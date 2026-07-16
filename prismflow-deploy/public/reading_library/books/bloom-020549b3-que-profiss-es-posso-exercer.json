@@ -1,0 +1,95 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-020549b3-que-profiss-es-posso-exercer",
+  "title": "Que profissões posso exercer?",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Peter Ebenrubo Okunola"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Peter Ebenrubo Okunola",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HhFHyxuoeq"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/HhFHyxuoeq%2f1783190219984%2fUt%c5%a9m+%e1%bb%8c%e1%bb%8dna+I+Diye+Sisye+A%2f0+Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Há tantas profissões diferentes que as pessoas podem seguir! Cada uma contribui de uma forma especial.​\nUm professor ajuda as crianças a aprender coisas novas todos os dias."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Um cabeleireiro penteia e cuida do cabelo das pessoas."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Um piloto voa em aviões bem acima das nuvens."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Um fotógrafo tira fotografias lindas."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Um pediatra ajuda as crianças a sentirem-se melhor quando estão doentes."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Uma polícia mantém as pessoas seguras e ajuda a resolver crimes."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Um jogador de futebol pode representar o seu país no Mundial."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Um músico canta canções que nos fazem sorrir e dançar."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Uma eletricista garante que as luzes funcionam em casa."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Um pedreiro constrói casas e escolas."
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Um taxista leva as pessoas para onde precisam de ir."
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Que profissão pensaste em seguir quando cresceres?"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 126
+  }
+}

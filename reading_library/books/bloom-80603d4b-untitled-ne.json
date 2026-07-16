@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-80603d4b-untitled-ne",
+  "title": "खेतबारी",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/rVI6wPBw5T"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fAOR_plant-1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fimage.jpg",
+      "text": "खेतबारीमा फल्छ धान, मकै गहुँ।\nताजा खाना खाई हामी स्वस्थ रहुँ।\nबाँच्न सकिँदैन खेतबारी बिना। खेतबारी बाँझो राख्नु हुन्छ किन?"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fimage1.jpg",
+      "text": "लगाउँछौं हामी खेतबारीमा मकै।\nखान पाउँदा खुसी हुन्छौं पक्‍कै।\nपोलेर नि खान्छौँ मकैको घोगा। ताजा खाना खाँदा लाग्दैन है रोग।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fimage1.png",
+      "text": "खेतबारीमा गहुँ फल्यो भरिपूर्ण दाना।\nघरमा पाक्छ गहुँको मिठो मिठो खाना।\nगहुँ फल्ने खेतबारी सधैँ सफा राखौँ।\nगहुँको रोटी पकाएर सबै जना चाखौँ।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fimage2.png",
+      "text": "खेतबारीमा झुलेछ है धान लह लह।\nआकाशमा कति राम्रो जून टह टह।\nधानले सबको सधैँभरि बचाउँछ प्राण।\nधेरै धान फलाउन राम्रो बीउ छान।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fimage3.png",
+      "text": "चना, अन्य गेडागुडी खेतबारी मै फल्छ।\nखेतबारीकै भरोसाले हाम्रो जीवन चल्छ।\nगेडागुडी खानुपर्छ पोषिलोको लागि।\nखाना खाउँ स्वस्थकर जान्छ रोग भागी।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fimage.png",
+      "text": "खेतबारीमै फूल्ने गर्छ ढकमक्‍क फूल।\nखेतबारीलाई बाँझो राख्ने गर्नु हुन्न भूल।\nसिंचाइ पुर्‍याउँ खेतबारीमा फलाउन अन्न।\nखेतबारीमै फल्छ अब अन्न टन्न।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fimage2.jpg",
+      "text": "गाजर, मुला, बन्दाकोभी खेतबारीमै फल्ने।\nखेतबारीकै काठ दाउरा भान्छाघरमा बल्ने।\nसागसब्जीले सजाऊँ अब हाम्रो खेतबारी।\nखेतबारी बन्नुपर्छ तरकारीको घारी।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fimage4.jpg",
+      "text": "खेतबारीको तरकारीले हामीलाई खुसी दिन्छ।\nघरमा बढि तरकारी व्यापारीले किन्छ।\nलसुन, बोडी, बन्दाकोभी तरकारीको रूप।\nखाऊँ अब तरकारी हटाऊँ सब दुःख।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fimage5.png",
+      "text": "खेतबारीमै फल्छ आँप, स्याउ, केरा।\nअन्न फलफूल फलाउने खेतबारी मेरा।\nखेतबारीलाई सबै मिली हराभरा पारौँ।\nहामी खेत बारीमानै रूख बिरूवा सारौँ।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fAOR_CMB0161.png",
+      "text": "रूख रोपौँ वरिपरी जोगाऊँ खेतबारी।\nखेतबारीलाई जोगाऊँ अब मिली पुरूषनारी।\nखेतबारी नभई हुन्न मानिसलाई बाँच्न।\nखेतबारीको अन्न देख्दा लाग्छ मन नाँच्न।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 210
+  }
+}

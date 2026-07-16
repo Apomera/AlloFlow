@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f265f823-o-cabrito-o-c-o-e-a-vaca",
+  "title": "\"O cabrito, o cão e a vaca\"",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "African Storybook"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "African Storybook",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/GcWGNEkMHM"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/GcWGNEkMHM%2f1765825833899%2fMbuzi+na+Mwanambwa+na+Ng+ombe%2fGoatDogCow_aw1b+empty+sky+(1).png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/GcWGNEkMHM%2f1765825833899%2fMbuzi+na+Mwanambwa+na+Ng+ombe%2fGoat+Dog+Cow+Cover.png",
+      "text": "O cabrito, o cão e a vaca eram amigos. Um dia, fizeram uma viagem e entraram no carro."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/GcWGNEkMHM%2f1765825833899%2fMbuzi+na+Mwanambwa+na+Ng+ombe%2fGoat+Dog+Cow+2.png",
+      "text": "Quando chegaram no lugar de descer, o motorista pediu que pagassem.\nA vaca pagou."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/GcWGNEkMHM%2f1765825833899%2fMbuzi+na+Mwanambwa+na+Ng+ombe%2fGoat+Dog+Cow+3.png",
+      "text": "O cão pagou também, mas tirou dinheiro a mais e era preciso devolver o troco dele."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/GcWGNEkMHM%2f1765825833899%2fMbuzi+na+Mwanambwa+na+Ng+ombe%2fGoat+Dog+Cow+4.png",
+      "text": "Aquele motorista queria devolver o troco ao cão, mas o cabrito fugiu sem pagar."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/GcWGNEkMHM%2f1765825833899%2fMbuzi+na+Mwanambwa+na+Ng+ombe%2fGoat+Dog+Cow+5.png",
+      "text": "Aquele motorista zangou e não queria devolver ao cão o troco dele."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/GcWGNEkMHM%2f1765825833899%2fMbuzi+na+Mwanambwa+na+Ng+ombe%2fGoat+Dog+Cow+6.jpg",
+      "text": "À partir deste dia, o cão, quando vê um carro, está a ladrar e a espreitar para dentro do carro, se talvez veja aquele motorista que lhe deve o troco."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/GcWGNEkMHM%2f1765825833899%2fMbuzi+na+Mwanambwa+na+Ng+ombe%2fGoat+Dog+Cow+7.png",
+      "text": "O cabrito vendo um carro está a fugir. Ele tem medo de ser preso porque não pagou."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/GcWGNEkMHM%2f1765825833899%2fMbuzi+na+Mwanambwa+na+Ng+ombe%2fGoat+Dog+Cow+8.png",
+      "text": "A vaca ouvindo um carro a buzinar na estrada não tem medo. Vai aonde quer, porque pagou o dinheiro completo da viagem."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 143
+  }
+}

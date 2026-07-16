@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-0bec5b70-untitled-km",
+  "title": "សៀវភៅទី២៤នំ៨ចំណែក",
+  "description": "An Early Grade Reader pattern book in Khmer and English. Suitable to translate into other languages.",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "NTFP"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NTFP",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/kvlEpBb4KS"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f%e1%9e%93%e1%9f%86%e1%9f%a8%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80_Page_1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f01+-+One+Big+Cake.jpg",
+      "text": "ដំដំ​មាន​នំ​ធំ​១ ។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f02+-+One+Big+Cake.jpg",
+      "text": "ដំដំ​កាត់​នំ​ជា​៨ ចំណែក ។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f03+-+One+Big+Cake.jpg",
+      "text": "១ ចំណែក​ជា​របស់​យាយ ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f04+-+One+Big+Cake.jpg",
+      "text": "១ ចំណែក​ជា​របស់​តា ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f05+-+One+Big+Cake.jpg",
+      "text": "១ ចំណែក​ជា​របស់​ម៉ែ ។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f06+-+One+Big+Cake.jpg",
+      "text": "១ ចំណែក​ជា​របស់​ពុក ។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f07+-+One+Big+Cake.jpg",
+      "text": "១ ចំណែក​ជា​របស់​មីង ។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f08+-+One+Big+Cake3.png",
+      "text": "1 piece for Uncle.\n១ ចំណែក​ជា​របស់​ពូ ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f09+-+One+Big+Cake.jpg",
+      "text": ""
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f10+-+One+Big+Cake.jpg",
+      "text": "១ ចំណែក​ជា​របស់​បង ។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f11+-+One+Big+Cake.jpg",
+      "text": "១ ចំណែក​ជា​របស់​ដំដំ ។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f12+-+One+Big+Cake.jpg",
+      "text": "យាយ តា ម៉ែ ពុក\nមីង ពូ ​ពិសា​នំ ។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2fimage.jpg",
+      "text": "បង​និង​ដំដំ​ញ៉ាំ​នំ​ដែរ ។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2fback+-+One+Big+Cake.jpg",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 43
+  }
+}

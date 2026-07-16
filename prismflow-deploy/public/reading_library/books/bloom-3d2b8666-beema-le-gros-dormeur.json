@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3d2b8666-beema-le-gros-dormeur",
+  "title": "Beema, le gros dormeur",
+  "description": "A French picture book from Bloom Library.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Peter Ebenrubo Okunola"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Peter Ebenrubo Okunola",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/CUd9dCIBn3"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/CUd9dCIBn3%2f1779655618013%2fIbeema++obuwe+%e1%b9%a3%c5%a9moworo%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "L'âne Beema a toujours du mal à se réveiller."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "- Vache, tu peux me réveiller ?\nElle ne peut pas."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "- Chien, tu peux me réveiller ?\nIl ne peut pas."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "- Coq, tu peux me réveiller ?\nIl ne peut pas."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "- Corbeau, tu peux me réveiller ?\nIl ne peut pas."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "- Qui peut me réveiller ?\nLa mouche vient le piquer."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "- Merci, la mouche. Viens me réveiller tous les matins !"
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 75
+  }
+}

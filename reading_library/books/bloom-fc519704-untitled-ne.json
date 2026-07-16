@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-fc519704-untitled-ne",
+  "title": "घमण्डी चमेरो",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/GxVgWNhUFd"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fAOR_sabt001m.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fimage.png",
+      "text": "कुनै जङ्गलमा एउटा चमेरो बस्दथ्यो। ऊ निकै घमण्डी थियो। आफूलाई निकै ठुलो मान्थ्यो। त्यसैले उसका साथी थिएनन्।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fAOR_Nab095.png",
+      "text": "उसको घमण्ड देखेर सबैजना बोल्न डराउँथे। जङ्गलमा अरू पंक्षीहरू एकआपसमा मिलेर बस्दथे। चमेरो कोहिसँग मिल्दैनथ्यो।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fimage.jpg",
+      "text": "उसलाई लाग्थ्यो म निकै भाग्यमानी छु। संसारको एकमात्र दुधिलो चरा हुँ।\nकुनै पनि चराले दुध दिँदैनन्।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fAOR_Ind00043.png",
+      "text": "जेठ महिनाको दिन सुरू भयो । सुख्खा र गर्मी मौसम आयो । हरेक बर्षझैँ पंक्षीहरूले बैठक डाके। बैठकमा सबै पंक्षीहरूको छलफल भयो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fAOR_Jungle3.png",
+      "text": "अब डढेलो लाग्ने समय आयो। हामी सबै सजग रहनुपर्छ।\nपानीको मुहानहरू जोगाउनुपर्छ । यो कुरा चमेरोलाई पनि भनौँ। उनीहरूले सल्‍लाह गरे।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fbird+meeting.png",
+      "text": "पंक्षिहरू सबै मिलेर चमेरोको गुँडमा गए। चमेरोले सबै पंक्षीहरू देखेर नमिठो बोल्यो। तिमीहरू यहाँ किन आएका हौ?"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fimage1.jpg",
+      "text": "पंक्षीहरूले आफ्नो कुरा चमेरोलाई भने। चमेरोले उनीहरूको कुरालाई खिसी गर्‍यो।\nउनीहरूको कुरालाई हाँसेर उडायो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fimage2.jpg",
+      "text": "हेर म तिमीहरू जस्तो होइन।\nम जनावर जस्तै बलियो छु।\nमलाई केही पनि हुँदैन।\nजाओ तिमीहरू भनेर भन्यो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fimage2.png",
+      "text": "चराहरूले भनेझैँ बिस्तारै सुख्खा मौसम आयो।\nबोटबिरूवाहरू मर्न थाले।\nएकदिन जङ्गलमा आगो लाग्यो।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fimage4.png",
+      "text": "जङ्गलमा हाहाकार मच्‍चियो।\nचराहरूले आफ्नो व्यवस्था गरेका थिए। सबै चराहरू अन्त उडेर गए। चमेरोलाई कसैले बोलाएनन्।"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fimage5.png",
+      "text": "चमेरो एक्लै भयो। सबैसँग हारगुहार माग्न थाल्यो। तर उसलाई सुन्ने कोही थिएनन्। किनकी जङ्गलमा अरू कोही बाँकी थिएनन्।"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fimage6.png",
+      "text": "उसले आफूले गरेको गल्ती सम्झियो। घमण्डी बानीले गर्दानै एक्लिएको थाहा पायो । चमेरोले एक्लै बस्‍न नसक्ने ठान्यो। ऊ पनि जङ्गलबाट बाहिर उड्यो।"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fimage8.png",
+      "text": "अरू चराहरूलाई खोज्दै टाढा टाढा पुग्यो। अन्त्यमा साथीहरूलाई भेट्यो। आफूले गल्ति गरेको कुरा बतायो। सबै चराहरूसँग माफी माग्यो।"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fbirds.png",
+      "text": "सबैले उसलाई माफ गरिदिए।\nत्यसपछि उसले आफ्नो घमण्डी बानी त्याग्यो। अनि चमेरो समूहमा मिलेर बस्‍न थाल्यो।"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 243
+  }
+}

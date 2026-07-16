@@ -1,0 +1,82 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e32eabe6-o-camale-o-e-o-coelho",
+  "title": "O camaleão e o coelho",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Little Zebra"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/BmBC4BTEXD"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/BmBC4BTEXD%2f1765823028609%2fNyakatendewa+na+sulo%2fChameleon+Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BmBC4BTEXD%2f1765823028609%2fNyakatendewa+na+sulo%2fChameleon+2.jpg",
+      "text": "Era uma vez, um Camaleão e um Coelho. Apostaram uma corrida para ver quem seria o campeão.\nO Coelho aceitou e disse: “Você anda muito devagar! Começa com esta perna, pára e depois começa de novo com a outra. Você nunca vai chegar. Vou deixar-lhe atrás, muito longe de mim. Nem me vai ver.”"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BmBC4BTEXD%2f1765823028609%2fNyakatendewa+na+sulo%2fChameleon+3.jpg",
+      "text": "Convidaram muitos animais que se juntaram na meta."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BmBC4BTEXD%2f1765823028609%2fNyakatendewa+na+sulo%2fChameleon+4.jpg",
+      "text": "O Camaleão e o Coelho começaram a correr."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BmBC4BTEXD%2f1765823028609%2fNyakatendewa+na+sulo%2fChameleon+5.jpg",
+      "text": "O Camaleão saltou e empoleirou-se na cauda do Coelho."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BmBC4BTEXD%2f1765823028609%2fNyakatendewa+na+sulo%2fChameleon+6.jpg",
+      "text": "O Coelho corria, os animais riam e batiam palmas.\nFaziam muito barulho por causa do Camaleão que estava agarrado à cauda do Coelho."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BmBC4BTEXD%2f1765823028609%2fNyakatendewa+na+sulo%2fChameleon+7.jpg",
+      "text": "O Coelho ao ouvir tanto barulho parou e sentou.\nO Camaleão disse: “Não te sentes em cima de mim!\nEu cheguei a muito tempo.”"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BmBC4BTEXD%2f1765823028609%2fNyakatendewa+na+sulo%2fChameleon+8.jpg",
+      "text": "O Coelho assustou-se e de novo, começou a correr.\nAo chegar na meta, os animais batiam palmas, gritando ao ver o Camaleão ainda na cauda. O Coelho ouviu e pensou que o Camaleão tinha chegado."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BmBC4BTEXD%2f1765823028609%2fNyakatendewa+na+sulo%2fChameleon+10.jpg",
+      "text": "Quando o Coelho chegou na meta, o Camaleão disse: “Não te sentes em cima de mim. Eu cheguei em primeiro lugar.”"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BmBC4BTEXD%2f1765823028609%2fNyakatendewa+na+sulo%2fChameleon+11.jpg",
+      "text": "O Coelho não se demorou. Fugiu, e o Camaleão ficou a receber o prémio. O Coelho perdeu."
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 199
+  }
+}

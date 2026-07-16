@@ -1,0 +1,92 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f915d4df-que-font-ils",
+  "title": "Que font-ils ?",
+  "description": "A French picture book from Bloom Library.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Personal Development"
+  ],
+  "authors": [
+    "Peter Ebenrubo Okunola"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Peter Ebenrubo Okunola",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/uZzxAY5Nls"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/uZzxAY5Nls%2f1780259375998%2f%e1%ba%b8na+b%c3%a8+e+siye+a%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "conduire"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "rouler"
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "lancer et attraper"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "courir et poursuivre"
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "faire tourner"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "faire tourner et sauter"
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "taper"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "jouer"
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "porter"
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "danser"
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Que font-ils ?"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 21
+  }
+}

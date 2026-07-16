@@ -1,0 +1,303 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-6aa755ea-le-tambour-de-l-unit",
+  "title": "Le tambour de l'unité",
+  "description": "Dans ce livre, les ethnies du Cameroun se rassemblent dans la savane du Nord pour partager leur chants et leurs récoltes. Les différends menacent de briser leur unité, mais les enfants, éveillés à la beauté du vivre-ensemble, refusent de céder à la peur. La hyène, symbole de division, tente de les intimider, mais leur chant, leur danse et leur solidarité la repoussent. Ainsi, malgré leurs différences de couleur et de culture, ils deviennent un seul peuple. Au matin, les parents découvrent leurs enfants actifs, porteurs d’une lumière nouvelle : celle de l’unité qui triomphe sur la division.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "Cabtal-Barthélemy BOUTI"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Cabtal-Barthélemy BOUTI",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/NZrkoaeiEG"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2fimage.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Dans la vaste savane de Katarko, là où le vent danse avec les herbes hautes, vivait un vieux griot nommé TAPNA. Chaque année, il organisait le grand marché des peuples, où les ethnies du Nord et du Sud du Cameroun venaient échanger leurs savoirs, leurs récoltes et leurs chants.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi9399f858-b376-43bd-93f1-aad01b71c71c.mp3",
+          "dur": 9.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi869a89e3-9ec8-42f1-ae38-1abde8090ba5.mp3",
+          "dur": 11.960091
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Cette année-là, les Masa apportèrent leurs calebasses sculptées, les Musgum leurs filets de pêche, les Tupuri leurs danses spiralées. Les Guiziga, Mafa, Buwal et Mufu arrivèrent avec des épices rares et des contes anciens. Du Sud, les Basa chantèrent en chœur, les Beti portèrent des étoffes colorées, les Lamso, Babanki et Kejom offrirent du miel et des instruments de musique.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fa80dc417-ca52-4076-8a0e-7942fc11d667.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi051f6acf-e68a-4574-8f59-baea12524d1f.mp3",
+          "dur": 8.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi3bd1b0d1-8607-4944-8a31-9867ca8d6dc7.mp3",
+          "dur": 13.660091
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Mais sous les sourires, des murmures s’élevaient. Les Musgum ne comprenaient pas les chants des Beti. Les Mafa trouvaient les habits des Babanki trop voyants. Les Basa riaient des coiffures des Tupuri. Petit à petit, chacun se replia sur son coin du marché, oubliant la joie du partage.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi7b88a4bd-ae0a-41be-97bb-52a8f5062746.mp3",
+          "dur": 4.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi96c3e753-bcb6-446d-9160-0e6f94f0b47c.mp3",
+          "dur": 3.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi1484a743-3564-41e3-accd-92f5ec55c103.mp3",
+          "dur": 3.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi8013d2f1-a1d2-4052-bac0-0518bdb8e66b.mp3",
+          "dur": 3.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2faf6c3dd2-1029-4733-9ade-91b0cbdf9a10.mp3",
+          "dur": 8.460091
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Un soir, alors que le soleil se couchait rouge comme un tam-tam brûlant, un grondement étrange secoua la terre. Le vieux griot TAPNA frappa son tambour : « Écoutez, enfants du Cameroun ! Une bête géante, la Hyène de katarko, s’approche. Elle se nourrit des divisions et des mépris. Si nous ne nous unissons pas, elle dévorera nos villages, nos chants et nos enfants. »",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi4972265f-6a53-4c40-b18b-7b34c937c984.mp3",
+          "dur": 10.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fe5cffcec-0c3f-41c2-97ac-be217ab2b012.mp3",
+          "dur": 6.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fcb077262-b468-4e75-a62a-c968605cf771.mp3",
+          "dur": 4.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi5fdb0a26-867a-404d-990e-bf364aca237b.mp3",
+          "dur": 3.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi3e4f57e6-314b-437f-afdb-fdba6ff4a47d.mp3",
+          "dur": 7.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi1ebe51d0-2156-45f2-8375-7ef0f152128c.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "La peur s’installa. Chacun retourna dans sa case, inquiet. Mais au cœur de la nuit, une jeune fille Masa nommée Tunsukka prit son courage et alla voir un garçon Beti, Essomba. « Si nous chantons ensemble, peut-être que la Hyène reculera.» Essomba hocha la tête. Ils allèrent chercher les autres.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fe5d4f209-d789-47c5-89ae-dd1c28387850.mp3",
+          "dur": 1.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fb80060d9-ff5f-4c45-b2e6-4c1b80777431.mp3",
+          "dur": 2.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2ffb99e650-92db-4108-b6fb-2770d8e400e9.mp3",
+          "dur": 9.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi32b4f3fb-5895-46c4-a6ae-ae50ccb8ff01.mp3",
+          "dur": 4.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi202be6c3-2244-4529-9918-ecdd784fb96e.mp3",
+          "dur": 1.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fce941866-be8d-4135-b86f-30b68d8f4a4d.mp3",
+          "dur": 2.560091
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Petit à petit, les enfants des différentes ethnies se réunirent. Les Mufu apportèrent des torches, les Babanki des tambours, les Musgum des flûtes, les Kejom des clochettes. Les Guiziga et les Lamso tressèrent une corde géante, symbole de leur alliance.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fe7eba4bd-2c80-4f2b-9943-d9560d8399e6.mp3",
+          "dur": 4.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2faa8bf51a-b7bb-4e08-b47e-987af6938749.mp3",
+          "dur": 9.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fb58aa750-30d6-427c-99eb-d906ad8eaf51.mp3",
+          "dur": 6.960091
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "À l’aube, la Hyène apparut, immense, aux yeux rouges comme le feu. Elle grogna : « Vous êtes trop différents pour vivre ensemble. Je vais vous séparer à jamais. » Mais les enfants se mirent à chanter, à danser, à frapper les tambours en rythme. Le sol vibra d’un seul cœur.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi8ee5a7d5-2c01-48bd-9a82-4c273acb9461.mp3",
+          "dur": 6.060091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2ff5bd7956-2275-4754-8a59-1d60e46b6ed0.mp3",
+          "dur": 4.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi76061799-82a4-4e4e-bac8-5eff15fc51e6.mp3",
+          "dur": 2.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi6edfae2a-c1ee-42c8-b62c-e9f39463b6ce.mp3",
+          "dur": 7.060091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fb1b2c169-17d2-49ba-8f48-4460db86c24e.mp3",
+          "dur": 3.260091
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "La Hyène recula, surprise. Les chants s’élevèrent en plusieurs langues, mais portaient un seul message : « Nous sommes un seul peuple, aux mille couleurs. » La bête hurla, tenta de s’approcher, mais la corde tressée fut dressée comme un mur vivant. Elle ne put passer.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi3b599574-d08f-4861-98b4-acb339689e77.mp3",
+          "dur": 3.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi30042d92-9e10-4f2a-a365-b91c6433d75b.mp3",
+          "dur": 9.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi11550bd6-fdb6-4dad-87a2-c9983436332b.mp3",
+          "dur": 8.360091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi01019c3d-fde6-4789-ad24-5cfea60ba381.mp3",
+          "dur": 2.160091
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Vaincue par l’unité, la Hyène s’enfuit dans les montagnes. Les anciens, réveillés par le vacarme, virent leurs enfants unis et pleurèrent de joie. Le vieux TAPNA sourit : « Vous avez compris ce que les adultes ont oublié. »",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi4038e9ea-48fe-4ce6-9f9a-e93a942b56dc.mp3",
+          "dur": 5.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fc70c2be8-a95c-456f-bed4-be395bbbdfc8.mp3",
+          "dur": 6.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi6f97839c-f9d8-4bf9-bee5-a882534f2146.mp3",
+          "dur": 6.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi8cc7d759-2d39-4772-b7b6-9e5e5302448a.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Depuis ce jour, le marché de Katarko devint le Festival de l’Unité. Chaque année, les peuples du Nord et du Sud venaient non seulement échanger, mais aussi raconter l’histoire de la Hyène de katarko, pour que jamais elle ne revienne.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi525e26aa-a897-479b-83df-f1299b6a22f6.mp3",
+          "dur": 6.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2ff85a8a1f-f4db-4588-9e6d-df8cfa754d2c.mp3",
+          "dur": 12.760091
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Les enfants grandirent, devinrent chefs, enseignants et conteurs. Ils enseignèrent que la diversité est une richesse, et que le respect est le chemin vers la paix. Le tambour de TAPNA fut placé au centre du village, et nul ne pouvait le frapper sans inviter tous les autres",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi210546e5-7073-41cd-aa19-56061dd6daf6.mp3",
+          "dur": 7.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi11b2b2f5-7586-4454-8a1c-cb4a573df3c0.mp3",
+          "dur": 7.060091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi6fa8b294-e8c9-47d4-80f3-46bc425cd88f.mp3",
+          "dur": 9.260091
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Ainsi, dans la savane du Cameroun, on apprit que l’unité ne signifie pas être identiques, mais marcher ensemble, malgré les différences. Et chaque fois que le vent souffle, on entend encore les chants des enfants qui ont sauvé leur peuple par la solidarité.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fd1f9f75d-ce70-4571-a9b1-981c722cd8c9.mp3",
+          "dur": 11.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2faudio%2fi23ed0031-a3fb-43c8-bcac-b650914492a7.mp3",
+          "dur": 9.260091
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 578
+  }
+}

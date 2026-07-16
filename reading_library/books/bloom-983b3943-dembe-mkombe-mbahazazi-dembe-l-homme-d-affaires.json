@@ -1,0 +1,82 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-983b3943-dembe-mkombe-mbahazazi-dembe-l-homme-d-affaires",
+  "title": "Dembe mkombe mbahazazi Dembe l'Homme d'Affaires",
+  "description": "Dembe the Businessman with Shimwali and French Translation",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jnVNNoC3Yj"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f983b3943-630c-41f2-9e15-bdc1064e9f64%2fDembe+mkombe+mbahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f983b3943-630c-41f2-9e15-bdc1064e9f64%2fDembe+mkombe+mbahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_02_Image_0001.jpg",
+      "text": "Dans mon village, il y a un homme d'affaires qui s'appelle Dembe."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f983b3943-630c-41f2-9e15-bdc1064e9f64%2fDembe+mkombe+mbahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_03_Image_0001.png",
+      "text": "Dembe possède une grande boutique dans le village."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f983b3943-630c-41f2-9e15-bdc1064e9f64%2fDembe+mkombe+mbahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_04_Image_0001.png",
+      "text": "La boutique vend de la farine, du sucre, du riz, des bananes et bien d'autres choses encore."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f983b3943-630c-41f2-9e15-bdc1064e9f64%2fDembe+mkombe+mbahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_05_Image_0001.png",
+      "text": "Dembe et sa femme ont trois enfants. Les enfants aident à la boutique pendant les vacances."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f983b3943-630c-41f2-9e15-bdc1064e9f64%2fDembe+mkombe+mbahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_06_Image_0001.png",
+      "text": "Chaque jour, Dembe compte l'argent qu'ils ont gagné."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f983b3943-630c-41f2-9e15-bdc1064e9f64%2fDembe+mkombe+mbahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_07_Image_0001.png",
+      "text": "Dembe tient un livre de comptes. Il y note l'argent qu'ils gagnent chaque jour. Il y note également l'argent qu'il dépense pour acheter des articles pour la boutique."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f983b3943-630c-41f2-9e15-bdc1064e9f64%2fDembe+mkombe+mbahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_08_Image_0001.png",
+      "text": "Dembe et sa femme peuvent se permettre une belle maison et une voiture."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f983b3943-630c-41f2-9e15-bdc1064e9f64%2fDembe+mkombe+mbahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_09_Image_0001.png",
+      "text": "Ils ont également des vaches, des poulets et des lapins."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f983b3943-630c-41f2-9e15-bdc1064e9f64%2fDembe+mkombe+mbahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_10_Image_0001.jpg",
+      "text": "Cette famille mène une belle vie. Dans quelques années, les enfants reprendront la boutique. Mais d'abord, ils termineront leurs études."
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 132
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-8b7cfc2a-a-casa-de-luwo",
+  "title": "A casa de Luwo",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Little Zebra"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ymAKpaUlXZ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ymAKpaUlXZ%2f1765823387066%2fNyumba+ya+Luwo%2fLuwo+cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ymAKpaUlXZ%2f1765823387066%2fNyumba+ya+Luwo%2fLuwo+cover+flipped.jpg",
+      "text": "Luwo foi para a igreja com a sua mãe.\nEla estava segurando a mão dele no caminho."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ymAKpaUlXZ%2f1765823387066%2fNyumba+ya+Luwo%2fLuwo+2.jpg",
+      "text": "Dentro da igreja havia muitas pessoas reunidas. Elas estavam cantando."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ymAKpaUlXZ%2f1765823387066%2fNyumba+ya+Luwo%2fLuwo+3.jpg",
+      "text": "Luwo saiu da igreja.\nSua mãe nem o viu."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ymAKpaUlXZ%2f1765823387066%2fNyumba+ya+Luwo%2fLuwo+5.jpg",
+      "text": "Luwo ficou no caminho. Ele olhou para o caminho e pensou: “Onde fica a minha casa?”\nEntão ele seguiu o caminho. Ele viu uma casa grande. “Não, essa não é a nossa casa. Nossa casa é pequena.”"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ymAKpaUlXZ%2f1765823387066%2fNyumba+ya+Luwo%2fLuwo+6.jpg",
+      "text": "Luwo andou um pouco mais. Ele viu uma casa em cima de estacas. “Não, essa não é a nossa casa. Nossa casa não está em cima de estacas.”"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ymAKpaUlXZ%2f1765823387066%2fNyumba+ya+Luwo%2fLuwo+7.jpg",
+      "text": "Ele continuou andando. Ele viu uma pequena casa de palha. “Não, essa não é a nossa casa.\nNossa casa tem paredes de barro”. 1"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ymAKpaUlXZ%2f1765823387066%2fNyumba+ya+Luwo%2fLuwo+8.jpg",
+      "text": "Luwo foi mais longe.\nEle viu uma pequena casa com uma mangueira do lado de fora. “Não, essa não é a nossa casa.\nNossa casa tem duas mangueiras lá fora.”"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ymAKpaUlXZ%2f1765823387066%2fNyumba+ya+Luwo%2fLuwo+9.jpg",
+      "text": "Por fim, Luwo viu a mãe vindo em sua direção. Luwo correu para sua mãe.\nSua mãe disse: “Vamos para casa!\""
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ymAKpaUlXZ%2f1765823387066%2fNyumba+ya+Luwo%2fLuwo+10.jpg",
+      "text": "Qual casa é a casa de Luwo?"
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 183
+  }
+}

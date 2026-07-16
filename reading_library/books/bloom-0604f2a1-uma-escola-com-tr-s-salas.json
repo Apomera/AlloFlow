@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-0604f2a1-uma-escola-com-tr-s-salas",
+  "title": "Uma escola com três salas",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Léonie Dieleman"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Léonie Dieleman",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/TGCftUlf0Q"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/TGCftUlf0Q%2f1765823985957%2fXikola+na+mbuto+zitatu%2fXikola+cover2.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/TGCftUlf0Q%2f1765823985957%2fXikola+na+mbuto+zitatu%2fXikola+1.png",
+      "text": "Era uma vez uma escola que tinha 3 salas de aula para estudar. Uma sala com camaleões, uma sala com formigas e uma sala com gafanhotos. Na sala dos camaleões animava muito para estudar. Se alguém errasse, os outros diziam: \"Não se preocupe, tente novamente.\""
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/TGCftUlf0Q%2f1765823985957%2fXikola+na+mbuto+zitatu%2fXikola+2.png",
+      "text": "Na sala das formigas também agradava muito estudar. Todos os dias as formigas chegavam na hora certa na escola. Elas não cabulavam. Elas sabiam que cabular é enganar a si mesmo. Talvez você tire uma boa nota, mas na sua cabeça não tem nada."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/TGCftUlf0Q%2f1765823985957%2fXikola+na+mbuto+zitatu%2fXikola+3.png",
+      "text": "Mas na sala dos gafanhotos não animava para estudar. Muitos gafanhotos eram chatos! Eles gozavam os outros. Eles não faziam o trabalho para casa. Eles cabulavam na hora da prova. Eles não percebiam que nas suas cabeças não tinha nada!"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/TGCftUlf0Q%2f1765823985957%2fXikola+na+mbuto+zitatu%2fXikola+4.png",
+      "text": "Alguns gafanhotos que não eram chatos já não queriam mais estudar aí dentro. Eles foram perguntar aos camaleões e as formigas se podiam estudar com eles. Os camaleões e as formigas responderam: 'Bem vindos!'"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/TGCftUlf0Q%2f1765823985957%2fXikola+na+mbuto+zitatu%2fXikola+5.png",
+      "text": "No último dia do ano, o coelho, o director da escola entrava nas salas. Ele dizia quem passou e quem chumbou.\nNa sala dos camaleões todos passaram. O director da escola disse: \"Parabéns, todos vocês passaram de classe. Vocês também aprenderam uma grande lição: Trate os outros como você gostaria de ser tratado.\""
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/TGCftUlf0Q%2f1765823985957%2fXikola+na+mbuto+zitatu%2fXikola+6.png",
+      "text": "Na sala das formigas todas passaram com boas notas. O director disse: \"Parabéns, todos vocês aprenderam também uma grande lição: Não tente ser o melhor, mas dê o melhor de você!\""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/TGCftUlf0Q%2f1765823985957%2fXikola+na+mbuto+zitatu%2fXikola+7.png",
+      "text": "Mas quando o coelho entrou na sala dos gafanhotos chatos o sorriso dele desapareceu e saíram umas lagrimas. Muito triste, ele disse: \"Vocês todos chumbaram. Vocês não se preocuparam com os seus estudos.\""
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/TGCftUlf0Q%2f1765823985957%2fXikola+na+mbuto+zitatu%2fXikola+8.png",
+      "text": "Alguns dias depois, um gafanhoto chato chegou no cabinete do coelho e disse, com vergonha: \"Eu errei. Eu quero repetir o ano. Eu quero aprender respeitar o meu próximo. Eu também quero dar o meu máximo.\"\nNo rosto do coelho apareceu um grande sorriso!"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 324
+  }
+}

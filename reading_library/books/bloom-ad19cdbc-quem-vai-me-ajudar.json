@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-ad19cdbc-quem-vai-me-ajudar",
+  "title": "Quem vai me ajudar?",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "SIL-PNG"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL-PNG",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YHnqbLzuRo"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/YHnqbLzuRo%2f1765891510007%2fMbani+anafuna+kundiphedza%2fCopy+of+Who+Will+Help+Me+3+taller.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YHnqbLzuRo%2f1765891510007%2fMbani+anafuna+kundiphedza%2fCopy+of+Who+Will+Help+Me+1a+taller.jpg",
+      "text": "Era uma vez uma galinha que procurava comida.\nNa rua ela encontrou um milho."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YHnqbLzuRo%2f1765891510007%2fMbani+anafuna+kundiphedza%2fCopy+of+Who+Will+Help+Me+2.png",
+      "text": "A galinha perguntou o porco: \"Você vai me ajudar a semear o milho?\"\nO porco respondeu: \"Não vou.\"\nAssim, a galinha semeou o milho sozinha."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YHnqbLzuRo%2f1765891510007%2fMbani+anafuna+kundiphedza%2fCopy+of+Who+Will+Help+Me+5.png",
+      "text": "O milho cresceu. A galinha perguntou ao cachorro: \"Você vai me ajudar a colher o milho?\"\nO cachorro respondeu: \"Não vou.\""
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YHnqbLzuRo%2f1765891510007%2fMbani+anafuna+kundiphedza%2fCopy+of+Who+Will+Help+Me+6.png",
+      "text": "Assim, a galinha colheu o milho sozinha."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YHnqbLzuRo%2f1765891510007%2fMbani+anafuna+kundiphedza%2fCopy+of+Who+Will+Help+Me+7.png",
+      "text": "A galinha perguntou a rato:\n\"Você vai me ajudar a carregar o milho para casa?\"\nO rato respondeu: \"Não vou.\""
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YHnqbLzuRo%2f1765891510007%2fMbani+anafuna+kundiphedza%2fCopy+of+Who+Will+Help+Me+8.png",
+      "text": "Assim, a galinha carregou o milho sozinha.\nA galinha perguntou ao gato: \"Você vai me ajudar a cozinhar o milho?\"\nO gato respondeu: \"Não vou.\""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YHnqbLzuRo%2f1765891510007%2fMbani+anafuna+kundiphedza%2fCopy+of+Who+Will+Help+Me+9.png",
+      "text": "Assim, a galinha cozinhou sozinha. Quando a galinha acabou de cozinhar o milho todos se aproximaram por causa do cheiro gostoso do milho cozido."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YHnqbLzuRo%2f1765891510007%2fMbani+anafuna+kundiphedza%2fCopy+of+Who+Will+Help+Me+11+no+knife.png",
+      "text": "A galinha perguntou: \"Quem vai me ajudar a comer?\"\nO porco, o cachorro, o rato e o gato responderam: \"Nós vamos ajudar a comer!!!\"\nMas a galinha respondeu: \"Não, vocês não vão me ajudar. Eu vou comer o milho com os meus filhos.\""
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 179
+  }
+}

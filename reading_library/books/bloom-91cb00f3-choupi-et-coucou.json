@@ -1,0 +1,213 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-91cb00f3-choupi-et-coucou",
+  "title": "Choupi et Coucou",
+  "description": "Choupi, une petite souris grise, sort joyeusement dans la cuisine à la recherche de nourriture, sans se douter du danger.\nCoucou, le chat noir, l’observe en silence et prépare son attaque avec patience et précision.\nPris par surprise, Choupi est capturée et dévorée, laissant Coucou satisfait de sa chasse réussie.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "CABTAL- Liboth Fabien"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CABTAL- Liboth Fabien",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YtjKlJievL"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2fChoupi+et+Coucou.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Un matin ensoleillé, Choupi la souris sortit de son trou. Elle avait très faim et cherchait des miettes de pain. Le parfum du pain grillé flottait encore dans l’air, comme une promesse alléchante.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi9f354211-0054-4217-9dcc-9e7076ddec0a.mp3",
+          "dur": 5.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi76bfa369-3728-4342-9f7e-d6d7b88bc33e.mp3",
+          "dur": 4.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi37c8968d-63d1-4aeb-9531-df29def0bb64.mp3",
+          "dur": 9.960091
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Choupi trottinait joyeusement dans la cuisine, en pensant : « Oh, peut-être que je trouverai du fromage aujourd’hui ! » Ses petites pattes effleuraient le carrelage tiède, rythmant sa marche d’un pas léger.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi71091832-5fd9-458f-ab99-754c6429a250.mp3",
+          "dur": 10.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi8f9fff0c-08dd-4acd-b31b-59c55cf55994.mp3",
+          "dur": 8.760091
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Mais elle ne savait pas que Coucou le chat dormait dans un coin, les oreilles attentives. Son souffle était lent, mais son instinct restait en éveil.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fd6fc0f4a-abb3-43ab-9efd-6232df7cbff0.mp3",
+          "dur": 8.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi89dcd127-3791-4526-8355-303a34dd779f.mp3",
+          "dur": 6.360091
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Coucou ouvrit un œil et aperçut Choupi. Il se dit doucement : « Voilà mon petit déjeuner. » Un frémissement parcourut ses moustaches, comme un signal de chasse.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fdb9edc1b-8562-49a6-a097-32d15a482a65.mp3",
+          "dur": 4.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fc54f0a98-c1e0-4416-b080-b217d70c3bf4.mp3",
+          "dur": 6.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi6785a012-8a14-40fa-9eee-d056acd91cf4.mp3",
+          "dur": 7.260091
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Choupi, insouciante, chantonnait et sautillait. Elle croyait être seule dans la maison. Son cœur battait au rythme de sa chanson, ignorant le danger qui rôdait.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fa21eadbf-76f7-43f7-b492-748c9d17ea41.mp3",
+          "dur": 6.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fccebb726-7351-4a1f-8428-577ab62c0eb4.mp3",
+          "dur": 4.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi749d4e5f-a61b-4469-ba05-9aea3a366ce4.mp3",
+          "dur": 8.260091
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "• Coucou se leva sans bruit et commença à marcher sur la pointe des pattes, comme une ombre. Chaque mouvement était calculé, précis, presque chorégraphié.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fae994475-b730-45fb-81ba-b3ee442fb8db.mp3",
+          "dur": 10.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fe0c43125-0ed9-46fb-be75-d1198b93ddea.mp3",
+          "dur": 8.360091
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Tout à coup, Choupi entendit un petit craquement. Elle leva la tête et vit deux yeux brillants fixés sur elle. Son souffle se coupa, figé par la peur qui venait de surgir.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi9c19b0a8-acdd-4a72-99e3-7a5d73785f28.mp3",
+          "dur": 5.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fc3153e91-904b-4a1e-a499-948fdcac7d8e.mp3",
+          "dur": 6.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi06a24d40-528e-443f-a188-b6fa0cfa40e6.mp3",
+          "dur": 7.760091
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Effrayée, elle voulut courir vers son trou, mais Coucou bondit d’un seul coup. Le silence fut brisé par le bruit sec de ses griffes sur le sol.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi6eb6e2b3-d1c2-42d1-b7c8-d3e26aa5032e.mp3",
+          "dur": 8.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fab25eb1f-65b9-4d0f-b529-9a73a02d62c7.mp3",
+          "dur": 7.960091
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "En un instant, Choupi fut attrapée entre les griffes du chat. Elle trembla et poussa un petit cri. Son regard implorait une clémence que le prédateur ne connaissait pas.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fa0cd18e5-33fb-4ba6-8e09-ae86697a6945.mp3",
+          "dur": 7.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi00c49a2b-aa4b-4fbe-a66b-e73c41847948.mp3",
+          "dur": 5.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fda7fe008-495e-47ce-a5fc-1b39f7336a9e.mp3",
+          "dur": 6.860091
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Coucou, rapide et puissant, dévora Choupi. Puis il se lécha les moustaches, content d’avoir gagné son jeu de patience. Le calme revint dans la cuisine, comme si rien ne s’était passé.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fbe5959c7-e074-4ce8-a0aa-71a47fad7dec.mp3",
+          "dur": 5.360091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi36537168-999a-4d97-ab1a-ae8a304f5084.mp3",
+          "dur": 7.360091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2faudio%2fi09cf6f1e-ea63-435c-9c10-a7058151d1d9.mp3",
+          "dur": 7.660091
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 289
+  }
+}

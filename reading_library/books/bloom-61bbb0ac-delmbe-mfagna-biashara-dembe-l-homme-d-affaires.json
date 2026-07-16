@@ -1,0 +1,82 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-61bbb0ac-delmbe-mfagna-biashara-dembe-l-homme-d-affaires",
+  "title": "Delmbe mfagna biashara Dembe l'Homme d'Affaires",
+  "description": "Dembe the Businessman with Shingazidja and French Translation",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "African Storybook Initiative"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "African Storybook Initiative",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Hmg4sNJHYX"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/Hmg4sNJHYX%2f1775848980270%2fDelmbe+mfagna+biashara+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Dans mon village, il y a un homme d'affaires qui s'appelle Dembe."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Dembe possède une grande boutique dans le village."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "La boutique vend de la farine, du sucre, du riz, des bananes et bien d'autres choses encore."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Dembe et sa femme ont trois enfants. Les enfants aident à la boutique pendant les vacances."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Chaque jour, Dembe compte l'argent qu'ils ont gagné."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Dembe tient un livre de comptes. Il y note l'argent qu'ils gagnent chaque jour. Il y note également l'argent qu'il dépense pour acheter des articles pour la boutique."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Dembe et sa femme peuvent se permettre une belle maison et une voiture."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Ils ont également des vaches, des poulets et des lapins."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Cette famille mène une belle vie. Dans quelques années, les enfants reprendront la boutique. Mais d'abord, ils termineront leurs études."
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 132
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-8876d1cf-com-for-a-de-vontade-vai-se-longe",
+  "title": "Com força de vontade, vai-se longe",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "Ministério da Educação da República de Angola INADE-MED"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministério da Educação da República de Angola INADE-MED",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/GACDt4JF66"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/GACDt4JF66%2f1772729406118%2fNa+phinga+unafika+kutali%2fRafiki+4.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Era uma vez um menino chamado Rafiki.\nEle vivia com sua avó.\nEles eram pobres.\nRafiki olhava os bois das pessoas da zona."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Um dia a avó do Rafiki foi matriculá-lo na escola.\nRafiki ficou muito feliz!"
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "A avó não tinha dinheiro para comprar material escolar.\nEla pediu a pessoas da zona para ajudá-la.\nEles concordaram."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Assim, Rafiki começou a estudar devido à força da sua avó.\nEle mostrou força de vontade."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Só que; alguns colegas da escola começaram a gozar o Rafiki porque ele usava roupas rasgadas.\nRafiki ficou muito triste com isso."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Um dia o Rafiki chegou em casa a chorar.\nSua avó perguntou: \"Por que você está a chorar?\"\nRafiki respondeu: \"Na escola alguns estão a me gozar por causa das minhas roupas...\"\nCom carinho, sua avó disse: \"Rafiki, quem você é, é muito mais importante do que aquilo que você veste.\""
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "A gozação não parava mas o Rafiki continuava a estudar.\nUm dia, um rapaz chamado Musa disse para os seus colegas: \"Rafiki é um bom rapaz. Ele tem respeito e ele não insulta a ninguém. Vamos ser amigo dele!\"\nAlguns ouviram, alguns não."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Depois de alguns anos, Rafiki terminou de estudar e formou-se para ser doutor num hospital."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Um dia, o filho de alguém que gozava muito Rafiki no passado, tinha caído de uma árvore e quebrou sua perna."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Quando eles chegaram ao hospital o pai da criança ficou muito admirado em ver Rafiki. Muito tempo atrás ele costumava gozar o Rafiki.\nRafiki atendeu muito bem o filho daquele pai.\nO pai se recordou o mal que ele havia feito no passado e se arrependeu. Ele sabia que não devia desprezar alguém e pediu desculpas ao Rafiki.\nRafiki ajudava bem as pessoas da zona e já não usava mais roupas rasgadas."
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 296
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e5f41016-las-aventuras-de-mart-n-en-la-isla-de-duendes",
+  "title": "Las aventuras de Martín en la isla de duendes",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/uv4oWb30Sk"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe5f41016-9246-4d8c-9d7f-fac5e5eaf328%2fLas+aventuras+de+Mart%c3%adn+en+la+isla+de+duendes%2fship-watercrafts-sea-ocean-boats-sky-clouds-sailing-background-225261.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe5f41016-9246-4d8c-9d7f-fac5e5eaf328%2fLas+aventuras+de+Mart%c3%adn+en+la+isla+de+duendes%2fjoven+caminando.png",
+      "text": "Martín es alegre y aventurero. Le gusta viajar y conocer lugares. Es viajero por naturaleza. Él ha viajado desde pequeño."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "El papá de Martín es marinero. Se llama Julián. Trabaja en un barco grande. Ha hecho muchos viajes. A veces ha llevado a Martín. Han viajado juntos.\nMartín también quiere ser marinero. Sueña con manejar un barco."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe5f41016-9246-4d8c-9d7f-fac5e5eaf328%2fLas+aventuras+de+Mart%c3%adn+en+la+isla+de+duendes%2fbarco+de+pasajeros.png",
+      "text": "Martín tiene grandes sueños. Quiere navegar por el mundo. Quiere visitar otros países. Desea conocer a muchas personas."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe5f41016-9246-4d8c-9d7f-fac5e5eaf328%2fLas+aventuras+de+Mart%c3%adn+en+la+isla+de+duendes%2faor_5-1-2p11.png",
+      "text": "Soñó que desembarcaron en una isla. La isla estaba habitada por duendes. Corrían por todos lados. ¡Era asombroso!"
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Martín estaba entusiasmado. Todo le parecía increíble. No dejaba de observar.\nLuego preguntó: ¿Quiénes son? Su papá dijo no saber. Dijo que era una isla desconocida. Era su primera vez allí. Él también estaba asombrado."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe5f41016-9246-4d8c-9d7f-fac5e5eaf328%2fLas+aventuras+de+Mart%c3%adn+en+la+isla+de+duendes%2fleprechaun-1391436_640.jpg",
+      "text": "Los duendes lucían trajes muy coloridos. Los hombres tenían barba blanca. Las mujeres llevaban canastas con flores. Caminaban por todos lados."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Martín y su papá caminaron más. La isla les pareció muy grande. Observaron detenidamente a su alrededor. Cada vez encontraban más duendes.\nEstos eran muy activos. Vivían en chozas pequeñas. Comían frutas y panecillos. Eran amables y muy divertidos."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe5f41016-9246-4d8c-9d7f-fac5e5eaf328%2fLas+aventuras+de+Mart%c3%adn+en+la+isla+de+duendes%2fpadre+e+hijo.jpg",
+      "text": "Martín y su papá siguieron caminando. Recorrieron toda la isla. Los duendes sonreían y los saludaban. Estaban muy contentos."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Caminaron cerca de la playa. A lo lejos divisaron un cofre. Corrieron a abrirlo.\nAl abrirlo se sorprendieron. Vieron que brillaba mucho. Eso les pareció increíble. Habían encontrado un tesoro. El sueño era muy real."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe5f41016-9246-4d8c-9d7f-fac5e5eaf328%2fLas+aventuras+de+Mart%c3%adn+en+la+isla+de+duendes%2ftreasure-160004_640.png",
+      "text": "Martín y su papá se emocionaron. El cofre estaba lleno de monedas. Ellos querían llevarse todo el cofre."
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Vieron que muchos duendes los miraban. Les sonreían. Martín y su papá estaban sorprendidos. No sabían qué hacer.\nEllos tomaron algunas monedas. Estas cambiaban al tocarlas. Se convertían en fotografías. Eran imágenes de familiares y amigos."
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Martín y su papá sonrieron. La isla de duendes era especial. Ellos querían regresar a casa. Querían ver a su familia. Querían compartir con sus amigos.\nLos duendes los guiaron al barco. Martín y su papá se despidieron. Empezaron a navegar por alta mar."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe5f41016-9246-4d8c-9d7f-fac5e5eaf328%2fLas+aventuras+de+Mart%c3%adn+en+la+isla+de+duendes%2fnin%cc%83o+levantandose.jpg",
+      "text": "Martín escuchó una voz. Era la voz de su mamá. Se despertó. Todo había sido tan real."
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Martín estaba emocionado. Había disfrutado mucho su sueño. Se lo contaba a todos. Había sido un sueño increíble.\nNo sabía dónde quedaba esa isla. No sabía si los duendes existían. Solo sabía una cosa. ¡Familiares y amigos son un tesoro!"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 397
+  }
+}

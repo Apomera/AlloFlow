@@ -1,0 +1,197 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-a4f879f9-untitled-km",
+  "title": "រឿង អ៌ុំក្រាក់",
+  "description": "The story of uncle Krak. A level 1 Easy Reader.",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/aLQOS9rPrV"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2f5.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2f6.png",
+      "text": "គាត់ឈ្មោះអ៊ុំក្រាក់។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage1.png",
+      "text": "៊ុំក្រាក់ស្លៀកពាក់អាវចាស់។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage.png",
+      "text": "អ៊ុំក្រាក់មិនសប្បាយចិត្តសោះព្រោះអត់ស្បែកជើងពាក់។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage2.png",
+      "text": "អ៊ុំក្រាក់មុតបន្លា។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage3.png",
+      "text": "អ៊ុំក្រាក់ឈឺជើងណាស់។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage4.png",
+      "text": "អ៊ុំក្រាក់អង្គុយរងចាំកូនមកពីចំការ។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage5.png",
+      "text": "អ៊ុំក្រាក់ឃើញកូនស្ពាយពោតនៅនឹងសាស។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage6.png",
+      "text": "អ៊ុំក្រាក់ក៏យកពោតនោះមកបរិភោគ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage7.png",
+      "text": "អ៊ុំក្រាក់មានកំលាំងវិញអាចដើរមកផ្ទះបាន។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage8.png",
+      "text": "អ៊ុំក្រាក់អោយគ្រូពេទ្យជួយរុំជើងរបួស។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage9.png",
+      "text": "អ៊ុំក្រាក់បានទិញខោអាវស្បែកជើងថ្មី។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage10.png",
+      "text": "អ៊ុំក្រាក់ស្លៀកពាក់ខោអាវស្បែកជើងថ្មី។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage11.png",
+      "text": "អ៊ុំក្រាក់សើចសប្បាយជាមួយប្រពន្ធកូន។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage12.png",
+      "text": "អ៊ុំក្រាក់ដើរស្ទូចត្រីជាមួយនឹងគេ។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage13.png",
+      "text": "អ៊ុំក្រាក់ស្ទូចត្រីបានគាត់អរភ្លេចស្បែកជើង។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage14.png",
+      "text": "អ៊ុំក្រាក់អង្គុយយំបាត់ស្បែកជើង។"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage15.png",
+      "text": "អ៊ុំក្រាក់ចាំងដើមឈើធ្វើជាស្បែកជើង។"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage16.png",
+      "text": "អ៊ុំក្រាក់ចិញ្ចឹមមាន់។"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage17.png",
+      "text": "មាន់អ៊ុំក្រាក់មិនដាក់ក្នុងទ្រុងទេ។"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage18.png",
+      "text": "មេមាន់បណ្ដើរកូននៅមុខផ្ទះ។"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage19.png",
+      "text": "អ៊ុំក្រាក់ដេញចាប់កូនមាន់ដាក់ទ្រុង មេមាន់ដេញចឹកគាត់។"
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage20.png",
+      "text": "អ៊ុំក្រាក់របួសពេញមុខមាត់ត្រូវក្រញាំជើងមាន់។"
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage21.png",
+      "text": "អ៊ុំក្រាក់មិនសប្បាយចិត្តនឹងមាន់សោះ។"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage22.png",
+      "text": "អ៊ុំក្រាក់ចិញ្ចឹមជ្រូកម្ដង។"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage23.png",
+      "text": "ជ្រូកអ៊ុំក្រាក់លែងពីទ្រុងចោលដែរ។"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage24.png",
+      "text": "មេជ្រូកអ៊ុំក្រាក់កើតកូននៅក្នុងព្រៃ។"
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage25.png",
+      "text": "អ៊ុំក្រាក់ដេញចាប់កូនជ្រូកដែលទើបនឹងកើត។"
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage26.png",
+      "text": "មេជ្រូកដេញខាំអ៊ុំក្រាក់ត្រូវចំកដៃ។"
+    },
+    {
+      "n": 29,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage27.png",
+      "text": "អ៊ុំក្រាក់សំងំនៅផ្ទះព្យាបាលដៃរបួសពេញមួយអាទិត្យ។"
+    },
+    {
+      "n": 30,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage28.png",
+      "text": "អ៊ុំក្រាក់មិនសប្បាយចិត្តនឹងជ្រូកនោះទៀត។"
+    },
+    {
+      "n": 31,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage29.png",
+      "text": "អ៊ុំក្រាក់ទៅរៀនការចិញ្ចឹមសត្វជាមួយនឹងគេ។"
+    },
+    {
+      "n": 32,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2fimage30.png",
+      "text": "អ៊ុំក្រាក់ចេះចិញ្ចឹមជ្រូកមាន់ដាក់ក្នុងទ្រុងត្រឹមត្រូវ៕"
+    }
+  ],
+  "stats": {
+    "pages": 32,
+    "words": 33
+  }
+}

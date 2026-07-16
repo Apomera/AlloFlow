@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-31d1520a-quiero-ayudar-a-mi-due-o",
+  "title": "Quiero ayudar a mi dueño",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/TAQu6apIF4"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f31d1520a-508c-44be-82f9-13440d2819c4%2fQuiero+ayudar+a+mi+due%c3%b1o1%2fzapatos.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f31d1520a-508c-44be-82f9-13440d2819c4%2fQuiero+ayudar+a+mi+due%c3%b1o1%2fimage2.png",
+      "text": "Siento gran satisfacción cada mañana. Mi dueño se levanta muy temprano. Lo primero que hace es buscarme."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Quiero confiarles un secreto. A veces no me encuentra. Es algo distraído. No se fija dónde me deja. Además, tengo un hermano gemelo. ¡Tiene que encontrarnos a los dos!"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f31d1520a-508c-44be-82f9-13440d2819c4%2fQuiero+ayudar+a+mi+due%c3%b1o1%2fzapatos211.jpg",
+      "text": "Cuando nos encuentra se pone contento. A veces me encuentra primero. Otras veces, es a mi hermano."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "En realidad me encanta mi trabajo. Me gusta llevar a mi dueño. Lo llevo a su trabajo. También lo llevo de paseo. Siempre andamos juntos los tres. Somos un gran equipo."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f31d1520a-508c-44be-82f9-13440d2819c4%2fQuiero+ayudar+a+mi+due%c3%b1o1%2fzapato+caf-011.png",
+      "text": "Todos los días me limpia. Algunas veces me lustra. Me agrada que me cuide."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f31d1520a-508c-44be-82f9-13440d2819c4%2fQuiero+ayudar+a+mi+due%c3%b1o1%2fzapatos1.png",
+      "text": "Veo algunos zapatos descuidados. A otros los veo relucientes. ¡A todos nos gusta estar limpios!"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f31d1520a-508c-44be-82f9-13440d2819c4%2fQuiero+ayudar+a+mi+due%c3%b1o1%2fNi%c3%b1o+con+sombrero+manos+atr%c3%a1s.png",
+      "text": "Mi dueño camina bastante. Viaja con frecuencia. Por eso he visitado muchos lugares."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Estoy un poco preocupado. Mis vecinos son los calcetines. Ellos se han sentido mareados. Siento un mal olor. Mi hermano también lo ha sentido. Algunos zapatos se alejan de nosotros."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Eso me hace sentir triste. Desconozco qué sucede. Ya no hemos salido... Me solidarizo con otros zapatos. Algunos sufren lo mismo que yo. La falta de higiene nos afecta."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Tenemos un plan con mi hermano. Si no se baña, nos escondemos. Los calcetines quieren hacer lo mismo. Nosotros lo llevamos a todas partes... Si quiere usarnos, debe bañarse. ¡Debe cuidarnos!"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f31d1520a-508c-44be-82f9-13440d2819c4%2fQuiero+ayudar+a+mi+due%c3%b1o1%2faor_pz062m.png",
+      "text": "Pero... quiero mucho a mi dueño. Mejor le haré una sugerencia. ¡Qué se lave los pies!"
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Ya no hizo falta mi consejo. Mi dueño se levantó temprano. Dijo que se sentía mejor. Dijo que necesitaba una ducha. Se bañó y se secó bien. Después, se puso ropa limpia."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f31d1520a-508c-44be-82f9-13440d2819c4%2fQuiero+ayudar+a+mi+due%c3%b1o1%2fNi%c3%b1o+postrado+rodilla+al+suelo.png",
+      "text": "No tuvo que buscarnos mucho. Nosotros salimos a su encuentro. ¡Olía muy bien!"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f31d1520a-508c-44be-82f9-13440d2819c4%2fQuiero+ayudar+a+mi+due%c3%b1o1%2fzapato.png",
+      "text": "Me siento otra vez contento. Mi dueño está muy limpio. Yo soy su amigo: EL ZAPATO."
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 303
+  }
+}

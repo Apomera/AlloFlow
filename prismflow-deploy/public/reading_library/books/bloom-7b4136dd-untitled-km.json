@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-7b4136dd-untitled-km",
+  "title": "គ្លើយ អាពៀល",
+  "description": "Jarai Folk tale",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Produced by ICC , Supported by UNESCO"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Produced by ICC , Supported by UNESCO",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/49V10iZLrk"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f01They+Go+to+The+Field2.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f02They+Go+to+The+Field.jpg",
+      "text": "តើដានីកំពង់ទៅណា?\nដានីកំពង់ដើររកដារ៉ា។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f03They+Go+to+The+Field.jpg",
+      "text": "តើដារ៉ាកំពង់ទៅណា? ដារ៉ាកំពង់ដើររកអាពាល។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f04They+Go+to+The+Field.jpg",
+      "text": "តើ​អាពាល​កំពង់​ទៅ​ណា? អាពាល​កំពង់​ដើរ​តាម​អាវង ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f05They+Go+to+The+Field.jpg",
+      "text": "តើ​អាវង​កំពង់​ទៅ​ណា? អាវង​កំពង់​ហើរ​តាម​អាលុក​ទៅ​វាល ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f06They+Go+to+The+Field.jpg",
+      "text": "តើ​អាលុក​កំពង់​ទៅ​ណា? អាលុក​កំពង់​ដើរ​តាម​ពស់​ទៅ​វាល ។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f07They+Go+to+The+Field.jpg",
+      "text": "តើ​ពស់​កំពង់​ទៅ​ណា? ពស់​កំពង់​លូន​តាម​កែបកែប​ទៅ​វាល ។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f08They+Go+to+The+Field.jpg",
+      "text": "តើ​កែបកែប​កំពង់​ទៅ​ណា? កែបកែប​កំពង់​លោត​ទៅ​វាល ។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f09They+Go+to+The+Field.jpg",
+      "text": "តើ​ពួកគេ​កំពុង​នៅ​ទី​ណា? ពួកគេ​កំពុង​នៅ​វាល ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f10They+Go+to+The+Field.jpg",
+      "text": ""
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f11They+Go+to+The+Field.jpg",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 22
+  }
+}

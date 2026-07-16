@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-aa92bf2e-rat-chat",
+  "title": "Rat - chat",
+  "description": "A French picture book from Bloom Library.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Peter Ebenrubo Okunola"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Peter Ebenrubo Okunola",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/76sy92VCA8"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/76sy92VCA8%2f1783186106221%2f%e1%bb%8cd%e1%bb%8d+e%c3%88%e1%b9%a3e%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Voici le rat."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Et voici le chat."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Le chat voit le rat."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Le chat chasse le rat."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Le rat rentre dans son trou."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Le chat ne peut pas y entrer."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Qui va gagner à la fin?"
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 36
+  }
+}

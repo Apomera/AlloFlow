@@ -1,0 +1,154 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-507a802e-djobo-vuna-et-le-grand-march",
+  "title": "Djoboŋvunaŋ et le grand marché",
+  "description": "Dans un village chaleureux du Cameroun dénommé Kotliina, Djoboŋvunaŋ et sa sœur Lumuda vivent des aventures pleines de joie, de foi et de sagesse. À travers les scènes du marché, les repas en famille et les chants de louange, ce livre célèbre l’éducation, le respect des parents, la générosité et la convivialité. Guidés par l’amour familial et la lumière de Dieu, les enfants deviennent des modèles pour leur entourage — une vraie fierté pour toute la communauté.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living",
+    "Traditional Story"
+  ],
+  "authors": [
+    "CABTAL-Barthélemy BOUTI"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CABTAL-Barthélemy BOUTI",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/evljv32e7H"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2fimage15.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "​ ​ ​D​jo​bo​ŋ​vuna​ŋ, un petit garçon du village Kotliina, souriant devant une maison traditionnelle en terre, avec une rivière au loin.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2faudio%2ff22ffbee-b28a-4b58-b2f8-c2355c851691.mp3",
+          "dur": 11.660091
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Le soleil se lève : un grand soleil brillant dans le ciel de la savane, avec Djoboŋvunaŋ qui lève la main pour dire bonjour.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2faudio%2fa3f3bbdf-d29f-43c3-a82f-e1a029a8f809.mp3",
+          "dur": 10.160091
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Djoboŋvunaŋ et sa sœur Lumuda en habits traditionnels simples, souriants, marchent ensemble pour le marché.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2faudio%2fi055a80d2-d1b3-4551-ad78-5c689f7d4a2e.mp3",
+          "dur": 10.260091
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Sur le chemin du marché, Djoboŋvunaŋ et Lumuda marchent sur un petit sentier entouré d’arbres et chantent joyeusement.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2faudio%2fi1a5dc1dc-0b1e-4e49-86df-4d209a7d46cf.mp3",
+          "dur": 10.960091
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Le jour du marché, une scène animée avec des femmes et hommes vendant manioc, bananes et poissons.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2faudio%2fi0c689ffc-7718-48c6-aa35-b1e1df854af1.mp3",
+          "dur": 9.760091
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Djoboŋvunaŋ montre du poisson frais, Lumuda à son tour montre un régime de bananes et tous deux rient.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2faudio%2fi258cf08e-2c7b-44a1-b6cb-006ae960ee04.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Un vieil homme nommé Horboyna assis sous un arbre, parle aux enfants avec sagesse et amour, ils l'écoutent avec beaucoup d'intérêt.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2faudio%2fi88f384f8-9f65-422d-a8b1-6b74a18bbc02.mp3",
+          "dur": 11.460091
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Djoboŋvunaŋ et Lumuda assis, se partagent la nourriture, cassant des bananes et partageant le poisson. Toute la foule admire avec sourire leur générosité.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2faudio%2fi5c005b09-0523-4827-8fe6-071c719576fb.mp3",
+          "dur": 9.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2faudio%2fi08609636-4b0c-4c22-a5cf-edec4b3f5b1b.mp3",
+          "dur": 5.860091
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Djoboŋvunaŋ et Lumuda rentrent à la maison. ils saluent leurs parents avec respect pour leur avoir donné de l'argent pour le marché.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2faudio%2fi3c916f1d-c145-4f50-b682-436a12a8c108.mp3",
+          "dur": 11.660091
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Toute la famille réunie dans la cour, assise en cercle autour du repas, certains chantent, d’autres battent les mains. ils louent Dieu pour la biellveillance de leurs enfants et la reconnaissance à Dieu pour ses merveilles.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2faudio%2fi8e75d9a1-b666-4845-a3df-8e4d7a745de1.mp3",
+          "dur": 20.560091
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 215
+  }
+}

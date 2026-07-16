@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-b5a023d8-untitled",
+  "title": "သူတို့ ကတတ်တယ်။",
+  "description": "An Early Grade Reader pattern book in Khmer and English, translated into Tangshang Naga",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "NTC Literacy team"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NTC Literacy team",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/BEosmwFU30"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fb5a023d8-27a8-43da-b5d3-a2749c7fe06f%2fTs%c3%a4ngxshiq+v%c3%a0numz+df%c3%bc+t%c3%a0lawx%2f01 Dance.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"သူတို့ ကတတ်တယ်။\" (Burmese). An Early Grade Reader pattern book in Khmer and English, translated into Tangshang Naga"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 71
+  }
+}

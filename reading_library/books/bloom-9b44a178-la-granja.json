@@ -1,0 +1,478 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-9b44a178-la-granja",
+  "title": "La granja",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/VjogBDEAwZ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2fvaca en ordeno.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2fGranja.png",
+      "text": "Mi familia y yo vivimos en una granja. Me gusta vivir cerca de la naturaleza. Amo despertar con el canto de las aves.\nDisfruto mirar el amanecer. Todos cuidamos la granja diariamente.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi8ea0e700-ebf8-4e51-b348-d6fb0f0b1adb.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi64e0e7a8-58bb-4914-8323-a347c07029ea.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi64e5190c-c4b6-4131-80a3-ab6c0cceebd1.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi3c0ea57f-971a-4312-a994-135f93b1845e.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi46066352-b764-45a4-9cb2-4cc6dbd5283d.mp3",
+          "dur": 2.716688
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "En la granja hay diversidad de animales. Tenemos una vaca lechera. El nombre de la vaca es Manchas. La leche de la vaca es nutritiva.\nMi mamá prepara queso. Hace queso fresco y queso crema. También hace queso de capas. El queso es un derivado de la leche. Nuestro cuerpo necesita de los lácteos para nutrirse. ¡Qué bueno tener a Manchas en la granja!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi4ab84e05-ac4a-4780-b6af-c83fbca10083.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi2b21afe5-1f16-49a4-b46f-b1c69a355b4c.mp3",
+          "dur": 2.324858
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi4b3982c5-0c72-40a8-8f3b-891a15503112.mp3",
+          "dur": 2.115882
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi5a63d1a9-ce38-403f-8f40-e4c335286078.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi41d38705-3244-40c8-8158-0d74b4f13f27.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi067c5f4d-5f4f-484e-af44-ddc58de6c82e.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi1b88cf78-4ac7-45a7-8ecd-2cee7f78077e.mp3",
+          "dur": 2.324858
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fe9e4dcd8-1ff2-4b80-94fe-15a9a4e089a5.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi59a23ed8-bbd4-4d02-ac94-cb158d44a436.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi08cd6cdd-c78a-4c41-93ee-8b0194f87d00.mp3",
+          "dur": 2.925664
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2fbrown-hen-823720_960_720.jpg",
+      "text": "También tenemos gallinas. Lola es una gallina. Pone muchos huevos. Todos los días mi papá recoge los huevos. Consumimos algunos huevos y los otros los vendemos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi54b92ba8-85f4-4a0e-8201-368f4f523c1e.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi440c6f3d-bccc-485a-a218-339f0ced73b2.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fcec39e5d-f254-46f8-92d2-556d12441288.mp3",
+          "dur": 2.037516
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi5264e941-ffc4-465c-8800-10f37c8b9932.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi90a04cab-ef46-45bf-bd11-81f945fffbe1.mp3",
+          "dur": 3.735446
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Los animales de la granja conviven juntos. Nos ayudan a mantener la granja funcionando bien. El gallo nos despierta en la madrugada. La vaca nos da leche. La gallina pone huevos. El burro carga la leña para la casa. El perro ladra cuando llegan visitas. El gato ayuda cazando ratones.\nNosotros cuidamos a los animales. Todos los días los alimentamos y limpiamos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi60e41f47-274a-4157-8706-7dc83f4c6a1e.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi8347ec66-8a36-455e-8282-172fbeed9df1.mp3",
+          "dur": 4.231764
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi0dcd2790-1c2e-4dca-802d-d39b9356760c.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fdfc03388-df80-48db-a9f1-de3d82ddfc80.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2ffad05d58-33ee-4bc7-8fd7-b690f26e9d6c.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi0bfddd1b-7631-4875-ad5e-ccbca7250101.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi4f8d357f-feb7-413a-83a5-62c9de96c3cd.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fe6bdb964-b70a-4935-99cb-48648625935f.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fc7ee9102-a855-4b87-9083-a0e3f1610f1d.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2ff7a1935d-fe17-4928-9bfc-e01d5e84f23f.mp3",
+          "dur": 3.735446
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2fMaestra+y+alumnos+en+jard%c3%adn.png",
+      "text": "En la granja también cultivamos flores. Son de colores muy lindos. El jardín de la granja es pequeño. Las mariposas vuelan por el jardín. Todos cuidamos el jardín.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi5f965527-2e73-4a5a-8fff-d1ec012126d7.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi33edc3eb-37a2-43a3-82c2-fb16bb512c27.mp3",
+          "dur": 2.533834
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi71423fb8-4bb8-45c4-af8f-cb7c493e057e.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fa103e129-4ea8-4527-aa84-6bea228bb060.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi560cf163-f578-417c-8b34-4d4fc17a30be.mp3",
+          "dur": 2.533834
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2fanimal-3704963_960_720.jpg",
+      "text": "En la granja también hay variedad de aves. Viven en los árboles. Allí hacen sus nidos. El sonar de su canto es especial. Escucharlos ofrece paz y tranquilidad."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "También hay un lago pequeño. Su agua es cristalina. La cuidamos para que no se contamine. Allí hay variedad de peces. A veces pescamos algunos para comer.\nTenemos una canoa. Está hecha de madera. Sirve para navegar por el lago. Desde ella se puede ver la granja. Los paisajes de la granja son maravillosos."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "La granja no está lejos de la ciudad. Solo hay veinte kilómetros de distancia. La carretera se mantiene en buen estado. Eso permite ir y venir rápidamente. Mi hermano y yo estudiamos en la ciudad. Nos movilizamos en un autobús escolar.\nMuchas personas viven y trabajan en la ciudad. La ciudad es muy grande. Tiene muchos lugares para ir a pasear. Sin embargo, hay personas que prefieren la granja. Es porque la granja ofrece belleza natural.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2ffd0a8c9d-8cee-441a-80af-20bd839ff61e.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi2d8e4ee4-760f-4245-b425-eaa6097d902c.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi4c809a72-b431-49e1-8e60-e785ae613b65.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fecf89c56-3a53-4c39-83db-3dbd1c7a5d3f.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fa98a8e71-589c-46a4-8897-7da3a5508e5d.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi81adeccd-bf63-43ac-8606-0759eb8411e6.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi43ac28ed-034a-4c4a-8537-9a3865aa471c.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi18bf698c-b502-4f3e-bb07-ca1d90a2d36d.mp3",
+          "dur": 1.933028
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi9188d33e-3eca-4b62-9d17-35e0121aa048.mp3",
+          "dur": 3.540657
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi671c536f-1fc1-47c5-a51b-387267ea3612.mp3",
+          "dur": 4.519106
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2ff5942e90-927b-406d-9ae5-6571bd592375.mp3",
+          "dur": 4.414618
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2fGranja1.png",
+      "text": "Cada año llegan muchas personas a la granja. Les gusta pasar el día allí. Es un lugar de descanso. Los visitantes se divierten mucho. También aprenden acerca de la naturaleza.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fb5a57ca7-baba-4487-ba91-784552a7d717.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi4f0d4ee3-114e-4f0b-a1ce-03ff8bd70cb7.mp3",
+          "dur": 2.533834
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi9768db65-186f-4aa6-acab-2e14d654aedc.mp3",
+          "dur": 1.619564
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi0118b406-024c-4c93-892e-44245b634141.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi3dbfe798-b2d9-48a9-8bdf-c31e684ea34e.mp3",
+          "dur": 3.630958
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2fninos+sembrando.png",
+      "text": "Visitar la granja es una gran aventura. Es una oportunidad de aprender diferentes cosas. Algunos aprenden a sembrar y a cultivar hortalizas. Esa actividad fue idea de mi abuelo. Él se encarga de enseñarles a los visitantes.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi44ac8a41-1e21-4aea-85bc-3d5e25c668d7.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fb037b2a1-43fa-402a-83c6-e549122a9822.mp3",
+          "dur": 4.127276
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi26a6931f-fdfa-4465-9aea-97db6e6cb76e.mp3",
+          "dur": 4.414618
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi93b95bf4-3906-48a7-a4c3-fbb45919cb2e.mp3",
+          "dur": 4.231764
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fe46bd8ab-9c50-4b5a-90bb-dfeaa67ee29d.mp3",
+          "dur": 3.813812
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Cada año mis compañeros visitan la granja. Mi maestra organiza una excursión. Todos esperan ese día con mucha emoción. Yo los espero en la granja.\nHacemos diferentes actividades. Montamos a caballo. Paseamos en la canoa. Algunos siembran con mi abuelito. Otros aprenden a ordeñar a Manchas. ¡Juntos nos divertimos mucho!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi681b3478-b205-4bff-809d-b2a43d2b2bd1.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fbb0c24de-e1a9-45d0-9258-2456d91791e8.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi964799c4-c0a4-4e44-9775-bc8aab17791c.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fc2b4de5e-1129-4e87-830b-68cb7a416d09.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi85109610-b336-4268-9144-a2d35ad6af6e.mp3",
+          "dur": 2.533834
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi489a98ca-47cf-4b71-8006-c5d11ad39827.mp3",
+          "dur": 1.515076
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi51991e4f-c518-40e9-8cee-57dc70707d0a.mp3",
+          "dur": 1.933028
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi994d6b53-dc4d-44df-bd70-2a6d7fde4e41.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi74ce8165-9889-4bfc-82f9-86f9a68cd712.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi28577147-df5f-4dcb-b0d2-de7965a759e9.mp3",
+          "dur": 2.638322
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2fni%c3%b1os+van+a+pescar.png",
+      "text": "Ese día mis papás se esfuerzan mucho. Quieren que todos disfrutemos de la granja. Cada año organizan una actividad especial. Este año nos enseñarán a pescar. Vamos a pescar en el lago.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fba824839-5a06-4f04-a004-60ce8db56664.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi45a8e06a-337f-478f-9a66-80c19a56a42f.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi27b5f4f6-abf8-4cd6-aa59-478e953642f0.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi68bf8db6-0f7d-49ca-ae27-57a6b7daf9a0.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi80eec5d6-a6c1-442a-9c7f-1535e495eec5.mp3",
+          "dur": 2.533834
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Mis padres dicen: hay que cuidar la granja. La granja familiar es un tesoro. Toda la familia se preocupa de mantenerla bien. Nos gusta que lleguen visitantes. Nos gusta que disfruten y aprendan. Nuestra granja es un lugar especial.\nMe gusta vivir en una granja. Me gustan los animales y las plantas. Amo vivir rodeada de la naturaleza. La naturaleza me da vida.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi7472edbd-538f-40de-aa96-e1b8dfdf18bb.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fa84b9c59-8d2c-44c2-8eae-70949d75f026.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi3c29cf95-7fb0-4104-84e6-0bbec1c87ae2.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2ff181263e-cd7e-4b15-b8eb-79ae99aaf581.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi4c0e0f35-5e41-444a-929a-c0656cc780ff.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi87806487-1a61-4de9-933b-ffd4264a3e25.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi669019f2-c7b5-4d41-aecd-0f77eaaea3a8.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi1a9e445e-2dcc-48b7-8eef-75316295a358.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi3d78296c-71c2-4ccf-91bf-bb734ffba6d8.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2faudio%2fi3d25353c-e3aa-40f0-bed4-df27e11fd296.mp3",
+          "dur": 3.213006
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2fj%c3%b3venes+en+el+campo.jpg",
+      "text": "Cuando sea grande quiero ser veterinaria. Mi hermano quiere ser ingeniero agrónomo. Seguiremos siendo un gran equipo. Vamos a seguir cuidando bien la granja."
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué producto prepara la mamá con la leche que se obtiene de las vacas de la granja?\nMantequilla\nYogur\nQueso"
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Compruebe su comprensión\nAparte de los animales, ¿qué más hay en la granja?\nVacas, caballos y gallinas.\nFlores, un lago y una canoa.\nUna escuela y un parque."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Quienes van de excursión cada año a la granja?\nLos misioneros.\nLos compañeros de la escuela.\nLos vecinos."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué a las personas les gusta ir de excursión a la granja?\nPorque en la ciudad hay mucho ruido y tráfico.\nPorque tiene muchos lugares para relajarse, divertirse y aprender.\nPorque se van en una camioneta grande."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿De qué material está hecha la canoa de la granja?\nDe madera.\nDe plástico.\nDe lata."
+    }
+  ],
+  "stats": {
+    "pages": 19,
+    "words": 738
+  }
+}

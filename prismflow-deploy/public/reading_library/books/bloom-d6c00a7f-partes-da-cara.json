@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d6c00a7f-partes-da-cara",
+  "title": "Partes da cara",
+  "description": "Aprenda as partes da cara e suas funções.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/vfTrgwvI7A"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+1+eyes.jpg",
+      "text": "Os olhos"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+2+ears.jpg",
+      "text": "As orelhas"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+3+mouth.jpg",
+      "text": "A boca"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+4+nose.jpg",
+      "text": "O nariz"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+5+cheeks.jpg",
+      "text": "As bochechas"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+6+chin.jpg",
+      "text": "O queixo"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+7+teeth.jpg",
+      "text": "Os dentes"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+8+tongue.jpg",
+      "text": "A língua"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+9+eyebrows.jpg",
+      "text": "As sobrancelhas"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+10+hair.jpg",
+      "text": "O cabelo"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 20
+  }
+}

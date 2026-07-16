@@ -1,0 +1,184 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-28e323bd-los-animales",
+  "title": "Los animales",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/w1urYc3H0k"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2fimage.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2fmono.png",
+      "text": "El mono toma un palo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fi808338f0-0365-4e77-ac06-06c07e1a1dcc.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2fLEON411.png",
+      "text": "El león me asusta.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fi1f7e3aa6-c29e-4669-8411-fa5278df5d6f.mp3",
+          "dur": 2.429346
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2fpata2.jpg",
+      "text": "La pata tiene patas.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fd5ac3e19-33f5-4382-8c4f-a536b9ae0e2b.mp3",
+          "dur": 2.821176
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2fRatas+en+maizal11.jpg",
+      "text": "Los ratones se alimentan.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2faa15ba01-1fe8-4848-a881-faa3463821ee.mp3",
+          "dur": 3.030152
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2frana.jpg",
+      "text": "La rana salta alto.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fi360852eb-64cb-47d3-ad8b-eefe6edcdc54.mp3",
+          "dur": 3.317494
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2fmula.png",
+      "text": "La mula es útil.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fi709a61b9-25b8-47a7-89c1-b99561177861.mp3",
+          "dur": 2.533834
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Compruebe su comprensión\nEl mono toma\nuna pelota\nun pito\nun palo",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fb553583a-30f4-461e-933f-ea6d7f4cc416.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fae20b2de-a54f-4b05-b34d-16e73db857ef.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2ff2093cf2-1ca7-496c-9e5b-ebf0c6803de6.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2faf6f27ea-934f-40e0-9e00-76266ed8eca2.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fi4ef9f0f7-16d8-4d5d-9676-a0a61f1b6398.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Compruebe su comprensión\nLa pata tiene\npelos\npatas\npalos",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fi6c04a92c-e5da-42f7-8ac2-4a34ef63dc18.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fcdff3f84-41d6-47f2-8cd4-c4fcc86bcd01.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fd78e2b2c-2ffb-4ebc-90f0-5fbdceba5eac.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fi6cd7043a-79fc-4ee4-8f6c-d70db81d21ea.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fi76f041b3-e2f1-4b73-a643-724541c262b1.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Compruebe su comprensión\nLa rana salta\nalto\nlento\nraro",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fi23a7b924-30e9-4d91-bcd8-c05a41bc0299.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fi9e0aaac2-2bec-426e-85d0-6b4b314411af.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fi7f3c19d9-9f3b-40cc-8f4d-b33ab5e1b5c5.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2ffbc241bf-1d05-4261-b155-325f0de6ea7d.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2faudio%2fd51df081-d61a-43fa-9f77-a445e92452aa.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 55
+  }
+}

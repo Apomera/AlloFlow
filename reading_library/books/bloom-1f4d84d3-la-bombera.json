@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1f4d84d3-la-bombera",
+  "title": "La bombera",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YAu8kMwXf9"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1f4d84d3-4a3a-41d0-82c6-6a708551db34%2fLa+bombera%2fbombera11.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1f4d84d3-4a3a-41d0-82c6-6a708551db34%2fLa+bombera%2fbebe.png",
+      "text": "Esta imagen es de María Luisa. Así se veía cuando era pequeña. Era una bebé muy risueña."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Su papás son maestros. Tiene dos hermanos mayores. Es la menor de tres hermanos. Su familia es muy alegre. María Luisa siempre ha sido vivaz. Le gusta sonreir y jugar."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1f4d84d3-4a3a-41d0-82c6-6a708551db34%2fLa+bombera%2fmadre+-+beb%c3%a9.png",
+      "text": "A su mamá le gusta leer. Disfruta leer para sus hijos. Les leía desde que eran pequeños."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "La familia tiene varias costumbres especiales. Siempre conversan después de cenar. Conversan de diferentes temas. También se divierten de diferentes formas. Les gusta ir a pasear juntos. Además, les gusta dramatizar historias."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1f4d84d3-4a3a-41d0-82c6-6a708551db34%2fLa+bombera%2fnina+en+resbaladero2.png",
+      "text": "María Luisa era una niña inquieta. Disfrutaba ir al parque. Siempre le gustaba explorar y aprender."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "También era una niña muy divertida. Le gustaba disfrazarse. Disfrutaba ponerse diferentes trajes. También era muy amigable. Además, le gustaba ayudar a otros. Eso la hacía ser más especial."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1f4d84d3-4a3a-41d0-82c6-6a708551db34%2fLa+bombera%2faxes-308092_640.png",
+      "text": "Cuando creció decidió ser bombera. Así podría ayudar a otros. Además, podría usar un casco rojo."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Ser bombera requiere preparación. Atender emergencias no es fácil. Ella tuvo que estudiar y prepararse. María Luisa estudiaba todos los días. Ella quería aprender mucho. Ella deseaba ser una bombera ejemplar."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1f4d84d3-4a3a-41d0-82c6-6a708551db34%2fLa+bombera%2fchica+sentada+leyendo21.png",
+      "text": "Ella leía y estudiaba mucho. Buscaba libros en la biblioteca. Quería prepararse para para atender emergencias."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Los bomberos son muy valientes. Atienden diferentes emergencias. Les toca tomar muchas decisiones difíciles.\nAhora María Luisa debe apagar incendios. También debe dar los primeros auxilios. ¡Salvar vidas está en sus manos!"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1f4d84d3-4a3a-41d0-82c6-6a708551db34%2fLa+bombera%2fchicos+corriendo.png",
+      "text": "Atender emergencias requiere buena preparación física. Luisa se prepara continuamente. Hace ejercicio todos los días."
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Ella tiene mucho trabajo. A veces debe trabajar de noche. Es muy responsable. Hace actividades importantes y también divertidas. Sale corriendo cuando suena la alarma. Le divierte deslizarse por el tubo."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1f4d84d3-4a3a-41d0-82c6-6a708551db34%2fLa+bombera%2fbombera2.png",
+      "text": "Su uniforme es rojo con amarillo. María Luisa usa una manguera. También usa un casco rojo."
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "María Luisa cumplió su sueño. Es feliz siendo bombera. Le gusta servir a su comunidad. Ser bombera le da alegría.\n¡Ama su trabajo!\n¡Ama ser bombera!"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 324
+  }
+}

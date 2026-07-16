@@ -1,0 +1,115 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-72a26afa-animais-do-mato",
+  "title": "Animais do mato",
+  "description": "Como são os animais do mato e como se escrevem os nomes deles?",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/BXxMHSSulQ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2fWild+Cover.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f1+Crocodile.png",
+      "text": "Crocodilo"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f2+Hippopotamus.png",
+      "text": "Hipopótamo"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f3+African+Buffalo.png",
+      "text": "Búfalo"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f4+Rhino.png",
+      "text": "Rinoceronte"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f4+Sable+antelope.png",
+      "text": "Pala-pala"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f6+Impala.png",
+      "text": "Impala"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f7+Hyena.png",
+      "text": "Hiena"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f8+Leopard.png",
+      "text": "Leopardo"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f9+Monkey.jpg",
+      "text": "Macaco"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f10+Baboon.png",
+      "text": "Babuíno"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f11+Lion.png",
+      "text": "Leão"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f12+Zebra.jpg",
+      "text": "Zebra"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f13+Snake.jpg",
+      "text": "Cobra"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f14+Porcupine.png",
+      "text": "Porco-espinho"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f15+Elephant.jpg",
+      "text": "Elefante"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2f5+Mongoose.png",
+      "text": "Mangusto"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 16
+  }
+}

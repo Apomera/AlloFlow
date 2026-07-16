@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-25c3384b-untitled-ne",
+  "title": "गौंथलीको गुँड",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jThROJXNkC"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fAOR_9JJJJ.png",
+      "text": "सुमन आँगनमा चुङ्गी खेल्दै थिए। सुमनको छेउछाऊ दुईओटा गौंथली उडे। सुमनले चुङ्गी खेल्न छाडे। अनि उडिरहेको गौंथली हेर्न लागे।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fflying+bird1.jpg",
+      "text": "गौंथली फुरफुर उडे। चिरबिर चिरबिर कराए। गौंथली कहिले आँगनमा बसे। कहिले दलानमा बसे।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fgauthali+ghar+ma1.jpg",
+      "text": "तिनीहरूको चुच्‍चामा केही थियो। त्यो कालो कालो रङको देखिन्थ्यो। अहो चुच्‍चामा त माटो रहेछ। गौंथलीले माटो दलानमा लगेर टाँसे।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fimage1.jpg",
+      "text": "सुमनलाई गौंथलीको काम रमाइलो लाग्यो। गौंथलीले माटो किन दलानमा टाँसेको होला? सुमनलाई जान्न मन लाग्यो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fgauthali+ghar+ma2.jpg",
+      "text": "“गौंथलीले चुच्‍चामा माटो किन बोकेको?” सुमनले आमालाई सोधे। अनि किन दलानमा लगेर टासेको?"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fgauthali3.jpg",
+      "text": "“हामी घरमा बस्छौं। गौंथली गुँडमा बस्छ। गौंथलीले त्यही गुँड बनाउन लागेको हो।” आमाले भन्नु भयो।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fgauthali3.jpg",
+      "text": "गौंथलीले चुच्‍चाले हिलो ल्याउँदो रहेछ। त्यसलाई दलिनमा टासेर गुँड बनाउने रहेछ। अब सुमनलाई यो कुरा थाहा भयो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fgauthali3.jpg",
+      "text": "आमाले भन्नुभयो। \"गोठको दलिनमा पनि गौंथलीको गुँड थियो। गुँडमा गौंथलीका तीनवटा बचेरा पनि थिए। ठुला भएपछि बचेराहरू गुँड छाडेर गए। \""
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fgauthali3.jpg",
+      "text": "\" त्‍यसको गुँड त्यहीँ छ त?\" महेसले आमालाई सोध्यो। आमाले भन्नुभयो, \"गुँड त भत्किसक्यो । एकदिन ठुलो पानी पर्‍यो। गोठभित्र पानी चुहियो, अनी गुँड भत्कियो। त्यसपछि गौंथली उडेर गए। \""
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fchild+play1.jpg",
+      "text": "सुमनलाई झन चाख लाग्यो। उसले ध्यान दिएर गौथलीको काम हेरिरहे। उनले छेस्का बटुले। अनि आँगनमा छेस्का गाडेर घर बनाए।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 181
+  }
+}

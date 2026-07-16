@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-107f01be-regarde-au-ciel-qu-est-ce-que-tu-vois",
+  "title": "Regarde au ciel. Qu’est ce que tu vois ?",
+  "description": "Lecture facile\nEasy reader",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Craig Aldred"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Craig Aldred",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HLp4BpemLo"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_aaa.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_bbb.jpg",
+      "text": "La soliel."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_ccc.jpg",
+      "text": "La lune."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_ddd.jpg",
+      "text": "Les oiseaux."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_eee.jpg",
+      "text": "Les éclaires."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_fff.jpg",
+      "text": "La pluie."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_ggg.jpg",
+      "text": "Le nuage."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_hhh.jpg",
+      "text": "Un avion."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_iii.jpg",
+      "text": "Le vapeur."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_jjj.jpg",
+      "text": "L’arcenciel."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_kkk.jpg",
+      "text": "Les étoiles."
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 19
+  }
+}

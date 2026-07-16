@@ -1,0 +1,332 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-69bece77-untitled-km",
+  "title": "០១ ឆាផៅ នតីរាឆ៝ឞូន៝ង",
+  "description": "Bunong alphabet book",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Alphabet Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/MWQhXzKEug"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fphoto_2023-11-01_14-07-6.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage3.png",
+      "text": "ត្រី"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage39.png",
+      "text": "ខោ"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage9.png",
+      "text": "គង"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage11.png",
+      "text": "ចាន"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage13.png",
+      "text": "ឃ្មោះ"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage17.png",
+      "text": "ឆ្កែ"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage55.png",
+      "text": "ប្រើស"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage40.png",
+      "text": "ផ្ទះសង់ខ្ពស់ផុតពីដី"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage53.png",
+      "text": "ដាវ"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage19.png",
+      "text": "ដោះ"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage22.png",
+      "text": "ពូថៅ"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage23.png",
+      "text": "ដើមទាល"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage70.png",
+      "text": "ស្នា"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage24.png",
+      "text": "កំប៉ុង"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage7.png",
+      "text": "កាំភ្លើង"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage78.png",
+      "text": "ចេក"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage84.png",
+      "text": "ភ្លៀង"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage25.png",
+      "text": "ពាង"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage99.png",
+      "text": "ផ្គាក់"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage91.png",
+      "text": "ដំរី"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage94.png",
+      "text": "ថ្ម"
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage100.png",
+      "text": "ពីងពាង"
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage101.png",
+      "text": "ស្រូវ"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage2.png",
+      "text": "សេះ"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage102.png",
+      "text": "ព្រួញ"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fER01+%e1%9e%a2%e1%9f%82%e1%9e%9c2.png",
+      "text": ""
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage104.png",
+      "text": "មាន់"
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fChoeng+Y+-+rice2.png",
+      "text": ""
+    },
+    {
+      "n": 29,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fChoeng+R+-+Truey.png",
+      "text": ""
+    },
+    {
+      "n": 30,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage26.png",
+      "text": "ខ្លែង"
+    },
+    {
+      "n": 31,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fChoeng+V+-+forget.png",
+      "text": ""
+    },
+    {
+      "n": 32,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage1.png",
+      "text": ""
+    },
+    {
+      "n": 33,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage90.png",
+      "text": "ស្រូវ"
+    },
+    {
+      "n": 34,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fER01+%e1%9e%9e%e1%9e%b6%e1%9f%883.png",
+      "text": ""
+    },
+    {
+      "n": 35,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage95.png",
+      "text": "ភ្នែក"
+    },
+    {
+      "n": 36,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage27.png",
+      "text": "ដេក"
+    },
+    {
+      "n": 37,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage28.png",
+      "text": "ព្រៃ"
+    },
+    {
+      "n": 38,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage29.png",
+      "text": "កង្កែប"
+    },
+    {
+      "n": 39,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage30.png",
+      "text": "ក្រពើ"
+    },
+    {
+      "n": 40,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fER01+%e2%80%8b%e1%9e%8f%e1%9e%ba%e1%9f%882.png",
+      "text": ""
+    },
+    {
+      "n": 41,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage35.png",
+      "text": "ពពក"
+    },
+    {
+      "n": 42,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage37.png",
+      "text": "ជណ្ដើរ"
+    },
+    {
+      "n": 43,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage8.png",
+      "text": ""
+    },
+    {
+      "n": 44,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage38.png",
+      "text": "ដាក់ឆ្នាំងលើចង្ក្រាន"
+    },
+    {
+      "n": 45,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage12.png",
+      "text": ""
+    },
+    {
+      "n": 46,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage41.png",
+      "text": "បងស្រីគា"
+    },
+    {
+      "n": 47,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage31.png",
+      "text": "ស្លាបព្រា"
+    },
+    {
+      "n": 48,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fER01+%e1%9e%8f%e1%9f%81%e1%9f%882.png",
+      "text": ""
+    },
+    {
+      "n": 49,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage6.png",
+      "text": "ស្នែង"
+    },
+    {
+      "n": 50,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage44.png",
+      "text": "ខ្ទីង"
+    },
+    {
+      "n": 51,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fER01+%e1%9e%96%e1%9f%81%e1%9f%88.png",
+      "text": ""
+    },
+    {
+      "n": 52,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage.png",
+      "text": "ឃ្លោក"
+    },
+    {
+      "n": 53,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage10.png",
+      "text": ""
+    },
+    {
+      "n": 54,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage4.png",
+      "text": "ខ្លា"
+    },
+    {
+      "n": 55,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage45.png",
+      "text": "ត្រកួត"
+    },
+    {
+      "n": 56,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fER01+%e1%9e%9e%e1%9f%92%e1%9e%9b%e1%9f%9d%e1%9f%882.png",
+      "text": ""
+    },
+    {
+      "n": 57,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage5.png",
+      "text": "កំព្រោងដាក់ស្រូវ"
+    },
+    {
+      "n": 58,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fimage21.png",
+      "text": ""
+    },
+    {
+      "n": 59,
+      "img": null,
+      "text": "​​អារម្ភកថា\n​\nប្រភេទសៀវភៅរឿងស្រួលអានជាភាសាព្នង-ខ្មែរ ដោយរូបភាពដែលបានរៀបរៀងឡើងនៅក្នុងសិក្ខាសាលាស្តីពីការចងក្រងអក្ខរាវិរុទ្ធសូរស័ព្ទជាភាសាព្នង ដែលរៀបចំឡើងដោយអង្គការសហការ “អាយស៊ីស៊ី“ ICC ក្នុងខេត្តមណ្ឌលគិរី ។ ការរៀបរៀងសៀវភៅនេះឡើងក្នុងគោលបំណង ៖ ចង់អោយជនជាតិភាគតិច “ព្នង” យើងមានអក្សរសាស្ត្រសំរាប់កត់ត្រាភាសាដូចជាជនជាតិភាគតិច នៅក្នុងប្រទេសជឿនលឿនមួយចំនួនដូចជា ៖ អាឡីម៉ង់ អូស្ត្រាលី វៀតណាម ។ល។ ដើម្បីចងក្រងឡើងវិញ នូវរឿងរាវ ដែលទាក់ទងទៅនឹងប្រពៃណី ទំនៀមទំលាប់របស់ខ្លួនដែលមានតាំងពីបុរាណមក ។ ជាពិសេសដើម្បីទុកអោយកូនចៅជនជាតិព្នងនៅជំនាន់ក្រោយទៀត បានដឹងនិងសិក្សាស្រាវជ្រាវបន្តអំពីប្រពៃណីទំនៀមទំលាប់របស់ខ្លួន កុំអោយមានការបាត់បង់ ។\nសិក្ខាសាលានេះបានប្រារឰអស់រយៈពេល ១៤ថ្ងៃ ចាប់ពីថ្ងៃទី ២៨,ឧសភាដល់ថ្ងៃទី១១ មិថុនា ឆ្នាំ២០០២ នៅទីស្នាក់ការអង្គការសហការ “អាយស៊ីស៊ី” ICC ប្រចាំនៅខេត្តមណ្ឌលគិរី ។\nសៀវភៅនេះគឺជាស្នាដៃមុនដំបូង ដែលបានរៀបរៀងឡើង និងមានការជួយឧបត្ថម្ភការបោះពុម្ពពីអង្គការសហការ “អាយស៊ីស៊ី” ICC ផងដែរ ។\nគោលបំណងសំខាន់ទី២ គឺចង់អោយប្អូនៗជនជាតិព្នងនៅតាមភូមិ ដែលពេញវ័យសិក្សា ហើយអោយគេបានចូលរៀននៅសាលានោះ មានលទ្ធភាពរៀនសូត្រ តាមរយៈសៀវភៅរៀនភាសាព្នងនេះបាន និង មានភាពងាយស្រួលឆ្លងទៅរៀនអក្សរខ្មែរ ។ យើងបានបកប្រែជាភាសាខ្មែរនៅផ្នែកបន្ទាប់ពីភាសាដើម ។\nយើងខ្ញុំរងចាំទទួលមតិកែលំអ ពីមិត្តអ្នកអាននិងសិស្សានុសិស្ស ដោយសេចក្ដីសោមនស្សរីករាយជាទីបំផុត ៕\nសូមអរគុណ"
+    }
+  ],
+  "stats": {
+    "pages": 59,
+    "words": 107
+  }
+}

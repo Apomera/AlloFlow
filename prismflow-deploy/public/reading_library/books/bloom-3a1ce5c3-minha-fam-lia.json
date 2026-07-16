@@ -1,0 +1,80 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3a1ce5c3-minha-fam-lia",
+  "title": "Minha família",
+  "description": "This booklet introduces my mom and dad and what they do. It teaches about roles, actions and new vocabulary.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Thandi Jackson"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL-PNG Education for Life",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/E2ImIs8ijA"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/nadia.h%40seeafrica.co%2f3a1ce5c3-9d67-4b81-9a43-5b27e9d16803%2fMinha+fam%c3%adlia%2fArtboard1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/nadia.h%40seeafrica.co%2f3a1ce5c3-9d67-4b81-9a43-5b27e9d16803%2fMinha+fam%c3%adlia%2fslice1.jpg",
+      "text": "Este é o meu pai.\nEle está a cavar um buraco ​com uma pá.​​"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/nadia.h%40seeafrica.co%2f3a1ce5c3-9d67-4b81-9a43-5b27e9d16803%2fMinha+fam%c3%adlia%2fslice2.jpg",
+      "text": "Esta é a minha mãe.\nEla está a varrer o quintal com uma vassoura."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/nadia.h%40seeafrica.co%2f3a1ce5c3-9d67-4b81-9a43-5b27e9d16803%2fMinha+fam%c3%adlia%2fslice3.jpg",
+      "text": "Esta é a minha mãe.\nEla está a varrer as folhas com um ancinho."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/nadia.h%40seeafrica.co%2f3a1ce5c3-9d67-4b81-9a43-5b27e9d16803%2fMinha+fam%c3%adlia%2fslice4.jpg",
+      "text": "Este é o meu pai.\nEle está a acender as folhas com fogo."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/nadia.h%40seeafrica.co%2f3a1ce5c3-9d67-4b81-9a43-5b27e9d16803%2fMinha+fam%c3%adlia%2fslice5.jpg",
+      "text": "Esta é a minha mãe.\nEla está a guardar a roupa no varal."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/nadia.h%40seeafrica.co%2f3a1ce5c3-9d67-4b81-9a43-5b27e9d16803%2fMinha+fam%c3%adlia%2fslice6.jpg",
+      "text": "Este é o meu pai.\nEle esta a cortar a madeira com um machado."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/nadia.h%40seeafrica.co%2f3a1ce5c3-9d67-4b81-9a43-5b27e9d16803%2fMinha+fam%c3%adlia%2fslice7.jpg",
+      "text": "Esta é minha família."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/nadia.h%40seeafrica.co%2f3a1ce5c3-9d67-4b81-9a43-5b27e9d16803%2fMinha+fam%c3%adlia%2fslice8.jpg",
+      "text": "Perguntas de compreensão\n1. Que trabalho a mamãe está a fazer em cada foto?\n2. Quem faz isso em sua casa?\n3. O que você faz para ajudar sua mãe?\n4. Que trabalho o papai está a fazer em cada foto?\n5. Quem faz isso em sua casa?\n6. O que você faz para ajudar seu papai?\n7. Quem você vê nesta família?\n8. A família gosta de estar junta?\n9. Como você pode saber?\n10. O que você gosta de fazer com sua família?"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/nadia.h%40seeafrica.co%2f3a1ce5c3-9d67-4b81-9a43-5b27e9d16803%2fMinha+fam%c3%adlia%2fslice8.jpg",
+      "text": "Atividade: Faça um desenho de você e sua família."
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 180
+  }
+}

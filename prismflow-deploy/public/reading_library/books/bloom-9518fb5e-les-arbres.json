@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-9518fb5e-les-arbres",
+  "title": "Les arbres",
+  "description": "A French picture book from Bloom Library.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Environment"
+  ],
+  "authors": [
+    "Peter Ebenrubo Okunola"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Peter Ebenrubo Okunola",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ieaPWA46AZ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ieaPWA46AZ%2f1783192888741%2fIti%2fTrees+Cover+page.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Les arbres nous offrent beaucoup."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Leurs troncs."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Leurs feuilles."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Leurs fruits."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Pour nos maisons."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Pour manger."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Pour nos médicaments."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Pour notre papier."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Pour l’ombre.\nPour notre plaisir."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Nous aimons nos arbres."
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 31
+  }
+}

@@ -1,0 +1,518 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-a99cf0d7-rufo-andal-n",
+  "title": "Rufo andalón",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/qzHRu1jwmL"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2fimage1.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2fimage.png",
+      "text": "Rufo era un perro juguetón. Le gustaba hacer nuevos amigos.\nEra muy conocido. Los vecinos lo veían pasar diario. Le llamaban Rufo, el andalón.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fd4287506-da1a-4afa-bd1e-2d7a4941d2c1.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fb9335133-18ab-4877-8300-f028373d94cd.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fcbb5d93f-90ad-464d-a4ba-43a46a6e4925.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fdf657035-cd92-4231-a42f-bd80bd6f8d51.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi0a7c16a2-c03f-4029-a259-e6c9d6b379e8.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faor_AN11.png",
+      "text": "Rufo sí era muy andalón. Todos los días salía a pasear. Era muy atrevido. Se escapaba de Carlos, su dueño. Rufo salía sin precaución.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi7c530f9c-e3af-439c-8d11-dc7047601c36.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi0c527158-6345-4c30-ab91-30809acaf177.mp3",
+          "dur": 2.130045
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fa7939ea0-95ab-4367-affe-55911420f0a3.mp3",
+          "dur": 1.738208
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi4103360a-e9a5-419c-87a1-f0be728f1b50.mp3",
+          "dur": 2.730861
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2ff5c0ed1e-5714-4e1e-9958-cdbe5e61760a.mp3",
+          "dur": 1.947188
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Una mañana Carlos lo bañó. Después, fue a traer una toalla. Quería secar a Rufo. Rufo salió corriendo. Quería secarse con el sol.\nPor ir corriendo, no prestó atención. Rufo se perdió. Rufo, el andalón, no podía regresar. No encontraba el camino. Él quería encontrar su hogar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2faf64e040-ed28-4c79-95e3-f08361420297.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi92074c82-0788-4ae9-a87e-72bfc7d7df7a.mp3",
+          "dur": 2.443514
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi62127d4b-509a-46f0-8352-bbc0f05958e1.mp3",
+          "dur": 1.842698
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi3b5ee702-a7c4-4b0e-9f87-9e14554cad6e.mp3",
+          "dur": 1.529229
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fea29e9b0-0b2e-4616-82f9-f2dc3860dae7.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi636f86af-13df-4252-81ce-04da499e25f7.mp3",
+          "dur": 2.339024
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi7d678639-cf6b-401e-9340-8e8d411eb76e.mp3",
+          "dur": 1.633718
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi95b4b98d-16c2-4d58-9477-97a62af01559.mp3",
+          "dur": 2.730861
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi3a7b3956-3fa1-4a8c-9f37-6d51a9868538.mp3",
+          "dur": 1.738208
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi19476f4f-0895-463f-bb89-a383b6258bea.mp3",
+          "dur": 1.947188
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2fdoubtful-young-kid-gesturing-with-hands-vector-4988655.jpg",
+      "text": "Carlos lo buscó por todos lados. Sus vecinos lo ayudaron. Sin embargo, no lo encontraron. Él confiaba que Rufo regresaría pronto. Carlos lo esperaba con ansias.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fbe6bc46b-75d1-4650-8db7-0298ef4a7d92.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi586478ba-32c5-4933-8242-e86a1b9a03e8.mp3",
+          "dur": 1.82854
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi53d8598f-bd7e-416c-aa6d-5ecd642204ac.mp3",
+          "dur": 2.339024
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi32406f4c-0ebe-404b-9392-e1eea430d1a1.mp3",
+          "dur": 2.835351
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2ff806141b-98ce-4817-8ff3-904176292f28.mp3",
+          "dur": 1.842698
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Rufo, el andalón, estaba agotado. Había dado muchas vueltas. No encontraba el camino para regresar. No encontraba su casa. Rufo estaba muy triste. También estaba muy agotado.\nDecidió descansar un ratito. Se quedó dormido en la calle. Eso no le gustó. Extrañaba su casa y a Carlos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi97a88a67-f6af-439c-87a0-7ad1231c525d.mp3",
+          "dur": 2.548004
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fb8d86d8b-e1bd-4d8a-93a1-3772239a9be9.mp3",
+          "dur": 1.842698
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi7689cfb3-4798-43b5-aa0b-398fe667f518.mp3",
+          "dur": 2.130045
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi8ab16f26-94c0-430d-ad6b-46fe08224453.mp3",
+          "dur": 1.633718
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi5d0a17a8-b07e-4742-9c29-0ec073c0a527.mp3",
+          "dur": 1.738208
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi85d4f54e-d882-41a5-ae40-354266ad920c.mp3",
+          "dur": 2.051678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fae417725-ce58-4fca-afd7-2d9c9a5a3ebc.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fb5ca716b-a2be-44b5-9263-dfc3788308e4.mp3",
+          "dur": 2.130045
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi78c16b81-66d5-484b-86d0-94a774bea925.mp3",
+          "dur": 1.346371
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fe522f115-d045-42af-8156-ca5647697135.mp3",
+          "dur": 2.730861
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Rufo estaba perdido. Había corrido mucho. Se sentía cansado y desesperado. Caminaba y caminaba. No encontraba a Carlos. Se lamentaba de haberse escapado. Se lamentaba de ser tan andalón.\nOtras veces había salido solo. Nunca se había alejado tanto. Esta vez no sabía cómo regresar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fbefa59c5-0ebf-4881-9e9b-0ea8f6f2fb88.mp3",
+          "dur": 1.82854
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi29d9a335-51da-48d3-b75d-0e292aa7ba44.mp3",
+          "dur": 1.346371
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi5ea5cc23-c3fc-4f4e-8656-44637c6512f2.mp3",
+          "dur": 2.324858
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi2ee48ae1-dd33-4f4e-884b-7ec8efa9ee64.mp3",
+          "dur": 1.529229
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi0d78f87f-5b38-48f2-9585-5ac79fbf3136.mp3",
+          "dur": 1.529229
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fd9276491-6872-46a6-bfc5-a6ad874721f4.mp3",
+          "dur": 2.051678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi84885f29-2651-47f8-8855-8dae1af1e6db.mp3",
+          "dur": 2.051678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi0a367141-3ed4-4dae-b528-eabeead78c96.mp3",
+          "dur": 2.130045
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi625328f4-0518-4bb3-95c3-ea7557214ae6.mp3",
+          "dur": 1.633718
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi0caafcb5-db6d-42ee-be93-a7e82ce91329.mp3",
+          "dur": 2.339024
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2f%c3%81rbol.jpg",
+      "text": "Llegó la noche. Estaba muy obscuro. Rufo no sabía a donde ir. Decidió dejar de correr. Se echó debajo de un árbol.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi6d993de4-9bb4-4359-8696-7d4134afc9ce.mp3",
+          "dur": 1.450861
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi3bd76635-f5c7-41b4-8132-3111eb24dccd.mp3",
+          "dur": 1.529229
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi53fc1ea9-4b34-4daa-a8a7-acda1853b4b3.mp3",
+          "dur": 1.738208
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi946fe865-85a3-4b03-9cc0-77b89d62708a.mp3",
+          "dur": 1.738208
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi713f4afe-5a00-4420-84a2-61ca18633e92.mp3",
+          "dur": 1.842698
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Mientras descansaba escuchó una voz. No sabía quién hablaba. Vio para todos lados. Luego, vio arriba del árbol... Unos ojos grandes lo observaban. Vio que era un búho.\nEl búho era quien le hablaba. Lo saludó amablemente. Rufo se sintió tranquilo. Le respondió el saludo."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2fimage41.jpg",
+      "text": "El búho le hizo una pregunta. Le preguntó qué hacía por allí. Dijo que ya era muy tarde... Rufo agachó la cabeza. Le contó que estaba perdido.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi3476fe7a-c1c8-4f87-8735-a679575ac3e3.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi079603d8-9fab-4ee5-8de7-94b3ca566b90.mp3",
+          "dur": 2.051678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi20711ba9-9fcb-4aeb-8a97-40dde727a93d.mp3",
+          "dur": 1.738208
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi1a4d5c37-bea2-42e8-b623-72aa796d566d.mp3",
+          "dur": 1.633718
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi1e18e369-bee2-4604-adcd-04c786c98105.mp3",
+          "dur": 1.738208
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2fimage411.jpg",
+      "text": "Le preguntó cómo se perdió. Rufo le contó que se escapó. Dijo que le gustaba mucho salir. El búho dijo: no seas andalón. Por eso te perdiste.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi0e393d33-6638-4af9-82cf-5ce3d1e304a4.mp3",
+          "dur": 1.738208
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi7b863f84-b94f-4c8d-9e14-f68bdc7d0912.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi6a84a2cb-bba0-49a0-9117-f9a31581dcaa.mp3",
+          "dur": 2.339024
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi229f6aeb-d68b-40d2-8f9b-26d44382d24a.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi2050e296-80bd-43ce-9593-e5439c3ddf5b.mp3",
+          "dur": 1.529229
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "El búho era muy sabio. Dijo que pronto iba a amanecer. Le sugirió que olfateara. Le dijo que fuera más despacio. Así podría encontrar su casa.\nRufo, el andalón, escuchó al búho. Lo escuchó atentamente. Por correr, se le olvidó olfatear. Le agradeció su consejo. Se despidió y siguió su camino.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fb1f69c03-ee2c-4463-ae4c-c6ee3ff35e88.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2ff518b230-a4d2-44f1-b0d8-6716e613e4d6.mp3",
+          "dur": 2.339024
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi4e80a579-cc7d-4c0b-8ee4-f3608859f792.mp3",
+          "dur": 2.339024
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2ffb00f88c-23d4-406d-907a-37c8ad59f648.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi29b35c0a-8de5-45e6-93cb-5bc0356c84fe.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi8b71beb9-6ca9-43da-843d-1d496e115da0.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi26685bcc-1f2c-4527-9c31-ca6abd95b93e.mp3",
+          "dur": 1.738208
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi1a00c0bc-0481-4a26-9f8a-69de18a8f58c.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fb4e2ff8c-1602-4fa6-9e0c-1dcd6578aaf3.mp3",
+          "dur": 1.633718
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi4d78c12e-85af-40b0-bff7-b777dda77a24.mp3",
+          "dur": 2.548004
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Ya estaba amaneciendo. Se miraba mejor con la claridad. Rufo siguió el consejo del búho. Empezó a olfatear por el camino. Caminó siguiendo su olfato.\nA lo lejos vio su casa. Rufo corrió alegremente. Carlos escuchó sus ladridos. Abrió la puerta y lo vio. Carlos salió a su encuentro.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi3e32f91e-6f91-4146-819f-43a6dacdb27f.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2feb207a5b-2c93-4d92-8303-6892c42955dd.mp3",
+          "dur": 2.037516
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2ffe568057-5852-4a53-bb41-dada1b3d0cc3.mp3",
+          "dur": 2.051678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi7aaccfdc-842f-42fe-b67c-c44d81b85c01.mp3",
+          "dur": 2.730861
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi61f9d8e8-b575-4f01-a75a-dd0269a8a244.mp3",
+          "dur": 1.842698
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi9c519173-d0d1-4209-ab71-5afa5216e9fd.mp3",
+          "dur": 1.450861
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2ff21845bf-0d1b-4fb9-af8f-01d6828df1af.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi2e77ad2a-7081-4a05-a72d-ca798c96a7d4.mp3",
+          "dur": 2.051678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fb2bb88f5-0bf3-4d24-ab4a-11d94430f85c.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fe2fdd96b-3565-44bc-b8a0-7404e596885a.mp3",
+          "dur": 1.947188
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2fimage31.png",
+      "text": "Carlos lo abrazó fuertemente. Rufo se sintió muy contento. Estaba emocionado de ver a Carlos. Estaba feliz de regresar a casa. Se sentía agradecido.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi3c61bf2b-c3f7-4cf8-8480-c2165cd59020.mp3",
+          "dur": 2.130045
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi75b45098-17cd-4821-b735-c05923e07677.mp3",
+          "dur": 2.130045
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi57b1acd8-840e-4c9c-8a76-2d46d49c13e1.mp3",
+          "dur": 2.051678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi154f0760-8c2a-4d86-b702-268c12178f44.mp3",
+          "dur": 2.443514
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi1cc73d5a-4760-44a0-be3d-d6ee80b8471e.mp3",
+          "dur": 2.051678
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2fpaisaje+con+ni%c3%b1os+jugando.jpg",
+      "text": "Rufo aprendió su lección. Dejó de ser andalón. Ahora solo sale con Carlos. Él lo lleva a pasear. Ahora corren y juegan juntos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fe82b625d-d01a-41b6-bf7b-50d27a0826b0.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2ff136b59c-59a9-474e-9fd9-c764a02f1858.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi8024033f-72a1-456e-88a6-62cfaa74bce7.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi27e92b75-2532-422f-a1df-72b2679a5dd7.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2faudio%2fi41e9489a-5481-4cae-9b54-c9b2ad9772a3.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué animal era Rufo?\nUn gato.\nUn perro.\nUn caballo."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué se perdió Rufo?\nPorque quería escaparse de su dueño.\nPorque quería tener una aventura.\nPor salir corriendo solo y no prestar atención."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué sentido usó Rufo para encontrar su casa?\nEl olfato.\nEl oído.\nLa vista."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué los perros olfatean para encontrar objetos o personas?\nPorque les gusta mover la nariz.\nPorque a través de su nariz reconocen los olores de las personas y objetos.\nPorque les pica la nariz y por eso olfatean."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Dejó Rufo de ser andalón?\nNo, porque se sigue escapando de la casa.\nSi, porque ahora solo sale con Carlos.\nSi, porque se cansa mucho si corre solo."
+    }
+  ],
+  "stats": {
+    "pages": 19,
+    "words": 611
+  }
+}

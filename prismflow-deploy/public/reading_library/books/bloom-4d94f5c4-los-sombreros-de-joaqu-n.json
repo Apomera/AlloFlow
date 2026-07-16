@@ -1,0 +1,228 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4d94f5c4-los-sombreros-de-joaqu-n",
+  "title": "Los sombreros de Joaquín",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Z5grZ4k4TS"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fnino con sombrero.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fchico.jpg",
+      "text": "Joaquín quiere un sombrero.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi2341e5ec-ed4f-4e3c-a7e1-b96f48ca97ce.mp3",
+          "dur": 1.947188
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fsun-159392_1280.jpg",
+      "text": "Él no quiere asolearse.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi879f369b-2288-4cf0-8d64-bc0fab6c890c.mp3",
+          "dur": 2.339024
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fhombre+con+sombrero.png",
+      "text": "Su papá trajo un sombrero.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2ffa986fc1-f7c1-4880-b994-ed0614dce279.mp3",
+          "dur": 1.738208
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fAbuelo.png",
+      "text": "Su abuelo trajo otro sombrero.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2ffa31a387-ffe5-4875-995c-a3781a17fa58.mp3",
+          "dur": 2.130045
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fsombrero1.png",
+      "text": "Joaquín tiene dos sombreros.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fcd5c4bb1-39d0-4d24-9314-b77cf2af8152.mp3",
+          "dur": 1.842698
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fpaja.png",
+      "text": "Los sombreros son de paja.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi8eb1ab82-023d-490a-8a5a-78bfba47f523.mp3",
+          "dur": 1.529229
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fNino+con+libro+bajo+el+brazo.png",
+      "text": "Joaquín sale con un sombrero.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi886f09cc-81a3-45ba-9cd5-9ecf5962a2ac.mp3",
+          "dur": 2.234535
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fNino+con+sombrero+manos+atras.png",
+      "text": "Usa el otro más tarde.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fe64549a0-8787-4546-9cfe-ff54887999f8.mp3",
+          "dur": 1.515076
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fpalm-304428_640.png",
+      "text": "Joaquín irá a la costa.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi76bbc91c-9f3e-410b-a731-2669f9782207.mp3",
+          "dur": 1.82854
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fNino+con+sombrero+de+espaldas.png",
+      "text": "Joaquín usará sus dos sombreros.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi9e2d15a9-2439-4615-8131-c4f1d8136618.mp3",
+          "dur": 2.638322
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Para qué quiere Joaquín un sombrero?\nPara cubrirse del sol\nPara no mojarse\nPara estar apuesto",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi20b00d1c-d70a-4089-8eee-f2f64f68a131.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi8c571d9f-262b-42d2-ac74-70f3ca2fc784.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fce405194-67e8-48de-a996-871ad22ca292.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fbbe5fa74-5188-44f1-8902-5fa49676d012.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi85651e1d-5cf2-4c7a-9ab3-765efc7ba4f9.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿En qué lugar usará Joaquín su sombrero?\nEn la escuela\nEn el mar\nEn la costa",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi3b8197ee-2aa9-4e90-84ae-aee034cf31a1.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fc778508b-92c2-400e-93e1-4718368e65b2.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi9fcc3df3-5742-4aa5-87c2-ae765c7b59fc.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi5498d19b-1d12-4708-b789-37fd2ffee130.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi65ba8787-c9d7-4088-aa6c-1917e7f6cca2.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Cuántos sombreros tiene Joaquín?\nUn sombrero\nDos sombreros\nCinco sombreros",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi3eef7eaf-fd57-4f3f-81e9-0692f4777497.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi7753d813-5a8a-4101-8198-f3149e2a36c2.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi2e536f72-d94f-4948-9b6a-b06b4dcd3b2a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi90fc5206-b339-4ec2-b55f-11d9a5511cc7.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2faudio%2fi7c3c5b15-7a8d-4449-b914-c0d1d5c69817.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 13,
+    "words": 98
+  }
+}

@@ -1,0 +1,282 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d8bdea25-rosa-quiere-ser-maestra",
+  "title": "Rosa quiere ser maestra",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4PgbaGn83f"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fnina rotulo1.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fni%c3%b1a+feliz.jpg",
+      "text": "Rosa es una niña entusiasta.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fda0bf610-99b7-425e-902a-9f7a1d2caad7.mp3",
+          "dur": 3.213006
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fni%c3%b1os+reunidos.png",
+      "text": "A Rosa le gusta enseñar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi37d3e80d-cf77-4824-88cd-a879049d8114.mp3",
+          "dur": 2.638322
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fninos+leyendo2.png",
+      "text": "Lee para sus amigos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fd80ee11c-fad5-442c-8bf6-62bfee6095ef.mp3",
+          "dur": 2.22037
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fMujer+sosteniendo+cartel.png",
+      "text": "Dibuja carteles con esmero.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fa8625a96-61e0-4f10-9abd-accc3108f11a.mp3",
+          "dur": 2.821176
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fMaestra+y+alumnos+en+jardin.png",
+      "text": "Rosa cuenta que quiere ser maestra.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fa1c5407c-59b4-4ace-ba59-905924b53a7d.mp3",
+          "dur": 3.030152
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fnina+rotulo3.png",
+      "text": "Ella practica para ser maestra.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fea7aca72-94ba-4493-9394-4110ba5403a0.mp3",
+          "dur": 2.716688
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fmaestra+con+nina.png",
+      "text": "Ella estudia mucho a diario.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi6b873cbf-4526-448a-9a9e-9fb644e0cd60.mp3",
+          "dur": 2.925664
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fchica+leyendo.png",
+      "text": "Se prepara para ser maestra.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi9036f3fe-f44f-45a9-985e-5c1276cc134d.mp3",
+          "dur": 2.638322
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fmaestra+y+ninos.png",
+      "text": "Rosa es una maestra especial.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi538770e0-81f1-4e2f-a268-e7f5401995ba.mp3",
+          "dur": 2.925664
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fmaestra+leyendo+ante+grupo+de+ninos.png",
+      "text": "Rosa siempre enseña con gusto.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi4798714b-0b63-47ec-9025-122c15d79e09.mp3",
+          "dur": 3.213006
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué le gusta a Rosa?\nEnseñar\nCorrer\nPintar",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fb0df6c06-c978-4613-b09a-d016faa5f591.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi4694f6c9-66bf-4283-a8b2-727c073a06f5.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi5d7ddffd-4327-46ef-91b3-09116af050e4.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2ff060d517-ee67-42e5-93ed-89c77c229492.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi226b8628-14ba-46bf-bf5f-18539594248c.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Para quién lee Rosa?\nPara sus vecinos\nPara sus hermanos\nPara sus amigos",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi7595b597-ddc1-4870-93c9-0edd18d68fc5.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi99157b16-c04f-4a84-9b01-eec557cba2c2.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi8ba3b2a8-7770-4af8-9ea4-24d37f5eb242.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi94a4e80a-f94d-4fe1-a5ca-ac4c5c741793.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi97cf77b2-7b8c-4405-b7d9-7b50b8aefcb3.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué quiere ser Rosa cuando sea grande?\nDoctora\nMaestra\nElectricista",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi8a85717d-2594-4008-bc91-1e2a03befea7.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi7ce78bc2-b7a8-412c-a330-4c7578b66c52.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fdb77193a-ce6b-4043-88b6-4c03467a8486.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi4373a2a3-ca97-470a-b3fb-10c31ffa281c.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi1f49a93d-0b1d-4c7e-b711-6f20b4a1e2f1.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué crees que Rosa quiere ser maestra?\nPorque quiere leer muchos libros.\nPorque le gusta que otras personas aprendan.\nPorque quiere escribir en el pizarrón.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2facea9038-c3bb-4341-a1d6-1d987ae41467.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi8293b78d-8bf0-478d-945b-7619418bc713.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi7a3a3ea0-8deb-4d66-959f-56fb42a81c26.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fb6f94f43-ea1e-4816-9cff-56589b235040.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi000dc3b5-c395-4bf4-90f8-da40370ad094.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Cómo enseña Rosa?\nCon gusto\nCon enojo\nCon miedo",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi2e2b11ea-90ef-4a09-ac0b-d2ca1ead12f9.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fdbb7d66a-d765-4ec1-9670-3d346f837299.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi3b225eb0-e77e-43bf-8d6d-44cd4a5fcbde.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2fi2699357c-9745-4e19-adb1-150d8d6045f5.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2faudio%2faa2918fc-f4af-472b-b2f4-f995defd039b.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 15,
+    "words": 130
+  }
+}

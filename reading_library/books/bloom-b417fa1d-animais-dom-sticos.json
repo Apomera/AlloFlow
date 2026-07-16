@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-b417fa1d-animais-dom-sticos",
+  "title": "Animais domésticos",
+  "description": "Portuguese: O Benjamin cria muitos animais na sua machamba. Cada animal faz um som diferente.\nEnglish: Ben farms with many animals. Each animal makes a different sound.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "creativecommons.org/licenses/by/4.0/"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "creativecommons.org/licenses/by/4.0/",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ZXcbK3tIVw"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ZXcbK3tIVw%2f1755808068101%2fKahala+18+Wahuwa+Anenama+a+Vaate%2fASP_170_Domestic_animals_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Este homen cria animais da sua machamba. Ele chama-se Benjamin."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ZXcbK3tIVw%2f1755808068101%2fKahala+18+Wahuwa+Anenama+a+Vaate%2fASP_170_Domestic_animals_Page_02_Image_0001.png",
+      "text": ""
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ZXcbK3tIVw%2f1755808068101%2fKahala+18+Wahuwa+Anenama+a+Vaate%2fASP_170_Domestic_animals_Page_03_Image_0001.png",
+      "text": "Ele cria uma vaca. A vaca faz muu."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ZXcbK3tIVw%2f1755808068101%2fKahala+18+Wahuwa+Anenama+a+Vaate%2fASP_170_Domestic_animals_Page_04_Image_0001.png",
+      "text": "Ele cria um cabrito. O cabrito faz méé."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ZXcbK3tIVw%2f1755808068101%2fKahala+18+Wahuwa+Anenama+a+Vaate%2fASP_170_Domestic_animals_Page_05_Image_0001.png",
+      "text": "Ele cria um cavalo. O cavalo faz irráá."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ZXcbK3tIVw%2f1755808068101%2fKahala+18+Wahuwa+Anenama+a+Vaate%2fASP_170_Domestic_animals_Page_06_Image_0001.png",
+      "text": "Ele cria um porco. O porco faz óinc, óinc."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ZXcbK3tIVw%2f1755808068101%2fKahala+18+Wahuwa+Anenama+a+Vaate%2fASP_170_Domestic_animals_Page_07_Image_0001.png",
+      "text": "Ele cria uma galinha. A galinha faz cócóricó."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ZXcbK3tIVw%2f1755808068101%2fKahala+18+Wahuwa+Anenama+a+Vaate%2fASP_170_Domestic_animals_Page_08_Image_0001.png",
+      "text": "Ele cria um cão. O cão faz au au."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "O Benjamin trabalha muito todos os dias para cuidar dos seus animais. O homem diz: ‘Eu tenho muito trabalho. É bom trabalhar com força!’”"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ZXcbK3tIVw%2f1755808068101%2fKahala+18+Wahuwa+Anenama+a+Vaate%2fASP_170_Domestic_animals_Page_09_Image_0001.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 84
+  }
+}

@@ -1,0 +1,516 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3cb935de-el-barrilete-de-mi-abuelito",
+  "title": "El barrilete de mi abuelito",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/R9NTFCKPIq"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2fbarrilete11.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2fAbuelo+con+ninos.png",
+      "text": "Era un día muy soleado. Salimos a caminar. Luego, nos sentamos bajo un árbol.\nEl abuelo dijo que lo escucháramos. Nos contaría una anécdota. Todos nos emocionamos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi2a192636-51e9-4676-9e03-f5b64deafa21.mp3",
+          "dur": 2.835351
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi0a0493ef-f813-4d74-82a5-523d629d27d0.mp3",
+          "dur": 2.051678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi672d1394-295f-4758-b3f4-638c01fc7935.mp3",
+          "dur": 3.540657
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi0b8b47a5-7101-417f-bdcc-97b97dd639c9.mp3",
+          "dur": 3.436167
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi79c3dec0-0b59-47eb-bb25-f9a8892af8f3.mp3",
+          "dur": 2.939841
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi0bbf8de3-0fd7-4a25-93d9-ccd49420e76f.mp3",
+          "dur": 2.835351
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Nos sentamos. Empezamos a escuchar. El abuelo inició recordando su infancia. Mencionó que era pequeño como nosotros.\nSe iba temprano a la escuela. Luego, regresaba a su casa. Comía y realizaba sus tareas. Después, salía a jugar al campo. Jugaba con sus amigos. Disfrutaba estar con ellos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi70ad4701-d381-47ad-977c-678ad8b373fb.mp3",
+          "dur": 2.115882
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fc71cf791-6ec9-4b49-9e04-32ad67e1b4c7.mp3",
+          "dur": 2.533834
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fb5a04667-76d1-4b8f-b93c-526034beae20.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi2fb66f29-76c6-48c1-9080-66eb04c04076.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2faca18f9b-89dc-46e7-8dc5-ea46bb15cd7f.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fd3ef27a4-7633-4634-94a2-de2c600297de.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fe1965375-1c62-4ccb-a313-63910898582b.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi409ff21f-66c0-47f2-9e4d-d818e00fe73b.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi54ce44a9-6c29-4073-bf11-fa3ff207d2ae.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi91df323a-12f4-490a-a12a-1203c4d1bb4c.mp3",
+          "dur": 1.933028
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2fni%c3%b1os+jugando+en+el+campo.png",
+      "text": "Contó que un día estaban jugando. De repente vieron al cielo. Vieron que algo volaba. Era un objeto de colores. Los colores eran muy llamativos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi199826a2-e383-47eb-94bf-16b06f9eb41a.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi3ca54f21-e6c3-4e87-93b1-3014f1e9c8a3.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi182ece2b-ba2a-4a44-8749-16bf241d37db.mp3",
+          "dur": 2.037516
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi99f254ab-39b4-4138-bb19-c13bdc7a925e.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi8011917e-6aa3-48b2-b3f7-84508c68fffa.mp3",
+          "dur": 2.716688
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Vieron que una niña estaba corriendo. Corría muy rápido. Estaba muy contenta. Todos se sorprendieron. Prestaron más atención...\nLa niña jalaba al objeto. Lo hacía con una pita. El objeto estaba volando. Tenía una gran cola de papel. ¡La niña volaba un barrilete!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi1e5dbba2-ccf2-4a9d-930f-1a28d2e3b862.mp3",
+          "dur": 3.749637
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fcb46c61a-2474-4845-9ed0-69984def394c.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi71dea68d-c516-432c-b84a-c61dc9939975.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fb97024cd-fe82-4a7e-9aea-acc147077bf2.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi8c0500fa-73af-4928-a2e6-ca1d57a45857.mp3",
+          "dur": 2.339024
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2ff243f832-64e5-456e-93e3-3e9db2e2b401.mp3",
+          "dur": 3.227188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fd4c45e50-ad98-4a91-a633-b105515cef49.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fe5912b70-4f06-47c0-83e6-59b77ba1b840.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fafd93d37-14ed-479f-920f-c1867cf0e4e0.mp3",
+          "dur": 2.548004
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi93f14a98-6d7b-45c7-958d-217406b2e918.mp3",
+          "dur": 2.443514
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2fni%c3%b1os+en+parque+jugando.png",
+      "text": "Todos se acercaron. Estaban admirados. Eso era nuevo para ellos.\n¡Hacer volar un objeto! ¡Les pareció fantástico!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi5191def3-2207-4776-b680-fbe368580156.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi17b73a01-10dd-42ae-9f76-44e9abb03d33.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi54a137ef-60d8-4cd2-85eb-b4a854bdc0e4.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi721d4f08-4cc1-4264-a8f6-3d3eeeee4db2.mp3",
+          "dur": 2.115882
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi20557cc8-af4e-4854-b150-8413ee62a427.mp3",
+          "dur": 2.115882
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Sus papás también se emocionaron. Volar barrilete era una gran experiencia. Hacía mucho que no veían barriletes. Hacía mucho que no volaban uno.\nRecordaron que antes volaban barriletes. Ellos mismos los construían. Luego, se reunían para volarlos. Los volaban en el campo. Los volaban cuando soplaba el viento. No recordaban porqué dejaron de hacerlo."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2fni%c3%b1os+charlando.png",
+      "text": "Se les ocurrió una idea. Harían barriletes con los niños. Les enseñarían a volarlos. El abuelo estaba muy entusiasmado. Él quería aprender a hacer barriletes."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Se organizaron para trabajar. Consiguieron los materiales para iniciar. Se reunieron un sábado. Llegaron muchos niños y adultos.\nUnos cortaban el papel de china. Algunos medían las varitas de bambú. Otros los armaban a su gusto. Juanito colocaba las colas de barrilete. Todos trabajaron mucho. Estaban felices haciendo barriletes.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fifee3ecc5-c478-4df3-a142-bf4b070157c1.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi271469d2-0fbf-4171-a20e-04aa3b949671.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fb76659d9-7efb-4911-8364-a5adea66bbba.mp3",
+          "dur": 1.933028
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi86b0a999-e221-491f-a4de-88590b583aea.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi31fe2c10-7163-46d9-80f3-35b373b94b96.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fb0b09e69-f93e-4293-be90-4c9adcfbaa52.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fdf2d22d1-e331-4921-ba9b-6545ce613359.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi907bc6b2-a6b7-41a9-bed0-8e7082eac529.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fec9e81bc-6160-4da1-93e3-07b90ebd28b2.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi284a54e1-bbfa-469f-b95f-d383f0e17692.mp3",
+          "dur": 3.030152
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2fbarrilete121.png",
+      "text": "Mi abuelito aprendió a hacer barriletes. Aprendió cada paso. Él era muy detallista. Hacía barriletes muy grandes. Sus barriletes eran los mejores.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fdc264dc0-97a7-4cb4-80f4-d31e0f4ef796.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi69244a9c-f6dd-4a4e-bb9f-132e9b078bec.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi40942281-4757-4e9b-9e5f-4b0de59f602c.mp3",
+          "dur": 2.115882
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2ff27d9fe7-f708-43d6-ba0e-149a2c3e8683.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi9a5dd4ac-5a96-4a85-9757-1dcac79f0a35.mp3",
+          "dur": 3.030152
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Mi abuelito cuenta que usaba cáñamo. El cáñamo es un hilo fuerte. Soporta mucho peso. Usaba papel de china de colores. Hacía barriletes de diferentes formas.\nAprendió a preparar el pegamento. Usaba engrudo. El engrudo es liviano. Así el barrilete pesa poco. Sus barriletes se elevaban muy alto.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi8e7d2a82-bee2-4921-b0c0-ba762d4dda75.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi13a52d99-9cb2-4d6c-95db-d4dc9dd9f09f.mp3",
+          "dur": 2.548004
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi6cb0c5f7-6a0d-4b2a-9fa9-c141e7913aa1.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fcde091c5-53ee-4aff-94c3-d9f7c74a9d7d.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fd061482a-026b-40f5-8aef-a820be4190e5.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2ffcfda52e-6ff2-433b-92f7-3813fa99619d.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi5d0e7f1a-e2be-4cb1-a948-bc28f0100c60.mp3",
+          "dur": 1.82854
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi3fa9fe41-86bf-46c3-8081-f0130bab9f4a.mp3",
+          "dur": 2.115882
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi02c4ed1b-6b8e-49f4-a75f-ed199deb82f7.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi0893758e-3f20-4e88-aea0-f4aa560e24ba.mp3",
+          "dur": 3.421982
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2fjalapa+rotulo.png",
+      "text": "También nos contó otro dato curioso. Colgaban un papel en el barrilete. El papel era delgado. El papel llevaba un mensaje. Querían que llegara al cielo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fb8671e22-32ba-454b-a282-a60c8e00b7ef.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi7545a107-391c-4af7-9bd1-857bcba10b26.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2faa2e98ad-9b5b-41f2-9d4e-0440b05f06e8.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi1cafe62a-2886-4d0b-816f-72244b3c3a9e.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fb180bcab-94aa-4755-a83a-bc5b2b5f351d.mp3",
+          "dur": 2.324858
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Enviar mensajes al cielo era importante. El papelito subía por el hilo. El papelito alcanzaba el cielo azul. Este contenía sentimientos del corazón. Les gustaba enviar mensajes.\nMi abuelito estaba emocionado. Le gustaba mucho hacer barriletes. Conocía todos los detalles para hacerlos. Cada uno que hacía era especial. Verlos volar le parecía divertido.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi54b603ad-9552-4396-9e8b-f82da879c005.mp3",
+          "dur": 4.036984
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi85b1e525-a866-4bd1-8846-17fcdbd385b9.mp3",
+          "dur": 3.14882
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi63fca56e-f1df-429b-8005-2dc272b918fb.mp3",
+          "dur": 3.540657
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fbb949b3c-72d7-4628-afb8-12723d62930b.mp3",
+          "dur": 3.331678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fc6d3cbcc-b24e-48b5-b0a5-0333c2204aa2.mp3",
+          "dur": 2.939841
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi91b7a10b-31e1-4a77-9d5f-849bae559fa7.mp3",
+          "dur": 2.652494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2feeec3c2b-b458-40d7-841a-e4d0214b2f71.mp3",
+          "dur": 2.652494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fa989eb6d-112b-4119-bc46-67c96dd778c0.mp3",
+          "dur": 3.331678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fa68db203-2f87-4690-bdd0-7221007bb917.mp3",
+          "dur": 3.14882
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi1b625bcc-b905-48d0-a166-a793ad240a8d.mp3",
+          "dur": 3.331678
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2fNi%c3%b1os+trabajando+en+proyecto.png",
+      "text": "Todos nos emocionamos con la historia. Decidimos hacer barriletes. Le pedimos al abuelo su ayuda. Él se emocionó con la idea. También nos enseñó a volarlos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi8ab4d7d8-d0ac-4b2d-a190-d2a999b50ba2.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi90ce99fd-def1-45f6-97d0-7ce57ac95734.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi4d588095-866b-4cc6-aa5e-d1de04121614.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi43051ec4-9798-4fa8-ab73-d6291503446e.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi39add0fb-839e-4835-8bfc-7b6e185df2a8.mp3",
+          "dur": 2.716688
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "En noviembre el viento es fuerte. Es apropiado para volar barriletes. Esperamos ansiosamente que llegue noviembre. Solo faltan dos semanas. Mi abuelito está contando los días.\nEstamos listos para volar nuestros barriletes. Será divertido verlos volar. Enviaremos muchos mensajes al cielo. ¡Estamos muy emocionados!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi3026c20a-4c6b-45d2-97bc-30acd0637d56.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi341e0e3e-70f6-45e9-a673-dccb9668a91c.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fafacec64-8e9f-4e08-98b9-4e6bf2742eeb.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi1af2f5d9-8337-4032-b335-0830720f1c84.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fc4b0e592-d8c9-4419-8a5f-8dad4fba9c2d.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi1cfb8268-21cc-49e3-9f32-e374ad93b670.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2faaa55a31-72f4-42b1-8927-02e1d5365604.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fb2bf2faf-fe88-4c3d-9cfb-639737bb2b2e.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2faudio%2fi06d4cb74-d6b1-40f3-9136-570dffaaf7ca.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿En qué lugar se sentaron los niños a escuchar al abuelo?\nDebajo de un árbol.\nEn el parque.\nA la orilla del río."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué era el objeto que volaba la niña?\nUn avión.\nUn pájaro de papel.\nUn barrilete."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué materiales utilizaron los niños para elaborar los barriletes?\nPapel delgado, palillos y lana.\nPapel de china, varitas de bambú, engrudo y cáñamo.\nTela de colores, pegamento y cáñamo."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué noviembre es un mes apropiado para volar barriletes?\nPorque los días son soleados.\nPorque hay viento.\nPorque hay frío."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué materiales no son adecuados para construir barriletes?\nPapel delgado y pegamento.\nLatas y cemento.\nBambú y cáñamo."
+    }
+  ],
+  "stats": {
+    "pages": 19,
+    "words": 628
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4df5b7ef-las-frutas",
+  "title": "Las frutas",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ctccqIgY1c"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2ffrutas1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2ffrutas.jpg",
+      "text": "En mi comunidad se cosechan frutas. Las frutas son beneficiosas para todos."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2ffamilia+sembrando.png",
+      "text": "La siembra es una época especial. Todos y todas trabajamos arduamente."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2farbol+de+naranja1.png",
+      "text": "Cuidamos los cultivos y árboles frutales. Así producimos muchas frutas."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2fbananos.png",
+      "text": "La cosecha es abundante y variada. Se cosechan bananos, sandías y naranjas."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2fnaranjas.jpg",
+      "text": "Las naranjas que cosechamos son dulces. Contienen vitamina C."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2fsandia2.png",
+      "text": "En la tierra se producen sandías. Las sandías son jugosas y dulces."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2fbananos1.png",
+      "text": "El banano aumenta la energía. El banano también mejora la digestión."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2ffrutero.jpg",
+      "text": "Las frutas son nutritivas. Por eso su consumo es saludable."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2ffrutas+2.png",
+      "text": "Las personas aprovechamos las frutas. En la comunidad las comemos diariamente."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2fmujeres+en+mercado.jpg",
+      "text": "Todos y todas estamos saludables. Nos gusta cosechar y consumir frutas."
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 109
+  }
+}

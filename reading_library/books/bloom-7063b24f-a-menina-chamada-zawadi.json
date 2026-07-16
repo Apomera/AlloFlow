@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-7063b24f-a-menina-chamada-zawadi",
+  "title": "A menina chamada Zawadi",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "Ministério da Educação da República de Angola INADE-MED"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministério da Educação da República de Angola INADE-MED",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/LDn8ebRFRj"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/LDn8ebRFRj%2f1773420197403%2fNtsikana+anacemerwa+Zawadi%2fZawadi+cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Havia um casal camponês com os seus filhos.\nUma filha não conseguia andar.\nEla era paralítica."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Os pais dela lhe amavam muito.\nEles lhe deram o nome Zawadi, que significa: 'Presente'."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Zawadi brincava perto da sua casa com as suas amigas.\nEla sabia trançar cabelo muito bem. Sua avó ensinava Zawadi fazer coisas feitas de palha."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Um dia os pais da Zawadi foram matriculá-la na escola.\nO director da escola ficou muito feliz com a chegada da Zawadi porque o ensino é para todos!"
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Zawadi foi bem recebida na escola. Todos brincavam com ela e lhe ajudavam."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Mas na rua havia muitas pessoas que reparavam a Zawadi porque ela gatinhava.\nZawadi não se sentia bem quando pessoas olhavam assim para ela."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Quando Zawadi terminou a escola os seus pais a levaram para a cidade.\nNa cidade ela começou a estudar para ser professora."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Um dia Zawadi recebeu uma cadeira de roda.\nEla gostou muito!\nAssim Zawadi não precisava mais gatinhar ou ser carregada por outras pessoas."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Zawadi começou a jogar basquetebol com outras paralíticas.\nElas jogavam muito bem!"
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Quando Zawadi terminou os seus estudos, ela começou a trabalhar como professora perto da sua casa.\nEla ensinava as crianças a ler e escrever.\nZawadi tinha paciência. Todos os dias ela trabalhava com um sorriso. Os alunos gostavam muito dela!"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 218
+  }
+}

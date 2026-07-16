@@ -1,0 +1,704 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-432eed8a-el-sue-o-de-estrella",
+  "title": "El sueño de Estrella",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/sSTLF1xKeG"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2fnina maya sentada en el piso.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2fmilky-way-984050__340.jpg",
+      "text": "Estrella es una niña de nueve años. Su mamá eligió su nombre. Dice que ella es una estrella. Ilumina la vida de la familia. Además, brilla en cualquier lugar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fa4e65ef7-9c3c-4377-8eb4-f6e3d69b9320.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi3dcf5759-0e81-47e4-bb66-68c7f91cdb9c.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fa6f7ff53-d158-4b3c-a83e-5473d40d62a3.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fe0b66fdb-7683-488f-8258-bf85d7e39001.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fadedfa5a-7e94-4233-8976-2604742c94ed.mp3",
+          "dur": 3.213006
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2fmadre+e+hija.png",
+      "text": "Estrella y su mamá son muy unidas. Les gusta observar el cielo juntas. Lo observan de día y de noche. De día le buscan formas a las nubes. En la noche ven las estrellas.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fdf1a289d-b166-49d8-9498-1e6f2af54ec5.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fb971c2f8-8935-4dad-acd7-2b789e9fb812.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi16f59be4-285c-4f74-9cb4-819c62b25d9c.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi4dacf888-f413-4d25-a033-8734367ca133.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi56dc7578-4dc2-44b6-ba1f-b42136ef245c.mp3",
+          "dur": 2.821176
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Todas las noches observan los primeros luceros. A veces les ponen nombre. También tratan de ver cuál brilla más. Comienzan a contarlos, pero les es imposible. Estrella ve que cada vez van apareciendo más.\nEstrella es muy curiosa. Ella quiere saber acerca de muchos temas. La niña quiere saber más de las estrellas. Ella desea saber qué hay en el universo. Ese tema le apasiona.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi74b268b3-9450-44b5-8a40-ccabf1ecfb7d.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fb1cf38f9-3f5e-4b9d-9529-1b03a49fba20.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi141c38db-2328-413d-b57b-5c51c94c2691.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi5bcf0e59-72cd-4650-8835-5b66eab41c37.mp3",
+          "dur": 4.623594
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi4c99738e-c810-43a4-8cd3-e95b2aa5ab90.mp3",
+          "dur": 4.414618
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi96e57128-d451-406d-86a7-fbb1d042ceb6.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fdec56dd4-272e-4c51-a353-918ab21a83de.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi9d50e601-ebfb-4451-b049-22b82befe8a5.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi0183df53-5c84-42e1-84e6-5674e1df276a.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi807096fa-8689-48ed-a0d3-88a6dc7b3f04.mp3",
+          "dur": 3.213006
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "A Estrella le encanta aprender. Siempre está leyendo y buscando información. Ella hace muchas preguntas. Siempre quiere saber más y más.\nBusca a sus papás para que le expliquen. Doña Martina, su madre, trata de orientarla siempre. Le dice que el Sol es una estrella. El Sol ilumina a la Tierra diariamente. Su papá, don Gilberto conversa con ella. La motiva a seguir investigando.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi47a79065-5618-4949-9197-c8b3012d53c9.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fibce33866-a156-447c-bca9-7b49ab7507f3.mp3",
+          "dur": 4.127276
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi4fc21b3d-325b-4a3f-af83-c941afb2c22c.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fidebcb676-7b84-4d5a-87c0-3cd67a6b1f17.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fe4897e74-d43e-4f4a-9d6a-ada5000e3a75.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi8e046a93-70d7-48cd-9ea6-04644a35474d.mp3",
+          "dur": 4.623594
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fid3b3c573-6b9f-4ff3-b968-835af398d7e4.mp3",
+          "dur": 4.022788
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi1cb39db7-3cf1-4ba6-bb39-354831bdddb4.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi084964e0-a170-4ee1-a5a7-568af33d96a3.mp3",
+          "dur": 4.519106
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi5fbad8e7-86da-4a29-afea-70a82f4ed420.mp3",
+          "dur": 3.421982
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2fnina+maya+subiendo.png",
+      "text": "Estrella está en tercero primaria. Un día fue a la escuela. Ese día fue especial para ella. Su profesor Hugo trabajaría un tema nuevo. El tema era el Sistema Solar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi74c49cda-31e9-48d8-8970-38c553abc633.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fa205123a-c8ea-407d-b5d8-dff6ff32a6f0.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi9879a149-e08a-403c-9eb2-90e888532a0e.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi41e23b47-b038-4544-b9d7-38ba9d66ed07.mp3",
+          "dur": 4.336252
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi50ed1ba1-960b-4391-96f2-d293a247ea5a.mp3",
+          "dur": 3.52647
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "El profesor escribió algo en el pizarrón. Les pidió que lo leyeran en voz alta. Allí decía El Sistema Solar.\nLuego, les pidió que dijeran algo del tema. Un compañero dijo que era inmenso. Una niña dijo que tenía muchos planetas. Otra dijo que el centro era el Sol. Estrella dijo que el Sol era una estrella. Otra niña dijo que allí estaba la Luna. Alguien dijo que habían asteroides y cometas.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi262ce8a7-6d25-4079-9496-dd9b378cde30.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fd2b686ed-3952-42c8-8fdb-5a95381ad597.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi813fb406-3fc6-48b6-9b2a-618d42f78cc8.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2ffb745676-9fb3-482b-9c27-1272c4808303.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi6914dc96-517f-4615-9a79-46d8607acdf8.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fc22dc5d6-11f6-482d-b681-c40060dbba11.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi080fa2ca-34a9-43b3-b5a9-9537382256a9.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fb6285801-16cf-4bd0-ab92-eada8b44b19e.mp3",
+          "dur": 4.127276
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi6bdd7022-0554-4b89-b612-b7e3afa48153.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi71f7a9bb-562b-492e-ae08-f68b7d00ea25.mp3",
+          "dur": 4.336252
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2fsolar-system-439046_960_7201.jpg",
+      "text": "Estrella estaba muy emocionada. El Sistema Solar le atraía mucho. Ella no quería ni parpadear.\nEl profesor les presentó una imagen. Luego, les empezó a explicar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi1fc14ae8-11c3-42bb-acb2-1436a31d55ec.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi10ae2143-85d8-45b8-966a-94d40842b789.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi2831feaf-8aba-4e17-a687-1ba700f2aa69.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi1dc813ed-f7b0-4d8f-93c3-b3830e5d6d3f.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi374467a9-63c1-46d8-a591-4344af9a1ec2.mp3",
+          "dur": 2.925664
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2fmoon-26619_960_720.png",
+      "text": "El profesor les habló acerca del Sistema Solar. Les explicó que hay ocho planetas. También que hay planetas menores y satélites. Explicó que la Luna es un satélite. Dijo que esta gira alrededor de la Tierra.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fca51e645-5629-4f8d-a2b1-a234290fd35e.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi04e8644e-07f6-41de-8696-da4725f03225.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fd2b06e6e-c8ea-41fe-ac9f-7e9e4ce8df94.mp3",
+          "dur": 4.127276
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fd5bcae4d-ee95-478f-9a4a-9cad4fd37f04.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi8d46825c-c40c-4b87-91e6-c7fb4d70a538.mp3",
+          "dur": 3.735446
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "El profesor les habló de los astronautas. Explicó que son personas que viajan al espacio. Viajan en naves espaciales. Además, que ellos han descubierto cosas allí.\nTodos los niños querían saber más de ellos...\nEstrella preguntó si habían mujeres astronautas. El profesor Hugo le respondió que sí hay. Dijo que los astronautas deben estudiar mucho. Le dijo que ella puede ser una astronauta. ¡Estrella se emocionó más!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi987514ed-c857-4c43-90ec-e426110efd6c.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi22ba8b60-5fb6-459c-872d-e110e0e3b351.mp3",
+          "dur": 4.414618
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fa0cd9890-cc0e-489a-ba6f-de6eaac93d72.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fbd61227c-6027-473b-8f1a-d504cb081247.mp3",
+          "dur": 4.231764
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi72171c23-471b-4e44-8f14-1586ac8b8c0c.mp3",
+          "dur": 4.022788
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi7d491b4e-f310-4912-b573-729b0916dc87.mp3",
+          "dur": 4.022788
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2ff126a94a-8447-4d38-8e6d-3fc0fd6e7faa.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi53c5940c-30cf-461d-8dc4-6ef31dade5f2.mp3",
+          "dur": 4.231764
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi40dd6e82-46f4-4636-ad23-0adefa34e001.mp3",
+          "dur": 4.83257
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fce83f524-0aa7-42a2-b508-92003cc2df23.mp3",
+          "dur": 2.716688
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2fni%c3%b1a+feliz.jpg",
+      "text": "La niña regresó entusiasmada a su casa. No dejaba de sonreir. Su mamá notó que sus ojos brillaban más. Le preguntó por qué estaba tan feliz. Estrella le contó acerca del Sistema Solar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi9e26050d-faee-44d2-a171-4eb599487d0a.mp3",
+          "dur": 4.022788
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fbc672e4a-0563-4c20-b298-6ae8b414d1cb.mp3",
+          "dur": 2.533834
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi29180a2b-33c5-414b-9ece-dd04bd3ae130.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi6b5c6598-0fb8-4a34-bd61-e4e0cc7b59c2.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi545a3c3b-ebde-4deb-b06d-21772cb2f590.mp3",
+          "dur": 3.813812
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Le contó acerca de lo que había aprendido. Comentó que ahora ella deseaba saber más...\nQuería saber más del universo. Quería saber los nombres de las estrellas. Quería saber cuántas estrellas hay. Quería saber cómo son por dentro. Quería ver la Luna. Quería conocer otros planetas. ¡Quería ser astronauta!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi77acd739-28e2-4360-8617-bcbca87b6d87.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi8255c701-baf3-4e36-9ebd-91aa66d681c5.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi1b251736-44ef-4589-b413-c4983b7ff9dc.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi4e3431c2-4ed5-4db1-994c-74392287013a.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi1b9c21b3-808e-4880-a8b6-518463245116.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fc8d50588-3142-4035-a33b-66f6ddeccbea.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi293e6fa4-b3c7-416e-830d-2941d6e869e4.mp3",
+          "dur": 1.724052
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi21024560-e0bd-49f5-a00b-5185bb093896.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fff724ef3-f26f-44d2-a01f-18d362f3ef95.mp3",
+          "dur": 1.947188
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2fspyglass-158156_960_7201.jpg",
+      "text": "Sus papás quieren apoyar a Estrella. Les gusta que quiera aprender más. Además, se alegraron que quiera ser astronauta. Por eso tuvieron una gran idea. Le obsequiaron un telescopio.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2ff7bcaa6a-c919-433c-8852-d455330791c0.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi1be4b615-b23a-40f9-aac3-71bdb2da0952.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2facbf0406-f807-4d84-a4d6-f0522f74fbc8.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi360f7067-27ad-441f-bbea-62ad15d1ed32.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2faec2e2e7-d16f-428b-8839-2f888ce58fe8.mp3",
+          "dur": 2.533834
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Estrella se emocionó mucho con su telescopio. Consideró que era su mejor regalo.\nSu papá la ayudó a armarlo. Siguieron todas las instrucciones. Le colocaron el trípode. Luego, lo ubicaron en su habitación. Lo colocaron frente a una ventana. Desde allí, Estrella podía observar el cielo. También aprendió a ajustar los lentes. Así podía enfocarlo y ver mejor.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi83cc9d00-bfb0-47ad-b584-01ff4ea0d096.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi3a8899da-b90f-4b0c-965a-33e922796b00.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi8bb757ad-8de7-46a5-b8be-f2ce05d7a6be.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fd5a79665-738f-4865-b278-b569648145b1.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi104ec74f-1614-4308-bf71-01e2136523de.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi8c75b9c5-0e3f-4472-909a-3e41c295f165.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi4260dfc2-40a1-46ab-80ef-ba118f571071.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi12fac547-8b51-4c51-8685-2cd43c554683.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2ff162ad92-3572-4cb1-8f3f-fe30edf27b2b.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi3f901e70-4e70-40ba-a63e-9c7ef127c44d.mp3",
+          "dur": 3.52647
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Estrella se preparaba cada noche. Ella esperaba con muchas ansias que obscureciera. Estrella se asomaba a la ventana. Desde allí observaba el universo.\nVeía las estrellas. Siempre miraba la Luna. Le gustaba ver cómo cambiaba en cada fase. También se entretenía buscando los planetas. Algunas noches lograba ver a Venus. Otras veces veía a Jupiter.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi6a2ade4c-cc95-4d6b-8eaf-f1ec9a6fbb86.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fe2d00338-f70a-4b57-99de-43bd0a521670.mp3",
+          "dur": 4.127276
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fe358d314-c45e-44ce-b2b8-b1e0166191a3.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fb74440cc-f283-4980-851c-a31286f72cc3.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi82ff0c81-907b-48d4-ae5b-53b204f8dee0.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2ffbdae7dd-5509-47a7-bf0e-fdec6bbb981b.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fcc4fb059-b65a-49e4-8903-f456b4263e26.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi16484298-c773-48e2-a9a8-da0e23a86129.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fb0c3886f-2013-4f32-8033-fd5b27f97219.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi64052084-3b2c-4a7e-9a06-70c4c1766f0f.mp3",
+          "dur": 2.925664
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faor_E-1-30.png",
+      "text": "Estrella disfrutaba observando el cielo. Una noche cayó una fuerte lluvia con viento. Estrella cerró la ventana rápidamente. La niña inmediatamente se quedó profundamente dormida.\nEmpezó a soñar...",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fbf6c2807-6a83-4ed8-bead-436a456107b7.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi2fb4c676-ac6f-4f88-a038-68b5a8dc05b9.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2ff2403372-4986-48ec-aa56-19e1fb093417.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi912af023-24df-477a-9f27-6ae8c6fde11c.mp3",
+          "dur": 4.83257
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi3942ae45-cc47-4295-8c8e-cf5c069a4638.mp3",
+          "dur": 1.933028
+        }
+      ]
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2fsketch-3045125_640.jpg",
+      "text": "Estrella soñó que era astronauta... Tenía un hermoso traje blanco. Caminaba por las estrellas. Podía saltar de una en una. También podía flotar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi45ff72e1-ba90-4fd7-b648-f2d7017f86d0.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi2b7fda1b-484a-41e4-a712-ee168d6e93df.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fb74f1021-a415-4e4f-8c09-5b4ad755834d.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi9ed92eab-2a37-409b-978a-d2522012ec4c.mp3",
+          "dur": 4.231764
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fbceab261-3166-4e08-a1a2-764745495e7d.mp3",
+          "dur": 2.429346
+        }
+      ]
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Estrella paseaba por el Universo. Quería conocer cada detalle. Llegaba y observaba cada planeta del Sistema Solar. En cada uno ponía una bandera de Guatemala.\nLlegó a Mercurio, el más cercano al Sol. Pasó por Venus, que era muy brillante. Vio que Marte era de color rojizo. Vio que Júpiter era un planeta enorme. De Saturno le encantaron sus anillos. Urano le pareció un planeta muy frío.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fae6de3a7-7de7-4fe9-884d-9afb07a17c0c.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fb2d099a5-302b-45c0-991d-42bfa1218f8e.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi01fb25ed-f597-4c92-8db4-df99c2ff2d13.mp3",
+          "dur": 4.83257
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi0a11c345-84f4-442b-9ef9-13b094010bad.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi121e790b-9ccd-420e-a41f-5f3c120da495.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi6e1af57b-e4e6-40b9-a691-1a7772a07867.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi3d348f5e-1910-45ea-85a4-a26277cfd30a.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi1830878c-af52-44ea-83ba-c3e25f309c9e.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fce1a341d-82f0-4e40-ae6c-8f2da9acfb50.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi7833917b-00b3-4dcf-92aa-1cd9883b0769.mp3",
+          "dur": 4.127276
+        }
+      ]
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2fni%c3%b1a+maya+2.png",
+      "text": "Al fin llegó a Neptuno. Neptuno era azul, el color favorito de Estrella. La pequeña astronauta disfrutaba de su maravilloso viaje.\nDe repente...Estrella se despertó. ¡Había sido un sueño increíble!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi89372112-fbea-4179-98b6-2bb74bc85d91.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi32bc0bda-7552-4b73-8ab9-bb224f7bcda8.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fi35700506-c2bc-4db6-898b-1fe37f4c862a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fcfe57279-3cc5-4952-b6c3-1def43749a21.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2faudio%2fecf1fa8c-d234-4d46-ac46-3566a54b18a7.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué hace Estrella para aprender más del universo?\nMira diferentes programas de televisión.\nSe queda en las tardes estudiando en la escuela.\nObserva, lee, investiga y pregunta."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué le regalaron a Estrella sus papás?\nUn microscopio\nUn telescopio\nUn larga vistas"
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué quiere ser Estrella?\nEscritora\nAstronauta\nMaestra"
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué es importante el trabajo de los astronautas?\nPorque exploran otros planetas y dan información sobre ellos.\nPorque viajan en un cohete espacial y vuelan.\nPorque usan casco y oxígeno artificial."
+    },
+    {
+      "n": 23,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué Estrella quiere conocer el Universo?\nPorque ella se llama Estrella.\nPorque ese tema le apasiona.\nPorque sus papás quieren que ella sea astronauta."
+    }
+  ],
+  "stats": {
+    "pages": 23,
+    "words": 915
+  }
+}

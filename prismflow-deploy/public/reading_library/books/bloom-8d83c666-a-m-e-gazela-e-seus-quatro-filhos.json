@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-8d83c666-a-m-e-gazela-e-seus-quatro-filhos",
+  "title": "A mãe gazela e seus quatro filhos",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Peter Ebenrubo Okunola"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Peter Ebenrubo Okunola",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/fSJhD3xeG2"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fSJhD3xeG2%2f1780608322719%2fAbuw%e1%ba%b9+wi+iya+ay%e1%ba%b9+ak%c3%a0+Ye+Egb%e1%ba%bdn+%e1%ba%b8na+ab%e1%ba%b9%2fGazela+cover2.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Um dia havia no mato uma mãe gazela com os seus quatro filhos.\nTodos os dias eles saíam para procurar comida.\nSó que, na floresta também havia leões.\nPor isso, antes de sair, a mãe gazela dizia aos seus filhos: \"Se eu gritar: 'Corram!', vocês devem correr para casa mais rápido possível ouviram?\""
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Um dia a mãe e seus filhos estavam a comer um capim muito delicioso.\nQuando de repente a mãe gazela gritou: \"Corram!\"\nAssim os quatro filhos começaram a correr para casa o mais rápido possível.\nAo chegar, um deles perguntou: \"Por que tivemos que fugir? O capim estava a animar muito.\"\nA mãe gazela respondeu: \"Havia um leão por perto.\""
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Por alguns dias a mãe gazela e os seus filhos comeram sossegados.\nMas num outro dia a mãe gritou novamente: \"Corram!\"\nImediatamente dois filhos começaram a correr atrás da mãe, mas dois filhos ficaram.\nUm disse para o outro: \"Pelo meu ver, a mãe só quer nos assustar\".\nO outro disse: \"Você tem razão.\"\nEntão eles continuaram a comer o capim."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "De repente um leão mordeu um filho que ficou e logo mordeu o outro.\nOs dois morreram.\nO leão disse para o seu cozinheiro, o coelho: \"Prepara as gazelas que eu trouxe. Eu vou beber água.\"\nAssim o coelho começou a preparar a comida do leão.\nPrimeiro o coelho cortou as orelhas das gazelas e lançou-as para fora. Depois o coelho começou a assar a carne."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "O leão quando voltou, viu a comida dele e disse: \"Aquelas não são as gazelas que eu trouxe.\"\nO coelho respondeu: \"São as gazelas que você trouxe.\"\nO leão disse: \"Não são\".\nO coelho respondeu: \"São\".\nO leão disse: \"Não são\"."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "O coelho perguntou o leão: \"Por que você acha que não são as gazelas que você trouxe?\"\nO leão disse: \"As gazelas que eu trouxe, tinham orelhas.\"\nO coelho respondeu: \"As gazelas que você trouxe não tinham orelhas.\n\"Tinham orelhas!\"\n\"Não tinham!\"\n\"Tinham!!\"\n\"Não tinham!!\"\nAssim o leão disse: \"Então vamos perguntar à mãe deles.\""
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "O leão e o coelho foram juntos para a casa da mãe gazela.\nO leão perguntou: \"Mãe, estes seus dois filhos, que eu acabei de matar hoje, tinham orelhas?\"\nA mãe respondeu muito triste: \"Os meus dois filhos que você matou hoje, não tinham orelhas. Se tivessem, teriam me ouvido quando eu gritava mas eles não me ouviram.\""
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 394
+  }
+}

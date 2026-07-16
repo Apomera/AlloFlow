@@ -1,0 +1,110 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-5f871583-untitled-th",
+  "title": "วงกลมกับเพื่อนๆ",
+  "description": "น้องวงกลมเป็นเด็กหญิงที่มีนิสัยขี้อาย แม้ว่าพ่อแม่และพี่ชวนไปไหนเธอก็ไม่ยอมไป จนเพื่อนๆเช่น น้องสามเหลี่ยม น้องสี่เหลี่ยมชนิดต่างๆรวมทั้งเพื่อนคนอื่นๆชวนไปเล่นด้วยน้องวงกลมจึงค่อยๆหายเขิน และสนุกสนานกับการกลิ้ง การกระโดดเล่น ครอบครัวของเธอก็พลอยมีความสุขไปด้วย",
+  "language": "Thai",
+  "langCode": "th",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/6cCeBNELnD"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2fปก1111.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f14077811.jpg",
+      "text": "สวัสดีค่ะเด็กๆคุณครูมีความรู้สึกดีใจที่ได้จัดทำหนังสือนิทานเล่มนี้โดยนิทานเรื่อง\nวงกลมกับเพื่อนๆเล่มนี้เป็นนิทานที่เกี่ยวข้องกับ รูปทรงเรขาคณิต แสดงให้เห็นถึง ความรักความสัมพันธ์ระหว่างเพื่อน การมีน้ำใจช่วยเหลือซึ่งกันและกัน เนื้อหาในนิทานแฝงไปด้วยข้อคิดและส่งเสริมการเรียนรู้ให้เด็กๆมีความรู้และความเข้าใจ รูปเรขาคณิต"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f1.jpg",
+      "text": "ครอบครัวหนึ่ง น้องวงกลมนั่งหน้าเศร้าอยู่คนเดียว"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f2.jpg",
+      "text": "พ่อแม่และพี่ชวนน้องวงกลมไปเที่ยวด้วยแต่เธอไม่ยอมไป"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f3.jpg",
+      "text": "น้องวงกลมบอกว่าเพราะเธอมีรูปร่างไม่เหมือนเพื่อนๆ จะไปไหนแต่ละครั้งก็ต้องกลิ้งไป"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f4.jpg",
+      "text": "เพื่อนของน้องวงกลมมีหลายคน เช่น น้องสามเหลี่ยม"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f5.jpg",
+      "text": "น้องสี่เหลี่ยมจัตุรัส"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f6.jpg",
+      "text": "น้องสี่เหลี่ยมผืนผ้า"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f7.jpg",
+      "text": "น้องสี่เหลี่ยมคางหมู น้องสี่เหลี่ยมด้านไม่เท่า"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f8.jpg",
+      "text": "น้องสี่เหลี่ยมขนมเปียกปูน"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f9.jpg",
+      "text": "น้องสี่เหลี่ยมรูปว่าว"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f10.jpg",
+      "text": "น้องห้าเหลี่ยม น้องหกเหลี่ยม และเพื่อนๆอีกหลายคน"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f11.jpg",
+      "text": "เพื่อนๆคิดถึงน้องวงกลมจริงมาเล่นด้วย จากนั้นจึงชวน\nน้องวงกลมเดินด้วยกัน แรกๆน้องวงกลมไม่ยอมกลิ้งไปแต่เพื่อนๆ ให้กำลังใจ น้องวงกลมจึงกลิ้งไปช้าๆ และไม่รู้สึกอายต่อมา\nน้องวงกลมฝึกกระโดดเล่นกับเพื่อนๆ เธอรู้สึกสนุกสนานมาก"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2f12.jpg",
+      "text": "น้องวงกลมรู้สึกมีความสุข เธอมีใบหน้ายิ้มแย้มแจ่มใส\nพ่อแม่และพี่ของน้องวงกลมจึงมีความสุขไปด้วย"
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "แก่นเรื่อง :การเปลี่ยนความเขินอายให้เป็นความกล้า\nชื่อเรื่อง :วงกลมกับเพื่อนๆ\nข้อคิด :การแก้ไขนิสัยเขินอายนั้นสามารถทำได้\nกำลังใจจากสมาชิกในครอบครัวและเพื่อนๆ เป็นสิ่งดีงาม\nเรื่องย่อ :น้องวงกลมเป็นเด็กหญิงที่มีนิสัยขี้อาย แม้ว่าพ่อแม่และพี่ชวนไปไหนเธอก็ไม่ยอมไป จนเพื่อนๆเช่น น้องสามเหลี่ยม น้องสี่เหลี่ยมชนิดต่างๆ รวมทั้งเพื่อนคนอื่นๆชวนไปเล่นด้วย น้องวงกลมจึงค่อยๆหายเขิน และสนุกสนานกับการกลิ้ง การกระโดดเล่น\nครอบครัวของเธอก็พลอยมีความสุขไปด้วย"
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "ผู้แต่ง : นางสาวปทุมรัตน์ กมลชาวไพร\nผู้จัดทำ : นางพรรณนิภา ดวงสุภา ครูชำนาญการพิเศษ\nนางสาวปทุมรัตน์ กมลชาวไพร ครูผู้ช่วย\nเด็กหญิงดลพร วงษ์ใส นักเรียน\nเด็กหญิงพรบุณยา ปัญญา นักเรียน\nเด็กหญิงกันนิตา เพชรหงส์ นักเรียน\nโรงเรียนบ้านแม่จะเราสองแคว\nสนับสนุนโดย : มูลนิธิศุภนิมิตแห่งประเทศไทย"
+    }
+  ],
+  "stats": {
+    "pages": 15,
+    "words": 81
+  }
+}

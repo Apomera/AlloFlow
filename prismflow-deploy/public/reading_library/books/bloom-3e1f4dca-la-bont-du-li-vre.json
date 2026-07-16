@@ -1,0 +1,300 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3e1f4dca-la-bont-du-li-vre",
+  "title": "La bonté du lièvre",
+  "description": "Dans la savane du Nord Cameroun, un lièvre sauve une pintade en danger.\nPlus tard, ce geste de bonté lui sauvera la vie face à une hyène affamée.\nAvec la sagesse du lion et du chameau, les animaux rappellent une grande vérité :\nle bienfait revient toujours en bénédiction.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living",
+    "Animal Stories"
+  ],
+  "authors": [
+    "CABTAL-Barthélemy BOUTI"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CABTAL-Barthélemy BOUTI",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/72FD1KSMyV"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2fimage.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A ɗukroy dans le Nord du Cameroun, la savane s’étendait à perte de vue. Les herbes sèches dansaient avec le vent chaud, et les animaux cherchaient de la nourriture. Le soleil brillait fort, et chacun pensait à sa survie.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fb212a13d-c35b-4af2-808c-7cdc94de4c00.mp3",
+          "dur": 6.060091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fc181967e-7233-4630-b3d6-e72efa7fc093.mp3",
+          "dur": 7.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fa29027f5-deaf-45c8-9dc1-346dd18c278f.mp3",
+          "dur": 5.360091
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Un jour, le lièvre sautillait près d’une petite mare presque vide. Il entendit un cri faible. En s’approchant, il vit une pintade coincée dans des ronces. Ses ailes étaient abîmées, et elle ne pouvait plus s’échapper.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2ffdd74dab-3dc3-467f-83ba-84dbb504070d.mp3",
+          "dur": 7.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi3adb92ff-119c-4aac-acf1-e904b15a06f8.mp3",
+          "dur": 3.060091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi2c9731f0-5f96-4367-91b7-059a0a47d5c9.mp3",
+          "dur": 6.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fdfa2b6f6-c260-4443-bcb7-f976ebccce28.mp3",
+          "dur": 5.760091
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Le lièvre, connu pour sa ruse, réfléchit un instant. Il pouvait partir, mais son cœur lui dit de rester. Alors, doucement, il arracha les ronces avec ses petites pattes et libéra la pintade.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi8091135c-97a0-4180-8758-0d0e60f53604.mp3",
+          "dur": 5.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi1dbc02c5-1067-4a20-b336-8b204a806eaf.mp3",
+          "dur": 5.060091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2faf48c69a-7533-4943-ae64-2dcd335d29f5.mp3",
+          "dur": 8.260091
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "La pintade, reconnaissante, dit : « Merci, frère lièvre ! Tu m’as sauvé la vie. Un jour, tu recevras une bénédiction. » Le lièvre sourit et répondit : « Je n’ai fait que mon devoir. » Puis il repartit dans la savane.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi0ad88dd3-26f7-4562-99a6-afd2f69f9840.mp3",
+          "dur": 6.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2ff9f8b9f8-1b8a-4c9c-af1e-939e43527225.mp3",
+          "dur": 2.360091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fde567634-fa65-49ac-83da-ffefd7e58add.mp3",
+          "dur": 4.360091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi9696c2cc-c298-41a9-b269-d89e057ddc00.mp3",
+          "dur": 6.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fec1aae69-b99e-4aac-942a-a478f717d603.mp3",
+          "dur": 3.560091
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Quelques jours plus tard, la hyène affamée rôdait dans le village des animaux. Elle sentait l’odeur du lièvre et décida de le chasser. La hyène était grande et rapide, et le lièvre tremblait de peur.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi708ffd32-fde9-4c1e-b851-9f0a01662d5f.mp3",
+          "dur": 6.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi8e0dfe47-8c9f-4cdf-8632-900347be23c0.mp3",
+          "dur": 4.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi8cbe4aea-f287-4650-9d2a-e95620c2b25d.mp3",
+          "dur": 6.060091
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Le lièvre courut de toutes ses forces. Mais la hyène se rapprochait dangereusement. Elle grognait : « Aujourd’hui, petit lièvre, tu seras mon repas !» Le lièvre chercha désespérément un refuge.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fc2a0e07c-73e5-40e4-9511-ec86edad9274.mp3",
+          "dur": 2.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi90e8003b-1cde-4dfe-bd74-1b2423ae1e48.mp3",
+          "dur": 3.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fb65dd898-a526-4ea3-aee8-3a33139062ed.mp3",
+          "dur": 8.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fc9ece5e3-6dbd-43ab-a837-a9b9e2a314b8.mp3",
+          "dur": 4.160091
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Alors qu’il perdait espoir, la pintade apparut. Elle vola au-dessus de la hyène et cria fort : « Attention, lion en approche !» La hyène, effrayée par ce mensonge, s’enfuit en vitesse.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fe45cfb46-de40-49d5-ad10-164dd17fc0e2.mp3",
+          "dur": 4.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi7ef93132-4324-4344-bcbc-2a3686dbbfd0.mp3",
+          "dur": 7.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fe0005a11-d98a-4a4c-8db0-3c6d08634d88.mp3",
+          "dur": 5.960091
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Le lièvre, haletant, regarda la pintade. Elle avait utilisé sa voix pour le sauver. C’était le retour du bienfait. Le lièvre remercia son amie : « Tu es venue au bon moment. »",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi3133704a-4848-4cf8-b8ca-90c7cea05cee.mp3",
+          "dur": 4.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi51ae6c38-10f8-4b28-b25d-beae320a3b74.mp3",
+          "dur": 3.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi0480510c-fb5d-406e-ae0b-892272441701.mp3",
+          "dur": 2.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fcce77aca-da9f-49ff-98a8-c88c29c9ec92.mp3",
+          "dur": 5.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi9cce51f3-4d93-43f5-85aa-277228fd45ee.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Mais l’histoire ne s’arrêta pas là. Le lion, véritable roi de la savane, avait observé la scène de loin. Il appela le lièvre et la pintade : « J’ai vu votre solidarité. Celui qui aide sera toujours aidé. »",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fee6237aa-f564-46be-b59c-2c7c8833c24e.mp3",
+          "dur": 2.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi50d75ed4-2d09-426b-bcc9-005f3bda874d.mp3",
+          "dur": 6.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2ff1576345-24f1-4219-9ec4-21354b8cfef7.mp3",
+          "dur": 6.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fc5bafefe-92fb-40b6-83ff-8b460fa38802.mp3",
+          "dur": 3.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fdbde9e7e-c977-4cf8-b7d5-2948e4366f6f.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Le lion décida d’offrir une part de viande de sa chasse au lièvre et à la pintade. Pour lui, partager avec ceux qui s’entraident était une manière d’honorer leur courage et leur bonté.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi0c0dd8fc-f72e-42a1-a3be-44eb0564bb7d.mp3",
+          "dur": 20.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi2b3b764e-fa7c-412d-99bb-67417ee90925.mp3",
+          "dur": 9.460091
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Le chameau, sage voyageur du désert voisin, ajouta : « La bonté est comme une graine. Quand on la sème, elle pousse et porte des fruits. » Tous les animaux présents acquiescèrent.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2ff0109a6f-ffc3-4da5-88db-6ec0f62ab6ef.mp3",
+          "dur": 10.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fa4ec5dd9-ade8-443b-b0a2-33d5189421d6.mp3",
+          "dur": 5.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi9b71e7b4-8fd0-46db-98c4-a986c5df3434.mp3",
+          "dur": 3.960091
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Ainsi, le lièvre comprit une grande leçon. Le bien qu’il avait fait à la pintade était revenu vers lui comme une bénédiction. Et tous les animaux répétèrent ensemble la morale : « Le bienfait n’est jamais tombé à terre, il a toujours une récompense et ​​bénédiction. »",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2feb7a092c-8f51-46ef-8d3c-b8244df1dd24.mp3",
+          "dur": 4.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi00ef2500-ab3e-40ca-821d-a736f233bd64.mp3",
+          "dur": 6.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fdc88458a-2a18-434d-b64f-860531a45ab0.mp3",
+          "dur": 15.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2faudio%2fi374741b9-266c-4d59-9b5c-88cceb3e1621.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 432
+  }
+}

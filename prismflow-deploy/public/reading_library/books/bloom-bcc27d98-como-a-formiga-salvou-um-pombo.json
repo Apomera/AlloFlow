@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-bcc27d98-como-a-formiga-salvou-um-pombo",
+  "title": "Como a formiga salvou um pombo",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "African Storybook Initiative"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "African Storybook Initiative",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Ia1mWz7LXR"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/Ia1mWz7LXR%2f1772729735669%2fNyerere+idapulumusa+nkhangaiwa%2fAnt+cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Fazia muito calor e já não chovia há muitos dias.\nUma formiga que não bebeu água por alguns dias estava com muita sede."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Ela disse: ‘Eu preciso de uma gota de água, mesmo saindo de uma folha.\nMas até orvalho já não tinha mais."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "A formiga chorou: ‘Eu vou morrer sem água. Eu preciso chegar num ribeiro, então.’\nO ribeiro era longe e a formiga começou a andar. Ela andou muito e passou por muito capim e ramos secos.\nDepois de um tempo a formiga ouviu o barulho da água!"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "A formiga bebeu daquela água fresca.\nEla ficou tão feliz que não viu que chegou uma onda grande."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "A formiga gritou: ‘Socorro, socorro!’ Ela não sabia nadar.\nVeio um pombo que segurou um ramo pequeno e disse: ‘Suba!’.\nAssim o pombo salvou a formiga do afogamento."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Vieram dois meninos com catapultas.\nUm deles disse: ‘Tem um pombo que vem beber água aqui. Vamos matá-lo para comer.’"
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "A formiga se assustou e disse: ‘Eu não posse deixar que os meninos matem o pombo que salvou a minha vida. Mas o que eu posso fazer? Eu sou pequena.’"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "O pombo chegou para beber água.\nOs meninos estavam prontos para matar o pombo."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "De repente a formiga teve uma idéia e pulou no pé de um menino e o mordeu com muita força.\nO menino gritou: ‘Ai, ai!’"
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "O pombo se assustou com o barulho e foi se embora.\nAssim a formiga salvou a vida do pombo."
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 244
+  }
+}

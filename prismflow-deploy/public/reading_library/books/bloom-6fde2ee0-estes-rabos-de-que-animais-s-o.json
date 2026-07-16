@@ -1,0 +1,95 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-6fde2ee0-estes-rabos-de-que-animais-s-o",
+  "title": "Estes rabos, de que animais são?",
+  "description": "Este livro faz-se a pergunta: \"De que animal é este rabo?\"",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Instituto Lingüístico de Verano, A.C."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Instituto Lingüístico de Verano, A.C.",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/iBJxWlmeet"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2fCover%2c+colas.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2fatt013m.png",
+      "text": "De que animais são estes rabos?"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2farb002.png",
+      "text": "É o rabo de um guaxinim."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2fatt015m.png",
+      "text": "De que animal é este rabo?"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2faac006k.png",
+      "text": "É o rabo de um de um tatu."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2fash021.png",
+      "text": "De que animal é este rabo?"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2fash012.png",
+      "text": "É o rabo de um esquilo."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2fatt005m.png",
+      "text": "De que animal é este rabo?"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2fase002v.png",
+      "text": "É o rabo de um gambá."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2fatt011m.png",
+      "text": "De que animal é este rabo?"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2fafb013.png",
+      "text": "É o rabo de um lobo."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2fatt007m.png",
+      "text": "De que animal é este rabo?"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2faob002.png",
+      "text": "É um rabo de um gambá."
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 74
+  }
+}

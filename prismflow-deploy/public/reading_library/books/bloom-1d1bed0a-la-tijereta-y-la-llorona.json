@@ -1,0 +1,80 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1d1bed0a-la-tijereta-y-la-llorona",
+  "title": "La Tijereta y La Llorona",
+  "description": "Es parte de la Colección Cuentos en familia, escritos por padres y madres de familia.  Estos materiales tienen el objetivo de rescatar la tradición oral de Guatemala.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/0JLEFRUa8a"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mixmata%40mineduc.gob.gt%2f1d1bed0a-0c3d-4e56-a640-572f7d31e133%2fLa+Tijereta+y+La+Llorona%2fLa llorona 1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mixmata%40mineduc.gob.gt%2f1d1bed0a-0c3d-4e56-a640-572f7d31e133%2fLa+Tijereta+y+La+Llorona%2fIlustraciones+La+llorona+diagramada411.jpg",
+      "text": "Una noche de verano, la tijereta y la Llorona se encontraron en un cruce de caminos.\nLa Llorona preguntó a la tijereta:\n- ¿Por qué eres tan diferente a otras aves?"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mixmata%40mineduc.gob.gt%2f1d1bed0a-0c3d-4e56-a640-572f7d31e133%2fLa+Tijereta+y+La+Llorona%2fIlustraciones+La+llorona+diagramada521.jpg",
+      "text": "Muy sorprendida, la tijereta le respondió: - No soy diferente a otras aves. ¿Acaso no te das cuenta de que tengo el cuerpo cubierto de plumas, dos alas para volar, un pico para comer, y que me alimento de insectos?"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mixmata%40mineduc.gob.gt%2f1d1bed0a-0c3d-4e56-a640-572f7d31e133%2fLa+Tijereta+y+La+Llorona%2fIlustraciones+La+llorona+diagramada6.jpg",
+      "text": ""
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mixmata%40mineduc.gob.gt%2f1d1bed0a-0c3d-4e56-a640-572f7d31e133%2fLa+Tijereta+y+La+Llorona%2fIlustraciones+La+llorona+diagramada711.jpg",
+      "text": "- Cierto - respondió la Llorona - tu cuerpo no es diferente al de otras aves, ni tu manera de alimentarte, pero sí es diferente tu conducta. A vos te gusta andar por los caminos y no por el bosque como es normal entre las aves.\nEn lugar de volar por las ramas de los árboles, correteás por el suelo como cualquier animal de cuatro patas."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mixmata%40mineduc.gob.gt%2f1d1bed0a-0c3d-4e56-a640-572f7d31e133%2fLa+Tijereta+y+La+Llorona%2fIlustraciones+La+llorona+diagramada8.jpg",
+      "text": "No sabes cantar como el cenzontle, como la guardabarranca o como la paloma. Eso decía la Llorona a la tijereta, mientras la observaba detenidamente.\nContinuó diciéndole:\n- Ni siquiera tenés un solo nombre, pues en cada lugar te dan uno distinto."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mixmata%40mineduc.gob.gt%2f1d1bed0a-0c3d-4e56-a640-572f7d31e133%2fLa+Tijereta+y+La+Llorona%2fIlustraciones+La+llorona+diagramada9.jpg",
+      "text": "Unos te llaman tijereta; otros, tapacaminos o atajacaminos; otros, pajarito caballero. Hay quienes te dicen correcaminos. Hasta te han puesto mi nombre. Aunque has de saber que a mí como a vos, también me dan otro nombre, pues algunos me dicen Siguanaba. Así termino de hablar la Llorona a la tijereta, que se quedó pensativa y triste."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mixmata%40mineduc.gob.gt%2f1d1bed0a-0c3d-4e56-a640-572f7d31e133%2fLa+Tijereta+y+La+Llorona%2fIlustraciones+La+llorona+diagramada10.jpg",
+      "text": "La tijereta, entonces, quiso demostrar a la Llorona o Siguanaba que no era diferente a otras aves.\nIntentó volar por el cielo, pero lo hizo de una manera tan torpe que cayó a pocos metros.\nSe levantó y comenzó a correr de la forma como estaba acostumbraba."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mixmata%40mineduc.gob.gt%2f1d1bed0a-0c3d-4e56-a640-572f7d31e133%2fLa+Tijereta+y+La+Llorona%2fIlustraciones+La+llorona+diagramada11.jpg",
+      "text": "Luego, quiso cantar como un cenzontle, pero lo que le salió del pecho fue un gemido más parecido al llanto de un niño recién nacido.\nLa Llorona se echó a reír y a remedar el canto de la pobre tijereta."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mixmata%40mineduc.gob.gt%2f1d1bed0a-0c3d-4e56-a640-572f7d31e133%2fLa+Tijereta+y+La+Llorona%2fIlustraciones+La+llorona+diagramada13.jpg",
+      "text": "Al oírla, la tijereta se acercó a la Llorona y le dijo: - Muy bien, me has dicho lo que quieres y quizá tengas razón en algunas cosas. Sin embargo, quiero decirte que me siento orgullosa de ser como soy."
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 362
+  }
+}

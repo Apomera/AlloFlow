@@ -1,0 +1,92 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f48524a4-c-est-mon-poisson",
+  "title": "C'est mon poisson !",
+  "description": "A French picture book from Bloom Library.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Personal Development"
+  ],
+  "authors": [
+    "Peter Ebenrubo Okunola"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Peter Ebenrubo Okunola",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/nDKEVdalIr"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/nDKEVdalIr%2f1779776274580%2fMa+Ay%e1%ba%b9r%e1%ba%b9+a+Wa+%e1%bb%8cn%e1%ba%b9b%e1%ba%b9!%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Karim se réveille.\n- Allons à la pêche."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Il part avec son ami Moussa."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Ils voient Mariyama.\n- Viens avec nous !"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Mariyama les avertit :\n- Ne tombez pas dans l’eau !"
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "- Attendez-moi ! Je viens avec vous."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Ils s’installent au bord du fleuve."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Hé, les deux pêcheurs ont une touche !"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "- C’est mon poisson !\n- Non, c’est le mien !"
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Chacun tire de toutes ses forces."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "CRAAAAC !\nSPLAAAAAASH !\nIls tombent dans l’eau."
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Hein ? Regarde ce que les poissons ont fait !"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 89
+  }
+}

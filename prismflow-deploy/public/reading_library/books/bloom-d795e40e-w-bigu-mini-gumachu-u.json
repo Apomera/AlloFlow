@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d795e40e-w-bigu-mini-gumachu-u",
+  "title": "Wɔbigu mini Gumachuɣu",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Literacy and Development through Partnership"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Literacy and Development through Partnership",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4M3NQ4ypJ1"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/lbenwunnam%40gmail.com%2fd795e40e-b7f1-4420-95fa-bb8f2927645d%2fW%c9%94bigu+mini+Gumachu%c9%a3u%2fElephant_and_Chameleon_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lbenwunnam%40gmail.com%2fd795e40e-b7f1-4420-95fa-bb8f2927645d%2fW%c9%94bigu+mini+Gumachu%c9%a3u%2fElephant_and_Chameleon_Page_02_Image_0001.png",
+      "text": "Era uma vez um grande palácio onde moravam o rei e sua linda filha, a princesa."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lbenwunnam%40gmail.com%2fd795e40e-b7f1-4420-95fa-bb8f2927645d%2fW%c9%94bigu+mini+Gumachu%c9%a3u%2fElephant_and_Chameleon_Page_03_Image_0001.png",
+      "text": "O Elefante vivia em uma casa em um dos lados do palácio. O Cameleão vivia do outro lado."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lbenwunnam%40gmail.com%2fd795e40e-b7f1-4420-95fa-bb8f2927645d%2fW%c9%94bigu+mini+Gumachu%c9%a3u%2fElephant_and_Chameleon_Page_04_Image_0001.png",
+      "text": "O rei teve uma ideia e chamou seus dois vizinhos ao palácio."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lbenwunnam%40gmail.com%2fd795e40e-b7f1-4420-95fa-bb8f2927645d%2fW%c9%94bigu+mini+Gumachu%c9%a3u%2fElephant_and_Chameleon_Page_05_Image_0001.png",
+      "text": "O rei prometeu a princesa em casamento para quem conse- guisse."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lbenwunnam%40gmail.com%2fd795e40e-b7f1-4420-95fa-bb8f2927645d%2fW%c9%94bigu+mini+Gumachu%c9%a3u%2fElephant_and_Chameleon_Page_06_Image_0001.png",
+      "text": "O Camaleão não tinha esper- ança, já que era muito pequeno. O Elefante esta va muito feliz, já que era bem grande e forte.\nO Elefante foi para o campo e começou a bater no solo com as patas."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lbenwunnam%40gmail.com%2fd795e40e-b7f1-4420-95fa-bb8f2927645d%2fW%c9%94bigu+mini+Gumachu%c9%a3u%2fElephant_and_Chameleon_Page_07_Image_0001.png",
+      "text": "Ele deu uma chance ao Camaleão para tentar."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lbenwunnam%40gmail.com%2fd795e40e-b7f1-4420-95fa-bb8f2927645d%2fW%c9%94bigu+mini+Gumachu%c9%a3u%2fElephant_and_Chameleon_Page_08_Image_0001.png",
+      "text": "O Camaleão começou a bater no solo. Após pouco tempo a água apareceu. As pessoas não conseguiam acreditar no que viam!"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lbenwunnam%40gmail.com%2fd795e40e-b7f1-4420-95fa-bb8f2927645d%2fW%c9%94bigu+mini+Gumachu%c9%a3u%2fElephant_and_Chameleon_Page_09_Image_0001.png",
+      "text": "Assim, o rei entregou a princesa ao Camaleão. O Elefante voltou para casa aborrecido."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 139
+  }
+}

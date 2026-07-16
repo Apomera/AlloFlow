@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-058af458-la-leche-y-sus-beneficios",
+  "title": "La leche y sus beneficios",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/bTphh4boBL"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2fniños bebiendo leche1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2fvaso+de+leche.png",
+      "text": "La leche tiene muchos beneficios. Es un alimento muy nutritivo."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2faor_Milking.png",
+      "text": "La leche es un líquido blanco. Proviene principalmente de los mamíferos."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2fvaca+en+orde%c3%b1o.png",
+      "text": "Es un alimento de origen animal. Se obtiene de vacas, cabras, etc."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2fImagen+Alimentos+2+copy.jpg",
+      "text": "Algunos alimentos provienen de la leche. Por ejemplo: queso, crema y mantequilla."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2fLeche+con+vitaminas-01.png",
+      "text": "Contiene vitaminas y minerales. Algunas vitaminas son: A, B y D."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2fnin%cc%83os+bebiendo+leche.jpg",
+      "text": "También contiene calcio. Es importante consumir calcio diariamente."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2fskeleton-2841822_960_720Pixabay.png",
+      "text": "La leche fortalece el sistema óseo. Esto significa que fortalece los huesos."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2fcrecimiento+211.png",
+      "text": "Tener huesos fuertes ayuda al crecimiento. También reduce las fracturas."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2fni%c3%b1o+jugando+2.png",
+      "text": "La leche fortalece el sistema inmunológico. Esto evita que nos enfermemos."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2fchicos+corriendo.png",
+      "text": "Nos ayuda a crecer sanos. Es fundamental para la actividad física."
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 108
+  }
+}

@@ -1,0 +1,322 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e9982c2a-la-tigresa",
+  "title": "La tigresa",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/is2yOnSwr2"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2fimage.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2fimage2.jpg",
+      "text": "La tigresa es un felino. Es un animal fuerte y veloz.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2ff8fb3264-f2bb-4210-bb7d-eb92644b9fdd.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fdf9a62e3-2f87-4082-b8da-1b22f43fe06d.mp3",
+          "dur": 3.13464
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2ftiger-3264048_960_720Pixabay.jpg",
+      "text": "Es un mamífero. También es un animal salvaje.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fae012a50-80aa-444f-815d-2ebc3fef5f66.mp3",
+          "dur": 1.842698
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fbdf805eb-191d-4f59-a1f0-00db81e71ada.mp3",
+          "dur": 2.730861
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2fimage3.jpg",
+      "text": "Tiene hasta seis cachorros por camada. Vive entre quince y veinte años.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fedcf9fe5-327e-4eb2-8496-27aa33d98022.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi238e930b-04e8-4bf5-b064-0d6a0f671c44.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2fdrop-147190_640.png",
+      "text": "Le gusta el agua. Tiene muy buena visión nocturna.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi0d595099-93e2-4403-982a-a787f7096da0.mp3",
+          "dur": 2.324858
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi9acd16ef-b54d-4828-a9ba-a3e3560e602b.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2fsteak-575806_640.png",
+      "text": "Es un animal carnívoro. Significa que se alimenta de carne.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2febcb6594-17a1-4d19-9557-82147f50eb65.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fdc0c323d-a76b-4230-a8c3-7b6fed62e4a6.mp3",
+          "dur": 2.835351
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2ftiger-47858_640.png",
+      "text": "La tigresa es un animal solitario. Acostumbra a cazar sola.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2ff0f240c4-4ef0-4eb3-9f82-7665b8319757.mp3",
+          "dur": 3.645147
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fa08b2199-2558-4e52-8d29-128bbb5244fd.mp3",
+          "dur": 3.030152
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2fsiberian-tiger-1209680_960_720Pixabay1.jpg",
+      "text": "Las hembras y machos son diferentes. Una diferencia es la cantidad de rayas.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi2a693719-f617-45d5-8c8d-a1bd307f8b8c.mp3",
+          "dur": 3.645147
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fa83c096c-de0c-4bcd-98c4-b74d0dfd1911.mp3",
+          "dur": 3.227188
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2fanimal-1296970_640.png",
+      "text": "Las hembras tienen menos rayas. Los machos tienen más rayas.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi1f68221a-56ec-4bc4-bee1-aa558d9fa01a.mp3",
+          "dur": 2.939841
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fdc4b45e9-8c81-445f-b06a-822d1268b428.mp3",
+          "dur": 2.730861
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2fwhite-tiger-2407799_640.jpg",
+      "text": "Hay diferentes especies de tigre. Existe una especie de color blanco.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi902dc274-99da-47dd-af1e-4c2e82c29ccc.mp3",
+          "dur": 3.044331
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi96849b11-7647-4531-a8d8-30b7146bda63.mp3",
+          "dur": 3.044331
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2frainforest-294275_640.png",
+      "text": "Su hábitat natural es la selva. ¡Protejamos a los tigres!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi86c02be2-2e6a-4f1b-81c0-148475037c10.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fbdbbfc59-368e-4c9b-b77e-5dd2fd4bd957.mp3",
+          "dur": 1.933028
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué tipo de animal es la tigresa?\nReptil\nFelino\nHerbívoro",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi1c120c4c-490a-4f1e-9598-316c8d0c68f3.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fd90d2e05-78fa-4bad-8fab-356d48743739.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fed405900-c631-4798-8719-ea0bd1e20d6c.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi36a891c2-ec6c-4320-828e-a9a2a11d6788.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi34ea848a-bbdb-49df-906b-7798ed392e4f.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Cuánto tiempo vive una tigresa?\nSeis años.\nDe quince a veinte años.\nDe veinte a cincuenta años.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2ff6febc9b-60ae-45a0-9d41-75ac51be1515.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2ffda702ab-790c-4fe8-92d7-7a6ed4c52bf9.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi72de09ba-905e-4240-8194-dcaf1e9a28d5.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi67e69bb2-561e-4220-91de-42899554b9be.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi7e6f8279-f248-4380-8fa0-682127d6279a.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué significa que la tigresa tiene buena visión nocturna?\nQue sus ojos brillan en la oscuridad.\nQue duerme con los ojos abiertos.\nQue mira bien de noche.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi819c5fad-c51f-459e-957e-476c78bb4238.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi0730f2e2-eb7d-4290-9a12-ae7da5bdba4b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi925ee933-0d9d-48b8-8dbe-59511fceb6d3.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi9b9e63b8-6238-443e-b67f-ce2fb1b77c89.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi92eedb95-4ba8-47af-8e85-d5211c210e89.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué significa la palabra carnívoro?\nQue come hierbas.\nQue come frutas.\nQue come carne.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fa5effc7f-f138-43d0-9b6c-d2a774a07302.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi1cc2af66-7556-4c4f-945c-ff10bad9b143.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2ffc1be1b0-4e10-4ad1-a016-06e32b4224fc.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi3464680e-bb76-413f-b1ed-bf076f057309.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi1793339e-9c76-4054-8c2b-d23e592d78e2.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Cómo podemos cuidar y proteger a los tigres?\nCazándolos con precaución.\nPoniendo a sus cachorros en un zoológico.\nCuidando y protegiendo su hábitat natural.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi9277c837-e740-4f71-aa1d-138865bfad8a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi95c0266c-c873-4505-af9d-b92e0ffe6485.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fcf854038-0263-43c2-9ea4-b40c94d0ee25.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi64e93bd5-b330-46f0-92bb-70bad206fc5b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2faudio%2fi3a88bbfd-208c-41d2-9fec-c13feb9f3ee0.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 15,
+    "words": 211
+  }
+}

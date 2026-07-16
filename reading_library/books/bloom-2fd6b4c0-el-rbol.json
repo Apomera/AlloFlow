@@ -1,0 +1,282 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-2fd6b4c0-el-rbol",
+  "title": "El árbol",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/7oAiFvSJ0K"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2ftree-576847_6401.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2ftree-576847_640.png",
+      "text": "La aldea tenía un árbol.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fc326bda9-a0da-4d32-8c27-5e0e389d2cf3.mp3",
+          "dur": 2.339024
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2fAbuelo+con+ni%c3%b1os.png",
+      "text": "Allí conversábamos con el abuelo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi2edd321a-32db-46ba-9725-018995b2c07e.mp3",
+          "dur": 1.947188
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faor_eag007851.png",
+      "text": "Cada día tenía menos hojas.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fec7d6b73-670b-4289-9161-031fa65cde76.mp3",
+          "dur": 2.835351
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2ftree-42301_640.png",
+      "text": "Un día lo cortaron.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi418eaa09-0de7-47b1-9e8e-9ecb81fbf188.mp3",
+          "dur": 2.443514
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faor_Nab2001.png",
+      "text": "Lo cortaron porque estaba seco.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fccad3f9a-8353-4ca5-b46d-14bdccf0e54e.mp3",
+          "dur": 2.115882
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2fabuela+maya.png",
+      "text": "La abuela dijo: ¡era joven!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi5f001023-7f8c-4408-a027-de4a2474e666.mp3",
+          "dur": 2.051678
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2fmathematics-1044080_640.jpg",
+      "text": "Dijo que tenía nueve años.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fbe39303d-b99f-4f5c-b2a5-dbe8160f8649.mp3",
+          "dur": 3.14882
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2fNi%c3%b1a+maya+brazos+abiertospsd.png",
+      "text": "¿Cómo supo cuántos años tenía?",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi40d91aad-8482-4e8d-8046-4053e37b3dca.mp3",
+          "dur": 2.638322
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2fabuelita+sentada+en+Silla2.png",
+      "text": "La abuela contó los anillos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi9e3bf9c2-8fdd-4b00-9eff-2026fb5d61ea.mp3",
+          "dur": 2.324858
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2fyear-rings-3423069_960_720+Pixabay.jpg",
+      "text": "Cada anillo representa un año.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi048a18ba-24ed-41ad-b2be-11a30538e572.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Con quién conversaban los niños bajo el árbol?\nCon su maestro\nCon el abuelo\nCon su mamá",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi04d8bc47-63b7-490f-ad4a-aeac14f39fad.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fc0831be3-ba2b-4c1b-9c8d-d86e5288564b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi95eae116-33ad-4373-987f-2dcc4501c2c0.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fe89460fd-9a86-4926-8ee1-52c13446627a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2ffeb2185c-35f4-4959-9641-e2b3a27066e3.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué cortaron el árbol de la aldea?\nPorque estaba seco.\nPorque estaba viejo.\nPorque ya no les gustaba.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi2a74306c-976b-43d5-ad7f-1bc72e8a1735.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fde08304c-b0ff-4932-bdbb-0c093a39121f.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fbbe2dcd1-28f5-4ab6-9bfc-030f28ea2e9e.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi2ee9175d-83a1-45ec-a4f4-d27c79dbf221.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi06176400-950c-4bd3-b64c-1508e98ab301.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Cómo supo la abuela la edad del árbol?\nPorque ella lo sembró.\nPorque lo visitaba cada año.\nPor la cantidad de anillos en su tronco.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fbb424792-9392-49a5-9105-704f7fb1c592.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fb5547d9d-8b78-4561-a40f-3e464f10312d.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi967d4940-09bf-4d16-a95d-aa4f2d7b57b4.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi99b7501b-58fa-441a-b07c-a0c92e47d21b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi4a9ff80a-76d4-4fe3-9c40-f7e79beb3951.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Crees que era necesario cortar el árbol?\nSí, porque estaba seco y podía caer en cualquier momento.\nSí, porque los árboles no son útiles.\nNo, porque tenía que caerse solo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fd7a212d3-9739-423b-90db-70573d60337e.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fb6e091bb-c456-4dcf-afd4-7e397f79f3fa.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi4097aba5-6de5-447d-b789-7be015955c49.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fafb63995-3ec4-4891-9cdf-9594643e8e97.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fc6cedeec-d6da-43df-8413-b0aa92ce0112.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué dijo la abuela que el árbol era joven?\nPorque tenía muchos años.\nPorque tenía pocos años.\nPorque sus hojas estaban muy verdes.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fa70c672c-4ff0-4a38-89b1-4f4202d3a8b3.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi04315baa-39e9-4ed1-ae32-09df2aef1e30.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi8a5098e2-3c5a-47bf-be89-b66557fd5a15.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi749c9b9c-37ad-4a28-9178-8927a4349d6e.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2faudio%2fi21ddf04e-b6c3-4296-8ad0-6783e4502e70.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 15,
+    "words": 179
+  }
+}

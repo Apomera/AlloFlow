@@ -1,0 +1,322 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-70ff82c9-conozcamos-el-parque-nacional-tikal",
+  "title": "Conozcamos el Parque Nacional Tikal",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/SqtuSYgmYt"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2fimage2.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2fmapa+-Pete%cc%81n-.png",
+      "text": "Petén es un departamento de Guatemala. Es el departamento con más territorio.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fd5107d3b-5921-49ed-8f04-bf1a0d7c9c15.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi59e7d61a-77cb-4296-a9bd-8899753dc470.mp3",
+          "dur": 2.652494
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faor_D-1-44.png",
+      "text": "En Petén hay un lago hermoso. Se llama Petén Itzá.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi86759608-6b5b-4e32-8e3a-a8289faf2f9a.mp3",
+          "dur": 2.324858
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fb73a70e2-818e-4795-afb3-5914cd02de81.mp3",
+          "dur": 1.738208
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2fpaganism-575489_64011.png",
+      "text": "Petén cuenta con varios sitios arqueológicos. Tiene una gran riqueza arqueológica.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2ffa211666-579b-4fa2-8a70-2b7a995dade1.mp3",
+          "dur": 3.540657
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi451bbda5-8ee4-41a4-8c2a-b8db8cc5aa81.mp3",
+          "dur": 2.234535
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2fimage11.jpg",
+      "text": "También tiene varios parques. Tikal es un parque muy visitado.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fbc43092b-7b4d-4af5-9ef9-b56a25d897f2.mp3",
+          "dur": 1.82854
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2ffb08218e-229d-4d5a-8757-106b28ae434e.mp3",
+          "dur": 3.13464
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2fMaya.jpg",
+      "text": "Tikal significa ciudad de las voces. Es la capital del imperio maya.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi84a8eb11-20ac-4e06-9be5-eba4e247f512.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fc4164e74-2ce6-46e6-8563-95226e439c00.mp3",
+          "dur": 3.14882
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2fimage3.jpg",
+      "text": "Tikal tiene una arquitectura espectacular. Hay muchas pirámides.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fc919e6f6-d47e-401e-b10c-ad918d0a0cec.mp3",
+          "dur": 2.835351
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fed2415c7-2e14-4912-8507-e47643e7967c.mp3",
+          "dur": 2.051678
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2f%c3%81rbol.jpg",
+      "text": "En Tikal todo es impresionante. La selva tiene muchas ceibas.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fd027fcee-b51b-4d0c-8139-95c5e560e4c7.mp3",
+          "dur": 2.037516
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2ff7b848d8-633e-4d63-a089-40318f9e9efc.mp3",
+          "dur": 2.22037
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2fjovenes+en+bosque.jpg",
+      "text": "En Tikal hay variedad de aves. Además, hay muchos animales.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fdc696766-28cc-4236-b7f8-065777a1f099.mp3",
+          "dur": 2.339024
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fac792643-4299-4ef8-b6b4-d6829f1fda83.mp3",
+          "dur": 2.443514
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2fimage1.jpg",
+      "text": "Abundan diferentes clases de monos. El mono araña es muy común.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi176d519d-e9f3-43d4-bece-a30cf841fda5.mp3",
+          "dur": 3.044331
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2feaf7ea1d-c431-435b-bc77-65773e6699cb.mp3",
+          "dur": 2.339024
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2fadultos+con+trajes+tipicos.png",
+      "text": "Petén es un lugar muy turístico. ¡Ven a conocer Petén!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi259373aa-9cc6-4efd-9a6b-a746d6983d7d.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi50de83a9-0a15-4bc5-abeb-c85464961cf0.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿En qué departamento se ubica el Parque Nacional Tikal?\nIzabal\nGuatemala\nPetén",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fcd6d3c32-3e57-44b2-851d-ee8fabdbebc4.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fc22ddfa0-657d-49e6-bebc-3bf85edc00c4.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi9f8f650b-588e-4757-9d94-23dd5e43b051.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi232d4259-ecc2-4c21-b92a-6bdf92846814.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fcf3bcb79-6e89-4e2f-abfc-93371aa18d15.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Cómo se llama el lago que se menciona en el libro?\nPetén Itzá\nIzabal\nAtitlán",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi8fbd8f6c-7eb7-451a-8098-e7ef3ab9f949.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fd94cfc08-36c5-45c0-88c0-1217da103413.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi7181adab-f778-48c3-a43a-b8a7bcd8292a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fcb4199f2-a59c-41d1-95fd-f20b53cb8727.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fd99bae92-b3e9-49de-8b87-935f3c358eb6.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué mono es común en Petén?\nAraña\nGorila\nMandril",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi0fb0cb31-4d92-4965-b00e-355deda1a01f.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi333a1539-1d4f-4fe4-a4c3-c6ba1a2fbd42.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi79b4dc0c-bf9d-4a47-aa50-1d8f0751bdf8.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fcf2ab4ac-5446-4eff-b67d-7913d7c9de86.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fbb400c36-b882-4a41-ae39-0d02d976bb83.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué hace especial al Parque Nacional Tikal?\nSu arqueología y belleza natural.\nLos visitantes y los vendedores.\nLos árboles y los visitantes.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fdaa3a451-d1d8-446e-9211-ba41df1025d9.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fa6cb4646-a65e-4069-97ae-3c4ec77a4df5.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi32d0146a-7471-4b01-ac6d-23cedb4e34c1.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi5edc1a0c-07ef-4f87-b178-547ec2396b72.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fb24f59b2-fbee-4c31-82d2-324ac7475080.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué se dice que Petén es un lugar muy turístico?\nPorque tiene muchas pirámides.\nPorque es un patrimonio nacional.\nPorque llegan muchos visitantes.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fade1349c-d52b-419d-9e59-49e38b81db30.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi1ca6c453-9b02-4fb7-a1a8-8b894324af52.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi37a13d32-0791-45e4-bf39-640fa030749f.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fc2b131d8-5dea-4f10-97a6-ad4ff29e6516.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2faudio%2fi9603329a-0cf1-4ced-a6c9-fac269db05c0.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 15,
+    "words": 201
+  }
+}

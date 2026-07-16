@@ -1,0 +1,142 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-949671df-cultiver-et-jardiner-six-principes-d-une-agricul",
+  "title": "Cultiver et jardiner: Six principes d'une agriculture qui donne la vie",
+  "description": "This is a shell book that explains six ways farmers and gardeners can improve the soil using lessons from nature and traditional agriculture. Content adapted with permission from UnderstandingAg.org.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Environment"
+  ],
+  "authors": [
+    "Amy Lazar"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Amy Lazar",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/B7kBENM7Wy"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/B7kBENM7Wy%2f1775260829425%2fCultiver+et+jardiner++Six+principes+d+une+agricult%2fimage1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Avez-vous déjà traversé une forêt ou une zone sauvage non perturbée ? Peut-être avez-vous remarqué qu'elle regorgeait de vie. De nombreuses plantes et animaux vivent et poussent harmonieusement ensemble. Ils disposent tous de la nourriture et de l'eau nécessaires pour grandir et être en bonne santé."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Mais souvent, si nous comparons ces espaces naturels à nos jardins ou à nos champs, nous ne voyons pas le même équilibre de vie. Nous ne voyons pas tout prospérer et cohabiter en harmonie. Le plus souvent, nous avons appris à planter de manière moderne, ignorant les leçons que nous pouvons tirer de la nature et de nos ancêtres."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "En cette période difficile de changement climatique, de nombreuses personnes qui cultivent pour leur alimentation ou leur commerce constatent des problèmes dans leurs champs et leurs jardins. Il peut y avoir un manque d'eau. Il peut y avoir des inondations. Les cultures poussent moins bien ou produisent moins bien qu'avant. Les engrais chimiques et les pesticides polluent peut-être les sols et l'eau. La couche de bonne terre​ est peut-être emportée par le vent ou les eaux, laissant un sol dur ou rocailleux où les plantes ne poussent pas bien."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Et si nous changions certaines de nos méthodes pour que nos champs et nos jardins ressemblent davantage à des espaces naturels et vivants ? Ce livre présente six leçons de la nature qui contribueront à rendre les sols de nos jardins et de nos champs plus sains, équilibrés et vivants.\nSi nous intégrons ces six principes à nos méthodes d'agriculture et de jardinage, le sol s'améliorera. La biodiversité sera plus importante (une plus grande variété de plantes et d'animaux vivra et poussera sur nos terres). Et nous n'aurons plus besoin d'utiliser des engrais et des pesticides chimiques coûteux, susceptibles de polluer les sols et l'eau."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "1. CONNAÎTRE VOTRE CONTEXTE\nConnaître le contexte de votre jardin ou de vos champs signifie comprendre au mieux les conditions qui affectent les plantes et les animaux de votre région. Voici quelques questions à se poser pour en savoir plus :\n• Quelles plantes et quels animaux vivent et poussent dans cette zone lorsque personne ne cultive ni n'élève d'animaux ?\n• Comment est le sol ?\n• Quel est le climat ?\n• Quels sont les cycles habituels de plantation, de croissance et de récolte ?\n• Quelle est la quantité d'eau disponible ou quelle quantité de pluie est attendue ?\n• Quand votre terre est-elle naturellement humide ou sèche ?\n• Comment les gens utilisaient-ils la terre autrefois ?"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Connaître votre contexte vous aidera à prendre de meilleures décisions et à utiliser les ressources plus judicieusement. Essayez de cultiver des plantes qui poussent naturellement bien dans votre climat et dans le sol où vous vivez. Conservez ou plantez des plantes et des fleurs sauvages indigènes à côté des plantes ou des arbres que vous souhaitez récolter pour l'alimentation ou d'autres usages. Cela attirera des animaux, des insectes et des micro-organismes utiles et améliorera le sol, même s'il a été endommagé par le passé."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "2. MOINS PERTURBER LE SOL\nUn sol est sain lorsque de nombreux organismes différents y vivent, à l'intérieur comme à la surface. De nombreux jardiniers et agriculteurs ameublissent et retournent le sol pour faciliter le semis. Cependant, cette méthode de plantation peut tuer des animaux et des plantes utiles. Elle détruit également les habitats de nombreux organismes qui contribuent à une biodiversité saine. Ces organismes apportent des nutriments au sol et l'empêchent de se dessécher, ce qui profite à tous les organismes qui y vivent.\nLes plantes qui poussent sur un sol moins perturbé produisent des cultures plus riches en nutriments, même sans engrais chimiques."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "3. METTEZ UNE << ARMURE >> SUR LE SOL\nUne armure est l'équipement que les soldats utilisent pour se protéger. D'une certaine manière, l'agriculture et le jardinage s'apparentent à une lutte contre les ennemis des cultures. Parmi ces ennemis, on trouve les nuisibles, la pollution, l'excès d'eau, le manque d'eau, l'excès de soleil ou de chaleur, et l'érosion (lorsque le sol est emporté par le vent ou les eaux). Le sol a besoin d'une couverture pour se protéger de ces ennemis.\nUne façon de protéger le sol est de le recouvrir de foin ou de paillis. (Le paillis est un mélange de plantes mortes, de feuilles, d'écorce ou de morceaux de bois.)"
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Une autre façon de protéger le sol est de planter des plantes couvre-sol. Ce sont des plantes qui poussent bas autour des cultures ou après la récolte.\nLes plantes couvre-sol empêchent le sol d'être emporté par le vent ou les eaux. Leurs racines contribuent à retenir l'eau et les nutriments dans le sol, tandis que leurs feuilles protègent le sol de la chaleur du soleil, ce qui permet de conserver davantage d'eau. Ces plantes abritent également d'autres organismes, ce qui accroît la biodiversité."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "4. ENCOURAGER LA DIVERSITÉ\nLa biodiversité signifie que de nombreuses espèces de plantes, d'animaux et de micro-organismes vivent ensemble de manière équilibrée, s'aidant mutuellement à vivre et à se développer.\nLes espaces naturels non perturbés par l'homme présentent souvent une biodiversité bien plus importante que les terres que nous cultivons et jardinons.\nUne plus grande biodiversité dans un jardin ou un champ améliorera la qualité du sol pour les cultures."
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Voici quelques moyens d'accroître la biodiversité dans vos champs et jardins :\nRegroupez différentes cultures dans un même champ. Chaque espèce végétale influence différemment les nutriments du sol. Par exemple, il est bénéfique pour l'équilibre nutritif du sol de planter des légumineuses avec des céréales.\nDe plus, chaque culture attire différents types d'animaux, d'insectes et de micro-organismes. Une plus grande variété de plantes entraîne une plus grande diversité d'organismes vivant sur les plantes et autour de celles-ci dans le sol."
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Plantez une variété de plantes à fleurs qui attirent les insectes et les oiseaux et contribuent à la pollinisation de vos cultures.\nEssayez d'offrir un abri aux insectes, oiseaux et autres animaux qui se nourrissent des nuisibles qui endommagent les cultures de votre région.\nÉvitez d'utiliser des engrais chimiques et des produits chimiques qui tuent les mauvaises herbes ou les nuisibles, car ils peuvent nuire aux vers utiles, aux micro-organismes, aux oiseaux, aux petits animaux, aux insectes et aux plantes indigènes qui contribuent à améliorer le sol et à empêcher naturellement les nuisibles de s'installer."
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "5. GARDEZ LES RACINES VIVANTES DANS LE SOL LE PLUS LONGTEMPS POSSIBLE\nLorsque de nombreuses racines vivantes restent dans le sol toute l'année, cela contribue à conserver l'eau et les nutriments. Cela empêche également la bonne terre d'être emportée par le vent ou emportée par la pluie ou la fonte des neiges.\nAprès la récolte, laissez les plantes en terre aussi longtemps qu'elles sont vivantes. Si vous arrachez les plantes mortes entre les récoltes, plantez une plante couvre-sol dans vos champs entre la récolte et les nouvelles plantations afin que le sol ait toujours des racines."
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Les racines des plantes vivantes libèrent du sucre dans le sol. Cela nourrit les micro-organismes qui y vivent et se multiplient. Les micro-organismes rendent le sol plus sain pour les plantes car ils décomposent les nutriments présents dans le sol en formes utilisables par les plantes.\nCes micro-organismes protègent également les plantes des maladies. Plus de racines vivantes dans le sol signifie plus de nourriture pour les micro-organismes, et donc plus de nutriments pour les nouvelles plantes. Si le sol a toujours des racines, le cycle de la santé se poursuit de saison en saison."
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "6. ACCUEILLEZ LES ANIMAUX DANS VOS CHAMPS ET JARDINS\nLa présence de nombreux animaux dans les champs et les jardins et qui laissent leurs déjections au sol est très bénéfique pour le sol. Laissez les ânes, les chèvres, les chevaux, les vaches, les moutons, les cochons et autres animaux se promener dans vos champs et vos jardins après les récoltes et pendant la croissance des plantes, s'ils ne risquent pas de causer trop de dégâts à vos cultures.\nLes animaux comme les canards et les poules contribuent à la consommation d'insectes et de chenilles nuisibles aux plantes."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Les comportements des animaux, comme brouter les mauvaises herbes, gratter et creuser le sol, marcher sur les plantes et le sol, transporter du pollen et des graines d'un endroit à un autre et laisser leurs excréments au sol, créent des perturbations bénéfiques. Ces perturbations contribuent à l'équilibre des cycles naturels. Elles contribuent également à faire de la terre des champs et des jardins un meilleur habitat pour les vers et autres organismes utiles qui apportent des nutriments, décomposent les matières mortes et aident le sol à retenir l'eau.\nPlus une grande variété d'animaux fréquentent les champs et les jardins, plus la biodiversité est préservée."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Pour rappel, les six principes d'une agriculture qui donne la vie pour les champs et les jardins sont les suivants :\n1. Connaître votre contexte.\n2. Moins perturber le sol.\n3. Mettez une « armure » sur le sol.\n4. Encourager la diversité.\n5. Gardez les racines vivantes dans le sol le plus longtemps possible.\n6. Accueillez les animaux dans vos champs et jardins."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Nombre de ces leçons sont celles que nos ancêtres ont apprises de la nature, mais nous en avons oublié certaines avec nos méthodes de culture modernes.\nRevenir à des modes de vie plus sages, en harmonie avec la nature, peut nous aider à relever les défis du changement climatique, à réduire la pollution et à protéger la vie et l'habitat des autres êtres vivants. Tous ces bienfaits contribueront à rendre nos fermes et nos jardins plus sains et plus productifs."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Glossaire\nBiodiversité : lorsque de nombreuses plantes, animaux et micro-organismes différents cohabitent dans un équilibre sain.\nChangement climatique : différences dans les cycles des saisons dues à l’augmentation de la température moyenne de la Terre.\nEngrais : éléments nutritifs qui enrichissent le sol afin que les cultures poussent mieux et produisent plus de nourriture. Certains utilisent des engrais naturels comme les déjections animales ou le compost composé de restes de nourriture et de plantes mortes. D’autres utilisent des engrais chimiques qu’ils achètent.\nCouvre-sol : plantes qui poussent bas sur le sol pour ombrager les racines des autres plantes, prévenir l’érosion et retenir l’eau dans le sol.\nFoin : tiges de graminées coupées et séchées, utilisées pour nourrir et soigner le bétail ou pour couvrir et protéger le sol.\nBétail : animaux élevés pour se nourrir, pour vendre ou pour produire du lait, des œufs ou de la laine."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Micro-organisme : un minuscule être vivant invisible sans loupe ni microscope.\nPaillis : plantes mortes, feuilles et morceaux de bois qui recouvrent et protègent le sol.\nPlantes indigènes : plantes qui poussent à l’état sauvage dans une région et prospèrent naturellement dans le climat et le sol, sans nécessiter d’arrosage supplémentaire ni de protection contre le soleil ou le froid.\nNutriments : substances présentes dans les aliments et le sol, nécessaires à la survie et à la croissance des êtres vivants.\nPesticide : produit chimique qui tue les insectes ou autres organismes nuisibles aux cultures.\nPollinisation : déplacement du pollen (la poudre produite par les plantes pour se reproduire) d’une partie de la plante à une autre afin que de nouvelles graines ou de nouveaux fruits poussent.\nPrincipe : vérité ou règle qui guide les bonnes décisions et les bons comportements.\nSol : mélange de très petites pierres, d’argile et de morceaux de plantes mortes qui forme la couche supérieure du sol où poussent les plantes."
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Nature sauvage - un lieu naturel où les gens n'influencent pas la façon dont vivent les plantes et les animaux."
+    }
+  ],
+  "stats": {
+    "pages": 21,
+    "words": 1919
+  }
+}

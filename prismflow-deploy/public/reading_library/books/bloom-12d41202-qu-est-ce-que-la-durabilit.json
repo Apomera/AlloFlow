@@ -1,0 +1,232 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-12d41202-qu-est-ce-que-la-durabilit",
+  "title": "Qu'est-ce que la durabilité ?",
+  "description": "Il s’agit d’un livre-coquille qui explique comment les écosystèmes restent équilibrés et suggère des moyens pour que les gens puissent faire des choix plus durables dans leur vie quotidienne.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Environment"
+  ],
+  "authors": [
+    "Amy Lazar"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Amy Lazar",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/6UTIqUXaBF"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/6UTIqUXaBF%2f1775261030760%2fQu+est-ce+que+la+durabilit%c3%a9%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Qu'est-ce que la durabilité ?\nLes personnes soucieuses de la protection de la nature souhaitent que nous réfléchissions davantage à la durabilité. Qu'est-ce que cela signifie ? Qu'est-ce qui rend quelque chose durable ?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Communautés végétales et animales\nLe développement durable consiste à faire des choix qui préservent la santé et l'équilibre de la nature pour les générations futures. Avant d'aborder la question, il est important de comprendre comment les plantes et les animaux cohabitent. Le monde est composé de nombreuses communautés végétales et animales différentes, vivant dans des lieux spécifiques."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Écosystèmes\nUn lieu où cohabitent des plantes et des animaux est appelé écosystème. Il existe de nombreux types d'écosystèmes, selon la nature du sol, des roches et de l'eau, les conditions météorologiques et la composition des plantes. Un désert, un lac ou une forêt en sont des exemples."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Dans chaque écosystème, on trouve également de très petits organismes vivants, appelés micro-organismes, qui vivent dans l'eau, le sol, les plantes et les animaux. Certains micro-organismes vivent même à l'intérieur d'autres organismes vivants."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Habitats\nDans chaque écosystème, il existe des endroits qui fournissent la nourriture et l'abri nécessaires à la vie et à la croissance de certaines plantes et de certains animaux. Ces lieux où vivent ces plantes et ces animaux constituent leurs habitats. Parmi ces habitats, on peut citer une souche couverte de mousse, la cime des arbres d'une forêt ou une partie d'un récif corallien."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Les plantes, les animaux et les micro-organismes vivant au même endroit sont interconnectés et dépendent les uns des autres pour croître et se reproduire. L'interconnexion de toutes les plantes et de tous les animaux, ainsi que de leurs différents habitats, constitue un écosystème."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Énergie et nutriments\nTous les êtres vivants d'un écosystème ont besoin de substances chimiques appelées nutriments pour croître et se reproduire. Les plantes tirent leur énergie du soleil et utilisent l'air et les nutriments du sol pour produire leur nourriture. D'autres organismes vivants de l'écosystème se nourrissent des plantes pour obtenir de l'énergie et des nutriments issus des aliments qu'elles produisent. Certains animaux tirent leur énergie et leurs nutriments de la consommation d'autres animaux.\nLorsque les êtres vivants meurent, les micro-organismes présents dans l'eau et le sol décomposent leur corps en nutriments que les nouvelles plantes utilisent pour pousser."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Réseaux trophiques\nLe flux d'énergie et de nutriments d'un être vivant à un autre dans l'écosystème établit des connexions appelées réseau trophique. Lorsqu'un écosystème est sain, les réseaux trophiques maintiennent l'équilibre entre chaque espèce vivante. Les plantes ont la possibilité de croître et de se reproduire, les animaux ont suffisamment de nourriture, et les micro-organismes peuvent détruire tous les végétaux et animaux qui meurent. Les cycles naturels préservent la pureté de l'air et de l'eau."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Les écosystèmes sains sont équilibrés\nLes écosystèmes s'adaptent plus facilement aux changements et se remettent plus facilement des dommages lorsque les réseaux trophiques comprennent de nombreuses espèces végétales et animales vivant dans des habitats variés. Si une espèce végétale ou animale est endommagée, de nombreuses autres espèces assurent la stabilité du réseau trophique. En revanche, si trop d'espèces végétales et animales sont endommagées, l'écosystème ne pourra pas maintenir son équilibre."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Certaines espèces animales ou végétales sont si importantes pour un écosystème que leur retrait du réseau trophique entraînerait son effondrement. Il est donc primordial de ne pas détruire les habitats de ces espèces importantes. Il est également essentiel de ne pas en éliminer un trop grand nombre par la chasse ou la récolte."
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Qu'est-ce qui détruit l'équilibre ?\nLes dommages causés aux habitats de l'écosystème affecteront les chaînes alimentaires. Si la pollution de l'air ou de l'eau nuit aux plantes, elles seront moins nombreuses. Tous les animaux qui se nourrissent de ces plantes auront alors moins de nourriture, certains mourront et auront moins de petits. Cela se traduira par une diminution de la nourriture pour les animaux qui se nourrissent des herbivores."
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Si les chasseurs tuent trop d'animaux (relativement grands) qui se nourrissent d'animaux mangeurs de plantes, la population d'animaux mangeurs de plantes deviendra trop importante.​ Ils dévoreront toutes les plantes avant même qu'elles aient eu le temps de pousser et de se reproduire, et bientôt, il n'y aura plus assez de nourriture pour tous."
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Le changement climatique entraîne de nouveaux régimes météorologiques et des phénomènes météorologiques extrêmes. Ces changements provoquent des sécheresses, des inondations, des températures extrêmes et une élévation du niveau de la mer. L'écosystème pourrait ne pas être en mesure de s'adapter aux changements climatiques à long terme qui affectent de nombreuses plantes et animaux. Les incendies de forêt et les tempêtes, plus fréquents en raison du changement climatique, peuvent endommager ou détruire simultanément de nombreux habitats, ce qui peut déséquilibrer les écosystèmes."
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Il arrive qu'une nouvelle espèce végétale ou animale pénètre dans un écosystème. Cette nouvelle espèce peut avoir un impact négatif sur le réseau trophique si elle ne commence pas à vivre en harmonie avec les autres êtres vivants. Si elle se reproduit trop rapidement, tue trop d'autres êtres vivants ou détruit des habitats, elle déséquilibrera l'écosystème."
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Les gens changent les écosystèmes\nLes humains font partie intégrante des écosystèmes où ils vivent. Ils éliminent les animaux des réseaux trophiques naturels en pêchant et en chassant. Ils modifient les habitats des plantes et des animaux en abattant des arbres pour construire des maisons et cultiver. L'agriculture, l'élevage et l'élevage d'animaux pour l'alimentation apportent de nouvelles espèces de plantes et d'animaux à un écosystème. L'utilisation d'engrais et l'irrigation perturbent les cycles naturels des nutriments et le débit de l'eau dans une région."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Toutes les actions humaines modifient l'équilibre des écosystèmes. La durabilité implique de planifier la protection de l'air, de l'eau, du sol, des plantes et des animaux d'un écosystème dont dépendent les humains, afin d'en préserver l'équilibre pendant de nombreuses générations. Elle implique d'aider de nombreuses espèces de plantes et d'animaux à rester en vie et vigoureuses au sein de l'écosystème. Ainsi, les cycles naturels essentiels à la santé des milieux propices à la vie peuvent se poursuivre."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Pratiques durables\nLes pratiques durables visent à limiter les effets néfastes de l'homme sur la nature. Par exemple, l'agriculture durable implique de réfléchir à la plantation de nouveaux arbres pour remplacer ceux qui doivent être abattus. Cela implique de réduire l'utilisation d'engrais et de pesticides sur les cultures, car ils affectent les réseaux trophiques des autres plantes et animaux de la région. Cela implique d'utiliser l'eau en respectant les cycles naturels qui l'alimentent."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Planifier des méthodes de pêche durables implique de réfléchir au nombre de poissons que l'on peut prélever dans les réseaux trophiques naturels sans compromettre l'équilibre de l'écosystème. Cela implique de protéger les eaux où vivent les poissons des déchets et de la pollution qui nuisent aux réseaux trophiques."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Une autre façon de planifier un mode de vie durable consiste à réfléchir à la manière dont nous utilisons les ressources naturelles. Certaines ressources naturelles, comme le pétrole, le charbon et le gaz, sont irremplaçables une fois extraites du sol. Leur combustion est polluante. L'extraction de ces combustibles peut endommager les écosystèmes proches des mines. L'équilibre des écosystèmes est également une ressource pour l'homme, et il est important de protéger certaines zones des perturbations causées par l'exploitation minière et l'agriculture afin de préserver les bienfaits des plantes et des animaux indigènes."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Penser au développement durable signifie apprendre à produire de l'énergie sans polluer ni endommager les écosystèmes. Il existe aujourd'hui d'excellentes façons d'utiliser le vent, le soleil, l'océan ou la chaleur produite naturellement dans les profondeurs du sous-sol pour produire de l'énergie."
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Les gouvernements et les grandes entreprises sont responsables d'une partie de la planification d'un mode de vie durable. En tant que citoyens et consommateurs, nous pouvons demander aux gouvernements et aux entreprises d'envisager des pratiques plus durables. Mais nous pouvons aussi contribuer à planifier l'avenir en faisant de petits choix pour vivre de manière plus durable."
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "Pratiques alimentaires durables\nProduire de la viande pour l'alimentation consomme plus d'énergie et est plus polluant que produire des légumes, des haricots et des lentilles. Moins nous consommons de viande, plus notre alimentation est durable. Élever de gros animaux comme les bovins et les porcs consomme plus de ressources et altère davantage les écosystèmes que d'élever des animaux plus petits comme les poulets, les poissons ou les lapins. Il est donc plus durable de produire de la viande à partir de petits animaux."
+    },
+    {
+      "n": 23,
+      "img": null,
+      "text": "Transporter des aliments depuis d'autres régions du monde pour les vendre et les conserver au froid pour préserver leur fraîcheur consomme de l'énergie et pollue. Conserver les aliments pour les expédier loin nécessite des emballages qui génèrent beaucoup de déchets. Cultiver dans son propre jardin ou acheter des aliments cultivés près de chez soi est plus durable que de consommer des aliments provenant de loin."
+    },
+    {
+      "n": 24,
+      "img": null,
+      "text": "Si vous devez acheter des aliments ailleurs, privilégiez les aliments conditionnés dans des contenants réutilisables, recyclables ou compostables. Évitez les petits emballages contenant une seule portion, car ils génèrent des déchets supplémentaires."
+    },
+    {
+      "n": 25,
+      "img": null,
+      "text": "Si vous ne pouvez pas utiliser tous les aliments que vous achetez ou cuisinez, il est plus écologique de les mettre dans un compost extérieur. Dans un compost, les micro-organismes et les animaux comme les vers et les insectes utilisent les déchets alimentaires pour fabriquer un engrais naturel. Vous pouvez utiliser cet engrais dans votre jardin. Vous pouvez parfois donner les restes de nourriture à d'autres animaux comme les poules, les cochons ou les chiens. C'est plus écologique que de mélanger les déchets alimentaires avec d'autres déchets qui finissent à la décharge."
+    },
+    {
+      "n": 26,
+      "img": null,
+      "text": "Pratiques énergétiques durables\nNous pouvons tous faire de petits choix pour utiliser l'énergie de manière plus durable. Si votre maison est équipée de la climatisation ou du chauffage central, vous pouvez parfois porter des vêtements plus frais ou plus chauds au lieu d'utiliser de l'énergie pour modifier la température de votre maison. Pensez également à éteindre les lumières et les appareils électriques lorsque vous ne les utilisez pas."
+    },
+    {
+      "n": 27,
+      "img": null,
+      "text": "La marche, le vélo, le bus et le train sont des moyens de transport plus durables que la voiture ou le taxi. Si vous devez absolument utiliser une voiture, vous pouvez essayer de la partager avec d'autres personnes plutôt que de voyager seul. Si vous avez les moyens d'acheter votre propre voiture, optez pour une voiture économe en carburant. Vous pourriez même opter pour une voiture électrique, moins polluante."
+    },
+    {
+      "n": 28,
+      "img": null,
+      "text": "Le développement durable implique de planifier l'avenir, même si cela coûte plus cher au départ. Par exemple, en achetant un produit coûteux, comme un panneau solaire ou un appareil électroménager à énergie solaire, vous pouvez économiser de l'électricité chaque mois pendant longtemps.\nAu bout de quelques années, vous aurez économisé plus d'argent que le prix d'achat de l'objet coûteux, et vous continuerez à économiser sur l'électricité chaque mois. Construire une maison ou une entreprise utilisant des matériaux durables, une énergie plus efficace ou une source d'énergie plus durable peut coûter plus cher, mais cela vous permettra de réaliser des économies à long terme. Cela réduira également la pollution pour les années à venir, ce qui est essentiel pour prendre soin des générations futures."
+    },
+    {
+      "n": 29,
+      "img": null,
+      "text": "Pratiques durables en matière d'eau\nLes populations des différentes régions du monde sont confrontées à des problèmes très différents en matière d'approvisionnement en eau. Les pratiques durables diffèrent selon qu'elles sont utilisées dans une forêt tropicale ou dans une région désertique. Mais chacun peut s'efforcer de ne pas gaspiller l'eau et de ne pas polluer les ressources en eau."
+    },
+    {
+      "n": 30,
+      "img": null,
+      "text": "Vous pouvez réfléchir à la manière de consommer moins d'eau pour vous laver, vous laver et cuisiner. Si vous avez l'eau courante chez vous, évitez de laisser couler l'eau du robinet dans les canalisations sans la consommer. Vous pouvez également réfléchir à des façons d'utiliser l'eau à plusieurs fins avant de la jeter. Par exemple, vous pouvez l'utiliser pour cuire des légumes, puis la verser dans le jardin pour arroser les plantes."
+    },
+    {
+      "n": 31,
+      "img": null,
+      "text": "Faire plus attention aux déchets\nLes ressources en eau et les sols sont souvent pollués parce que les gens produisent trop de déchets et ne font pas attention à ce qu'ils en font. Les déchets jetés au sol sont souvent emportés par le vent ou flottent dans les rivières, les lacs et les océans, nuisant ainsi aux écosystèmes."
+    },
+    {
+      "n": 32,
+      "img": null,
+      "text": "Les déchets plastiques laissés au soleil se décomposent en minuscules morceaux de plastique qui se déversent dans les cours d'eau. Les animaux aquatiques les avalent. Si trop de ces minuscules morceaux de plastique pénètrent dans l'organisme des animaux et des humains, ils peuvent les rendre malades."
+    },
+    {
+      "n": 33,
+      "img": null,
+      "text": "Nous pouvons tous essayer d'utiliser moins de plastique pour produire moins de déchets plastiques. Lorsque vous faites vos courses, apportez un sac en tissu réutilisable plutôt qu'un sac en plastique neuf que vous jetterez. Dans la mesure du possible, utilisez des assiettes, des couverts et des gobelets lavables ou biodégradables plutôt que des articles en plastique ou en polystyrène que vous jetez après usage. Privilégiez les emballages recyclables, réutilisables ou biodégradables."
+    },
+    {
+      "n": 34,
+      "img": null,
+      "text": "Les bouteilles d'eau en plastique produisent beaucoup de déchets dans le monde. Au lieu d'acheter de l'eau en bouteille plastique, vous pouvez remplir une bouteille en métal ou en verre à une source d'eau propre et l'emporter avec vous."
+    },
+    {
+      "n": 35,
+      "img": null,
+      "text": "Si les gens jettent des liquides contenant des produits chimiques dangereux dans les égouts ou laissent des déchets contenant des produits chimiques dangereux dans des endroits où ces produits peuvent s’infiltrer dans le sol et l’eau, cela endommage les écosystèmes."
+    },
+    {
+      "n": 36,
+      "img": null,
+      "text": "Il faut faire attention à la façon dont nous jetons des objets comme les piles, les vieux appareils électroniques et électroménagers, l'huile moteur, la peinture, les produits d'entretien et certains types d'ampoules. Ils contiennent tous des produits chimiques qui peuvent polluer les sols et l'eau. Renseignez-vous auprès de votre domicile pour savoir si des personnes peuvent utiliser ces objets à d'autres fins ou si des entreprises garantissent leur recyclage en toute sécurité."
+    },
+    {
+      "n": 37,
+      "img": null,
+      "text": "Chacun peut penser au développement durable avant de jeter ou d'acheter quelque chose de neuf. Évitez d'acheter du neuf si ce que vous possédez déjà est encore utile. Réparez les objets cassés au lieu de les remplacer. Lorsque vous achetez du neuf, privilégiez les modèles durables. Achetez des articles fabriqués à partir de matériaux recyclés ou naturels comme le bois ou le coton plutôt que du plastique. Vendez ou donnez vos objets inutilisés à des personnes qui les réutiliseront ou recycleront les matériaux."
+    },
+    {
+      "n": 38,
+      "img": null,
+      "text": "Faire un changement\nIl est parfois difficile de penser à toutes les façons dont nous nuisons aux écosystèmes dans lesquels nous vivons. Les pratiques durables peuvent sembler trop complexes. Ou bien, la durabilité peut sembler être une préoccupation pour quelqu'un d'autre. Pourtant, si chacun s'unit, nous pouvons faire la différence. Ce mois-ci, choisissez une façon de vivre plus durablement. Une fois cette pratique durable adoptée, vous pourrez en ajouter une nouvelle. Vous pouvez également encourager vos proches à faire un petit changement."
+    },
+    {
+      "n": 39,
+      "img": null,
+      "text": "Si suffisamment de personnes commencent à faire de petits choix durables, nous pouvons influencer nos dirigeants locaux, et peut-être même les membres de notre gouvernement, pour qu'ils engagent des changements encore plus importants. Tous nos efforts pour vivre plus durablement contribueront à un avenir meilleur pour tous."
+    }
+  ],
+  "stats": {
+    "pages": 39,
+    "words": 2505
+  }
+}

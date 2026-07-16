@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-754e2843-el-volc-n-jumay",
+  "title": "El volcán Jumay",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/gcuNV3XOem"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fvolcano-149322_1280.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fmapa+-Jalapa-.jpg",
+      "text": "Jalapa es un departamento de Guatemala. Está ubicado en el oriente."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fninos+pintando+cuadro+de+paisaje.jpg",
+      "text": "Es un departamento hermoso. En Jalapa hablan español y pocomam."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fhierberas+con+mariquitas11.jpg",
+      "text": "Es tierra de personas muy trabajadoras. Sus pobladores son amables."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fmazorca.png",
+      "text": "La agricultura es fuente de trabajo. También se producen lácteos."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fJalapa.png",
+      "text": "En Jalapa se encuentra Jumay. Es un volcán."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fvolcano-149322_12801.png",
+      "text": "El volcán Jumay es majestuoso. Es el más alto del oriente."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fimage.png",
+      "text": "Está cubierto de bosques. Hay variedad de vegetación."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fjovenes+en+bosque.jpg",
+      "text": "Los pobladores escalan el volcán. Jumay es impresionante."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fAgricultor.png",
+      "text": "En las faldas del volcán siembran. Allí hay muchos cultivos."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fcanasto+de+verduras.jpg",
+      "text": "¿Sabes qué siembran? Siembran maíz y otras verduras."
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 94
+  }
+}

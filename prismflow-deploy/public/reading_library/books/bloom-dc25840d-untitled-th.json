@@ -1,0 +1,110 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-dc25840d-untitled-th",
+  "title": "มาปลูกต้นไม้กัน...",
+  "description": "โรงเรียนแห่งหนึ่งมีครูและเด็กๆซึ่งเป็นสัตว์ป่าที่น่ารักวันหนึ่งคุณครูชวนนักเรียนนำต้นกล้าไปปลูกเพื่อให้เป็นป่าที่ร่มรื่น เมื่อเด็กๆเหล่านี้เติบโตขึ้นต่างมาชื่นชมป่าไม้ที่เคยร่วมกันปลูกด้วยความรู้สึกภาคภูมิใจและมีความสุข",
+  "language": "Thai",
+  "langCode": "th",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/kxQfX2WqYX"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2fปก211111.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f69333466_441958466412553_7689148339345948672_n1111.jpg",
+      "text": "สวัสดีค่ะเด็กๆ คุณครูมีความรู้สึกดีใจที่ได้ร่วมจากทางหนังสือนิทานเล่มนี้โดยนิทานเรื่องมาปลูกต้นไม้กัน... เล่มนี้เป็นนิทานที่เกี่ยวข้องกับการปลูกต้นไม้ การอนุรักษ์และการรักษาป่าไม้ แสดงให้เห็นถึงความรักความสามัคคีในหมู่คณะ การรักษาธรรมชาติเนื้อหาในนิทานแฝงไปด้วยข้อคิดและส่งเสริมการเรียนรู้ให้เด็กๆมีความรู้และความเข้าใจถึงความรักความสามัคคีในหมู่คณะการอนุรักษ์และการรักษาป่าไม้"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f0111.jpg",
+      "text": "โรงเรียนแสนสุข มีเด็กนักเรียน มาเรียนมากมี"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f0211.jpg",
+      "text": "มีทั้งลูกหมี ลูกหมา ลูกแมว ลูกกา กระต่าย"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f0311.jpg",
+      "text": "ลูกเสือ ลูกช้าง ลูกเป็ด ลูกไก่ ลูกลิง ม้าลาย"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f04.jpg",
+      "text": "เด็กหญิงเด็กชาย สนุกกันใหญ่ หมั่นมาโรงเรียน"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f05.jpg",
+      "text": "คุณครูนกฮูก อบรมสั่งสอน จากเช้าถึงค่ำ"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f06.jpg",
+      "text": "สนุกหนักหนา ร่วมเล่นกีฬา ขยันหมั่นเพียร"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f071.jpg",
+      "text": "บางวันก็เปลี่ยน ปัดกวาดเช็ดถู ดูน่ารักจัง"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f08.jpg",
+      "text": "ใต้ต้นไม้ใหญ่ เด็กไม่รีรอ รีบหาที่นั่ง"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f09.jpg",
+      "text": "จะได้ไปเที่ยว ไปปลูกต้นไม้ ชมป่าสีเขียว"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f010.jpg",
+      "text": "ต่างมาช่วยขน มีดจอบและเสียม บ้างแบกบ้างหาม"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f0112.jpg",
+      "text": "ถึงป่าแห่งหนึ่ง จึงปลูกต้นกล้า เด็กน้อยทำตาม"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2f012.jpg",
+      "text": "เด็กๆทุกคน เจริญเติบโต กลายเป็นผู้ใหญ่\nพวกเขาจำได้ ต้องรักษาป่า รู้ค่าแผ่นดิน"
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "แก่นเรื่อง : ความสามัคคี\nชื่อเรื่อง : มาปลูกต้นไม้กัน...\nข้อคิด : ทุกคนควรรักษาและช่วยกันดูแลต้นไม้และป่าไม้\nเรื่องย่อ : โรงเรียนแห่งหนึ่งมีครูและเด็กๆซึ่งเป็นสัตว์ป่าที่น่ารัก\nวันหนึ่งคุณครูชวนนักเรียนนำต้นกล้าไปปลูกเพื่อให้เป็นป่า\nที่ร่มรื่น เมื่อเด็กๆเหล่านี้เติบโตขึ้นต่างมาชื่นชมป่าไม้ที่เคย\nร่วมกันปลูกด้วยความรู้สึกภาคภูมิใจและมีความสุข"
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "ผู้แต่ง : นางสาวสรวีย์ โพธิ์แก้วธีรกุล\nคณะผู้จัดทำ\n1.นางสาวสรวีย์ โพธิ์แก้วธีรกุล ครูชำนาญการโรงเรียนบ้านแม่จะเราสองแคว\n2.เด็กชายวุฒิชัย คำโย นักเรียนโรงเรียนบ้านแม่จะเราสองแคว\n3.เด็กชายเกียรติพันธ์ หล้ามูลสาย นักเรียนโรงเรียนบ้านแม่จะเราสองแคว\n4.เด็กชายชนพล เต็มปัญญา นักเรียนโรงเรียนบ้านแม่จะเราสองแคว\nสนับสนุนโดย : มูลนิธิศุภนิมิตแห่งประเทศไทย"
+    }
+  ],
+  "stats": {
+    "pages": 15,
+    "words": 86
+  }
+}

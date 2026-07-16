@@ -1,0 +1,327 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-fa564e15-l-oiseau-qui-chantait-la-v-rit",
+  "title": "L’oiseau qui chantait la vérité",
+  "description": "Un oiseau messager parcourt les villages, chantant des vérités oubliées. Son chant réveille les consciences et invite à la justice et à la paix.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Traditional Story"
+  ],
+  "authors": [
+    "CABTAL-Barthélemy BOUTI"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CABTAL-Barthélemy BOUTI",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/RNoWrM2KZP"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2fimage.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Mura-Jaɓɓe, un village paisible sous le soleil du Grand Nord du Cameroun, où les enfants jouent et les anciens racontent des histoires. Mais derrière les sourires, le chef impose des règles injustes.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fd68aa852-6d86-42a2-a7f8-91f1fc5b559a.mp3",
+          "dur": 10.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi39556c96-9aad-423a-b738-4cd4641e6dbf.mp3",
+          "dur": 5.760091
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Un matin, un petit oiseau aux plumes dorées se pose sur le grand baobab et exécute ​un chant mystérieux en ces termes : « Le chef prend sans donner, il parle sans écouter… »",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fdcae03fe-a17f-4001-81e4-38c2b5f58266.mp3",
+          "dur": 17.160091
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Le chef, furieux, ordonne qu’on capture l’oiseau. Mais l’oiseau s’envole, laissant derrière lui un silence troublé.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi62e54b76-b40f-4d9d-b361-b2f63d2206ab.mp3",
+          "dur": 4.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fa60bccbd-ead9-4392-aaf1-fcd7cb00f7b7.mp3",
+          "dur": 6.060091
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Les enfants du village curieux, commencent à écouter chaque matin cette belle et harmonieuse mélodie. Ils répètent les paroles de l’oiseau et posent des questions à leurs parents.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi921abdd0-3e6f-4bd8-a0a5-60d9f8cb5255.mp3",
+          "dur": 8.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi1a9e4394-f191-499b-b873-1aa83e2eb3f6.mp3",
+          "dur": 5.560091
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Les anciens murmurent entre eux. Les femmes parlent autour du feu. Les paroles de l’oiseau font ainsi naître des pensées nouvelles.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi5cb8e031-b916-4aa3-85a6-bdca1b067c46.mp3",
+          "dur": 3.360091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fd4bb4021-9a33-4c71-b56b-9b84aa4b466e.mp3",
+          "dur": 3.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi5624bc60-ae1b-494a-a6d8-56a87280d4c7.mp3",
+          "dur": 4.760091
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Le chef envoie ses gardes dans la forêt chercher l'illustre oiseau. Ils ne trouvent cependant que des plumes légères et des chants portés par le vent.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fb22ac408-ebcf-45db-bd76-468825d02d27.mp3",
+          "dur": 5.060091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fe9bf4066-f0a6-4c16-9bef-f10f50bc4198.mp3",
+          "dur": 5.860091
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Chaque jour, l’oiseau revient et son chant fait écho. Son chant devient plus fort : « La vérité ne se cache pas, mais elle vole avec le vent. »",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi6c614a63-5826-4180-8992-613a33aac7e6.mp3",
+          "dur": 5.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi3aa65371-8f13-44ed-a94f-8810fbdffebd.mp3",
+          "dur": 9.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi22433132-5e16-4ab5-aa57-1c5d52c56d9a.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Le chef commence à entendre les murmures. Il voit les regards changer et met en doute sa décision autoritaire. Il se demande : « Et si l’oiseau disait vrai ? »",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi762c7c6f-f854-45f6-b1c2-a609ff664dff.mp3",
+          "dur": 3.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi8c56604c-e725-4b10-8c01-9685f9854a3f.mp3",
+          "dur": 5.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi55c5a7b1-5d14-4b1e-a7bb-17f3658223c4.mp3",
+          "dur": 5.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fbc201ace-3e21-4cf2-a44a-1453fecbac96.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Un ancien s’approche du chef et lui glisse sagement ce conseil : « Celui qui écoute l’oiseau entend son propre cœur. »",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi05203234-176a-435d-97e4-b935ed0ea147.mp3",
+          "dur": 10.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fbbdc67b5-7c47-4feb-95bd-048344a1f339.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Le chef réunit le village. Il revient sur sa décision et demande pardon en promettant d’écouter, de partager et de respecter chacun de ses sujets jusqu'aux enfants.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi4ec149a8-564d-41f8-a139-69c684dae81c.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2ff9390ff5-b4b7-454a-b113-ebafa1c93d9b.mp3",
+          "dur": 10.760091
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "L’oiseau chante une dernière fois : « Quand la vérité est entendue, elle n’a plus besoin de crier. » Puis il s’envole vers l’horizon.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi41d88d1c-7449-42a3-b4a7-c63bc4d0264d.mp3",
+          "dur": 9.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi336b2c0b-2cac-4ab6-a938-659ed0798ec3.mp3",
+          "dur": 3.160091
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Les enfants chantent à leur tour dans les coeurs. Le village vit en paix. Et dans chaque cœur, demeure l’écho de l’oiseau.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi9cfb698c-6446-4865-ab8d-1d7fdbdf16f7.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi376638ed-167d-4b5a-825c-0a6d2c168e6b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi63a9f26d-b7b3-40be-98a4-9f30bcc2316b.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "ACTIVITES PROPOSEES\n1. Lecture en cercle\nLire une scène à voix haute chaque jour.\nInviter les enfants à reformuler le message de l’oiseau avec leurs propres mots.\nQuestionner : Que veut dire “la vérité ne se cache pas” ?\n2. Atelier de dessin\nReproduire une scène ou inventer une suite visuelle.\nImaginer un autre animal porteur de vérité : que dirait-il ? comment serait-il ?\n3. Jeu des murmures\nUn enfant reçoit une phrase de l’oiseau et la transmet à l’oreille d’un autre.\nÀ la fin, comparer la phrase initiale et celle entendue : discussion sur la transmission et la fidélité des paroles.\n4. Débat en cercle\nThème : Faut-il toujours dire la vérité ?\nEncourager les enfants à exprimer leurs opinions, à\nécouter celles des autres, et à chercher des compromis.\nQue reste-t-il du chant une fois l’oiseau parti ?",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi06b5acca-53fd-49cc-86b9-2a9a9de8ef00.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi1ab658c1-aa3c-4c8a-9325-1b80e5a00a7a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi6cf8857f-feff-42aa-bd4f-6210b3e1fc21.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2ffd88acae-9699-44fd-a492-eb05504babee.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fc6c29bad-3cfc-4731-89f6-99e145ba2963.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi26ac0f2e-4b05-4515-b111-5630878130dd.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fcc6e1268-74c4-4e23-a997-6f18c4466d65.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi15e7f8a7-bc11-441c-b092-fbded8fc66a0.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fc1e4545f-510d-4186-a18e-57b089d12b80.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi2b7ec2c6-cd1a-4489-968a-74634369ac4e.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi5fe55913-f983-4833-9d5c-b84b319ba71d.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi725018f8-0301-4213-9ed7-65d642259bec.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi8d4543eb-cb92-4653-9e86-7ff7b65f9b4e.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fa3970f4b-0903-46ed-950d-658bc24fb34b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2ffd5c3757-c5a3-45d1-b4ed-c971e5544356.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fe2b26dee-741d-44e6-b11e-0d8f77110cb0.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi4f94ac7e-ea41-40e2-9993-5fe77f5679f5.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi355fbcd3-7b93-444f-bb31-2408b726ef45.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fi1950d75a-8a26-4139-8469-d700c3a35a48.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2faudio%2fc5b129ad-2f68-4439-aa7d-b344e7d35b49.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "5. Chant collectif\nCréer une chanson inspirée du refrain de l’oiseau.\nAjouter des percussions ou des instruments traditionnels pour accompagner.\nQuestions pour aller plus loin\nPourquoi les enfants sont les premiers à écouter l’oiseau ?\nQue signifie entendre son propre cœur ?\nComment le chef change-t-il au fil de l’histoire ?"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 504
+  }
+}

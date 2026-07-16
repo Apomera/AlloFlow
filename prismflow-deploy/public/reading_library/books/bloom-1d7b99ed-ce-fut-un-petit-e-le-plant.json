@@ -1,0 +1,142 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1d7b99ed-ce-fut-un-petit-e-le-plant",
+  "title": "Ce fut un petit éléplant",
+  "description": "How did the elephant get its trunk?",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Judith Baker et Lorato Trok"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL Mali",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/fId65JsNSJ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_01_Image_00011.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_02_Image_1.png",
+      "text": "Le nez de l'éléphant est très long."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_03_Image_0001.png",
+      "text": "Autrefois, son nez était court."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_04_Image_1.png",
+      "text": "À l'époque, il y avait un petit éléphant très curieux."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_05_Image_0001.png",
+      "text": "Il demanda à la girafe : « Pourquoi as-tu un cou si long ? »"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_06_Image_1.png",
+      "text": "Il demanda au rhinocéros : « Pourquoi ta corne est-elle si pointue ? »"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_07_Image_0001.png",
+      "text": "Il demanda à l'hippopotame : « Pourquoi as-tu des yeux rouges ? »"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_08_Image_1.png",
+      "text": "Il voulait surtout savoir ce que mange le crocodile."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_09_Image_0001.png",
+      "text": "Sa mère lui dit : « Ne pose jamais cette question ! »"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_10_Image_2.png",
+      "text": "Un jour, un corbeau malin lui dit : « Viens. Je vais te montrer ce que mange le crocodile. »"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_11_Image_0001.png",
+      "text": "Le petit éléphant suivit le corbeau jusqu'à la rivière."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_12_Image_1.png",
+      "text": "Il regarda dans l'eau.\nOù était donc le crocodile?"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_13_Image_0001.png",
+      "text": "« Bonjour ! » lui dit un tronc d'arbre dans l'eau.\n« Bonjour ! » répondit le petit éléphant. « Sais-tu ce que mange le crocodile ? »"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_14_Image_1.png",
+      "text": "« Penche-toi et je te le dirai », lui dit ce tronc.\nLe petit éléphant se pencha très bas et plus bas. Puis…"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_15_Image_0001.png",
+      "text": "Claque !\nLe crocodile attrapa son nez. Le corbeau dit : « Maintenant tu vois ce que mange le crocodile. »"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_16_Image_1.png",
+      "text": "Le petit éléphant tira, et tira, et tira. Mais le crocodile ne lâcha pas son nez."
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_17_Image_0001.png",
+      "text": "Le nez du bébé éléphant s'étira, s'étira, et s'étira.\nBaff ! Il tomba sur le dos."
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_18_Image_1.png",
+      "text": "Faché, le crocodile disparut sous l'eau."
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_19_Image_2.png",
+      "text": "Le petit éléphant regarda son nez. Il n'en voyait même pas le bout!"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fimage2.png",
+      "text": "Son nez était si long qu'il pouvait cueillir des fruits en haut de l'arbre."
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_21_Image_0001.png",
+      "text": "Il pouvait s'asperger d'eau avec son nez."
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_22_Image_1.png",
+      "text": "Depuis ce jour, tous les éléphants ont de longs nez, des trompes."
+    }
+  ],
+  "stats": {
+    "pages": 21,
+    "words": 280
+  }
+}

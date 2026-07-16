@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1a36cdeb-mis-amigos-de-la-comunidad",
+  "title": "Mis amigos de la comunidad",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/RMsY34BHKG"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1a36cdeb-d57c-4e77-8f61-66f7254822b9%2fMis+amigos+de+la+comunidad%2fComunidad en reunion1111.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1a36cdeb-d57c-4e77-8f61-66f7254822b9%2fMis+amigos+de+la+comunidad%2fnino+y+nina.png",
+      "text": "Somos Julio y Julia. Somos amigos desde que éramos pequeños. Vivimos en la misma comunidad. Nuestra comunidad se llama La Esperanza. La Esperanza es una aldea."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "En la aldea vivimos doscientas personas. Todos nos conocemos. En La Esperanza tenemos muchos amigos. La fraternidad es muy valorada. Nos gusta vivir en armonía. Desde pequeños aprendimos a ser amigables.\nTambién somos muy solidarios. Nos apoyamos entre todos. Siempre estamos listos para ayudar. Somos como una gran familia."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1a36cdeb-d57c-4e77-8f61-66f7254822b9%2fMis+amigos+de+la+comunidad%2fJ%c3%b3venes+trabajos+de+campo.jpg",
+      "text": "En La Esperanza reina la prosperidad. Todas las personas somos muy trabajadoras. Las personas vivimos del trabajo honesto. La mayoría trabaja en agricultura. Las tierras son cultivables y productivas."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1a36cdeb-d57c-4e77-8f61-66f7254822b9%2fMis+amigos+de+la+comunidad%2fmujeres+en+mercado.jpg",
+      "text": "Las verduras que producimos son saludables. En la escuela hay un huerto. Allí aprendemos a cultivar en grupo. Hay varios huertos familiares. Algunos venden las verduras que producen."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Don Pancho es nuestro amigo. Es un señor mayor. Él tiene una finca grande. Allí trabajan muchas personas. Siembran tomate manzano. Cosechan muchas cajas de tomates. Son tomates muy saludables. Los exportan a otros países. Algunas cajas se quedan en la comunidad. Son para el consumo de los pobladores."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Nuestros amigos tienen diferentes oficios. No todos son agricultores. Algunos son albañiles, carpinteros o tenderos. Hay panaderos y reposteros. También hay médicos, maestros y abogados. Además, hay peluqueros y sastres.\nTodos somos importantes en la comunidad. Cada uno aporta algo. Todos necesitamos de todos. Por eso nos cuidamos y ayudamos."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1a36cdeb-d57c-4e77-8f61-66f7254822b9%2fMis+amigos+de+la+comunidad%2fAlbanil+2.png",
+      "text": "Don Mario es albañil. Él construye casas. Rosa es arquitecta. Ella diseña las casas. Hacen un buen equipo."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Clara es médica. Estudió en la capital. Trabaja en el centro de salud. También hay dos enfermeros. Ellos se preocupan por nuestra salud. Llevan nuestros registros de salud. Nos curan cuando nos enfermamos. También nos dan pláticas. Nos enseñan a cuidar nuestra salud. Promueven que seamos una comunidad saludable."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1a36cdeb-d57c-4e77-8f61-66f7254822b9%2fMis+amigos+de+la+comunidad%2f87-refrigeracion_mujer.png",
+      "text": "Don Manuel es carpintero, hace sillas. Don Casimiro hace trajes. Doña María es electricista. Hace instalaciones eléctricas. También repara las refrigeradoras."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Los niños vamos a la escuela. Estudiamos en preprimaria o en primaria. Los jóvenes estudian. También hay un instituto de secundaria.\nNuestro profesor se llama Carlos. Nosotros estamos en tercero primaria. Estamos aprendiendo acerca de Guatemala.\nLa educación es valiosa. Nos enseñaron la importancia de estudiar. Un pueblo educado prospera."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1a36cdeb-d57c-4e77-8f61-66f7254822b9%2fMis+amigos+de+la+comunidad%2fninos+saludo+a+la+bandera.png",
+      "text": "En la comunidad convivimos diferentes culturas. Todos nos guardamos mucho respeto. Wilson es nuestro mejor amigo. Wilson es de Livingston. A Wilson le gusta cantar en garífuna."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1a36cdeb-d57c-4e77-8f61-66f7254822b9%2fMis+amigos+de+la+comunidad%2fnino+saxofon.jpg",
+      "text": "Enrique también es nuestro amigo. A él le gusta la música. Toca el saxofón. Wilson y Enrique practican juntos. Interpretan diferentes melodías."
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "El domingo todos descansamos. Nos reunimos en el parque. Cuando vamos al parque jugamos. Adultos y niños nos divertimos. Don Paco juega y enseña ajedrez. Él juega ajedrez con todos.\nSiempre jugamos con Tere. Ella llega en silla de ruedas. Juanito es no vidente. Nos gusta jugar juntos."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1a36cdeb-d57c-4e77-8f61-66f7254822b9%2fMis+amigos+de+la+comunidad%2fni%c3%b1os+en+parque+jugando.png",
+      "text": "La aldea La Esperanza es especial. Allí vivimos muy bien. Es un ejemplo de convivencia sana.\nUn pueblo educado es próspero."
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 487
+  }
+}

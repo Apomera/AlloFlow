@@ -1,0 +1,82 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-5d533461-o-rato-e-a-ratoeira",
+  "title": "O rato e a ratoeira",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Léonie Dieleman"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Léonie Dieleman",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jR6SPDD98S"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/jR6SPDD98S%2f1772819724013%2fChiru+ibodzi+na+latowera%2fRato+1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Um dia havia uma senhora que sofria com um rato dentro da sua casa.\nUm marido foi comprar uma ratoeira para matar aquele rato."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Quando o rato viu a ratoeira ele tomou um susto.\nEle foi falar com a galinha e disse: \"Eu vou morrer em breve porque o dono da casa comprou uma ratoeira.\"\nA galinha respondeu: \" O problema é seu.\""
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "O rato então foi falar com o porco.\nO rato disse: \"Eu vou morrer em breve porque o dono da casa comprou uma ratoeira.\"\nO porco respondeu: \"Não se preocupe, no dia que vai morrer, eu vou pôr flores na sua campa.\""
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Triste, o rato foi falar com a vaca.\nO rato disse: \"Em breve eu vou morrer porque o dono da casa comprou uma ratoeira.\"\nA‌ vaca apenas disse: \"Waaaa\"."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Naquela noite a mulher ouviu o baralho da ratoeira.\nEla levantou com alegria e disse: \"Este meu sofrimento acabou porque o rato morreu!\"\nNa escuridão a mulher aproximou-se da ratoeira. Só que, não havia entrado o rato mas uma cobra!\nA cobra mordeu aquela senhora."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Assim, a mulher foi levado para o hospital.\nAo voltar para casa ela ainda não estava muito."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Por isso o marido disse para os empregados: \"Matem a galinha para fazer uma sopa para minha esposa.\""
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Muitas pessoas vieram para visitar a mulher que foi mordida com a cobra.\nAssim, o marido disse para os empregados: \"Matem o porco para que as pessoas possam comer.\""
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "So que, a mulher perdeu a sua vida.\nMuitas pessoas vieram para o enterro.\nO marido então disse para os empregados: \"Matem a vaca para que todos possam comer.\"\nO sofrimento que estamos a ver hoje com alguém pode vir para você amanhã. Por isso ajude uns aos outros."
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 292
+  }
+}

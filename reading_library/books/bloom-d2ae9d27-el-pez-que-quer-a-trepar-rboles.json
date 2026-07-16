@@ -1,0 +1,574 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d2ae9d27-el-pez-que-quer-a-trepar-rboles",
+  "title": "El pez que quería trepar árboles",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/A7b7p5EY0G"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2fgoldfish-30837_640.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2ffish-3774184_640.jpg",
+      "text": "Había una vez un pez dorado y hermoso. Sus escamas brillaban como el sol. Este pez amaba nadar.\nEra un pez muy valiente y atrevido. Además, era muy competitivo, le gustaba ganar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fa7708b92-860e-4e10-b443-76be8dd1582b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi472c9b5d-9d45-4a14-8f45-34512b800229.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fdea3ec9f-2ad6-4041-9706-c86ba32eac08.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi2779cf53-73a0-4beb-8d25-d530ce44b4c2.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi5038fa32-d978-4af3-b114-5ea4a38fa554.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2fbald-eagle-309003_6401.png",
+      "text": "El pez asistía a la escuela. Era una escuela muy especial. Allí estudiaban muchos animales. Habían leones, monos, aves y vacas, entre otros. El profesor era un búho muy sabio.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fdf03e317-3268-45dd-b755-453716b0830e.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fca49ec28-1492-41a3-a615-8dfec1130534.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi4f72a5d8-0b65-4372-99ba-0e6618775971.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi228fe268-a568-4f1f-82cf-f458edc237f8.mp3",
+          "dur": 6.034182
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi1d044a4e-d49a-406f-a94c-f15fd13e3e1f.mp3",
+          "dur": 3.630958
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "El primer día de clases todos estaban emocionados. Llegaron temprano a la escuela. El profesor saludó a los estudiantes. Dijo que ese año aprenderían muchas cosas nuevas. Pidió que todos trabajaran en armonía. Además, que todos se debían valorar.\nLe pidió a cada uno su atención. Dijo que harían algunas actividades. Si no querían hacer alguna, lo debían decir. Debían explicar por qué no la harían.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fa343a11b-6176-40fc-8e1e-00ad1e99ac28.mp3",
+          "dur": 4.336252
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fab87e17c-c315-43c7-bcc6-6ba67d966a08.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi716780e6-3fa0-4ae9-830c-ebe7f19c53b7.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi84b9d70f-3db7-47f0-a31c-382935c22f1b.mp3",
+          "dur": 4.231764
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi4ec91ae9-f006-455b-990d-69d8c5e81065.mp3",
+          "dur": 4.336252
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fdcac4263-9447-4bb9-b77b-7b234b57eed2.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi077f33ea-7eab-47c2-b11e-ac4455435d9b.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fd80f13d0-30ca-4782-aa2e-561813163a56.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fb6a538b1-ad7a-4c52-83af-aaa3955b4886.mp3",
+          "dur": 4.127276
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi8513b838-bde7-4c5a-a608-ee78b22cd4aa.mp3",
+          "dur": 4.127276
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "El búho dijo que iban a volar o saltar. Podían hacerlo como quisieran. Podían hacerlo en cualquier lugar.\nEl águila se puso muy contenta. Pidió pasar de primero. Extendió sus alas y emprendió el vuelo. Todos la veían admirados y la felicitaron.\nEl león se subió a una montaña. Corrió y brincó muy alto. Al caer a tierra, parecía que volaba.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2ff1732234-b0cd-462d-b819-0a63142cbbcc.mp3",
+          "dur": 4.231764
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi5855eb96-539c-492e-a61b-22bdec7c2d28.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2ff468458a-6377-40c1-9c2b-4ec4f622caf7.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fcfff529f-a02c-469b-80d0-c689458f6e76.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2ff57d08a9-63cd-45ae-bfc0-e6543e2c62ae.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi8a8f3222-9757-4705-b161-e3809d6b9a67.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi3a32d92e-499e-4a03-bce1-47c18d9462d1.mp3",
+          "dur": 4.728082
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fcc54bb66-cc90-4a64-8919-9780362d7d90.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi47318e74-b1cd-4027-9892-86a321c8dbf7.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi2e958306-5824-4a5a-9beb-ac4872da2591.mp3",
+          "dur": 3.813812
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2fmono+varios11.jpg",
+      "text": "El mono se subió a un árbol. Se colgó de rama en rama. Parecía que volaba en el aire. Se veía que lo disfrutaba. Todos sus compañeros le aplaudieron."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "El turno del pez llegó. No se quería quedar atrás e intentó volar. Él quería que todos lo admiraran.\nEl pez no podía salir de su pecera. Pegó un brinco y se cayó. El profesor lo metió rápidamente a su pecera.\nLe preguntó si estaba bien. Lo felicitó por haberlo intentado. Algunos animales se rieron del pez. El profesor les recordó que debían respetarse.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi1c91e93a-8000-413a-939c-8797d2105197.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2ff4f9609b-bdcb-4e11-8251-5d30f8e26074.mp3",
+          "dur": 4.336252
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fd5aaaff8-274c-4dc2-941f-dbb4ac314e67.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fa3c5797e-cac8-4630-affc-f28d439af087.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi05c70f9d-ccf6-491c-8bef-113007ace1b5.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi77979075-ecab-41fc-90c1-86d14e0f72c3.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi5f3ac150-2401-44ce-9b9f-7d036f52c208.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi33dcd81d-3f3a-474d-8f4c-7394faa32353.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi1b2b348c-b954-4450-825d-57561767765f.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi547881ab-4a83-4fd6-a1a6-840097179044.mp3",
+          "dur": 4.336252
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Al siguiente día fueron a la escuela.\nEl profesor explicó que harían algo especial. Harían algo para cuidar el ambiente. Cada uno seleccionaría cómo y en dónde trabajar.\nUnos decidieron recoger basura. Otros iban a limpiar el césped. Un grupo quería sembrar plantas. Un colibrí llevaba agua en su pico. Luego, la tiraba y regaba las flores. Eso causó la admiración de sus compañeros."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2fcow-159893_640.png",
+      "text": "La vaca, sin decir palabra, empezó. Inició pastando rápidamente. El césped estaba limpio y recortado. Todos los animales se quedaron asombrados. Algunos le empezaron a aplaudir."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "El pez no se quería quedar atrás. El profesor le aconsejó limpiar su pecera. Eso ayudaría a que las algas no crecieran. Además, eso beneficiaría a los animales más pequeños.\nEl pez no se quería quedar atrás. Quería hacer algo más asombroso. Intentó regar las flores. El pez tiró agua una y otra vez. La pecera se quedo vacía. Todos llenaron la pecera para salvar al pez.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fa5282894-1f8b-4252-abff-0883bf33899b.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2ff28a30f2-ae73-4d5b-bc8a-acb56b73f0ba.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fa69ba126-b7ac-4c28-8bc8-fb6736d4defc.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi42cd94db-12a5-469e-ba65-cc9a30364add.mp3",
+          "dur": 5.2244
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi41e53a98-1389-415c-81eb-da1d88832407.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi330a24ab-f04e-4d99-a6a7-34a8a781bedc.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi785f2eee-2d0e-4549-9034-497be471ec9d.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi5af8a82f-e084-4892-a814-c577d0651e84.mp3",
+          "dur": 4.231764
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi0f6a3662-68b8-425d-99e3-479b64e65df5.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi97d49469-94fe-44c1-9632-692373b74b9c.mp3",
+          "dur": 4.231764
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Otro día el profesor les puso un reto. Debían correr, nadar o volar. Cada uno debía decir hasta dónde llegaría. Además, en cuánto tiempo lo haría. Ellos mismos se pondrían la meta.\nEl mono dijo que subiría una montaña saltando. Lo haría en diez minutos. A los veinte saltos, se cansó. La vaca desde un principio se rindió. El profesor en una sombra la dejó.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fic854ce14-00fd-4c64-bc46-c8e88385abee.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fc55af571-34e2-4083-9444-01fb51d0b8ef.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi4a3adbd7-75f0-419d-a0eb-4b1230af5d36.mp3",
+          "dur": 4.336252
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fd7ff537e-31f0-4cf0-9b0a-e41a7b254a65.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2ff88b71eb-46cf-4414-862c-65885e379d2a.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi084ba2f5-a3c7-439d-8c66-aa568e69d62a.mp3",
+          "dur": 4.414618
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi6c15b4a6-3932-45c6-bfbc-8d399c421821.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fe1c2272e-a0bd-4886-96f0-b8028feab6b1.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi53d87936-be4e-4b13-9d63-31bd0aa2d4ae.mp3",
+          "dur": 4.414618
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi80d8206b-dcf4-4852-a5f3-c1582d0ad685.mp3",
+          "dur": 4.623594
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2fLEON.png",
+      "text": "Mientras tanto, el león se preparó. Decidió subir una montaña en cinco minutos. Estiró sus patas y sus garras afiló. El león rápido llegó y su meta alcanzó. Todos sus compañeros le aplaudieron al unísono.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fa88a373b-e992-4aab-8917-d3bf887b69c0.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi468ca997-ad32-4615-bf98-cad30c3765ef.mp3",
+          "dur": 4.127276
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi8117951b-daf6-4703-bb9b-25ddc84f3e6a.mp3",
+          "dur": 4.127276
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi11c29696-7ff2-48fa-a9c0-dd69e0ff19e0.mp3",
+          "dur": 4.623594
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fea2cf3d6-f3b3-4959-9863-4842a2efc2a6.mp3",
+          "dur": 4.623594
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2ftortuga+3.jpg",
+      "text": "La tortuga dijo que caminaría cincuenta metros. Lo haría en media hora. Su caparazón movió y a paso lento subió. Logró llegar a la meta. Sus compañeros la felicitaron.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi9644fcd0-d8b6-48f9-83d5-522e24364380.mp3",
+          "dur": 4.414618
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi5f6e4c3f-5139-4866-aece-8ed750e5fbbf.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2ffa7fb0cd-82cb-48cb-85ba-a44896f094d1.mp3",
+          "dur": 4.937058
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi4b92f8e6-cf57-44fd-a320-de30036c25c6.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi8d30774a-ddde-43c2-b65c-6794ef0fe598.mp3",
+          "dur": 3.813812
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Todos pensaron que el pez iba a nadar. El pez solo pensaba en sobresalir. Así que dijo que subiría un árbol. Luego haría un clavado hacia su pecera. Todo lo haría en cinco minutos. Algunos no le creyeron, otros se rieron.\nEl profesor lo cuestionó. Le preguntó si estaba seguro. Le dijo que no debía ponerse en riesgo. El pez no lo escuchó.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi70b82515-31fa-4674-9c07-23932d874814.mp3",
+          "dur": 4.414618
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fdd66e5d8-7e2c-4b73-934b-b17b810bee2b.mp3",
+          "dur": 4.414618
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fd7877e59-7b44-412e-88ed-f32a37257683.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi62455e22-2ba8-417a-ae6e-de679ebeccef.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fa7417644-778b-49b1-aac5-2d628816ef87.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi4801171b-570d-415b-99c2-62de5fa9936e.mp3",
+          "dur": 4.728082
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi99355eaf-dc1c-4c99-bcb0-145f02339e73.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fd48525c4-f581-4811-af8f-96d6ac2f1627.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fdf0dee20-6c9b-45e1-89c8-82df709375eb.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fcbd9875f-86d3-42bb-990a-42d1dc3f49c5.mp3",
+          "dur": 2.925664
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2fgolden-fish.jpg",
+      "text": "El pez dio un gran brinco para salir. El pecesito no aguantó y se cayó. Su pecera se volteó. El pez se asustó y pidió ayuda. El mono lo recogió muy rápido.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi7221a8da-b8aa-41df-98a1-064171f28c1b.mp3",
+          "dur": 4.127276
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi32b43994-49e2-45be-9a87-90ef7148be91.mp3",
+          "dur": 5.015424
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi863d165c-ada4-4c46-b800-c512e3c9c2e8.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fed5f7d0f-3352-4a30-a436-230c1bcef89c.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fdc1e6b92-7cf6-4d7b-9dbd-a55dde285f2d.mp3",
+          "dur": 3.735446
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Todos los animales conversaban del pez. A algunos les daba pena. Otros se reían de él. El profesor los observó...\nAl día siguiente el profesor los saludó. Dijo que ese día todos iban a nadar.\nEl águila fue la primera en pasar. Movió sus alas, pero no pudo nadar.\nLa tortuga nadó despacio, pero muy bien. El león y la vaca no quisieron probar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fbcecc591-a674-45fc-abf8-447781524908.mp3",
+          "dur": 3.932494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi1b694a6d-570c-49f0-baba-5955692339ff.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi320ceebd-5935-4554-a33b-388b2eabc36b.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fbb8461cd-73cc-40cb-aaae-1e29587c2668.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi41517a7b-fde8-40bd-bcf5-c3cc8f9abb81.mp3",
+          "dur": 4.414618
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fcae7da8e-2a0a-421b-8525-447a19f0d312.mp3",
+          "dur": 4.231764
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fe59a459f-be01-4207-b13f-d5e5476fbbe8.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi36f8a26a-0aa7-404d-9ec9-dfb09e8f8130.mp3",
+          "dur": 4.414618
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fd2496c9c-8435-41c5-a3f2-1979172957d9.mp3",
+          "dur": 5.015424
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi7a25d2dd-929c-4e0b-9964-c76c8a1f2a30.mp3",
+          "dur": 4.231764
+        }
+      ]
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2ffish-2638627_640.png",
+      "text": "El pez empezó a nadar. Nadó boca abajo y nadó boca arriba. Nadó al fondo y cerca de la superficie. Lo felicitaron por nadar como nadie más.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi73bf1b9d-165e-4eee-a8a4-069f6ad29e1c.mp3",
+          "dur": 3.9183
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi8d4962f2-ca92-4579-a4b0-2b465bee498b.mp3",
+          "dur": 4.414618
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi0ae48e8b-09f0-40ab-a48d-3b91e9336a91.mp3",
+          "dur": 4.231764
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2faudio%2fi1ffdaf68-98fc-47fc-9abc-74d37b1c40c1.mp3",
+          "dur": 4.414618
+        }
+      ]
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "El pez estaba muy contento, se sentía especial. Sin embargo, dijo que tenía un sueño. Quería trepar un árbol para ver desde arriba. Había entendido que nunca lo podría lograr.\nEl mono tuvo una idea. Se amarró la pecera en la espalda. Luego, trepó un árbol. El pez estaba emocionado de cumplir su sueño. Pudo trepar y ver desde arriba. Todos felicitaron al mono por ser tan amigable."
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2ffinal.jpg",
+      "text": "El profesor les habló de los talentos individuales. Dijo que cada uno era valioso. Además, que no se debían criticar. Resaltó la importancia de valorar a los demás. Todos los animales se sintieron especiales."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué el pez hacía todas las actividades que indicaba el búho?\nPorque era muy valiente.\nPorque era el más aplicado de la escuela.\nPorque era competitivo y quería sobresalir."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué animal ayudó más al pez?\nEl león\nEl mono\nLa tortuga"
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿De qué les habló el profesor al final de la lectura?\nDe los talentos individuales.\nDe estudiar todos los días.\nDe ser competitivos."
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué se dice que el búho era un maestro muy sabio?\nPorque no regañaba a los animales.\nPorque hacía muchas actividades divertidas con sus estudiantes.\nPorque daba consejos y buscaba que todos se valoraran y aprendieran."
+    },
+    {
+      "n": 23,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué fue importante que todos llenaran rápido la pecera cuando se vació?\nPorque el profesor búho los podía regañar.\nPorque un pez no puede vivir fuera del agua.\nPorque una pecera vacía se quiebra fácilmente."
+    }
+  ],
+  "stats": {
+    "pages": 23,
+    "words": 1009
+  }
+}

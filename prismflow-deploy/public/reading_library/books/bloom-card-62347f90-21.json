@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-62347f90-21",
+  "title": "21 - แมวและสุนัข และดวงดาว",
+  "description": "แมวกับสุนัขต้องการบินไปสู่ดวงดาว . . .",
+  "language": "Thai",
+  "langCode": "th",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "SIL Education for Life"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL Education for Life",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/mJWxEnHorE"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mJWxEnHorE%2f1736231396881%2f21+-+%e0%b9%81%e0%b8%a1%e0%b8%a7%e0%b9%81%e0%b8%a5%e0%b8%b0%e0%b8%aa%e0%b8%b8%e0%b8%99%e0%b8%b1%e0%b8%82+%e0%b9%81%e0%b8%a5%e0%b8%b0%e0%b8%94%e0%b8%a7%e0%b8%87%e0%b8%94%e0%b8%b2%e0%b8%a7%2fcoverImagecurved.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"21 - แมวและสุนัข และดวงดาว\" (Thai). แมวกับสุนัขต้องการบินไปสู่ดวงดาว . . ."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 63
+  }
+}

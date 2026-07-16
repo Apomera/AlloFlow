@@ -1,0 +1,67 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-834c7f67-a-canoa-da-sara",
+  "title": "A canoa da Sara",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "Little Zebra"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/RpYpzWbp3G"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/RpYpzWbp3G%2f1765822070469%2fMwadiya+wa+Sara%2fSara+Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/RpYpzWbp3G%2f1765822070469%2fMwadiya+wa+Sara%2fSara+2.jpg",
+      "text": "A Sara tem uma canoa. A canoa é grande. A canoa está na margem do rio.\nUmas mulheres aparecem no rio. Uma mulher tem uma bacia de frutas. Outra tem uma galinha. Outra tem um cabrito. E outra ainda tem dois cabritos. Elas perguntam à Sara: “Como é que nós podemos chegar à outra margem do rio?” A Sara responde: “Entrem na minha canoa!”"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/RpYpzWbp3G%2f1765822070469%2fMwadiya+wa+Sara%2fSara+3.png",
+      "text": "Depois, uns homens chegam. Um homem tem peixe. Outro tem uma bicicleta. Outro tem um saco de milho. E um outro ainda tem dois sacos de milho. Eles perguntam à Sara: “Como é que nós podemos chegar à outra margem do rio?” A Sara responde: “Entrem na minha canoa!\""
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/RpYpzWbp3G%2f1765822070469%2fMwadiya+wa+Sara%2fSara+5.png",
+      "text": "Uns animais aparecem no rio. Eles perguntam à Sara: “Como é que nós podemos chegar à outra margem do rio?” A Sara responde: “Entrem na minha canoa!” Os animais entram na canoa. O cão entra na canoa. O gato entra na canoa. O macaco entra na canoa. O coelho entra na canoa. O cágado entra na canoa. A gazela entra na canoa."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/RpYpzWbp3G%2f1765822070469%2fMwadiya+wa+Sara%2fSara+8.jpg",
+      "text": "O elefante aparece no rio. Ele pergunta: “Como é que eu posso chegar à outra margem do rio?” A Sara responde: “Entra na minha canoa!” O elefante entra na canoa. A canoa fica cheia de água. A canoa é pequena. Não há espaço suficiente. A canoa é pequena. Não há espaço suficiente."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/RpYpzWbp3G%2f1765822070469%2fMwadiya+wa+Sara%2fSara+12.jpg",
+      "text": "A Sara diz: “Esperem um minuto! Primeiro, eu levarei as mulheres. Segundo, eu levarei os homens. “No fim, eu levarei os animais.”"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/RpYpzWbp3G%2f1765822070469%2fMwadiya+wa+Sara%2fSara+13.png",
+      "text": "O elefante diz: “Ei, eu irei a pé!”"
+    }
+  ],
+  "stats": {
+    "pages": 6,
+    "words": 257
+  }
+}

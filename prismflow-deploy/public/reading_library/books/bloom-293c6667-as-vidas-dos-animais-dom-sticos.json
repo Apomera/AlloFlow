@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-293c6667-as-vidas-dos-animais-dom-sticos",
+  "title": "As Vidas dos Animais Domésticos",
+  "description": "Vê-se muitos animais no dia a dia. Você sabe o trabalho de cada um?",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Science"
+  ],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/6P6ySc3CxO"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Cão\nMeu nome é Cão. Meu trabalho é ladrar às pessoas. Muitas pessoas não me gostam porque sou um ladrão. Quando vejo ovos, os como. Meus patrões gostam de mim quando ladro aos macacos e quando guarneço a casa durante a noite, enquanto eles dormem. Outras pessoas gostam de mim porque os ajudo na caça. Mas, quando mato um animal na caça, eles não me dão muito para comer. Sou eu, o Cão."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage12.jpg",
+      "text": ""
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage3.jpg",
+      "text": "Pato\nMeu nome é Pato. Meu trabalho é nadar na água. Muitas pessoas não me gostam porque faço necessidades maiores nos seus quintais. Também sujo muita água procurando comida e fazendo coisas muito sujas, mesmo quando tem hóspede na casa. No entanto, algumas pessoas gostam de mim porque comem a minha carne e os meus ovos. Sou eu, o Pato."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage4.jpg",
+      "text": "Vaca\nMeu nome é Vaca. Meu trabalho é comer capim e carregar trouxas com a carroça. Muitas pessoas gostam de mim porque me criam e, depois, me matam. Depois de me matarem, eles vendem minha carne para ganhar muito dinheiro ou comem a minha carne gostosa. Sou eu, a Vaca."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage5.jpg",
+      "text": "Burro\nMeu nome é Burro. Meu trabalho é carregar as pessoas. Algumas pessoas me criam para subir em mim e fazer viagem de burro, como se eu fosse uma mota. Outras pessoas usam-me como uma bicicleta, me utilizando para carregar mercadoria ou arroz. Eu levo estas coisas para onde eles querem. Outras pessoas não gostam de mim porque, quando estou cansado, sacudo a pessoa que está em cima de mim, sem nenhum aviso. Sou eu, o Burro."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage6.jpg",
+      "text": "Rato\nMeu nome é Rato. Meu trabalho é correr pelas machambas e pelo tecto das casas. Muitas pessoas não gostam de mim, porque eu como o seu arroz e milho. Também não gostam de mim porque mexo com as outras coisas deles e eu roo as suas roupas bonitas. Elas procuram ter um gato em casa para me caçar e outras até compram veneno para me matarem! Sou eu, o Rato."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage7.jpg",
+      "text": "Gato\nMeu nome é Gato. Meu trabalho é caçar ratos, cobras e insectos. Quando apanho ratos ou cobras, as pessoas gostam de mim. No entanto, outras pessoas não me gostam porque eu roubo o seu peixe e sou esperto, pois, quando eu pego o peixe, corro para longe das pessoas para o comer. Sou eu, o Gato."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage8.jpg",
+      "text": "Ovelha\nMeu nome é Ovelha. Meu trabalho é andar por todo lado e comer capim. Infelizmente, não sou muito esperta. Facilmente fico presa nas árvores espinhosas e, se eu cair na água, às vezes tenho problemas em nadar por causa da minha lã grossa. As pessoas gostam de mim porque sou muito gorda e me comem. Dizem que minha carne faz um bom carril! Sou eu, a ovelha."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2f8+Goat.jpg",
+      "text": "Cabrito\nMeu nome é Cabrito. Meu trabalho é andar, comer capim e outras coisas. Muitas pessoas não gostam de mim porque faço estragos em suas machambas, comendo as suas mandioqueiras, feijão, milho e aboboreiras. Mas, quando chegar a festa de 25 de Dezembro, muitas pessoas gostam de mim, porque gostam de comer a minha carne. Sou eu, o cabrito."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage9.jpg",
+      "text": "Porco\nMeu nome é Porco. Meu trabalho é cavar o chão e brincar na lama. Muitas pessoas não gostam de mim porque eu cavo demais e como suas mandiocas. Algumas pessoas não comem minha carne porque são muçulmanos, mas outras comem e dizem que é muito gostosa. Sou eu, o Porco."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage10.jpg",
+      "text": "Galinha\nMeu nome é Galinha. Meu trabalho é agitar e espalhar a terra procurando comida. Muitas pessoas gostam de mim porque comem meus ovos ou minha carne. Dizem que a minha carne é muito boa para assar ou para fazer carril. Sou eu, a Galinha."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage11.jpg",
+      "text": "Galinha de Mato\nMeu nome é Galinha do Mato. Meu trabalho é cacarejar por onde passo: \"Ndjendje, ndjendje.\" Muitas pessoas não gostam de mim porque é muito difícil me apanhar. Quando hóspedes chegam em casa e os meus donos querem me pegar para o carril, eu saio voando e não me pegam. No entanto, se conseguem me apanhar, eles gostam muito da minha carne. Sou eu, a Galinha de Mato."
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 681
+  }
+}

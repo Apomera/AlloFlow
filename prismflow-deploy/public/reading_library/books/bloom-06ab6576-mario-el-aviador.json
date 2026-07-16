@@ -1,0 +1,520 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-06ab6576-mario-el-aviador",
+  "title": "Mario el aviador",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/uJfZqI0aAj"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faircraft-3855349_6401.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Había un niño llamado Mario. Mario tenía 10 años. Era un niño muy creativo. Además, le gustaba soñar.\nLe gustaba hacer muchas cosas. Sentía pasión por los aviones. Soñaba con ser un aviador. Además, quería tener un avión.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fccc7d0c2-bd59-413b-a859-1210bedd7295.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi5d3ed312-48f2-474b-901f-a41ef6ea1fc6.mp3",
+          "dur": 2.730861
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi84bc756f-a2ee-4552-93ab-cde9ae0f79ff.mp3",
+          "dur": 2.730861
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fe34bc895-418b-4b4e-a5fd-3726464333c4.mp3",
+          "dur": 2.443514
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi8bae504d-903a-4006-9ef7-12e33b737e70.mp3",
+          "dur": 2.443514
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2ff614fb63-2d0f-4711-ab14-3fa9dc7a67a2.mp3",
+          "dur": 2.652494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi6ef4fc33-4b2f-48c6-bbae-ab91576a1415.mp3",
+          "dur": 2.548004
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi670c6d71-c61e-4afd-9dfa-d060d7f764ba.mp3",
+          "dur": 2.548004
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2fchico+2+leyendo.png",
+      "text": "Le gustaba leer acerca de aviones. Siempre conversaba acerca de ellos. A veces imitaba su vuelo. Sentía pasión por ese tema.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi2ac75fb3-1853-41c6-abaa-30a4eef08773.mp3",
+          "dur": 2.939841
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi5d845cee-7219-45af-bf0a-854d1e245768.mp3",
+          "dur": 2.939841
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fc70b2156-ec1e-4d91-8e91-f4cc21ea7da7.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fa74f36f3-93e8-4cf8-a928-5a2419caa1e4.mp3",
+          "dur": 2.730861
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "En la escuela dibujaba muchos aviones. Luego, los pintaba de diferentes colores. En el patio pintó un avión. Los niños lo usaban para saltar.\nSus compañeros le llamaban Mario Aviador. Él se sentía muy orgulloso. Sabía mucho del tema. Quería ser un experto."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faeroplano.png",
+      "text": "Mario construía aviones con diferentes materiales. Podían ser latas, cajas o papel. Hacía aviones con formas diversas. También les ponía nombre.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi74460d9e-9891-4a35-adb8-bc0a18b70b1a.mp3",
+          "dur": 3.540657
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi9022a167-33d6-4817-a038-56fcaef58b75.mp3",
+          "dur": 2.939841
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fd8fc6ca7-e7e7-44cb-892b-04d827c43c08.mp3",
+          "dur": 2.939841
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi3996657e-7bdb-42cf-abdd-4b78081b0268.mp3",
+          "dur": 2.339024
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Mario quería tener un avión. Un avión que volara de verdad. Empezó a investigar cómo hacerlo. Se emocionó al encontrar un plano.\nEl plano le pareció complicado. Entonces se recordó de don Carlos. Él era un anciano jubilado. Había sido aviador.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fda895ac2-e78e-4ddc-97f5-ecab7374d850.mp3",
+          "dur": 2.130045
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi300b1835-44c1-47f1-b58f-6f559ded998f.mp3",
+          "dur": 2.443514
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fd32c8b61-a3e4-403a-9913-67eec3b61b17.mp3",
+          "dur": 2.443514
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2faedfea2a-5a31-42fb-9d88-a527a9c9e219.mp3",
+          "dur": 2.339024
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi9005c5fe-250c-4038-86fb-33d932ef401e.mp3",
+          "dur": 2.339024
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2ff5330acf-c0e8-4d55-8a5b-beba24f3a495.mp3",
+          "dur": 2.443514
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fd73fa1f6-c720-4b61-98ff-028b5638aa77.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fbc77b527-3ecf-4c5d-a257-ebf4897c8d21.mp3",
+          "dur": 2.130045
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2fAbuelo+en+sillon+de+madera.png",
+      "text": "Corrió a buscarlo. Don Carlos ofreció ayudarle. Mario y don Carlos trabajarían juntos. Ellos construirían un avión.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fa849ed86-958f-4f7e-9e1c-de54eb9c806a.mp3",
+          "dur": 1.633718
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi4cfd1f27-b464-4215-9bd3-0e1f6b6e1263.mp3",
+          "dur": 2.130045
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi09d600ac-4898-46a9-86c6-9c4c1d55fe98.mp3",
+          "dur": 2.652494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi931a90db-8704-4399-99b5-d8cba6f062b6.mp3",
+          "dur": 2.130045
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Tenían un gran proyecto. Querían construir un avión a escala. Primero vieron el plano. Luego, consiguieron todos los materiales.\nTrabajaban mucho. Además, conversaban acerca de aviones. Los sábados trabajaban en su proyecto. Don Carlos guiaba a Mario.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi9001acb5-58e7-4c29-b4f2-3c104106f587.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fb8ba3dd6-2d15-4025-a114-d06eded9ac85.mp3",
+          "dur": 2.548004
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi6a35b969-88c1-495d-92fd-21cb03eb198e.mp3",
+          "dur": 1.842698
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi824d8a36-bce9-4b8f-a653-6e99cf379cc6.mp3",
+          "dur": 2.652494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi8664ff07-78d3-4803-b770-3cffa68f5a31.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi62c740dd-943d-49ab-8204-02222b1031a8.mp3",
+          "dur": 3.331678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi4a63f731-9d33-4b1f-abe7-03b45682eca3.mp3",
+          "dur": 2.548004
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi429ae6de-99f8-49a5-9702-ea3afd43e955.mp3",
+          "dur": 1.947188
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2fplane-145467_640.png",
+      "text": "Por fin terminaron el avión. Era azul. La cabina era grande. Las alas eran muy largas.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fb7b6780a-c6a2-41c5-853a-9748cced0706.mp3",
+          "dur": 2.443514
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fe109522d-558e-4607-9175-6e5efdb73443.mp3",
+          "dur": 1.529229
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi599238a7-7810-4eab-92c2-50e12c4cb6cd.mp3",
+          "dur": 2.051678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fffa4b1c6-edf8-4877-90b3-1856ddb1d386.mp3",
+          "dur": 2.339024
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Estaban muy contentos con el resultado. Era un proyecto muy exitoso. Los papás de Mario estaban orgullosos. Estaban muy agradecidos con don Carlos.\nTodos pensaron que ya habían terminado. Los aviadores tenían otra idea. Querían ponerle motor al avión. Querían hacerlo volar."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faor_CMB0132.png",
+      "text": "Consiguieron un motor usado. Un mecánico los ayudó a colocarlo. Ya era un avión con motor. Se manejaría con un control remoto."
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Fueron al campo a probarlo. Ambos fueron vestidos como pilotos. Mario se sentía feliz. Era su primer vuelo.\n¡Oh! exclamó Mario, soy un aviador. El avión volaba por el campo. Don Carlos se sentía como niño. Todos estaban muy emocionados.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi1fb9e91a-c37d-40d8-a202-99159fd2830a.mp3",
+          "dur": 2.443514
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi16df52c0-2a70-470e-91b9-d1576d113397.mp3",
+          "dur": 2.652494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi0c36b7d3-dfcc-47ec-bf32-dd3d71888502.mp3",
+          "dur": 2.130045
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2ff7419c77-1445-4231-a854-ef56305dfe63.mp3",
+          "dur": 1.842698
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fb5a308bf-5aec-4945-811d-d80b3019ae3a.mp3",
+          "dur": 3.331678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi3733524d-0114-4a6e-a2db-dbee91ea91bc.mp3",
+          "dur": 2.339024
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi93af8757-7428-451a-8f7f-2542cc3014c3.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fa7fea86e-f665-4646-9a45-9fd3af4a138d.mp3",
+          "dur": 2.339024
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2fplane-145467_6401.png",
+      "text": "Pasaron muchas horas jugando. El avión era un éxito. Las personas lo veían entusiasmadas. Mario era un aviador de verdad.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi50ac03c3-2de6-41ea-bfb2-90568aab3696.mp3",
+          "dur": 2.234535
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi23017466-a43e-4fc2-8553-c49d95e8ee7b.mp3",
+          "dur": 1.947188
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fff48c4c9-250d-4018-aa71-102343889b03.mp3",
+          "dur": 2.939841
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi50486049-0ac2-42ad-8227-d6c6e238b896.mp3",
+          "dur": 2.051678
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Mario y don Carlos eran amigos. Todos los sábados eran especiales. Carlos contaba sus aventuras como aviador. Mario compartía sus sueños y metas.\nAhora Mario está más feliz. Tiene un amigo aviador. Tiene un avión que vuela. Está convencido que cumplirá sus metas.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fa54943a1-191f-4185-b6cc-719ed0dca847.mp3",
+          "dur": 2.130045
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi838488b3-636a-4def-a823-5740aa03b2b4.mp3",
+          "dur": 2.548004
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fe97eb2ef-9fe8-4b52-98ac-94f729e2bd0f.mp3",
+          "dur": 2.835351
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi073931af-c9ee-491c-a354-c9bf7fcb309f.mp3",
+          "dur": 2.652494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2ff2c97a68-8c5a-4c16-a457-8d273c6d960b.mp3",
+          "dur": 2.443514
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi6e4733e8-d908-4ea4-aedc-95e101cd6e4c.mp3",
+          "dur": 1.738208
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi46783526-292e-447f-a58f-0fcbad62c170.mp3",
+          "dur": 1.842698
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi2e3ddacb-47c0-4b0e-b90c-2ff06defd0da.mp3",
+          "dur": 2.548004
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2fHelicoptero.png",
+      "text": "Ellos tenían muchas ideas. Juntos pensaron en su próximo proyecto. Finalmente tomaron una decisión. Ahora construirán un helicóptero.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi03e2521e-54a9-49e7-b156-7e63a83ac110.mp3",
+          "dur": 2.324858
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fa782de22-d8ff-4f24-a976-e6a37ab5741d.mp3",
+          "dur": 2.652494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi3799202e-b1c3-4595-8a34-0702ba9ebc81.mp3",
+          "dur": 2.652494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2ff49b0557-f6b9-4d87-ab2a-95507fcd5fae.mp3",
+          "dur": 2.730861
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Cuál era el sueño de Mario?\nColeccionar aviones.\nSer aviador.\nEscribir un libro acerca de los aviones.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi35b3ec12-fe9e-4e06-9f49-e70c59ae4903.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2ff6951507-532d-4ff6-9286-2c910647c878.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi6748c5d9-a774-463c-8d20-0a34212ed59f.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2ff532e16e-71cb-45b5-8f26-0fbe350f72dc.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi563e11f7-47de-41e1-aeaa-0bb54e98f49d.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué materiales usaba Mario para construir aviones?\nLatas, cajas y papel.\nPiezas de madera.\nPlástico flexible.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi6538ef0a-1a5d-4863-b4ab-df2ab9262e6c.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi320af9a0-b861-4066-af98-dc646334b42a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi36b6beb6-55e1-4830-bc4e-8d0b635c8352.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi7afd1ed5-6e19-4fd1-8678-945fe2ae792a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi01146630-d14a-41fc-8545-040750e4d73b.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Para qué le pusieron motor al avión que construyeron?\nPara hacerlo más veloz.\nPara que pudiera volar.\nPara que pareciera un avión real.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fa7c88486-7658-4130-864f-7879ec820834.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi49be6a55-0893-4004-9be8-0e00dddc2a84.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi4595775b-a09c-4363-ba99-46281e1b0b41.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi0af5f159-8ddf-4218-ae54-b88e5c374844.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi868a3e12-0af8-468d-a45d-38c184bb225b.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Consideras que Mario y don Carlos son un buen equipo?\nNo, porque don Carlos era un aviador experto y Mario era un niño.\nNo, porque cada uno trabajaba por su lado.\nSi, porque trabajaron juntos y lograron finalizar el avión.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fcdb202be-a548-414f-9d60-908efe51c80a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi62639ef4-e3b5-4508-a41e-2966f1a43232.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fe663bb5b-215c-4584-82b8-582d08c1bab2.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi40f140f2-296e-479e-8f70-25a83688b5c4.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fcb0d10b3-e152-4385-a62e-440990efa824.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué llaman a Mario, el aviador?\nPorque le gustaba viajar en avión.\nPorque le gustaba conocer del tema y construir aviones.\nPorque dibujaba los mejores aviones.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi32647710-d3ba-4ffd-9616-4b29060b301c.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi2c1b65c7-5fa0-4e40-ad5d-cba642cd4e70.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fd7363b57-1c92-42e1-925c-2493faf73cf6.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fae6ba63a-8b6d-456d-bfb0-7d49f1d9f6b1.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faudio%2fi787f2a6c-e26e-44a8-8185-1c2dce5e8822.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 19,
+    "words": 557
+  }
+}

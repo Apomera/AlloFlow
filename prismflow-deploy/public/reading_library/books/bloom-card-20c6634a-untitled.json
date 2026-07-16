@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-20c6634a-untitled",
+  "title": "ไปโรงเรียนวันแรก",
+  "description": "A Thai picture book, readable free at Bloom Library.",
+  "language": "Thai",
+  "langCode": "th",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Spiritual"
+  ],
+  "authors": [
+    "Wycliffe Thailand Foundation"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wycliffe Thailand Foundation",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tqTgBy2hMB"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/lannaliteracyli%40gmail.com%2f20c6634a-229d-4cbd-9c92-4d69072c0827%2f%e0%b9%84%e0%b8%9b%e0%b9%82%e0%b8%a3%e0%b8%87%e0%b9%80%e0%b8%a3%e0%b8%b5%e0%b8%a2%e0%b8%99%e0%b8%a7%e0%b8%b1%e0%b8%99%e0%b9%81%e0%b8%a3%e0%b8%81%2fS__7725064.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ไปโรงเรียนวันแรก\" (Thai)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 56
+  }
+}

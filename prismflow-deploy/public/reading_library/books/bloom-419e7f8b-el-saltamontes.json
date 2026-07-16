@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-419e7f8b-el-saltamontes",
+  "title": "El saltamontes",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ATT7mdwtlE"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f419e7f8b-4307-4862-8f3c-267554fcd604%2fEl+saltamontes1%2fcaterpillar-41420_640.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f419e7f8b-4307-4862-8f3c-267554fcd604%2fEl+saltamontes1%2fcaterpillar-41420_6401.png",
+      "text": "Había una vez un saltamontes. Vivía en el bosque. Le gustaba mucho conversar. Sin embargo, tenía pocos amigos."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "El saltamontes había sido muy popular. Era amigable y le gustaba platicar. Un tiempo atrás las cosas cambiaron. El saltamontes empezó a quedarse solo.\nNo entendía porqué tenía pocos amigos. Él se sentía triste. Intentaba conversar con otros animales. Sin embargo, solo lo saludaban."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f419e7f8b-4307-4862-8f3c-267554fcd604%2fEl+saltamontes1%2faor_eag00784.png",
+      "text": "El saltamontes era un gran escritor. Escribía mucho. Luego, contaba sus historias. Le gustaba que todos lo escucharan."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Las historias eran increíbles. El saltamontes contaba sus aventuras. A veces exageraba al escribir. Al principio todos disfrutaban escucharlo.\nDespués, se aburrieron de escucharlo. El saltamontes no paraba de hablar. No dejaba que nadie hablara. El saltamontes dejó de escuchar."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f419e7f8b-4307-4862-8f3c-267554fcd604%2fEl+saltamontes1%2fhormiga+roja.jpg",
+      "text": "Un día llegó una visitante. La visitante tenía antenas. Era una hormiga roja. La hormiga saludó al saltamontes."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "El saltamontes se sorprendió. Luego, la saludó emocionado. Ella le preguntó por otros animales. El saltamontes se quedó callado.\nLa miró muy triste. No podía sonreír. Ella no sabía qué pasaba. Le preguntó si estaba bien."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f419e7f8b-4307-4862-8f3c-267554fcd604%2fEl+saltamontes1%2fcricket-47470_6402.png",
+      "text": "El saltamontes empezó a hablar. -Soy escritor desde que era pequeño...\nLa hormiga dijo: -Eso es genial. A mí me gustaría escucharte."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "El saltamontes empezó a hablar. Le contó muchas historias. Cada vez eran más increíbles. La hormiga seguía escuchándolo atentamente.\nPasaron varias horas. El saltamontes continuaba hablando. Se sentía fantástico. No paraba de hablar."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f419e7f8b-4307-4862-8f3c-267554fcd604%2fEl+saltamontes1%2fhormiga+roja1.jpg",
+      "text": "Pasaron las horas... El saltamontes hablaba y hablaba. La hormiga escuchaba y escuchaba. De repente, la hormiga desapareció."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f419e7f8b-4307-4862-8f3c-267554fcd604%2fEl+saltamontes1%2faor_EAG00593111.png",
+      "text": "El saltamontes la buscó desesperadamente. Luego, se dió cuenta del error. Él nunca escuchó a la hormiga. Perdió a otra amiga."
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Se lamentó por lo sucedido. Se dio cuenta que no escuchaba. Solo él quería hablar. Se sintió triste.\nTendré que aprender a escuchar, pensó. Si quiero tener amigos debo escucharlos. Tengo que prestarles atención. El saltamontes se fue a casa."
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Al otro día se levantó temprano. El saltamontes paseó por el campo. Saludaba a todos. Los saludaba con una gran sonrisa.\nAl verlo sonreír, lo saludaban. Todos lo apreciaban mucho. Solo que pensaban que hablaba mucho. Ahora el saltamontes quería escuchar."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f419e7f8b-4307-4862-8f3c-267554fcd604%2fEl+saltamontes1%2fgrillo211.jpg",
+      "text": "El saltamontes encontró al grillo. Se preparaba para oírlo. ¡Sorpresa! El saltamontes quería escuchar al grillo."
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "El saltamontes aprendió la lección. Necesitaba dejar que los demás hablaran. Debía escuchar a los demás. Así volvió a tener amigos.\nNo solo aprendió a escuchar. Escuchar le daba ideas nuevas. Ideas que usaba para escribir. Los demás disfrutaban leer sus historias."
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 407
+  }
+}

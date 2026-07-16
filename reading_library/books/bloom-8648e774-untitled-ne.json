@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-8648e774-untitled-ne",
+  "title": "खरायोको भोज",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jXFmX7hZTo"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fAOR_ara019.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fimage1.png",
+      "text": "जङ्गलमा एउटा खरायो बस्थ्यो। त्यहाँ अरू जनावरहरू बस्थे। खरायो र हात्ती मिल्ने साथी थिए। खरायो सोझो थियो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2findex.jpg",
+      "text": "हात्ती अरूको कुरा नबुझ्ने थियो। एकदिन हात्तीको घरमा भोज थियो। हात्तीले खरायोलाई भोज खान बोलायो। खरायो भोज खान गयो ।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fimage.png",
+      "text": "खरायो सानो थियो। ऊ थोरै खाएर नै अघायो। किनकी खरायोलाई थोरै खानाले पुग्थ्यो। यसरी नै समय बित्दै गयो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fAOR_eag00122.png",
+      "text": "एकदिन खरायोको घरमा पनि भोज भयो। खरायोले हात्तीलाई भोज खान बोलायो। अरू साथीहरूलाई पनि बोलायो। हात्ती भोज खान छिटै नै गयो।\nखरायोको घर सानो थियो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fAOR_ELPHNT02.png",
+      "text": "हात्ती खरायोको घरमा अटेन। खरायोले हात्तीलाई आँगनमा बस्‍न लगायो। खरायोले हात्तीलाई खाना दियो। हात्तीले खाना थप्दै गयो। किनकि हात्तीले धेरै खान सक्थ्यो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fasianelephantdrawing.jpg",
+      "text": "खरायोको खाना सकिँदै गयो।\nअलिकति मात्र बाँकी भयो। खरायोलाई अप्ठ्यारो पर्‍यो। हात्तीले खरायोको अप्ठ्यारो बुझेन।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fAOR_SUD00091.png",
+      "text": "उसले फेरि खाना माग्यो। भएको धेरैजसो खाना खायो। बचेको थोरै पनि नास गरिदियो। हात्ती त्यहाँबाट हिँड्यो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fAOR_ara0191.png",
+      "text": "खरायोले तैपनि चिन्ता गर्न छाडेन। “अरू साथीहरूलाई के खुवाउने ?” ऊ अझै दुःखी थियो। बिस्तारै अरू साथीहरू सबै आउन थाले। सबै साथीहरूले खरायो दुःखी भएको देखे।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fAOR_ara01911.png",
+      "text": "साथीहरूले खरायो दुःखी हुनुको कारण सोधे। खरायोले साथीहरूलाई सबै कुरा बतायो। साथीहरूले चिन्ता नगर्न सल्‍लाह दिए।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fAOR_CMB0580.png",
+      "text": "सबै मिलेर फेरि खाना बनाए। पहिले भन्दा पनि मिठो मिठो बनाए। मिलेर खाए अनि नाच गान गरे। साँझमा सबैले खरायोलाइ धन्यवाद दिए। अनि आफ्नो घर फर्किए।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 201
+  }
+}

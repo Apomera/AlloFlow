@@ -1,0 +1,310 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1bf5c25d-le-contraste-des-destins",
+  "title": "Le Contraste des Destins",
+  "description": "Le présent livre célèbre les fruits du respect et du travail. Trois enfants d'une même famille mais trois chemins. Deux choisissent l’obéissance, le respect et discipline et deviennent des modèles. Le troisième rejette les valeurs et sombre dans l’échec.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "CABTAL-Barthélemy BOUTI"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CABTAL-Barthélemy BOUTI",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4oEBhqQUm5"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2fimage1.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Dans un quartier animé, vivaient monsieur et madame Liŋana avec leurs trois enfants. Le couple était connu pour sa sagesse et sa patience. Leur maison était petite, mais toujours propre. C'était un lieu de paix et de respect.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi25e691a2-f9b0-40ad-a769-d7f60e65e91b.mp3",
+          "dur": 7.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi3f652292-440e-4c19-ada0-33a55b0e8fe8.mp3",
+          "dur": 4.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fe43e8afb-5fbf-429c-a3a5-4abb3cd28827.mp3",
+          "dur": 4.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2ffc5c0d90-1cda-482e-b8ce-22aa57437a53.mp3",
+          "dur": 3.360091
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Les deux aînés, HUMVUNNA et TUNSUKKA, étaient des modèles. Dès le matin, ils se levaient tôt sans qu'on leur demande. Ils rangeaient leurs lits et aidaient leurs parents à préparer le petit-déjeuner. Leur politesse était une évidence pour tous.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2ff30d6b71-238b-49ad-a098-8dbc8c8cd22c.mp3",
+          "dur": 5.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi42a7161c-ebcb-417c-a66e-363df6068fee.mp3",
+          "dur": 5.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fc3c8a203-9a34-4614-a8e9-45c92425d5ed.mp3",
+          "dur": 5.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fc9009b83-0ece-4dde-b903-565223b76d65.mp3",
+          "dur": 4.160091
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "HUMVUNNA et TUNSUKKA prenaient soin de leur maison. Le sol était toujours bien balayé et la vaisselle était faite sans bruit. Leurs cahiers d'école étaient impeccables. Ils faisaient leurs devoirs sans jamais protester.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fa3cd09c8-85b8-407d-90f4-188d1d31b79e.mp3",
+          "dur": 3.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi727d2e26-4c0f-4465-ba6e-8325be3cc443.mp3",
+          "dur": 5.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi6e1c6c96-4b48-4dfa-8482-c5cc872a33f3.mp3",
+          "dur": 3.360091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fcb9bbbb1-5ee4-464b-b721-8bb98f802780.mp3",
+          "dur": 3.960091
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Leur obéissance faisait la fierté de leurs parents. Madame Liŋana disait souvent : « Mes enfants, le respect est la clé qui ouvre toutes les portes.» HUMVUNNA et TUNSUKKA avaient bien compris ces mots.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi0629beef-debd-4976-8ba5-062d697eb3d1.mp3",
+          "dur": 3.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi503b5084-4ed2-44f8-a3bd-3e6bbbc1605e.mp3",
+          "dur": 9.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi8eb0d268-4cd6-4a34-b241-985442c16a7a.mp3",
+          "dur": 4.360091
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Leur réputation grandissait dans tout le quartier. Les voisins, impressionnés par leur sérieux, les admiraient. On les citait en exemple à tous les enfants. Ils étaient un véritable honneur pour leur famille.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fbed6e72a-cdcf-45dd-ba7f-0c15b40c6886.mp3",
+          "dur": 4.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi4f1e1174-e107-426c-9dbd-604cd93f882f.mp3",
+          "dur": 6.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi28c9af5c-bbe3-49f9-bf58-8d252164322b.mp3",
+          "dur": 3.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi0c2bf43a-957d-46ee-a7a7-4978e91062ef.mp3",
+          "dur": 3.460091
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Un jour, monsieur HINTUWANDI, le boulanger du quartier, vint à la maison. Il avait besoin d'un jeune aide pour sa boutique. Sans hésiter, il a demandé à HUMVUNNA de travailler avec lui. La réputation de HUMVUNNA était sa seule référence.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi8cfd2140-71a1-47b5-8d2f-e29e2e116011.mp3",
+          "dur": 7.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi5fce6ab2-2879-4dc1-b83c-19aa3f802b94.mp3",
+          "dur": 3.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi3d17e690-0cf9-4fbe-817f-a2ffbde99347.mp3",
+          "dur": 5.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fd24ae535-7a38-4c46-9f7d-837061164e7d.mp3",
+          "dur": 3.860091
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Peu de temps après, la couturière du marché, madame Giletuwaŋvaŋ, vint elle aussi à la maison. Elle cherchait une apprentie honnête. Elle avait entendu parler de la bonne éducation de TUNSUKKA et lui proposa le poste.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2ff4dd3d48-f623-4fda-a06c-5c3db03c7c4b.mp3",
+          "dur": 8.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi94f832be-840c-4797-9117-9374b70f7b11.mp3",
+          "dur": 2.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi974495f7-2acc-4096-8175-ba58eff72b73.mp3",
+          "dur": 7.060091
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Pendant ce temps, le cadet, Humgatɗi, ne pensait qu'à s'amuser. Il refusait de faire ses tâches. Ses parents lui demandaient de balayer, il disait non. Il préférait traîner avec ses amis.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fb349a2ef-c802-4879-a496-4a32ecb1ae3b.mp3",
+          "dur": 6.360091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fc6e010b0-8d28-4e0a-b592-9f2480f05723.mp3",
+          "dur": 2.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fee0ad9a8-7d36-4bca-9393-aa1a2a8bbf66.mp3",
+          "dur": 4.060091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fa03913fe-13aa-4b9e-b22f-135131a776cf.mp3",
+          "dur": 3.560091
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Humgatɗi n'aimait pas les règles. Il pensait que la vie était faite pour la liberté. Il mentait souvent à ses parents pour sortir et il lui arrivait de prendre de l'argent dans la poche de son père sans permission.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fa9d6d242-1563-4a19-889f-e74f42e2fbbc.mp3",
+          "dur": 3.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi3dfa2333-1766-4784-b2e1-16c5a1a626d8.mp3",
+          "dur": 3.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fd3eb4023-fa85-46b3-9b35-88798cdedfb6.mp3",
+          "dur": 9.360091
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Les mauvaises habitudes de Humgatɗi devinrent de plus en plus graves. Il a fini par s'associer avec des jeunes qui volaient. Petit à petit, il a quitté la maison pour rejoindre ce groupe de bandits. Sa famille a pleuré son départ.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi1ff24641-c1f8-4828-94f3-955e4613b8e7.mp3",
+          "dur": 5.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi3d0096ce-eb3b-4d52-a284-e11c47182767.mp3",
+          "dur": 5.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi681b5e45-21e5-4c38-b55a-c344e2f64717.mp3",
+          "dur": 6.360091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2ffb3f61ee-974b-4d72-a196-36fb26e7baca.mp3",
+          "dur": 3.260091
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Des années plus tard, HUMVUNNA et TUNSUKKA étaient devenus des piliers de la communauté. HUMVUNNA a ouvert sa propre boulangerie, et TUNSUKKA dirigeait un grand atelier de couture. Ils aidaient leurs parents et étaient respectés par tous.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi4a94b69f-fe9e-4d00-9a9a-cd26138766a4.mp3",
+          "dur": 7.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi5536c638-50fa-4dee-89f5-c54dce15e965.mp3",
+          "dur": 7.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi4cfaaaf5-aaeb-48ec-b883-a9d3699d1177.mp3",
+          "dur": 5.960091
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Un jour, ils entendirent une triste nouvelle : Humgatɗi avait été arrêté par la police après un vol qui avait mal tourné. Il avait tout perdu : sa liberté et l'amour de sa famille.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2faa938c17-1a22-4491-8c99-a3b7bec90b81.mp3",
+          "dur": 12.060091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi6a273f5d-5896-4a37-8f6d-b5de2ad68ade.mp3",
+          "dur": 6.560091
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "La vie de Humgatɗi était le triste reflet de ses choix. Il avait rejeté la discipline et l'honnêteté, et son échec était la conséquence de ses actions. Le destin de HUMVUNNA et TUNSUKKA montrait que le travail et le respect sont les vraies clés du succès.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fi40f175a3-9783-4555-8a93-7a0fc43eece1.mp3",
+          "dur": 4.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fb2fd8306-d8fc-4cf6-bc11-315943068eb5.mp3",
+          "dur": 9.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2faudio%2fa9477f98-8cb5-4b3a-bdd1-744664be488d.mp3",
+          "dur": 9.660091
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 13,
+    "words": 480
+  }
+}

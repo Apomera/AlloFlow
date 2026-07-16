@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3d42d088-una-aventura",
+  "title": "Una aventura",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/fKhkVwUVnv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2fforest-1967253_6401.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2fimage.png",
+      "text": "Guadalupe y Juan salieron de paseo. Ellos fueron al bosque."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2fwatercolour-2467834_640.jpg",
+      "text": "Les gustaba apreciar la naturaleza. Se divertían jugando con mariposas."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2fjovenes+en+bosque(1).jpg",
+      "text": "Eran muy atrevidos. Les gustaba mucho explorar la naturaleza."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2fapple-3311094_640.jpg",
+      "text": "En el camino vieron muchas frutas. Comieron y saborearon frutas frescas."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2fjovenes+conversando.jpg",
+      "text": "De regreso se perdieron. No lograban salir del bosque."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2fchildren-3176409_640.png",
+      "text": "Los niños estaban asustados. No sabían qué hacer para salir."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2ftree-3522574_640.jpg",
+      "text": "Guadalupe propuso mirar las estrellas. Pensó que podían guiarles para salir."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2fPuente.jpg",
+      "text": "Observaron con cuidado las estrellas. Así lograron encontrar la salida."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2fpadres+dandose+las+manos2.jpg",
+      "text": "Los niños regresaron con sus padres. Les contaron lo sucedido."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2fni%c3%b1o+y+ni%c3%b1a.png",
+      "text": "Guadalupe y Juan culminaron su aventura. Estaban felices de estar en casa."
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 102
+  }
+}

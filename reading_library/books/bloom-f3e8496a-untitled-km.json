@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f3e8496a-untitled-km",
+  "title": "រឿងព្រេងនិទានខ្លា និង ឆ្មា",
+  "description": "Tampuan folk tale translate into khmer and English",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "produced by ICC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "produced by ICC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/zVFpezR7Gk"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2ff3e8496a-bb93-4907-ae16-ce4c6225daba%2f%e1%9e%9a%e1%9e%bf%e1%9e%84%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%81%e1%9e%84%e1%9e%93%e1%9e%b7%e1%9e%91%e1%9e%b6%e1%9e%93%e1%9e%81%e1%9f%92%e1%9e%9b%e1%9e%b6+%e1%9e%93%e1%9e%b7%e1%9e%84+%e1%9e%86%e1%9f%92%e1%9e%98%e1%9e%b6%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2ff3e8496a-bb93-4907-ae16-ce4c6225daba%2f%e1%9e%9a%e1%9e%bf%e1%9e%84%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%81%e1%9e%84%e1%9e%93%e1%9e%b7%e1%9e%91%e1%9e%b6%e1%9e%93%e1%9e%81%e1%9f%92%e1%9e%9b%e1%9e%b6+%e1%9e%93%e1%9e%b7%e1%9e%84+%e1%9e%86%e1%9f%92%e1%9e%98%e1%9e%b6%2fimage.png",
+      "text": "កាលពីព្រេងនាយ ខ្លានិងឆ្មារស់នៅជាមួយគ្នា"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2ff3e8496a-bb93-4907-ae16-ce4c6225daba%2f%e1%9e%9a%e1%9e%bf%e1%9e%84%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%81%e1%9e%84%e1%9e%93%e1%9e%b7%e1%9e%91%e1%9e%b6%e1%9e%93%e1%9e%81%e1%9f%92%e1%9e%9b%e1%9e%b6+%e1%9e%93%e1%9e%b7%e1%9e%84+%e1%9e%86%e1%9f%92%e1%9e%98%e1%9e%b6%2fimage1.png",
+      "text": "ខ្លាបបួលឆ្មាស្វែងរកអាចម៍គ្នាទៅវិញទៅមក។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2ff3e8496a-bb93-4907-ae16-ce4c6225daba%2f%e1%9e%9a%e1%9e%bf%e1%9e%84%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%81%e1%9e%84%e1%9e%93%e1%9e%b7%e1%9e%91%e1%9e%b6%e1%9e%93%e1%9e%81%e1%9f%92%e1%9e%9b%e1%9e%b6+%e1%9e%93%e1%9e%b7%e1%9e%84+%e1%9e%86%e1%9f%92%e1%9e%98%e1%9e%b6%2fimage2.png",
+      "text": "ឆ្មាសួរៈបើសិនរកឃើញ ត្រូវធ្វើដូចម្តេច?"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2ff3e8496a-bb93-4907-ae16-ce4c6225daba%2f%e1%9e%9a%e1%9e%bf%e1%9e%84%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%81%e1%9e%84%e1%9e%93%e1%9e%b7%e1%9e%91%e1%9e%b6%e1%9e%93%e1%9e%81%e1%9f%92%e1%9e%9b%e1%9e%b6+%e1%9e%93%e1%9e%b7%e1%9e%84+%e1%9e%86%e1%9f%92%e1%9e%98%e1%9e%b6%2fimage3.png",
+      "text": "ខ្លាឆ្លើយប្រាប់ថា៖នរណារកឃើញនោះ អាចក្លាយជាឋានៈលោកពូបាន"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2ff3e8496a-bb93-4907-ae16-ce4c6225daba%2f%e1%9e%9a%e1%9e%bf%e1%9e%84%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%81%e1%9e%84%e1%9e%93%e1%9e%b7%e1%9e%91%e1%9e%b6%e1%9e%93%e1%9e%81%e1%9f%92%e1%9e%9b%e1%9e%b6+%e1%9e%93%e1%9e%b7%e1%9e%84+%e1%9e%86%e1%9f%92%e1%9e%98%e1%9e%b6%2fimage4.png",
+      "text": "ខ្លានិងឆ្មាលាអាចម៍តាមកន្លែងរៀងៗខ្លួន"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2ff3e8496a-bb93-4907-ae16-ce4c6225daba%2f%e1%9e%9a%e1%9e%bf%e1%9e%84%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%81%e1%9e%84%e1%9e%93%e1%9e%b7%e1%9e%91%e1%9e%b6%e1%9e%93%e1%9e%81%e1%9f%92%e1%9e%9b%e1%9e%b6+%e1%9e%93%e1%9e%b7%e1%9e%84+%e1%9e%86%e1%9f%92%e1%9e%98%e1%9e%b6%2fimage5.png",
+      "text": "ខ្លារស្វែងរកអាចម៍ឆ្មាអត់ឃើញ"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2ff3e8496a-bb93-4907-ae16-ce4c6225daba%2f%e1%9e%9a%e1%9e%bf%e1%9e%84%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%81%e1%9e%84%e1%9e%93%e1%9e%b7%e1%9e%91%e1%9e%b6%e1%9e%93%e1%9e%81%e1%9f%92%e1%9e%9b%e1%9e%b6+%e1%9e%93%e1%9e%b7%e1%9e%84+%e1%9e%86%e1%9f%92%e1%9e%98%e1%9e%b6%2fimage6.png",
+      "text": "ឆ្មារកឃើញអាចម៍ខ្លានៅលើដី១ដុំធំ"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2ff3e8496a-bb93-4907-ae16-ce4c6225daba%2f%e1%9e%9a%e1%9e%bf%e1%9e%84%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%81%e1%9e%84%e1%9e%93%e1%9e%b7%e1%9e%91%e1%9e%b6%e1%9e%93%e1%9e%81%e1%9f%92%e1%9e%9b%e1%9e%b6+%e1%9e%93%e1%9e%b7%e1%9e%84+%e1%9e%86%e1%9f%92%e1%9e%98%e1%9e%b6%2fimage7.png",
+      "text": "ខ្លាក៍ព្រមទទួលយកឆ្មាធ្វើជាពូ"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 11
+  }
+}

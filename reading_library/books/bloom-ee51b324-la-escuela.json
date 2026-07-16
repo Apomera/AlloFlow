@@ -1,0 +1,548 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-ee51b324-la-escuela",
+  "title": "La escuela",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/3F8MDA51aY"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2fescuela.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2fMaestra+con+alumnos+en+el+aula1.jpg",
+      "text": "En mi comunidad tenemos una escuela. Es una escuela grande. Mis amigos y yo estudiamos allí. Cada día es otra oportunidad de seguir aprendiendo. La escuela es nuestra segunda casa.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fcb9326d3-9e43-4a25-9749-46a5179de8dd.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi69978321-3d4b-4040-b335-f5e6a30f2589.mp3",
+          "dur": 1.933028
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi642e836a-3126-4e60-aa5f-1caf0d151fbf.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi867e29e8-5efb-432b-b7b9-fce7457e9ed3.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi5f17164b-e8bd-4454-8f23-25fee25f6f86.mp3",
+          "dur": 2.925664
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2fj%c3%b3venes+recogiendo+basura.png",
+      "text": "La escuela de la comunidad es muy bonita. Está pintada de gris. Siempre se mantiene limpia y ordenada. En la escuela hay una comisión de limpieza. Niños y niñas participamos por igual.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi4b5ce867-505a-42d3-9428-6a16d810f357.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fad3f9122-6bd0-4b24-a671-d6458687cc6f.mp3",
+          "dur": 2.037516
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi2983f538-d7c3-4194-b625-e68302a8a7e6.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2ff7391e70-428c-429f-96d1-b712feb0914e.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi540d90ce-b863-42b7-9796-fd738845307d.mp3",
+          "dur": 3.317494
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Cuidamos todas las áreas de la escuela. Nos gusta que todo esté ordenado.\nTambién cuidamos sus alrededores. Procuramos no contaminar. Tenemos una campaña de reciclaje. Los basureros están rotulados. Sabemos que es importante cuidar el ambiente. Eso nos ayuda a estar saludables. Sembramos plantas en el jardín. Además, sembramos árboles una vez al año.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fdfb4720e-a2a4-4322-97d3-099fae11f3ed.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fccad3443-8bf5-417d-ab89-3d63a1d13096.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fb59695c5-edbc-4171-8dfb-260998eeae8d.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi1a32594a-9ca0-4088-b8c2-7a0c83e99d4e.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi6fd5f914-d8a8-4dfc-822d-fe1d9bc478f6.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi4abb36ec-6734-4cdf-b186-1ffdd14ec22e.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi6464f9da-5ac8-4431-8250-f7902262fc94.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi6d9c40d7-ab7d-49be-a879-69216c4c79fc.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fa5d98459-917d-402d-b8bd-05425ea43666.mp3",
+          "dur": 2.533834
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi74b0ed19-181a-4585-83bd-5d330c611168.mp3",
+          "dur": 3.813812
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "En la escuela hay seis maestros. También hay una directora. Dos de los maestros vienen de otras comunidades. Las clases empiezan a las 7:30. Terminan a medio día.\nLos maestros de la escuela nos enseñan mucho. Los niños aprovechamos día a día. Cada día hacemos muchas actividades. Jugamos durante el recreo. ¡Qué gran oportunidad tenemos de estudiar!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi082db0e2-c3e9-4116-972e-1ba143ecd452.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2ff1efb219-b359-4ccd-9954-0b576ad6fbff.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi6933abed-0d48-4fc3-94ff-d96fa2d08116.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2ff6d8a26a-0fe3-46a0-85ae-5d2f01a4b3e9.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi7bfc58ff-8630-4733-862f-f25465f0801c.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fb341f2c2-754d-4e84-acd6-a1b3ad9a12a1.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi86d3a355-7633-4566-8b2b-8ff80a5f22d0.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi7436c73e-4a14-4c84-9ff5-a4d078e8f976.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fac35a35c-6fd9-498b-bf6b-b1f66dc2d763.mp3",
+          "dur": 1.933028
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi2816e165-caa4-4b94-9b1a-421ea5a66c0b.mp3",
+          "dur": 2.821176
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2fMaestra+y+jovenes+alumnos.jpg",
+      "text": "Mi maestra se llama Josefina. Ella habla idioma maya achí'. Los niños y niñas también hablamos achí'. ¡Qué bonito es hablar nuestro idioma! Aprendimos a leer en nuestro idioma.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi8fed6858-347a-4e06-90f6-fb6645d4aed5.mp3",
+          "dur": 2.533834
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fcd09a0fb-9efa-450b-91c0-decb840b1671.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fdaf1b407-ddd1-4aea-8720-c5abd4b457aa.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi7184831c-d564-4e6f-a213-ad9baa4566f2.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fbe387df4-9753-408c-8c89-c5f699b14ea1.mp3",
+          "dur": 2.22037
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "También escribimos en achí'. Nos gusta escribir. El idioma materno es importante para nosotros.\nLa escuela hace concursos en achí'. Cada año los niños y niñas participamos. El primer concurso es de lectura en achí'. El otro es de poesía. También hay un concurso de vocabulario. Este año habrá un concurso de escritura. Vamos a escribir historias en achi'.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fa723db83-7d51-425c-8e4e-8291949ed7c8.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fc6560164-e12a-44dd-99fa-e0a0967fb54b.mp3",
+          "dur": 1.515076
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi01b73d9f-23ce-4f3d-9ba2-69668c581a85.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi19ad1aaa-6c26-423a-8eaa-42619b6c4801.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi7a8e9d12-4a86-4e95-9837-1b974f9e31fa.mp3",
+          "dur": 3.932494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi4bcab8f8-73cf-48e1-aa6f-ab3d3e3125ff.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fdbe1212f-9834-4bf5-95f9-1f3fb176bc24.mp3",
+          "dur": 2.324858
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi0b472e52-476d-4962-828e-5534e6bd91f5.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2ffff79bf9-4589-42f0-82a1-7b8c42e28a12.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi19b83343-ffd7-48ac-baa9-0d202d044a38.mp3",
+          "dur": 2.429346
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2fSecretaria+maya.png",
+      "text": "La maestra Josefina se prepara todos los días. Ella lo hace para enseñarnos cosas nuevas. También nos enseña tecnología. Todos valoramos mucho eso.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fa0b218d1-7958-41ee-8bf2-01b4c79eec42.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fb52f6a76-62e2-410a-9139-2eef2a8aa9e5.mp3",
+          "dur": 3.13464
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fa8102f14-49de-4a5d-9dc3-4815c9c89972.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fec362af6-1e0c-4468-98db-ec4d87e97443.mp3",
+          "dur": 2.533834
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2fProfesor+maya+en+clase.jpg",
+      "text": "El maestro Balam vive en nuestra comunidad. Él trabaja en cuarto grado. Habla y escribe achi' y español. Enseña en idioma achi'. Sus clases son muy interesantes.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi782c1983-3403-4bb6-a1a5-da3d2e08dae6.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi67790bd1-ec85-410b-8ce7-ce7f6f86dc29.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2feb06c47b-f03c-49a4-9a97-251d7387aa1a.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi27d87cd7-4fe4-4a2a-8d3c-e76f7ddfb044.mp3",
+          "dur": 2.533834
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi32335497-1ea0-40db-932e-fc7e82e63723.mp3",
+          "dur": 2.638322
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Él nos explica acerca de los mayas. La ciencia de los mayas es impresionante. Nuestros antepasados eran muy sabios.\nTodos le ponen mucha atención. Le hacen muchas preguntas. Él explica paso a paso. Le gusta mucho que los niños le pregunten. Le gusta que quieran aprender. Aprender de nuestra cultura es interesante. Los maestros nos enseñan a valorar lo nuestro.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi66b1c85f-b18c-49aa-9a20-6ef0089670cf.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi433de2bd-de55-4433-ba76-d8150a318271.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi8c3f3a3d-3b88-481e-b61a-a32e99c0d29c.mp3",
+          "dur": 3.421982
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi7bc322ff-67e7-4fa0-888b-597f6702f5e8.mp3",
+          "dur": 2.429346
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi223c481d-2f7d-408b-855d-95921c96899d.mp3",
+          "dur": 2.037516
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi939da265-e5be-4afd-add9-60d32fb367ce.mp3",
+          "dur": 2.821176
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fed15d7a1-f145-4f53-aff3-619892522b8c.mp3",
+          "dur": 3.213006
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi1028e4a3-5c11-4391-a68e-cc6074dcdd96.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi7d474e55-b087-43e9-94cf-15901ea6daaf.mp3",
+          "dur": 3.030152
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi8ed49d7c-7d1b-4278-a872-4f0d1973dc2a.mp3",
+          "dur": 3.317494
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2fMaestra+con+alumnos+en+el+aula.jpg",
+      "text": "La profesora Amelia enseña en sexto grado. Mi hermano está en su aula. Me cuenta que hacen muchos proyectos. Se organizan y trabajan en grupos. La clase preferida de mi hermano es Matemáticas.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi136bfc2e-d95e-4e2a-9d06-442f7c79ef15.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fa9d32c6b-c5a8-4a2d-8703-fe39a13b37b6.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi51040dc4-7511-4c05-aac8-8c1c3e1b4ba4.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi67a584f6-2792-49ff-9206-c703b34d0f4e.mp3",
+          "dur": 3.331678
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi7862c7f4-7f26-4378-ac24-b2942ef966ad.mp3",
+          "dur": 3.9183
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Mi hermano está trabajando en un proyecto nuevo. Dice que hay pocos libros en idioma achi'. Por eso este mes ellos escribirán libros. Los libros serán parte de la biblioteca escolar. Así todos los niños podremos leerlos.\nPrimero investigarán acerca de nuestra cultura. Los achi'es somos originarios de Baja Verapaz. Luego, entrevistarán a los ancianos de la comunidad. Esto es para preservar nuestras tradiciones y costumbres. Después van a escribir e ilustrar los libros.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi2f946ee4-cf28-45a3-9a9d-99ec2bc27cc5.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fa61a07bd-ee99-4199-bc09-a557a4a578cd.mp3",
+          "dur": 3.735446
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fcb575453-cd27-4272-a846-289caaf455c5.mp3",
+          "dur": 3.52647
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fe9c1cca5-b68e-4410-9c76-d58d3a60e3f8.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fca865fa1-492a-4a07-8752-1e4f777658ff.mp3",
+          "dur": 2.925664
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fdac5bf67-353b-4812-b473-ad5ad8cc585f.mp3",
+          "dur": 3.317494
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fc42bab29-d954-4855-9d81-443f909d4d44.mp3",
+          "dur": 3.813812
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi388372b6-1a37-4eef-9d62-acc1bafcd92f.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fbc94aa88-e3dd-4b15-968f-9f57141ac413.mp3",
+          "dur": 4.231764
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fa945e569-f05a-45bb-bc1c-e8826f3f8f2f.mp3",
+          "dur": 3.630958
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2fni%c3%b1os+leyendo+varios+libros.png",
+      "text": "Tenemos una biblioteca escolar. Allí podemos ir a leer. También podemos pedir libros para llevar a casa. Debemos devolverlos en una semana. Así otros niños los pueden leer.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fd20dd267-78c9-4418-99f2-50864abeb833.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2faba3bbe7-3244-4caa-a5a2-de5534fe8952.mp3",
+          "dur": 2.22037
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi59d9d661-1cd6-4556-88be-8fa455ae33e0.mp3",
+          "dur": 3.630958
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi98a63181-4112-4b0b-b57d-de8d700d9e74.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fb58b0780-31b7-47a7-b664-d9bc3686cd1b.mp3",
+          "dur": 2.716688
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "En la biblioteca hay muchos libros. Hay en diferentes idiomas: achi', español e inglés.\nEl proyecto de la maestra Amelia es importante. Ayudará a que tengamos más libros en achi'. Los nuevos libros estarán en la biblioteca. El libro de mi hermano estará allí. Me emociona leer lo que él escribirá. Me comentó que escribirá acerca de las cofradías. Las cofradías son parte de nuestra cultura. Son parte de nuestra cultura y organización social.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi6e30eeee-77f9-4350-aa57-9ea4e6cefa6b.mp3",
+          "dur": 2.716688
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fca58ae28-1944-4e81-bd5d-b9b4588314e9.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi96ce81b5-0696-4a63-b7c1-a979b96d890d.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi085dcab8-6b88-4941-943e-ed5f7d8a9ec0.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi3d13d60a-d6d2-4f6c-8bd0-b908b0f87f11.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi6ed6d979-f8e1-47b2-a84f-610befc4af33.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi0731244f-1ce3-422e-8a72-d81b51fea6cb.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi058f6204-7eb0-4efd-a649-6d91d7bcf20d.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fdf5f0672-1c29-42f1-b037-5bd05cf61346.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi2a49422f-551c-4eff-813c-2af27c0242b3.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2fni%c3%b1os+en+laboratorio.png",
+      "text": "En mi escuela también hay un laboratorio. Allí hacemos experimentos.\nTambién recibimos clases de canto y danza. Aprendemos a representar el Rabinal Achi'. Esta es una danza reconocida a nivel nacional.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fbae6ef05-a4f3-40df-8204-d9bdc82caa25.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2fi0c9be374-a156-4c92-8fef-995b04fb92d5.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2faudio%2ff3a0bc17-019d-4e2d-a387-77943a07a422.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Cómo es la escuela de la comunidad?\nGrande y lejana.\nGrande y limpia.\nPequeña y ordenada."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué idioma hablan los niños en la escuela?\nAchi'\nK'iche'\nQ'anjob'al"
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Cual es la danza tradicional que se representa en la escuela?\nBaile de los disfraces.\nLa Paach.\nRabinal Achí."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué significa que la escuela es una segunda casa?\nQue allí estudian nuestros hermanos y primos.\nQue podemos dormir en la escuela.\nQue en la escuela convivimos mucho tiempo con otras personas que nos quieren."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Por qué crees que para los niños es importante hablar y aprender en achi' en la escuela?\nPorque es su idioma materno y se les hace más fácil aprender.\nPorque si no lo hablan se pueden quedar sin voz.\nPorque solo así pueden jugar con otros niños."
+    }
+  ],
+  "stats": {
+    "pages": 19,
+    "words": 754
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f0f5fcd0-a-festa-na-montanha",
+  "title": "A festa na montanha",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Little Zebra"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YqMbEQD0OT"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/YqMbEQD0OT%2f1765823591119%2fPhwando+ya+pa+phiri%2fNo+Pigs+Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YqMbEQD0OT%2f1765823591119%2fPhwando+ya+pa+phiri%2fNo+Pigs+1.png",
+      "text": "Certo dia um grupo de animais com chifres pensaram em fazer uma festa em cima da montanha. Eles apenas convidaram os animais com chifres."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YqMbEQD0OT%2f1765823591119%2fPhwando+ya+pa+phiri%2fNo+Pigs+2.png",
+      "text": "Quando o porco ouviu acerca da festa ele pensou: \"Eu não tenho chifres. Eu vou fazer como?\""
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YqMbEQD0OT%2f1765823591119%2fPhwando+ya+pa+phiri%2fNo+Pigs+3.png",
+      "text": "No dia seguinte ele teve um ideia e pensou assim: \"Eu vou colar chifres na minha cabeça!\""
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YqMbEQD0OT%2f1765823591119%2fPhwando+ya+pa+phiri%2fNo+Pigs+5.png",
+      "text": "Ele conseguiu fazer aquilo e entrou na festa.\nO porco pensou: \"Eu sou muito esperto!\"\nA festa acontecia na montanha.\nQuando o sol começou a aquecer, a cola derreteu e os chifres do porco caíram."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YqMbEQD0OT%2f1765823591119%2fPhwando+ya+pa+phiri%2fNo+Pigs+6.png",
+      "text": "Os animais com chifres ficaram muito admirados e disseram: \"Quem é aquele que não tem chifres? Por que ele entrou na nossa festa?\""
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YqMbEQD0OT%2f1765823591119%2fPhwando+ya+pa+phiri%2fNo+Pigs+7.png",
+      "text": "O líder dos animais com chifres disse: \"Amarrem este porco e lancem ele para baixo.\""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YqMbEQD0OT%2f1765823591119%2fPhwando+ya+pa+phiri%2fNo+Pigs+8.jpg",
+      "text": "Os animais fizeram o que o líder havia falado.\nO porco foi amarado e lançado para baixo."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YqMbEQD0OT%2f1765823591119%2fPhwando+ya+pa+phiri%2fNo+Pigs+9.jpg",
+      "text": "Quando o porco foi lançado, ele caiu de nariz. Por issp ele ficou com um nariz esmagado."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/YqMbEQD0OT%2f1765823591119%2fPhwando+ya+pa+phiri%2fNo+Pigs+10.png",
+      "text": "Os animais com chifres voltaram a festejar. Eles comeram e dançaram a noite inteira. Eles ficaram muito felizes!\nNão fique admirado quando você vê um porco com um nariz esmagado, porque ele ficou assim para sempre."
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 201
+  }
+}

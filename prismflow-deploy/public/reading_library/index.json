@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-16T16:56:55.524Z",
+ "generatedAt": "2026-07-16T17:44:59.748Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -15,32 +15,42 @@
   {
    "name": "Spanish",
    "code": "es",
-   "count": 82
+   "count": 112
   },
   {
    "name": "French",
    "code": "fr",
-   "count": 67
+   "count": 96
   },
   {
    "name": "Nepali",
    "code": "ne",
-   "count": 65
+   "count": 69
+  },
+  {
+   "name": "Portuguese",
+   "code": "pt",
+   "count": 61
   },
   {
    "name": "Khmer",
    "code": "km",
-   "count": 53
+   "count": 61
   },
   {
    "name": "Burmese",
    "code": "my",
-   "count": 47
+   "count": 49
   },
   {
    "name": "Dari",
    "code": "prs",
    "count": 45
+  },
+  {
+   "name": "Thai",
+   "code": "th",
+   "count": 44
   },
   {
    "name": "Kiswahili",
@@ -65,11 +75,6 @@
   {
    "name": "Arabic",
    "code": "ar",
-   "count": 36
-  },
-  {
-   "name": "Portuguese",
-   "code": "pt",
    "count": 36
   },
   {
@@ -176,11 +181,6 @@
    "name": "Haitian Creole",
    "code": "ht",
    "count": 23
-  },
-  {
-   "name": "Thai",
-   "code": "th",
-   "count": 22
   },
   {
    "name": "Malay",
@@ -100960,6 +100960,3602 @@
    "pageCount": 141,
    "wordCount": 67592,
    "file": "books/gutenberg-ebook-46541-le-tour-du-monde-en-quatre-vingts-jours.json"
+  },
+  {
+   "slug": "bloom-a4f879f9-untitled-km",
+   "title": "រឿង អ៌ុំក្រាក់",
+   "description": "The story of uncle Krak. A level 1 Easy Reader.",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/aLQOS9rPrV"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fa4f879f9-b806-49d5-8868-0bab5583b318%2f%e1%9f%a0%e1%9f%a5+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%9c%e1%9e%b6%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%80%e1%9f%8b%2f5.png",
+   "authors": [
+    "International Cooperation Cambodia"
+   ],
+   "illustrators": [],
+   "publisher": "International Cooperation Cambodia",
+   "hasAudio": false,
+   "pageCount": 32,
+   "wordCount": 33,
+   "file": "books/bloom-a4f879f9-untitled-km.json"
+  },
+  {
+   "slug": "bloom-33bee8f6-untitled-km",
+   "title": "០០ នាវអោបមាក្លាងក៝ក",
+   "description": "Egret, why are you so skinny? (Easy Reader Level 1)",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/eggFPmIEHG"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2fA.Book+cover3.jpg",
+   "authors": [
+    "International Cooperation Cambodia (ICC)"
+   ],
+   "illustrators": [],
+   "publisher": "International Cooperation Cambodia (ICC)",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 68,
+   "file": "books/bloom-33bee8f6-untitled-km.json"
+  },
+  {
+   "slug": "bloom-69bece77-untitled-km",
+   "title": "០១ ឆាផៅ នតីរាឆ៝ឞូន៝ង",
+   "description": "Bunong alphabet book",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Alphabet Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/MWQhXzKEug"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f69bece77-3339-493a-90df-60f7886bdd41%2f%e1%9f%a0%e1%9f%a1+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%93%e1%9e%8f%e1%9e%b8%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9f%9d%e1%9e%84%2fphoto_2023-11-01_14-07-6.jpg",
+   "authors": [
+    "International Cooperation Cambodia (ICC)"
+   ],
+   "illustrators": [],
+   "publisher": "International Cooperation Cambodia (ICC)",
+   "hasAudio": false,
+   "pageCount": 59,
+   "wordCount": 107,
+   "file": "books/bloom-69bece77-untitled-km.json"
+  },
+  {
+   "slug": "bloom-0bec5b70-untitled-km",
+   "title": "សៀវភៅទី២៤នំ៨ចំណែក",
+   "description": "An Early Grade Reader pattern book in Khmer and English. Suitable to translate into other languages.",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/kvlEpBb4KS"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sawete175%40gmail.com%2f0bec5b70-d887-461d-8ae8-ef62f16f5de1%2f%e1%9e%95%e1%9e%b6%e1%9e%94%e1%9f%8b+%e1%9e%92%e1%9e%b8+%e1%9f%a2%e1%9f%a4+%e1%9e%93%e1%9f%86+%e1%9f%a8+%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80%2f%e1%9e%93%e1%9f%86%e1%9f%a8%e1%9e%96%e1%9e%8e%e1%9e%b6%e1%9e%80_Page_1.png",
+   "authors": [
+    "NTFP"
+   ],
+   "illustrators": [],
+   "publisher": "NTFP",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 43,
+   "file": "books/bloom-0bec5b70-untitled-km.json"
+  },
+  {
+   "slug": "bloom-f3e8496a-untitled-km",
+   "title": "រឿងព្រេងនិទានខ្លា និង ឆ្មា",
+   "description": "Tampuan folk tale translate into khmer and English",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/zVFpezR7Gk"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2ff3e8496a-bb93-4907-ae16-ce4c6225daba%2f%e1%9e%9a%e1%9e%bf%e1%9e%84%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%81%e1%9e%84%e1%9e%93%e1%9e%b7%e1%9e%91%e1%9e%b6%e1%9e%93%e1%9e%81%e1%9f%92%e1%9e%9b%e1%9e%b6+%e1%9e%93%e1%9e%b7%e1%9e%84+%e1%9e%86%e1%9f%92%e1%9e%98%e1%9e%b6%2fimage.jpg",
+   "authors": [
+    "produced by ICC"
+   ],
+   "illustrators": [],
+   "publisher": "produced by ICC",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 11,
+   "file": "books/bloom-f3e8496a-untitled-km.json"
+  },
+  {
+   "slug": "bloom-a996daeb-untitled-km",
+   "title": "រីងរីង ណាវ សៀមរៀប",
+   "description": "Jarai Folk tale",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/i8OYF8tsy6"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f01+Where+Do+They+Go.jpg",
+   "authors": [
+    "Produced by ICC,Supported by UNESCO"
+   ],
+   "illustrators": [],
+   "publisher": "Produced by ICC,Supported by UNESCO",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 9,
+   "file": "books/bloom-a996daeb-untitled-km.json"
+  },
+  {
+   "slug": "bloom-7b4136dd-untitled-km",
+   "title": "គ្លើយ អាពៀល",
+   "description": "Jarai Folk tale",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/49V10iZLrk"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f7b4136dd-22fc-4c26-9a75-93f2ef7fbfd1%2f%e1%9e%82%e1%9f%92%e1%9e%9b%e1%9e%be%e1%9e%99+%e1%9e%a2%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%9b%2f01They+Go+to+The+Field2.jpg",
+   "authors": [
+    "Produced by ICC , Supported by UNESCO"
+   ],
+   "illustrators": [],
+   "publisher": "Produced by ICC , Supported by UNESCO",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 22,
+   "file": "books/bloom-7b4136dd-untitled-km.json"
+  },
+  {
+   "slug": "bloom-8bd36038-untitled-km",
+   "title": "អ្នង់ សំ",
+   "description": "Jarai Folk tale",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/xZHaS8Re8N"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2f8bd36038-cc75-45f0-96eb-3d400bfc3420%2f%e1%9e%a2%e1%9f%92%e1%9e%93%e1%9e%84%e1%9f%8b+%e1%9e%9f%e1%9f%86%2f01UncleSam.jpg",
+   "authors": [
+    "Produced by ICC ,Supported by UNESCO"
+   ],
+   "illustrators": [],
+   "publisher": "Produced by ICC ,Supported by UNESCO",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 12,
+   "file": "books/bloom-8bd36038-untitled-km.json"
+  },
+  {
+   "slug": "bloom-a19c89d3-untitled-my",
+   "title": "ဖိုးကောင်းနှင့် ညီညီ",
+   "description": "Aˬkhaˬ zaˬ deuˬ gui dzaw-eu sahˬ boꞈ",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YwKJ5yLlxz"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2fa19c89d3-55f6-45de-bda6-2df85a5f3899%2fLi+mui%cb%ac+haw%cb%87-eu+Nyi%cb%acnyi%cb%ac%2f4.jpg",
+   "authors": [
+    "Akha literature and cultural committee, and NTC"
+   ],
+   "illustrators": [],
+   "publisher": "Akha literature and cultural committee, and NTC",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 278,
+   "file": "books/bloom-a19c89d3-untitled-my.json"
+  },
+  {
+   "slug": "bloom-card-b5a023d8-untitled",
+   "title": "သူတို့ ကတတ်တယ်။",
+   "description": "An Early Grade Reader pattern book in Khmer and English, translated into Tangshang Naga",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/BEosmwFU30"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fb5a023d8-27a8-43da-b5d3-a2749c7fe06f%2fTs%c3%a4ngxshiq+v%c3%a0numz+df%c3%bc+t%c3%a0lawx%2f01 Dance.jpg",
+   "authors": [
+    "NTC Literacy team"
+   ],
+   "illustrators": [],
+   "publisher": "NTC Literacy team",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 71,
+   "file": "books/bloom-card-b5a023d8-untitled.json"
+  },
+  {
+   "slug": "bloom-fc519704-untitled-ne",
+   "title": "घमण्डी चमेरो",
+   "description": "A Nepali picture book from Bloom Library.",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/GxVgWNhUFd"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ffc519704-33cd-4cdc-9317-5aac0559c557%2f%e0%a4%98%e0%a4%ae%e0%a4%a3%e0%a5%8d%e0%a4%a1%e0%a5%80+%e0%a4%9a%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b%2fAOR_sabt001m.png",
+   "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+   ],
+   "illustrators": [],
+   "publisher": "Enabling Writers Project - World Education-Nepal",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 243,
+   "file": "books/bloom-fc519704-untitled-ne.json"
+  },
+  {
+   "slug": "bloom-25c3384b-untitled-ne",
+   "title": "गौंथलीको गुँड",
+   "description": "A Nepali picture book from Bloom Library.",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jThROJXNkC"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f25c3384b-1fc6-4d78-be72-b464b8ba0768%2f%e0%a4%97%e0%a5%8c%e0%a4%82%e0%a4%a5%e0%a4%b2%e0%a5%80%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a5%81%e0%a4%81%e0%a4%a1%2fimage.jpg",
+   "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+   ],
+   "illustrators": [],
+   "publisher": "Enabling Writers Project - World Education-Nepal",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 181,
+   "file": "books/bloom-25c3384b-untitled-ne.json"
+  },
+  {
+   "slug": "bloom-80603d4b-untitled-ne",
+   "title": "खेतबारी",
+   "description": "A Nepali picture book from Bloom Library.",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/rVI6wPBw5T"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80603d4b-31fc-431a-9a01-d4511512a8b7%2f%e0%a4%96%e0%a5%87%e0%a4%a4%e0%a4%ac%e0%a4%be%e0%a4%b0%e0%a5%80%2fAOR_plant-1.png",
+   "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+   ],
+   "illustrators": [],
+   "publisher": "Enabling Writers Project - World Education-Nepal",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 210,
+   "file": "books/bloom-80603d4b-untitled-ne.json"
+  },
+  {
+   "slug": "bloom-8648e774-untitled-ne",
+   "title": "खरायोको भोज",
+   "description": "A Nepali picture book from Bloom Library.",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jXFmX7hZTo"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f8648e774-cce3-4974-9d59-fcde72d6c369%2f%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fAOR_ara019.png",
+   "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+   ],
+   "illustrators": [],
+   "publisher": "Enabling Writers Project - World Education-Nepal",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 201,
+   "file": "books/bloom-8648e774-untitled-ne.json"
+  },
+  {
+   "slug": "bloom-7ce4fa20-anansi-and-turtle-anansi-et-la-tortue",
+   "title": "Anansi and Turtle Anansi et la Tortue",
+   "description": "An African Storybook:  Anansi learns a lesson from Turtle",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HIf0xwaSvl"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage.jpg",
+   "authors": [
+    "Bloom Library community"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 597,
+   "file": "books/bloom-7ce4fa20-anansi-and-turtle-anansi-et-la-tortue.json"
+  },
+  {
+   "slug": "bloom-6aa755ea-le-tambour-de-l-unit",
+   "title": "Le tambour de l'unité",
+   "description": "Dans ce livre, les ethnies du Cameroun se rassemblent dans la savane du Nord pour partager leur chants et leurs récoltes. Les différends menacent de briser leur unité, mais les enfants, éveillés à la beauté du vivre-ensemble, refusent de céder à la peur. La hyène, symbole de division, tente de les intimider, mais leur chant, leur danse et leur solidarité la repoussent. Ainsi, malgré leurs différences de couleur et de culture, ils deviennent un seul peuple. Au matin, les parents découvrent leurs enfants actifs, porteurs d’une lumière nouvelle : celle de l’unité qui triomphe sur la division.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/NZrkoaeiEG"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/NZrkoaeiEG%2f1763558949795%2fLe+tambour+de+l+unit%c3%a9%2fimage.jpg",
+   "authors": [
+    "Cabtal-Barthélemy BOUTI"
+   ],
+   "illustrators": [],
+   "publisher": "Cabtal-Barthélemy BOUTI",
+   "hasAudio": true,
+   "pageCount": 12,
+   "wordCount": 578,
+   "file": "books/bloom-6aa755ea-le-tambour-de-l-unit.json"
+  },
+  {
+   "slug": "bloom-fa564e15-l-oiseau-qui-chantait-la-v-rit",
+   "title": "L’oiseau qui chantait la vérité",
+   "description": "Un oiseau messager parcourt les villages, chantant des vérités oubliées. Son chant réveille les consciences et invite à la justice et à la paix.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Traditional Story"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/RNoWrM2KZP"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/RNoWrM2KZP%2f1760004660400%2fL%e2%80%99oiseau+qui+chantait+la+v%c3%a9rit%c3%a9+%e2%80%8b%2fimage.jpg",
+   "authors": [
+    "CABTAL-Barthélemy BOUTI"
+   ],
+   "illustrators": [],
+   "publisher": "CABTAL-Barthélemy BOUTI",
+   "hasAudio": true,
+   "pageCount": 14,
+   "wordCount": 504,
+   "file": "books/bloom-fa564e15-l-oiseau-qui-chantait-la-v-rit.json"
+  },
+  {
+   "slug": "bloom-1bf5c25d-le-contraste-des-destins",
+   "title": "Le Contraste des Destins",
+   "description": "Le présent livre célèbre les fruits du respect et du travail. Trois enfants d'une même famille mais trois chemins. Deux choisissent l’obéissance, le respect et discipline et deviennent des modèles. Le troisième rejette les valeurs et sombre dans l’échec.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4oEBhqQUm5"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/4oEBhqQUm5%2f1758801091362%2fLe+Contraste+des+Destins%2fimage1.jpg",
+   "authors": [
+    "CABTAL-Barthélemy BOUTI"
+   ],
+   "illustrators": [],
+   "publisher": "CABTAL-Barthélemy BOUTI",
+   "hasAudio": true,
+   "pageCount": 13,
+   "wordCount": 480,
+   "file": "books/bloom-1bf5c25d-le-contraste-des-destins.json"
+  },
+  {
+   "slug": "bloom-f462c3ae-c-l-bration-de-la-langue-maternelle",
+   "title": "Célébration de la langue maternelle",
+   "description": "ce livre relate le récit illustré de la célébration de la langue maternelle",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/lf36DtBC5U"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2fimage1.jpg",
+   "authors": [
+    "CABTAL-NANOU CHARLOTTE"
+   ],
+   "illustrators": [],
+   "publisher": "CABTAL-NANOU CHARLOTTE",
+   "hasAudio": true,
+   "pageCount": 8,
+   "wordCount": 352,
+   "file": "books/bloom-f462c3ae-c-l-bration-de-la-langue-maternelle.json"
+  },
+  {
+   "slug": "bloom-3e1f4dca-la-bont-du-li-vre",
+   "title": "La bonté du lièvre",
+   "description": "Dans la savane du Nord Cameroun, un lièvre sauve une pintade en danger.\nPlus tard, ce geste de bonté lui sauvera la vie face à une hyène affamée.\nAvec la sagesse du lion et du chameau, les animaux rappellent une grande vérité :\nle bienfait revient toujours en bénédiction.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living",
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/72FD1KSMyV"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/72FD1KSMyV%2f1760005153687%2fLa+bont%c3%a9+du+li%c3%a8vre%2fimage.jpg",
+   "authors": [
+    "CABTAL-Barthélemy BOUTI"
+   ],
+   "illustrators": [],
+   "publisher": "CABTAL-Barthélemy BOUTI",
+   "hasAudio": true,
+   "pageCount": 12,
+   "wordCount": 432,
+   "file": "books/bloom-3e1f4dca-la-bont-du-li-vre.json"
+  },
+  {
+   "slug": "bloom-91cb00f3-choupi-et-coucou",
+   "title": "Choupi et Coucou",
+   "description": "Choupi, une petite souris grise, sort joyeusement dans la cuisine à la recherche de nourriture, sans se douter du danger.\nCoucou, le chat noir, l’observe en silence et prépare son attaque avec patience et précision.\nPris par surprise, Choupi est capturée et dévorée, laissant Coucou satisfait de sa chasse réussie.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YtjKlJievL"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/YtjKlJievL%2f1758722876077%2fChoupi+et+Coucou%2fChoupi+et+Coucou.jpg",
+   "authors": [
+    "CABTAL- Liboth Fabien"
+   ],
+   "illustrators": [],
+   "publisher": "CABTAL- Liboth Fabien",
+   "hasAudio": true,
+   "pageCount": 10,
+   "wordCount": 289,
+   "file": "books/bloom-91cb00f3-choupi-et-coucou.json"
+  },
+  {
+   "slug": "bloom-64bda03e-lina-et-son-chat-milo",
+   "title": "Lina et son chat Milo",
+   "description": "Il s'agit dans ce livre de débutant l'histoire d'une fillette nommée Lina avec son chat Milo.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/sgERoOvvRo"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faor_PA105M.png",
+   "authors": [
+    "CABTAL -Nanou Charlotte"
+   ],
+   "illustrators": [],
+   "publisher": "CABTAL -Nanou Charlotte",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 154,
+   "file": "books/bloom-64bda03e-lina-et-son-chat-milo.json"
+  },
+  {
+   "slug": "bloom-507a802e-djobo-vuna-et-le-grand-march",
+   "title": "Djoboŋvunaŋ et le grand marché",
+   "description": "Dans un village chaleureux du Cameroun dénommé Kotliina, Djoboŋvunaŋ et sa sœur Lumuda vivent des aventures pleines de joie, de foi et de sagesse. À travers les scènes du marché, les repas en famille et les chants de louange, ce livre célèbre l’éducation, le respect des parents, la générosité et la convivialité. Guidés par l’amour familial et la lumière de Dieu, les enfants deviennent des modèles pour leur entourage — une vraie fierté pour toute la communauté.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living",
+    "Traditional Story"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/evljv32e7H"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/evljv32e7H%2f1760001250008%2fDjobo%c5%8bvuna%c5%8b+et+le+grand+march%c3%a9%2fimage15.jpg",
+   "authors": [
+    "CABTAL-Barthélemy BOUTI"
+   ],
+   "illustrators": [],
+   "publisher": "CABTAL-Barthélemy BOUTI",
+   "hasAudio": true,
+   "pageCount": 10,
+   "wordCount": 215,
+   "file": "books/bloom-507a802e-djobo-vuna-et-le-grand-march.json"
+  },
+  {
+   "slug": "bloom-6d1b8cef-la-d-couverte-de-la-nature",
+   "title": "La découverte de la nature",
+   "description": "il s'agit de l'histoire d'une petite fille se lève le matin et découvre les merveilles de la nature.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Traditional Story"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/mUIIItbISX"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faor_9-3j.png",
+   "authors": [
+    "cabtal"
+   ],
+   "illustrators": [],
+   "publisher": "cabtal",
+   "hasAudio": true,
+   "pageCount": 10,
+   "wordCount": 213,
+   "file": "books/bloom-6d1b8cef-la-d-couverte-de-la-nature.json"
+  },
+  {
+   "slug": "bloom-1cb58346-la-poule-et-le-millepatte",
+   "title": "La poule et le millepatte",
+   "description": "A French picture book from Bloom Library.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/VsEd6qODua"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2fpph3c4pn.fsc.jpg",
+   "authors": [
+    "SIL Mali"
+   ],
+   "illustrators": [],
+   "publisher": "SIL Mali",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 339,
+   "file": "books/bloom-1cb58346-la-poule-et-le-millepatte.json"
+  },
+  {
+   "slug": "bloom-1d7b99ed-ce-fut-un-petit-e-le-plant",
+   "title": "Ce fut un petit éléplant",
+   "description": "How did the elephant get its trunk?",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/fId65JsNSJ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fId65JsNSJ%2f1747238864619%2fNun+y%c9%9b+foo+samaindin+s%c9%94h%c9%94n%2fCurious_baby_elephant_Page_01_Image_00011.png",
+   "authors": [
+    "Judith Baker et Lorato Trok"
+   ],
+   "illustrators": [],
+   "publisher": "SIL Mali",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 280,
+   "file": "books/bloom-1d7b99ed-ce-fut-un-petit-e-le-plant.json"
+  },
+  {
+   "slug": "bloom-9518fb5e-les-arbres",
+   "title": "Les arbres",
+   "description": "A French picture book from Bloom Library.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Environment"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ieaPWA46AZ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ieaPWA46AZ%2f1783192888741%2fIti%2fTrees+Cover+page.jpg",
+   "authors": [
+    "Peter Ebenrubo Okunola"
+   ],
+   "illustrators": [],
+   "publisher": "Peter Ebenrubo Okunola",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 31,
+   "file": "books/bloom-9518fb5e-les-arbres.json"
+  },
+  {
+   "slug": "bloom-aa92bf2e-rat-chat",
+   "title": "Rat - chat",
+   "description": "A French picture book from Bloom Library.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/76sy92VCA8"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/76sy92VCA8%2f1783186106221%2f%e1%bb%8cd%e1%bb%8d+e%c3%88%e1%b9%a3e%2fimage.jpg",
+   "authors": [
+    "Peter Ebenrubo Okunola"
+   ],
+   "illustrators": [],
+   "publisher": "Peter Ebenrubo Okunola",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 36,
+   "file": "books/bloom-aa92bf2e-rat-chat.json"
+  },
+  {
+   "slug": "bloom-f915d4df-que-font-ils",
+   "title": "Que font-ils ?",
+   "description": "A French picture book from Bloom Library.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Personal Development"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/uZzxAY5Nls"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/uZzxAY5Nls%2f1780259375998%2f%e1%ba%b8na+b%c3%a8+e+siye+a%2fimage.jpg",
+   "authors": [
+    "Peter Ebenrubo Okunola"
+   ],
+   "illustrators": [],
+   "publisher": "Peter Ebenrubo Okunola",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 21,
+   "file": "books/bloom-f915d4df-que-font-ils.json"
+  },
+  {
+   "slug": "bloom-3d2b8666-beema-le-gros-dormeur",
+   "title": "Beema, le gros dormeur",
+   "description": "A French picture book from Bloom Library.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/CUd9dCIBn3"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/CUd9dCIBn3%2f1779655618013%2fIbeema++obuwe+%e1%b9%a3%c5%a9moworo%2fimage.jpg",
+   "authors": [
+    "Peter Ebenrubo Okunola"
+   ],
+   "illustrators": [],
+   "publisher": "Peter Ebenrubo Okunola",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 75,
+   "file": "books/bloom-3d2b8666-beema-le-gros-dormeur.json"
+  },
+  {
+   "slug": "bloom-f48524a4-c-est-mon-poisson",
+   "title": "C'est mon poisson !",
+   "description": "A French picture book from Bloom Library.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Personal Development"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/nDKEVdalIr"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/nDKEVdalIr%2f1779776274580%2fMa+Ay%e1%ba%b9r%e1%ba%b9+a+Wa+%e1%bb%8cn%e1%ba%b9b%e1%ba%b9!%2fimage.jpg",
+   "authors": [
+    "Peter Ebenrubo Okunola"
+   ],
+   "illustrators": [],
+   "publisher": "Peter Ebenrubo Okunola",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 89,
+   "file": "books/bloom-f48524a4-c-est-mon-poisson.json"
+  },
+  {
+   "slug": "bloom-1639cf6a-qui-a-mang-les-bonbons",
+   "title": "Qui a mangé les bonbons ?",
+   "description": "A French picture book from Bloom Library.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/zxZSwmmqhO"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/zxZSwmmqhO%2f1779653218239%2f%e1%ba%b8ra+a+T%c3%a3m+%e1%ba%b8kandi+ay%e1%ba%b9+a%2fimage.jpg",
+   "authors": [
+    "Peter Ebenrubo Okunola"
+   ],
+   "illustrators": [],
+   "publisher": "Peter Ebenrubo Okunola",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 30,
+   "file": "books/bloom-1639cf6a-qui-a-mang-les-bonbons.json"
+  },
+  {
+   "slug": "bloom-48c0b969-le-singe-et-le-tambour",
+   "title": "Le singe et le tambour",
+   "description": "A French picture book from Bloom Library.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/GfsXjlTLD0"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/GfsXjlTLD0%2f1779651421245%2f%e1%bb%8ck%e1%bb%8dr%e1%ba%b9+ay%e1%ba%b9+ak%c3%a0+%e1%bb%8ckanga+ay%e1%ba%b9%2fimage30.jpg",
+   "authors": [
+    "Peter Ebenrubo Okunola"
+   ],
+   "illustrators": [],
+   "publisher": "Peter Ebenrubo Okunola",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 30,
+   "file": "books/bloom-48c0b969-le-singe-et-le-tambour.json"
+  },
+  {
+   "slug": "bloom-983b3943-dembe-mkombe-mbahazazi-dembe-l-homme-d-affaires",
+   "title": "Dembe mkombe mbahazazi Dembe l'Homme d'Affaires",
+   "description": "Dembe the Businessman with Shimwali and French Translation",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jnVNNoC3Yj"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f983b3943-630c-41f2-9e15-bdc1064e9f64%2fDembe+mkombe+mbahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_01_Image_0001.png",
+   "authors": [
+    "Bloom Library community"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 132,
+   "file": "books/bloom-983b3943-dembe-mkombe-mbahazazi-dembe-l-homme-d-affaires.json"
+  },
+  {
+   "slug": "bloom-ca829dd6-dembe-bahazazi-dembe-l-homme-d-affaires",
+   "title": "Dembe Bahazazi Dembe l'Homme d'Affaires",
+   "description": "Dembe the Businessman in shiNdzuani with French translation",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/dixSkyR4oP"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2fca829dd6-c892-4cd0-b2dc-338a2133b807%2fDembe+Bahazazi+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_01_Image_0001.png",
+   "authors": [
+    "Bloom Library community"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 132,
+   "file": "books/bloom-ca829dd6-dembe-bahazazi-dembe-l-homme-d-affaires.json"
+  },
+  {
+   "slug": "bloom-61bbb0ac-delmbe-mfagna-biashara-dembe-l-homme-d-affaires",
+   "title": "Delmbe mfagna biashara Dembe l'Homme d'Affaires",
+   "description": "Dembe the Businessman with Shingazidja and French Translation",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Hmg4sNJHYX"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/Hmg4sNJHYX%2f1775848980270%2fDelmbe+mfagna+biashara+Dembe+l+Homme+d+Affaires%2fASP_71_dembe_the_shopkeeper_Page_01_Image_0001.png",
+   "authors": [
+    "African Storybook Initiative"
+   ],
+   "illustrators": [],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 132,
+   "file": "books/bloom-61bbb0ac-delmbe-mfagna-biashara-dembe-l-homme-d-affaires.json"
+  },
+  {
+   "slug": "bloom-949671df-cultiver-et-jardiner-six-principes-d-une-agricul",
+   "title": "Cultiver et jardiner: Six principes d'une agriculture qui donne la vie",
+   "description": "This is a shell book that explains six ways farmers and gardeners can improve the soil using lessons from nature and traditional agriculture. Content adapted with permission from UnderstandingAg.org.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Environment"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/B7kBENM7Wy"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/B7kBENM7Wy%2f1775260829425%2fCultiver+et+jardiner++Six+principes+d+une+agricult%2fimage1.jpg",
+   "authors": [
+    "Amy Lazar"
+   ],
+   "illustrators": [],
+   "publisher": "Amy Lazar",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 1919,
+   "file": "books/bloom-949671df-cultiver-et-jardiner-six-principes-d-une-agricul.json"
+  },
+  {
+   "slug": "bloom-c6c8eb29-qu-est-ce-que-le-changement-climatique",
+   "title": "Qu’est-ce que le changement climatique ?",
+   "description": "This is a shell book that explains why climate change is occurring and what are some common effects.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Environment"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/k4QfDsdLJx"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/k4QfDsdLJx%2f1775260919322%2fQu%e2%80%99est-ce+que+le+changement+climatique%2fimage19.jpg",
+   "authors": [
+    "Amy Lazar"
+   ],
+   "illustrators": [],
+   "publisher": "Amy Lazar",
+   "hasAudio": false,
+   "pageCount": 31,
+   "wordCount": 2078,
+   "file": "books/bloom-c6c8eb29-qu-est-ce-que-le-changement-climatique.json"
+  },
+  {
+   "slug": "bloom-12d41202-qu-est-ce-que-la-durabilit",
+   "title": "Qu'est-ce que la durabilité ?",
+   "description": "Il s’agit d’un livre-coquille qui explique comment les écosystèmes restent équilibrés et suggère des moyens pour que les gens puissent faire des choix plus durables dans leur vie quotidienne.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Environment"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/6UTIqUXaBF"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/6UTIqUXaBF%2f1775261030760%2fQu+est-ce+que+la+durabilit%c3%a9%2fimage.jpg",
+   "authors": [
+    "Amy Lazar"
+   ],
+   "illustrators": [],
+   "publisher": "Amy Lazar",
+   "hasAudio": false,
+   "pageCount": 39,
+   "wordCount": 2505,
+   "file": "books/bloom-12d41202-qu-est-ce-que-la-durabilit.json"
+  },
+  {
+   "slug": "bloom-9da31db7-regarde-au-ciel-qu-est-ce-que-tu-vois-non-color",
+   "title": "Regarde au ciel. Qu’est ce que tu vois ? (Non coloré)",
+   "description": "Lecture facile\nEasy reader",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/iwjtbtlZmC"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/iwjtbtlZmC%2f1745831682383%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois++++Non+colo%2fCover_aaa+bw.jpg",
+   "authors": [
+    "Craig Aldred"
+   ],
+   "illustrators": [],
+   "publisher": "Craig Aldred",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 19,
+   "file": "books/bloom-9da31db7-regarde-au-ciel-qu-est-ce-que-tu-vois-non-color.json"
+  },
+  {
+   "slug": "bloom-107f01be-regarde-au-ciel-qu-est-ce-que-tu-vois",
+   "title": "Regarde au ciel. Qu’est ce que tu vois ?",
+   "description": "Lecture facile\nEasy reader",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HLp4BpemLo"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/HLp4BpemLo%2f1745831473959%2fRegarde+au+ciel.+Qu%e2%80%99est+ce+que+tu+vois%2fCover_aaa.jpg",
+   "authors": [
+    "Craig Aldred"
+   ],
+   "illustrators": [],
+   "publisher": "Craig Aldred",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 19,
+   "file": "books/bloom-107f01be-regarde-au-ciel-qu-est-ce-que-tu-vois.json"
+  },
+  {
+   "slug": "bloom-card-d04aeb1d-la-promenade-sur-la-lune",
+   "title": "La promenade sur la lune",
+   "description": "Œuvres non romanesques : science spatiale",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Non Fiction"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/EqIUyV2oxc"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/carol22_smith%40sil.org%2fd04aeb1d-4eef-4dda-ac47-898b20647462%2fLa+promenade+sur+la+lune%2fimage6.png",
+   "authors": [
+    "SIL Cameroun"
+   ],
+   "illustrators": [],
+   "publisher": "SIL Cameroun",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 66,
+   "file": "books/bloom-card-d04aeb1d-la-promenade-sur-la-lune.json"
+  },
+  {
+   "slug": "bloom-card-6b40235a-la-promenade-l-cole",
+   "title": "La promenade à l'école",
+   "description": "A French picture book, readable free at Bloom Library.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Fiction"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/f4zGli8iya"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/carol22_smith%40sil.org%2f6b40235a-1b31-4560-bae3-6718d9f447e2%2fLa+promenade+%c3%a0+l+%c3%a9cole%2fimage.png",
+   "authors": [
+    "SIL Cameroun"
+   ],
+   "illustrators": [],
+   "publisher": "SIL Cameroun",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/bloom-card-6b40235a-la-promenade-l-cole.json"
+  },
+  {
+   "slug": "bloom-432eed8a-el-sue-o-de-estrella",
+   "title": "El sueño de Estrella",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/sSTLF1xKeG"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f432eed8a-835c-4988-bee1-5a94301b08fc%2fEl+sue%c3%b1o+de+Estrella1%2fnina maya sentada en el piso.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 23,
+   "wordCount": 915,
+   "file": "books/bloom-432eed8a-el-sue-o-de-estrella.json"
+  },
+  {
+   "slug": "bloom-d2ae9d27-el-pez-que-quer-a-trepar-rboles",
+   "title": "El pez que quería trepar árboles",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/A7b7p5EY0G"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2ae9d27-72a8-4d0c-94d4-9306da77cd8e%2fEl+pez+que+quer%c3%ada+trepar+%c3%a1rboles%2fgoldfish-30837_640.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 23,
+   "wordCount": 1009,
+   "file": "books/bloom-d2ae9d27-el-pez-que-quer-a-trepar-rboles.json"
+  },
+  {
+   "slug": "bloom-9b44a178-la-granja",
+   "title": "La granja",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/VjogBDEAwZ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f9b44a178-a100-4102-bc33-d13f906c8406%2fLa+granja%2fvaca en ordeno.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 19,
+   "wordCount": 738,
+   "file": "books/bloom-9b44a178-la-granja.json"
+  },
+  {
+   "slug": "bloom-ee51b324-la-escuela",
+   "title": "La escuela",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/3F8MDA51aY"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fee51b324-cb47-46cb-8d24-d79744b5246a%2fLa+escuela%2fescuela.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 19,
+   "wordCount": 754,
+   "file": "books/bloom-ee51b324-la-escuela.json"
+  },
+  {
+   "slug": "bloom-a99cf0d7-rufo-andal-n",
+   "title": "Rufo andalón",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/qzHRu1jwmL"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fa99cf0d7-0a93-4f22-b070-2045d5c0cd85%2fRufo+andal%c3%b3n1%2fimage1.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 19,
+   "wordCount": 611,
+   "file": "books/bloom-a99cf0d7-rufo-andal-n.json"
+  },
+  {
+   "slug": "bloom-3cb935de-el-barrilete-de-mi-abuelito",
+   "title": "El barrilete de mi abuelito",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/R9NTFCKPIq"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3cb935de-72cb-4da1-95b8-7de2f752e1c3%2fEl+barrilete+de+mi+abuelito%2fbarrilete11.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 19,
+   "wordCount": 628,
+   "file": "books/bloom-3cb935de-el-barrilete-de-mi-abuelito.json"
+  },
+  {
+   "slug": "bloom-06ab6576-mario-el-aviador",
+   "title": "Mario el aviador",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/uJfZqI0aAj"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f06ab6576-8002-4ab6-8d50-76910858d059%2fMario+el+aviador%2faircraft-3855349_6401.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 19,
+   "wordCount": 557,
+   "file": "books/bloom-06ab6576-mario-el-aviador.json"
+  },
+  {
+   "slug": "bloom-03be1223-el-tibur-n-y-el-planeta",
+   "title": "El tiburón y el planeta",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/C2kGPRYcvC"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2fshark-3068590_640.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 19,
+   "wordCount": 567,
+   "file": "books/bloom-03be1223-el-tibur-n-y-el-planeta.json"
+  },
+  {
+   "slug": "bloom-e9982c2a-la-tigresa",
+   "title": "La tigresa",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/is2yOnSwr2"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe9982c2a-ac88-412b-9434-981b36963b8a%2fLa+tigresa%2fimage.jpg",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 15,
+   "wordCount": 211,
+   "file": "books/bloom-e9982c2a-la-tigresa.json"
+  },
+  {
+   "slug": "bloom-70ff82c9-conozcamos-el-parque-nacional-tikal",
+   "title": "Conozcamos el Parque Nacional Tikal",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/SqtuSYgmYt"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f70ff82c9-3cc1-4404-8756-8b75b4345f40%2fConozcamos+el+Parque+Nacional+Tikal%2fimage2.jpg",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 15,
+   "wordCount": 201,
+   "file": "books/bloom-70ff82c9-conozcamos-el-parque-nacional-tikal.json"
+  },
+  {
+   "slug": "bloom-d8bdea25-rosa-quiere-ser-maestra",
+   "title": "Rosa quiere ser maestra",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4PgbaGn83f"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd8bdea25-a08f-4f1f-8414-5fadc0964ecf%2fRosa+quiere+ser+maestra%2fnina rotulo1.png",
+   "authors": [
+    "Ministerio de Educación Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 15,
+   "wordCount": 130,
+   "file": "books/bloom-d8bdea25-rosa-quiere-ser-maestra.json"
+  },
+  {
+   "slug": "bloom-2fd6b4c0-el-rbol",
+   "title": "El árbol",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/7oAiFvSJ0K"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f2fd6b4c0-1ffa-4122-bdc9-69b12d24a18a%2fEl+%c3%a1rbol+joven%2ftree-576847_6401.png",
+   "authors": [
+    "Ministerio de Educación Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 15,
+   "wordCount": 179,
+   "file": "books/bloom-2fd6b4c0-el-rbol.json"
+  },
+  {
+   "slug": "bloom-4d94f5c4-los-sombreros-de-joaqu-n",
+   "title": "Los sombreros de Joaquín",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Z5grZ4k4TS"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4d94f5c4-6ac7-49eb-abcd-a68ea2b9f688%2fLos+sombreros+de+Joaqu%c3%adn%2fnino con sombrero.png",
+   "authors": [
+    "Ministerio de Educación Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 13,
+   "wordCount": 98,
+   "file": "books/bloom-4d94f5c4-los-sombreros-de-joaqu-n.json"
+  },
+  {
+   "slug": "bloom-410cfaa9-los-primos",
+   "title": "Los primos",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/2EfFupv5c5"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2fhouses-1719055_640 (1).png",
+   "authors": [
+    "Ministerio de Educación Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 13,
+   "wordCount": 81,
+   "file": "books/bloom-410cfaa9-los-primos.json"
+  },
+  {
+   "slug": "bloom-28e323bd-los-animales",
+   "title": "Los animales",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/w1urYc3H0k"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f28e323bd-69fe-4ac5-b3b4-7ffd466a2e22%2fLos+animales%2fimage.jpg",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": true,
+   "pageCount": 9,
+   "wordCount": 55,
+   "file": "books/bloom-28e323bd-los-animales.json"
+  },
+  {
+   "slug": "bloom-d06fad7c-mi-pescado-no-es-mi-pescado",
+   "title": "\"¡Mi pescado!\" \"¡No, es mi pescado!",
+   "description": "Three friends go fishing.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": true,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/omRW9MZgTg"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_01_Image_0001.jpg",
+   "authors": [
+    "Raphael Finkel"
+   ],
+   "illustrators": [],
+   "publisher": "Raphael Finkel",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 175,
+   "file": "books/bloom-d06fad7c-mi-pescado-no-es-mi-pescado.json"
+  },
+  {
+   "slug": "bloom-337d12e8-el-sapo-y-condor-el-asendado",
+   "title": "El sapo y condor el asendado",
+   "description": "A Spanish picture book from Bloom Library.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/nbLZ2bcTe4"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fDiapositiva3.jpg",
+   "authors": [
+    "Pacha Waray"
+   ],
+   "illustrators": [],
+   "publisher": "Pacha Waray",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 597,
+   "file": "books/bloom-337d12e8-el-sapo-y-condor-el-asendado.json"
+  },
+  {
+   "slug": "bloom-1d1bed0a-la-tijereta-y-la-llorona",
+   "title": "La Tijereta y La Llorona",
+   "description": "Es parte de la Colección Cuentos en familia, escritos por padres y madres de familia.  Estos materiales tienen el objetivo de rescatar la tradición oral de Guatemala.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/0JLEFRUa8a"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mixmata%40mineduc.gob.gt%2f1d1bed0a-0c3d-4e56-a640-572f7d31e133%2fLa+Tijereta+y+La+Llorona%2fLa llorona 1.jpg",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID"
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 362,
+   "file": "books/bloom-1d1bed0a-la-tijereta-y-la-llorona.json"
+  },
+  {
+   "slug": "bloom-31d1520a-quiero-ayudar-a-mi-due-o",
+   "title": "Quiero ayudar a mi dueño",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/TAQu6apIF4"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f31d1520a-508c-44be-82f9-13440d2819c4%2fQuiero+ayudar+a+mi+due%c3%b1o1%2fzapatos.jpg",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID"
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 303,
+   "file": "books/bloom-31d1520a-quiero-ayudar-a-mi-due-o.json"
+  },
+  {
+   "slug": "bloom-1a36cdeb-mis-amigos-de-la-comunidad",
+   "title": "Mis amigos de la comunidad",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/RMsY34BHKG"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1a36cdeb-d57c-4e77-8f61-66f7254822b9%2fMis+amigos+de+la+comunidad%2fComunidad en reunion1111.jpg",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 487,
+   "file": "books/bloom-1a36cdeb-mis-amigos-de-la-comunidad.json"
+  },
+  {
+   "slug": "bloom-1fded413-lucy-la-poeta",
+   "title": "Lucy la poeta",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/SuAX9kP2cJ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1fded413-303b-4bb8-a3d7-420f3bdf9498%2fLucy+la+poeta%2fgirl-160167_640.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 511,
+   "file": "books/bloom-1fded413-lucy-la-poeta.json"
+  },
+  {
+   "slug": "bloom-e5f41016-las-aventuras-de-mart-n-en-la-isla-de-duendes",
+   "title": "Las aventuras de Martín en la isla de duendes",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/uv4oWb30Sk"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fe5f41016-9246-4d8c-9d7f-fac5e5eaf328%2fLas+aventuras+de+Mart%c3%adn+en+la+isla+de+duendes%2fship-watercrafts-sea-ocean-boats-sky-clouds-sailing-background-225261.jpg",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 397,
+   "file": "books/bloom-e5f41016-las-aventuras-de-mart-n-en-la-isla-de-duendes.json"
+  },
+  {
+   "slug": "bloom-419e7f8b-el-saltamontes",
+   "title": "El saltamontes",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ATT7mdwtlE"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f419e7f8b-4307-4862-8f3c-267554fcd604%2fEl+saltamontes1%2fcaterpillar-41420_640.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 407,
+   "file": "books/bloom-419e7f8b-el-saltamontes.json"
+  },
+  {
+   "slug": "bloom-1f4d84d3-la-bombera",
+   "title": "La bombera",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YAu8kMwXf9"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1f4d84d3-4a3a-41d0-82c6-6a708551db34%2fLa+bombera%2fbombera11.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 324,
+   "file": "books/bloom-1f4d84d3-la-bombera.json"
+  },
+  {
+   "slug": "bloom-3d42d088-una-aventura",
+   "title": "Una aventura",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/fKhkVwUVnv"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3d42d088-aa5f-4cf6-b45d-8c2ab8ce026a%2fUna+aventura1%2fforest-1967253_6401.jpg",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 102,
+   "file": "books/bloom-3d42d088-una-aventura.json"
+  },
+  {
+   "slug": "bloom-4df5b7ef-las-frutas",
+   "title": "Las frutas",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ctccqIgY1c"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f4df5b7ef-e3e6-4030-9ba1-3490fda59870%2fLas+frutas1%2ffrutas1.jpg",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID"
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 109,
+   "file": "books/bloom-4df5b7ef-las-frutas.json"
+  },
+  {
+   "slug": "bloom-058af458-la-leche-y-sus-beneficios",
+   "title": "La leche y sus beneficios",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/bTphh4boBL"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f058af458-87a7-4d24-a626-cd5b21f37936%2fLa+leche+y+sus+beneficios%2fniños bebiendo leche1.jpg",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 108,
+   "file": "books/bloom-058af458-la-leche-y-sus-beneficios.json"
+  },
+  {
+   "slug": "bloom-3f730bb5-entre-flores",
+   "title": "Entre flores",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/c0WF1geyIr"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fscenery-970839_1280.jpg",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 104,
+   "file": "books/bloom-3f730bb5-entre-flores.json"
+  },
+  {
+   "slug": "bloom-754e2843-el-volc-n-jumay",
+   "title": "El volcán Jumay",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/gcuNV3XOem"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f754e2843-5035-4610-ae4c-1ce426f527a6%2fEl+volc%c3%a1n+Jumay%2fvolcano-149322_1280.png",
+   "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación de Guatemala y USAID.",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 94,
+   "file": "books/bloom-754e2843-el-volc-n-jumay.json"
+  },
+  {
+   "slug": "bloom-d2b0527b-manchas",
+   "title": "Manchas",
+   "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/lmtWJFn4OQ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fvaca 4.png",
+   "authors": [
+    "Ministerio de Educación Guatemala y USAID."
+   ],
+   "illustrators": [],
+   "publisher": "Ministerio de Educación Guatemala y USAID.",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 44,
+   "file": "books/bloom-d2b0527b-manchas.json"
+  },
+  {
+   "slug": "bloom-8d83c666-a-m-e-gazela-e-seus-quatro-filhos",
+   "title": "A mãe gazela e seus quatro filhos",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/fSJhD3xeG2"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fSJhD3xeG2%2f1780608322719%2fAbuw%e1%ba%b9+wi+iya+ay%e1%ba%b9+ak%c3%a0+Ye+Egb%e1%ba%bdn+%e1%ba%b8na+ab%e1%ba%b9%2fGazela+cover2.png",
+   "authors": [
+    "Peter Ebenrubo Okunola"
+   ],
+   "illustrators": [],
+   "publisher": "Peter Ebenrubo Okunola",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 394,
+   "file": "books/bloom-8d83c666-a-m-e-gazela-e-seus-quatro-filhos.json"
+  },
+  {
+   "slug": "bloom-b5b37db3-o-pai-seu-filho-e-o-burro",
+   "title": "O pai, seu filho e o burro",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/khGxGohtw0"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/khGxGohtw0%2f1779657618862%2f%e1%ba%b8d%e1%ba%b9da+ay%e1%ba%b9++yo+ogben++ak%c3%a0+%e1%ba%b9k%e1%ba%b9t%e1%ba%b9k%e1%ba%b9t%e1%ba%b9+ay%e1%ba%b9%2fFather%2c+son+and+donkey_02+(2).png",
+   "authors": [
+    "Peter Ebenrubo Okunola"
+   ],
+   "illustrators": [],
+   "publisher": "Peter Ebenrubo Okunola",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 190,
+   "file": "books/bloom-b5b37db3-o-pai-seu-filho-e-o-burro.json"
+  },
+  {
+   "slug": "bloom-bcc27d98-como-a-formiga-salvou-um-pombo",
+   "title": "Como a formiga salvou um pombo",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Ia1mWz7LXR"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/Ia1mWz7LXR%2f1772729735669%2fNyerere+idapulumusa+nkhangaiwa%2fAnt+cover.jpg",
+   "authors": [
+    "African Storybook Initiative"
+   ],
+   "illustrators": [],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 244,
+   "file": "books/bloom-bcc27d98-como-a-formiga-salvou-um-pombo.json"
+  },
+  {
+   "slug": "bloom-5d533461-o-rato-e-a-ratoeira",
+   "title": "O rato e a ratoeira",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jR6SPDD98S"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/jR6SPDD98S%2f1772819724013%2fChiru+ibodzi+na+latowera%2fRato+1.jpg",
+   "authors": [
+    "Léonie Dieleman"
+   ],
+   "illustrators": [],
+   "publisher": "Léonie Dieleman",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 292,
+   "file": "books/bloom-5d533461-o-rato-e-a-ratoeira.json"
+  },
+  {
+   "slug": "bloom-e32eabe6-o-camale-o-e-o-coelho",
+   "title": "O camaleão e o coelho",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/BmBC4BTEXD"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/BmBC4BTEXD%2f1765823028609%2fNyakatendewa+na+sulo%2fChameleon+Cover.jpg",
+   "authors": [
+    "Little Zebra"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 199,
+   "file": "books/bloom-e32eabe6-o-camale-o-e-o-coelho.json"
+  },
+  {
+   "slug": "bloom-8b7cfc2a-a-casa-de-luwo",
+   "title": "A casa de Luwo",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ymAKpaUlXZ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ymAKpaUlXZ%2f1765823387066%2fNyumba+ya+Luwo%2fLuwo+cover.jpg",
+   "authors": [
+    "Little Zebra"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 183,
+   "file": "books/bloom-8b7cfc2a-a-casa-de-luwo.json"
+  },
+  {
+   "slug": "bloom-834c7f67-a-canoa-da-sara",
+   "title": "A canoa da Sara",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/RpYpzWbp3G"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/RpYpzWbp3G%2f1765822070469%2fMwadiya+wa+Sara%2fSara+Cover.jpg",
+   "authors": [
+    "Little Zebra"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 257,
+   "file": "books/bloom-834c7f67-a-canoa-da-sara.json"
+  },
+  {
+   "slug": "bloom-ad19cdbc-quem-vai-me-ajudar",
+   "title": "Quem vai me ajudar?",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YHnqbLzuRo"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/YHnqbLzuRo%2f1765891510007%2fMbani+anafuna+kundiphedza%2fCopy+of+Who+Will+Help+Me+3+taller.jpg",
+   "authors": [
+    "SIL-PNG"
+   ],
+   "illustrators": [],
+   "publisher": "SIL-PNG",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 179,
+   "file": "books/bloom-ad19cdbc-quem-vai-me-ajudar.json"
+  },
+  {
+   "slug": "bloom-f265f823-o-cabrito-o-c-o-e-a-vaca",
+   "title": "\"O cabrito, o cão e a vaca\"",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/GcWGNEkMHM"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/GcWGNEkMHM%2f1765825833899%2fMbuzi+na+Mwanambwa+na+Ng+ombe%2fGoatDogCow_aw1b+empty+sky+(1).png",
+   "authors": [
+    "African Storybook"
+   ],
+   "illustrators": [],
+   "publisher": "African Storybook",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 143,
+   "file": "books/bloom-f265f823-o-cabrito-o-c-o-e-a-vaca.json"
+  },
+  {
+   "slug": "bloom-dc1670f9-nema-compra-a-linha",
+   "title": "Nema compra a linha",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/W8HdAGi6La"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/W8HdAGi6La%2f1765822611496%2fNema+asagula+usalu%2fNema+Cover.jpg",
+   "authors": [
+    "Little Zebra"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 176,
+   "file": "books/bloom-dc1670f9-nema-compra-a-linha.json"
+  },
+  {
+   "slug": "bloom-f0f5fcd0-a-festa-na-montanha",
+   "title": "A festa na montanha",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YqMbEQD0OT"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/YqMbEQD0OT%2f1765823591119%2fPhwando+ya+pa+phiri%2fNo+Pigs+Cover.jpg",
+   "authors": [
+    "Little Zebra"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 201,
+   "file": "books/bloom-f0f5fcd0-a-festa-na-montanha.json"
+  },
+  {
+   "slug": "bloom-7063b24f-a-menina-chamada-zawadi",
+   "title": "A menina chamada Zawadi",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/LDn8ebRFRj"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/LDn8ebRFRj%2f1773420197403%2fNtsikana+anacemerwa+Zawadi%2fZawadi+cover.jpg",
+   "authors": [
+    "Ministério da Educação da República de Angola INADE-MED"
+   ],
+   "illustrators": [],
+   "publisher": "Ministério da Educação da República de Angola INADE-MED",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 218,
+   "file": "books/bloom-7063b24f-a-menina-chamada-zawadi.json"
+  },
+  {
+   "slug": "bloom-8876d1cf-com-for-a-de-vontade-vai-se-longe",
+   "title": "Com força de vontade, vai-se longe",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/GACDt4JF66"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/GACDt4JF66%2f1772729406118%2fNa+phinga+unafika+kutali%2fRafiki+4.jpg",
+   "authors": [
+    "Ministério da Educação da República de Angola INADE-MED"
+   ],
+   "illustrators": [],
+   "publisher": "Ministério da Educação da República de Angola INADE-MED",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 296,
+   "file": "books/bloom-8876d1cf-com-for-a-de-vontade-vai-se-longe.json"
+  },
+  {
+   "slug": "bloom-0c38bcf6-profiss-es",
+   "title": "Profissões",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ewXzE1tUPV"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ewXzE1tUPV%2f1773420033614%2fMabasa%2fOccupations+7.png",
+   "authors": [
+    "African Storybook Initiative"
+   ],
+   "illustrators": [],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 170,
+   "file": "books/bloom-0c38bcf6-profiss-es.json"
+  },
+  {
+   "slug": "bloom-0604f2a1-uma-escola-com-tr-s-salas",
+   "title": "Uma escola com três salas",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/TGCftUlf0Q"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/TGCftUlf0Q%2f1765823985957%2fXikola+na+mbuto+zitatu%2fXikola+cover2.png",
+   "authors": [
+    "Léonie Dieleman"
+   ],
+   "illustrators": [],
+   "publisher": "Léonie Dieleman",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 324,
+   "file": "books/bloom-0604f2a1-uma-escola-com-tr-s-salas.json"
+  },
+  {
+   "slug": "bloom-d795e40e-w-bigu-mini-gumachu-u",
+   "title": "Wɔbigu mini Gumachuɣu",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4M3NQ4ypJ1"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/lbenwunnam%40gmail.com%2fd795e40e-b7f1-4420-95fa-bb8f2927645d%2fW%c9%94bigu+mini+Gumachu%c9%a3u%2fElephant_and_Chameleon_Page_01_Image_0001.png",
+   "authors": [
+    "Literacy and Development through Partnership"
+   ],
+   "illustrators": [],
+   "publisher": "Literacy and Development through Partnership",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 139,
+   "file": "books/bloom-d795e40e-w-bigu-mini-gumachu-u.json"
+  },
+  {
+   "slug": "bloom-3a1ce5c3-minha-fam-lia",
+   "title": "Minha família",
+   "description": "This booklet introduces my mom and dad and what they do. It teaches about roles, actions and new vocabulary.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/E2ImIs8ijA"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/nadia.h%40seeafrica.co%2f3a1ce5c3-9d67-4b81-9a43-5b27e9d16803%2fMinha+fam%c3%adlia%2fArtboard1.jpg",
+   "authors": [
+    "Thandi Jackson"
+   ],
+   "illustrators": [],
+   "publisher": "SIL-PNG Education for Life",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 180,
+   "file": "books/bloom-3a1ce5c3-minha-fam-lia.json"
+  },
+  {
+   "slug": "bloom-020549b3-que-profiss-es-posso-exercer",
+   "title": "Que profissões posso exercer?",
+   "description": "A Portuguese picture book from Bloom Library.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HhFHyxuoeq"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/HhFHyxuoeq%2f1783190219984%2fUt%c5%a9m+%e1%bb%8c%e1%bb%8dna+I+Diye+Sisye+A%2f0+Cover.jpg",
+   "authors": [
+    "Peter Ebenrubo Okunola"
+   ],
+   "illustrators": [],
+   "publisher": "Peter Ebenrubo Okunola",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 126,
+   "file": "books/bloom-020549b3-que-profiss-es-posso-exercer.json"
+  },
+  {
+   "slug": "bloom-293c6667-as-vidas-dos-animais-dom-sticos",
+   "title": "As Vidas dos Animais Domésticos",
+   "description": "Vê-se muitos animais no dia a dia. Você sabe o trabalho de cada um?",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Science"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/6P6ySc3CxO"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/6P6ySc3CxO%2f1769120200637%2f2+Mwaha+wa+Anenama+a+vaate%2fimage1.jpg",
+   "authors": [
+    "Little Zebra Books"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 681,
+   "file": "books/bloom-293c6667-as-vidas-dos-animais-dom-sticos.json"
+  },
+  {
+   "slug": "bloom-72a26afa-animais-do-mato",
+   "title": "Animais do mato",
+   "description": "Como são os animais do mato e como se escrevem os nomes deles?",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/BXxMHSSulQ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/BXxMHSSulQ%2f1769014118685%2f3+Anenema+a+Mwiini%2fWild+Cover.png",
+   "authors": [
+    "Little Zebra Books"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 16,
+   "file": "books/bloom-72a26afa-animais-do-mato.json"
+  },
+  {
+   "slug": "bloom-d6c00a7f-partes-da-cara",
+   "title": "Partes da cara",
+   "description": "Aprenda as partes da cara e suas funções.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/vfTrgwvI7A"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/vfTrgwvI7A%2f1768946047251%2f1+Kumpatti+yo+maithoni%2fFace+cover.jpg",
+   "authors": [
+    "Little Zebra Books"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 20,
+   "file": "books/bloom-d6c00a7f-partes-da-cara.json"
+  },
+  {
+   "slug": "bloom-6fde2ee0-estes-rabos-de-que-animais-s-o",
+   "title": "Estes rabos, de que animais são?",
+   "description": "Este livro faz-se a pergunta: \"De que animal é este rabo?\"",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/iBJxWlmeet"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/iBJxWlmeet%2f1756332211296%2fEstes+rabos++de+que+animais+s%c3%a3o%2fCover%2c+colas.png",
+   "authors": [
+    "Instituto Lingüístico de Verano, A.C."
+   ],
+   "illustrators": [],
+   "publisher": "Instituto Lingüístico de Verano, A.C.",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 74,
+   "file": "books/bloom-6fde2ee0-estes-rabos-de-que-animais-s-o.json"
+  },
+  {
+   "slug": "bloom-b417fa1d-animais-dom-sticos",
+   "title": "Animais domésticos",
+   "description": "Portuguese: O Benjamin cria muitos animais na sua machamba. Cada animal faz um som diferente.\nEnglish: Ben farms with many animals. Each animal makes a different sound.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ZXcbK3tIVw"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ZXcbK3tIVw%2f1755808068101%2fKahala+18+Wahuwa+Anenama+a+Vaate%2fASP_170_Domestic_animals_Page_01_Image_0001.png",
+   "authors": [
+    "creativecommons.org/licenses/by/4.0/"
+   ],
+   "illustrators": [],
+   "publisher": "creativecommons.org/licenses/by/4.0/",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 84,
+   "file": "books/bloom-b417fa1d-animais-dom-sticos.json"
+  },
+  {
+   "slug": "bloom-47fbca9d-o-macaco-e-o-crocodilo",
+   "title": "O Macaco e o Crocodilo",
+   "description": "Crocodile pretends to be a rock, but Monkey is too clever for Crocodile!",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YsaSwfjGsE"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/YsaSwfjGsE%2f1755117523771%2fKahala+14+Siriyo+ni+Ekonya%2f1+capa+Monkey+and+the+Crocodile.jpg",
+   "authors": [
+    "© Mozambican Writers"
+   ],
+   "illustrators": [],
+   "publisher": "© Mozambican Writers",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 337,
+   "file": "books/bloom-47fbca9d-o-macaco-e-o-crocodilo.json"
+  },
+  {
+   "slug": "bloom-bc6e0757-os-animais-cavam-um-po-o",
+   "title": "Os animais cavam um poço",
+   "description": "Hare does not help the other animals dig a well but gets to use the well anyways.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Qtu0pYtyzn"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/Qtu0pYtyzn%2f1755035849530%2fKahala+16+Anenama+ethipa+ehime%2fASP_222_Animals_dig_a_well_Page_01_Image_0001.png",
+   "authors": [
+    "Little Zebra Books"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 704,
+   "file": "books/bloom-bc6e0757-os-animais-cavam-um-po-o.json"
+  },
+  {
+   "slug": "bloom-5f871583-untitled-th",
+   "title": "วงกลมกับเพื่อนๆ",
+   "description": "น้องวงกลมเป็นเด็กหญิงที่มีนิสัยขี้อาย แม้ว่าพ่อแม่และพี่ชวนไปไหนเธอก็ไม่ยอมไป จนเพื่อนๆเช่น น้องสามเหลี่ยม น้องสี่เหลี่ยมชนิดต่างๆรวมทั้งเพื่อนคนอื่นๆชวนไปเล่นด้วยน้องวงกลมจึงค่อยๆหายเขิน และสนุกสนานกับการกลิ้ง การกระโดดเล่น ครอบครัวของเธอก็พลอยมีความสุขไปด้วย",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/6cCeBNELnD"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5f871583-ff37-49fd-a836-7badcb0f5bff%2f%e0%b8%a7%e0%b8%87%e0%b8%81%e0%b8%a5%e0%b8%a1%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%9e%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%99%e0%b9%86%2fปก1111.jpg",
+   "authors": [
+    "Bloom Library community"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 81,
+   "file": "books/bloom-5f871583-untitled-th.json"
+  },
+  {
+   "slug": "bloom-dc25840d-untitled-th",
+   "title": "มาปลูกต้นไม้กัน...",
+   "description": "โรงเรียนแห่งหนึ่งมีครูและเด็กๆซึ่งเป็นสัตว์ป่าที่น่ารักวันหนึ่งคุณครูชวนนักเรียนนำต้นกล้าไปปลูกเพื่อให้เป็นป่าที่ร่มรื่น เมื่อเด็กๆเหล่านี้เติบโตขึ้นต่างมาชื่นชมป่าไม้ที่เคยร่วมกันปลูกด้วยความรู้สึกภาคภูมิใจและมีความสุข",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/kxQfX2WqYX"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2fdc25840d-5e12-446a-b0ba-542f0698edc6%2f%e0%b8%a1%e0%b8%b2%e0%b8%9b%e0%b8%a5%e0%b8%b9%e0%b8%81%e0%b8%95%e0%b9%89%e0%b8%99%e0%b9%84%e0%b8%a1%e0%b9%89%e0%b8%81%e0%b8%b1%e0%b8%99%2fปก211111.jpg",
+   "authors": [
+    "Bloom Library community"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 86,
+   "file": "books/bloom-dc25840d-untitled-th.json"
+  },
+  {
+   "slug": "bloom-fb10261d-untitled-th",
+   "title": "เสือกลับใจ",
+   "description": "ในป่าแห่งหนึ่งที่มีความอุดมสมบูรณ์และมีเหล่าสัตว์มากมาย มีนกอยู่คู่หนึ่ง ได้ฟักไข่ และด้วยความกังวลของนกตัวผู้ที่กลัวว่าจะเกิดอันตรายกับไข่จึงคุยกับนกตัวเมียว่าจะไปขอร้องเสือเพื่อนรักให้ช่วยดูแลเฝ้าไข่ที่ฟักไว้ในรัง วันรุ่งขึ้นนักก็บินไปยังถ้ำเสือเพื่อขอความช่วยเหลือ เสือก็รับปาก  ในระหว่างที่เสือกับนกคุยกันอยู่นั้น",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/1QO7bHDdl2"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2ffb10261d-9531-4b61-869b-e017c1f20175%2f%e0%b9%80%e0%b8%aa%e0%b8%b7%e0%b8%ad%e0%b8%81%e0%b8%a5%e0%b8%b1%e0%b8%9a%e0%b9%83%e0%b8%88%2fปก11.jpg",
+   "authors": [
+    "Bloom Library community"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 108,
+   "file": "books/bloom-fb10261d-untitled-th.json"
+  },
+  {
+   "slug": "bloom-f397e21a-untitled-th",
+   "title": "ชะนีตัวป่วน",
+   "description": "ชะนีก็ไม่มายุ่งวุ่นวายกับข้าวของชาวบ้านอีกเลยชาวบ้านกลับมามีความสุขเหมือนเดิม",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/KiqK8nIu2c"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2ff397e21a-9a59-40fd-91f8-523cdf7e6e95%2f%e0%b8%8a%e0%b8%b0%e0%b8%99%e0%b8%b5%e0%b8%95%e0%b8%b1%e0%b8%a7%e0%b8%9b%e0%b9%88%e0%b8%a7%e0%b8%991%2fหน้าปกใหญ่.jpg",
+   "authors": [
+    "Bloom Library community"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 119,
+   "file": "books/bloom-f397e21a-untitled-th.json"
+  },
+  {
+   "slug": "bloom-983e3c09-untitled-th",
+   "title": "นายพรานกับกระรอก",
+   "description": "นายพรานเข้าไปล่าสัตว์ในป่า ได้เจอกระรอกตัวน้อยติดกับดัก ด้วยคำพูดอ้อนวอนและน่าสงสารจึงเกิดความเมตตากระรอกน้อย นายพรานจึงนำกระรอกน้อยมาเลี้ยงเสมือนเป็นสหาย จากนั้นนายพรานก็กลับใจไม่ฆ่าสัตว์อีกเลย",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/OQzJGDEu1C"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/chalida0816046149%40gmail.com%2f983e3c09-bf0c-4fdd-814c-b7a014d6fc61%2f%e0%b8%99%e0%b8%b2%e0%b8%a2%e0%b8%9e%e0%b8%a3%e0%b8%b2%e0%b8%99%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b8%81%e0%b8%a3%e0%b8%b0%e0%b8%a3%e0%b8%ad%e0%b8%81%2fปก2.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตแห่งประเทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตแห่งประเทศไทย",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 115,
+   "file": "books/bloom-983e3c09-untitled-th.json"
+  },
+  {
+   "slug": "bloom-98e269d0-untitled-th",
+   "title": "สวนพอเพียงของตารวย",
+   "description": "A Thai picture book from Bloom Library.",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/k1pDTLGSXB"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/papmicky007%40gmail.com%2f98e269d0-4115-4762-b0cc-57ac9421ee2a%2f%e0%b8%aa%e0%b8%a7%e0%b8%99%e0%b8%9e%e0%b8%ad%e0%b9%80%e0%b8%9e%e0%b8%b5%e0%b8%a2%e0%b8%87%e0%b8%82%e0%b8%ad%e0%b8%87%e0%b8%95%e0%b8%b2%e0%b8%a3%e0%b8%a7%e0%b8%a2%2f31243.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตแห่งประเทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตแห่งประเทศไทย",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 169,
+   "file": "books/bloom-98e269d0-untitled-th.json"
+  },
+  {
+   "slug": "bloom-41c18049-untitled-th",
+   "title": "ความดีของประยุทธ์",
+   "description": "A Thai picture book from Bloom Library.",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Oc0HrRKEGT"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/papmicky007%40gmail.com%2f41c18049-1dd1-4aef-ad66-58dca9ea4dad%2f%e0%b8%84%e0%b8%a7%e0%b8%b2%e0%b8%a1%e0%b8%94%e0%b8%b5%e0%b8%82%e0%b8%ad%e0%b8%87%e0%b8%9b%e0%b8%a3%e0%b8%b0%e0%b8%a2%e0%b8%b8%e0%b8%97%e0%b8%98%e0%b9%8c%2fความดีของประยุทธ์.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตเเห่งประเทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตเเห่งประเทศไทย",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 170,
+   "file": "books/bloom-41c18049-untitled-th.json"
+  },
+  {
+   "slug": "bloom-9c5d9e57-untitled-th",
+   "title": "นกตั้งล้อกับเด็กหญิงแก้ว",
+   "description": "เนื่องจากนกตั้งล้อได้ลดลงแล้วเด็กหญิงแก้วรับรู้จึงช่วยอนุรักษ์นกตั้งล้ออีกแรง",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HnIycIFTf5"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f9c5d9e57-1bc2-45b9-b44f-7e37d98340b5%2f%e0%b8%99%e0%b8%81%e0%b8%95%e0%b8%b1%e0%b9%89%e0%b8%87%e0%b8%a5%e0%b9%89%e0%b8%ad%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b9%80%e0%b8%94%e0%b9%87%e0%b8%81%e0%b8%ab%e0%b8%8d%e0%b8%b4%e0%b8%87%e0%b9%81%e0%b8%81%e0%b9%89%e0%b8%a7%2fนกตั้งล้อกับเด็กหญิง1.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตแห่งประเทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตแห่งประเทศไทย",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 82,
+   "file": "books/bloom-9c5d9e57-untitled-th.json"
+  },
+  {
+   "slug": "bloom-72365b38-untitled-th",
+   "title": "นกตั้งล้อผู้กตัญญู",
+   "description": "ลูกต้องเป็นตัวหลักในการหาอาหารให้ครอบครัวแล้วตั้งแต่นั้นมาลูกไม่เคยให้พ่อหาอาหารอีกเลย",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/QDaBgVuhi4"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f72365b38-7959-48c4-910c-c70ce3510e5c%2f%e0%b8%99%e0%b8%81%e0%b8%95%e0%b8%b1%e0%b9%89%e0%b8%87%e0%b8%a5%e0%b9%89%e0%b8%ad%e0%b8%9c%e0%b8%b9%e0%b9%89%e0%b8%81%e0%b8%95%e0%b8%b1%e0%b8%8d%e0%b8%8d%e0%b8%b9%2fหน้าปกนกก1.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตแห่งประเทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตแห่งประเทศไทย",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 80,
+   "file": "books/bloom-72365b38-untitled-th.json"
+  },
+  {
+   "slug": "bloom-2c48e0d8-untitled-th",
+   "title": "เสียงอันไพเราะของนกตั้งล้อ",
+   "description": "เด็กทั้งสามคนได้รุ้จักนกตั้งล้อและให้มันอยู่กับธรรมชาติที่สวยงาม",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/kzXt0WE3d7"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f2c48e0d8-998a-4304-9515-4091a255d819%2f%e0%b9%80%e0%b8%aa%e0%b8%b5%e0%b8%a2%e0%b8%87%e0%b8%ad%e0%b8%b1%e0%b8%99%e0%b9%84%e0%b8%9e%e0%b9%80%e0%b8%a3%e0%b8%b2%e0%b8%b0%e0%b8%82%e0%b8%ad%e0%b8%87%e0%b8%99%e0%b8%81%e0%b8%95%e0%b8%b1%e0%b9%89%e0%b8%87%e0%b8%a5%e0%b9%89%e0%b8%ad%2fหน้าปก3.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตแห่งประทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตแห่งประทศไทย",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 112,
+   "file": "books/bloom-2c48e0d8-untitled-th.json"
+  },
+  {
+   "slug": "bloom-5ef1119e-untitled-th",
+   "title": "นกตั้งล้อกับนายพราน",
+   "description": "ลูกสาวเศรษฐีพูดออกมาเลยได้แต่งงานกับคนใช้ซึ่งเป็นนกตั้งล้อตัวผู้เมื่อชาติที่แล้ว",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/9Vkn83vW8Z"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f5ef1119e-befb-4a4b-bbee-240d4015d63a%2f%e0%b8%99%e0%b8%81%e0%b8%95%e0%b8%b1%e0%b9%89%e0%b8%87%e0%b8%a5%e0%b9%89%e0%b8%ad%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b8%99%e0%b8%b2%e0%b8%a2%e0%b8%9e%e0%b8%a3%e0%b8%b2%e0%b8%99%2fหน้าปก1.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตแห่งประเทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตแห่งประเทศไทย",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 109,
+   "file": "books/bloom-5ef1119e-untitled-th.json"
+  },
+  {
+   "slug": "bloom-134fff31-untitled-th",
+   "title": "นางฟ้าในร่างนางมาร",
+   "description": "เด็กๆกลับมาตั้งใจเรียนเพราะเห็นความจริงใจของคุณครูที่มีต่อลูกศิษย์",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/PFgGjZkjGs"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f134fff31-adfd-41d1-812a-efec8e528a40%2f%e0%b8%99%e0%b8%b2%e0%b8%87%e0%b8%9f%e0%b9%89%e0%b8%b2%e0%b9%83%e0%b8%99%e0%b8%a3%e0%b9%88%e0%b8%b2%e0%b8%87%e0%b8%99%e0%b8%b2%e0%b8%87%e0%b8%a1%e0%b8%b2%e0%b8%a3%2fหน้าปก121.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตแห่งประเทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตแห่งประเทศไทย",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 140,
+   "file": "books/bloom-134fff31-untitled-th.json"
+  },
+  {
+   "slug": "bloom-299deb7e-untitled-th",
+   "title": "ตำนานหมู่บ้านหม่องกั๊วะ",
+   "description": "ชายหนุ่มก็หลงทางวกวนไปไม่ถูก จนในที่สุดก็ต้องละความพยายามกลับไปอยู่หมู่บ้านของตนตามเดิม",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/S9ZjMSJo63"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f299deb7e-a138-45ef-a131-e11acf45ad4e%2f%e0%b8%95%e0%b8%b3%e0%b8%99%e0%b8%b2%e0%b8%99%e0%b8%ab%e0%b8%a1%e0%b8%b9%e0%b9%88%e0%b8%9a%e0%b9%89%e0%b8%b2%e0%b8%99%e0%b8%ab%e0%b8%a1%e0%b9%88%e0%b8%ad%e0%b8%87%e0%b8%81%e0%b8%b1%e0%b9%8a%e0%b8%a7%e0%b8%b0%2fหน้าปก11.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตแห่งประเทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตแห่งประเทศไทย",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 145,
+   "file": "books/bloom-299deb7e-untitled-th.json"
+  },
+  {
+   "slug": "bloom-54906e9d-untitled-th",
+   "title": "แม่กับหนูนิดไปงานแต่ง",
+   "description": "หนูนิดเล่าให้แม่และเพื่อนฟังว่าดอกไม้นี้สามารถกินได้แม่และเพื่อนชื่นชมหนูนิด",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/bjaPVnpHkv"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f54906e9d-7b89-4ec5-b14b-b15610a2d1f3%2f%e0%b9%81%e0%b8%a1%e0%b9%88%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b8%ab%e0%b8%99%e0%b8%b9%e0%b8%99%e0%b8%b4%e0%b8%94%e0%b9%84%e0%b8%9b%e0%b8%87%e0%b8%b2%e0%b8%99%e0%b9%81%e0%b8%95%e0%b9%88%e0%b8%87%2fน11.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตแห่งประเทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตแห่งประเทศไทย",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 84,
+   "file": "books/bloom-54906e9d-untitled-th.json"
+  },
+  {
+   "slug": "bloom-832550b3-untitled-th",
+   "title": "เสียงแคนสวรรค์",
+   "description": "เก้าคัวเลยพิสูจน์ได้ว่าชีน้าคือคนที่เป่าแคนเก่งที่สุดเลยยอมแต่งงานกับเก้าคัว แล้วก็อยู่กินกันอย่างมีความสุข",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/uAGiLQKtIM"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f832550b3-a0d1-455a-8873-6a0b22a09fe8%2f%e0%b9%80%e0%b8%aa%e0%b8%b5%e0%b8%a2%e0%b8%87%e0%b9%81%e0%b8%84%e0%b8%99%e0%b8%aa%e0%b8%a7%e0%b8%a3%e0%b8%a3%e0%b8%84%e0%b9%8c%2fหน้าปก.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตแห่งประเทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตแห่งประเทศไทย",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 192,
+   "file": "books/bloom-832550b3-untitled-th.json"
+  },
+  {
+   "slug": "bloom-51ce5405-untitled-th",
+   "title": "เงินกับข้าว",
+   "description": "กาลครั้งหนึ่งนานมาแล้ว เงินกับข้าวอาศัยอยู่ในหมู่บ้านเดียวกัน วันหนึ่งเมื่อข้าวได้เจอกับเงิน จึงถามเงินว่า \"เธอกับฉัน ใครสำคัญกว่ากัน??\"",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/53YnOBVkPs"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/muicrab.14%40gmail.com%2f51ce5405-28d0-4be8-a9d8-c37476a915fd%2f%e0%b9%80%e0%b8%87%e0%b8%b4%e0%b8%99%e0%b8%81%e0%b8%b1%e0%b8%9a%e0%b8%82%e0%b9%89%e0%b8%b2%e0%b8%a7+(Money+and+Rice)%2f0211.jpg",
+   "authors": [
+    "มูลนิธิศุภนิมิตแห่งประเทศไทย"
+   ],
+   "illustrators": [],
+   "publisher": "มูลนิธิศุภนิมิตแห่งประเทศไทย",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 159,
+   "file": "books/bloom-51ce5405-untitled-th.json"
+  },
+  {
+   "slug": "bloom-card-5b0c1f7f-untitled",
+   "title": "เกมเงินไทย",
+   "description": "Learn to count with Thai Baht.",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Math"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/8bphouxkqu"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/8bphouxkqu%2f1783497968278%2fThailand+Money+Game%2fThai+AP+Cover.jpg",
+   "authors": [
+    "SIL Education for Life"
+   ],
+   "illustrators": [],
+   "publisher": "SIL Education for Life",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 62,
+   "file": "books/bloom-card-5b0c1f7f-untitled.json"
+  },
+  {
+   "slug": "bloom-card-62347f90-21",
+   "title": "21 - แมวและสุนัข และดวงดาว",
+   "description": "แมวกับสุนัขต้องการบินไปสู่ดวงดาว . . .",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/mJWxEnHorE"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mJWxEnHorE%2f1736231396881%2f21+-+%e0%b9%81%e0%b8%a1%e0%b8%a7%e0%b9%81%e0%b8%a5%e0%b8%b0%e0%b8%aa%e0%b8%b8%e0%b8%99%e0%b8%b1%e0%b8%82+%e0%b9%81%e0%b8%a5%e0%b8%b0%e0%b8%94%e0%b8%a7%e0%b8%87%e0%b8%94%e0%b8%b2%e0%b8%a7%2fcoverImagecurved.jpg",
+   "authors": [
+    "SIL Education for Life"
+   ],
+   "illustrators": [],
+   "publisher": "SIL Education for Life",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 63,
+   "file": "books/bloom-card-62347f90-21.json"
+  },
+  {
+   "slug": "bloom-card-20c6634a-untitled",
+   "title": "ไปโรงเรียนวันแรก",
+   "description": "A Thai picture book, readable free at Bloom Library.",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Spiritual"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tqTgBy2hMB"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/lannaliteracyli%40gmail.com%2f20c6634a-229d-4cbd-9c92-4d69072c0827%2f%e0%b9%84%e0%b8%9b%e0%b9%82%e0%b8%a3%e0%b8%87%e0%b9%80%e0%b8%a3%e0%b8%b5%e0%b8%a2%e0%b8%99%e0%b8%a7%e0%b8%b1%e0%b8%99%e0%b9%81%e0%b8%a3%e0%b8%81%2fS__7725064.jpg",
+   "authors": [
+    "Wycliffe Thailand Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "Wycliffe Thailand Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 56,
+   "file": "books/bloom-card-20c6634a-untitled.json"
+  },
+  {
+   "slug": "bloom-card-911520af-untitled",
+   "title": "เพราะอะไร",
+   "description": "A Thai picture book, readable free at Bloom Library.",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Spiritual"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/CsFOJBt75N"
+   },
+   "cover": null,
+   "authors": [
+    "Wycliffe Thailand Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "Wycliffe Thailand Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 56,
+   "file": "books/bloom-card-911520af-untitled.json"
+  },
+  {
+   "slug": "bloom-card-9b2d05ca-untitled",
+   "title": "ขอจากใครดี",
+   "description": "A Thai picture book, readable free at Bloom Library.",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Spiritual"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/OHCejkLV3e"
+   },
+   "cover": null,
+   "authors": [
+    "Wycliffe Thailand Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "Wycliffe Thailand Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 56,
+   "file": "books/bloom-card-9b2d05ca-untitled.json"
+  },
+  {
+   "slug": "bloom-card-dec2616b-untitled",
+   "title": "ทำอย่างไรดี",
+   "description": "A Thai picture book, readable free at Bloom Library.",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Spiritual"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/BtGmVPDTg3"
+   },
+   "cover": null,
+   "authors": [
+    "Wycliffe Thailand Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "Wycliffe Thailand Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 56,
+   "file": "books/bloom-card-dec2616b-untitled.json"
   }
  ]
 }

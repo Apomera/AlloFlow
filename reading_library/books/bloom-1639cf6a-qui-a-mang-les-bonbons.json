@@ -1,0 +1,67 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1639cf6a-qui-a-mang-les-bonbons",
+  "title": "Qui a mangé les bonbons ?",
+  "description": "A French picture book from Bloom Library.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Peter Ebenrubo Okunola"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Peter Ebenrubo Okunola",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/zxZSwmmqhO"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/zxZSwmmqhO%2f1779653218239%2f%e1%ba%b8ra+a+T%c3%a3m+%e1%ba%b8kandi+ay%e1%ba%b9+a%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Voici un gros chat."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Le chat aime les bonbons."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Le chat voit un homme."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "L’homme fait des bonbons."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Le chat mange les bonbons."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "- Qui a mangé mes bonbons ?"
+    }
+  ],
+  "stats": {
+    "pages": 6,
+    "words": 30
+  }
+}

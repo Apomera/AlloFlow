@@ -1,0 +1,234 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-64bda03e-lina-et-son-chat-milo",
+  "title": "Lina et son chat Milo",
+  "description": "Il s'agit dans ce livre de débutant l'histoire d'une fillette nommée Lina avec son chat Milo.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "CABTAL -Nanou Charlotte"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CABTAL -Nanou Charlotte",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/sgERoOvvRo"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faor_PA105M.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Il était une fois une petite fille. Elle s’appelait Lina.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fd57fbd49-171e-4483-af11-0d4655288964.mp3",
+          "dur": 5.960091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fb6a5e581-f240-4015-92c6-c0f11c013520.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Lina habitait dans une petite maison. La maison était près de la forêt",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi1b2cf4d4-8f89-4a33-aa2a-a3dcaba5f4b8.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fa2753706-54fe-4e56-bc3b-63059ca5af4b.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Lina avait un chat. Le chat s’appelait Milo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi077bb1d7-8249-44fc-b11f-50a4f14609a0.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2ffc14b1a9-4c43-4237-ad39-49bce73f9e58.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Lina aimait jouer avec Milo. Ils couraient dans le jardin.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi84dd2e0b-8837-4dc6-b63d-01610cde2d8d.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi218412ee-4ce4-4812-b12c-2e63bf88975c.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Un jour, Lina est allée dans la forêt. Milo l’a suivie.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi196ab73f-b4cc-4cc9-b038-8ec674721bf4.mp3",
+          "dur": 6.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi640bf5ae-47c4-41a4-88e4-3bef9ebb8969.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Dans la forêt, Lina a vu un oiseau. L’oiseau était bleu et très joli.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi16317407-b2d3-4fc9-bb55-43c5b15d2495.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fc0218de3-c86e-41c7-89cd-bab6deb19348.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Lina a dit : « Bonjour, petit oiseau ! ». L’oiseau a chanté une chanson.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi551a9e7c-6b67-47f3-8550-2b7b249587fe.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fd7b8e6ab-46e5-4dd9-8399-17e54581f310.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Milo a regardé l’oiseau. Il a miaulé doucement",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi712327a7-7453-41be-955c-6196840f752b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi0d927b41-848e-41d2-9ad4-a13ba5c97b4a.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Lina a ri. Elle était contente dans la forêt.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fbab710f7-d7bc-433c-872a-173664bd3f06.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2ff6a91fd9-adc3-4bb3-a8d2-953ff91f18f3.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Puis, Lina et Milo sont rentrés à la maison. Ils étaient fatigués, mais heureux.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fbfbc52f4-f457-47b3-a154-6ff65cd7b5e8.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2ff12445d7-f225-4e81-aa7b-6c3f9bdd3ee6.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Morale : L’amitié et la curiosité rendent chaque jour plus joyeux.\nPetit exercice de vocabulaire\n1. Comment s’appelle la petite fille ?\n2. Quel est le nom du chat ?\n3. De quelle couleur est l’oiseau ?\n4. Où habite Lina ?",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi3e1aa0ea-3935-4def-bfe0-aa65e1ab9314.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi74937aee-43f2-4ead-b532-93d6a2417627.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi7d49d6c4-adec-4b99-8374-157992c0348d.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi26837b74-ba41-4de3-af80-9c908128f89b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi77eadfa1-e7ff-4cc6-9285-12b243d7e901.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi20f09f9d-68c9-4ec1-9c43-7941fa2298e5.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi2327aa52-1a35-4596-8f29-8749ada0b366.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi36d709ba-0694-4ff8-9c5a-01cde471cca5.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi6a178b4a-70b0-459f-bf09-fcf5ba66c56d.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/sgERoOvvRo%2f1758754311118%2fLina+et+son+chat+Milo%2faudio%2fi947b0953-9c13-4d3d-a1c6-11447718bb7e.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 154
+  }
+}

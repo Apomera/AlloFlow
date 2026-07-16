@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1fded413-lucy-la-poeta",
+  "title": "Lucy la poeta",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/SuAX9kP2cJ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1fded413-303b-4bb8-a3d7-420f3bdf9498%2fLucy+la+poeta%2fgirl-160167_640.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1fded413-303b-4bb8-a3d7-420f3bdf9498%2fLucy+la+poeta%2fgirl-160172_640.png",
+      "text": "Soy Lucy, una niña escritora. Disfruto al escribir en mi cuaderno. Tengo un cuaderno color morado. Todos los días escribo en él. Escribo mis aventuras y vivencias."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Ese cuaderno es un obsequio. Me lo regaló mi abuelita. A ella le gusta escribir. Me sugirió que llevara un diario. Ella dice que escribir es recrear. También es soñar y crear.\nEl morado es mi color preferido. Por eso eligió ese color. Mi abuelita me inspira. Ella me motiva a escribir."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1fded413-303b-4bb8-a3d7-420f3bdf9498%2fLucy+la+poeta%2fcuaderno1.png",
+      "text": "Escribo todos los días. Escribo acerca de muchos temas. Me gusta escribir historias y anécdotas. También escribo poesía. La poesía sale de mi corazón."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Tengo diez años de edad. Estudio en tercer grado de primaria. Estoy en un club de escritores. En el club tengo muchos amigos. A todos nos gusta escribir.\nNos reunimos una vez al mes. Nos reunimos para escribir. Elegimos un tema. Luego, intercambiamos lo que escribimos. Algunos dicen que soy muy creativa."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1fded413-303b-4bb8-a3d7-420f3bdf9498%2fLucy+la+poeta%2fLibro+abierto.png",
+      "text": "Amo las letras desde pequeña. Me gusta escribir. Me gusta compartir mis pensamientos. Compartir mis sentimientos es especial. Amo ser escritora."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Recibimos una visita en el club. Nos invitaron a un concurso. Es un concurso de poesía. El concurso es el próximo mes. Lo organizó la municipalidad.\nEs un concurso interesante. Tiene dos retos. El primero es escribir un poema. El tema se selecciona al azar. Luego, hay que declamar el poema."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1fded413-303b-4bb8-a3d7-420f3bdf9498%2fLucy+la+poeta%2fNi%c3%b1a+saltando+de+alegr%c3%ada.png",
+      "text": "Ese concurso me emociona. Aunque también es un reto. Me gusta escribir. Me gusta la poesía. Nunca he declamado en público."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1fded413-303b-4bb8-a3d7-420f3bdf9498%2fLucy+la+poeta%2fni%c3%b1os+trabajando+en+clase.jpg",
+      "text": "Los integrantes del club nos inscribimos. Queremos participar en ese concurso. Estamos escribiendo poemas. También practicamos cómo declamar. Esperamos ese día con emoción."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Llegó el día del concurso. Me levanté muy temprano. Nos reunimos en el salón municipal. El alcalde nos dio la bienvenida. Todos nos presentamos. Estábamos muy emocionados de escribir. Luego, dijeron que íbamos a empezar.\nTenían tarjetas con varios temas. Pasé a elegir una tarjeta. Mi tema era \"Mujeres valiosas\"."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Me gustó mucho el tema. Las mujeres somos muy valiosas. Mi mamá es un ejemplo. Ella estudia y trabaja mucho. Se esfuerza por salir adelante. Admiro mucho a mi mamá. También a mi abuelita.\nEllas son grandes mujeres. Aprendo mucho de ellas. Escribiré el poema en su honor."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1fded413-303b-4bb8-a3d7-420f3bdf9498%2fLucy+la+poeta%2fchico+con+libro+en+mano.png",
+      "text": "Terminé el poema. Luego, nos dieron un receso. Después tendríamos que repasar nuestro poema. En la tarde lo declamaríamos. Mi familia llegaría para apoyarme."
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "No dejé de sentir tensión. Había mucha gente en el salón. Quería declamar. Decirlo frente al público me preocupaba. Ese era un reto. Era una nueva experiencia para mí.\nEscuché mi nombre, era mi turno. Caminé hacia el escenario.Tomé el micrófono. Empecé a declamar... ¡Estaba contenta y disfrutando esa experiencia!"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f1fded413-303b-4bb8-a3d7-420f3bdf9498%2fLucy+la+poeta%2fni%c3%b1a+recibiendo.jpg",
+      "text": "Terminé de declamar mi poema. Percibí un silencio en el salón. De repente, todos estaban de pie. Escuché muchos aplausos. Vi a mi familia muy emocionada."
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "El concurso finalizó. Obtuve el tercer lugar. Me gustó esa experiencia. Aprendí como poeta. Crecí como persona.\nMi abuelita está muy feliz. Ahora nos reunimos a escribir. Me encanta escribir con ella. A veces declamamos juntas. Dice que soy Lucy, la poeta."
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 511
+  }
+}

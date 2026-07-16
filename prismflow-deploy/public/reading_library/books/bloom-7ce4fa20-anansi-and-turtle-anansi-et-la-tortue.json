@@ -1,0 +1,107 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-7ce4fa20-anansi-and-turtle-anansi-et-la-tortue",
+  "title": "Anansi and Turtle Anansi et la Tortue",
+  "description": "An African Storybook:  Anansi learns a lesson from Turtle",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HIf0xwaSvl"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage12.jpg",
+      "text": "Un jour, l'araignée Anansi cueillit des ignames dans son champ. Comme elles étaient délicieuses, elle les fit cuire avec soin sur le feu. Une fois les ignames cuites, elle s'assit pour les manger."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage2.jpg",
+      "text": "Alors qu'Anansi s'apprêtait à prendre la première bouchée, il entendit frapper à sa porte. \" Oh non ! \" pensa Anansi. \" Qui cela peut-il bien être ? \""
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage2.jpg",
+      "text": "Il ouvrit la porte. C'était la Tortue, qui semblait très fatiguée. La Tortue dit : \" Anansi, laisse-moi entrer, je t'en prie. J'ai marché très loin aujourd'hui, je suis épuisée et j'ai faim. \" Alors, que pouvait faire Anansi sinon la laisser entrer ?"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage3.jpg",
+      "text": "Anansi était bien trop égoïste pour partager ses délicieuses ignames avec qui que ce soit. Il échafauda donc un plan malveillant."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage3.jpg",
+      "text": "Au moment où la Tortue s'assit près de la table et tendit la main vers les ignames, Anansi lui cria dessus : \" Tortue, tes mains sont toutes sales ! Tu ne peux pas manger avec des mains aussi sales ! Va te laver les mains. \" Les mains de la Tortue étaient effectivement sales. Elle rampa donc lentement jusqu'à la rivière, se lava les mains, puis revint en rampant."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage4.jpg",
+      "text": "Mais pendant que la Tortue rampait, Anansi avait commencé à engloutir les ignames à toute vitesse. Au retour de la Tortue, il ne restait plus aucune igname."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage4.jpg",
+      "text": "La Tortue regarda Anansi et dit : \" Merci de m'avoir invitée à dîner. Si un jour tu passes près de chez moi, viens me rendre visite et je te rendrai la pareille. \" Et la Tortue commença à rentrer lentement chez elle."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage5.jpg",
+      "text": "Alors Anansi se mit à penser de plus en plus à la promesse de la Tortue de l'inviter à dîner. Un jour, il se rendit donc chez elle. Anansi arriva chez la Tortue juste au coucher du soleil."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage5.jpg",
+      "text": "La tortue se reposait sur un rocher. Le soleil était chaud et elle se réchauffait. Quand la tortue aperçut Anansi, elle lui dit : \" Bonjour, Anansi, tu viens dîner ? \" Et Anansi répondit : \" Oui, j'aimerais beaucoup, merci. \" Il avait de plus en plus faim."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage6.jpg",
+      "text": "La Tortue plongea alors au fond de la rivière pour préparer le dîner. Anansi attendit sur les rochers. Bientôt, la Tortue revint et dit : \" Ah Anansi, tout est prêt maintenant, allons manger. \" La Tortue replongea et commença à manger ses feuilles vertes."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage7.jpg",
+      "text": "Anansi essaya de plonger au fond de la rivière, mais il était une araignée, pas une tortue, et il ne pouvait pas plonger aussi profondément. Il remontait sans cesse à la surface. Il essaya encore et encore, mais en vain. Il ne pouvait tout simplement pas descendre jusqu'au dîner."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage8.jpg",
+      "text": "Finalement, Anansi eut une idée. Il mit beaucoup de pierres dans les poches de son manteau et, cette fois, il était suffisamment lourd pour couler au fond de la rivière. Comme il était astucieux ! Il vit la table de la Tortue, couverte de feuilles vertes juteuses et de beaucoup d'autres mets délicieux. Anansi avait très faim."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage9.jpg",
+      "text": "Mais au moment où Anansi commençait à manger de ces délicieuses nourritures, la Tortue l'arrêta. \" Anansi, vas-tu dîner avec ton manteau ? Ce n'est pas ainsi que l'on fait chez moi. \" Anansi, sans réfléchir, dit : \" Ah, bien sûr ! Pardon, tu as tout à fait raison, Tortue ! \" Il enleva son manteau."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sbaboolal%40nextgenu.org%2f7ce4fa20-cab9-471d-9119-487a305447b6%2fAnansi+and+Turtle+Anansi+et+la+Tortue%2fimage10.jpg",
+      "text": "Mais sans les pierres dans ses poches, Anansi remonta à la surface et jaillit hors de l'eau. Plein de honte, il plongea la tête dans l'eau et regarda la Tortue dévorer tout le repas !"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 597
+  }
+}

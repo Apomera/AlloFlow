@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-6b40235a-la-promenade-l-cole",
+  "title": "La promenade à l'école",
+  "description": "A French picture book, readable free at Bloom Library.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Fiction"
+  ],
+  "authors": [
+    "SIL Cameroun"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL Cameroun",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/f4zGli8iya"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/carol22_smith%40sil.org%2f6b40235a-1b31-4560-bae3-6718d9f447e2%2fLa+promenade+%c3%a0+l+%c3%a9cole%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"La promenade à l'école\" (French)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

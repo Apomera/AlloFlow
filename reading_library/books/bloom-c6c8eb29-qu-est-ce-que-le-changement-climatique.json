@@ -1,0 +1,192 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-c6c8eb29-qu-est-ce-que-le-changement-climatique",
+  "title": "Qu’est-ce que le changement climatique ?",
+  "description": "This is a shell book that explains why climate change is occurring and what are some common effects.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Environment"
+  ],
+  "authors": [
+    "Amy Lazar"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Amy Lazar",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/k4QfDsdLJx"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/k4QfDsdLJx%2f1775260919322%2fQu%e2%80%99est-ce+que+le+changement+climatique%2fimage19.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Qu’est-ce que le changement climatique ?\nDe nombreuses personnes s'inquiètent du changement climatique. Vous en avez peut-être entendu parler aux informations. Peut-être avez-vous même remarqué certains de ses effets là où vous vivez."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Il fait peut-être plus chaud ou plus froid que prévu à certaines périodes de l'année. Ou peut-être pleut-il trop ou pas assez par rapport à ce dont on se souvient. Qu'est-ce que le changement climatique ? Quelles en sont les causes ?"
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Météo et climat\nIl faut d'abord aborder la différence entre la météo quotidienne et les conditions météorologiques sur de longues périodes. Chaque jour, on peut observer certaines choses concernant les conditions extérieures. Quelles étaient les températures maximales et minimales de la journée ? Y avait-il du soleil ? Y avait-il des nuages ? Y avait-il du vent ? A-t-il plu ou neigé ? Voilà la météo du jour."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Le climat est l'ensemble des variations saisonnières du temps quotidien auxquelles les gens s'attendent année après année dans un lieu donné. À certains endroits, le climat est chaud et sec pendant une saison, puis frais et pluvieux pendant une autre. À d'autres endroits, le climat est froid pendant les mois d'hiver, avec leur verglas et leurs chutes de neige, tandis qu'à d'autres périodes de l'année, il fait chaud."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Le monde est composé de nombreux endroits différents aux climats variés. Le temps peut varier considérablement d'un jour à l'autre et être difficile à prévoir. Cependant, les scientifiques peuvent généralement prédire l'évolution du climat au fil du temps, car les schémas météorologiques saisonniers sont généralement similaires d'une année sur l'autre."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Comment le climat change-t-il ?\nLes scientifiques ont constaté que, dans de nombreux endroits, les conditions météorologiques qu'ils anticipent évoluent par rapport au passé. Ils ont constaté que les températures moyennes mondiales augmentent depuis le début du XXe siècle. Ils s'accordent à dire que cette hausse des températures est due aux activités humaines qui libèrent des gaz dans l'air, lesquels contribuent au réchauffement de la planète."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Quelle est l'ambiance ?\nL'atmosphère est une couche d'air qui enveloppe la planète. L'air est composé d'un mélange de différents types de gaz. Il est composé d'environ 78 % d'azote, 21 % d'oxygène et 1 % d'autres gaz et particules. Nous respirons l'air et notre corps a besoin de l'oxygène qu'il contient pour rester en vie."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Lorsque nous inspirons de l'air, notre corps échange l'oxygène contre un autre gaz appelé dioxyde de carbone, que nous expirons. Les plantes absorbent du dioxyde de carbone et rejettent de l'oxygène. Les bactéries du sol contribuent à transformer l'azote atmosphérique en un élément que les plantes peuvent utiliser pour leur croissance. Ces cycles naturels maintiennent l'équilibre des gaz atmosphériques."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "L'atmosphère est comme une couverture qui enveloppe la planète et la protège de la chaleur du soleil et du froid glacial de l'espace. Elle laisse passer une partie de la lumière et de la chaleur du soleil, ce qui nous permet de voir et d'avoir chaud. Mais elle nous protège aussi de certains rayons nocifs du soleil, nous évitant ainsi les coups de soleil."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "La nuit, lorsque le soleil ne brille pas, l’atmosphère retient une partie de la chaleur de la journée, de sorte que le côté obscur de la planète ne devient pas trop froid la nuit."
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Les scientifiques appellent cette protection contre les températures trop élevées ou trop basses « l'effet de serre ». Les serres sont des bâtiments que les agriculteurs utilisent pour protéger les plantes d'un ensoleillement direct excessif pendant la journée et du froid la nuit. L'atmosphère protège la planète entière comme une serre protège les plantes. Sans l'effet de serre, le soleil nous brûlerait le jour et il ferait trop froid la nuit pour que les plantes et les animaux survivent."
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Gaz à effet de serre\nCertains gaz présents dans l'atmosphère sont appelés gaz à effet de serre, car ils contribuent à retenir la chaleur du soleil dans l'atmosphère. Certains gaz à effet de serre sont nécessaires pour que l'atmosphère puisse constituer la couverture chaude dont les êtres vivants ont besoin pour survivre. Les cycles naturels de la Terre maintiennent un équilibre sain des gaz à effet de serre depuis des millions d'années."
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Au cours des trois derniers siècles, l'utilisation des combustibles fossiles a augmenté partout dans le monde. Ces combustibles sont le charbon, le pétrole et le gaz naturel. Ces composés chimiques complexes se sont formés dans les profondeurs de la roche, à partir de plantes et d'animaux disparus il y a des millions d'années. Nous extrayons ces combustibles fossiles du sol et les brûlons pour produire de l'énergie. Cette énergie peut être utilisée pour produire de la chaleur, de l'électricité ou faire fonctionner des machines comme des voitures et des avions."
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Lorsque l'on brûle des combustibles fossiles pour produire de l'énergie, on libère dans l'atmosphère des gaz à effet de serre comme le dioxyde de carbone. La combustion massive de combustibles fossiles à travers le monde a libéré plus de dioxyde de carbone que les cycles naturels ne peuvent en éliminer. En fait, la quantité de dioxyde de carbone dans l'atmosphère est près de deux fois plus élevée aujourd'hui qu'aux alentours de 1700. Cela signifie que l'atmosphère est déséquilibrée. Il y a trop de dioxyde de carbone dans l'atmosphère, et cette quantité ne cesse d'augmenter."
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Le nombre d'habitants sur la planète ne cesse de croître. Les gens ont besoin d'un endroit où vivre et de quoi se nourrir. Ils abattent donc des arbres pour défricher des terres et construire leurs maisons et leurs fermes. Ils abattent aussi des arbres pour brûler du bois pour cuisiner et se chauffer, ce qui libère du dioxyde de carbone. Les forêts jouent un rôle important dans l'élimination du dioxyde de carbone de l'atmosphère. Ainsi, lorsque l'on coupe des arbres sans en planter de nouveaux, cela peut affecter l'équilibre des gaz à effet de serre dans l'atmosphère."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "L'agriculture et l'élevage destinés à nourrir une population importante émettent des gaz à effet de serre. Les machines utilisées dans les grandes exploitations consomment des combustibles fossiles. Les bovins, les ovins et les caprins produisent un gaz à effet de serre appelé méthane lorsqu'ils digèrent l'herbe. L'élevage intensif de ces animaux, notamment de bovins pour la viande et de vaches laitières, libère du méthane dans l'atmosphère, ce qui accroît l'effet de serre."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "À mesure que de plus en plus de personnes naissent et migrent vers les villes, elles consomment de plus en plus d'électricité et achètent des produits fabriqués en usine. Elles utilisent des transports motorisés pour se rendre de leur domicile à leur travail. Ce mode de vie consomme davantage de combustibles fossiles qu'à la campagne. De plus en plus de gaz à effet de serre sont rejetés dans l'atmosphère. Cela emprisonne davantage de chaleur solaire qu'auparavant, et les températures mondiales augmentent lentement."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Quels sont les effets de la hausse des températures mondiales ?\nVous avez peut-être entendu dire que le réchauffement climatique inquiète beaucoup. La température moyenne a déjà augmenté d'un peu plus d'un degré Celsius. Les scientifiques prévoient une hausse de 2 ou 3 degrés dans les années à venir. Il est parfois difficile de comprendre comment un changement aussi minime peut faire une telle différence. Pourquoi cette inquiétude ?"
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Fonte des glaces\nMême de faibles variations des températures moyennes mondiales peuvent avoir des conséquences importantes. Par exemple, la glace fond dans les régions froides du globe, et l'eau de fonte se déverse dans les océans, provoquant une élévation du niveau de la mer. Par ailleurs, les océans se réchauffent. L'eau chaude occupe plus d'espace que l'eau froide, ce qui entraîne également une élévation du niveau de la mer. Certaines îles et zones côtières seront submergées si le niveau de la mer monte trop."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Les océans deviennent acides\nUn autre effet du réchauffement climatique est l'acidification de l'eau des océans. Les océans absorbent le dioxyde de carbone de l'atmosphère dans le cadre de leurs cycles naturels. Si l'atmosphère contient trop de dioxyde de carbone, les océans en absorbent également trop. Cela provoque des réactions chimiques qui acidifient l'eau de mer."
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Lorsque l'eau est acide, de nombreux animaux marins ne peuvent pas développer de coquilles solides. L'eau acide nuit aux récifs coralliens, où vivent de nombreux animaux marins. Une eau trop acide peut nuire à la survie et à la reproduction de certains poissons. Cela signifie moins de nourriture pour les animaux qui se nourrissent de ces poissons et pour ceux qui pêchent pour gagner leur vie."
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "Des conditions météorologiques plus sévères\nL'un des effets les plus notables de la hausse des températures est l'aggravation des phénomènes météorologiques. Lorsque les gaz à effet de serre emprisonnent la chaleur dans l'atmosphère, l'eau des océans ne se refroidit plus comme par le passé. Lorsque l'eau de l'océan reste chaude à certains endroits, cela affecte les courants océaniques qui transportent les eaux froides et chaudes à travers le monde. Les variations de température et de courants océaniques influencent des facteurs tels que le vent, la pluie et le développement des tempêtes."
+    },
+    {
+      "n": 23,
+      "img": null,
+      "text": "En raison du réchauffement des océans à certains endroits, certaines zones urbaines reçoivent trop de pluie, tandis que d'autres en reçoivent moins.\nLes ouragans se forment plus fréquemment sur les eaux plus chaudes, et les tempêtes sont plus fortes que par le passé. Elles peuvent provoquer des inondations et des vents violents qui endommagent les habitations, les cultures et les commerces. Il arrive même que des personnes meurent sous la tempête ou de maladies qui se propagent dans des zones privées d'eau potable et d'électricité après la tempête."
+    },
+    {
+      "n": 24,
+      "img": null,
+      "text": "Les vagues de chaleur peuvent provoquer des températures dangereusement élevées et des pénuries d'eau dans certaines régions. Une sécheresse survient lorsque les précipitations habituelles ne tombent pas. En l'absence de pluie suffisante, les récoltes meurent. Les troupeaux d'animaux qui se nourrissent d'herbe souffrent également."
+    },
+    {
+      "n": 25,
+      "img": null,
+      "text": "Lorsqu’il y a une longue période sans pluie, il est plus probable que des incendies de forêt se déclarent et se propagent sur de vastes zones."
+    },
+    {
+      "n": 26,
+      "img": null,
+      "text": "Dans certains endroits, les gens doivent faire face à de violentes tempêtes hivernales qui apportent des quantités dangereuses de neige et un froid extrême."
+    },
+    {
+      "n": 27,
+      "img": null,
+      "text": "Tous ces changements dans les océans, les côtes et les conditions météorologiques peuvent rendre la vie difficile aux populations qui dépendent de la pêche et de l'agriculture pour survivre. Les zones côtières sont inondées et les réseaux trophiques qui soutiennent la pêche se modifient. Les agriculteurs doivent faire face à des précipitations imprévisibles et à des conditions météorologiques changeantes.\nIl se peut que les pluies attendues n'arrivent pas à temps pour les semis habituels, ou que les tempêtes apportent trop de pluie et endommagent les cultures avant même qu'elles ne soient prêtes à être récoltées. Certaines zones autrefois habitées se sont transformées en déserts, faute de pluie suffisante depuis de nombreuses années."
+    },
+    {
+      "n": 28,
+      "img": null,
+      "text": "Les changements des courants océaniques saisonniers, qui provoquent des conditions météorologiques plus extrêmes, pourraient faire remonter à la surface les eaux froides du fond océanique dans certaines régions septentrionales du monde. La douceur du climat de ces régions dépendait autrefois des courants océaniques chauds. Ce changement de courants pourrait à terme rendre l'hiver trop long et l'été trop froid pour les cultures."
+    },
+    {
+      "n": 29,
+      "img": null,
+      "text": "Les incendies, les inondations, les sécheresses et les ouragans détruisent les maisons, les récoltes et les commerces. Ceux qui ne peuvent plus survivre doivent trouver un nouveau logement et un nouveau travail. Ils se dirigent souvent vers les villes, qui deviennent surpeuplées.\nLes personnes contraintes de quitter leur foyer sont menacées par des individus qui tentent de les escroquer et de les traiter injustement. Parfois, des conflits éclatent autour de ressources devenues rares, comme des terres agricoles fertiles et de l'eau potable. Si un nombre important de personnes se retrouvent dans une situation désespérée et privées des ressources nécessaires, des guerres peuvent éclater."
+    },
+    {
+      "n": 30,
+      "img": null,
+      "text": "Que peut faire une personne seule ?\nLe changement climatique est un problème si grave que nous pouvons parfois nous sentir désespérés. Une seule personne peut-elle faire quelque chose pour changer les choses ? C'est vrai, c'est un problème majeur. Tous devront travailler ensemble et apporter sa contribution si nous voulons empêcher la hausse des températures mondiales."
+    },
+    {
+      "n": 31,
+      "img": null,
+      "text": "La première étape que chacun peut franchir est de comprendre les causes du changement climatique et son impact sur la Terre. Vous avez franchi cette première étape !\nLa prochaine étape consiste à sensibiliser d'autres personnes au changement climatique, et vous êtes désormais prêt à franchir cette nouvelle étape. Plus les gens comprendront le changement climatique, plus il sera facile de collaborer pour trouver des solutions aux problèmes qu'il engendre."
+    }
+  ],
+  "stats": {
+    "pages": 31,
+    "words": 2078
+  }
+}

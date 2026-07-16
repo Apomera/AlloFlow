@@ -1,0 +1,228 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-410cfaa9-los-primos",
+  "title": "Los primos",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/2EfFupv5c5"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2fhouses-1719055_640 (1).png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2fboy-158152_640.png",
+      "text": "Manolo baila con mucho ritmo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi7d438e33-69fd-4dbe-9548-848df9307ae1.mp3",
+          "dur": 1.82854
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2fearphones-152424_640.png",
+      "text": "Rosita camina escuchando música.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi9882c0d8-6d22-4eac-a1e4-b92100dbb3c4.mp3",
+          "dur": 2.115882
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2fj%c3%b3ven+con+marionetas.png",
+      "text": "Eduardo usa marionetas para entretener.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2ff684a2f5-68e3-434f-9990-dfeb432064be.mp3",
+          "dur": 2.821176
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2fchicos+corriendo.png",
+      "text": "Otros se juntan para trotar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi3c60b14b-af49-47ba-99a4-04a486c122b3.mp3",
+          "dur": 2.22037
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2flaboratorista.png",
+      "text": "Blanca trabaja en un laboratorio.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi4593dcaa-10bb-48af-b8a3-ab962f2b714f.mp3",
+          "dur": 2.037516
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2fchica+leyendo+2.png",
+      "text": "Amanda estudia con mucho esmero.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi8f000185-ef22-4713-b3e3-bfb1798f528d.mp3",
+          "dur": 2.638322
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2fcartoon-1299636_640.png",
+      "text": "Braulio prepara alimentos sabrosos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi0edd46fb-523d-4602-b7dd-593b8ac1fc17.mp3",
+          "dur": 2.716688
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2fdoctora.png",
+      "text": "Mi prima Estela es pediatra.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi46cbaf8b-3acf-4406-84ca-181f2da9d4cd.mp3",
+          "dur": 2.429346
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2fNi%c3%b1a+saltando+de+alegr%c3%ada.png",
+      "text": "Me encanta reunirnos y platicar.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2faf345d7a-d47b-46be-a87b-724eeb3edcf4.mp3",
+          "dur": 2.037516
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2fj%c3%b3venes+recogiendo+basura.png",
+      "text": "Amo a mis primos.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi03ffd3a7-2a63-4454-a7f3-4c9f0afd3581.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué prepara el primo Braulio?\nAlimentos\nMarionetas\nMúsica",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi839656bd-7302-4fa7-aa52-3d5140ba3eaf.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi2a99b675-1516-4c9a-9c12-5daf0fb4ec7c.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi760bc7bf-55de-447f-8f7e-4b4ef54a0236.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi5f2affa2-de47-4548-847c-00297d212763.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi5fd9ac60-26ac-483f-a411-58d16235c8d2.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Quién es pediatra?\nManolo\nEstela\nRosa",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi1f8ee6cb-2a3c-4568-9b6d-dfe31fe204c7.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fa64cd8e2-8a72-4fe1-bdc9-d086de34b3f1.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2faf07a826-cfe7-4005-8b9d-18459cb86144.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi7dda0eed-2fe0-4ecc-a4e0-8f40af8730e2.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi8aa879c7-7697-4e52-823f-ad89f03645c1.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué hace Blanca?\nEscucha música\nTrabaja en un laboratorio\nEs maestra",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fe487965f-323b-488b-80f3-7976cca738e6.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi40ac493e-23e2-45ef-ab54-b664039e9008.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi289ae577-e8ec-4b31-b6b6-eb9d43311ccb.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi30815361-186b-47b8-b26c-a83729547ecc.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f410cfaa9-7713-4627-852d-9b01f4c89bed%2fLos+primos%2faudio%2fi49fef7e6-69e9-4cb4-8ad5-3ee27e975062.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 13,
+    "words": 81
+  }
+}

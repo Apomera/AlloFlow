@@ -1,0 +1,221 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f462c3ae-c-l-bration-de-la-langue-maternelle",
+  "title": "Célébration de la langue maternelle",
+  "description": "ce livre relate le récit illustré de la célébration de la langue maternelle",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "CABTAL-NANOU CHARLOTTE"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CABTAL-NANOU CHARLOTTE",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/lf36DtBC5U"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2fimage1.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "L’aube d’un grand jour\nDans le village de Mbang, les habitants se sont réveillés avec excitation. Ce jour-là, tout le monde se préparait pour la grande célébration de la langue maternelle. Les enfants portaient de magnifiques habits traditionnels, aux couleurs éclatantes, pendant que les adultes installaient les décorations sur la place du village.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fbbfda470-b29e-4d22-9d48-6bc611678b7f.mp3",
+          "dur": 29.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi50dd81a8-0373-440b-b2c9-1bc106356cbd.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi8c17a32d-7742-46a3-a1f9-e184fb712366.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi705616e1-1281-4916-8408-ca0df1de4585.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Les préparatifs\nDevant le centre communautaire, on entendait déjà les tambours résonner. Les jeunes répétaient leurs chants dans différentes langues locales : mpumpong, Kunambembe, mpiemo, kako… Chaque voix portait la fierté de ses origines.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi68cab5af-8fc9-4201-bcdf-c185ead5ad9f.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2ff83b118e-a2a7-4f63-a106-5b4bc6c022ad.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fc4cb0de1-65f3-4ef7-aabf-f7d1db3a477e.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "La sagesse des anciens\nAu milieu de la foule, Grand-père Epiet, le sage du village, s’est avancé avec son grand tambour. Il a rappelé à tous l’importance des langues maternelles en disant : « Une langue, c’est un trésor. Quand elle disparaît, c’est comme si un arbre centenaire tombait. »",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi233880f8-5ee6-4ae8-8bf7-197988fb267c.mp3",
+          "dur": 27.660091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi33399d57-cfba-4b3e-b36b-26e76a80ffac.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi7969ed1d-f040-492f-ae17-d5be64136607.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fd6b4a382-025c-478c-b3c7-41f94ae3c4c2.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi7d9113b2-b23d-404b-a39a-e5f7cdb9e7c3.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Les contes vivants\nLa fête s’est ouverte par une série de contes. Les anciens racontaient des histoires dans leurs langues, et les enfants traduisaient pour que tout le monde comprenne. Ce fut un moment riche en apprentissage et en rires.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi7100c38e-5659-40e8-8718-2c6d883131a4.mp3",
+          "dur": 21.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fbf914a19-dfc1-4c6f-baf8-7edc847a8e7f.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fc9b1a792-b65d-48d1-8955-0a0d54162779.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi4664422a-bd7c-4060-8b3b-29d47d591696.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Danses et chants\nAprès les contes, place aux danses ! Chaque communauté a présenté une danse traditionnelle, accompagnée de chants dans sa langue maternelle. Les tam-tams faisaient vibrer la terre, les voix s’unissaient, et la place se transformait en un véritable arc-en-ciel culturel.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi617b2f15-01f7-434c-bfac-1033aa6d591e.mp3",
+          "dur": 25.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2ff54f278c-e02e-43d2-870c-8588c2e77a0d.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2faee82f09-45e7-413a-9adb-8118ed08153f.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi42bead63-d79a-4f08-80bf-38efff7d4762.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Concours de proverbes\nLes enfants ont ensuite organisé un concours de proverbes. Chacun disait une phrase dans sa langue maternelle, puis expliquait son sens. Tout le monde riait, applaudissait, et découvrait la sagesse cachée dans ces paroles anciennes.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi0a9a5f24-6c40-44d2-9eca-007847b23878.mp3",
+          "dur": 24.360091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi743130c1-cac7-4f69-8fde-c99ba872d307.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi36970a07-9edd-433f-be2e-3d92af17c1b9.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi283cc3ff-61aa-4d63-8e0c-0d0bc9100be5.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Le grand repas\nÀ la tombée de la nuit, la fête s’est poursuivie autour d’un grand repas. Les familles partageaient du riz parfumé, des plantains grillés, du poisson et des sauces épicées. La musique et les chants continuaient à résonner dans le ciel étoilé.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fe6e3ec10-f633-451d-a485-0da0f9cc64d2.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi17249d72-3d4e-4632-9cc1-2170b4122553.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi83276a4d-def6-4c9f-8289-e2d45edca841.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi55e03485-33fe-4e2e-b18d-a4c117fd9bd0.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "La conclusion du sage\nPour clôturer la journée, Grand-père Epiet a pris la parole une dernière fois : « Aujourd’hui, nous avons célébré plus qu’une langue. Nous avons célébré notre identité, notre mémoire et notre avenir. » Tout le village a applaudi, fier de transmettre ses racines aux générations futures.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi6e5a3794-18b0-4f4a-89a7-9c0fdb558cd5.mp3",
+          "dur": 29.260091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi63ce0080-2ce0-4efa-b49a-5be799cc0b41.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi6bb87f6a-05d8-465e-9777-9d7f979724e4.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lf36DtBC5U%2f1758753195540%2fC%c3%a9l%c3%a9bration+de+la+langue+maternelle%2faudio%2fi373f4861-c571-45ff-95b0-93a0538568d9.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 352
+  }
+}

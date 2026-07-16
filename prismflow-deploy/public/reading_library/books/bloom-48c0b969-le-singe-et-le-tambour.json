@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-48c0b969-le-singe-et-le-tambour",
+  "title": "Le singe et le tambour",
+  "description": "A French picture book from Bloom Library.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Peter Ebenrubo Okunola"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Peter Ebenrubo Okunola",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/GfsXjlTLD0"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/GfsXjlTLD0%2f1779651421245%2f%e1%bb%8ck%e1%bb%8dr%e1%ba%b9+ay%e1%ba%b9+ak%c3%a0+%e1%bb%8ckanga+ay%e1%ba%b9%2fimage30.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Un arbre."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Un singe."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Un tambour."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Une idée !"
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Le singe saisit le tambour."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Le singe porte le tambour."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Le singe joue du tambour."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Badam ! Badam ! Badam !"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 30
+  }
+}

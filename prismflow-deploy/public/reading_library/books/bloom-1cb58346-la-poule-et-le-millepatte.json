@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1cb58346-la-poule-et-le-millepatte",
+  "title": "La poule et le millepatte",
+  "description": "A French picture book from Bloom Library.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "SIL Mali"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL Mali",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/VsEd6qODua"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2fpph3c4pn.fsc.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2futl34zvn.s1i.png",
+      "text": "La poule et le millepatte étaient amis. Mais ils étaient toujours en compétition l'un contre l'autre. Un jour, ils décidèrent de jouer au football pour voir qui était le meilleur joueur."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2favlfroe1.dta.png",
+      "text": "Ils allèrent au terrain de football et commencèrent à jouer. La poule était rapide, mais le millepatte était encore plus rapide. La poule envoyait le ballon loin, mais le millepatte l'envoyait encore plus loin. La poule commençait à être de mauvaise humeur."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2fw0coqiyg.dag.png",
+      "text": "Ils décidèrent de tirer au but au tour de rôle. Au début, le millepatte était gardien de but. La poule marqua un seul but. Puis ce fut au tour de la poule d'être le gardien de but."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2f5move5bc.0il2.png",
+      "text": "Le millepatte tira dans le ballon et marqua. Le millepatte dribbla le ballon et marqua. Le millepatte fit une tête avec le ballon et marqua. Le millepatte marqua cinq buts."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2f31sbr0xc.cpz.png",
+      "text": "La poule était furieuse d'avoir perdu. C'était une très mauvaise perdante. Le millepatte commença à rire parce que son amie faisait toute une histoire."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2fimage2.jpg",
+      "text": "La poule était tellement en colère qu'elle ouvrit son bec en grand et avala le millepatte."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2fqjapj3fu.wvg.png",
+      "text": "Alors que la poule rentrait à la maison, elle rencontra la maman millepatte. La maman millepatte demanda : « As-tu vu mon enfant ? » La poule ne répondit pas.\nLa maman millepatte était inquiète."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2fbnv0qtva.4v1.png",
+      "text": "Puis la maman millepatte entendit une petite voix. « Aide-moi, maman ! » criait la voix. La maman millepatte regarda autour et écouta attentivement. La voix venait de l'intérieur de la poule."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2fgt5ah4eo.pq1.png",
+      "text": "La maman millepatte s'écria : « Utilise tes pouvoirs spéciaux, mon enfant ! » Les millepattes peuvent faire une mauvaise odeur et donner un mauvais goût. La poule commença à se sentir mal."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2fjv01iw2o.hic.png",
+      "text": "La poule fit un rot. Puis elle déglutit et cracha. Puis elle éternua et toussa. Et toussa. Le millepatte était dégoûtant !"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2fyq3cbxe1.nkr.png",
+      "text": "La poule toussa jusqu'à ce qu'elle recrache le millepatte qui était dans son estomac. La maman millepatte et son enfant rampèrent jusqu'à un arbre pour se cacher."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/VsEd6qODua%2f1747302492955%2fNiin+naun+foo+Sh%c9%9b+ko+%c5%8a%c9%94%c9%94n%2fhl4sjghx.ynt.png",
+      "text": "Depuis ce temps, les poules et les millepattes sont ennemis."
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 339
+  }
+}

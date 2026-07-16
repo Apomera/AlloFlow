@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d2b0527b-manchas",
+  "title": "Manchas",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/lmtWJFn4OQ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fvaca 4.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fadulto+maya+levantando+la+mano11.png",
+      "text": "Juan ama la naturaleza."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fAdulto+maya+leyendo.png",
+      "text": "Le gusta leer mucho."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fadulto+maya+pensativo.png",
+      "text": "Juan tuvo una idea nueva."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fse%c3%b1or+con+dinero.png",
+      "text": "Fue a comprar un animal."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fvaca+41.png",
+      "text": "Juan adquirió una vaca."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fvaca+Pixabay2.png",
+      "text": "La vaca es grande."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fVaca+2.+Pixabay.png",
+      "text": "La vaca se llama Manchas."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fvaca+en+ordeno1.png",
+      "text": "La ordeña por las mañanas."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fvaso+de+leche.png",
+      "text": "Manchas da mucha leche."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2fd2b0527b-4eba-44e0-a205-6d98fb5881f7%2fManchas%2fjovenes+en+el+campo.jpg",
+      "text": "Juan cuida a Manchas."
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 44
+  }
+}

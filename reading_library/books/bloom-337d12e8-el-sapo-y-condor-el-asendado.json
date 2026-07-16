@@ -1,0 +1,120 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-337d12e8-el-sapo-y-condor-el-asendado",
+  "title": "El sapo y condor el asendado",
+  "description": "A Spanish picture book from Bloom Library.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Pacha Waray"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Pacha Waray",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/nbLZ2bcTe4"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fDiapositiva3.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fcondoor.jpg",
+      "text": "Un cierto día condor el asendado tuvo un litigio con sapo el campesino por motivos del hito de sus tierras. Condor el asendado ganó el litigio al sapo campesino ante las autoridades provinciales."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fDiapositiva7.jpg",
+      "text": "A pesar que sus documentos eran legales el sapo perdió el litigio. Por eso el sapo muy triste dijo entre sí: \"El condor me ganó el litigio con sus documentos ilegales.\""
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fDiapositiva2.jpg",
+      "text": "Despues de ganar el litigio el condor dijo: \"Ahora ya me recogeré mis tierras.\" Ante las autoridades el condor le decia al sapo: \"Ahora ya tienes que entregarmi mis tierras.\""
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fDiapositiva51111.jpg",
+      "text": "Entonces el sapo dice: \"¿Como puede ser así? No puede ser. Este caso llevaremos ante las instancias superiores de la capital.\"\nEntonces el condor dijo: \"Ahí tambien te ganaré.\""
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fsapo+sapo.jpg",
+      "text": "Sapo el campesino muy triste salio del despacho de la autoridad provincial y regreso a su comunidad.\nAl llegar a su comunidad ordeno a su subalterno: \"Convoque a todo los comuneros a una reunion.\""
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fDiapositiva8.jpg",
+      "text": "Luego de juntar a sus comuneros les dio la noticia \"Nuestro adversario el asendado de saco negro, de botas duro nos ganó el litigio.\" Entonces los comuneros dijeron: \"Señor sapo usted haga todo lo que es conveniente.\""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fDiapositiva42.jpg",
+      "text": "Cuando el lider sapo estaba reunido con sus comuneros llegó el condor y les dijo: \"¿Cuándo iras a la capital para que solucionemos de una vez?\" Entonce el sapo le respondió: \"A media mañana nos encontraremos en el despacho de la autoridad.\""
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fEpson_05152020_0852001111.jpg",
+      "text": "Entonces el condor estaba muy feliz diciendo: \"Yo iré volando por lo alto. Él irá por el suelo arrastrandose.\""
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fsapo+cantaro.jpg",
+      "text": "Pero, el sapo sabia el secreto del condor, ya le habia hecho el seguimiento mientras andaban en el litigio. El condor nunca dejaba su cántaro con agua. Pero en el camino al momento de descanso lo descuidaba. Así que el sapo la tarde que conversó con el condor aseguró bien sus documentos y se entró en el cántaro."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fDiapositiva10.jpg",
+      "text": "El condor en vano guardó agua en su cántaro de un dia para otro para su viaje. El cóndor levantó el vuelo cargando su cántaro vacío. Cerca a la capital en la cumbre de la quebrada el cóndor descansó."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fDiapositiva9.jpg",
+      "text": "Dejando su cántaro de agua descansó alejandose un poco mas lejos. Mientras tanto el sapo salió del cántaro y se metió a la quebrada. A media mañana llegó el sapo ante la autoridad de la capital, le ganó llegar al cóndor."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fDiapositiva6.jpg",
+      "text": "El leon era la autoridad en la capital. El sapo aprovechó para conversar y mostrar sus paples a la autoridad. La autidad le dijo: \"Tus documentos estan bien.\" El sapo continuó contando lo que ocurrio en la provincia, le dijo: \"El asendado me ganó con un papel ilegal.\""
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fDiapositiva3111.jpg",
+      "text": "Entonces la autoridad le dice: \"Ahora confrontaremos tus documentos; uno de ustedes será el ganador.\" El sapo no salió del despacho de la autoridad. De pronto llegó la hora citada, pero el cóndor no llegaba. Despues que haya pasado un buen rato recien llegó el condor."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fvolar211.jpg",
+      "text": "La autoridad estaba muy enojado y le dijo al cóndor: \"Tu vienes volando por lo alto, el sapo viene por el suelo arrastrandose. ¿Cómo es que te ganó?\""
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fEpson_05152020_085417.jpg",
+      "text": "Entonces ambos se preguntaron: \"Sapo ¿cómo has venido?\" El sapo le responde \"¡saltando! ¡brincando! ¡así, así!\" Diciendo el sapo hizo saltos largos de demostración."
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fcondoor+xx.jpg",
+      "text": "Luego confrontaron los documentos y el sapo salio victorioso. Y el cóndor perdió el litigio porque sus documentos eran ilegales."
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pillcuwayta%40yahoo.com.pe%2f337d12e8-7a28-49b4-9242-aed8de98c9b1%2fASEND%c3%84DU+KONDURWAN+MARKA+S%c3%84PU%2fsapooo11.jpg",
+      "text": "El sapo retorno a su comunidad y reunió a sus comuneros y les dijo: \"Ahora hemos ganado el litigio. Hagamos fiesta, siquiera palmando nuestras piernas y rascando nuestros brazos.\"\nAsí celebraron muy felices despues de ganar el litigio."
+    }
+  ],
+  "stats": {
+    "pages": 17,
+    "words": 597
+  }
+}

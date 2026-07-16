@@ -1,0 +1,107 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-33bee8f6-untitled-km",
+  "title": "០០ នាវអោបមាក្លាងក៝ក",
+  "description": "Egret, why are you so skinny? (Easy Reader Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/eggFPmIEHG"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2fA.Book+cover3.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f05.egret+standing6.png",
+      "text": "អូ! ​សត្វ​កុក​ស្គម។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f07.egret+fishing6.jpg",
+      "text": "“កុក ហេតុ​អី​បាន​ជា​សត្វ​កុក​ឯង​ស្គម​ខ្លាំង​ម្ល៉េះ?” ​\n“ត្រី​វា​ឡើង​យូពេក​ បាន​ជា​ខ្ញុំ​ស្គម​ដូច្នេះ”។​"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f09.fish+swimming4.png",
+      "text": "“ត្រី ហេតុ​អី​បាន​ជា​ត្រី​ឯង​ក្រ​ឡើង​ម្លេះ?” ​\n“សា​រាយ​វា​ដុះ​ច្រើន​ពេក​ បាន​ជា​ខ្ញុំ​ឡើង​យូ​ដូច្នេះ”។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f11.fish+%26+grass4.png",
+      "text": "“សារាយ ហេតុ​អី​បាន​ជា​សា​រាយ​ឯង​ដុះ​ច្រើន​បែប​នេះ?” ​\n“ក្រ​បី​វា​ក្រ​មក​ស៊ី​ខ្ញុំ​ពេក​ ទើប​ខ្ញុំ​ដុះ​ច្រើន​យ៉ាង​នេះ” ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f13.ox+by+water3.jpg",
+      "text": "“ក្របី ហេតុ​អី​បាន​ជា​ក្រ​បី​ឯង​ក្រ​មក​ស៊ី​សា​រាយ?” ​“ដោយ​សា​តែ​អ៊ុំខ្ញុំ​គាត់​បើក​ខ្ញុំ​ចេញ​ពី​ក្រោល​យូ​ពេក​ បាន​ជា​ខ្ញុំ​យូ​មក​ស៊ី។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f15.man+%26+ox4.jpg",
+      "text": "“អ៊ុំ ហេតុ​អី​បាន​ជា​អ៊ុំ​ឯង​បើក​យូ​ម្លេះ?” ​\n“បាយ​ខ្ញុំ​ក្រ​ឆ្អិន​ពេក​ បាន​ជា​ខ្ញុំ​បើក​យូ” ។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f17.rice+pot3.jpg",
+      "text": "“បាយ ហេតុ​អី​បាន​ជា​បាយ​ឯង​ក្រ​ឆ្អិន​ម្លេះ?” ​\n“ភ្លើង​វា​មិន​ឆេះ​ បាន​ជា​ខ្ញុំ​ក្រ​ឆ្អិន” ។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f19.women+%26+fire4.png",
+      "text": "“ភ្លើង ហេតុ​អី​បាន​ជា​ភ្លើង​ឯង​មិន​ឆេះ?” ​\n“អុស​វា​ពុក​ បាន​ជា​ខ្ញុំ​មិន​ឆេះ” ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f21.rotten+wood4.png",
+      "text": "“អុស ហេតុអី​បាន​ជា​អុស​ឯង​ពុក?”\n​“ដោយ​សា​តែ​ទឹក​ភ្លៀង ​បាន​ជា​ខ្ញុំ​ពុក”។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f23.rain+on+wood4.png",
+      "text": "“ភ្លៀង ហេតុ​អី​បាន​ជា​ភ្លៀង​ឯង​ធ្វើ​ឲ្យ​ទទឹក​អុស?” “កង្កែប​វា​ហៅ​ បាន​ជា​ខ្ញុំ​ធ្វើ​ឲ្យ​ទទឹក​អុស” ។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f25.frog+croaking3.jpg",
+      "text": "“កង្កែប ហេតុ​អី​បាន​ជា​កង្កែប​ឯង​ហៅ​ភ្លៀង?”\n​“ពស់​វា​ខាំ​ បាន​ជា​ខ្ញុំ​ហៅ​ភ្លៀង”។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f27.snake+%26+frog8.png",
+      "text": "“ពស់ ហេតុ​អី​បាន​ជា​ពស់​ឯង​ខាំ​កង្កែប?” ​\n“ក្លែង​វា​ក្រ​ញាំ​ខ្ញុំ​ បាន​ជា​ខ្ញុំ​ខាំ​កង្កែប”។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f29.hawk+%26+snake4.png",
+      "text": "“ខ្លែង ហេតុ​អី​បាន​ជា​ក្លែង​ឯង​ក្រ​ញាំ​ពស់​? ”\n“ស្នា​វា​បាញ់​ខ្ញុំ​ បាន​ជា​ខ្ញុំ​ក្រ​ញាំ​ពស់​”។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f33bee8f6-f2be-4cb5-ad80-fd57986d7460%2f%e1%9f%a0%e1%9f%a0+%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%a2%e1%9f%84%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%b6%e2%80%8b%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%84%e2%80%8b%e1%9e%80%e1%9f%9d%e1%9e%80%2f31.hunter+shooting+hawk7.png",
+      "text": "“ស្នា ហេតុ​អី​បាន​ជា​ស្នា​ឯង​បាញ់​ក្លែង?” ​\n“មក​ពី​អ៊ុំ​គាត់​កែះ​កៃ​ បាន​ជា​ខ្ញុំ​រាកៃ​ទៅ​បាញ់​ខ្លែង៕​"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 68
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d06fad7c-mi-pescado-no-es-mi-pescado",
+  "title": "\"¡Mi pescado!\" \"¡No, es mi pescado!",
+  "description": "Three friends go fishing.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Raphael Finkel"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Raphael Finkel",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/omRW9MZgTg"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_01_Image_0001.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_02_Image_0001.jpg",
+      "text": "Kicchu despertó una mañana temprano. \"Ha llegado el momento de coger peces.\", dijo bostezando."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_03_Image_0001.jpg",
+      "text": "Choru conoció en el camino hacia el estanque. Ellos eran los mejores amigos que jugaron durante todo el dí a."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_04_Image_0001.jpg",
+      "text": "Munia los vio marchar con sus cañas de pescar.\n\"Vamos a la laguna para pescar. Ven Munia, si desea.\""
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_05_Image_0001.jpg",
+      "text": "Pequeña Munia pensó por algún tiempo. \"Por favor, no haga eso\", dijo, \"sin agua, los peces morirán.\""
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_06_Image_0001.jpg",
+      "text": "Ellos no escucharon a Munia. Se fueron a la laguna de inmediato."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_07_Image_0001.jpg",
+      "text": "Kicchu y Choru sentaron junto al estanque. Dos peces nadaron, uno fino y otro redondo."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_08_Image_0001.jpg",
+      "text": "Luego vino un tercer pez, el más grande que había visto nunca.\nMunia rió, \"Es más grande que los pies de Appa!\""
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_09_Image_0001.jpg",
+      "text": "Kicchu y Choru agarró con fuerza a sus cañas de pescar.\nKicchu gritó, \"¡MI PESCADO!\"\nTambién Choru gritó, \"¡NO, MI PESCADO!\""
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_10_Image_0001.jpg",
+      "text": "Kiccu tiró con fuerza.\nChoru tiró con más fuerza."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_11_Image_0001.jpg",
+      "text": "¡PHAAATTT! Tanto las cañas de pescar rompieron.\n¡THUDDD! Kicchu cayó al suelo.\n¡SSSPPLASH! Choru cayó al agua."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/raphael%40cs.uky.edu%2fd06fad7c-47b0-4b17-aa6f-f1a10c543d7f%2f%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!+%d7%a0%d7%b2%d7%9f++%d7%a1+%d7%90%d7%99%d7%96+%d7%9e%d7%b2%d6%b7%d7%9f+%d7%a4%d6%bf%d7%99%d7%a9!%2fSWPB_53-my-fish-no-my-fish_Page_12_Image_0001.jpg",
+      "text": "¿Que pasó?\n¿Qué piensas?\n¡Los peces atadas las cuerdas!"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 175
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-6d1b8cef-la-d-couverte-de-la-nature",
+  "title": "La découverte de la nature",
+  "description": "il s'agit de l'histoire d'une petite fille se lève le matin et découvre les merveilles de la nature.",
+  "language": "French",
+  "langCode": "fr",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Traditional Story"
+  ],
+  "authors": [
+    "cabtal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "cabtal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/mUIIItbISX"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faor_9-3j.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Un matin, Léa ouvre la fenêtre et sent l’air frais. Le soleil brille doucement. Elle se demande pourquoi le ciel est bleu.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fi0c5aaf3b-f8bd-45d2-8b37-e3a11c314f05.mp3",
+          "dur": 4.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fi8fdb229a-513d-495c-a934-f2506e0d9019.mp3",
+          "dur": 3.360091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fbaa420ba-8d45-4fc1-b2a6-e08c73d09f74.mp3",
+          "dur": 3.060091
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Sa maman explique : la lumière du soleil traverse l’air, et c’est le bleu qui reste le plus visible. Léa sourit, c’est magique !",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fi7a0e5050-4e06-4615-9378-6e190ff04dd8.mp3",
+          "dur": 10.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fi52731585-9779-4eeb-8192-8809d1bc223f.mp3",
+          "dur": 3.260091
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Dans le jardin, un papillon coloré vole de fleur en fleur. Léa compte ses couleurs : rouge, jaune, orange, bleu… combien en tout ?",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fcba49b7e-168c-43ae-a7b2-3be2e6c69ab2.mp3",
+          "dur": 3.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fe8442ef6-7e52-4c55-a04e-8fa383e8c136.mp3",
+          "dur": 6.560091
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Elle apprend que les papillons aiment le nectar, une boisson sucrée cachée dans les fleurs. C’est leur repas préféré.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fd6aeb835-bd65-4c7e-8dfb-691090e49c55.mp3",
+          "dur": 5.560091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fi29f5cd0e-3062-42a7-82ed-6a1f6302e365.mp3",
+          "dur": 2.260091
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Plus loin, un oiseau chante. Léa écoute attentivement : « piou-piou ». Elle essaye d’imiter son chant et rit de sa drôle de voix.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fcf2c90c6-e45a-47c2-9458-537b509497b2.mp3",
+          "dur": 2.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fa58d4066-1642-4faf-8533-33c9c478cdd9.mp3",
+          "dur": 4.160091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fafcfa804-b3e5-48e5-9cf2-cef3bbfdcdfb.mp3",
+          "dur": 5.560091
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Sa maman lui dit que chaque oiseau a un chant spécial pour parler avec ses amis ou protéger son nid.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fi2ea944c1-6ef3-4a2b-be48-2ca2211b1b92.mp3",
+          "dur": 7.860091
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Léa ramasse une feuille verte tombée d’un arbre. Elle sent sa douceur et remarque les petites lignes comme des routes.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fi55a4130d-346f-439c-b613-44b7ed6be378.mp3",
+          "dur": 4.460091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fdd66a57b-84d7-4aa1-99db-c9d977f08fc5.mp3",
+          "dur": 4.960091
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Ces lignes s’appellent des nervures. Elles transportent l’eau et la nourriture pour nourrir toute la feuille.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fef4462ef-4aee-43d5-aeff-28903967c6f5.mp3",
+          "dur": 2.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fi9b4b539e-75ca-4201-83ff-78e7c0068c10.mp3",
+          "dur": 4.260091
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Avant de rentrer, Léa voit une petite fourmi qui transporte une miette plus grosse qu’elle. Quelle force !",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fi299e3030-c6fc-43e8-ac44-f58577b8eb35.mp3",
+          "dur": 6.760091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fi4f899d1a-a96d-4062-90fb-a3d5feb10fa4.mp3",
+          "dur": 1.460091
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Léa comprend que chaque petit être, même minuscule, a un rôle important dans la nature. Elle se promet de toujours observer et protéger ce monde vivant.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fi13bc865b-022a-4dc4-a3e6-f21b2e8342d1.mp3",
+          "dur": 5.860091
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mUIIItbISX%2f1758639649263%2fLa+d%c3%a9couverte+de+la+nature%2faudio%2fe9ef296b-1038-429b-a4ea-8d27b9239eac.mp3",
+          "dur": 4.060091
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 213
+  }
+}

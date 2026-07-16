@@ -1,0 +1,434 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-03be1223-el-tibur-n-y-el-planeta",
+  "title": "El tiburón y el planeta",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje y desarrollo de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/C2kGPRYcvC"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2fshark-3068590_640.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2f_96939896_gettyimages-1487887742.jpg",
+      "text": "Los tiburones son animales extraordinarios. Habitan el planeta desde la antigüedad. Existen desde hace 450,000,000 de años. Son de los animales más antiguos."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faor_F3.png",
+      "text": "El tiburón es un pez. También se le conoce como escualo. Vive en aguas profundas. Habita principalmente en agua cálida.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fb5c170b7-a267-495e-94c0-54d3ac59e5bf.mp3",
+          "dur": 1.933028
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi05d87d37-a340-4b51-bd0a-0729cfe6ddf7.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2ffb024167-0830-4e36-873b-fda0c627cc4a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fb57f9876-8ea5-4273-99ad-2163c71d96a1.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Su piel es muy áspera. Está formada por escamas. Le ayuda a moverse silenciosamente. Además, le ayuda a desplazarse rápidamente.\nPuede ser de diferentes colores. Puede ser azul, blanco o gris. También hay tiburones marrones y negros. Algunos son de varios colores.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi5a1f2093-d6b2-4c4b-8fae-1e61993b12b3.mp3",
+          "dur": 1.933028
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi5fa23db4-ba0b-401e-bbe2-91f076fc7636.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2faf6d932a-4038-4d7d-8694-5869aa537d52.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi0cb50dd6-9a97-4efc-b508-4dea91171a23.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2ff116c208-5b8d-46cf-ac17-d4166cb50788.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fbb596737-cbcc-4e27-a584-9adc5c69069c.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2ff6e6c0f1-3556-4069-89e3-d36466597328.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi1aabef62-fe48-4708-b86e-9ce996fa49bb.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faor_Nab039.png",
+      "text": "El tiburón es un pez cartilaginoso. No tiene huesos. Su esqueleto está hecho de cartílago. El cartílago es flexible.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi3ed6ee14-eee8-499e-895f-a5196e894917.mp3",
+          "dur": 2.638322
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi78ea2d48-916d-416b-853b-8715dfca7256.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi8cf3583e-3ada-4233-94f7-ff5b3ffed031.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi0e4ee642-286f-4f2e-a1db-df8a1ceb345b.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "El tiburón posee filas de dientes. Algunas permanecen invisibles. Solo las usan para atacar. Sustituyen sus dientes muy rápido. Los jóvenes pueden cambiarlos semanalmente. Los adultos los sustituyen mensualmente.\nLos tiburones blancos tienen dientes triangulares. Los tiburones tigre tiene dientes aserrados."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faor_ELK-268.png",
+      "text": "Los tiburones son longevos. Significa que viven muchos años. Algunas especies viven treinta años. Otras viven hasta cien años.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi7a3aad88-2706-4c2e-8906-f13185219e70.mp3",
+          "dur": 2.115882
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fcca7a59e-6c36-4ba2-a289-d432e19a3493.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fe54a8217-b802-4c51-a48e-b568942782fd.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi090bbcd9-9e93-47ed-985b-2ee887407be7.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Tienen buena visión. Pueden ver con poca luz. Por eso cazan en la obscuridad. También cazan a grandes profundidades. Duermen con los ojos abiertos.\nTienen otros sentidos muy desarrollados. Su olfato y gusto son agudos. Detecta sangre a mucha distancia.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi0c3f49c5-2de9-4be6-9dc2-bd5d28694d8a.mp3",
+          "dur": 1.227734
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fe8194851-4736-474d-9b9d-969475960d89.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi1dce6fea-af06-433a-a336-01d4b684a08a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi27b07db2-1660-4500-9d87-86c92ee3a737.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi973c7695-006c-459f-9959-1266d7bbc1cb.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi84cf4ce9-9178-45b7-8bde-23cf00d5240c.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fb2be5035-2d96-41ea-8ba3-b230d7918d47.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi26da0b3b-f3fe-4a20-8727-70a00cc7eda7.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Se alimentan de peces y crustáceos. También de moluscos, plancton y krill. Algunos también comen mamíferos marinos. Otros comen otras especies de tiburones.\nGeneralmente atacan a sus presas sorpresivamente. Consumen bancos de peces. Los grandes tienen alimentación de filtro. Estos nadan con la boca abierta."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faor_afa037.png",
+      "text": "Los tiburones maduran lentamente. Pueden reproducirse hasta los 12 años. Tienen una o dos crías. Las crías son independientes desde pequeñas."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "Existen más de 300 especies. Una especie se llama toro. Otra es tiburón cabeza de martillo. Uno se llama tiburón ángel. También existe el tiburón duende. Hay una especie llamada tiburón limón. Otra es el tiburón bala. También existe el tiburón enfermero."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2f_96939896_gettyimages-1487887741.jpg",
+      "text": "Su tamaño depende de su especie. El tiburón pigmeo mide ocho centímetros. El tiburón ballena es enorme. Puede medir más de quince metros.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi87be0f27-9669-44e8-9188-c8c6fed16a60.mp3",
+          "dur": 1.933028
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi041e816c-e7fc-4eb5-89dc-d6ef1237d4b7.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fbef21af0-9e4e-4495-8325-32adf3c8d76e.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fd9ef06ee-1fcd-47fe-8d8c-f98078ce0ee2.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Los tiburones viven en el planeta. Se adaptan a diferentes hábitats acuáticos. Buscan alimentarse para sobrevivir. Son parte del ecosistema del océano. Ellos son importantes para todos.\nAlgunos están en peligro de extinción. Principalmente por la pesca ilegal. Es importante protegerlos para su conservación.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi51dea123-fdfa-48dc-95f7-b3c2ee92cb42.mp3",
+          "dur": 2.037516
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi93f54818-9b4a-4ec6-8050-35148edf24c7.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi673aae2c-36c6-4cc6-baca-5f9b3bceb9ca.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi2018b73d-592d-4660-9ee7-7520087b427b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi51d99e98-bda8-4402-b39e-3da25355842b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi818861db-02a8-48b5-a233-84b9a52c6882.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi7e097cc2-5c16-42ab-a261-63536a7e4b68.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fd6d9ffe8-8c5d-45b2-99ed-8f8eb5f1a248.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2ftiburon.jpg",
+      "text": "Los tiburones viven alrededor del mundo. Su hábitat natural se ha estrechado. También les afecta el calentamiento global. Es importante seguir aprendiendo de ellos."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2fpollution-1603644_640.jpg",
+      "text": "La contaminación perjudica la vida marina. Los tiburones y otras especies mueren.\n¡Protejamos a los tiburones! ¡Cuidemos el planeta!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi0e9950c2-4bd3-45b5-b976-a2ce85aae689.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi02c29f02-1774-4b0e-86ff-c6c8fd949cd7.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi7c22f9ae-d153-4f41-8eed-e3ae08c76360.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fdb9353c9-7c15-45e0-8ec9-ac00b5695499.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Cuál es el otro nombre con el que se conoce a los tiburones?\nBallenas\nEscualos\nMariscos",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi4db6a95f-a6b6-4615-92cb-26baf66c9370.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi534bac68-1c42-4aac-9893-ba959b9a90c1.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fa6290c30-5a0f-4cd1-9903-88bc5808d6e4.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi2ad90d68-6ba6-42d4-a279-3355968ef109.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi72d124d3-d184-413f-a449-c2cf14e83846.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué característica tienen los dientes de los tiburones?\nSi los pierden, no los recuperan.\nEstán en filas.\nSon de cartílago.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi2d0ef85c-b203-4cdf-ae2f-2e0a10ae287b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi2051541f-118b-4334-82bc-6cf94b82b27b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi92ca924d-9a86-4bc0-9fee-e1877b4e4c7a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi70d6e6e9-1fad-4180-864b-9fcdf058c478.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi01ee0af8-0b98-4c21-a1e0-57086a97ee9e.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Qué especies de tiburón se mencionan en la lectura?\nAzul, blanco, negro, gris y marrón.\nToro, cabeza de martillo, ángel, duende, limón, bala y enfermero.\nCrustáceos, moluscos, plancton y krill.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fb31eb6b0-9c6e-461d-aee5-2fb48d08818e.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi15df5035-c717-47c5-9962-7695f5c98091.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fec202af0-5714-4d26-961c-ba5c1ed6272d.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fa833eab6-e1f9-4c00-add5-9249ee64a6b6.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi40f82099-0ca5-4552-8477-08776f71b67a.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿A qué se refiere que los tiburones pueden adaptarse a diferentes hábitats acuáticos?\nQue pueden vivir en un solo lugar.\nQue pueden vivir en la tierra y en el agua.\nQue pueden vivir en agua dulce y salada.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi522a1b98-dbaf-4c6a-b0c1-d7baae81b35b.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi9f752f37-33dd-43e7-a618-7dc9c4d3f3a4.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi7bb40cb0-127a-4807-b456-7506c3b2feaf.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi9ef1ffb8-53da-48dc-98ea-a598d54fe0fb.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fff24c3b3-1993-44c4-8159-5e53799f2139.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Compruebe su comprensión\n¿Cómo podemos cuidar a los tiburones?\nCazándolos para que no hagan daño.\nPoniéndolos a todos juntos en un lugar seguro.\nCuidando y protegiendo su hábitat natural.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi53d99861-9f0d-4a6c-8811-ae022ea2e823.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi613fccc0-ab45-47d6-9b32-10d38d3856d3.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi38abcb45-bef6-4e11-96b2-e4371cca9ecf.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fb7ee8fd7-4cf0-42a2-9eca-04e53d15f776.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f03be1223-b968-4b3a-95eb-13e85c1585b3%2fEl+tibur%c3%b3n+y+el+planeta1%2faudio%2fi2b587480-b2ab-4ca6-9b4c-bdc93ca78278.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 19,
+    "words": 567
+  }
+}

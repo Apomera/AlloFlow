@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-b5b37db3-o-pai-seu-filho-e-o-burro",
+  "title": "O pai, seu filho e o burro",
+  "description": "A Portuguese picture book from Bloom Library.",
+  "language": "Portuguese",
+  "langCode": "pt",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "Peter Ebenrubo Okunola"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Peter Ebenrubo Okunola",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/khGxGohtw0"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/khGxGohtw0%2f1779657618862%2f%e1%ba%b8d%e1%ba%b9da+ay%e1%ba%b9++yo+ogben++ak%c3%a0+%e1%ba%b9k%e1%ba%b9t%e1%ba%b9k%e1%ba%b9t%e1%ba%b9+ay%e1%ba%b9%2fFather%2c+son+and+donkey_02+(2).png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Um dia um pai e o seu filho fizeram uma viagem com o seu burro. No meio do caminho algumas pessoas perguntaram: \"Por que vocês não sobem no burro?\""
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Então; o pai disse para o seu filho: \"Suba.\"\nO pai continuou a andar a pé.\nAssim eles continuaram a viagem."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Depois de um tempinho algumas pessoas disseram: \"Olha só, este filho não tem respeito! Ele se sentou em cima do burro e deixou o seu pai andar a pé.\""
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Quando o rapaz ouviu aquilo, ele desceu e o pai subiu.\nE assim eles continuaram sua viagem."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Depois de ter andado um pouco mais, algumas outras pessoas disseram: \"Olha-só, este pai que está a se fazer. Ele subiu no burro e deixou o seu filho andar a pé...\""
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Assim o pai e o filho decidiram subir juntos no burro."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Mais depois de um tempinho algumas pessoas disseram: \"Olha estas pessoas, que não têm sentimentos com o burro. O burro vai morrer!\""
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "No fim o pai e o seu filho perceberam que as pessoas falam muita coisa a seu respeito. Então eles combinaram fazer coisas boas que saiam da suas próprias cabeças."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 190
+  }
+}

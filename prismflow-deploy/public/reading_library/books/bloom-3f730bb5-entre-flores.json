@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3f730bb5-entre-flores",
+  "title": "Entre flores",
+  "description": "Libro apropiado para niños que están en el proceso de aprendizaje de la lectoescritura en español.",
+  "language": "Spanish",
+  "langCode": "es",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Ministerio de Educación de Guatemala y USAID."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ministerio de Educación de Guatemala y USAID.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/c0WF1geyIr"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fscenery-970839_1280.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fwatercolor-1646030_19201.jpg",
+      "text": "Josué es un niño muy simpático. Él vive en \"El Molino\"."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fwatercolour-2168655_1920.jpg",
+      "text": "Josué vive alegre. Su hogar está lleno de flores."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fsmell-41970_1280.png",
+      "text": "El jardín tiene diversas flores. Josué disfruta cada detalle del jardín."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fsunflower-field-background-3892384_1920.jpg",
+      "text": "Las flores huelen intensamente. Su flor favorita es el girasol."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fsunflower-869133_12802.jpg",
+      "text": "En el jardín también hay pájaros. Josué presta atención a sus sonidos."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fni%c3%b1os+sembrando.png",
+      "text": "Cuida mucho las plantas. Las riega y limpia con dedicación."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fni%c3%b1os+pintando+cuadro+de+paisaje.jpg",
+      "text": "Sueña con mejorar su barrio. Imagina un barrio con flores."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fAgricultor.png",
+      "text": "Josué tiene pasión por la naturaleza. Desea ser ambientalista."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fni%c3%b1os+en+jardin.png",
+      "text": "Josué se caracteriza por su pasión. Sus amigas y amigos desean imitarlo."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/bborrayo%40gmail.com%2f3f730bb5-335d-4bce-a147-0aa558c47fe4%2fEntre+flores%2fchico+y+chica+sentados+leyendo.png",
+      "text": "Él lucha por sus sueños. Trabaja cada día para lograrlos."
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 104
+  }
+}

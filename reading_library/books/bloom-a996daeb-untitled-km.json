@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-a996daeb-untitled-km",
+  "title": "រីងរីង ណាវ សៀមរៀប",
+  "description": "Jarai Folk tale",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Produced by ICC,Supported by UNESCO"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Produced by ICC,Supported by UNESCO",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/i8OYF8tsy6"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f01+Where+Do+They+Go.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f02+Where+Do+They+Go.jpg",
+      "text": "រីងរីង​ទៅ​សួន​កុមារ។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f03+Where+Do+They+Go.jpg",
+      "text": "រីងរីង​ជួប​ពីបពីប។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f04+Where+Do+They+Go.jpg",
+      "text": "ពីបពីប​ទៅ​ឋានីយ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f05+Where+Do+They+Go.jpg",
+      "text": "ពីបពីប​ជួប​ឆុកឆាក់។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f06+Where+Do+They+Go.jpg",
+      "text": "ឆុកឆាក់​ទៅ​វាល។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f07+Where+Do+They+Go.jpg",
+      "text": "ឆុកឆាក់​ជួប​រ៉ឺងរ៉ឺង។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f12+-+Where+Do+They+Go.jpg",
+      "text": "រ៉ឺងរ៉ឺង​ទៅ​សៀមរាប។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f09+Where+Do+They+Go.png",
+      "text": ""
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "រ៉ឺងរ៉ឺង​ជួប​ទីនទីន។\nពួកគេ​ទាំង​៥​ទៅ​លេង​សៀមរាប។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f10+Where+Do+They+Go2.jpg",
+      "text": ""
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tampuan.ibcde%40gmail.com%2fa996daeb-f0d5-48d6-86ce-2e812468d7a3%2f%e1%9e%9a%e1%9e%b8%e1%9e%84%e1%9e%9a%e1%9e%b8%e1%9e%84+%e1%9e%8e%e1%9e%b6%e1%9e%9c+%e1%9e%9f%e1%9f%80%e1%9e%98%e1%9e%9a%e1%9f%80%e1%9e%94%2f11+Where+Do+They+Go.jpg",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 9
+  }
+}

@@ -67,18 +67,26 @@ const PLAN = [
   { code: 'prs', name: 'Dari', cap: 20 },
   // Raised caps (2026-07-13): Portland's Cambodian community + the deepest
   // talking-book pools — narrated books get priority within every cap.
-  { code: 'km', name: 'Khmer', cap: 32 },
-  { code: 'my', name: 'Burmese', cap: 28 },
-  { code: 'ne', name: 'Nepali', cap: 28 },
-  { code: 'lo', name: 'Lao', cap: 20 },
-  { code: 'vi', name: 'Vietnamese', cap: 12 },
+  { code: 'km', name: 'Khmer', cap: 48 },
+  { code: 'my', name: 'Burmese', cap: 40 },
+  { code: 'ne', name: 'Nepali', cap: 44 },
+  { code: 'lo', name: 'Lao', cap: 30 },
+  { code: 'vi', name: 'Vietnamese', cap: 24 },
   { code: 'mww', name: 'Hmong', cap: 20 },
-  { code: 'sw', name: 'Kiswahili', cap: 20 },
+  { code: 'sw', name: 'Kiswahili', cap: 32 },
   { code: 'ur', name: 'Urdu', cap: 12 },
   { code: 'tl', name: 'Filipino', cap: 12, langCode: 'fil' },
   { code: 'ar', name: 'Arabic', cap: 5 },
   { code: 'fa', name: 'Farsi', cap: 2 },
   { code: 'kmr', name: 'Kurdish', cap: 20 },
+  // ---- 2026-07-16 wave 3: the big world-language pools skipped in wave 2
+  // (census then: French 1502, Spanish 1856, Portuguese 855, Thai 361).
+  // Display names match StoryWeaver's so the browse shelves merge; these give
+  // dual-language families a deep home-language picture-book shelf.
+  { code: 'fr', name: 'French', cap: 30 },
+  { code: 'es', name: 'Spanish', cap: 30 },
+  { code: 'pt', name: 'Portuguese', cap: 25 },
+  { code: 'th', name: 'Thai', cap: 25 },
 ];
 
 const RTL_CODES = new Set(['ar', 'fa', 'ur', 'prs', 'ps', 'he']);
@@ -186,7 +194,19 @@ function isReligiousInstructional(record) {
   // (God) caught a numbered Lao Bible-story series and a Filipino worship
   // book in wave 2. NOT included: bare names like Moses/Joseph — "Mussa na
   // Shamba Bora" is a secular farming story whose farmer is named Moses.
-  return /jesus|\byesu\b|bible|biblia|scripture|gospel|golyat|goliath|psalm|passover|exodus|panginoon|ພຣະເຈົ້າ|ісус|біблі|христ|the creation in/i.test(text);
+  // Wave-3 languages (fr/es/pt/th) add their scripts' unambiguous tokens:
+  // French/Spanish/Portuguese Jesus/Bible/gospel spellings, Thai พระเยซู
+  // (Jesus) / พระคัมภีร์ (Bible) / เธสะโลนิกา (Thessalonians — a Thai
+  // "1 Thessalonians book study" surfaced in the wave-3 census), and Bible
+  // book-study names that show up as numbered series.
+  // Thai อธิษฐาน (to pray, religiously) and the monotheism phrase พระเจ้าองค์เดียว
+  // ("one God") caught two Thai devotional cards in wave 3 that carry none of
+  // the Jesus/Bible tokens. พระเจ้า is NOT matched alone — it also means
+  // king/lord in secular Thai (พระเจ้าแผ่นดิน = the sovereign). The Romance
+  // "faith in God" / "God-fearing" PHRASES catch French/Spanish/Portuguese
+  // devotional fiction ("garde sa foi en Dieu") — bare dieu/dios/deus is left
+  // out (mon Dieu!, adiós, folk tales all use it non-devotionally).
+  return /jesus|jésus|jesús|\byesu\b|bible|biblia|bíblia|scripture|gospel|évangile|evangelio|evangelho|golyat|goliath|psalm|passover|exodus|panginoon|ພຣະເຈົ້າ|ісус|біблі|христ|พระเยซู|พระคัมภีร์|เธสะโลนิกา|อธิษฐาน|พระเจ้าองค์เดียว|thessalon|corinthian|deuteronom|the creation in|foi en dieu|craign\w* dieu|fe en dios|temeroso de dios|fé em deus|temente a deus/i.test(text);
 }
 
 // Last line of defense: metadata can be silent while the story text itself
@@ -194,7 +214,7 @@ function isReligiousInstructional(record) {
 // Lao"). Checks the first pages of PARSED text for the unambiguous tokens.
 function looksReligiousInText(pages) {
   const head = pages.slice(0, 3).map((p) => p.text || '').join(' ');
-  return /\byesu\b|jesus|panginoon|ພຣະເຈົ້າ|እግዚአብሔር|біблі|ісус/i.test(head);
+  return /\byesu\b|jesus|jésus|jesús|panginoon|ພຣະເຈົ້າ|እግዚአብሔር|біблі|ісус|พระเยซู|พระคัมภีร์/i.test(head);
 }
 
 function computedLevel(record) {
