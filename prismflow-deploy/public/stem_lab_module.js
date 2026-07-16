@@ -2959,7 +2959,7 @@
                 cell: ['Cell Explorer', '\uD83D\uDD2C'], epidemicSim: ['Epidemic Sim', '\uD83E\uDDA0'],
                 titrationLab: ['Titration', '\uD83E\uDDEA'], climateExplorer: ['Climate', '\uD83C\uDF21\uFE0F'],
                 moonMission: ['Moon Mission', '\uD83C\uDF11'], appLab: ['App Lab', '\uD83D\uDCF1'],
-                gameStudio: ['Game Studio', '\uD83C\uDFAE'], lifeSkills: ['Life Skills', '\uD83D\uDD27'],
+                gameStudio: ['Game Studio', '\uD83C\uDFAE'], freeForms: ['Free Forms', '\uD83C\uDFDB\uFE0F'], lifeSkills: ['Life Skills', '\uD83D\uDD27'],
                 popSim: ['Population Sim', '\uD83D\uDC3E'], targetMode: ['Target Mode', '\uD83C\uDFAF'],
                 oratory_warmup: ['Oratory Warmup', '\uD83C\uDFA4'], oratory_phrase: ['Speech Practice', '\uD83D\uDDE3\uFE0F'],
                 oratory_smooth_pacing: ['Pacing', '\u23F1\uFE0F'], geoQuiz: ['Geo Quiz', '\uD83C\uDF0D'],
@@ -3565,6 +3565,12 @@
                 color: 'slate', ready: true
               },
               {
+                // @tool spaceStation
+                id: 'spaceStation', icon: '🛰️', label: 'Space Station',
+                desc: 'Explore a clickable 3D map of the ISS, live an astronaut’s day, trace the water and air recycling loops, and run real orbital mechanics in the Orbit Lab.',
+                color: 'sky', ready: true
+              },
+              {
                 // @tool galaxy
                 id: 'galaxy', icon: '\uD83C\uDF0C', label: t('stem.tools_menu.galaxy_explorer'),
                 desc: 'Fly through a 3D Milky Way. Discover star types, nebulae, and black holes.',
@@ -3782,6 +3788,11 @@
                 id: 'archStudio', icon: '\uD83C\uDFD7\uFE0F', label: 'Architecture Studio',
                 desc: '3D building with blocks, columns, arches, and ramps. Snap to grid, measure, and export STL.',
                 color: 'amber', ready: true
+              },
+              {
+                id: 'freeForms', icon: '\uD83C\uDFDB\uFE0F', label: 'Free Forms',
+                desc: 'Build your own World of Forms: fill an archetypal 3D structure (Venn, story mountain, fishbone\u2026) with your OWN ideas, sculpt them, and get AI coaching on the whole composition.',
+                color: 'violet', ready: true
               },
 
               { id: '_cat_BehavioralScience', icon: '', label: '\uD83E\uDDE0 Behavioral Science', desc: '', color: 'slate', category: true },
@@ -5376,9 +5387,9 @@
             archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
             cyberDefense: true, semiconductor: true,
             // Art & Music
-            artStudio: true, creative: true, gameStudio: true,
+            artStudio: true, creative: true, gameStudio: true, freeForms: true,
             // Earth & Space
-            astronomy: true, galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true,
+            astronomy: true, galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true, spaceStation: true,
             // Data & Logic
             behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true, timelineStudio: true,
             // Geography
