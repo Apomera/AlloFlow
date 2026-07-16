@@ -6337,6 +6337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var vs = R.useState('today');               var view = vs[0];   var setView = vs[1];
     var ns = R.useState({ name: '', icon: '✅', target: '' });
     var form = ns[0];                            var setForm = ns[1];
+    var ves = R.useState('');                    var formError = ves[0]; var setFormError = ves[1];
 
     var TEMPLATE_HABITS = [
       { name: '8+ hours of sleep', icon: '😴', target: 'every night' },
@@ -6402,9 +6403,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 10 } }, '✨ Common student habits'),
             hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 16 } },
               TEMPLATE_HABITS.map(function(h, i) {
-                return hh('button', { key: 'tp-' + i,
+                return hh('button', { key: 'tp-' + i, type: 'button',
                   onClick: function() { addHabit(h); setView('today'); },
-                  style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, background: 'rgba(2,6,23,0.4)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px dashed rgba(16,185,129,0.30)', cursor: 'pointer', textAlign: 'left' }
+                  style: { display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '8px 10px', borderRadius: 6, background: 'rgba(2,6,23,0.4)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px dashed rgba(16,185,129,0.30)', cursor: 'pointer', textAlign: 'left' }
                 },
                   hh('span', { style: { fontSize: 16 } }, h.icon),
                   hh('div', { style: { flex: 1 } },
@@ -6417,25 +6418,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             ),
 
             hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 6 } }, '📝 Or write your own'),
-            hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 } },
-              hh('span', { style: { fontSize: 18 } }, form.icon),
-              hh('input', { type: 'text', value: form.icon, onChange: function(e) { setForm(Object.assign({}, form, { icon: e.target.value })); }, placeholder: '🎯',
-                style: { width: 50, padding: '8px', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, textAlign: 'center' }
-              }),
-              tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Habit name', { flex: 1 })
+            hh('div', { style: { display: 'grid', gridTemplateColumns: '70px 1fr', gap: 8, alignItems: 'end', marginBottom: 8 } },
+              hh('div', null,
+                hh('label', { htmlFor: 'learning-lab-habit-icon', style: { fontSize: 10, fontWeight: 800, color: '#10b981', display: 'block', marginBottom: 4 } }, 'Icon'),
+                hh('input', { id: 'learning-lab-habit-icon', type: 'text', value: form.icon, maxLength: 8, onChange: function(e) { setForm(Object.assign({}, form, { icon: e.target.value })); }, placeholder: '🎯', style: { width: '100%', minHeight: 44, padding: 8, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, textAlign: 'center', boxSizing: 'border-box' } })
+              ),
+              hh('div', null,
+                hh('label', { htmlFor: 'learning-lab-habit-name', style: { fontSize: 10, fontWeight: 800, color: '#10b981', display: 'block', marginBottom: 4 } }, 'Habit name (required)'),
+                hh('input', { id: 'learning-lab-habit-name', type: 'text', value: form.name, required: true, 'aria-invalid': formError ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-habit-error' : undefined, onChange: function(e) { setForm(Object.assign({}, form, { name: e.target.value })); setFormError(''); }, placeholder: 'Habit name', style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } })
+              )
             ),
-            tkInput(form.target, function(v) { setForm(Object.assign({}, form, { target: v })); }, 'Target (e.g., "5x/week")', { marginBottom: 10 }),
+            hh('label', { htmlFor: 'learning-lab-habit-target', style: { fontSize: 10, fontWeight: 800, color: '#10b981', display: 'block', marginBottom: 4 } }, 'Target (optional)'),
+            hh('input', { id: 'learning-lab-habit-target', type: 'text', value: form.target, onChange: function(e) { setForm(Object.assign({}, form, { target: e.target.value })); }, placeholder: 'e.g., "5x/week"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 10, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } }),
+            formError ? hh('div', { id: 'learning-lab-habit-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: 10 } }, formError) : null,
             tkBtn('+ Add custom habit', function() {
-              if (!form.name.trim()) { alert('Need a name.'); return; }
+              if (!form.name.trim()) { setFormError('Habit name is required.'); setTimeout(function() { var target = document.getElementById('learning-lab-habit-name'); if (target) target.focus(); }, 0); return; }
               addHabit(form);
               setForm({ name: '', icon: '✅', target: '' });
+              setFormError('');
               setView('today');
             }, 'primary')
           )
         ),
 
         hh('div', { style: { display: 'flex', justifyContent: 'flex-start' } },
-          tkBtn('← Back', function() { setView('today'); }, 'ghost')
+          tkBtn('← Back', function() { setFormError(''); setView('today'); }, 'ghost')
         )
       );
     }
@@ -6444,15 +6451,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkSectionHeader('✅', 'Habit Tracker', 'Daily check-ins build the routine. Habits take ~66 days to form (Lally 2009).', '#10b981'),
 
       hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
-        tkBtn('+ Add habit', function() { setView('add'); }, 'primary')
+        tkBtn('+ Add habit', function() { setFormError(''); setView('add'); }, 'primary')
       ),
 
-      habits.length === 0 ? tkEmptyState('✅', 'No habits tracked yet. Pick from common student habits or build your own.', '+ Add your first habit', function() { setView('add'); })
+      habits.length === 0 ? tkEmptyState('✅', 'No habits tracked yet. Pick from common student habits or build your own.', '+ Add your first habit', function() { setFormError(''); setView('add'); })
       : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
           habits.map(function(h) {
             var streak = habitStreak(h.id);
             var thisWeek = habitsTotalThisWeek(h.id);
-            var todayDone = ((data.logs || {})[h.id] || []).indexOf(today) >= 0;
+            var habitLogs = ((data.logs || {})[h.id] || []);
+            var todayDone = habitLogs.indexOf(today) >= 0;
+            var last30Count = 0;
+            for (var historyIndex = 29; historyIndex >= 0; historyIndex--) {
+              var historyDate = new Date(); historyDate.setDate(historyDate.getDate() - historyIndex);
+              if (habitLogs.indexOf(historyDate.toISOString().slice(0, 10)) >= 0) last30Count++;
+            }
             return hh('div', { key: 'h-' + h.id, style: {
               padding: 12, borderRadius: 12,
               background: 'linear-gradient(135deg, rgba(16,185,129,0.10), rgba(15,23,42,0.7))',
@@ -6465,13 +6478,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'target: ' + h.target)
                 ),
                 hh('div', { style: { display: 'flex', gap: 6 } },
-                  hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: streak > 0 ? 'rgba(251,191,36,0.20)' : 'rgba(100,116,139,0.10)', color: streak > 0 ? '#fbbf24' : '#94a3b8', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, '🔥 ' + streak),
-                  hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: '#10b981', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, thisWeek + '/7'),
-                  hh('button', { onClick: function() { if (confirm('Remove this habit and all its history?')) removeHabit(h.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                  hh('div', { role: 'img', 'aria-label': 'Current streak: ' + streak + ' day' + (streak === 1 ? '' : 's'), style: { padding: '6px 12px', borderRadius: 999, background: streak > 0 ? 'rgba(251,191,36,0.20)' : 'rgba(100,116,139,0.10)', color: streak > 0 ? '#fbbf24' : '#94a3b8', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, '🔥 ' + streak),
+                  hh('div', { role: 'img', 'aria-label': 'Completed this week: ' + thisWeek + ' of 7 days', style: { padding: '6px 12px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: '#10b981', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, thisWeek + '/7'),
+                  hh('button', { type: 'button', 'aria-label': 'Delete habit: ' + h.name, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the habit "' + h.name + '" and all of its history.', { title: 'Delete this habit?', confirmText: 'Delete habit' })) removeHabit(h.id); }, style: { minWidth: 44, minHeight: 44, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer', padding: 8 } }, '✕')
                 )
               ),
               // 30-day strip
-              hh('div', { style: { display: 'flex', gap: 2, marginBottom: 8 } },
+              hh('div', { role: 'img', 'aria-label': h.name + ' activity for the last 30 days: ' + last30Count + ' days completed. Today is ' + (todayDone ? 'complete.' : 'not complete.'), style: { display: 'flex', gap: 2, marginBottom: 8 } },
                 (function() {
                   var arr = [];
                   for (var i = 29; i >= 0; i--) {
@@ -6479,7 +6492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                     var iso = dt.toISOString().slice(0, 10);
                     var done = ((data.logs || {})[h.id] || []).indexOf(iso) >= 0;
                     var isToday = iso === today;
-                    arr.push(hh('div', { key: 'day-' + i,
+                    arr.push(hh('div', { key: 'day-' + i, 'aria-hidden': 'true',
                       title: iso + (done ? ' ✓' : ''),
                       style: { flex: 1, height: 16, borderRadius: 2, background: done ? '#10b981' : 'rgba(100,116,139,0.15)', border: isToday ? '1px solid #fbbf24' : 'none' }
                     }));
@@ -6488,8 +6501,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 })()
               ),
               // Today button
-              hh('button', { onClick: function() { toggleDay(h.id, today); },
-                style: { width: '100%', padding: '10px', borderRadius: 8, background: todayDone ? 'rgba(16,185,129,0.30)' : 'rgba(16,185,129,0.10)', color: todayDone ? '#10b981' : '#94a3b8', border: '1.5px solid ' + (todayDone ? '#10b981' : 'rgba(16,185,129,0.40)'), fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+              hh('button', { type: 'button', 'aria-pressed': todayDone, onClick: function() { toggleDay(h.id, today); },
+                style: { width: '100%', minHeight: 44, padding: '10px', borderRadius: 8, background: todayDone ? 'rgba(16,185,129,0.30)' : 'rgba(16,185,129,0.10)', color: todayDone ? '#10b981' : '#94a3b8', border: '1.5px solid ' + (todayDone ? '#10b981' : 'rgba(16,185,129,0.40)'), fontSize: 12, fontWeight: 800, cursor: 'pointer' }
               }, todayDone ? '✓ Done today — undo' : 'Mark done today')
             );
           })
