@@ -255,6 +255,25 @@ describe('solar system main 3D canvas loop', () => {
     });
   });
 
+  it('adds drone visual polish gated by prefers-reduced-motion', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var droneReduceMotion = false;');
+      // Twinkling star layers on dark-sky worlds, static when motion is reduced.
+      expect(source).toContain('var twinkleLayers = [];');
+      expect(source).toContain('twMesh._twPhase = tl * Math.PI * 0.5;');
+      expect(source).toContain('if (!droneReduceMotion && twinkleLayers.length)');
+      // Falling frost on ice worlds, skipped entirely when motion is reduced.
+      expect(source).toContain("sel.terrainType === 'iceworld' && !isOcean && !droneReduceMotion");
+      expect(source).toContain('frostFall.geometry.attributes.position.needsUpdate = true;');
+      // Sun glare overlay tracks the sun's screen position on rover worlds.
+      expect(source).toContain('id="drone-sun-glare"');
+      expect(source).toContain("var sunGlareEl = screenFx.querySelector('#drone-sun-glare');");
+      expect(source).toContain('camera.getWorldDirection(_glareCamDir);');
+    });
+  });
+
   it('detects mode-specific patterns after three readings and adds them to the evidence', () => {
     SOLAR_SYSTEM_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');

@@ -8449,6 +8449,9 @@ const d = labToolData.solarSystem || {};
                         var isOcean = sel.terrainType === 'earthlike'; // Earth gets underwater drone
                         var isFluid = isGas || isOcean; // shared free-movement mechanics
 
+                        var droneReduceMotion = false;
+                        try { droneReduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
                         var camera = new THREE.PerspectiveCamera(70, W / H, 0.1, 500);
 
                         camera.position.set(0, isFluid ? 5 : 1.6, 0);
@@ -8541,6 +8544,32 @@ const d = labToolData.solarSystem || {};
                         var skyMat = new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide });
 
                         scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+                        // ── Twinkling star points (dark-sky worlds) ──
+                        // The sky-dome stars are static paint; two phase-offset additive
+                        // layers make the sky glitter without per-star attribute updates.
+                        // Under prefers-reduced-motion they stay at a fixed opacity.
+                        var twinkleLayers = [];
+                        if (!isOcean && (sel.terrainType === 'cratered' || sel.terrainType === 'iceworld' || sel.terrainType === 'desert')) {
+                          for (var tl = 0; tl < 2; tl++) {
+                            var twGeo = new THREE.BufferGeometry();
+                            var twCount = 110;
+                            var twPos = new Float32Array(twCount * 3);
+                            for (var twi = 0; twi < twCount; twi++) {
+                              var twTheta = Math.random() * Math.PI * 2;
+                              var twY = 0.15 + Math.random() * 0.85; // upper sky only
+                              var twR = Math.sqrt(Math.max(0, 1 - twY * twY));
+                              twPos[twi * 3] = Math.cos(twTheta) * twR * 190;
+                              twPos[twi * 3 + 1] = twY * 190;
+                              twPos[twi * 3 + 2] = Math.sin(twTheta) * twR * 190;
+                            }
+                            twGeo.setAttribute('position', new THREE.BufferAttribute(twPos, 3));
+                            var twMesh = new THREE.Points(twGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 1.2 + tl * 0.6, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }));
+                            twMesh._twPhase = tl * Math.PI * 0.5;
+                            scene.add(twMesh);
+                            twinkleLayers.push(twMesh);
+                          }
+                        }
 
                         // ── Visible Sun in Sky ──
                         // Sun apparent size varies by planet distance from Sun
@@ -9939,6 +9968,27 @@ const d = labToolData.solarSystem || {};
                           }
                         }
 
+                        // ── Ice worlds: falling frost ──
+                        // Grounded in the tool's own Pluto fact: the atmosphere freezes and
+                        // falls as snow. Skipped entirely under prefers-reduced-motion.
+                        var frostFall = null;
+                        if (sel.terrainType === 'iceworld' && !isOcean && !droneReduceMotion) {
+                          var ffGeo = new THREE.BufferGeometry();
+                          var ffCount = 180;
+                          var ffPos = new Float32Array(ffCount * 3);
+                          var ffVel = new Float32Array(ffCount);
+                          for (var ffi = 0; ffi < ffCount; ffi++) {
+                            ffPos[ffi * 3] = (Math.random() - 0.5) * 60;
+                            ffPos[ffi * 3 + 1] = Math.random() * 18;
+                            ffPos[ffi * 3 + 2] = (Math.random() - 0.5) * 60;
+                            ffVel[ffi] = 0.015 + Math.random() * 0.03;
+                          }
+                          ffGeo.setAttribute('position', new THREE.BufferAttribute(ffPos, 3));
+                          frostFall = new THREE.Points(ffGeo, new THREE.PointsMaterial({ color: 0xdff2ff, size: 0.09, transparent: true, opacity: 0.7, depthWrite: false }));
+                          frostFall._vel = ffVel;
+                          scene.add(frostFall);
+                        }
+
                         // ── Venus: Distant volcanic glow + lava flow ──
                         var venusVolcanoes = [];
                         if (sel.terrainType === 'volcanic') {
@@ -11321,8 +11371,12 @@ const d = labToolData.solarSystem || {};
                           // Subtle scan lines
                           '<div id="scanline-fx" style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);opacity:0.5"></div>' +
                           // Depth color tint overlay (changes with depth for fluid environments)
-                          '<div id="depth-tint-fx" style="position:absolute;inset:0;background:transparent;transition:background 1s;opacity:0.15"></div>';
+                          '<div id="depth-tint-fx" style="position:absolute;inset:0;background:transparent;transition:background 1s;opacity:0.15"></div>' +
+                          // Sun glare — brightens when the pilot looks toward the sun, tracking its screen position
+                          '<div id="drone-sun-glare" style="position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,rgba(255,244,214,0.34),rgba(255,244,214,0.12) 22%,transparent 55%);opacity:0;transition:opacity 0.25s"></div>';
                         canvasEl.parentElement.appendChild(screenFx);
+                        var sunGlareEl = screenFx.querySelector('#drone-sun-glare');
+                        var _glareSunDir = new THREE.Vector3(), _glareCamDir = new THREE.Vector3(), _glareNdc = new THREE.Vector3();
 
                         // ── Atmospheric Sound Description (top-center, cycles) ──
                         var soundDesc = document.createElement('div');
@@ -12492,6 +12546,30 @@ const d = labToolData.solarSystem || {};
                             coronaMesh.scale.setScalar(sunPulse);
                           }
 
+                          // Star twinkle — phase-offset opacity waves (static under reduced motion)
+                          if (!droneReduceMotion && twinkleLayers.length) {
+                            for (var twl = 0; twl < twinkleLayers.length; twl++) {
+                              twinkleLayers[twl].material.opacity = 0.35 + 0.3 * Math.abs(Math.sin(tick3d * 0.013 + twinkleLayers[twl]._twPhase));
+                            }
+                          }
+
+                          // Sun glare overlay tracks where the sun sits on screen (rover worlds only —
+                          // fluid modes hide the sun underwater or fade it behind atmosphere fog)
+                          if (sunGlareEl && !isFluid && sunMesh.visible && tick3d % 3 === 0) {
+                            _glareSunDir.copy(sunMesh.position).normalize();
+                            camera.getWorldDirection(_glareCamDir);
+                            var glareDot = _glareCamDir.dot(_glareSunDir);
+                            if (glareDot > 0.55) {
+                              _glareNdc.copy(sunMesh.position).project(camera);
+                              var gx = Math.round((_glareNdc.x * 0.5 + 0.5) * 100);
+                              var gy = Math.round((-_glareNdc.y * 0.5 + 0.5) * 100);
+                              sunGlareEl.style.background = 'radial-gradient(circle at ' + gx + '% ' + gy + '%,rgba(255,244,214,0.34),rgba(255,244,214,0.12) 22%,transparent 55%)';
+                              sunGlareEl.style.opacity = String(Math.min(1, (glareDot - 0.55) / 0.4) * 0.85);
+                            } else {
+                              sunGlareEl.style.opacity = '0';
+                            }
+                          }
+
                           // Animate sky moons orbiting overhead
                           skyMoons.forEach(function(sm) {
                             var angle = tick3d * sm._orbitSpeed + sm._orbitPhase;
@@ -12645,6 +12723,21 @@ const d = labToolData.solarSystem || {};
                                 child.rotation.y += dd._ddSpeed;
                               });
                             });
+                          }
+
+                          // Frost falls slowly and recycles around the player so it always snows nearby
+                          if (frostFall) {
+                            var ffArr = frostFall.geometry.attributes.position.array;
+                            var ffV = frostFall._vel;
+                            for (var ffu = 0; ffu < ffV.length; ffu++) {
+                              ffArr[ffu * 3 + 1] -= ffV[ffu];
+                              if (ffArr[ffu * 3 + 1] < playerPos.y - 4) {
+                                ffArr[ffu * 3] = playerPos.x + (Math.random() - 0.5) * 60;
+                                ffArr[ffu * 3 + 1] = playerPos.y + 10 + Math.random() * 8;
+                                ffArr[ffu * 3 + 2] = playerPos.z + (Math.random() - 0.5) * 60;
+                              }
+                            }
+                            frostFall.geometry.attributes.position.needsUpdate = true;
                           }
 
                           // Venus volcanoes pulse and erupt
