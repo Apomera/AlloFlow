@@ -5832,9 +5832,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function removeBlock(id) {
       setData(Object.assign({}, data, { blocks: (data.blocks || []).filter(function(b) { return b.id !== id; }) }));
     }
-    function addSubject() {
-      var name = prompt('Subject name?');
-      if (!name) return;
+    async function addSubject() {
+      var values = await askLearningLabForm({
+        title: 'Add a study subject',
+        description: 'Enter a short name for the subject.',
+        submitText: 'Add subject',
+        fields: [{ name: 'name', label: 'Subject name', required: true, maxLength: 60 }],
+        validate: function(result) {
+          return (data.subjects || []).some(function(existing) { return existing.toLowerCase() === result.name.toLowerCase(); }) ? 'That subject is already in the planner.' : '';
+        }
+      });
+      if (!values) return;
+      var name = values.name;
       setData(Object.assign({}, data, { subjects: (data.subjects || []).concat([name]) }));
     }
 
@@ -5859,44 +5868,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkSectionHeader('+', 'Add study block', 'When + what + how long.', '#3b82f6'),
         tkCard('#3b82f6',
           hh('div', null,
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Day of week'),
-            hh('div', { style: { display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' } },
-              DAYS.map(function(d, i) {
-                return hh('button', { key: 'd-' + i,
-                  onClick: function() { setForm(Object.assign({}, form, { day: i })); },
-                  style: { padding: '8px 12px', borderRadius: 6, background: form.day === i ? '#3b82f6' : 'rgba(59,130,246,0.10)', color: form.day === i ? '#fff' : '#60a5fa', border: '1px solid rgba(59,130,246,0.40)', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
-                }, d);
-              })
+            hh('fieldset', { style: { border: 0, padding: 0, margin: '0 0 12px' } },
+              hh('legend', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Day of week'),
+              hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                DAYS.map(function(d, i) {
+                  return hh('button', { key: 'd-' + i, type: 'button', 'aria-pressed': form.day === i,
+                    onClick: function() { setForm(Object.assign({}, form, { day: i })); },
+                    style: { minWidth: 44, minHeight: 44, padding: '8px 12px', borderRadius: 6, background: form.day === i ? '#3b82f6' : 'rgba(59,130,246,0.10)', color: form.day === i ? '#fff' : '#60a5fa', border: '1px solid rgba(59,130,246,0.40)', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                  }, d);
+                })
+              )
             ),
             hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 } },
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Start time'),
+                hh('label', { htmlFor: 'learning-lab-study-start-time', style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Start time'),
                 hh('select', {
+                  id: 'learning-lab-study-start-time',
                   value: form.hour, onChange: function(e) { setForm(Object.assign({}, form, { hour: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', padding: '8px 10px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
+                  style: { width: '100%', minHeight: 44, padding: '8px 10px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
                 }, HOURS.map(function(h) { return hh('option', { key: 'h-' + h, value: h }, fmtHour(h)); }))
               ),
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Duration'),
+                hh('label', { htmlFor: 'learning-lab-study-duration', style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Duration'),
                 hh('select', {
+                  id: 'learning-lab-study-duration',
                   value: form.duration, onChange: function(e) { setForm(Object.assign({}, form, { duration: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', padding: '8px 10px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
+                  style: { width: '100%', minHeight: 44, padding: '8px 10px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
                 }, [25, 45, 60, 90, 120].map(function(m) { return hh('option', { key: 'm-' + m, value: m }, m + ' min'); }))
               )
             ),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Subject'),
-            hh('div', { style: { display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' } },
-              subjects.map(function(s) {
-                var col = subColor(s);
-                return hh('button', { key: 'su-' + s,
-                  onClick: function() { setForm(Object.assign({}, form, { subject: s })); },
-                  style: { padding: '6px 12px', borderRadius: 6, background: form.subject === s ? col + '30' : 'rgba(15,23,42,0.5)', color: form.subject === s ? col : '#94a3b8', border: '1px solid ' + (form.subject === s ? col : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                }, s);
-              }),
-              hh('button', { onClick: addSubject, style: { padding: '6px 12px', borderRadius: 6, background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px dashed rgba(148,163,184,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '+ Add subject')
+            hh('fieldset', { style: { border: 0, padding: 0, margin: '0 0 12px' } },
+              hh('legend', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Subject'),
+              hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                subjects.map(function(s) {
+                  var col = subColor(s);
+                  return hh('button', { key: 'su-' + s, type: 'button', 'aria-pressed': form.subject === s,
+                    onClick: function() { setForm(Object.assign({}, form, { subject: s })); },
+                    style: { minHeight: 44, padding: '6px 12px', borderRadius: 6, background: form.subject === s ? col + '30' : 'rgba(15,23,42,0.5)', color: form.subject === s ? col : '#94a3b8', border: '1px solid ' + (form.subject === s ? col : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, s);
+                }),
+                hh('button', { type: 'button', onClick: addSubject, style: { minHeight: 44, padding: '6px 12px', borderRadius: 6, background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px dashed rgba(148,163,184,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '+ Add subject')
+              )
             ),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Task or topic (optional)'),
-            tkInput(form.task, function(v) { setForm(Object.assign({}, form, { task: v })); }, 'e.g., "Chapter 5 problem set"', { marginBottom: 12 }),
+            hh('label', { htmlFor: 'learning-lab-study-task', style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Task or topic (optional)'),
+            hh('input', { id: 'learning-lab-study-task', type: 'text', value: form.task, onChange: function(e) { setForm(Object.assign({}, form, { task: e.target.value })); }, placeholder: 'e.g., "Chapter 5 problem set"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 12, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, outline: 'none', boxSizing: 'border-box' } }),
             hh('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer' } },
               hh('input', { type: 'checkbox', checked: form.recurring, onChange: function(e) { setForm(Object.assign({}, form, { recurring: e.target.checked })); } }),
               'Repeat weekly'
@@ -5948,16 +5963,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   var col = subColor(firstHere.subject);
                   var cellHeight = Math.max(28, (firstHere.duration / 60) * 28);
                   return hh('div', { key: 'c-' + di + '-' + h, style: { position: 'relative', minHeight: 28 } },
-                    hh('div', {
+                    hh('button', {
+                      type: 'button',
+                      'aria-label': 'Remove ' + firstHere.subject + ' study block on ' + DAYS[di] + ' at ' + fmtHour(firstHere.hour),
                       title: firstHere.subject + (firstHere.task ? ' — ' + firstHere.task : ''),
                       style: {
                         position: 'absolute', top: 0, left: 0, right: 0,
                         height: cellHeight - 2 + 'px',
                         background: col + '30', border: '1px solid ' + col, borderLeft: '3px solid ' + col,
                         borderRadius: 4, padding: 4, overflow: 'hidden',
-                        fontSize: 9, color: col, fontWeight: 700, cursor: 'pointer'
+                        fontSize: 9, color: col, fontWeight: 700, cursor: 'pointer', minWidth: 24, minHeight: 24, textAlign: 'left'
                       },
-                      onClick: function() { if (confirm('Remove this block?')) removeBlock(firstHere.id); }
+                      onClick: async function() { if (await askLearningLabConfirmation('This removes the ' + firstHere.subject + ' study block on ' + DAYS[di] + ' at ' + fmtHour(firstHere.hour) + '.', { title: 'Remove this study block?', confirmText: 'Remove block' })) removeBlock(firstHere.id); }
                     },
                       hh('div', { style: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, firstHere.subject),
                       cellHeight > 40 && firstHere.task ? hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 500, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, firstHere.task) : null
