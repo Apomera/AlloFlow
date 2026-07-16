@@ -6951,6 +6951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
       setData({ entries: [entry].concat(data.entries || []) });
       setForm({ intrinsic: 5, extraneous: 5, germane: 5, triggers: [], notes: '' });
+      llAnnounce('Cognitive load check-in saved.');
     }
     function remove(id) { setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) }); }
 
@@ -6993,14 +6994,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'cl-' + s.id, style: { marginBottom: 12 } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                 hh('div', null,
-                  hh('strong', { style: { fontSize: 11, color: s.color, marginRight: 6 } }, s.label),
-                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, s.help)
+                  hh('label', { htmlFor: 'learning-lab-load-' + s.id, style: { fontSize: 11, color: s.color, marginRight: 6, fontWeight: 800 } }, s.label),
+                  hh('span', { id: 'learning-lab-load-help-' + s.id, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, s.help)
                 ),
                 hh('strong', { style: { fontSize: 14, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, form[s.id] + '/10')
               ),
-              hh('input', { type: 'range', min: 0, max: 10, step: 1, value: form[s.id],
+              hh('input', { id: 'learning-lab-load-' + s.id, type: 'range', min: 0, max: 10, step: 1, value: form[s.id], 'aria-describedby': 'learning-lab-load-help-' + s.id, 'aria-valuetext': form[s.id] + ' out of 10',
                 onChange: function(e) { setForm(Object.assign({}, form, (function() { var o = {}; o[s.id] = parseInt(e.target.value, 10); return o; })())); },
-                style: { width: '100%', accentColor: s.color }
+                style: { width: '100%', minHeight: 44, accentColor: s.color }
               })
             );
           }),
@@ -7014,33 +7015,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           ),
 
           // Triggers
-          hh('div', { style: { marginBottom: 12 } },
-            hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, '⚠️ Overwhelm triggers (tap all that apply)'),
+          hh('fieldset', { style: { border: 0, padding: 0, margin: '0 0 12px' } },
+            hh('legend', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, '⚠️ Overwhelm triggers (select all that apply)'),
             hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
               TRIGGERS.map(function(t) {
                 var on = form.triggers.indexOf(t.id) >= 0;
-                return hh('button', { key: 't-' + t.id,
+                return hh('button', { key: 't-' + t.id, type: 'button', 'aria-pressed': on,
                   onClick: function() { toggleTrigger(t.id); },
-                  style: { padding: '6px 10px', borderRadius: 6, background: on ? 'rgba(251,191,36,0.20)' : 'rgba(15,23,42,0.5)', color: on ? '#fbbf24' : '#94a3b8', border: '1px solid ' + (on ? '#fbbf24' : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                  style: { minHeight: 44, padding: '6px 10px', borderRadius: 6, background: on ? 'rgba(251,191,36,0.20)' : 'rgba(15,23,42,0.5)', color: on ? '#fbbf24' : '#94a3b8', border: '1px solid ' + (on ? '#fbbf24' : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
                 }, t.icon + ' ' + t.label);
               })
             )
           ),
 
-          tkTextarea(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'Notes (optional) — what happened today, what surprised you, what to remember', 2, { marginBottom: 10 }),
-          tkBtn('💾 Save check-in', save, 'primary')
+          hh('label', { htmlFor: 'learning-lab-load-notes', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 4 } }, 'Notes (optional)'),
+          hh('textarea', { id: 'learning-lab-load-notes', value: form.notes, rows: 2, onChange: function(e) { setForm(Object.assign({}, form, { notes: e.target.value })); }, placeholder: 'What happened today, what surprised you, or what should you remember?', style: { width: '100%', minHeight: 72, padding: '10px 12px', marginBottom: 10, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' } }),
+          tkBtn('💾 Save check-in', save, 'primary', { minHeight: 44 })
         )
       ),
 
       // 7-day strip
       hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
         hh('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📊 Last 7 days'),
-        hh('div', { style: { display: 'flex', gap: 4, alignItems: 'flex-end' } },
+        hh('div', { role: 'img', 'aria-label': 'Last 7 days cognitive load: ' + last7.map(function(d) { var value = d.entry ? (d.entry.intrinsic + d.entry.extraneous + d.entry.germane) : 0; return d.date + ': ' + (value ? value + ' out of 30' : 'no check-in'); }).join('; '), style: { display: 'flex', gap: 4, alignItems: 'flex-end' } },
           last7.map(function(d) {
             var total = d.entry ? (d.entry.intrinsic + d.entry.extraneous + d.entry.germane) : 0;
             var pct = total > 0 ? (total / 30) * 100 : 0;
             var col = total >= 24 ? '#ef4444' : total >= 18 ? '#fbbf24' : total > 0 ? '#10b981' : 'rgba(100,116,139,0.20)';
-            return hh('div', { key: 'd-' + d.date, style: { flex: 1, textAlign: 'center' } },
+            return hh('div', { key: 'd-' + d.date, 'aria-hidden': 'true', style: { flex: 1, textAlign: 'center' } },
               hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, d.label),
               hh('div', { style: { height: 60, background: 'rgba(15,23,42,0.5)', borderRadius: 4, position: 'relative', overflow: 'hidden' } },
                 hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
@@ -7053,7 +7055,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       // Recent history
       entries.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 History'),
+        hh('h3', { style: { margin: '0 0 8px', fontSize: 12, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em' } }, '📚 History'),
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
           entries.slice(0, 10).map(function(e) {
             var total = e.intrinsic + e.extraneous + e.germane;
@@ -7061,8 +7063,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                 hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + relDate(e.date)),
                 hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, e.intrinsic + '/' + e.extraneous + '/' + e.germane),
-                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('span', { 'aria-label': 'Intrinsic ' + e.intrinsic + ', extraneous ' + e.extraneous + ', germane ' + e.germane, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, e.intrinsic + '/' + e.extraneous + '/' + e.germane),
+                  hh('button', { type: 'button', 'aria-label': 'Delete cognitive load check-in from ' + e.date, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the cognitive load check-in from ' + e.date + '.', { title: 'Delete this check-in?', confirmText: 'Delete check-in' })) remove(e.id); }, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
               (e.triggers || []).length > 0 ? hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, '⚠ ' + e.triggers.map(function(tid) { return (TRIGGERS.filter(function(t) { return t.id === tid; })[0] || {}).label; }).filter(Boolean).join(' · ')) : null,
