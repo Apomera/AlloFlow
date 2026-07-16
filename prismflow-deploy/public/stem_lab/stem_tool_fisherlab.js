@@ -685,6 +685,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return prior.concat([note]).slice(-4);
   }
 
+  function getCoreTripLedger(retainedBySpecies, speciesList, focusSpeciesId) {
+    var retained = retainedBySpecies && typeof retainedBySpecies === 'object' ? retainedBySpecies : {};
+    var species = Array.isArray(speciesList) ? speciesList : [];
+    return species.filter(function(item) {
+      return item && (item.id === focusSpeciesId || Number(retained[item.id]) > 0);
+    }).sort(function(a, b) {
+      if (a.id === focusSpeciesId) return -1;
+      if (b.id === focusSpeciesId) return 1;
+      return String(a.name || a.id).localeCompare(String(b.name || b.id));
+    }).slice(0, 3).map(function(item) {
+      var retainedCount = isFinite(Number(retained[item.id])) ? Math.max(0, Math.floor(Number(retained[item.id]))) : 0;
+      var bagLimit = typeof item.dailyBag === 'number' && isFinite(item.dailyBag) && item.dailyBag > 0 ? Math.floor(item.dailyBag) : null;
+      var remaining = bagLimit === null ? null : Math.max(0, bagLimit - retainedCount);
+      var limitReached = bagLimit !== null && remaining === 0;
+      var statusLabel = bagLimit === null ? retainedCount + ' retained; no numeric trip limit scored' : retainedCount + ' of ' + bagLimit + ' retained; ' + remaining + ' remaining' + (limitReached ? '; limit reached' : '');
+      return { id: item.id, name: item.name || item.id, retainedCount: retainedCount, bagLimit: bagLimit, remaining: remaining, limitReached: limitReached, statusLabel: statusLabel };
+    });
+  }
+
   function scoreCoreDecision(score, streak, correct, multiplier) {
     var nextStreak = correct ? streak + 1 : 0;
     var baseReward = 25 + Math.min(20, Math.max(0, nextStreak - 1) * 5);
@@ -734,6 +753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreShellfishHandlingGuidance: getCoreShellfishHandlingGuidance,
     getCoreFishHandlingGuidance: getCoreFishHandlingGuidance,
     appendCoreCatchDecision: appendCoreCatchDecision,
+    getCoreTripLedger: getCoreTripLedger,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
     getCoreObjective: getCoreObjective,
@@ -11028,6 +11048,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var fuelValue = hud.fuel == null ? 100 : Math.max(0, hud.fuel);
       var decisionAccuracy = hud.totalDecisions ? Math.round((hud.correctDecisions || 0) / hud.totalDecisions * 100) : 0;
       var catchDecisionHistory = Array.isArray(hud.catchDecisionHistory) ? hud.catchDecisionHistory : [];
+      var tripLedger = getCoreTripLedger(hud.retainedBySpecies, getSpeciesForRegion(region), mission.targetFishId);
+      var tripLedgerLabel = 'Scenario trip catch ledger. ' + tripLedger.map(function(row) { return row.name + ': ' + row.statusLabel + '.'; }).join(' ');
       var modeProfile = getCoreVoyageMode(voyageMode);
       var voyageRank = getCoreVoyageRank(hud.stewardshipScore || 0, decisionAccuracy, fuelValue);
       var trafficPlotAngle = (hud.trafficRelativeBearing || 0) * Math.PI / 180;
@@ -11260,6 +11282,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('div', null, 'Traps Hauled: ', h('b', { style: { color: '#bae6fd' } }, hud.lobstersHauled || 0)),
                 hud.trafficContactActive ? h('div', { style: { marginTop: 3, color: '#fde68a', fontWeight: 900 } }, hud.trafficRadarOnly ? 'Radar: contact tracking' : 'Traffic: vessel clearing') : null
               ),
+              tripLedger.length ? h('div', { 'aria-label': tripLedgerLabel, style: { marginTop: 7, paddingTop: 6, borderTop: '1px solid rgba(56,189,248,0.2)' } },
+                h('div', { style: { marginBottom: 4, color: '#7dd3fc', fontSize: 9, fontWeight: 900, textTransform: 'uppercase' } }, 'Scenario trip ledger'),
+                tripLedger.map(function(row) {
+                  return h('div', { key: row.id, style: { marginTop: 3, color: row.limitReached ? '#fca5a5' : '#dbeafe', fontSize: 9, lineHeight: 1.3 } },
+                    h('div', { style: { overflowWrap: 'anywhere', fontWeight: 800 } }, row.name),
+                    h('div', null, row.bagLimit === null ? row.retainedCount + ' retained · profile not numeric' : row.retainedCount + '/' + row.bagLimit + ' retained · ' + (row.limitReached ? 'LIMIT REACHED' : row.remaining + ' left')));
+                })
+              ) : null,
               // Throttle level indicator bar
               h('div', { style: { marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 } },
                 h('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', width: 35 } }, 'Throttle:'),

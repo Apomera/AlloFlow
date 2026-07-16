@@ -272,6 +272,25 @@ describe('Fisher Lab catch evidence', () => {
     expect(getCoreFishHandlingGuidance('retain', false).id).toBe('release');
   });
 
+  it('builds a compact scenario trip ledger around the mission target', () => {
+    const { getCoreTripLedger } = window.__FisherLabCore;
+    const species = [
+      { id: 'cod', name: 'Atlantic Cod', dailyBag: 1 },
+      { id: 'haddock', name: 'Haddock', dailyBag: 15 },
+      { id: 'pollock', name: 'Pollock', dailyBag: null }
+    ];
+
+    expect(getCoreTripLedger({}, species, 'cod')).toEqual([
+      expect.objectContaining({ id: 'cod', retainedCount: 0, bagLimit: 1, remaining: 1, limitReached: false })
+    ]);
+    expect(getCoreTripLedger({ cod: 2, haddock: 3, pollock: 1 }, species, 'cod')).toEqual([
+      expect.objectContaining({ id: 'cod', retainedCount: 2, remaining: 0, limitReached: true }),
+      expect.objectContaining({ id: 'haddock', retainedCount: 3, remaining: 12, limitReached: false }),
+      expect.objectContaining({ id: 'pollock', retainedCount: 1, bagLimit: null, remaining: null })
+    ]);
+    expect(getCoreTripLedger({ cod: -4 }, species, 'cod')[0].retainedCount).toBe(0);
+  });
+
   it('normalizes and caps catch field notes for the voyage debrief', () => {
     const { appendCoreCatchDecision } = window.__FisherLabCore;
     let history = [];
@@ -400,6 +419,10 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('retainedBySpecies: {}');
     expect(source).toContain('boatState.retainedBySpecies = {}');
     expect(source).toContain('retainedBySpecies: Object.assign({}, boatState.retainedBySpecies)');
+    expect(source).toContain('getCoreTripLedger');
+    expect(source).toContain('Scenario trip ledger');
+    expect(source).toContain("'aria-label': tripLedgerLabel");
+    expect(source).toContain("row.limitReached ? '#fca5a5' : '#dbeafe'");
     expect(source).toContain("name: 'fl-fish-evidence'");
     expect(source).toContain("disabled: !fishEvidence");
     expect(source).toContain('Deckhand review');
