@@ -123,6 +123,8 @@ function AdventureView(props) {
   var handleSetShowStorybookExportModalToTrue = props.handleSetShowStorybookExportModalToTrue;
   var handleShopPurchase = props.handleShopPurchase;
   var handleSpeak = props.handleSpeak;
+  var prewarmAdventureAudio = props.prewarmAdventureAudio;   // scene TTS pre-warm (2026-07-16)
+  var handleAdventureHint = props.handleAdventureHint;       // free-response nudge, costs half the turn's XP gain
   var handleStartAdventure = props.handleStartAdventure;
   var handleStartOptionEdit = props.handleStartOptionEdit;
   var handleStartSequel = props.handleStartSequel;
@@ -298,6 +300,17 @@ function AdventureView(props) {
                                         </span>
                                     )}
                                 </div>
+                                {/* Live concepts chip (2026-07-16): stats.conceptsFound was accumulated every
+                                    turn but only shown on the game-over Mission Report — now visible DURING
+                                    play so students/teachers see learning progress as it happens. */}
+                                {(adventureState.stats?.conceptsFound || []).length > 0 && (
+                                    <div className="bg-cyan-900/60 px-3 py-1 rounded-full text-xs font-bold border border-cyan-600 flex items-center gap-1.5 text-cyan-200 shadow-sm shrink-0"
+                                        title={(t('adventure.mission_report.concepts_secured') || 'Concepts secured') + ': ' + adventureState.stats.conceptsFound.join(', ')}
+                                        aria-label={(t('adventure.mission_report.concepts_secured') || 'Concepts secured') + ': ' + adventureState.stats.conceptsFound.join(', ')}
+                                    >
+                                        <span aria-hidden="true">🔑</span> {adventureState.stats.conceptsFound.length}
+                                    </div>
+                                )}
                                 <InventoryGrid
                                     inventory={adventureState.inventory}
                                     onSelect={handleSelectInventoryItem}
@@ -797,7 +810,7 @@ function AdventureView(props) {
                                             )}
                                         </div>
                                         <div className="prose prose-sm text-slate-800 font-medium font-serif leading-relaxed max-w-none">
-                                            <div className="space-y-4">
+                                            <div className="space-y-4" onPointerEnter={() => { if (prewarmAdventureAudio && adventureState.currentScene) prewarmAdventureAudio(adventureState.currentScene.text, adventureState.currentScene.voices); }}>
                                                 {(() => {
                                                     const paragraphs = adventureState.currentScene.text.split(/\n{2,}/);
                                                     let sentenceCounter = 0;
@@ -1101,6 +1114,21 @@ function AdventureView(props) {
                                                     adventureState.currentScene && (
                                                         adventureFreeResponseEnabled ? (
                                                             <div className="flex flex-col gap-3">
+                                                                {/* Free-response nudge (2026-07-16): help is available, at a cost —
+                                                                    the turn's XP gain is halved. One hint per scene. */}
+                                                                {adventureState.currentHint && adventureState.currentHint.turn === adventureState.turnCount && (
+                                                                    <div role="status" className="p-3 rounded-xl bg-amber-500/15 border border-amber-400/40 text-amber-100 text-sm backdrop-blur-sm">
+                                                                        <span className="font-bold mr-1" aria-hidden="true">💡</span>
+                                                                        {adventureState.currentHint.loading ? (t('adventure.hint_loading') || 'Thinking of a nudge…') : adventureState.currentHint.text}
+                                                                        {!adventureState.currentHint.loading && adventureState.currentHint.starter && (
+                                                                            <button type="button"
+                                                                                onClick={() => setAdventureTextInput(adventureState.currentHint.starter + ' ')}
+                                                                                className="ml-2 px-2 py-0.5 rounded-lg bg-amber-400/20 border border-amber-300/40 text-amber-50 text-xs font-bold hover:bg-amber-400/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300"
+                                                                                title={t('adventure.hint_use_starter') || 'Use this sentence starter'}
+                                                                            >⤷ “{adventureState.currentHint.starter}”</button>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                                 <textarea
                                                                     aria-label={t('adventure.aria_free_response') || 'Type your adventure action'}
                                                                     data-help-key="adventure_input_field" value={adventureTextInput}
@@ -1122,6 +1150,16 @@ function AdventureView(props) {
                                                                 >
                                                                     <Send size={16} aria-hidden="true" /> {t('adventure.send_action')}
                                                                 </button>
+                                                                {handleAdventureHint && (
+                                                                    <button type="button"
+                                                                        onClick={() => handleAdventureHint()}
+                                                                        disabled={adventureState.isLoading || adventureState.hintUsedTurn === adventureState.turnCount}
+                                                                        className="min-h-11 w-full bg-transparent border border-amber-400/40 text-amber-200 p-2 rounded-xl text-xs font-bold hover:bg-amber-400/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                                                                        title={t('adventure.hint_button_title') || 'Ask for a nudge — this turn will earn half XP'}
+                                                                    >
+                                                                        💡 {adventureState.hintUsedTurn === adventureState.turnCount ? (t('adventure.hint_used') || 'Hint used this scene') : (t('adventure.hint_button') || 'Need a nudge? (half XP this turn)')}
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         ) : (
                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1156,20 +1194,27 @@ function AdventureView(props) {
                                                                                         <span className="text-left">{typeof opt === 'object' && opt?.action ? opt.action : opt}</span>
                                                                                     </button>
                                                                                     <div className="flex items-center gap-2">
-                                                                                        {typeof opt === 'object' && opt?.audio && (
-                                                                                            <button type="button"
-                                                                                                aria-label={(t('common.listen') || 'Listen') + ': ' + (typeof opt === 'object' && opt?.action ? opt.action : opt)}
-                                                                                                onClick={(e) => {
-                                                                                                    e.stopPropagation();
+                                                                                        {/* Listen (2026-07-16): previously rendered ONLY when opt.audio existed —
+                                                                                            but nothing ever generates opt.audio, so the button was effectively dead.
+                                                                                            Now always available: plays the recorded clip when present, otherwise
+                                                                                            synthesizes the option text on demand (UDL: non-readers can hear choices). */}
+                                                                                        <button type="button"
+                                                                                            aria-label={(t('common.listen') || 'Listen') + ': ' + (typeof opt === 'object' && opt?.action ? opt.action : opt)}
+                                                                                            onClick={(e) => {
+                                                                                                e.stopPropagation();
+                                                                                                if (typeof opt === 'object' && opt?.audio) {
                                                                                                     const audio = new Audio(opt.audio);
                                                                                                     audio.play();
-                                                                                                }}
-                                                                                                className="min-w-11 min-h-11 rounded-full bg-white/10 hover:bg-white/30 text-white hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                                                                                                title={t('common.listen')}
-                                                                                            >
-                                                                                                <Volume2 size={16} aria-hidden="true" />
-                                                                                            </button>
-                                                                                        )}
+                                                                                                } else if (handleSpeak) {
+                                                                                                    const optText = typeof opt === 'object' && opt?.action ? opt.action : String(opt);
+                                                                                                    handleSpeak(optText, 'adventure-option-' + idx);
+                                                                                                }
+                                                                                            }}
+                                                                                            className="min-w-11 min-h-11 rounded-full bg-white/10 hover:bg-white/30 text-white hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                                                                                            title={t('common.listen')}
+                                                                                        >
+                                                                                            <Volume2 size={16} aria-hidden="true" />
+                                                                                        </button>
                                                                                         {isDemocracy && (
                                                                                             <span aria-live="polite" aria-atomic="true" className={`text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${voteCount > 0 ? 'bg-indigo-500 text-white shadow-sm' : 'opacity-40'}`}>
                                                                                                 {t('adventure.vote_status', { count: voteCount, percent: percent })}
@@ -1215,7 +1260,7 @@ function AdventureView(props) {
                                                 })()}
                                                 <div role="region" aria-label={t('adventure.current_scene')} className="text-lg md:text-xl text-slate-100 font-medium leading-relaxed font-serif text-shadow-sm min-h-[80px]">
                                                     {adventureState.currentScene && (
-                                                            <div className="space-y-4">
+                                                            <div className="space-y-4" onPointerEnter={() => { if (prewarmAdventureAudio && adventureState.currentScene) prewarmAdventureAudio(adventureState.currentScene.text, adventureState.currentScene.voices); }}>
                                                                 {(() => {
                                                                     const paragraphs = adventureState.currentScene.text.split(/\n{2,}/);
                                                                     let sentenceCounter = 0;
@@ -1428,6 +1473,32 @@ function AdventureView(props) {
                                             >
                                                 <Send size={18} aria-hidden="true" />
                                                 <span className="text-[11px]">{t('adventure.act_button')}</span>
+                                            </button>
+                                        </div>
+                                    )}
+                                    {/* Free-response nudge (2026-07-16): costs half the turn's XP gain; one per scene. */}
+                                    {handleAdventureHint && adventureFreeResponseEnabled && adventureState.currentScene && !adventureState.isGameOver && (
+                                        <div className="w-full mt-2 flex flex-col gap-2">
+                                            {adventureState.currentHint && adventureState.currentHint.turn === adventureState.turnCount && (
+                                                <div role="status" className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-sm">
+                                                    <span className="font-bold mr-1" aria-hidden="true">💡</span>
+                                                    {adventureState.currentHint.loading ? (t('adventure.hint_loading') || 'Thinking of a nudge…') : adventureState.currentHint.text}
+                                                    {!adventureState.currentHint.loading && adventureState.currentHint.starter && (
+                                                        <button type="button"
+                                                            onClick={() => setAdventureTextInput(adventureState.currentHint.starter + ' ')}
+                                                            className="ml-2 px-2 py-0.5 rounded-lg bg-amber-100 border border-amber-400 text-amber-900 text-xs font-bold hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700"
+                                                            title={t('adventure.hint_use_starter') || 'Use this sentence starter'}
+                                                        >⤷ “{adventureState.currentHint.starter}”</button>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <button type="button"
+                                                onClick={() => handleAdventureHint()}
+                                                disabled={adventureState.isLoading || adventureState.hintUsedTurn === adventureState.turnCount}
+                                                className="min-h-11 self-start px-3 py-2 rounded-xl border border-amber-400 text-amber-700 text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+                                                title={t('adventure.hint_button_title') || 'Ask for a nudge — this turn will earn half XP'}
+                                            >
+                                                💡 {adventureState.hintUsedTurn === adventureState.turnCount ? (t('adventure.hint_used') || 'Hint used this scene') : (t('adventure.hint_button') || 'Need a nudge? (half XP this turn)')}
                                             </button>
                                         </div>
                                     )}

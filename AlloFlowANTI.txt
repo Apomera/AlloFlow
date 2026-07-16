@@ -26384,6 +26384,30 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setShowHintsModal(false);
       addToast(t('toasts.extensions_saved'), "success");
   };
+  // ── Adventure scene TTS pre-warm (2026-07-16) ──────────────────────────
+  // Synthesizes the first 1-2 scene sentences into the tts urlCache during dead
+  // time so playback starts INSTANTLY instead of waiting a full TTS round-trip.
+  // Quota-safe: fires only when auto-read is ON (guaranteed playback) or on
+  // hover-intent from the view (student is about to click the text). De-duped
+  // per scene; voice resolution shared with playSequence via PhaseKHelpers.
+  const _advPrewarmedRef = useRef('');
+  const prewarmAdventureAudio = (text, voices) => {
+      try {
+          const _pk = window.AlloModules && window.AlloModules.PhaseKHelpers;
+          if (!_pk || typeof _pk.prewarmSequenceAudio !== 'function') return;
+          const key = String(text || '').slice(0, 80);
+          if (!key || _advPrewarmedRef.current === key) return;
+          _advPrewarmedRef.current = key;
+          _pk.prewarmSequenceAudio(text, { count: 2, voiceMap: voices || {}, deps: { callTTS, splitTextToSentences, selectedVoice } });
+      } catch (_) { /* pre-warm is best-effort; playback synthesizes on demand */ }
+  };
+  // Warm the PENDING scene while the dice modal / image generation runs (the
+  // student is watching the roll — by commit time the audio is usually ready).
+  useEffect(() => {
+      if (!adventureAutoRead || !pendingAdventureUpdate) return;
+      const _pText = (pendingAdventureUpdate.scene && pendingAdventureUpdate.scene.text) || pendingAdventureUpdate.text;
+      if (_pText) prewarmAdventureAudio(_pText, pendingAdventureUpdate.voices || (pendingAdventureUpdate.scene && pendingAdventureUpdate.scene.voices));
+  }, [pendingAdventureUpdate, adventureAutoRead]);
   useEffect(() => {
       if (!adventureAutoRead || adventureState.isLoading || adventureState.turnCount <= lastReadTurnRef.current) return;
       let textToSpeak = "";
@@ -26391,6 +26415,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           textToSpeak += adventureState.currentScene.text;
       }
       if (textToSpeak) {
+          // Pre-warm immediately (covers scenes that skipped the pending/dice path),
+          // then start the sequenced read on the existing 500ms delay.
+          prewarmAdventureAudio(textToSpeak, adventureState.currentScene && adventureState.currentScene.voices);
           const _readTimer = setTimeout(() => {
               handleSpeak(textToSpeak, 'adventure-active');
           }, 500);
@@ -26698,6 +26725,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           - Maintain the user's Level (${previousLevel}) context if applicable.
       `;
       executeStartAdventure(sequelContext);
+  };
+  // Free-response nudge (2026-07-16): delegates to AdventureHandlers. Costs half
+  // the turn's XP gain (applied in handleDiceRollComplete via hintUsedTurn).
+  const handleAdventureHint = async () => {
+    const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
+    if (_m && typeof _m.handleAdventureHint === "function") return _m.handleAdventureHint({
+        adventureState, setAdventureState, callGemini, addToast, t, warnLog, resilientJsonParse, gradeLevel
+    });
   };
   const executeStartAdventure = async (contextOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
@@ -36256,6 +36291,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 )}
                 {activeView === 'adventure' && window.AlloModules && window.AlloModules.AdventureView && React.createElement(window.AlloModules.AdventureView, {
                     adventureState, t, globalPoints, soundEnabled, activeView,
+                    prewarmAdventureAudio, handleAdventureHint,
                     showLedger, isProcessing, adventureImageSize, adventureAutoRead,
                     isDictationMode, adventureTextInput, adventureInputMode,
                     adventureArtStyle, adventureCustomArtStyle, useLowQualityVisuals,

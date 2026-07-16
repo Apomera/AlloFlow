@@ -204,6 +204,8 @@ function AdventureView(props) {
   var handleSetShowStorybookExportModalToTrue = props.handleSetShowStorybookExportModalToTrue;
   var handleShopPurchase = props.handleShopPurchase;
   var handleSpeak = props.handleSpeak;
+  var prewarmAdventureAudio = props.prewarmAdventureAudio; // scene TTS pre-warm (2026-07-16)
+  var handleAdventureHint = props.handleAdventureHint; // free-response nudge, costs half the turn's XP gain
   var handleStartAdventure = props.handleStartAdventure;
   var handleStartOptionEdit = props.handleStartOptionEdit;
   var handleStartSequel = props.handleStartSequel;
@@ -417,7 +419,13 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }, "💰"), " ", adventureState.gold, adventureState.activeGoldBuffTurns > 0 && /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] ml-1 bg-yellow-400 text-black px-1 rounded-full"
-  }, adventureState.activeGoldBuffTurns)), /*#__PURE__*/React.createElement(InventoryGrid, {
+  }, adventureState.activeGoldBuffTurns)), (adventureState.stats?.conceptsFound || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "bg-cyan-900/60 px-3 py-1 rounded-full text-xs font-bold border border-cyan-600 flex items-center gap-1.5 text-cyan-200 shadow-sm shrink-0",
+    title: (t('adventure.mission_report.concepts_secured') || 'Concepts secured') + ': ' + adventureState.stats.conceptsFound.join(', '),
+    "aria-label": (t('adventure.mission_report.concepts_secured') || 'Concepts secured') + ': ' + adventureState.stats.conceptsFound.join(', ')
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🔑"), " ", adventureState.stats.conceptsFound.length), /*#__PURE__*/React.createElement(InventoryGrid, {
     inventory: adventureState.inventory,
     onSelect: handleSelectInventoryItem
   }), adventureInputMode === 'system' && enableFactionResources && (adventureState.systemResources || []).length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -996,7 +1004,10 @@ function AdventureView(props) {
   }, t('adventure.no_image'))))), /*#__PURE__*/React.createElement("div", {
     className: "prose prose-sm text-slate-800 font-medium font-serif leading-relaxed max-w-none"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "space-y-4"
+    className: "space-y-4",
+    onPointerEnter: () => {
+      if (prewarmAdventureAudio && adventureState.currentScene) prewarmAdventureAudio(adventureState.currentScene.text, adventureState.currentScene.voices);
+    }
   }, (() => {
     const paragraphs = adventureState.currentScene.text.split(/\n{2,}/);
     let sentenceCounter = 0;
@@ -1339,7 +1350,18 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), " ", t('adventure.retry_action'))) : adventureState.currentScene && (adventureFreeResponseEnabled ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
-  }, /*#__PURE__*/React.createElement("textarea", {
+  }, adventureState.currentHint && adventureState.currentHint.turn === adventureState.turnCount && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "p-3 rounded-xl bg-amber-500/15 border border-amber-400/40 text-amber-100 text-sm backdrop-blur-sm"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold mr-1",
+    "aria-hidden": "true"
+  }, "💡"), adventureState.currentHint.loading ? t('adventure.hint_loading') || 'Thinking of a nudge…' : adventureState.currentHint.text, !adventureState.currentHint.loading && adventureState.currentHint.starter && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setAdventureTextInput(adventureState.currentHint.starter + ' '),
+    className: "ml-2 px-2 py-0.5 rounded-lg bg-amber-400/20 border border-amber-300/40 text-amber-50 text-xs font-bold hover:bg-amber-400/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300",
+    title: t('adventure.hint_use_starter') || 'Use this sentence starter'
+  }, "⤷ “", adventureState.currentHint.starter, "”")), /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('adventure.aria_free_response') || 'Type your adventure action',
     "data-help-key": "adventure_input_field",
     value: adventureTextInput,
@@ -1362,7 +1384,13 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement(Send, {
     size: 16,
     "aria-hidden": "true"
-  }), " ", t('adventure.send_action'))) : /*#__PURE__*/React.createElement("div", {
+  }), " ", t('adventure.send_action')), handleAdventureHint && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => handleAdventureHint(),
+    disabled: adventureState.isLoading || adventureState.hintUsedTurn === adventureState.turnCount,
+    className: "min-h-11 w-full bg-transparent border border-amber-400/40 text-amber-200 p-2 rounded-xl text-xs font-bold hover:bg-amber-400/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+    title: t('adventure.hint_button_title') || 'Ask for a nudge — this turn will earn half XP'
+  }, "💡 ", adventureState.hintUsedTurn === adventureState.turnCount ? t('adventure.hint_used') || 'Hint used this scene' : t('adventure.hint_button') || 'Need a nudge? (half XP this turn)')) : /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-2 gap-3"
   }, (() => {
     const mainTextParagraphs = adventureState.currentScene.text.split(/\n{2,}/);
@@ -1399,13 +1427,18 @@ function AdventureView(props) {
         className: "text-left"
       }, typeof opt === 'object' && opt?.action ? opt.action : opt)), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-2"
-      }, typeof opt === 'object' && opt?.audio && /*#__PURE__*/React.createElement("button", {
+      }, /*#__PURE__*/React.createElement("button", {
         type: "button",
         "aria-label": (t('common.listen') || 'Listen') + ': ' + (typeof opt === 'object' && opt?.action ? opt.action : opt),
         onClick: e => {
           e.stopPropagation();
-          const audio = new Audio(opt.audio);
-          audio.play();
+          if (typeof opt === 'object' && opt?.audio) {
+            const audio = new Audio(opt.audio);
+            audio.play();
+          } else if (handleSpeak) {
+            const optText = typeof opt === 'object' && opt?.action ? opt.action : String(opt);
+            handleSpeak(optText, 'adventure-option-' + idx);
+          }
         },
         className: "min-w-11 min-h-11 rounded-full bg-white/10 hover:bg-white/30 text-white hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
         title: t('common.listen')
@@ -1459,7 +1492,10 @@ function AdventureView(props) {
     "aria-label": t('adventure.current_scene'),
     className: "text-lg md:text-xl text-slate-100 font-medium leading-relaxed font-serif text-shadow-sm min-h-[80px]"
   }, adventureState.currentScene && /*#__PURE__*/React.createElement("div", {
-    className: "space-y-4"
+    className: "space-y-4",
+    onPointerEnter: () => {
+      if (prewarmAdventureAudio && adventureState.currentScene) prewarmAdventureAudio(adventureState.currentScene.text, adventureState.currentScene.voices);
+    }
   }, (() => {
     const paragraphs = adventureState.currentScene.text.split(/\n{2,}/);
     let sentenceCounter = 0;
@@ -1664,7 +1700,26 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px]"
-  }, t('adventure.act_button')))), adventureState.canStartSequel && /*#__PURE__*/React.createElement("div", {
+  }, t('adventure.act_button')))), handleAdventureHint && adventureFreeResponseEnabled && adventureState.currentScene && !adventureState.isGameOver && /*#__PURE__*/React.createElement("div", {
+    className: "w-full mt-2 flex flex-col gap-2"
+  }, adventureState.currentHint && adventureState.currentHint.turn === adventureState.turnCount && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-sm"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold mr-1",
+    "aria-hidden": "true"
+  }, "💡"), adventureState.currentHint.loading ? t('adventure.hint_loading') || 'Thinking of a nudge…' : adventureState.currentHint.text, !adventureState.currentHint.loading && adventureState.currentHint.starter && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setAdventureTextInput(adventureState.currentHint.starter + ' '),
+    className: "ml-2 px-2 py-0.5 rounded-lg bg-amber-100 border border-amber-400 text-amber-900 text-xs font-bold hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700",
+    title: t('adventure.hint_use_starter') || 'Use this sentence starter'
+  }, "⤷ “", adventureState.currentHint.starter, "”")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => handleAdventureHint(),
+    disabled: adventureState.isLoading || adventureState.hintUsedTurn === adventureState.turnCount,
+    className: "min-h-11 self-start px-3 py-2 rounded-xl border border-amber-400 text-amber-700 text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2",
+    title: t('adventure.hint_button_title') || 'Ask for a nudge — this turn will earn half XP'
+  }, "💡 ", adventureState.hintUsedTurn === adventureState.turnCount ? t('adventure.hint_used') || 'Hint used this scene' : t('adventure.hint_button') || 'Need a nudge? (half XP this turn)')), adventureState.canStartSequel && /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-6 pt-6 border-t border-slate-200 animate-in fade-in slide-in-from-bottom-4 motion-reduce:animate-none flex flex-col items-center"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-3"

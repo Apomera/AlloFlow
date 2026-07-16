@@ -98,6 +98,92 @@ const captureReadAloudClip = (contentId, mode, sentence, url) => {
     } catch (_) {}
 };
 
+// ── Adventure sentence-voice resolution (extracted from playSequence 2026-07-16) ──
+// Pure: given the sentence list, an index, and the speaker chain state, returns the
+// voice that playSequence WILL use for that sentence plus the chained nextSpeaker.
+// Shared by playSequence AND prewarmSequenceAudio so a pre-warmed callTTS call hits
+// the exact same tts urlCache key as playback (text+voice) — never a near-miss.
+const resolveAdventureSentenceVoice = (sentences, index, activeSpeaker, voiceMap, selectedVoice) => {
+    let currentVoice = activeSpeaker || selectedVoice;
+    let nextSpeaker = activeSpeaker;
+    const text = sentences[index].trim();
+    const hasOpen = /["“]/.test(text);
+    const hasClose = /["”]/.test(text);
+    const speakerTagMatch = text.match(/^(\*\*|__)?([A-Za-z0-9\s]+)(\*\*|__)?:\s*["“]/);
+    let explicitVoiceFound = false;
+    if (speakerTagMatch) {
+        const detectedName = speakerTagMatch[2].trim();
+        const voiceKey = Object.keys(voiceMap).find(k => k.toLowerCase() === detectedName.toLowerCase());
+        if (voiceKey) {
+            currentVoice = voiceMap[voiceKey];
+            nextSpeaker = hasClose ? null : currentVoice;
+            explicitVoiceFound = true;
+            if (!hasClose) nextSpeaker = currentVoice;
+        }
+    }
+    if (!activeSpeaker && !explicitVoiceFound) {
+        if (hasOpen) {
+            let speakerVoice = null;
+            const prevText = index > 0 ? sentences[index - 1] : "";
+            const combinedContext = prevText + " " + text;
+            const charNames = Object.keys(voiceMap).sort((a, b) => b.length - a.length);
+            for (const name of charNames) {
+                if (combinedContext.toLowerCase().includes(name.toLowerCase())) {
+                    speakerVoice = voiceMap[name];
+                    break;
+                }
+            }
+            if (!speakerVoice) {
+                const distinctVoices = Object.values(voiceMap).filter(v => v !== selectedVoice);
+                if (distinctVoices.length > 0) {
+                    speakerVoice = distinctVoices[0];
+                } else {
+                    speakerVoice = "Aoede";
+                }
+            }
+            currentVoice = speakerVoice;
+            if (!hasClose) {
+                nextSpeaker = speakerVoice;
+            } else {
+                nextSpeaker = null;
+            }
+        }
+    }
+    else if (activeSpeaker && !explicitVoiceFound) {
+        currentVoice = activeSpeaker;
+        if (hasClose) {
+            nextSpeaker = null;
+        }
+    }
+    return { currentVoice, nextSpeaker };
+};
+
+// ── Adventure scene TTS pre-warm (2026-07-16) ─────────────────────────────
+// Fire-and-forget: synthesize the first `count` narrative sentences during dead
+// time (the dice modal, image generation, the 500ms auto-read delay) so playback
+// starts instantly. Works because callTTS caches non-Kokoro URLs by (text, voice)
+// in urlCache and dedupes racing requests via callTTSInFlight — a later playback
+// call with the same args is an instant cache hit. Kokoro voices are skipped
+// (local synth; urlCache is intentionally bypassed for them, so warming wastes work).
+const _kokoroPrewarmSkip = /^(af_|am_|bf_|bm_)/i; // mirrors tts_source _kokoroVoicePrefix
+const prewarmSequenceAudio = (text, opts) => {
+    try {
+        const { count = 2, voiceMap = {}, deps = {} } = opts || {};
+        const { callTTS, splitTextToSentences, selectedVoice } = deps;
+        if (typeof callTTS !== 'function' || typeof splitTextToSentences !== 'function' || !text) return 0;
+        const sentences = splitTextToSentences(String(text)).filter(s => s && s.trim());
+        let activeSpeaker = null;
+        let warmed = 0;
+        for (let i = 0; i < Math.min(count, sentences.length); i++) {
+            const r = resolveAdventureSentenceVoice(sentences, i, activeSpeaker, voiceMap, selectedVoice);
+            activeSpeaker = r.nextSpeaker;
+            if (_kokoroPrewarmSkip.test(String(r.currentVoice || ''))) continue;
+            try { Promise.resolve(callTTS(sentences[i], r.currentVoice)).catch(() => {}); warmed++; } catch (_) {}
+        }
+        return warmed;
+    } catch (_) { return 0; }
+};
+
 const playSequence = async (index, sentences, sessionId, mode = 'standard', voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0, speakerName = null, deps, contentId = null) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] playSequence fired"); } catch(_) {}
@@ -118,55 +204,11 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
           let currentVoice = activeSpeaker || selectedVoice;
           let nextSpeaker = activeSpeaker;
           if (mode === 'adventure') {
-              const text = sentences[index].trim();
-              const hasOpen = /["“]/.test(text);
-              const hasClose = /["”]/.test(text);
-              const speakerTagMatch = text.match(/^(\*\*|__)?([A-Za-z0-9\s]+)(\*\*|__)?:\s*["“]/);
-              let explicitVoiceFound = false;
-              if (speakerTagMatch) {
-                  const detectedName = speakerTagMatch[2].trim();
-                  const voiceKey = Object.keys(voiceMap).find(k => k.toLowerCase() === detectedName.toLowerCase());
-                  if (voiceKey) {
-                      currentVoice = voiceMap[voiceKey];
-                      nextSpeaker = hasClose ? null : currentVoice;
-                      explicitVoiceFound = true;
-                      if (!hasClose) nextSpeaker = currentVoice;
-                  }
-              }
-              if (!activeSpeaker && !explicitVoiceFound) {
-                  if (hasOpen) {
-                      let speakerVoice = null;
-                      const prevText = index > 0 ? sentences[index - 1] : "";
-                      const combinedContext = prevText + " " + text;
-                      const charNames = Object.keys(voiceMap).sort((a, b) => b.length - a.length);
-                      for (const name of charNames) {
-                          if (combinedContext.toLowerCase().includes(name.toLowerCase())) {
-                              speakerVoice = voiceMap[name];
-                              break;
-                          }
-                      }
-                      if (!speakerVoice) {
-                          const distinctVoices = Object.values(voiceMap).filter(v => v !== selectedVoice);
-                          if (distinctVoices.length > 0) {
-                              speakerVoice = distinctVoices[0];
-                          } else {
-                              speakerVoice = "Aoede";
-                          }
-                      }
-                      currentVoice = speakerVoice;
-                      if (!hasClose) {
-                          nextSpeaker = speakerVoice;
-                      } else {
-                          nextSpeaker = null;
-                      }
-                  }
-              }
-              else if (activeSpeaker && !explicitVoiceFound) {
-                  currentVoice = activeSpeaker;
-                  if (hasClose) {
-                      nextSpeaker = null;
-                  }
-              }
+              // Extracted to resolveAdventureSentenceVoice (2026-07-16) so the adventure
+              // scene pre-warm resolves the IDENTICAL voice (same urlCache key).
+              const _resolved = resolveAdventureSentenceVoice(sentences, index, activeSpeaker, voiceMap, selectedVoice);
+              currentVoice = _resolved.currentVoice;
+              nextSpeaker = _resolved.nextSpeaker;
           } else if (mode === 'script') {
               const text = sentences[index].trim();
               const match = text.match(/^(\*+)?([A-Za-z]+)(\*+)?:\s*/);
@@ -2585,6 +2627,8 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.PhaseKHelpers = {
   playSequence,
   handleSpeak,
+  prewarmSequenceAudio,
+  resolveAdventureSentenceVoice,
   syncProgressToFirestore,
   executeSaveFile,
   formatInlineText,

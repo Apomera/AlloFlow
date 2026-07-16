@@ -18,10 +18,11 @@ describe('Adventure View WCAG focus behavior', () => {
   });
 
   it('keeps every native button explicitly non-submit', () => {
-    // 37 (was 39): the 2 inline per-sentence speaker buttons were removed 2026-07-16
-    // (redundant with click-to-karaoke; the sentence span is now the control).
+    // 41: 39 - 2 inline per-sentence speaker buttons (removed 2026-07-16; the sentence
+    // span is the control) + 2 free-response hint buttons + 2 hint sentence-starter
+    // buttons (the nudge-with-XP-cost feature, same day).
     const buttons = source.match(/<button\b/g);
-    expect(buttons).toHaveLength(37);
+    expect(buttons).toHaveLength(41);
     // The real invariant: every native button declares type="button" (non-submit).
     expect(source.match(/\btype="button"/g)).toHaveLength(buttons.length);
   });

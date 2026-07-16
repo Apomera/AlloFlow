@@ -1264,6 +1264,36 @@ const handleAdventureChoice = async (choice, deps) => {
     }
 };
 
+// ── Free-response nudge (2026-07-16, Aaron) ────────────────────────────────
+// A stuck student can ask for a hint, at a cost: the turn's XP gain is HALVED
+// (applied in handleDiceRollComplete via adventureState.hintUsedTurn — help is
+// available, but unaided mastery earns more). One hint per scene; the hint
+// nudges toward what to consider and offers a sentence-starter, never the answer.
+const handleAdventureHint = async (deps) => {
+  const { adventureState, setAdventureState, callGemini, addToast, t, warnLog, resilientJsonParse, gradeLevel } = deps;
+  const scene = adventureState.currentScene;
+  if (!scene || adventureState.isLoading) return;
+  if (adventureState.hintUsedTurn === adventureState.turnCount) return; // one per scene
+  // Mark used BEFORE the await so a double-click cannot stack hints.
+  setAdventureState(prev => ({ ...prev, hintUsedTurn: prev.turnCount, currentHint: { turn: prev.turnCount, text: '', loading: true } }));
+  addToast(t('adventure.hint_cost_toast') || "💡 Hint requested — this turn's XP gain will be halved.", 'info');
+  const fallbackHint = t('adventure.hint_fallback') || 'Re-read the last paragraph: what problem is still unsolved? Try describing what your character examines, asks, or tries next.';
+  try {
+    const prompt = `You are a kind dungeon master. A ${gradeLevel || 'middle school'} student is stuck on this adventure scene:
+"${String(scene.text || '').slice(0, 1500)}"
+Give ONE short nudge (1-2 sentences) pointing them toward what to consider — do NOT reveal the solution or act for them. Also give one short sentence-starter they could type to begin their response.
+Return ONLY JSON: {"hint": "...", "starter": "..."}`;
+    const resp = await callGemini(prompt, true, false, 0.7);
+    const parsed = (typeof resilientJsonParse === 'function' ? resilientJsonParse(resp) : JSON.parse(resp)) || {};
+    const hintText = String(parsed.hint || '').trim() || fallbackHint;
+    const starter = String(parsed.starter || '').trim();
+    setAdventureState(prev => ({ ...prev, currentHint: { turn: prev.turnCount, text: hintText, starter } }));
+  } catch (error) {
+    warnLog('Adventure hint failed', error);
+    setAdventureState(prev => ({ ...prev, currentHint: { turn: prev.turnCount, text: fallbackHint, starter: '' } }));
+  }
+};
+
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AdventureHandlers = {
   executeStartAdventure,
@@ -1271,6 +1301,7 @@ window.AlloModules.AdventureHandlers = {
   handleResumeAdventure,
   handleAdventureTextSubmit,
   handleAdventureChoice,
+  handleAdventureHint,
 };
 
 window.AlloModules.AdventureHandlersModule = true;

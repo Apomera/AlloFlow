@@ -123,6 +123,12 @@ const handleDiceRollComplete = (deps) => {
           if (xpDelta > 0) {
               xpDelta = Math.round(xpDelta * xpMult);
           }
+          // Hint cost (2026-07-16, Aaron): a nudge was requested for THIS scene —
+          // the turn's XP GAIN is halved (losses are never amplified; floor stays 0).
+          // hintUsedTurn is stamped by handleAdventureHint before the student responds.
+          if (xpDelta > 0 && prev.hintUsedTurn === prev.turnCount) {
+              xpDelta = Math.round(xpDelta / 2);
+          }
           const safeXpDelta = xpDelta;
           let newXp = prev.xp + safeXpDelta;
           let newLevel = prev.level;
