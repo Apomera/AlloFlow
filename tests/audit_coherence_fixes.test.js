@@ -325,7 +325,12 @@ describe('deep-dive queue fixes (2026-07-02)', () => {
   it('D5: typeset export is factored into one handler; PDF inputs get the sanitized-rebuild button', () => {
     expect(vpNow).toMatch(/const _runTypesetExport = async \(opts\) => \{/);
     expect(vpNow).toMatch(/onClick=\{\(\) => _runTypesetExport\(\)\}/);            // non-PDF branch reuse
-    expect(vpNow).toMatch(/onClick=\{\(\) => _runTypesetExport\(\{ sanitized: true \}\)\}/); // PDF-only button
+    // The clean button's onClick evolved past a one-line arrow: when executable active
+    // content was detected it now flips _activeContentFidelityOverrideRef and re-clicks the
+    // fidelity button instead. The invariant that matters is unchanged — the sanitized
+    // rebuild still funnels through the SAME single handler with { sanitized: true }.
+    expect(vpNow).toMatch(/_activeContentFidelityOverrideRef\.current = true;/);
+    expect(vpNow).toMatch(/_runTypesetExport\(\{ sanitized: true \}\);/);          // PDF-only clean path
     expect(vpNow).toMatch(/\{_inputIsPdf && \(\s*\n\s*<button\s*\n\s*id="allo-tagged-pdf-clean-btn"/);
   });
 });
