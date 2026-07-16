@@ -265,8 +265,8 @@ describe('Test Prep Hub render flow', () => {
     await clickButton('Flashcards');
     expect(host.textContent).toContain('Flashcard study');
     expect(host.textContent).toContain('Show due cards only');
-    expect(host.textContent).toContain('415 due now');
-    expect(host.textContent).toContain('1 of 415 matching cards');
+    expect(host.textContent).toContain('336 due now');
+    expect(host.textContent).toContain('1 of 336 matching cards');
     await clickButton('Reveal answer');
     expect(host.textContent).toContain('Answer:');
     await clickButton('Know it');
@@ -276,9 +276,10 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Memory aids');
     expect(host.textContent).toContain('Memory-aid library');
-    expect(host.textContent).toContain('Showing 255 of 255 memory aids');
+    expect(host.textContent).toContain('Showing 24 of 24 released memory aids');
     await clickButton('Show aid');
     expect(findButton('Hide aid')).toBeTruthy();
+    expect(host.textContent).toContain('Why this source is reputable:');
   }, 30_000);
 
   it('uses ParaPro batch selection, timed simulation, and native chapter learning', async () => {
