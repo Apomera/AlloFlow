@@ -186,6 +186,18 @@ describe('Fisher Lab voyage progression', () => {
     expect(summarizeCoreRadarTrail([{ bearing: 20, range: 12 }, { bearing: 21, range: 12.2 }])).toMatchObject({ constantBearing: true, trend: 'steady-range' });
   });
 
+  it('scores learner radar calls from the plotted evidence', () => {
+    const { evaluateCoreRadarCall } = window.__FisherLabCore;
+    const collisionTrail = [{ bearing: 35, range: 24 }, { bearing: 37, range: 15 }];
+    const openingTrail = [{ bearing: 20, range: 12 }, { bearing: 28, range: 18 }];
+    const changingTrail = [{ bearing: 20, range: 22 }, { bearing: 38, range: 15 }];
+
+    expect(evaluateCoreRadarCall(collisionTrail, 'collision-risk')).toMatchObject({ correct: true, expected: 'collision-risk', expectedLabel: 'Steady bearing + closing range' });
+    expect(evaluateCoreRadarCall(collisionTrail, 'opening')).toMatchObject({ correct: false, expected: 'collision-risk' });
+    expect(evaluateCoreRadarCall(openingTrail, 'opening')).toMatchObject({ correct: true, expected: 'opening' });
+    expect(evaluateCoreRadarCall(changingTrail, 'changing')).toMatchObject({ correct: true, expected: 'changing' });
+  });
+
   it('grades prompt, well-separated encounters without rewarding incorrect or timed-out work', () => {
     const { gradeCoreEncounter } = window.__FisherLabCore;
 
@@ -250,6 +262,12 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('Traffic encounter debrief.');
     expect(source).toContain('summarizeCoreRadarTrail');
     expect(source).toContain('Radar evidence replay');
+    expect(source).toContain('evaluateCoreRadarCall');
+    expect(source).toContain('Make the radar evidence call');
+    expect(source).toContain("pointerEvents: 'auto', display: 'grid'");
+    expect(source).toContain('Make the radar call - optional bonus');
+    expect(source).toContain('Radar evidence call already logged.');
+    expect(source).toContain("'Radar call: ' + (hud.radarCallCorrect ? 'correct' : 'review')");
     expect(source).toContain('Rule 35 signal: ');
     expect(source).toContain('Steady bearing and closing range show collision risk');
     expect(source).toContain('COLREGS Rule 19');
