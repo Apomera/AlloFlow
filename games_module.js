@@ -1559,8 +1559,9 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const handleAddItem = async () => {
     if (!newItemText.trim()) return;
     if (!onGenerateItem) {
-      if (window.AlloFlowUX) window.AlloFlowUX.toast(t("common.coming_soon"), "error");
-      else alert(t("common.coming_soon"));
+      const message = t("common.coming_soon") || "This feature is coming soon.";
+      setAnnouncement(message);
+      if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === "function") window.AlloFlowUX.toast(message, "info");
       return;
     }
     setIsAdding(true);
