@@ -2778,6 +2778,27 @@ function PdfAuditView(props) {
   const [pdfConfirmRequest, setPdfConfirmRequest] = useState(null);
   const pdfConfirmResolveRef = useRef(null);
   const pdfConfirmCancelRef = useRef(null);
+  const promptForPdfText = React.useCallback(async (message, defaultValue, options) => {
+    if (!(window.AlloFlowUX && typeof window.AlloFlowUX.prompt === "function")) {
+      addToast(t("dialogs.text_entry_loading") || "The text-entry dialog is still loading. Please try again in a moment.", "error");
+      return null;
+    }
+    return window.AlloFlowUX.prompt(message, defaultValue || "", options || {});
+  }, [addToast, t]);
+  const promptForPdfLink = React.useCallback(() => promptForPdfText("Enter the destination for this link.", "", {
+    title: "Insert link",
+    confirmText: "Insert link",
+    cancelText: "Cancel",
+    placeholder: "https://example.org or #section",
+    inputType: "url",
+    maxLength: 2048,
+    validate: (value) => {
+      const candidate = value.trim();
+      if (!candidate) return "Enter a link URL.";
+      const scheme = candidate.match(/^\s*([a-zA-Z][a-zA-Z0-9+.-]*)\s*:/);
+      return !scheme || ["http", "https", "mailto", "tel"].includes(scheme[1].toLowerCase()) ? null : "Only web (http/https), mailto:, tel:, and internal links are allowed.";
+    }
+  }), [promptForPdfText]);
   const askPdfConfirmation = React.useCallback((options) => new Promise((resolve) => {
     if (pdfConfirmResolveRef.current) pdfConfirmResolveRef.current(false);
     pdfConfirmResolveRef.current = resolve;
@@ -4135,8 +4156,8 @@ function PdfAuditView(props) {
       }
       setSmartTableBusy(true);
       try {
-        const prompt2 = `You organize a teacher's raw data into a table. Return ONLY a JSON object, no markdown: {"caption": string, "headers": string[], "rows": string[][], "headerColumn": boolean}. HARD RULES: every cell value must come from the DATA below (verbatim where possible); NEVER invent, estimate, or complete missing values \u2014 use "" for unknown cells; max 12 columns, 40 rows; headerColumn=true ONLY if the first column contains row labels.` + ((smartTableSpec || "").trim() ? " The teacher wants: " + smartTableSpec.trim().slice(0, 300) : "") + "\n\nDATA:\n" + raw;
-        const out = await callGemini(prompt2);
+        const prompt = `You organize a teacher's raw data into a table. Return ONLY a JSON object, no markdown: {"caption": string, "headers": string[], "rows": string[][], "headerColumn": boolean}. HARD RULES: every cell value must come from the DATA below (verbatim where possible); NEVER invent, estimate, or complete missing values \u2014 use "" for unknown cells; max 12 columns, 40 rows; headerColumn=true ONLY if the first column contains row labels.` + ((smartTableSpec || "").trim() ? " The teacher wants: " + smartTableSpec.trim().slice(0, 300) : "") + "\n\nDATA:\n" + raw;
+        const out = await callGemini(prompt);
         const m = String(out || "").match(/\{[\s\S]*\}/);
         const j = JSON.parse(m ? m[0] : String(out));
         if (!Array.isArray(j.headers) || !Array.isArray(j.rows) || !j.headers.length) throw new Error("bad shape");
@@ -7278,8 +7299,8 @@ Return ONLY JSON:
           return `Educational illustration for image #${imgIdx}. Clean, professional style. No text overlays.`;
         };
         try {
-          const prompt2 = _buildImagePrompt();
-          const dataUrl = await callImagen(prompt2, 400, 0.85);
+          const prompt = _buildImagePrompt();
+          const dataUrl = await callImagen(prompt, 400, 0.85);
           if (!dataUrl) {
             if (addToast) addToast(`Regeneration failed for image #${imgIdx}`, "error");
             return;
@@ -8484,8 +8505,8 @@ Return ONLY JSON:
             if (typeof callGeminiVision !== "function") return null;
             const m = String(dataUrl || "").match(/^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i);
             if (!m) return null;
-            const prompt2 = userText && userText.trim() ? 'A teacher cropped this region from a document and drafted this description: "' + userText.trim().slice(0, 300) + '". Improve it into ONE clear, complete alt-text sentence \u2014 keep everything factual the teacher wrote, fix omissions you can SEE in the image, never invent. Return ONLY the sentence.' : "Describe this cropped region from an educational document as ONE clear alt-text sentence for a screen reader user. Be factual; if it is a chart or diagram, say what it shows. Return ONLY the sentence.";
-            const out = await callGeminiVision(prompt2, m[2], m[1]);
+            const prompt = userText && userText.trim() ? 'A teacher cropped this region from a document and drafted this description: "' + userText.trim().slice(0, 300) + '". Improve it into ONE clear, complete alt-text sentence \u2014 keep everything factual the teacher wrote, fix omissions you can SEE in the image, never invent. Return ONLY the sentence.' : "Describe this cropped region from an educational document as ONE clear alt-text sentence for a screen reader user. Be factual; if it is a chart or diagram, say what it shows. Return ONLY the sentence.";
+            const out = await callGeminiVision(prompt, m[2], m[1]);
             const s = String(out || "").trim().replace(/^"|"$/g, "");
             return s.length > 3 ? s.slice(0, 500) : null;
           } catch (_) {
@@ -9786,7 +9807,14 @@ Return ONLY JSON:
     }, "data-help-key": "pdf_audit_view_json_data_btn", className: "w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100" }, "\u{1F4CA} JSON Data (research)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       try {
         const teacherName = (localStorage.getItem("alloflow_teacher_name") || "").trim();
-        const promptedName = (window.prompt("Sign this audit trail as (teacher name / institution). Leave blank to sign as Unknown. Saved for next time.", teacherName) || "").trim();
+        const promptedSigner = await promptForPdfText("Sign this audit trail as a teacher or institution. Submit a blank value to sign as Unknown.", teacherName, {
+          title: "Sign audit trail",
+          confirmText: "Sign trail",
+          cancelText: "Cancel",
+          maxLength: 160
+        });
+        if (promptedSigner === null) return;
+        const promptedName = String(promptedSigner).trim();
         if (promptedName) {
           try {
             localStorage.setItem("alloflow_teacher_name", promptedName);
@@ -10146,7 +10174,7 @@ Return ONLY JSON:
       };
       reader.readAsText(file);
       e.target.value = "";
-    } }))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    } }))), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       const html = pdfFixResult?.accessibleHtml;
       if (!html) return;
       const structure = [];
@@ -10172,7 +10200,14 @@ Return ONLY JSON:
       if (html.includes("<footer")) landmarks.push("footer");
       if (html.includes("<aside")) landmarks.push("aside");
       const images = [...html.matchAll(/<img[^>]*alt="([^"]*)"[^>]*>/gi)].map((m) => m[1]);
-      const templateName = prompt('Template name (e.g., "IEP Document", "Course Syllabus"):');
+      const templateName = await promptForPdfText("Name this accessible structure template.", "", {
+        title: "Save accessible template",
+        confirmText: "Save template",
+        cancelText: "Cancel",
+        placeholder: "IEP Document or Course Syllabus",
+        maxLength: 100,
+        validate: (value) => value.trim() ? null : "Enter a template name."
+      });
       if (!templateName) return;
       const template = {
         version: 1,
@@ -12217,11 +12252,11 @@ Return ONLY JSON:
           }
         }
       ), /* @__PURE__ */ React.createElement("button", { id: "pdf-preview-gen-img-btn", onClick: async () => {
-        const prompt2 = document.getElementById("pdf-preview-img-prompt")?.value;
-        if (!prompt2?.trim()) return;
+        const prompt = document.getElementById("pdf-preview-img-prompt")?.value;
+        if (!prompt?.trim()) return;
         addToast(t("toasts.generating_image"), "info");
         try {
-          const imgUrl = await callImagen(prompt2 + " Professional, clean, educational illustration. No text.", 400, 0.85);
+          const imgUrl = await callImagen(prompt + " Professional, clean, educational illustration. No text.", 400, 0.85);
           if (imgUrl) {
             const doc = pdfPreviewRef.current?.contentDocument;
             if (!doc) return;
@@ -12229,10 +12264,10 @@ Return ONLY JSON:
             figure.style.cssText = "margin:1em 0;text-align:center;";
             const img = doc.createElement("img");
             img.src = imgUrl;
-            img.alt = prompt2;
+            img.alt = prompt;
             img.style.cssText = "max-width:100%;border-radius:8px;";
             const cap = doc.createElement("figcaption");
-            cap.textContent = prompt2;
+            cap.textContent = prompt;
             cap.style.cssText = "font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.25rem;";
             figure.appendChild(img);
             figure.appendChild(cap);
@@ -12260,7 +12295,15 @@ Return ONLY JSON:
           addToast(t("toasts.image_editing_available_build"), "error");
           return;
         }
-        const editPrompt = window.prompt("Describe how to edit this image:");
+        const editPrompt = await promptForPdfText("Describe how this image should change.", "", {
+          title: "Edit selected image",
+          confirmText: "Edit image",
+          cancelText: "Cancel",
+          placeholder: "Describe the visual change",
+          multiline: true,
+          maxLength: 1e3,
+          validate: (value) => value.trim() ? null : "Describe the image change."
+        });
         if (!editPrompt?.trim()) return;
         addToast(t("toasts.editing_image"), "info");
         try {
@@ -14881,11 +14924,18 @@ Return ONLY JSON:
       ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
         "button",
         {
-          onClick: () => {
+          onClick: async () => {
             const doc = pdfPreviewRef.current?.contentDocument;
             if (!doc) return;
-            const url = prompt("Enter link URL:");
-            if (url) doc.execCommand("createLink", false, url);
+            const selection = doc.getSelection?.();
+            const savedRange = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+            const url = await promptForPdfLink();
+            if (url && savedRange && savedRange.commonAncestorContainer?.isConnected) {
+              selection.removeAllRanges();
+              selection.addRange(savedRange);
+              pdfPreviewRef.current?.contentWindow?.focus();
+              doc.execCommand("createLink", false, url.trim());
+            }
           },
           className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
           "aria-label": t("pdf_audit.toolbar.insert_link") || "Insert link",
@@ -15250,7 +15300,7 @@ Return ONLY JSON:
                   target.style.outlineOffset = "2px";
                 }
               });
-              doc.addEventListener("keydown", function(e) {
+              doc.addEventListener("keydown", async function(e) {
                 if (e.ctrlKey || e.metaKey) {
                   if (e.key === "1") {
                     e.preventDefault();
@@ -15268,8 +15318,15 @@ Return ONLY JSON:
                     doc.execCommand("formatBlock", false, "<p>");
                   } else if (e.key === "k" || e.key === "K") {
                     e.preventDefault();
-                    var url = prompt("Enter link URL:");
-                    if (url) doc.execCommand("createLink", false, url);
+                    var selection = doc.getSelection();
+                    var savedRange = selection && selection.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+                    var url = await promptForPdfLink();
+                    if (url && savedRange && savedRange.commonAncestorContainer && savedRange.commonAncestorContainer.isConnected) {
+                      selection.removeAllRanges();
+                      selection.addRange(savedRange);
+                      cw && cw.focus();
+                      doc.execCommand("createLink", false, url.trim());
+                    }
                   } else if (e.shiftKey && (e.key === "l" || e.key === "L")) {
                     e.preventDefault();
                     doc.execCommand("insertUnorderedList", false, null);

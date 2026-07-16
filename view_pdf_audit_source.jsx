@@ -2687,6 +2687,24 @@ function PdfAuditView(props) {
   const [pdfConfirmRequest, setPdfConfirmRequest] = useState(null);
   const pdfConfirmResolveRef = useRef(null);
   const pdfConfirmCancelRef = useRef(null);
+  const promptForPdfText = React.useCallback(async (message, defaultValue, options) => {
+    if (!(window.AlloFlowUX && typeof window.AlloFlowUX.prompt === 'function')) {
+      addToast(t('dialogs.text_entry_loading') || 'The text-entry dialog is still loading. Please try again in a moment.', 'error');
+      return null;
+    }
+    return window.AlloFlowUX.prompt(message, defaultValue || '', options || {});
+  }, [addToast, t]);
+  const promptForPdfLink = React.useCallback(() => promptForPdfText('Enter the destination for this link.', '', {
+    title: 'Insert link', confirmText: 'Insert link', cancelText: 'Cancel',
+    placeholder: 'https://example.org or #section', inputType: 'url', maxLength: 2048,
+    validate: (value) => {
+      const candidate = value.trim();
+      if (!candidate) return 'Enter a link URL.';
+      const scheme = candidate.match(/^\s*([a-zA-Z][a-zA-Z0-9+.-]*)\s*:/);
+      return (!scheme || ['http', 'https', 'mailto', 'tel'].includes(scheme[1].toLowerCase()))
+        ? null : 'Only web (http/https), mailto:, tel:, and internal links are allowed.';
+    },
+  }), [promptForPdfText]);
   const askPdfConfirmation = React.useCallback((options) => new Promise((resolve) => {
     if (pdfConfirmResolveRef.current) pdfConfirmResolveRef.current(false);
     pdfConfirmResolveRef.current = resolve;
@@ -11907,7 +11925,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <button onClick={async () => {
                               try {
                                 const teacherName = (localStorage.getItem('alloflow_teacher_name') || '').trim();
-                                const promptedName = (window.prompt('Sign this audit trail as (teacher name / institution). Leave blank to sign as Unknown. Saved for next time.', teacherName) || '').trim();
+                                const promptedSigner = await promptForPdfText('Sign this audit trail as a teacher or institution. Submit a blank value to sign as Unknown.', teacherName, {
+                                  title: 'Sign audit trail', confirmText: 'Sign trail', cancelText: 'Cancel', maxLength: 160,
+                                });
+                                if (promptedSigner === null) return;
+                                const promptedName = String(promptedSigner).trim();
                                 if (promptedName) { try { localStorage.setItem('alloflow_teacher_name', promptedName); } catch (_) {} }
                                 const signer = promptedName || 'Unknown';
                                 const _aiS = pdfFixResult.afterScore; const _axS = pdfFixResult.axeAudit?.score ?? null;
@@ -12288,7 +12310,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
 
                       {/* Save Structure as Accessible Template */}
-                      <button onClick={() => {
+                      <button onClick={async () => {
                         const html = pdfFixResult?.accessibleHtml;
                         if (!html) return;
                         const structure = [];
@@ -12314,7 +12336,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         if (html.includes('<footer')) landmarks.push('footer');
                         if (html.includes('<aside')) landmarks.push('aside');
                         const images = [...html.matchAll(/<img[^>]*alt="([^"]*)"[^>]*>/gi)].map(m => m[1]);
-                        const templateName = prompt('Template name (e.g., "IEP Document", "Course Syllabus"):');
+                        const templateName = await promptForPdfText('Name this accessible structure template.', '', {
+                          title: 'Save accessible template', confirmText: 'Save template', cancelText: 'Cancel',
+                          placeholder: 'IEP Document or Course Syllabus', maxLength: 100,
+                          validate: (value) => value.trim() ? null : 'Enter a template name.',
+                        });
                         if (!templateName) return;
                         const template = {
                           version: 1,
@@ -14381,7 +14407,11 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       const img = selectedPreviewImgRef.current;
                       if (!img || !img.src) { addToast(t('toasts.click_image_preview_select_first'), 'info'); return; }
                       if (!callGeminiImageEdit) { addToast(t('toasts.image_editing_available_build'), 'error'); return; }
-                      const editPrompt = window.prompt('Describe how to edit this image:');
+                      const editPrompt = await promptForPdfText('Describe how this image should change.', '', {
+                        title: 'Edit selected image', confirmText: 'Edit image', cancelText: 'Cancel',
+                        placeholder: 'Describe the visual change', multiline: true, maxLength: 1000,
+                        validate: (value) => value.trim() ? null : 'Describe the image change.',
+                      });
                       if (!editPrompt?.trim()) return;
                       addToast(t('toasts.editing_image'), 'info');
                       try {
@@ -16621,10 +16651,16 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.align_center') || 'Align center'} title={t('pdf_audit.toolbar.align_center_title') || 'Center'}>≡</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
-                <button onClick={() => {
+                <button onClick={async () => {
                   const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
-                  const url = prompt('Enter link URL:');
-                  if (url) doc.execCommand('createLink', false, url);
+                  const selection = doc.getSelection?.();
+                  const savedRange = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+                  const url = await promptForPdfLink();
+                  if (url && savedRange && savedRange.commonAncestorContainer?.isConnected) {
+                    selection.removeAllRanges(); selection.addRange(savedRange);
+                    pdfPreviewRef.current?.contentWindow?.focus();
+                    doc.execCommand('createLink', false, url.trim());
+                  }
                 }} className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.insert_link') || 'Insert link'} title={t('pdf_audit.toolbar.insert_link') || 'Insert link'}>🔗</button>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('unlink', false, null); }}
@@ -16917,13 +16953,22 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         target.style.outlineOffset = '2px';
                       }
                     });
-                    doc.addEventListener('keydown', function(e) {
+                    doc.addEventListener('keydown', async function(e) {
                       if (e.ctrlKey || e.metaKey) {
                         if (e.key === '1') { e.preventDefault(); if (!doc.querySelector('h1')) { doc.execCommand('formatBlock', false, '<h1>'); } } /* single-h1 policy: only when none exists */
                         else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
                         else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
                         else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }
-                        else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); var url = prompt('Enter link URL:'); if (url) doc.execCommand('createLink', false, url); }
+                        else if (e.key === 'k' || e.key === 'K') {
+                          e.preventDefault();
+                          var selection = doc.getSelection();
+                          var savedRange = selection && selection.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+                          var url = await promptForPdfLink();
+                          if (url && savedRange && savedRange.commonAncestorContainer && savedRange.commonAncestorContainer.isConnected) {
+                            selection.removeAllRanges(); selection.addRange(savedRange); cw && cw.focus();
+                            doc.execCommand('createLink', false, url.trim());
+                          }
+                        }
                         else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); doc.execCommand('insertUnorderedList', false, null); }
                         else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
                       }
