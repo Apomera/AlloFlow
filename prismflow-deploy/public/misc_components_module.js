@@ -206,6 +206,7 @@ const WordSoundsReviewPanel = ({
   const [regeneratingOptions, setRegeneratingOptions] = React.useState({});
   const [playingAudioKey, setPlayingAudioKey] = React.useState(null);
   const [audioProgress, setAudioProgress] = React.useState({ ready: 0, total: 0 });
+  const [reviewError, setReviewError] = React.useState(null);
   const [showProbeEndConfirm, setShowProbeEndConfirm] = React.useState(false);
   const reviewDialogRef = React.useRef(null);
   const reviewBackRef = React.useRef(null);
@@ -502,7 +503,7 @@ const WordSoundsReviewPanel = ({
       title: t("word_sounds.retry_audio_tooltip") || "Retry audio generation for words that failed"
     },
     t("word_sounds.retry_audio") || "Retry audio"
-  )))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" }, !isLoading && preloadedWords.length > 0 && (() => {
+  ))), reviewError && /* @__PURE__ */ React.createElement("p", { id: "word-sounds-review-error", role: "alert", className: "mt-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-800" }, reviewError.message)), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" }, !isLoading && preloadedWords.length > 0 && (() => {
     const norm = (v) => String(v || "").trim().toLowerCase().replace(/\s+/g, " ");
     const portableKeys = /* @__PURE__ */ new Set();
     const imageKeys = /* @__PURE__ */ new Set();
@@ -552,15 +553,16 @@ const WordSoundsReviewPanel = ({
           debugLog("\u{1F504} FORCE CLICK regen idx:", idx);
           if (typeof onRegenerateWord === "function") {
             debugLog("\u2705 Calling onRegenerateWord for idx:", idx);
+            setReviewError(null);
             onRegenerateWord(idx);
           } else {
             warnLog("\u274C onRegenerateWord is not a function:", typeof onRegenerateWord);
-            if (window.AlloFlowUX) window.AlloFlowUX.toast("Error: Regenerate function missing or invalid", "error");
-            else alert("Error: Regenerate function missing or invalid");
+            setReviewError({ index: idx, message: t("word_sounds.regenerate_unavailable") || "Regeneration is unavailable right now. Please close this review and try again." });
           }
         },
         disabled: regeneratingIndex === idx,
         "aria-busy": regeneratingIndex === idx,
+        "aria-describedby": reviewError?.index === idx ? "word-sounds-review-error" : void 0,
         "aria-label": regeneratingIndex === idx ? t("common.regenerating_word_aria") || "Regenerating word" : t("common.regenerate_this_word"),
         className: `w-10 h-10 flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none text-base font-bold border-2
                                                     ${regeneratingIndex === idx ? "bg-orange-200 border-orange-400 animate-spin motion-reduce:animate-none text-orange-700" : "bg-orange-50 border-orange-200 text-orange-500 hover:bg-orange-100 hover:border-orange-300 hover:scale-110 shadow-sm"}`,

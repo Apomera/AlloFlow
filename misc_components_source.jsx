@@ -199,6 +199,7 @@ const WordSoundsReviewPanel = ({
     const [regeneratingOptions, setRegeneratingOptions] = React.useState({});
     const [playingAudioKey, setPlayingAudioKey] = React.useState(null);
     const [audioProgress, setAudioProgress] = React.useState({ ready: 0, total: 0 });
+    const [reviewError, setReviewError] = React.useState(null);
     const [showProbeEndConfirm, setShowProbeEndConfirm] = React.useState(false);
     const reviewDialogRef = React.useRef(null);
     const reviewBackRef = React.useRef(null);
@@ -441,6 +442,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             </span>
                         )}
                     </p>
+                    {reviewError && <p id="word-sounds-review-error" role="alert" className="mt-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-800">{reviewError.message}</p>}
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                     {/* Pack completeness: what the student device will actually
@@ -509,14 +511,16 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     debugLog("🔄 FORCE CLICK regen idx:", idx);
                                                     if (typeof onRegenerateWord === 'function') {
                                                         debugLog("✅ Calling onRegenerateWord for idx:", idx);
+                                                        setReviewError(null);
                                                         onRegenerateWord(idx);
                                                     } else {
                                                         warnLog("❌ onRegenerateWord is not a function:", typeof onRegenerateWord);
-                                                        if (window.AlloFlowUX) window.AlloFlowUX.toast("Error: Regenerate function missing or invalid", 'error'); else alert("Error: Regenerate function missing or invalid");
+                                                        setReviewError({ index: idx, message: t('word_sounds.regenerate_unavailable') || 'Regeneration is unavailable right now. Please close this review and try again.' });
                                                     }
                                                 }}
                                                 disabled={regeneratingIndex === idx}
                                                 aria-busy={regeneratingIndex === idx}
+                                                aria-describedby={reviewError?.index === idx ? 'word-sounds-review-error' : undefined}
                                                 aria-label={regeneratingIndex === idx ? (t('common.regenerating_word_aria') || 'Regenerating word') : t('common.regenerate_this_word')}
                                                 className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none text-base font-bold border-2
                                                     ${regeneratingIndex === idx
