@@ -59,6 +59,35 @@ describe('space station tool', () => {
     });
   });
 
+  it('ships the docking sim, EVA game, and interior views with honest physics', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      // Missions tab exists
+      expect(source).toContain("id: 'missions'");
+      // Docking sim runs real Clohessy-Wiltshire coupling, toggleable for contrast
+      expect(source).toContain('Clohessy-Wiltshire');
+      expect(source).toContain('3 * N_ORBIT * N_ORBIT * st.x + 2 * N_ORBIT * st.vy');
+      expect(source).toContain('-2 * N_ORBIT * st.vx');
+      expect(source).toContain('exaggerated');            // time-scaling disclosed honestly
+      expect(source).toContain('dockRealMode');
+      // No per-frame React state: game state lives on the canvas element
+      expect(source).toContain('cv._dockState = st');
+      expect(source).toContain('cv._dockCleanup = cleanup');
+      // EVA enforces the two-tether rule and consumables budget
+      expect(source).toContain('Moved WITHOUT clipping ahead');
+      expect(source).toContain('tetherA');
+      expect(source).toContain('Suit consumables');
+      // Interior views wired to their modules
+      expect(source).toContain('renderCupolaInterior');
+      expect(source).toContain('renderSleepInterior');
+      expect(source).toContain("selModule.id === 'cupola' ? renderCupolaInterior()");
+      // New quest hooks
+      expect(source).toContain("id: 'iss_dock'");
+      expect(source).toContain("id: 'iss_eva'");
+    });
+  });
+
   it('is registered in the catalog, loader lists, and build manifest', () => {
     const moduleSrc = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
     expect(moduleSrc).toContain("id: 'spaceStation'");

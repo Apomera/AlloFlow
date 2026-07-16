@@ -167,7 +167,9 @@
       { id: 'iss_module', label: 'Inspect 3 station modules in the 3-D map', icon: '🛰️', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.seenModules || {}).length >= 3; } },
       { id: 'iss_day', label: 'Walk through an astronaut’s whole day', icon: '👩‍🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.seenHours || {}).length >= 6; } },
       { id: 'iss_orbit', label: 'Change the orbit in the Orbit Lab', icon: '🧮', check: function (d) { var s = (d && d.spaceStation) || {}; return !!s.orbitTouched; } },
-      { id: 'iss_quiz', label: 'Score 7+ on the station quiz', icon: '🧠', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.quizBest || 0) >= 7; } }
+      { id: 'iss_quiz', label: 'Score 7+ on the station quiz', icon: '🧠', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.quizBest || 0) >= 7; } },
+      { id: 'iss_dock', label: 'Achieve a soft-capture docking', icon: '🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.dockWins || 0) >= 1; } },
+      { id: 'iss_eva', label: 'Complete the spacewalk pump repair', icon: '🧑‍🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return !!(s.eva && s.eva.done && !s.eva.failMsg); } }
     ],
     render: function (ctx) {
       var React = ctx.React;
@@ -435,12 +437,321 @@
         });
       }
 
+      // ── Docking mini-sim (canvas game; physics state lives on the canvas,
+      //    React state is only touched when a run ends — no per-frame setState) ──
+      function dockingCanvasRef(cv) {
+        if (!cv || cv._dockInit) return;
+        cv._dockInit = true;
+        var ctx2 = cv.getContext('2d');
+        var Wc = cv.width = 640, Hc = cv.height = 360;
+        var realMode = cv._dockRealMode !== false;
+        // Game state (meters; station docking port at origin, approach along +Y = right)
+        var st = { x: 26, y: -190, vx: 0, vy: 1.0, fuel: 100, t: 0, over: false, msg: '', thrust: { up: false, down: false, fwd: false, back: false } };
+        cv._dockState = st;
+        var N_ORBIT = 0.02;   // orbital rate, exaggerated ~18x so coupling is feelable in a minute
+        var ACCEL = 0.35, DT = 0.35;
+        function endRun(result, msg) {
+          if (st.over) return;
+          st.over = true; st.msg = msg;
+          var wins = (d.dockWins || 0) + (result === 'docked' ? 1 : 0);
+          upd({ dockResult: result, dockMsg: msg, dockWins: wins, dockRuns: (d.dockRuns || 0) + 1 });
+          if (result === 'docked') {
+            if (addToast) addToast('🛰️ ' + __alloT('stem.spacestation.dock_win_toast', 'Soft capture confirmed — docking complete!'), 'success');
+            if (typeof awardXP === 'function') { try { awardXP(5); } catch (e) {} }
+          }
+        }
+        function step() {
+          if (st.over) return;
+          st.t += DT;
+          var ax = 0, ay = 0;
+          if (st.fuel > 0) {
+            if (st.thrust.up) ax += ACCEL; if (st.thrust.down) ax -= ACCEL;
+            if (st.thrust.fwd) ay += ACCEL; if (st.thrust.back) ay -= ACCEL;
+            var burning = (st.thrust.up || st.thrust.down || st.thrust.fwd || st.thrust.back);
+            if (burning) st.fuel = Math.max(0, st.fuel - 0.35);
+          }
+          if (realMode) {
+            // Clohessy-Wiltshire relative motion: x = radial (screen up), y = along-track
+            ax += 3 * N_ORBIT * N_ORBIT * st.x + 2 * N_ORBIT * st.vy;
+            ay += -2 * N_ORBIT * st.vx;
+          }
+          st.vx += ax * DT; st.vy += ay * DT;
+          st.x += st.vx * DT; st.y += st.vy * DT;
+          var range = Math.sqrt(st.x * st.x + st.y * st.y);
+          var speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
+          if (range < 5) {
+            if (speed <= 0.6 && Math.abs(st.x) < 2.5) endRun('docked', __alloT('stem.spacestation.dock_win', 'Soft capture! Contact at ' + speed.toFixed(2) + ' m/s — gentle enough for the docking latches.'));
+            else endRun('bonk', __alloT('stem.spacestation.dock_bonk', 'Contact too fast or off-axis (' + speed.toFixed(2) + ' m/s). Real vehicles would abort long before this — try arriving under 0.6 m/s, centered.'));
+          } else if (range > 420 || st.fuel <= 0 && speed < 0.05 && range > 60) {
+            endRun('drift', __alloT('stem.spacestation.dock_drift', 'Drifted out of the approach zone. Notice HOW you drifted — in orbit, thrusting forward raises you and slows you.'));
+          }
+        }
+        function draw() {
+          ctx2.fillStyle = '#050a18'; ctx2.fillRect(0, 0, Wc, Hc);
+          // Earth limb at bottom
+          ctx2.fillStyle = '#2f6fab';
+          ctx2.beginPath(); ctx2.arc(Wc / 2, Hc + 520, 560, 0, Math.PI * 2); ctx2.fill();
+          var sc = 1.35; // px per meter
+          var ox = Wc - 90, oy = Hc / 2; // station port on the right
+          // approach corridor
+          ctx2.strokeStyle = 'rgba(56,189,248,0.35)'; ctx2.setLineDash([6, 6]);
+          ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(ox - 480, oy - (0.15 * 480 / 1.0) * sc - 4); ctx2.stroke();
+          ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(ox - 480, oy + (0.15 * 480 / 1.0) * sc + 4); ctx2.stroke();
+          ctx2.setLineDash([]);
+          // station (simplified: node + truss)
+          ctx2.fillStyle = '#cbd5e1'; ctx2.fillRect(ox - 4, oy - 12, 30, 24);
+          ctx2.fillStyle = '#8a93a6'; ctx2.fillRect(ox + 8, oy - 90, 10, 180);
+          ctx2.fillStyle = '#c9962e'; ctx2.fillRect(ox + 2, oy - 132, 22, 40); ctx2.fillRect(ox + 2, oy + 92, 22, 40);
+          ctx2.fillStyle = '#38bdf8'; ctx2.fillRect(ox - 7, oy - 4, 4, 8); // port
+          // capsule
+          var px = ox + st.y * sc, py = oy - st.x * sc; // y along-track → screen x (approach from the left), x radial → screen up
+          ctx2.save(); ctx2.translate(px, py);
+          ctx2.fillStyle = '#e2e8f0';
+          ctx2.beginPath(); ctx2.moveTo(9, 0); ctx2.lineTo(-7, -6); ctx2.lineTo(-7, 6); ctx2.closePath(); ctx2.fill();
+          // thruster puffs
+          ctx2.fillStyle = 'rgba(253,224,71,0.9)';
+          if (st.thrust.fwd && st.fuel > 0) { ctx2.beginPath(); ctx2.arc(-10, 0, 3, 0, Math.PI * 2); ctx2.fill(); }
+          if (st.thrust.back && st.fuel > 0) { ctx2.beginPath(); ctx2.arc(12, 0, 3, 0, Math.PI * 2); ctx2.fill(); }
+          if (st.thrust.up && st.fuel > 0) { ctx2.beginPath(); ctx2.arc(0, 9, 3, 0, Math.PI * 2); ctx2.fill(); }
+          if (st.thrust.down && st.fuel > 0) { ctx2.beginPath(); ctx2.arc(0, -9, 3, 0, Math.PI * 2); ctx2.fill(); }
+          ctx2.restore();
+          // velocity vector
+          ctx2.strokeStyle = '#4ade80'; ctx2.beginPath(); ctx2.moveTo(px, py); ctx2.lineTo(px + st.vy * sc * 9, py - st.vx * sc * 9); ctx2.stroke();
+          // HUD
+          var range = Math.sqrt(st.x * st.x + st.y * st.y), speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
+          ctx2.fillStyle = '#94a3b8'; ctx2.font = 'bold 11px ui-monospace, monospace';
+          ctx2.fillText('RANGE ' + range.toFixed(0) + ' m', 12, 20);
+          ctx2.fillText('SPEED ' + speed.toFixed(2) + ' m/s ' + (speed > 0.6 && range < 40 ? '⚠' : ''), 12, 36);
+          ctx2.fillText('FUEL  ' + st.fuel.toFixed(0) + '%', 12, 52);
+          ctx2.fillText(realMode ? 'ORBITAL PHYSICS: ON' : 'ORBITAL PHYSICS: OFF (video-game mode)', 12, Hc - 14);
+          if (st.over) {
+            ctx2.fillStyle = 'rgba(2,6,23,0.78)'; ctx2.fillRect(0, 0, Wc, Hc);
+            ctx2.fillStyle = st.msg.indexOf('capture') >= 0 || st.msg.indexOf('Soft') >= 0 ? '#4ade80' : '#fbbf24';
+            ctx2.font = 'bold 15px system-ui'; ctx2.textAlign = 'center';
+            var words = st.msg.split(' '); var line = ''; var ly = Hc / 2 - 12;
+            for (var wi = 0; wi < words.length; wi++) {
+              if ((line + words[wi]).length > 60) { ctx2.fillText(line, Wc / 2, ly); ly += 20; line = ''; }
+              line += words[wi] + ' ';
+            }
+            ctx2.fillText(line, Wc / 2, ly);
+            ctx2.textAlign = 'left';
+          }
+        }
+        var rafId = 0, frame = 0;
+        function loop() {
+          if (!cv.isConnected) { cleanup(); return; }
+          frame++;
+          if (!st.over) step();
+          if (!_prefersReducedMotion || frame % 4 === 0) draw();
+          rafId = requestAnimationFrame(loop);
+        }
+        function setThrust(dir, on) { st.thrust[dir] = on; }
+        cv._dockSetThrust = setThrust;
+        cv._dockReset = function (mode) {
+          realMode = mode !== false; cv._dockRealMode = realMode;
+          st.x = 26; st.y = -190; st.vx = 0; st.vy = 1.0; st.fuel = 100; st.t = 0; st.over = false; st.msg = '';
+          st.thrust = { up: false, down: false, fwd: false, back: false };
+        };
+        function onKey(e, on) {
+          var k = e.key;
+          if (k === 'ArrowUp' || k === 'w') { setThrust('up', on); e.preventDefault(); }
+          else if (k === 'ArrowDown' || k === 's') { setThrust('down', on); e.preventDefault(); }
+          else if (k === 'ArrowRight' || k === 'd') { setThrust('fwd', on); e.preventDefault(); }
+          else if (k === 'ArrowLeft' || k === 'a') { setThrust('back', on); e.preventDefault(); }
+        }
+        var kd = function (e) { onKey(e, true); }, ku = function (e) { onKey(e, false); };
+        cv.addEventListener('keydown', kd); cv.addEventListener('keyup', ku);
+        function cleanup() {
+          cancelAnimationFrame(rafId);
+          cv.removeEventListener('keydown', kd); cv.removeEventListener('keyup', ku);
+          cv._dockInit = false;
+        }
+        cv._dockCleanup = cleanup;
+        loop();
+      }
+
+      // ── EVA repair minigame (turn-based DOM game — fully keyboard/AT friendly) ──
+      var EVA_RAILS = ['Quest airlock', 'Node handrail', 'Lab handrail', 'Truss base', 'Truss rail 1', 'Truss rail 2', 'Pump worksite'];
+      var evaS = d.eva || { pos: 0, tetherA: 0, tetherB: 0, freeTether: 'B', o2: 100, bolts: 0, done: false, failMsg: '', started: false, log: [] };
+      function evaUpd(patch) { upd({ eva: Object.assign({}, evaS, patch) }); }
+      function evaLog(entry, cost, extra) {
+        var log2 = (evaS.log || []).concat([entry]).slice(-4);
+        evaUpd(Object.assign({ log: log2, o2: Math.max(0, evaS.o2 - cost) }, extra || {}));
+      }
+      function evaClip() {
+        if (evaS.done) return;
+        var next = Math.min(EVA_RAILS.length - 1, evaS.pos + 1);
+        var patch = {};
+        patch[evaS.freeTether === 'A' ? 'tetherA' : 'tetherB'] = next;
+        evaLog('🔗 Clipped tether ' + evaS.freeTether + ' to ' + EVA_RAILS[next] + '.', 2, patch);
+      }
+      function evaMove() {
+        if (evaS.done) return;
+        var next = Math.min(EVA_RAILS.length - 1, evaS.pos + 1);
+        var clippedAhead = evaS.tetherA === next || evaS.tetherB === next;
+        if (!clippedAhead) {
+          evaLog('⚠ Moved WITHOUT clipping ahead — one slip and you are a satellite. Safety violation: −12% O₂ (sim penalty).', 12, {});
+          if ((evaS.o2 - 12) <= 0) evaUpd({ done: true, failMsg: __alloT('stem.spacestation.eva_o2_out', 'Suit consumables exhausted — EVA aborted. Real spacewalks budget every breath; try a cleaner run.') });
+          return;
+        }
+        var trailing = evaS.tetherA === next ? 'B' : 'A';
+        var patch = { pos: next, freeTether: trailing };
+        patch[trailing === 'A' ? 'tetherA' : 'tetherB'] = next;
+        evaLog('🧗 Translated to ' + EVA_RAILS[next] + ' (trailing tether ' + trailing + ' re-stowed).', 4, patch);
+      }
+      function evaTorque() {
+        if (evaS.done || evaS.pos !== EVA_RAILS.length - 1) return;
+        var b = Math.min(4, (evaS.bolts || 0) + 1);
+        if (b >= 4) {
+          evaUpd({ bolts: 4, done: true, failMsg: '' });
+          if (addToast) addToast('🧑‍🚀 ' + __alloT('stem.spacestation.eva_win_toast', 'Pump module secured — EVA objective complete!'), 'success');
+          if (typeof awardXP === 'function') { try { awardXP(5); } catch (e) {} }
+        } else {
+          evaLog('🔩 Bolt ' + b + '/4 torqued. Gloved hands tire fast — pace yourself.', 5, { bolts: b });
+        }
+      }
+      function evaReset() { upd({ eva: { pos: 0, tetherA: 0, tetherB: 0, freeTether: 'B', o2: 100, bolts: 0, done: false, failMsg: '', started: true, log: ['📻 Airlock egress complete. Two tethers, both clipped at Quest. Daylight window open.'] } }); }
+
+      // ── Interior views (SVG "peek inside" for Cupola + sleep cabin) ──
+      function renderCupolaInterior() {
+        var scene = d.cupolaScene || 'day';
+        var shut = !!d.cupolaShut;
+        var SCENES = {
+          day: { fill: '#2f6fab', label: __alloT('stem.spacestation.scene_day', '☀️ Daylit Pacific'), note: 'Cloud spirals and ocean glint — crews say the blue is beyond any photograph.' },
+          night: { fill: '#0b1026', label: __alloT('stem.spacestation.scene_night', '🌃 Night — city lights'), note: 'Cities web the darkness in gold; lightning storms flicker hundreds of km wide.' },
+          aurora: { fill: '#123a2e', label: __alloT('stem.spacestation.scene_aurora', '🟢 Aurora pass'), note: 'The station flies THROUGH the upper fringes of aurora — green curtains below and beside you.' }
+        };
+        var sc = SCENES[scene] || SCENES.day;
+        function windowPane(x, y, w, hgt, key) {
+          return h('g', { key: key },
+            h('rect', { x: x, y: y, width: w, height: hgt, rx: 6, fill: shut ? '#39424f' : sc.fill, stroke: '#94a3b8', strokeWidth: 2 }),
+            shut ? h('line', { x1: x + 4, y1: y + hgt / 2, x2: x + w - 4, y2: y + hgt / 2, stroke: '#556072', strokeWidth: 3 }) :
+              scene === 'aurora' ? h('path', { d: 'M ' + (x + 4) + ' ' + (y + hgt - 8) + ' Q ' + (x + w / 2) + ' ' + (y + 4) + ' ' + (x + w - 4) + ' ' + (y + hgt - 10), fill: 'none', stroke: '#4ade80', strokeWidth: 3, opacity: 0.8 }) :
+              scene === 'night' ? h('g', null, [0, 1, 2, 3].map(function (i) { return h('circle', { key: i, cx: x + 6 + ((i * 37) % (w - 10)), cy: y + 8 + ((i * 23) % (hgt - 14)), r: 1.5, fill: '#fde68a' }); })) :
+              h('ellipse', { cx: x + w / 2, cy: y + hgt - 2, rx: w * 0.55, ry: 6, fill: '#e8f4ff', opacity: 0.5 })
+          );
+        }
+        return card('🔭 ' + __alloT('stem.spacestation.inside_cupola', 'Inside the Cupola'),
+          h('div', null,
+            h('svg', { viewBox: '0 0 360 180', role: 'img', 'aria-label': __alloT('stem.spacestation.cupola_aria', 'View from inside the Cupola dome: six angled windows around a large round center window, looking down at Earth. Scene: ') + sc.label, style: { width: '100%', maxWidth: 480, display: 'block', margin: '0 auto', background: '#101725', borderRadius: 12, border: '1px solid #334155' } },
+              windowPane(12, 62, 70, 56, 'w1'), windowPane(88, 30, 70, 44, 'w2'), windowPane(202, 30, 70, 44, 'w3'), windowPane(278, 62, 70, 56, 'w4'),
+              windowPane(88, 118, 70, 44, 'w5'), windowPane(202, 118, 70, 44, 'w6'),
+              h('circle', { cx: 180, cy: 96, r: 34, fill: shut ? '#39424f' : sc.fill, stroke: '#94a3b8', strokeWidth: 3 }),
+              !shut ? h('ellipse', { cx: 180, cy: 112, rx: 26, ry: 8, fill: scene === 'day' ? '#e8f4ff' : scene === 'aurora' ? '#4ade80' : '#fde68a', opacity: 0.45 }) : null,
+              h('text', { x: 180, y: 14, textAnchor: 'middle', fill: '#64748b', fontSize: 9 }, '80 cm center window — the largest ever flown in space')
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
+              Object.keys(SCENES).map(function (k) {
+                var on = scene === k;
+                return h('button', { key: k, type: 'button', 'aria-pressed': on, onClick: function () { upd({ cupolaScene: k, cupolaSeen: true }); }, style: { padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: on ? 'rgba(56,189,248,0.2)' : PANEL, color: on ? '#7dd3fc' : TEXT, border: '1px solid ' + (on ? '#38bdf8' : '#334155') } }, SCENES[k].label);
+              }),
+              h('button', { type: 'button', 'aria-pressed': shut, onClick: function () { upd({ cupolaShut: !shut }); }, style: { padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: shut ? 'rgba(251,191,36,0.15)' : PANEL, color: shut ? '#fbbf24' : TEXT, border: '1px solid ' + (shut ? '#fbbf24' : '#334155') } }, shut ? '🛡️ ' + __alloT('stem.spacestation.shutters_closed', 'Shutters closed') : '🛡️ ' + __alloT('stem.spacestation.close_shutters', 'Close debris shutters'))),
+            h('p', { style: { fontSize: 12, color: TEXT, lineHeight: 1.55, margin: '8px 0 0' } }, shut ? __alloT('stem.spacestation.shutter_note', 'Every window has an external shutter, closed whenever the Cupola is unattended — a micrometeoroid pit in this glass would be very bad news.') : sc.note)
+          ), '#38bdf8');
+      }
+      function renderSleepInterior() {
+        var spot = d.sleepSpot || 'bag';
+        var SPOTS = {
+          bag: { x: 95, y: 95, label: __alloT('stem.spacestation.spot_bag', 'Sleeping bag'), note: 'Strapped upright to the wall — "lying down" is meaningless in freefall. You clip in so you don’t drift into the vent.' },
+          laptop: { x: 42, y: 52, label: __alloT('stem.spacestation.spot_laptop', 'Laptop'), note: 'Personal station for email, timeline, calls home, and movies. Velcro everywhere — the real space program runs on Velcro.' },
+          vent: { x: 148, y: 26, label: __alloT('stem.spacestation.spot_vent', 'Air vent'), note: 'Constant airflow is a LIFE-SUPPORT feature: without it, your own exhaled CO₂ pools invisibly around your face while you sleep.' },
+          gear: { x: 150, y: 120, label: __alloT('stem.spacestation.spot_gear', 'Personal kit'), note: 'Earplugs and an eye mask — the station hums at ~60-70 dB and the Sun rises every 92 minutes.' },
+          photos: { x: 42, y: 125, label: __alloT('stem.spacestation.spot_photos', 'Family photos'), note: 'Each phone-booth-sized cabin is the only truly private space on the station. Crews decorate them like dorm rooms.' }
+        };
+        var sp = SPOTS[spot] || SPOTS.bag;
+        return card('😴 ' + __alloT('stem.spacestation.inside_cabin', 'Inside a crew sleep cabin (Harmony)'),
+          h('div', null,
+            h('svg', { viewBox: '0 0 200 160', role: 'img', 'aria-label': __alloT('stem.spacestation.cabin_aria', 'Cutaway of a crew sleep cabin, about the size of a phone booth. Tap the hotspot buttons to inspect items.'), style: { width: '100%', maxWidth: 380, display: 'block', margin: '0 auto', background: '#101725', borderRadius: 12, border: '1px solid #334155' } },
+              h('rect', { x: 14, y: 10, width: 172, height: 140, rx: 10, fill: '#1c2434', stroke: '#475569', strokeWidth: 2 }),
+              h('rect', { x: 80, y: 26, width: 34, height: 118, rx: 12, fill: '#334a66', stroke: '#64748b' }),
+              h('circle', { cx: 97, cy: 40, r: 9, fill: '#e8d8c3' }),
+              h('rect', { x: 30, y: 40, width: 26, height: 18, rx: 3, fill: '#0f172a', stroke: '#64748b' }),
+              h('rect', { x: 138, y: 18, width: 24, height: 12, rx: 3, fill: '#0f172a', stroke: '#64748b' }),
+              [0, 1, 2].map(function (i) { return h('line', { key: i, x1: 141 + i * 7, y1: 20, x2: 141 + i * 7, y2: 28, stroke: '#475569' }); }),
+              h('rect', { x: 138, y: 108, width: 26, height: 24, rx: 4, fill: '#243146', stroke: '#64748b' }),
+              h('rect', { x: 30, y: 112, width: 22, height: 16, rx: 2, fill: '#3b2f3f', stroke: '#a78bfa' }),
+              h('circle', { cx: sp.x, cy: sp.y, r: 8, fill: 'none', stroke: '#38bdf8', strokeWidth: 2.5 })
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
+              Object.keys(SPOTS).map(function (k) {
+                var on = spot === k;
+                return h('button', { key: k, type: 'button', 'aria-pressed': on, onClick: function () { upd({ sleepSpot: k, cabinSeen: true }); }, style: { padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: on ? 'rgba(232,121,249,0.16)' : PANEL, color: on ? '#f0abfc' : TEXT, border: '1px solid ' + (on ? '#e879f9' : '#334155') } }, SPOTS[k].label);
+              })),
+            h('p', { style: { fontSize: 12, color: TEXT, lineHeight: 1.55, margin: '8px 0 0' } }, h('strong', { style: { color: '#f0abfc' } }, sp.label + ': '), sp.note)
+          ), '#e879f9');
+      }
+
+      function renderMissions() {
+        var dockRealMode = d.dockRealMode !== false;
+        return h('div', null,
+          h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
+            __alloT('stem.spacestation.missions_intro', 'Two hands-on missions. Both are simplified but honest: the docking sim runs the real relative-motion equations (with orbit effects sped up so you can feel them), and the spacewalk enforces the real two-tether safety rule.')),
+
+          card('🚀 ' + __alloT('stem.spacestation.mission_dock', 'Mission 1 — Dock the cargo capsule'),
+            h('div', null,
+              h('p', { style: { fontSize: 12, color: SOFT, lineHeight: 1.55, margin: '0 0 8px' } },
+                __alloT('stem.spacestation.dock_help', 'Fly the capsule (left side) onto the glowing port. Arrow keys / WASD or the buttons: → thrusts forward, ← brakes, ↑/↓ steer radially. Dock slower than 0.6 m/s, inside the corridor. With ORBITAL PHYSICS ON, watch the counter-intuitive part: thrusting forward also pushes you upward off the approach line — orbits are not roads.')),
+              h('canvas', {
+                ref: function (cv) { if (cv) { cv._dockRealMode = dockRealMode; dockingCanvasRef(cv); } },
+                'data-dock-canvas': 'true',
+                tabIndex: 0, role: 'application',
+                'aria-label': __alloT('stem.spacestation.dock_aria', 'Docking simulator. Use arrow keys or W A S D to thrust. Goal: reach the docking port slower than 0.6 meters per second. Status is shown in the mission report below.'),
+                style: { width: '100%', maxWidth: 640, display: 'block', margin: '0 auto', borderRadius: 12, border: '1px solid #334155', background: '#050a18', cursor: 'crosshair' }
+              }),
+              h('div', { role: 'group', 'aria-label': 'Thruster controls', style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 } },
+                [['back', '←', 'Brake'], ['up', '↑', 'Radial out'], ['down', '↓', 'Radial in'], ['fwd', '→', 'Forward']].map(function (b) {
+                  function press(on) { return function (e) { e.preventDefault(); var cv = document.querySelector('[data-dock-canvas]') || e.currentTarget.parentElement.parentElement.querySelector('canvas'); if (cv && cv._dockSetThrust) cv._dockSetThrust(b[0], on); }; }
+                  return h('button', { key: b[0], type: 'button', 'aria-label': 'Thrust ' + b[2], onPointerDown: press(true), onPointerUp: press(false), onPointerLeave: press(false), style: { padding: '10px 16px', borderRadius: 10, fontSize: 14, fontWeight: 900, cursor: 'pointer', background: PANEL, color: TEXT, border: '1px solid #475569', touchAction: 'none' } }, b[1] + ' ', h('span', { style: { fontSize: 10, fontWeight: 600, color: SOFT } }, b[2]));
+                })),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 } },
+                h('button', { type: 'button', onClick: function (e) { var cv = e.currentTarget.parentElement.parentElement.querySelector('canvas'); if (cv && cv._dockReset) cv._dockReset(dockRealMode); upd({ dockResult: null, dockMsg: '' }); }, style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: '#0ea5e9', color: '#fff', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, '🔁 ' + __alloT('stem.spacestation.dock_retry', 'New approach')),
+                h('button', { type: 'button', 'aria-pressed': dockRealMode, onClick: function (e) { var next = !dockRealMode; var cv = e.currentTarget.parentElement.parentElement.querySelector('canvas'); upd({ dockRealMode: next, dockResult: null, dockMsg: '' }); if (cv && cv._dockReset) cv._dockReset(next); }, style: { padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', background: dockRealMode ? 'rgba(34,197,94,0.15)' : 'rgba(251,191,36,0.12)', color: dockRealMode ? '#4ade80' : '#fbbf24', border: '1px solid ' + (dockRealMode ? '#22c55e' : '#fbbf24') } }, dockRealMode ? '🧲 ' + __alloT('stem.spacestation.dock_real_on', 'Orbital physics ON') : '🎮 ' + __alloT('stem.spacestation.dock_real_off', 'Video-game mode (physics OFF)'))),
+              d.dockMsg ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 8, padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + (d.dockResult === 'docked' ? '#22c55e' : '#fbbf24'), fontSize: 12, color: TEXT, lineHeight: 1.55 } },
+                h('strong', { style: { color: d.dockResult === 'docked' ? '#4ade80' : '#fbbf24' } }, __alloT('stem.spacestation.mission_report', 'Mission report: ')), d.dockMsg,
+                (d.dockRuns || 0) > 0 ? h('span', { style: { color: SOFT } }, '  (' + (d.dockWins || 0) + '/' + d.dockRuns + ' docked)') : null) : null,
+              h('p', { style: { fontSize: 11, color: SOFT, marginTop: 8, lineHeight: 1.5 } },
+                __alloT('stem.spacestation.dock_science', '🔬 The science: relative motion near an orbiting target follows the Clohessy-Wiltshire equations — thrust toward the target and you drift off-axis, because raising your speed raises your orbit. Real approaches are therefore slow, computed, and rehearsed. Try predicting your drift BEFORE toggling physics on: that is the whole discipline of rendezvous in one toggle.'))
+            ), '#38bdf8'),
+
+          card('🧑‍🚀 ' + __alloT('stem.spacestation.mission_eva', 'Mission 2 — Spacewalk: replace the failed pump'),
+            h('div', null,
+              h('p', { style: { fontSize: 12, color: SOFT, lineHeight: 1.55, margin: '0 0 8px' } },
+                __alloT('stem.spacestation.eva_help', 'An ammonia pump on the truss has failed. Translate hand-over-hand from the Quest airlock to the worksite and torque 4 bolts — while respecting the real rule that keeps astronauts alive: at least one tether clipped AT ALL TIMES. Clip the free tether ahead, then move. Every action costs suit consumables.')),
+              !evaS.started ? h('button', { type: 'button', onClick: evaReset, style: { padding: '8px 16px', borderRadius: 10, border: 'none', background: '#0ea5e9', color: '#fff', fontWeight: 900, fontSize: 13, cursor: 'pointer' } }, '🚪 ' + __alloT('stem.spacestation.eva_start', 'Open the hatch')) :
+              h('div', null,
+                h('div', { role: 'list', 'aria-label': 'Handrail route', style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 } },
+                  EVA_RAILS.map(function (r, i) {
+                    var here = evaS.pos === i;
+                    var tA = evaS.tetherA === i, tB = evaS.tetherB === i;
+                    return h('div', { key: i, role: 'listitem', style: { padding: '6px 8px', borderRadius: 8, fontSize: 10.5, fontWeight: 700, background: here ? 'rgba(56,189,248,0.2)' : 'rgba(2,6,23,0.4)', color: here ? '#7dd3fc' : SOFT, border: '1px solid ' + (here ? '#38bdf8' : '#334155') } },
+                      (here ? '🧑‍🚀 ' : '') + r + (tA ? ' 🔗A' : '') + (tB ? ' 🔗B' : ''));
+                  })),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 800, color: evaS.o2 > 40 ? '#4ade80' : evaS.o2 > 15 ? '#fbbf24' : '#f87171' } }, '🫁 ' + __alloT('stem.spacestation.eva_o2', 'Suit consumables: ') + evaS.o2.toFixed(0) + '%'),
+                  h('div', { style: { fontSize: 11, color: SOFT } }, '🔩 ' + (evaS.bolts || 0) + '/4 ' + __alloT('stem.spacestation.eva_bolts', 'bolts'))),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                  h('button', { type: 'button', disabled: evaS.done || evaS.pos >= EVA_RAILS.length - 1, onClick: evaClip, style: { padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', background: PANEL, color: TEXT, border: '1px solid #475569', opacity: (evaS.done || evaS.pos >= EVA_RAILS.length - 1) ? 0.5 : 1 } }, '🔗 ' + __alloT('stem.spacestation.eva_clip', 'Clip tether ') + evaS.freeTether + __alloT('stem.spacestation.eva_ahead', ' ahead')),
+                  h('button', { type: 'button', disabled: evaS.done || evaS.pos >= EVA_RAILS.length - 1, onClick: evaMove, style: { padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', background: PANEL, color: TEXT, border: '1px solid #475569', opacity: (evaS.done || evaS.pos >= EVA_RAILS.length - 1) ? 0.5 : 1 } }, '🧗 ' + __alloT('stem.spacestation.eva_translate', 'Translate forward')),
+                  h('button', { type: 'button', disabled: evaS.done || evaS.pos !== EVA_RAILS.length - 1, onClick: evaTorque, style: { padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', background: evaS.pos === EVA_RAILS.length - 1 && !evaS.done ? 'rgba(251,191,36,0.15)' : PANEL, color: evaS.pos === EVA_RAILS.length - 1 && !evaS.done ? '#fbbf24' : TEXT, border: '1px solid ' + (evaS.pos === EVA_RAILS.length - 1 && !evaS.done ? '#fbbf24' : '#475569'), opacity: (evaS.done || evaS.pos !== EVA_RAILS.length - 1) ? 0.5 : 1 } }, '🔩 ' + __alloT('stem.spacestation.eva_torque', 'Torque bolt')),
+                  h('button', { type: 'button', onClick: evaReset, style: { padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', background: 'transparent', color: SOFT, border: '1px solid #334155' } }, '🔁 ' + __alloT('stem.spacestation.eva_restart', 'Restart EVA'))),
+                h('div', { role: 'log', 'aria-live': 'polite', style: { marginTop: 8, padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px solid #334155', fontSize: 11.5, color: TEXT, lineHeight: 1.6, minHeight: 40 } },
+                  (evaS.log || []).map(function (l, i) { return h('div', { key: i }, l); })),
+                evaS.done ? h('div', { role: 'status', style: { marginTop: 8, padding: 8, borderRadius: 8, background: evaS.failMsg ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)', borderLeft: '3px solid ' + (evaS.failMsg ? '#ef4444' : '#22c55e'), fontSize: 12, color: TEXT, lineHeight: 1.55 } },
+                  evaS.failMsg || __alloT('stem.spacestation.eva_win', '✅ Pump secured with ' + evaS.o2.toFixed(0) + '% consumables to spare. Real EVAs run 6-8 hours with the same discipline you just practiced: clip, verify, move, repeat — hundreds of times.')) : null
+              ),
+              h('p', { style: { fontSize: 11, color: SOFT, marginTop: 8, lineHeight: 1.5 } },
+                __alloT('stem.spacestation.eva_science', '🔬 The science: nothing about a spacewalk is casual. Astronauts pre-breathe pure O₂ for hours (decompression safety), gloves stiffen every grip like squeezing a tennis ball for 7 hours, and the two-tether rule exists because in orbit a slip does not mean falling — it means becoming a slowly departing satellite.'))
+            ), '#fbbf24')
+        );
+      }
+
       // ── Tabs ──
       var TABS = [
         { id: 'map', icon: '🛰️', label: __alloT('stem.spacestation.tab_map', '3-D Station') },
         { id: 'day', icon: '👩‍🚀', label: __alloT('stem.spacestation.tab_day', 'A Day Aboard') },
         { id: 'systems', icon: '⚙️', label: __alloT('stem.spacestation.tab_systems', 'Systems & Challenges') },
         { id: 'orbit', icon: '🧮', label: __alloT('stem.spacestation.tab_orbit', 'Orbit Lab') },
+        { id: 'missions', icon: '🎮', label: __alloT('stem.spacestation.tab_missions', 'Missions') },
         { id: 'history', icon: '📜', label: __alloT('stem.spacestation.tab_history', 'History & Future') },
         { id: 'quiz', icon: '🧠', label: __alloT('stem.spacestation.tab_quiz', 'Quiz') }
       ];
@@ -477,6 +788,8 @@
               h('div', { style: { padding: 8, borderRadius: 8, background: 'rgba(251,191,36,0.08)', borderLeft: '3px solid #fbbf24', fontSize: 12, color: TEXT, lineHeight: 1.55 } },
                 h('strong', { style: { color: '#fbbf24' } }, __alloT('stem.spacestation.eng', 'Engineering spotlight: ')), selModule.eng)
             ), '#38bdf8'),
+          selModule.id === 'cupola' ? renderCupolaInterior() : null,
+          selModule.id === 'harmony' ? renderSleepInterior() : null,
           card(__alloT('stem.spacestation.fast_facts', '📊 Fast facts'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
               FAST_FACTS.map(function (f, i) {
@@ -679,6 +992,7 @@
         tab === 'day' ? renderDay() :
         tab === 'systems' ? renderSystems() :
         tab === 'orbit' ? renderOrbit() :
+        tab === 'missions' ? renderMissions() :
         tab === 'history' ? renderHistory() :
         renderQuiz()
       );
