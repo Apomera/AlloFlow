@@ -5259,8 +5259,8 @@
     }, /*#__PURE__*/React.createElement("span", {
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${nwfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(nwfProbeTimer / 60), ":", String(nwfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
-      onClick: () => {
-        if (window.confirm("End NWF probe early?")) {
+      onClick: async () => {
+        if (await askStudentAnalyticsConfirmation("End NWF probe early?", { title: 'End NWF probe', confirmText: 'End probe' })) {
           clearInterval(nwfProbeTimerRef.current);
           nwfProbeTimerRef.current = null;
           const scored = nwfProbeWords.filter(w => w.scored);
@@ -5437,8 +5437,8 @@
     }, /*#__PURE__*/React.createElement("span", {
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${lnfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(lnfProbeTimer / 60), ":", String(lnfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
-      onClick: () => {
-        if (window.confirm("End LNF probe early?")) {
+      onClick: async () => {
+        if (await askStudentAnalyticsConfirmation("End LNF probe early?", { title: 'End LNF probe', confirmText: 'End probe' })) {
           clearInterval(lnfProbeTimerRef.current);
           lnfProbeTimerRef.current = null;
           const scored = lnfProbeLetters.filter(l => l.scored);
@@ -5603,8 +5603,8 @@
     }, /*#__PURE__*/React.createElement("span", {
       className: "tabular-nums px-3 py-1 rounded-full text-sm font-bold bg-amber-100 text-amber-700"
     }, "\u23F1 ", Math.floor(ranProbeElapsed / 60), ":", String(ranProbeElapsed % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
-      onClick: () => {
-        if (window.confirm("End RAN probe early?")) {
+      onClick: async () => {
+        if (await askStudentAnalyticsConfirmation("End RAN probe early?", { title: 'End RAN probe', confirmText: 'End probe' })) {
           clearInterval(ranProbeTimerRef.current);
           ranProbeTimerRef.current = null;
           const scored = ranProbeItems.filter(it => it.scored);
@@ -5797,8 +5797,8 @@
     }, /*#__PURE__*/React.createElement("span", {
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${orfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(orfProbeTimer / 60), ":", String(orfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
-      onClick: () => {
-        if (window.confirm("End ORF probe early?")) {
+      onClick: async () => {
+        if (await askStudentAnalyticsConfirmation("End ORF probe early?", { title: 'End ORF probe', confirmText: 'End probe' })) {
           clearInterval(orfProbeTimerRef.current);
           orfProbeTimerRef.current = null;
           setOrfProbeTimer(0);
@@ -6033,8 +6033,8 @@
     }, /*#__PURE__*/React.createElement("span", {
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${mnProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(mnProbeTimer / 60), ":", String(mnProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
-      onClick: () => {
-        if (window.confirm("End probe early? Progress will be saved.")) {
+      onClick: async () => {
+        if (await askStudentAnalyticsConfirmation("End probe early? Progress will be saved.", { title: 'End missing number probe', confirmText: 'End probe' })) {
           clearInterval(mnProbeTimerRef.current);
           mnProbeTimerRef.current = null;
           const answered = mnProbeProblems.filter(p => p.studentAnswer !== null);
@@ -6272,8 +6272,8 @@
     }, /*#__PURE__*/React.createElement("span", {
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${qdProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(qdProbeTimer / 60), ":", String(qdProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
-      onClick: () => {
-        if (window.confirm("End probe early?")) {
+      onClick: async () => {
+        if (await askStudentAnalyticsConfirmation("End probe early?", { title: 'End quantity discrimination probe', confirmText: 'End probe' })) {
           clearInterval(qdProbeTimerRef.current);
           qdProbeTimerRef.current = null;
           const answered = qdProbeProblems.filter(p => p.studentAnswer !== null);
@@ -8125,8 +8125,8 @@
         if (nwfProbeIndex + 1 < nwfProbeWords.length) { setNwfProbeIndex(nwfProbeIndex + 1); }
         else { clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null; var sc = nwfProbeWords.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0); setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:nwfProbeWords.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false); }
       },
-      onEndEarly: function() {
-        if (window.confirm('End NWF probe early?')) {
+      onEndEarly: async function() {
+        if (await askStudentAnalyticsConfirmation('End NWF probe early?', { title: 'End NWF probe', confirmText: 'End probe' })) {
           clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null;
           var sc = nwfProbeWords.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0);
           setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:nwfProbeWords.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false);
@@ -8173,8 +8173,8 @@
         if (lnfProbeIndex + 1 < lnfProbeLetters.length) { setLnfProbeIndex(lnfProbeIndex + 1); }
         else { clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null; var sc = lnfProbeLetters.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length; setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:lnfProbeLetters.length,lpm:co,type:'lnf'}); setLnfProbeActive(false); }
       },
-      onEndEarly: function() {
-        if (window.confirm('End LNF probe early?')) {
+      onEndEarly: async function() {
+        if (await askStudentAnalyticsConfirmation('End LNF probe early?', { title: 'End LNF probe', confirmText: 'End probe' })) {
           clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null;
           var sc = lnfProbeLetters.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length;
           setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:lnfProbeLetters.length,lpm:co,type:'lnf'}); setLnfProbeActive(false);
@@ -8231,8 +8231,8 @@
         if (ranProbeIndex + 1 < ranProbeItems.length) { setRanProbeIndex(ranProbeIndex + 1); }
         else { clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null; var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = ranProbeItems.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length; setRanProbeResults({correct:co,totalScored:sc.length,totalItems:ranProbeItems.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false); }
       },
-      onEndEarly: function() {
-        if (window.confirm('End RAN probe early?')) {
+      onEndEarly: async function() {
+        if (await askStudentAnalyticsConfirmation('End RAN probe early?', { title: 'End RAN probe', confirmText: 'End probe' })) {
           clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null;
           var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = ranProbeItems.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length;
           setRanProbeResults({correct:co,totalScored:sc.length,totalItems:ranProbeItems.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false);
