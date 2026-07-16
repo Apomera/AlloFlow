@@ -88,8 +88,8 @@ function requirePdfPath(args) { return _requireFileOfType(args, /\.pdf$/i, '.pdf
 function requireDocPath(args) { return _requireFileOfType(args, /\.(pdf|docx|pptx)$/i, '.pdf, .docx, or .pptx'); }
 
 function requireGeminiKey() {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY is not set. This tool sends document content to the Gemini API and cannot run without a key.');
+  if (!Driver.resolveGeminiApiKey().key) {
+    throw new Error('GEMINI_API_KEY is not set (and no key file was found). This tool sends document content to the Gemini API and cannot run without a key — set the env var or ALLOFLOW_MCP_ENV_PATH.');
   }
 }
 
@@ -391,9 +391,11 @@ const TOOL_HANDLERS = {
     let playwrightAvailable = false;
     try { require.resolve('playwright'); playwrightAvailable = true; } catch (_) {}
     const modules = {};
-    for (const f of Driver.MODULE_FILES) modules[f] = fs.existsSync(path.join(Driver.REPO_ROOT, f));
+    for (const f of Driver.MODULE_FILES) modules[f] = fs.existsSync(path.join(Driver.ASSETS_ROOT, f));
+    const keyInfo = Driver.resolveGeminiApiKey();
     return {
-      geminiKeyPresent: !!process.env.GEMINI_API_KEY,
+      geminiKeyPresent: !!keyInfo.key,
+      geminiKeySource: keyInfo.source, // label only ('env:…'/'file:…'/'none') — never the value
       playwrightAvailable,
       pipelineModulesPresent: modules,
       model: process.env.ALLOFLOW_MCP_GEMINI_MODEL || 'gemini-3-flash-preview',
@@ -407,7 +409,7 @@ const TOOL_HANDLERS = {
         unfinished: Array.from(JOBS.values()).filter((j) => ['queued', 'running'].indexOf(j.status) !== -1).length,
       },
       networkEgress: ['generativelanguage.googleapis.com (document content)', 'public CDNs (pdf.js, Tesseract, pdf-lib, axe)'],
-      ready: !!process.env.GEMINI_API_KEY && playwrightAvailable && Object.values(modules).every(Boolean),
+      ready: !!keyInfo.key && playwrightAvailable && Object.values(modules).every(Boolean),
     };
   },
 

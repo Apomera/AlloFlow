@@ -35,6 +35,15 @@ const MODULE_FILES = [
   'doc_builder_renderer_module.js',
   'doc_pipeline_module.js',
 ];
+// Where the pipeline modules + verapdf/ actually live. A repo checkout serves them from the
+// repo root; a packaged MCPB bundle ships them in an assets/ dir next to server/. Resolution:
+// ALLOFLOW_MCP_ASSETS_DIR override → repo root when the modules are there → ../assets.
+function resolveAssetsRoot() {
+  if (process.env.ALLOFLOW_MCP_ASSETS_DIR) return path.resolve(process.env.ALLOFLOW_MCP_ASSETS_DIR);
+  if (fs.existsSync(path.join(REPO_ROOT, MODULE_FILES[0]))) return REPO_ROOT;
+  return path.resolve(__dirname, '..', 'assets');
+}
+const ASSETS_ROOT = resolveAssetsRoot();
 const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
 
 // veraPDF validator transport. The page + its 16MB JAR live in the repo (verapdf/), and
@@ -50,6 +59,36 @@ const FALLBACK_MODEL = process.env.ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL || 'gemini
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 function defaultLog(msg) { process.stderr.write('[alloflow-remediation] ' + msg + '\n'); }
+
+// ── Gemini key resolution ───────────────────────────────────────────────────
+// Order: GEMINI_API_KEY env var → the file at ALLOFLOW_MCP_ENV_PATH → the repo's
+// gitignored maintainer env file (prismflow-deploy/.env.maintainer-demo), reading
+// GEMINI_API_KEY / REACT_APP_GEMINI_API_KEY / REACT_APP_API_KEY. The key VALUE is
+// never logged or returned by any tool — only its source label. Set
+// ALLOFLOW_MCP_NO_KEY_FILES=1 to disable the file fallbacks (the smoke test does,
+// so its "no key" contract holds on machines where the maintainer file exists).
+function readKeyFromEnvFile(p) {
+  let text;
+  try { text = fs.readFileSync(p, 'utf8'); } catch (_) { return null; }
+  for (const name of ['GEMINI_API_KEY', 'REACT_APP_GEMINI_API_KEY', 'REACT_APP_API_KEY']) {
+    const m = text.match(new RegExp('^\\s*' + name + '\\s*=\\s*(["\']?)([^"\'\\r\\n]+)\\1\\s*$', 'm'));
+    if (m && m[2] && m[2].trim() && !/YOUR|CHANGE|PLACEHOLDER|XXXX/i.test(m[2])) return m[2].trim();
+  }
+  return null;
+}
+
+function resolveGeminiApiKey() {
+  if (process.env.GEMINI_API_KEY) return { key: process.env.GEMINI_API_KEY, source: 'env:GEMINI_API_KEY' };
+  if (process.env.ALLOFLOW_MCP_NO_KEY_FILES === '1') return { key: null, source: 'none' };
+  const candidates = [];
+  if (process.env.ALLOFLOW_MCP_ENV_PATH) candidates.push(path.resolve(process.env.ALLOFLOW_MCP_ENV_PATH));
+  candidates.push(path.join(REPO_ROOT, 'prismflow-deploy', '.env.maintainer-demo'));
+  for (const p of candidates) {
+    const key = readKeyFromEnvFile(p);
+    if (key) return { key, source: 'file:' + path.basename(p) };
+  }
+  return { key: null, source: 'none' };
+}
 
 // ── Gemini transport (Node side) ────────────────────────────────────────────
 // Returns { ok: true, text } or { ok: false, error: {...} } — never throws.
@@ -124,8 +163,8 @@ function createDriver(options) {
   let activeContext = null; // the in-flight run's browser context (single-flight callers only)
 
   function requireModuleFiles() {
-    const missing = MODULE_FILES.filter((f) => !fs.existsSync(path.join(REPO_ROOT, f)));
-    if (missing.length) throw new Error('Pipeline module file(s) missing from the repo root: ' + missing.join(', '));
+    const missing = MODULE_FILES.filter((f) => !fs.existsSync(path.join(ASSETS_ROOT, f)));
+    if (missing.length) throw new Error('Pipeline module file(s) missing from ' + ASSETS_ROOT + ': ' + missing.join(', '));
   }
 
   async function getBrowser() {
@@ -151,8 +190,10 @@ function createDriver(options) {
 
   async function newPipelinePage(runOpts) {
     requireModuleFiles();
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error('GEMINI_API_KEY is not set. The remediation pipeline needs a Gemini API key.');
+    const resolved = resolveGeminiApiKey();
+    const apiKey = resolved.key;
+    if (!apiKey) throw new Error('GEMINI_API_KEY is not set (and no key file was found). The remediation pipeline needs a Gemini API key — set the env var or point ALLOFLOW_MCP_ENV_PATH at an env file containing one.');
+    if (resolved.source !== 'env:GEMINI_API_KEY') log('using Gemini key from ' + resolved.source);
     // Per-run log sink: job-based callers route a run's telemetry into that job's record;
     // everything still lands on the driver-level log (stderr) too via the caller's sink.
     const rlog = typeof runOpts.onLog === 'function' ? runOpts.onLog : log;
@@ -178,7 +219,7 @@ function createDriver(options) {
     });
     await page.exposeFunction('__mcpProgress', async (line) => { rlog('progress: ' + String(line).slice(0, 300)); });
 
-    for (const f of MODULE_FILES) await page.addScriptTag({ path: path.join(REPO_ROOT, f) });
+    for (const f of MODULE_FILES) await page.addScriptTag({ path: path.join(ASSETS_ROOT, f) });
     await page.waitForFunction(
       () => !!(window.AlloModules && window.AlloModules.VerificationPolicy && window.AlloModules.DocBuilderRenderer && window.AlloModules.createDocPipeline),
       null, { timeout: 30000 }
@@ -386,7 +427,7 @@ function createDriver(options) {
     if (VERAPDF_URL_OVERRIDE) return Promise.resolve(VERAPDF_URL_OVERRIDE);
     if (verapdfServer) return Promise.resolve('http://127.0.0.1:' + verapdfServer.address().port + '/verapdf/verapdf_validator.html');
     const http = require('http');
-    const rootDir = path.join(REPO_ROOT, 'verapdf');
+    const rootDir = path.join(ASSETS_ROOT, 'verapdf');
     if (!fs.existsSync(path.join(rootDir, 'verapdf_validator.html'))) {
       return Promise.reject(new Error('verapdf/verapdf_validator.html not found in the repo — cannot serve the validator locally.'));
     }
@@ -498,7 +539,7 @@ function createDriver(options) {
   return { audit, remediate, validatePdfUa, cancelActiveRun, close };
 }
 
-module.exports = { createDriver, classifyHttpFailure, REPO_ROOT, MODULE_FILES };
+module.exports = { createDriver, classifyHttpFailure, resolveGeminiApiKey, REPO_ROOT, ASSETS_ROOT, MODULE_FILES };
 
 // ── Direct CLI (for manual testing without an MCP client) ──────────────────
 //   GEMINI_API_KEY=... node desktop/mcp/remediation_headless_driver.cjs audit <file.pdf>

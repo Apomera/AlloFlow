@@ -30,8 +30,15 @@ From the repo root (`UDL-Tool-Updated`):
 ```bash
 npm install                          # playwright is already a devDependency
 npx playwright install chromium      # once, if Chromium isn't present
-export GEMINI_API_KEY=...            # a Google AI Studio / Gemini API key
+export GEMINI_API_KEY=...            # optional — see key auto-discovery below
 ```
+
+**Key auto-discovery:** if `GEMINI_API_KEY` isn't set, the connector looks in the file at
+`ALLOFLOW_MCP_ENV_PATH`, then in the repo's gitignored `prismflow-deploy/.env.maintainer-demo`
+(keys `GEMINI_API_KEY` / `REACT_APP_GEMINI_API_KEY` / `REACT_APP_API_KEY`). The key value is
+never logged or returned by tools — `remediation_capabilities` reports only its source label.
+⚠ 2026-07-16: the key currently in the maintainer file was **disabled by Google as leaked**
+(the June Prismflow incident) — mint a fresh one at aistudio.google.com and replace it there.
 
 Requires network: the Gemini API (**document content is sent to it**) and public CDNs
 (pdf.js, Tesseract, pdf-lib, axe) that the pipeline loads at runtime.
@@ -144,13 +151,31 @@ no retry grind); 429s are classified per-minute (throttle, retried/deferred) vs 
 
 | Var | Default | Purpose |
 | --- | --- | --- |
-| `GEMINI_API_KEY` | — (required) | Gemini API key for text + vision calls |
+| `GEMINI_API_KEY` | — | Gemini API key for text + vision calls (see auto-discovery above) |
+| `ALLOFLOW_MCP_ENV_PATH` | — | env file to read the key from when the var isn't set |
+| `ALLOFLOW_MCP_NO_KEY_FILES` | off | `1` disables key-file auto-discovery (tests; bundles) |
+| `ALLOFLOW_MCP_ASSETS_DIR` | auto | where the pipeline modules + `verapdf/` live (repo root, or `assets/` in a bundle) |
 | `ALLOFLOW_MCP_GEMINI_MODEL` | `gemini-3-flash-preview` | primary model |
 | `ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL` | `gemini-2.5-flash-lite` | one retry on a 404/config failure |
 | `ALLOFLOW_MCP_MAX_RUN_MINUTES` | `30` | hard wall clock per run |
 | `ALLOFLOW_MCP_VERAPDF_URL` | local loopback server | override validator page URL (host must support HTTP Range) |
 | `ALLOFLOW_MCP_VERBOSE` | off | forward ALL page console lines to stderr |
 | `ALLOFLOW_MCP_HEADFUL` | off | visible Chromium (debugging) |
+
+## Packaging (MCPB bundle for Claude Desktop)
+
+```bash
+node desktop/mcp/build_mcpb.cjs          # → desktop/dist/mcpb/alloflow-remediation.mcpb (~18MB)
+```
+
+The bundle stages the server, the three pipeline modules, `verapdf/`, `PRIVACY.md`, a
+playwright `node_modules`, and an MCPB manifest whose `user_config` prompts the installer for
+their Gemini API key (stored by Claude Desktop, injected as `GEMINI_API_KEY`; never in the
+bundle). Install by dragging the `.mcpb` into Claude Desktop → Settings → Extensions. Host
+machines still need Node 18+ on PATH and a one-time `npx playwright install chromium` —
+`remediation_capabilities` reports honestly when either is missing. `--lean` skips
+`node_modules` for personal installs where the repo checkout is present. Packed with the
+official `@anthropic-ai/mcpb` CLI when available (validates the manifest), else plain zip.
 
 ## Tests
 

@@ -53,6 +53,7 @@ const callTool = async (name, args) => (await request('tools/call', { name, argu
 beforeAll(() => {
   const env = { ...process.env, ALLOFLOW_MCP_MAX_RUN_MINUTES: '30' };
   delete env.GEMINI_API_KEY; // the missing-key gate is part of the contract under test
+  env.ALLOFLOW_MCP_NO_KEY_FILES = '1'; // and key AUTO-DISCOVERY (maintainer env file) must not defeat it on dev machines
   child = spawn(process.execPath, [SERVER], { cwd: process.cwd(), stdio: ['pipe', 'pipe', 'pipe'], env });
   child.stdout.setEncoding('utf-8');
   child.stdout.on('data', onStdout);
