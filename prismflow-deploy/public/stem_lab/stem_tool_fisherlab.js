@@ -541,6 +541,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     next.push({ bearing: Number(bearing) || 0, range: Math.max(0, Number(range) || 0) });
     return next.slice(-limit);
   }
+  function summarizeCoreRadarTrail(history) {
+    var plots = Array.isArray(history) ? history : [];
+    if (plots.length < 2) return { plotCount: plots.length, bearingChange: 0, rangeChange: 0, constantBearing: false, trend: 'insufficient', label: 'More timed plots needed for a trend' };
+    var first = plots[0];
+    var last = plots[plots.length - 1];
+    var bearingDelta = (Number(last.bearing) || 0) - (Number(first.bearing) || 0);
+    while (bearingDelta > 180) bearingDelta -= 360;
+    while (bearingDelta < -180) bearingDelta += 360;
+    var bearingChange = Math.abs(bearingDelta);
+    var rangeChange = (Number(last.range) || 0) - (Number(first.range) || 0);
+    var constantBearing = bearingChange <= 5;
+    var trend = rangeChange < -0.5 ? 'closing' : rangeChange > 0.5 ? 'opening' : 'steady-range';
+    var label = trend === 'closing' && constantBearing ? 'Steady bearing and closing range show collision risk' : trend === 'closing' ? 'Range is closing while bearing changes' : trend === 'opening' ? 'Range is opening after the maneuver' : 'Range is nearly steady; continue monitoring';
+    return { plotCount: plots.length, bearingChange: bearingChange, rangeChange: rangeChange, constantBearing: constantBearing, trend: trend, label: label };
+  }
   function gradeCoreEncounter(correct, reviewed, maneuverType, elapsed, closestRange) {
     if (!correct || reviewed) return { id: 'review', label: 'Review required', bonus: 0 };
     var promptLimit = maneuverType === 'stand-on' ? 8 : maneuverType === 'restricted' ? 9 : 7;
@@ -586,6 +601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     evaluateCoreManeuver: evaluateCoreManeuver,
     evaluateCoreCollisionRisk: evaluateCoreCollisionRisk,
     appendCoreRadarPlot: appendCoreRadarPlot,
+    summarizeCoreRadarTrail: summarizeCoreRadarTrail,
     gradeCoreEncounter: gradeCoreEncounter,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
@@ -10814,6 +10830,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         return { x: Math.sin(angle) * radius, y: -Math.cos(angle) * radius, opacity: 0.24 + ((plotIndex + 1) / Math.max(1, trafficTrackHistory.length)) * 0.48 };
       });
       var trafficPlotLesson = hud.trafficConstantBearing && hud.trafficClosing ? 'Steady bearing + shrinking range = collision risk' : hud.trafficOpening ? 'Growing range = contact opening' : 'Compare each timed bearing and range plot';
+      var trafficEvidence = summarizeCoreRadarTrail(trafficTrackHistory);
       var trafficGradeColor = hud.trafficGradeId === 'excellent' ? '#fde68a' : hud.trafficGradeId === 'safe' ? '#86efac' : hud.trafficGradeId === 'review' ? '#fdba74' : '#bae6fd';
       var trafficIsStandOn = hud.trafficManeuverType === 'stand-on';
       var trafficIsRestricted = hud.trafficManeuverType === 'restricted';
@@ -11027,13 +11044,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { height: 5, borderRadius: 4, overflow: 'hidden', background: 'rgba(148,163,184,0.22)', marginBottom: 6 } }, h('div', { style: { width: missionProgressPct + '%', height: '100%', background: 'linear-gradient(90deg,#22c55e,#38bdf8)', transition: 'width 0.25s ease' } })),
               h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Navigate red nun correctly' : '○ Pass red nun on starboard'),
               h('div', { style: { fontSize: 10, color: hud.trafficManeuverReviewed || (hud.trafficDecisionMade && !hud.trafficDecisionCorrect) ? '#fdba74' : 'inherit' } }, hud.trafficManeuverComplete ? (hud.trafficManeuverReviewed ? '△ ' + hud.trafficManeuverLabel + ' reviewed' : '✓ ' + hud.trafficManeuverLabel) : hud.trafficDecisionMade ? (trafficIsRestricted ? '○ Slow + horn + avoid port' : trafficIsStandOn ? '○ Hold course + speed for 5 s' : '○ Slow + alter 15° starboard') : '○ Resolve crossing traffic'),
-              hud.trafficManeuverComplete ? h('div', { 'aria-label': 'Traffic encounter debrief. ' + (hud.trafficGradeLabel || 'Maneuver complete') + '. Closest approach ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : 'not available') + ' simulation units. Response time ' + (hud.trafficManeuverSeconds || 0).toFixed(1) + ' seconds.', style: { margin: '5px 0 6px', padding: '5px 0', borderTop: '1px solid rgba(125,211,252,0.22)', borderBottom: '1px solid rgba(125,211,252,0.22)' } },
+              hud.trafficManeuverComplete ? h('div', { 'aria-label': 'Traffic encounter debrief. ' + (hud.trafficGradeLabel || 'Maneuver complete') + '. Closest approach ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : 'not available') + ' simulation units. Response time ' + (hud.trafficManeuverSeconds || 0).toFixed(1) + ' seconds. Radar evidence: ' + trafficEvidence.plotCount + ' plots, bearing change ' + trafficEvidence.bearingChange.toFixed(1) + ' degrees, range change ' + trafficEvidence.rangeChange.toFixed(1) + ' simulation units. ' + trafficEvidence.label + (trafficIsRestricted ? '. Rule 35 fog signal ' + (hud.trafficFogSignalMade ? 'logged' : 'not logged') : '') + '.', style: { margin: '5px 0 6px', padding: '5px 0', borderTop: '1px solid rgba(125,211,252,0.22)', borderBottom: '1px solid rgba(125,211,252,0.22)' } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: trafficGradeColor, fontSize: 9, fontWeight: 900, textTransform: 'uppercase' } },
                   h('span', null, 'Encounter · ' + (hud.trafficGradeLabel || 'Complete')),
                   h('span', null, (hud.trafficGradeBonus || 0) ? '+' + hud.trafficGradeBonus + ' bonus' : hud.trafficGradeId === 'review' ? 'review' : 'complete')),
                 h('div', { style: { marginTop: 2, display: 'flex', justifyContent: 'space-between', gap: 8, color: '#dbeafe', fontSize: 9 } },
                   h('span', null, 'CPA ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : '—')),
-                  h('span', null, (hud.trafficManeuverSeconds || 0).toFixed(1) + ' s'))
+                  h('span', null, (hud.trafficManeuverSeconds || 0).toFixed(1) + ' s')),
+                h('div', { style: { marginTop: 5, paddingTop: 5, borderTop: '1px solid rgba(125,211,252,0.18)' } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: '#7dd3fc', fontSize: 8, fontWeight: 900, textTransform: 'uppercase' } },
+                    h('span', null, 'Radar evidence replay'),
+                    h('span', null, trafficEvidence.plotCount + ' plots')),
+                  h('div', { 'aria-hidden': 'true', style: { height: 22, marginTop: 3, display: 'flex', alignItems: 'flex-end', gap: 2, borderBottom: '1px solid rgba(125,211,252,0.3)' } },
+                    trafficTrackHistory.map(function(plot, replayIndex) {
+                      return h('span', { key: 'replay-' + replayIndex, style: { flex: 1, minWidth: 3, height: Math.max(4, Math.min(20, ((plot.range || 0) / 38) * 20)), background: '#7dd3fc', opacity: 0.36 + ((replayIndex + 1) / Math.max(1, trafficTrackHistory.length)) * 0.54 } });
+                    })),
+                  h('div', { style: { marginTop: 3, display: 'flex', justifyContent: 'space-between', gap: 7, color: '#dbeafe', fontSize: 8 } },
+                    h('span', null, 'Bearing change ' + trafficEvidence.bearingChange.toFixed(1) + ' deg'),
+                    h('span', null, 'Range change ' + (trafficEvidence.rangeChange > 0 ? '+' : '') + trafficEvidence.rangeChange.toFixed(1))),
+                  h('div', { style: { marginTop: 2, color: trafficEvidence.trend === 'closing' && trafficEvidence.constantBearing ? '#fca5a5' : '#a7f3d0', fontSize: 8, lineHeight: 1.3, fontWeight: 800 } }, trafficEvidence.label),
+                  trafficIsRestricted ? h('div', { style: { marginTop: 2, color: hud.trafficFogSignalMade ? '#86efac' : '#fca5a5', fontSize: 8, fontWeight: 800 } }, 'Rule 35 signal: ' + (hud.trafficFogSignalMade ? 'logged' : 'not logged')) : null)
               ) : null,
               h('div', { style: { fontSize: 10 } }, hud.reachedHalfwayRock ? '✓ Reach ' + mission.destination : '○ Reach ' + mission.destination),
               h('div', { style: { fontSize: 10 } }, hud.targetFishDecision ? '✓ Classify ' + mission.targetFish : '○ Classify ' + mission.targetFish),

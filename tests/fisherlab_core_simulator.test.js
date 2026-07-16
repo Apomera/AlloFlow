@@ -169,6 +169,23 @@ describe('Fisher Lab voyage progression', () => {
     expect(appendCoreRadarPlot([], 0, -4, 6)[0].range).toBe(0);
   });
 
+  it('summarizes radar evidence for the post-encounter replay', () => {
+    const { summarizeCoreRadarTrail } = window.__FisherLabCore;
+
+    expect(summarizeCoreRadarTrail([])).toMatchObject({ plotCount: 0, trend: 'insufficient' });
+    expect(summarizeCoreRadarTrail([{ bearing: 20, range: 12 }])).toMatchObject({ plotCount: 1, trend: 'insufficient' });
+    expect(summarizeCoreRadarTrail([{ bearing: 179, range: 24 }, { bearing: -179, range: 15 }])).toMatchObject({
+      plotCount: 2,
+      bearingChange: 2,
+      rangeChange: -9,
+      constantBearing: true,
+      trend: 'closing',
+      label: 'Steady bearing and closing range show collision risk'
+    });
+    expect(summarizeCoreRadarTrail([{ bearing: 20, range: 12 }, { bearing: 35, range: 18 }])).toMatchObject({ constantBearing: false, trend: 'opening' });
+    expect(summarizeCoreRadarTrail([{ bearing: 20, range: 12 }, { bearing: 21, range: 12.2 }])).toMatchObject({ constantBearing: true, trend: 'steady-range' });
+  });
+
   it('grades prompt, well-separated encounters without rewarding incorrect or timed-out work', () => {
     const { gradeCoreEncounter } = window.__FisherLabCore;
 
@@ -231,6 +248,10 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("'PLOT ' + trafficTrackDots.length + '/6 - 0.8 s interval'");
     expect(source).toContain('gradeCoreEncounter');
     expect(source).toContain('Traffic encounter debrief.');
+    expect(source).toContain('summarizeCoreRadarTrail');
+    expect(source).toContain('Radar evidence replay');
+    expect(source).toContain('Rule 35 signal: ');
+    expect(source).toContain('Steady bearing and closing range show collision risk');
     expect(source).toContain('COLREGS Rule 19');
     expect(source).toContain('Radar: contact tracking');
     expect(source).toContain('Navigate cautiously 5 s');
