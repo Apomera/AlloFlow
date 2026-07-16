@@ -3477,6 +3477,9 @@ async function handleApi(req, res, url) {
       name: 'AlloFlow Desktop Runtime',
       version: VERSION,
       status: 'ok',
+      // Build edition ('teacher' | 'admin' | '') — set by electron/main.cjs from
+      // extraMetadata.alloEdition; the command center adapts its boot view to it.
+      edition: String(process.env.ALLOFLOW_DESKTOP_EDITION || '').toLowerCase(),
       appUrl: getAppUrl(config, origin),
       appReachable: appProbe.reachable,
       appStatus: appProbe.status,

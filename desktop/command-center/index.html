@@ -43,6 +43,20 @@
             <button id="toggle-app-focus" type="button" aria-pressed="false">Full Screen</button>
           </div>
         </header>
+        <!-- Admin edition only (hidden otherwise): the school-server "front door".
+             Shows the LAN URL teachers open in their browsers plus the join PIN
+             that gates it. Populated by renderAdminConnectBanner(). -->
+        <section class="panel admin-connect-banner hidden" id="admin-connect-banner" aria-label="Teacher access">
+          <div class="admin-connect-main">
+            <strong>Teachers connect at:</strong>
+            <span id="admin-connect-urls">—</span>
+          </div>
+          <div class="admin-connect-pin">
+            <strong>Join PIN:</strong>
+            <code id="admin-connect-pin">—</code>
+            <span id="admin-connect-state" class="admin-connect-state">checking…</span>
+          </div>
+        </section>
         <!-- Setup Health: one glance answers "is this machine actually ready?"
              Field-test lesson (0.2.0â€“0.2.2): every failure so far LOOKED like
              silence â€” engine unused, voice falling back, images impossible â€”
@@ -382,6 +396,9 @@
   </div>
 
   <button id="exit-app-focus" class="focus-exit" type="button">Exit Full Screen</button>
+  <!-- Teacher edition: the console lives behind this gear. Same auto-hide
+       visibility rules as the exit control (see .focus-exit CSS). -->
+  <button id="focus-settings-gear" class="focus-exit focus-gear" type="button" aria-label="Open settings">⚙ Settings</button>
 
   <div class="setup-modal hidden" id="api-key-setup" role="dialog" aria-modal="true" aria-labelledby="api-key-title">
     <section class="setup-dialog">

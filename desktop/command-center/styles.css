@@ -837,3 +837,57 @@ body.app-focus-mode .focus-exit:focus-visible::before {
   font-size: 11px;
   padding: 4px 9px;
 }
+
+/* ── Build editions (teacher | admin) ──────────────────────────────────────
+   Teacher: the console lives behind the ⚙ gear while the app view is
+   full-bleed; the gear docks just below the exit handle and shares all its
+   auto-hide behavior (.focus-exit rules above).
+   Admin: the "teachers connect here" banner is the school-server front door. */
+body.app-focus-mode .focus-gear {
+  top: calc(50% + 88px);
+}
+
+.admin-connect-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 18px;
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(31, 122, 90, 0.45);
+  background: rgba(31, 122, 90, 0.08);
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.admin-connect-banner.hidden {
+  display: none;
+}
+
+.admin-connect-main,
+.admin-connect-pin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+#admin-connect-urls {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+#admin-connect-pin {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 2px 10px;
+  border-radius: 6px;
+  background: rgba(31, 122, 90, 0.16);
+}
+
+.admin-connect-state {
+  font-size: 12px;
+  opacity: 0.75;
+}

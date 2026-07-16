@@ -1703,6 +1703,44 @@
     healthPollTimer = setInterval(refreshSetupHealth, 4000);
   }
 
+  // ── Build editions (teacher | admin) ──────────────────────────────────────
+  // The runtime reports the baked edition in /api/health. Teacher boots
+  // straight into the app view full-bleed (console behind the ⚙ gear); admin
+  // shows the school-server "teachers connect here" banner with the join PIN.
+  // Unflavored builds change nothing.
+  function applyEditionPosture() {
+    const edition = String((state.health && state.health.edition) || '').toLowerCase();
+    document.body.classList.toggle('edition-admin', edition === 'admin');
+    document.body.classList.toggle('edition-teacher', edition === 'teacher');
+    if (edition === 'teacher' && !state.editionBooted) {
+      state.editionBooted = true;
+      // CSS-only full-bleed — no forced OS fullscreen; the Full Screen control
+      // still does that on demand.
+      setAppFocusMode(true, { syncWindow: false });
+    }
+    renderAdminConnectBanner().catch(() => {});
+  }
+
+  async function renderAdminConnectBanner() {
+    const banner = $('#admin-connect-banner');
+    if (!banner) return;
+    const edition = String((state.health && state.health.edition) || '').toLowerCase();
+    if (edition !== 'admin') {
+      banner.classList.add('hidden');
+      return;
+    }
+    banner.classList.remove('hidden');
+    const pin = String((((state.config || {}).liveSession || {}).lan || {}).pin || '').trim();
+    setText('#admin-connect-pin', pin || 'not set');
+    let share = null;
+    try { share = await api('/api/lan-share/status'); } catch (_) {}
+    const urls = (share && Array.isArray(share.appUrls)) ? share.appUrls : [];
+    setText('#admin-connect-urls', urls.length
+      ? urls.join('  ·  ')
+      : 'LAN Share is not running — start it from the Server tab (or restart the app).');
+    setText('#admin-connect-state', share && share.active ? 'serving' : 'stopped');
+  }
+
   async function refresh() {
     const [health, config, providerResponse, appResponse, logsResponse, schoolBoxResponse, schoolBoxLogsResponse, liveSessionResponse] = await Promise.all([
       api('/api/health'),
@@ -1739,6 +1777,7 @@
     renderLiveSession();
     renderLanClassroom();
     renderClassroomWizard();
+    applyEditionPosture();
     maybeShowApiKeySetup();
     refreshSetupHealth().catch(() => {});
     inspectSdTurbo().catch(() => {});
@@ -1801,6 +1840,14 @@
     });
     $('#exit-app-focus').addEventListener('mouseenter', showAppFocusControls);
     $('#exit-app-focus').addEventListener('focus', showAppFocusControls);
+    // Teacher edition: the console lives behind this gear — leave the app view
+    // and land on the Settings pane.
+    $('#focus-settings-gear')?.addEventListener('click', () => {
+      setAppFocusMode(false);
+      selectPane('settings', true);
+    });
+    $('#focus-settings-gear')?.addEventListener('mouseenter', showAppFocusControls);
+    $('#focus-settings-gear')?.addEventListener('focus', showAppFocusControls);
     document.addEventListener('mousemove', showAppFocusControls, { passive: true });
     document.addEventListener('pointerdown', showAppFocusControls, { passive: true });
 

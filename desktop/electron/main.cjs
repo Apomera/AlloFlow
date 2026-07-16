@@ -7,6 +7,28 @@ const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('ele
 const runtime = require('../runtime/alloflow-desktop-runtime.cjs');
 const { assertTrustedIpcSender, isSameOrigin } = require('./security.cjs');
 
+// ── Build edition ('teacher' | 'admin' | '' = unflavored upstream) ──────────
+// Baked at package time by scripts/build-edition.cjs via electron-builder
+// extraMetadata.alloEdition; ALLOFLOW_DESKTOP_EDITION env overrides for dev.
+//   teacher — boots straight into the web app full-bleed (single teacher).
+//   admin   — school-server posture: boots into the command center and
+//             auto-starts LAN Share with a required join PIN, so teachers
+//             reach the app from browsers at http://<server-ip>:32175/app/.
+// Unflavored builds keep pure upstream behavior.
+function getEdition() {
+  const fromEnv = String(process.env.ALLOFLOW_DESKTOP_EDITION || '').toLowerCase();
+  if (fromEnv === 'teacher' || fromEnv === 'admin') return fromEnv;
+  try {
+    const fromPkg = String(require('../package.json').alloEdition || '').toLowerCase();
+    if (fromPkg === 'teacher' || fromPkg === 'admin') return fromPkg;
+  } catch (_) {}
+  return '';
+}
+const DESKTOP_EDITION = getEdition();
+// Expose to the runtime (it reports the edition in /api/health so the command
+// center can adapt its boot view without a new IPC surface).
+if (DESKTOP_EDITION) process.env.ALLOFLOW_DESKTOP_EDITION = DESKTOP_EDITION;
+
 let autoUpdater = null;
 let electronLog = null;
 let updaterLoadError = null;
@@ -594,13 +616,39 @@ handleTrustedIpc('remediation:reveal-path', async (_event, targetPath) => {
   }
 });
 
+// Admin edition: the server is only useful when teachers can reach it, so LAN
+// Share auto-starts at boot — and never without a join PIN. If no PIN is set,
+// generate a 6-digit one and persist it (shown in the command center banner).
+async function ensureAdminServerPosture() {
+  if (DESKTOP_EDITION !== 'admin') return;
+  try {
+    let config = runtime.readConfig();
+    const lan = (config.liveSession && config.liveSession.lan) || {};
+    if (!String(lan.pin || '').trim()) {
+      const pin = String(Math.floor(100000 + Math.random() * 900000));
+      config = runtime.writeConfig({
+        ...config,
+        liveSession: { ...config.liveSession, lan: { ...lan, pin } },
+      });
+      logLine('Admin edition: generated LAN join PIN (shown in the command center).');
+    }
+    const status = await runtime.startLanShare(config);
+    const urls = (status && status.appUrls) || [];
+    logLine('Admin edition: LAN Share started — teachers connect at ' + (urls.join(' | ') || '(no LAN address detected)'));
+  } catch (error) {
+    // Non-fatal: the command center still shows LAN Share controls for manual start.
+    logLine('Admin edition: LAN Share autostart failed: ' + (error && error.message ? error.message : error));
+  }
+}
+
 app.whenReady().then(async () => {
   configureDesktopSecretStorage();
   prepareDesktopRuntimeHome();
-  logLine('Launching AlloFlow Desktop');
+  logLine('Launching AlloFlow Desktop' + (DESKTOP_EDITION ? ` (${DESKTOP_EDITION} edition)` : ''));
   logLine('Runtime data dir: ' + runtime.getDataDir());
   await ensureRuntime();
   await autoStartAlloFlowApp();
+  await ensureAdminServerPosture();
   configureUpdates();
   createMainWindow();
 

@@ -62,7 +62,14 @@ self.addEventListener('fetch', (event) => {
 
     event.respondWith(
         fetch(event.request).then((response) => {
-            if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+            // Clone synchronously BEFORE returning: caches.open() resolves in a
+            // later microtask, by which time the page may have consumed the body
+            // and clone() throws "Response body is already used" (cache write
+            // silently failed on every request). Same pattern as the handlers above.
+            if (response.ok) {
+                const copy = response.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+            }
             return response;
         }).catch(() => caches.match(event.request).then((response) => response || new Response(
             'Network error and no cache available.',
