@@ -2778,7 +2778,7 @@ function PdfAuditView(props) {
   const [pdfConfirmRequest, setPdfConfirmRequest] = useState(null);
   const pdfConfirmResolveRef = useRef(null);
   const pdfConfirmCancelRef = useRef(null);
-  const askPdfConfirmation = useCallback((options) => new Promise((resolve) => {
+  const askPdfConfirmation = React.useCallback((options) => new Promise((resolve) => {
     if (pdfConfirmResolveRef.current) pdfConfirmResolveRef.current(false);
     pdfConfirmResolveRef.current = resolve;
     setPdfConfirmRequest({
@@ -2790,7 +2790,7 @@ function PdfAuditView(props) {
       tone: options && options.tone === "danger" ? "danger" : "primary"
     });
   }), []);
-  const settlePdfConfirmation = useCallback((result) => {
+  const settlePdfConfirmation = React.useCallback((result) => {
     const resolve = pdfConfirmResolveRef.current;
     pdfConfirmResolveRef.current = null;
     setPdfConfirmRequest(null);
@@ -12676,6 +12676,123 @@ Return ONLY JSON:
             } catch (_) {
             }
           };
+          const askBuilderConfirmation = (options) => new Promise((resolve) => {
+            if (!doc || !doc.body) {
+              resolve(false);
+              return;
+            }
+            const opener = doc.activeElement;
+            const blocked = Array.from(doc.body.children).map((el) => ({
+              el,
+              hadInert: el.hasAttribute("inert"),
+              ariaHidden: el.getAttribute("aria-hidden")
+            }));
+            let style = doc.getElementById("allo-builder-confirm-style");
+            let createdStyle = false;
+            if (!style) {
+              style = doc.createElement("style");
+              style.id = "allo-builder-confirm-style";
+              style.textContent = ".allo-builder-confirm-button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.allo-builder-confirm-button{min-height:44px}";
+              doc.head.appendChild(style);
+              createdStyle = true;
+            }
+            const overlay = doc.createElement("div");
+            overlay.setAttribute("role", "presentation");
+            overlay.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;";
+            const dialog = doc.createElement("div");
+            dialog.setAttribute("role", "alertdialog");
+            dialog.setAttribute("aria-modal", "true");
+            dialog.setAttribute("aria-labelledby", "allo-builder-confirm-title");
+            dialog.setAttribute("aria-describedby", "allo-builder-confirm-description");
+            dialog.style.cssText = "box-sizing:border-box;width:min(100%,480px);max-height:calc(100vh - 32px);overflow:auto;background:#fff;color:#0f172a;border:2px solid #f59e0b;border-radius:16px;padding:24px;box-shadow:0 24px 70px rgba(0,0,0,.45);font-family:system-ui,sans-serif;";
+            const title = doc.createElement("h2");
+            title.id = "allo-builder-confirm-title";
+            title.textContent = String(options && options.title || "Please confirm");
+            title.style.cssText = "font-size:20px;line-height:1.3;margin:0 0 10px;font-weight:800;color:#0f172a;";
+            const description = doc.createElement("p");
+            description.id = "allo-builder-confirm-description";
+            description.textContent = String(options && options.description || "");
+            description.style.cssText = "font-size:15px;line-height:1.6;margin:0 0 20px;color:#334155;white-space:pre-line;";
+            const actions = doc.createElement("div");
+            actions.style.cssText = "display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end;";
+            const cancel = doc.createElement("button");
+            cancel.type = "button";
+            cancel.className = "allo-builder-confirm-button";
+            cancel.textContent = String(options && options.cancelLabel || "Cancel");
+            cancel.style.cssText = "padding:10px 18px;border:1px solid #64748b;border-radius:10px;background:#fff;color:#1e293b;font-size:14px;font-weight:700;cursor:pointer;";
+            const confirm = doc.createElement("button");
+            confirm.type = "button";
+            confirm.className = "allo-builder-confirm-button";
+            confirm.textContent = String(options && options.confirmLabel || "Continue");
+            confirm.style.cssText = "padding:10px 18px;border:1px solid transparent;border-radius:10px;background:" + (options && options.danger ? "#b91c1c" : "#4338ca") + ";color:#fff;font-size:14px;font-weight:800;cursor:pointer;";
+            actions.appendChild(cancel);
+            actions.appendChild(confirm);
+            dialog.appendChild(title);
+            dialog.appendChild(description);
+            dialog.appendChild(actions);
+            overlay.appendChild(dialog);
+            doc.body.appendChild(overlay);
+            blocked.forEach(({ el }) => {
+              el.setAttribute("inert", "");
+              el.setAttribute("aria-hidden", "true");
+            });
+            let settled = false;
+            const finish = (accepted) => {
+              if (settled) return;
+              settled = true;
+              doc.removeEventListener("keydown", onKeyDown, true);
+              try {
+                overlay.remove();
+              } catch (_) {
+              }
+              if (createdStyle) {
+                try {
+                  style.remove();
+                } catch (_) {
+                }
+              }
+              blocked.forEach(({ el, hadInert, ariaHidden }) => {
+                if (!hadInert) el.removeAttribute("inert");
+                if (ariaHidden == null) el.removeAttribute("aria-hidden");
+                else el.setAttribute("aria-hidden", ariaHidden);
+              });
+              try {
+                if (opener && opener.isConnected && typeof opener.focus === "function") opener.focus();
+              } catch (_) {
+              }
+              resolve(accepted === true);
+            };
+            const onKeyDown = (event) => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                event.stopPropagation();
+                finish(false);
+                return;
+              }
+              if (event.key !== "Tab") return;
+              const buttons = [cancel, confirm].filter((button) => !button.disabled);
+              const first = buttons[0], last = buttons[buttons.length - 1];
+              if (!dialog.contains(doc.activeElement)) {
+                event.preventDefault();
+                first.focus();
+                return;
+              }
+              if (event.shiftKey && doc.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+              } else if (!event.shiftKey && doc.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+              }
+            };
+            cancel.addEventListener("click", () => finish(false));
+            confirm.addEventListener("click", () => finish(true));
+            overlay.addEventListener("click", (event) => {
+              if (event.target === overlay) finish(false);
+            });
+            doc.addEventListener("keydown", onKeyDown, true);
+            cancel.focus();
+          });
           doc.addEventListener("focusin", (ev) => {
             const t2 = ev.target;
             if (t2 && t2.tagName === "SELECT" && t2.classList && t2.classList.contains("allo-frame-template-select")) {
@@ -13307,7 +13424,7 @@ Return ONLY JSON:
               }
             }
           }, true);
-          doc.addEventListener("change", (ev) => {
+          doc.addEventListener("change", async (ev) => {
             const t2 = ev.target;
             if (!t2) return;
             if (t2.classList && t2.classList.contains("allo-img-file-input")) {
@@ -13317,9 +13434,8 @@ Return ONLY JSON:
               if (!block) return;
               const sizeMB = file.size / (1024 * 1024);
               if (sizeMB > 1) {
-                const win = doc.defaultView;
                 const msg = "This image is " + sizeMB.toFixed(1) + " MB. Embedding it inline will add about " + (sizeMB * 1.33).toFixed(1) + " MB to your document. Continue, or cancel and paste a URL instead?";
-                const proceed = win && typeof win.confirm === "function" ? win.confirm(msg) : true;
+                const proceed = await askBuilderConfirmation({ title: "Embed this large image?", description: msg, confirmLabel: "Embed image" });
                 if (!proceed) {
                   t2.value = "";
                   announce("Image upload cancelled");
@@ -13438,8 +13554,12 @@ Return ONLY JSON:
                 if (stripped.length >= 4 && stripped !== "agreedisagree") hasEdits = true;
               });
               if (hasEdits) {
-                const win = doc.defaultView;
-                const proceed = win && typeof win.confirm === "function" ? win.confirm("Switch sentence frame template? Your edits to the blanks will be replaced.") : true;
+                const proceed = await askBuilderConfirmation({
+                  title: "Replace the sentence frame template?",
+                  description: "Your edits to the current blanks will be replaced.",
+                  confirmLabel: "Replace template",
+                  danger: true
+                });
                 if (!proceed) {
                   const prev = t2.dataset.prevValue;
                   if (prev) t2.value = prev;
@@ -13454,6 +13574,12 @@ Return ONLY JSON:
               if (newSelect) {
                 newSelect.value = t2.value;
                 newSelect.dataset.prevValue = t2.value;
+                setTimeout(() => {
+                  try {
+                    newSelect.focus();
+                  } catch (_) {
+                  }
+                }, 0);
               }
               announce("Sentence frame: " + t2.value);
               persist();

@@ -13,8 +13,8 @@ describe('PDF Audit confirmation accessibility', () => {
     expect(source).toContain("title: 'Clear saved PDF progress?'");
     expect(source).toContain("title: t('pdf_audit.start_new_title_short') || 'Start a new audit?'");
     expect(source).toContain("title: t('pdf_audit.rescan_title') || 'Replace results with a new OCR scan?'");
-    // These two confirmations execute inside the separate document-builder iframe runtime.
-    expect(source.match(/\bwin\.confirm\s*\(/g)).toHaveLength(2);
+    // The separate document-builder iframe runtime now uses its own accessible alert dialog too.
+    expect(source.match(/\bwin\.confirm\s*\(/g) || []).toHaveLength(0);
   });
 
   it('uses a named safe-default alert dialog with focus lifecycle and 44px actions', () => {
