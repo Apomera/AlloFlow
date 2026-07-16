@@ -1392,10 +1392,27 @@ function openConceptMap3D(opts) {
       status.textContent = "\u26A0\uFE0F " + (t("concept_map.view_3d_failed") || "The 3D view could not load here. Open the latest Canvas link and try again \u2014 the outline still works.");
       return;
     }
-    var graph = nodes.length ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null) : E.adaptGenerated(generated);
-    if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+    var savedStrandZ = !!(opts.arrangement && opts.arrangement.axisValues && Object.keys(opts.arrangement.axisValues).some(function(id) {
+      var av = opts.arrangement.axisValues[id];
+      return av && typeof av.z === "string";
+    }));
+    function buildGraph(withShape) {
+      var g = nodes.length ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null) : E.adaptGenerated(generated);
+      if (withShape && !nodes.length && E.applyStructureLayout) g = E.applyStructureLayout(g);
+      if (E.ensureDefaultAxisValues) g = E.ensureDefaultAxisValues(g);
+      return g;
+    }
+    var graph = buildGraph(!savedStrandZ);
     if (opts.arrangement && E.applyArrangement) graph = E.applyArrangement(graph, opts.arrangement);
     var canPersist = typeof opts.onArrangementChange === "function";
+    function setHint() {
+      var shaped = !!(graph && graph.meta && graph.meta.layout);
+      if (canPersist) {
+        hint.textContent = shaped ? t("concept_map.view_3d_controls_edit_shaped") || "Drag a node to place it \xB7 drag space to orbit \xB7 scroll to zoom \xB7 placement follows the organizer" : t("concept_map.view_3d_controls_edit") || "Drag a node to place it \xB7 drag space to orbit \xB7 scroll to zoom \xB7 depth = strand";
+      } else if (shaped) {
+        hint.textContent = t("concept_map.view_3d_controls_shaped") || "Drag to orbit \xB7 scroll to zoom \xB7 placement follows the organizer";
+      }
+    }
     var renderOpts = { t };
     if (canPersist) {
       renderOpts.editable = true;
@@ -1409,8 +1426,8 @@ function openConceptMap3D(opts) {
         } catch (e) {
         }
       };
-      hint.textContent = t("concept_map.view_3d_controls_edit") || "Drag a node to place it \xB7 drag space to orbit \xB7 scroll to zoom \xB7 depth = strand";
     }
+    setHint();
     if (status.parentNode) status.parentNode.removeChild(status);
     if (canPersist) {
       var resetArrBtn = document.createElement("button");
@@ -1422,8 +1439,8 @@ function openConceptMap3D(opts) {
           opts.onArrangementChange(null);
         } catch (e) {
         }
-        graph = nodes.length ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null) : E.adaptGenerated(generated);
-        if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+        graph = buildGraph(true);
+        setHint();
         try {
           if (handle && handle.destroy) handle.destroy();
         } catch (e) {
@@ -1443,6 +1460,12 @@ function openConceptMap3D(opts) {
         E.layoutWithGemini(graph, window.callGemini, { topic: opts.title || "" }).then(function(merged) {
           if (!overlay.parentNode) return;
           graph = merged;
+          if (graph.meta && graph.meta.layout) {
+            var m2 = Object.assign({}, graph.meta);
+            delete m2.layout;
+            graph = Object.assign({}, graph, { meta: m2 });
+          }
+          setHint();
           if (canPersist && E.extractArrangement) {
             try {
               opts.onArrangementChange(E.extractArrangement(graph));

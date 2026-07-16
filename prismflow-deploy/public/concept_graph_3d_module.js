@@ -80,7 +80,12 @@
     opts = opts || {};
     var E = engine();
     var g = E ? E.normalizeGraph(graph) : (graph && typeof graph === 'object' ? graph : { nodes: [], edges: [] });
-    var projected = (E && opts.project !== false) ? E.project(g, opts) : g;
+    // Organizer-shaped layouts (engine.applyStructureLayout) stamp meta.layout:
+    // they own the depth scale (planeGap) and swap the strand planes for zones.
+    var layoutMeta = (g.meta && g.meta.layout && typeof g.meta.layout === 'object') ? g.meta.layout : null;
+    var projOpts = opts;
+    if (layoutMeta && isNum(layoutMeta.planeGap) && opts.planeGap == null) projOpts = Object.assign({}, opts, { planeGap: layoutMeta.planeGap });
+    var projected = (E && opts.project !== false) ? E.project(g, projOpts) : g;
     var lanes = E ? E.deriveLanes(projected) : [];
     var outline = E ? E.deriveOutline(projected) : { order: (projected.nodes || []).map(function (n) { return n.id; }), hasCycle: false };
 
@@ -130,13 +135,54 @@
       };
     }).filter(Boolean);
 
-    // One depth plane per lane (makes the z axis legible as stacked "floors").
-    var laneZ = {};
-    nodes.forEach(function (n) { if (laneZ[n.lane] == null) laneZ[n.lane] = n.sz; });
-    var lanePlanes = lanes.map(function (l) {
-      return { index: l.index, key: l.key, label: l.label, z: laneZ[l.index] != null ? laneZ[l.index] : 0,
-               color: l.key == null ? UNCATEGORIZED : PALETTE[l.index % PALETTE.length] };
-    });
+    // One depth plane per lane (makes the z axis legible as stacked "floors") —
+    // UNLESS the graph carries an organizer-shaped layout: free-form placement
+    // makes constant-z planes meaningless, so those get category ZONES instead
+    // (translucent bubbles / facing walls computed from where the members
+    // actually sit — for a Venn, each set's bubble also encloses the shared
+    // items, so the two bubbles intersect in a lens around them).
+    var lanePlanes = [];
+    var zones = [];
+    if (!layoutMeta) {
+      var laneZ = {};
+      nodes.forEach(function (n) { if (laneZ[n.lane] == null) laneZ[n.lane] = n.sz; });
+      lanePlanes = lanes.map(function (l) {
+        return { index: l.index, key: l.key, label: l.label, z: laneZ[l.index] != null ? laneZ[l.index] : 0,
+                 color: l.key == null ? UNCATEGORIZED : PALETTE[l.index % PALETTE.length] };
+      });
+    } else if (Array.isArray(layoutMeta.zones)) {
+      layoutMeta.zones.forEach(function (zs) {
+        if (!zs || typeof zs.key !== 'string' || !zs.key) return;
+        var members = nodes.filter(function (n) { return n.category === zs.key; });
+        (zs.includeKeys || []).forEach(function (k) {
+          nodes.forEach(function (n) { if (n.category === k && n.type === 'item') members.push(n); });
+        });
+        if (!members.length) return;
+        var cx = 0, cy = 0, cz = 0;
+        members.forEach(function (n) { cx += n.sx; cy += n.sy; cz += n.sz; });
+        cx /= members.length; cy /= members.length; cz /= members.length;
+        var li = laneIndex[zs.key]; if (li == null) li = 0;
+        var color = PALETTE[li % PALETTE.length];
+        if (zs.shape === 'wall') {
+          var minY = Infinity, maxY = -Infinity, minZ = Infinity, maxZ = -Infinity;
+          members.forEach(function (n) {
+            minY = Math.min(minY, n.sy); maxY = Math.max(maxY, n.sy);
+            minZ = Math.min(minZ, n.sz); maxZ = Math.max(maxZ, n.sz);
+          });
+          zones.push({ key: zs.key, label: zs.key, shape: 'wall', color: color,
+                       center: { x: cx, y: (minY + maxY) / 2, z: (minZ + maxZ) / 2 },
+                       w: Math.max(240, (maxZ - minZ) + 220), h: Math.max(220, (maxY - minY) + 200) });
+        } else {
+          var r = 0;
+          members.forEach(function (n) {
+            var dx = n.sx - cx, dy = n.sy - cy, dz = n.sz - cz;
+            r = Math.max(r, Math.sqrt(dx * dx + dy * dy + dz * dz));
+          });
+          zones.push({ key: zs.key, label: zs.key, shape: 'sphere', color: color,
+                       center: { x: cx, y: cy, z: cz }, radius: r * 1.18 + 60 });
+        }
+      });
+    }
 
     // undirected adjacency (id -> [neighbour ids]) — powers hover neighbour-focus
     var adjacency = {};
@@ -146,7 +192,7 @@
       if (adjacency[lk.toId] && adjacency[lk.toId].indexOf(lk.fromId) < 0) adjacency[lk.toId].push(lk.fromId);
     });
 
-    return { nodes: nodes, links: links, lanes: lanes, lanePlanes: lanePlanes, outline: outline, bounds: bounds, axes: projected.axes || null, adjacency: adjacency };
+    return { nodes: nodes, links: links, lanes: lanes, lanePlanes: lanePlanes, zones: zones, layout: layoutMeta, outline: outline, bounds: bounds, axes: projected.axes || null, adjacency: adjacency };
   }
 
   function accessibleName(n) {
@@ -465,6 +511,57 @@
       if (lp.label) { tag = makeLabelSprite(THREE, lp.label, lp.color); tag.position.set(-planeW / 2 + 80, planeH / 2 - 40, lp.z); group.add(tag); }
       planeObjs.push({ key: lp.key == null ? '__none' : lp.key, mesh: mesh, tag: tag });
     });
+
+    // ── Category zones (organizer-shaped layouts) — bubbles/walls instead of
+    // depth planes. Rebuilt wholesale after each edit (geometry follows the
+    // members), so every replaced mesh/texture is disposed IMMEDIATELY — the
+    // destroy() traversal only covers what's still live at teardown.
+    var zoneObjs = [];
+    function disposeZones() {
+      zoneObjs.forEach(function (zo) {
+        try {
+          group.remove(zo.mesh);
+          if (zo.mesh.geometry) zo.mesh.geometry.dispose();
+          if (zo.mesh.material) zo.mesh.material.dispose();   // planeTex is module-shared for walls — never disposed here
+        } catch (e) {}
+        if (zo.tag) {
+          try {
+            group.remove(zo.tag);
+            if (zo.tag.material) { if (zo.tag.material.map) zo.tag.material.map.dispose(); zo.tag.material.dispose(); }
+          } catch (e) {}
+        }
+      });
+      zoneObjs = [];
+    }
+    function buildZones(sc) {
+      disposeZones();
+      (sc.zones || []).forEach(function (zn) {
+        var mesh = null;
+        try {
+          if (zn.shape === 'wall') {
+            mesh = new THREE.Mesh(new THREE.PlaneGeometry(zn.w, zn.h),
+              new THREE.MeshBasicMaterial({ color: new THREE.Color(zn.color), map: planeTex || undefined, transparent: true, opacity: planeTex ? 0.12 : 0.08, side: THREE.DoubleSide, depthWrite: false }));
+            mesh.rotation.y = Math.PI / 2;   // a wall at constant x, facing its twin
+          } else {
+            // BackSide: the bubble reads as a glass shell you can see INTO (and
+            // two Venn bubbles overlap legibly instead of stacking front films).
+            mesh = new THREE.Mesh(new THREE.SphereGeometry(Math.max(40, zn.radius || 0), 28, 20),
+              new THREE.MeshBasicMaterial({ color: new THREE.Color(zn.color), transparent: true, opacity: 0.1, side: THREE.BackSide, depthWrite: false }));
+          }
+          mesh.position.set(zn.center.x, zn.center.y, zn.center.z);
+        } catch (e) { return; }
+        group.add(mesh);
+        var tag = null;
+        if (zn.label) {
+          tag = makeLabelSprite(THREE, zn.label, zn.color);
+          var top = zn.shape === 'wall' ? zn.h / 2 : (zn.radius || 0);
+          tag.position.set(zn.center.x, zn.center.y + top + 26, zn.center.z);
+          group.add(tag);
+        }
+        zoneObjs.push({ mesh: mesh, tag: tag });
+      });
+    }
+    buildZones(scene);
 
     var nodeMeshes = [], nodeById3d = {};
     // Staggered entrance (motion-safe): spheres pop in one after another so the
@@ -935,6 +1032,7 @@
           } catch (e) {}
         }
       });
+      buildZones(newScene);         // zone bubbles/walls re-fit their members (snap — big translucent volumes)
       buildEdges();                 // new colours/dash + refs (built at final coords)
       if (_constelState) applyConstellation(_constelState);   // wholesale rebuild wipes materials → re-map weights
       updateAllEdgePositions();     // …then re-seated on CURRENT positions so they glide with the tween
@@ -973,6 +1071,12 @@
       }
       if (!key || key === m.node.category) return;
       state.graph = E.setNodeStrand(state.graph, id, key);
+      // Organizer-shaped layout: recompute THIS node's place in its new group
+      // (setNodeStrand left a categorical z that would snap it to a lane plane) —
+      // it glides into the new cluster/wall/quadrant via the usual tween.
+      if (state.graph.meta && state.graph.meta.layout && E.applyStructureLayout) {
+        state.graph = E.applyStructureLayout(state.graph, { onlyIds: [id] });
+      }
       applySceneUpdate(buildScene(state.graph, opts));
       emitArrangement();
       announceEdit(id, _tr(t, 'cg3d.moved_strand', 'Moved to strand') + ' ' + key);

@@ -177,6 +177,398 @@
     return changed ? Object.assign({}, graph, { nodes: nodes }) : graph;
   }
 
+  // ── Structure-shaped 3D layouts — the organizer's OWN spatial grammar ──
+  // Generic strand-planes treat every organizer identically; these builders give
+  // each structureType its native 3D shape instead (a Venn's two clusters with
+  // the shared traits floating in the lens between them, a Story Map's tension
+  // arc, a Fishbone's ribs…). Each builder is PURE: it receives {graph, main,
+  // branches:[{node, items}]} (dispatcher branch ORDER carries the role — titles
+  // are localized, indices are not) and returns
+  //   { pos: {nodeId:{x,y,z}},        — normalized 0..1 axisValues (z numeric =
+  //                                     free depth via project()'s planeGap)
+  //     axes,                          — human meaning of the axes
+  //     layout: {mode, zones, planeGap}, — renderer hints; zones = translucent
+  //                                     bubbles/walls INSTEAD of depth planes
+  //     extraEdges }                   — semantic edges the tree form lacks
+  // or null to fall back to the generic planes layout.
+  var GOLDEN_ANGLE = 2.399963229728653;
+  // Deterministic ball scatter: i-th of n points around (cx,cy,cz), golden-angle
+  // spherical distribution (NO Math.random — layouts must be reproducible).
+  function _scatter(cx, cy, cz, i, n, sx, sy, sz) {
+    var N = Math.max(1, n), k = i + 0.5;
+    if (n <= 1) return { x: cx, y: cy, z: cz };
+    var phi = Math.acos(Math.max(-1, Math.min(1, 1 - 2 * k / N)));
+    var th = GOLDEN_ANGLE * i;
+    var r = 0.55 + 0.45 * (k / N);   // fill the ball, not just its shell
+    return { x: cx + Math.sin(phi) * Math.cos(th) * sx * r, y: cy + Math.sin(phi) * Math.sin(th) * sy * r, z: cz + Math.cos(phi) * sz * r };
+  }
+
+  // Venn Diagram — dispatcher contract: branches = [Set A, Set B, Shared?].
+  // Two side-by-side clusters; shared items float in the gap between them; the
+  // renderer draws each set as a translucent sphere that ENCLOSES its own items
+  // PLUS the shared ones, so the two bubbles intersect in a lens around the
+  // shared cluster — a literal 3D Venn.
+  function _layoutVenn(ctx) {
+    var B = ctx.branches;
+    if (B.length < 2 || B.length > 3) return null;
+    var A = B[0], Bb = B[1], SH = B[2] || null;
+    var pos = {};
+    if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.04, z: 0.5 };
+    pos[A.node.id] = { x: 0.13, y: 0.24, z: 0.5 };
+    pos[Bb.node.id] = { x: 0.87, y: 0.24, z: 0.5 };
+    A.items.forEach(function (n, i) { pos[n.id] = _scatter(0.18, 0.6, 0.5, i, A.items.length, 0.11, 0.17, 0.3); });
+    Bb.items.forEach(function (n, i) { pos[n.id] = _scatter(0.82, 0.6, 0.5, i, Bb.items.length, 0.11, 0.17, 0.3); });
+    if (SH) {
+      pos[SH.node.id] = { x: 0.5, y: 0.28, z: 0.5 };
+      SH.items.forEach(function (n, i) { pos[n.id] = _scatter(0.5, 0.6, 0.5, i, SH.items.length, 0.05, 0.15, 0.17); });
+    }
+    var inc = SH ? [SH.node.category] : [];
+    return {
+      pos: pos,
+      axes: { x: { label: (A.node.label || 'Set A') + ' ↔ ' + (Bb.node.label || 'Set B'), kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      layout: { mode: 'venn', planeGap: 1100, zones: [
+        { key: A.node.category, shape: 'sphere', includeKeys: inc },
+        { key: Bb.node.category, shape: 'sphere', includeKeys: inc }
+      ] }
+    };
+  }
+
+  // T-Chart — two facing walls of items across a gap (rows = y, columns = depth).
+  function _layoutTChart(ctx) {
+    var B = ctx.branches;
+    if (B.length !== 2) return null;
+    var pos = {};
+    if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.08, z: 0.5 };
+    B.forEach(function (b, side) {
+      var wx = side === 0 ? 0.2 : 0.8;
+      pos[b.node.id] = { x: wx, y: 0.22, z: 0.5 };
+      var n = b.items.length, cols = Math.max(1, Math.ceil(Math.sqrt(n))), rows = Math.max(1, Math.ceil(n / cols));
+      b.items.forEach(function (it, i) {
+        var row = Math.floor(i / cols), col = i % cols;
+        pos[it.id] = {
+          x: wx,
+          y: rows <= 1 ? 0.62 : 0.4 + 0.48 * (row / (rows - 1)),
+          z: cols <= 1 ? 0.5 : 0.18 + 0.64 * (col / (cols - 1))
+        };
+      });
+    });
+    return {
+      pos: pos,
+      axes: { x: { label: (B[0].node.label || '') + ' ↔ ' + (B[1].node.label || ''), kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      layout: { mode: 'tchart', planeGap: 1100, zones: [
+        { key: B[0].node.category, shape: 'wall' },
+        { key: B[1].node.category, shape: 'wall' }
+      ] }
+    };
+  }
+
+  // Fishbone — the effect at the head (right), cause categories as ribs angling
+  // off the spine, alternating above/below AND front/back for real depth.
+  function _layoutFishbone(ctx) {
+    var B = ctx.branches;
+    if (B.length < 2) return null;
+    var pos = {};
+    if (ctx.main) pos[ctx.main.id] = { x: 0.94, y: 0.5, z: 0.5 };
+    var pairs = Math.max(1, Math.ceil(B.length / 2) - 1);
+    B.forEach(function (b, k) {
+      var p = Math.floor(k / 2), up = (k % 2 === 0);
+      var ax = 0.14 + (B.length <= 2 ? 0.3 : 0.56 * (p / pairs));
+      var head = { x: ax - 0.06, y: up ? 0.16 : 0.84, z: up ? 0.3 : 0.7 };
+      var attach = { x: ax + 0.1, y: 0.5, z: 0.5 };
+      pos[b.node.id] = head;
+      var n = b.items.length;
+      b.items.forEach(function (it, i) {
+        var tt = (i + 1) / (n + 1);
+        pos[it.id] = {
+          x: head.x + (attach.x - head.x) * tt,
+          y: head.y + (attach.y - head.y) * tt,
+          z: head.z + (attach.z - head.z) * tt + (i % 2 ? 0.04 : -0.04)
+        };
+      });
+    });
+    return {
+      pos: pos,
+      axes: { x: { label: 'causes → effect', kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      layout: { mode: 'fishbone', planeGap: 1100, zones: [] }
+    };
+  }
+
+  // Cause and Effect — dispatcher contract: branches = [Causes, Effects, Chain?].
+  // Causes cluster flows INTO the central event, which flows OUT to the effects;
+  // an optional chain snakes along beneath.
+  function _layoutCauseEffect(ctx) {
+    var B = ctx.branches;
+    if (B.length < 2 || B.length > 3 || !ctx.main) return null;
+    var C = B[0], Ef = B[1], CH = B[2] || null;
+    var pos = {}, extraEdges = [];
+    pos[ctx.main.id] = { x: 0.5, y: 0.42, z: 0.5 };
+    pos[C.node.id] = { x: 0.13, y: 0.16, z: 0.5 };
+    pos[Ef.node.id] = { x: 0.87, y: 0.16, z: 0.5 };
+    C.items.forEach(function (n, i) {
+      pos[n.id] = _scatter(0.16, 0.5, 0.5, i, C.items.length, 0.1, 0.2, 0.3);
+      extraEdges.push({ fromId: n.id, toId: ctx.main.id, type: 'cause' });
+    });
+    Ef.items.forEach(function (n, i) {
+      pos[n.id] = _scatter(0.84, 0.5, 0.5, i, Ef.items.length, 0.1, 0.2, 0.3);
+      extraEdges.push({ fromId: ctx.main.id, toId: n.id, type: 'cause' });
+    });
+    if (CH) {
+      pos[CH.node.id] = { x: 0.5, y: 0.93, z: 0.5 };
+      var m = CH.items.length;
+      CH.items.forEach(function (n, i) {
+        pos[n.id] = { x: m <= 1 ? 0.5 : 0.26 + 0.48 * (i / (m - 1)), y: 0.8, z: 0.5 + 0.16 * Math.sin(i * 1.7) };
+        if (i) extraEdges.push({ fromId: CH.items[i - 1].id, toId: n.id, type: 'sequence' });
+      });
+    }
+    return {
+      pos: pos,
+      axes: { x: { label: (C.node.label || 'Causes') + ' → ' + (Ef.node.label || 'Effects'), kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      layout: { mode: 'causeeffect', planeGap: 1100, zones: [
+        { key: C.node.category, shape: 'sphere' },
+        { key: Ef.node.category, shape: 'sphere' }
+      ] },
+      extraEdges: extraEdges
+    };
+  }
+
+  // Frayer Model — the term at the very center, its four quadrants as corner
+  // clusters (Definition / Characteristics / Examples / Non-Examples).
+  function _layoutQuadrants(ctx) {
+    var B = ctx.branches;
+    if (B.length !== 4) return null;
+    var pos = {};
+    if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.5, z: 0.5 };
+    var corners = [
+      { x: 0.17, y: 0.2, z: 0.36 }, { x: 0.83, y: 0.2, z: 0.64 },
+      { x: 0.17, y: 0.8, z: 0.64 }, { x: 0.83, y: 0.8, z: 0.36 }
+    ];
+    var zones = [];
+    B.forEach(function (b, k) {
+      var c = corners[k];
+      pos[b.node.id] = { x: c.x, y: c.y - 0.08, z: c.z };
+      b.items.forEach(function (it, i) { pos[it.id] = _scatter(c.x, c.y + 0.08, c.z, i, b.items.length, 0.09, 0.12, 0.22); });
+      zones.push({ key: b.node.category, shape: 'sphere' });
+    });
+    return {
+      pos: pos,
+      axes: { x: { label: '', kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      layout: { mode: 'quadrants', planeGap: 1100, zones: zones }
+    };
+  }
+
+  // KWL / See-Think-Wonder — a three-station journey that bends through depth,
+  // linked by sequence arrows (the thinking routine's direction of travel).
+  function _layoutJourney(ctx) {
+    var B = ctx.branches;
+    if (B.length !== 3) return null;
+    var pos = {}, extraEdges = [], zones = [];
+    if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.05, z: 0.35 };
+    var st = [{ x: 0.12, z: 0.3 }, { x: 0.5, z: 0.68 }, { x: 0.88, z: 0.3 }];
+    B.forEach(function (b, k) {
+      pos[b.node.id] = { x: st[k].x, y: 0.26, z: st[k].z };
+      b.items.forEach(function (it, i) { pos[it.id] = _scatter(st[k].x, 0.62, st[k].z, i, b.items.length, 0.08, 0.17, 0.16); });
+      zones.push({ key: b.node.category, shape: 'sphere' });
+      if (k) extraEdges.push({ fromId: B[k - 1].node.id, toId: b.node.id, type: 'sequence' });
+    });
+    return {
+      pos: pos,
+      axes: { x: { label: B.map(function (b) { return b.node.label; }).join(' → '), kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      layout: { mode: 'journey', planeGap: 1100, zones: zones },
+      extraEdges: extraEdges
+    };
+  }
+
+  // Claim-Evidence-Reasoning — an argument you can walk under: evidence pillars
+  // at the base, the reasoning layer bridging upward, the claim held on top.
+  function _layoutPillars(ctx) {
+    var B = ctx.branches;
+    if (B.length !== 3) return null;
+    var CL = B[0], EV = B[1], RE = B[2];
+    var pos = {}, extraEdges = [];
+    if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.02, z: 0.5 };
+    pos[CL.node.id] = { x: 0.5, y: 0.16, z: 0.5 };
+    CL.items.forEach(function (it, i) { pos[it.id] = { x: 0.5 + (i - (CL.items.length - 1) / 2) * 0.14, y: 0.3, z: 0.5 }; });
+    pos[RE.node.id] = { x: 0.07, y: 0.54, z: 0.5 };
+    RE.items.forEach(function (it, i) {
+      var n = RE.items.length;
+      pos[it.id] = { x: n <= 1 ? 0.5 : 0.25 + 0.5 * (i / (n - 1)), y: 0.54, z: 0.5 + (i % 2 ? 0.12 : -0.12) };
+    });
+    pos[EV.node.id] = { x: 0.07, y: 0.86, z: 0.5 };
+    EV.items.forEach(function (it, i) {
+      var n = EV.items.length;
+      pos[it.id] = { x: n <= 1 ? 0.5 : 0.18 + 0.64 * (i / (n - 1)), y: 0.86, z: 0.5 + (i % 2 ? 0.18 : -0.18) };
+    });
+    extraEdges.push({ fromId: EV.node.id, toId: RE.node.id, type: 'sequence' });
+    extraEdges.push({ fromId: RE.node.id, toId: CL.node.id, type: 'sequence' });
+    return {
+      pos: pos,
+      axes: { x: { label: '', kind: 'ordinal' }, y: { label: (EV.node.label || 'Evidence') + ' → ' + (RE.node.label || 'Reasoning') + ' → ' + (CL.node.label || 'Claim'), kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      layout: { mode: 'pillars', planeGap: 1100, zones: [] },
+      extraEdges: extraEdges
+    };
+  }
+
+  // Story Map — the plot mountain in actual 3D: x = story order, HEIGHT = tension
+  // (exposition low, climax on the summit, resolution back down), with a gentle
+  // drift through depth; stages linked by sequence arrows, items strung as beads
+  // along the slope toward the next stage.
+  function _layoutArc(ctx) {
+    var B = ctx.branches;
+    if (B.length !== 5) return null;
+    var pos = {}, extraEdges = [];
+    if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.03, z: 0.75 };
+    var st = [
+      { x: 0.07, y: 0.82, z: 0.3 }, { x: 0.28, y: 0.5, z: 0.4 }, { x: 0.5, y: 0.1, z: 0.5 },
+      { x: 0.72, y: 0.5, z: 0.6 }, { x: 0.93, y: 0.82, z: 0.7 }
+    ];
+    B.forEach(function (b, k) {
+      pos[b.node.id] = st[k];
+      var next = k < 4 ? st[k + 1] : { x: st[4].x + (st[4].x - st[3].x), y: st[4].y + (st[4].y - st[3].y), z: st[4].z + (st[4].z - st[3].z) };
+      var n = b.items.length;
+      b.items.forEach(function (it, i) {
+        var tt = (i + 1) / (n + 1);
+        pos[it.id] = { x: st[k].x + (next.x - st[k].x) * tt * 0.72, y: st[k].y + (next.y - st[k].y) * tt * 0.72 + 0.06, z: st[k].z + (next.z - st[k].z) * tt * 0.72 };
+      });
+      if (k) extraEdges.push({ fromId: B[k - 1].node.id, toId: b.node.id, type: 'sequence' });
+    });
+    return {
+      pos: pos,
+      axes: { x: { label: 'story order', kind: 'ordinal' }, y: { label: 'tension', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      layout: { mode: 'arc', planeGap: 1100, zones: [] },
+      extraEdges: extraEdges
+    };
+  }
+
+  // Flow Chart — steps advance along a corkscrew through depth; consecutive
+  // steps get sequence arrows ONLY when the AI supplied no connectsTo edges.
+  function _layoutFlow(ctx) {
+    var B = ctx.branches;
+    if (B.length < 2) return null;
+    var pos = {}, extraEdges = [];
+    if (ctx.main) pos[ctx.main.id] = { x: 0.02, y: 0.5, z: 0.5 };
+    var hasSeq = (ctx.graph.edges || []).some(function (e) { return e.type === 'sequence'; });
+    B.forEach(function (b, k) {
+      var tt = k / (B.length - 1);
+      var ang = tt * Math.PI * 1.6;
+      var c = { x: 0.1 + 0.84 * tt, y: 0.42 - 0.26 * Math.sin(ang), z: 0.5 + 0.3 * Math.cos(ang) };
+      pos[b.node.id] = c;
+      b.items.forEach(function (it, i) { pos[it.id] = _scatter(c.x, c.y + 0.18, c.z, i, b.items.length, 0.05, 0.12, 0.12); });
+      if (k && !hasSeq) extraEdges.push({ fromId: B[k - 1].node.id, toId: b.node.id, type: 'sequence' });
+    });
+    return {
+      pos: pos,
+      axes: { x: { label: 'first step → last step', kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      layout: { mode: 'flow', planeGap: 1100, zones: [] },
+      extraEdges: extraEdges
+    };
+  }
+
+  // Key Concept Map / Problem Solution — a true 3D hub: branches orbit the
+  // center on a tilted ring, each with its own constellation bubble of items
+  // pushed radially outward.
+  function _layoutOrbital(ctx) {
+    var B = ctx.branches;
+    if (!B.length) return null;
+    var pos = {}, zones = [];
+    if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.45, z: 0.5 };
+    B.forEach(function (b, k) {
+      var a = (k / B.length) * Math.PI * 2;
+      var lift = (k % 2 ? 0.16 : -0.16);
+      var c = { x: 0.5 + 0.34 * Math.cos(a), y: 0.45 + lift, z: 0.5 + 0.36 * Math.sin(a) };
+      pos[b.node.id] = c;
+      b.items.forEach(function (it, i) {
+        pos[it.id] = _scatter(c.x + (c.x - 0.5) * 0.42, c.y + lift * 0.8, c.z + (c.z - 0.5) * 0.42, i, b.items.length, 0.07, 0.13, 0.1);
+      });
+      zones.push({ key: b.node.category, shape: 'sphere' });
+    });
+    return {
+      pos: pos,
+      axes: { x: { label: '', kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      layout: { mode: 'orbital', planeGap: 1100, zones: zones }
+    };
+  }
+
+  // structureType → builder. Types NOT here ('Structured Outline', '3D Concept
+  // Space', unknown/custom) keep the generic strand-plane layout on purpose.
+  var STRUCTURE_LAYOUTS = {
+    'Venn Diagram': _layoutVenn,
+    'T-Chart': _layoutTChart,
+    'Fishbone': _layoutFishbone,
+    'Cause and Effect': _layoutCauseEffect,
+    'Frayer Model': _layoutQuadrants,
+    'KWL Chart': _layoutJourney,
+    'See-Think-Wonder': _layoutJourney,
+    'Claim-Evidence-Reasoning': _layoutPillars,
+    'Story Map': _layoutArc,
+    'Flow Chart': _layoutFlow,
+    'Key Concept Map': _layoutOrbital,
+    'Problem Solution': _layoutOrbital
+  };
+
+  // Apply the organizer-shaped layout for the graph's structureType (or
+  // opts.structureType). Writes numeric axisValues for every node the builder
+  // placed, stamps meta.layout (renderer hints) + type-specific axes, and adds
+  // any semantic extraEdges (id 'e_layout_*', added once — idempotent). Unknown
+  // types and builder fallbacks return the graph UNCHANGED, so callers can
+  // always follow with ensureDefaultAxisValues.
+  // opts.onlyIds: recompute the full layout but write ONLY those nodes' positions
+  // (used after a strand reassignment so the node flies to its new cluster) —
+  // axes/meta/extraEdges are left untouched in that mode.
+  function applyStructureLayout(graph, opts) {
+    opts = opts || {};
+    graph = normalizeGraph(graph);
+    var type = opts.structureType
+      || (graph.meta && graph.meta.generated && graph.meta.generated.structureType)
+      || (graph.meta && graph.meta.conceptMap && graph.meta.conceptMap.structureType)
+      || (graph.meta && graph.meta.layout && graph.meta.layout.structureType)
+      || null;
+    var builder = type ? STRUCTURE_LAYOUTS[type] : null;
+    if (!builder) return graph;
+    var main = null, branches = [], byCat = {};
+    graph.nodes.forEach(function (n) {
+      if (n.type === 'main' && !main) main = n;
+      else if (n.type === 'branch') {
+        var b = { node: n, items: [] };
+        branches.push(b);
+        var key = (typeof n.category === 'string' && n.category) ? n.category : n.label;
+        if (key && !byCat[key]) byCat[key] = b;
+      }
+    });
+    graph.nodes.forEach(function (n) {
+      if (n.type === 'item' && byCat[n.category]) byCat[n.category].items.push(n);
+    });
+    var res = builder({ graph: graph, main: main, branches: branches });
+    if (!res || !res.pos) return graph;
+    var only = null;
+    if (Array.isArray(opts.onlyIds)) { only = {}; opts.onlyIds.forEach(function (id) { only[id] = 1; }); }
+    var changed = false;
+    var nodes = graph.nodes.map(function (n) {
+      var p = res.pos[n.id];
+      if (!p || (only && !only[n.id])) return n;
+      changed = true;
+      return Object.assign({}, n, { axisValues: Object.assign({}, n.axisValues || {}, { x: clamp01(p.x), y: clamp01(p.y), z: clamp01(p.z) }) });
+    });
+    if (only && !changed) return graph;
+    var g = Object.assign({}, graph, { nodes: nodes });
+    if (!only) {
+      g.axes = res.axes || g.axes;
+      g.meta = Object.assign({}, g.meta, { layout: Object.assign({ structureType: type }, res.layout || {}) });
+      if (Array.isArray(res.extraEdges) && res.extraEdges.length) {
+        var have = {}; (g.edges || []).forEach(function (e) { if (e && e.id) have[e.id] = 1; });
+        var add = [];
+        res.extraEdges.forEach(function (e) {
+          if (!e || !e.fromId || !e.toId) return;
+          var id = 'e_layout_' + e.fromId + '_' + e.toId;
+          if (have[id]) return;
+          have[id] = 1;
+          add.push({ id: id, fromId: e.fromId, toId: e.toId, type: EDGE_TYPES[e.type] ? e.type : 'sequence' });
+        });
+        if (add.length) g.edges = (g.edges || []).concat(add);
+      }
+    }
+    return g;
+  }
+
   // Reassign a node to a different strand (= depth plane). category + axisValues.z
   // move in lock-step so geometry, lanes, and the SR description keep one source
   // of truth.
@@ -501,6 +893,8 @@
     extractArrangement: extractArrangement,
     applyArrangement: applyArrangement,
     ensureDefaultAxisValues: ensureDefaultAxisValues,
+    applyStructureLayout: applyStructureLayout,
+    STRUCTURE_LAYOUT_TYPES: Object.keys(STRUCTURE_LAYOUTS),
     setNodeStrand: setNodeStrand,
     nudgeNodeAxis: nudgeNodeAxis,
     buildStrandChallenge: buildStrandChallenge,

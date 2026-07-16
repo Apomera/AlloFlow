@@ -5365,6 +5365,8 @@
     "view_3d_empty": "Primero agrega algunos conceptos.",
     "view_3d_controls": "Arrastra para orbitar · desplázate para acercar · profundidad = hilo temático",
     "view_3d_controls_edit": "Arrastra un nodo para ubicarlo · arrastra el espacio para orbitar · desplázate para acercar · profundidad = hilo temático",
+    "view_3d_controls_shaped": "Arrastra para orbitar · desplázate para acercar · la posición sigue al organizador",
+    "view_3d_controls_edit_shaped": "Arrastra un nodo para ubicarlo · arrastra el espacio para orbitar · desplázate para acercar · la posición sigue al organizador",
     "view_3d_loading": "Cargando la vista 3D…",
     "view_3d_failed": "La vista 3D no se pudo cargar aquí. Abre el enlace más reciente de Canvas e inténtalo de nuevo; el esquema sigue funcionando.",
     "view_3d_arrange": "Organizar por significado",

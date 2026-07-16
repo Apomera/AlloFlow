@@ -1983,14 +1983,38 @@ function openConceptMap3D(opts) {
     var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
     var CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
     if (!ok || !E || !CG3D) { status.textContent = '⚠️ ' + (t('concept_map.view_3d_failed') || 'The 3D view could not load here. Open the latest Canvas link and try again — the outline still works.'); return; }
-    var graph = nodes.length
-      ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null)
-      : E.adaptGenerated(generated);
-    // Deterministic default placement (reading order × tree depth × strand) for
-    // graphs with no geometry, then any saved arrangement wins on top of it.
-    if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+    // A saved STRAND arrangement (any categorical/string z — every pre-layout
+    // save and every AI 'arrange by meaning' result) keeps the classic
+    // strand-plane view; otherwise known organizer types get their own 3D shape
+    // (venn clusters + shared lens, story arc, fishbone ribs, facing T-chart
+    // walls, …) via the engine's applyStructureLayout.
+    var savedStrandZ = !!(opts.arrangement && opts.arrangement.axisValues && Object.keys(opts.arrangement.axisValues).some(function (id) {
+      var av = opts.arrangement.axisValues[id];
+      return av && typeof av.z === 'string';
+    }));
+    function buildGraph(withShape) {
+      var g = nodes.length
+        ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null)
+        : E.adaptGenerated(generated);
+      if (withShape && !nodes.length && E.applyStructureLayout) g = E.applyStructureLayout(g);
+      // Deterministic default placement (reading order × tree depth × strand)
+      // fills anything the shaped layout didn't place.
+      if (E.ensureDefaultAxisValues) g = E.ensureDefaultAxisValues(g);
+      return g;
+    }
+    var graph = buildGraph(!savedStrandZ);
     if (opts.arrangement && E.applyArrangement) graph = E.applyArrangement(graph, opts.arrangement);
     var canPersist = typeof opts.onArrangementChange === 'function';
+    function setHint() {
+      var shaped = !!(graph && graph.meta && graph.meta.layout);
+      if (canPersist) {
+        hint.textContent = shaped
+          ? (t('concept_map.view_3d_controls_edit_shaped') || 'Drag a node to place it · drag space to orbit · scroll to zoom · placement follows the organizer')
+          : (t('concept_map.view_3d_controls_edit') || 'Drag a node to place it · drag space to orbit · scroll to zoom · depth = strand');
+      } else if (shaped) {
+        hint.textContent = t('concept_map.view_3d_controls_shaped') || 'Drag to orbit · scroll to zoom · placement follows the organizer';
+      }
+    }
     var renderOpts = { t: t };
     if (canPersist) {
       renderOpts.editable = true;
@@ -1998,8 +2022,8 @@ function openConceptMap3D(opts) {
         try { if (E.applyArrangement) graph = E.applyArrangement(graph, arr); } catch (e) {}   // keep closure graph fresh for a later AI arrange
         try { opts.onArrangementChange(arr); } catch (e) {}
       };
-      hint.textContent = t('concept_map.view_3d_controls_edit') || 'Drag a node to place it · drag space to orbit · scroll to zoom · depth = strand';
     }
+    setHint();
     if (status.parentNode) status.parentNode.removeChild(status);
     if (canPersist) {
       // Parity with the embedded view: clear the saved arrangement and glide back
@@ -2010,10 +2034,8 @@ function openConceptMap3D(opts) {
       header.insertBefore(resetArrBtn, closeBtn);
       resetArrBtn.onclick = function () {
         try { opts.onArrangementChange(null); } catch (e) {}
-        graph = nodes.length
-          ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null)
-          : E.adaptGenerated(generated);
-        if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+        graph = buildGraph(true);   // reset always returns to the organizer-shaped default
+        setHint();
         try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
         handle = CG3D.render(body, graph, renderOpts);
       };
@@ -2028,6 +2050,13 @@ function openConceptMap3D(opts) {
         E.layoutWithGemini(graph, window.callGemini, { topic: opts.title || '' }).then(function (merged) {
           if (!overlay.parentNode) return;
           graph = merged;
+          // AI arrange scores nodes on semantic axes with categorical z — hand
+          // the view back to the classic strand planes (Reset restores the shape).
+          if (graph.meta && graph.meta.layout) {
+            var m2 = Object.assign({}, graph.meta); delete m2.layout;
+            graph = Object.assign({}, graph, { meta: m2 });
+          }
+          setHint();
           if (canPersist && E.extractArrangement) { try { opts.onArrangementChange(E.extractArrangement(graph)); } catch (e) {} }
           try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
           handle = CG3D.render(body, graph, renderOpts);
