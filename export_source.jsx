@@ -1376,7 +1376,7 @@ const createExport = (deps) => {
 
     // ─── handleExportFlashcards ───────────────────────────────────────
     const handleExportFlashcards = (mode = 'standard') => {
-        const { generatedContent, t } = liveRef.current;
+        const { generatedContent, t, addToast } = liveRef.current;
         if (!generatedContent || generatedContent.type !== 'glossary') return;
         const cleanText = (text) => _escapeExportText(text ? String(text).replace(/\*\*/g, '').replace(/\*/g, '') : '');
         const cards = generatedContent?.data;
@@ -1450,7 +1450,9 @@ const createExport = (deps) => {
         });
         const languagesList = Array.from(allLanguages);
         if (isLanguageMode && languagesList.length === 0) {
-            if (window.AlloFlowUX) window.AlloFlowUX.toast(t('flashcards.no_translations'), 'error'); else alert(t('flashcards.no_translations'));
+            const message = t('flashcards.no_translations') || 'No translated flashcards are available to export.';
+            if (typeof addToast === 'function') addToast(message, 'error');
+            else if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') window.AlloFlowUX.toast(message, 'error');
             return;
         }
         const renderSet = (lang = null) => {
