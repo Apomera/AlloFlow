@@ -6593,6 +6593,11 @@ const AlloFlowContent = () => {
   // When set (e.g. from the idle panel's "Find a resource online"), the wizard
   // opens straight to that source step instead of step 1. Cleared once consumed.
   const [wizardInitialMode, setWizardInitialMode] = useState(null);
+  // Declared here (top-level, before first use). Was previously declared ~10k lines
+  // below, AFTER render-time useEffect dependency arrays (adventure autosave, project
+  // sync) that read it — a temporal-dead-zone ReferenceError ("Cannot access
+  // 'useLowQualityVisuals' before initialization") that crashed AlloFlowContent on mount.
+  const [useLowQualityVisuals, setUseLowQualityVisuals] = useState(false);
   _guidedWizardOpenRef.current = showWizard && hasSelectedRole && isTeacherMode; // keep the guided effect's wizard check current each render
   useEffect(() => {
     const wizardCompleted = safeGetItem('allo_wizard_completed');
@@ -16486,7 +16491,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // 'Default' if the field is empty so the prompt never reads "${''} style."
   const [visualCustomStyle, setVisualCustomStyle] = useState('');
   const [visualLayoutMode, setVisualLayoutMode] = React.useState('auto');
-  const [useLowQualityVisuals, setUseLowQualityVisuals] = useState(false);
+  // useLowQualityVisuals moved UP to the top-level useState cluster (~L6596) so it is
+  // initialized before the render-time useEffect deps arrays that read it (TDZ fix).
   const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [isAutoConfigEnabled, setIsAutoConfigEnabled] = useState(true);
   const [expandedTools, setExpandedTools] = useState(['source-input']);
