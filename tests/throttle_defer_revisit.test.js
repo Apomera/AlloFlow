@@ -20,12 +20,13 @@ const drain = async (chunks, initialDeferred, fixer) => {
   if (initialDeferred.length && initialDeferred.length < chunks.length) {
     for (let round = 0; round < 2 && _todo.length; round++) {
       const nextDeferred = [];
-      const again = await Promise.all(_todo.map(async (ci) => {
+      const again = [];
+      for (const ci of _todo) {
         const { out, deferred } = await fixer(chunks[ci], ci, round);
         if (deferred) nextDeferred.push(ci);
         log.push({ round, ci }); // which index was revisited
-        return { ci, out };
-      }));
+        again.push({ ci, out });
+      }
       for (const { ci, out } of again) { if (out != null) fixed[ci] = out; } // splice at the SAME index
       _todo = nextDeferred;
     }
@@ -63,11 +64,13 @@ describe('defer-and-revisit catch-up: results splice back at the correct index',
   });
 });
 
-describe('anti-drift: the breaker recovers over time + fails fast', () => {
-  it('time-decay recovery steps the cap back up as cooldowns elapse (toward this run\'s effective ceiling)', () => {
+describe('anti-drift: the breaker recovers on evidence + fails fast', () => {
+  it('an elapsed cooldown alone cannot raise concurrency; real successes restore the run ceiling', () => {
     // 2026-06-24: recovery now climbs toward _geminiEffectiveMax (the per-run ceiling, lowered for heavy/scanned
     // docs by _applyGeminiPacing) instead of the raw global _GEMINI_MAX_CONCURRENT — so pacing isn't undone.
-    expect(pipe).toMatch(/_geminiCap = Math\.min\(_geminiEffectiveMax, _geminiCap \+ 1\);\s*\n\s*_geminiCooldownUntil = 0;/);
+    expect(pipe).not.toMatch(/_geminiCap = Math\.min\(_geminiEffectiveMax, _geminiCap \+ 1\)/);
+    expect(pipe).toContain("_geminiCap = _geminiEffectiveMax; // restore to THIS run's ceiling");
+    expect(pipe).toMatch(/if \(_geminiOkStreak >= _GEMINI_RECOVER_HITS\)/);
   });
   it('one inline auth retry (then defer), not three', () => {
     expect(pipe).toMatch(/var _GEMINI_AUTH_RETRIES = 1;/);
@@ -88,6 +91,8 @@ describe('anti-drift: aiFixChunked records + revisits throttle-deferred chunks',
   });
   it('the catch-up drain revisits them (skipped when ALL deferred) and splices by index', () => {
     expect(pipe).toMatch(/if \(_deferredIdx\.length && _deferredIdx\.length < chunks\.length\)/);
+    expect(pipe).toContain('await waitForGeminiCalm({ maxWaitMs: 90000 })');
+    expect(pipe).not.toMatch(/Promise\.all\(_todo\.map/);
     expect(pipe).toMatch(/for \(const \{ ci, out \} of _again\) \{ if \(out != null\) fixed\[ci\] = out; \}/);
   });
 });

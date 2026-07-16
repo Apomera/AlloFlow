@@ -29,7 +29,9 @@ describe('pdf.js extraction/OCR awaits are timeboxed (anti-hang)', () => {
     // those per-scale millisecond budgets get tuned over time, so we deliberately do NOT pin them
     // here: we assert the structural wrapping + the OCR-specific label + that a stalled page is
     // recovered at a lower scale, not the exact timeout numbers.
-    expect(src).toMatch(/await _withTimeout\(page\.render\(\{ canvasContext: _c\.getContext\('2d'\), viewport: _vp \}\)\.promise,[^\n]*'page\.render \(OCR p'/);
+    expect(src).toContain("_renderTask = page.render({ canvasContext: _c.getContext('2d'), viewport: _vp });");
+    expect(src).toMatch(/await _withTimeout\(_renderTask\.promise,[^\n]*'page\.render \(OCR p'/);
+    expect(src).toContain("typeof _renderTask.cancel === 'function'");
     expect(src).toContain('retrying at a lower scale');
   });
 

@@ -19,8 +19,10 @@ describe('#4A — OCR render recovers a slow/hung page via a bounded lower-scale
   it('tries 2x then 1.25x then 1x, every attempt _withTimeout-wrapped (still bounded — hang fix intact)', () => {
     // 2026-06-19: ladder gained a final 1x rung with a generous budget so a heavy scanned page reliably
     // renders (→ Tesseract word boxes → POSITIONED searchable text) instead of dropping to a top-block.
-    expect(src).toContain('for (const _sc of [2.0, 1.25, 1.0]) {');
-    expect(src).toContain("await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 2 ? 45000 : (_sc >= 1.25 ? 35000 : 55000),");
+    expect(src).toContain('const _renderScales = _renderFailureStreak > 0 ? [1.0] : [2.0, 1.25, 1.0];');
+    expect(src).toContain('for (const _sc of _renderScales) {');
+    expect(src).toContain("_renderTask = page.render({ canvasContext: _c.getContext('2d'), viewport: _vp });");
+    expect(src).toContain("await _withTimeout(_renderTask.promise, _sc >= 2 ? 45000 : (_sc >= 1.25 ? 35000 : 55000),");
     // higher scales retry to a lower scale; the final 1x rung rethrows into the per-page catch (recorded, not silent)
     expect(src).toContain('else throw _rErr;');
   });
@@ -36,6 +38,12 @@ describe('#4A — OCR render recovers a slow/hung page via a bounded lower-scale
   it('a render failure is still RECORDED per page (never a silent total loss)', () => {
     expect(src).toContain("pages.push({ pageNum: p, text: '', words: null, error: _pmsg });");
     expect(src).toContain('pageErrors.push({ pageNum: p, error: _pmsg });');
+  });
+
+  it('cancels timed-out render work and opens a Vision-backed circuit after two failed pages', () => {
+    expect(src).toContain("typeof _renderTask.cancel === 'function'");
+    expect(src).toContain('_renderFailureStreak >= 2');
+    expect(src).toContain("phase: 'vision-fallback'");
   });
 });
 

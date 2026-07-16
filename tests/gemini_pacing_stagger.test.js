@@ -175,9 +175,10 @@ describe('anti-drift: the pacing wiring ships in the source', () => {
     expect(dp).toMatch(/var _geminiStaggerTimer = null;/);
     expect(dp).toMatch(/var _geminiLastStartAt = 0;/);
   });
-  it('the pump recovers toward _geminiEffectiveMax (not the raw global max)', () => {
-    expect(dp).toMatch(/if \(_geminiCap < _geminiEffectiveMax && _geminiCooldownUntil > 0\)/);
-    expect(dp).toMatch(/_geminiCap = Math\.min\(_geminiEffectiveMax, _geminiCap \+ 1\);/);
+  it('cooldown expiry alone cannot raise the cap; successful calls recover toward the run ceiling', () => {
+    expect(dp).not.toMatch(/_geminiCap = Math\.min\(_geminiEffectiveMax, _geminiCap \+ 1\)/);
+    expect(dp).toMatch(/if \(_geminiOkStreak >= _GEMINI_RECOVER_HITS\)/);
+    expect(dp).toContain("_geminiCap = _geminiEffectiveMax; // restore to THIS run's ceiling");
   });
   it('the pump enforces a min gap between starts and records each start time', () => {
     expect(dp).toMatch(/if \(_geminiStaggerMs > 0 && _geminiLastStartAt > 0\)/);
@@ -195,5 +196,8 @@ describe('anti-drift: the pacing wiring ships in the source', () => {
     expect(dp).toMatch(/var _applyGeminiPacing = function \(heavy, opts\)/);
     expect(dp).toMatch(/if \(_heavyScanned \|\| _heavyPages >= 8\) \{\s*\n\s*_applyGeminiPacing\(true,/);
     expect(dp).toMatch(/_applyGeminiPacing\(true, \(det\.pageCount >= 20\)/);
+    expect(dp).toContain("_applyGeminiPacing(true, { maxConcurrent: 2, staggerMs: 1500, label: 'the opening PDF audit' })");
+    expect(dp).toContain("_pipeLog('API-start'");
+    expect(dp).toContain("_pipeLog('Vision-start'");
   });
 });

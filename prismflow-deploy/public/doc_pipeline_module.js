@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -4143,18 +4143,12 @@ var createDocPipeline = function(deps) {
       }
       return;
     }
-    // TIME-DECAY recovery (2026-06-21): each ELAPSED cooldown restores ONE concurrency step, independent of
-    // the success streak. The old model restored ONLY on _GEMINI_RECOVER_HITS consecutive successes — which
-    // a trickle of intermittent failures (the actual Canvas rate-limit pattern) can NEVER reach, pinning
-    // cap=1 for the whole run and serializing everything (the 2-hour grind). A rate-limit eases over TIME,
-    // so recover over time: gently (one step per elapsed cooldown, not a jump back to full) to probe rather
-    // than re-storm. Consumed by zeroing _geminiCooldownUntil so one elapsed cooldown bumps once; the next
-    // failure re-arms it. The fast _geminiNoteSuccess path (4 clean successes → full) still applies too.
-    if (_geminiCap < _geminiEffectiveMax && _geminiCooldownUntil > 0) {
-      _geminiCap = Math.min(_geminiEffectiveMax, _geminiCap + 1);
-      _geminiCooldownUntil = 0;
-      if (_geminiCap >= _geminiEffectiveMax) _geminiStormAnnounced = false;
-    }
+    // Recovery is SUCCESS-GATED, never time-gated. The former time-decay step raised a heavy
+    // document from cap=1 straight back to its full ceiling of 2 merely because 12–25 seconds
+    // elapsed. On a rolling quota window that re-fanned the queue before the service had actually
+    // recovered. Leave the cap at 1 after cooldown; a cheap waitForGeminiCalm probe resets the
+    // live failure streak, then _geminiNoteSuccess restores the normal ceiling only after a short
+    // run of real successes.
     while (_geminiInFlight < _geminiCap && _geminiWaiters.length) {
       // STAGGER (heavy/scanned mode): enforce a MIN gap between consecutive call starts, so the calls are
       // spread over time instead of all firing the instant a slot is free. The first start fires immediately
@@ -4306,7 +4300,8 @@ var createDocPipeline = function(deps) {
       _geminiEffectiveMax = Math.max(1, Math.min(_GEMINI_MAX_CONCURRENT, _max));
       _geminiStaggerMs = (typeof opts.staggerMs === 'number') ? opts.staggerMs : 700; // ~0.7s between starts
       if (_geminiCap > _geminiEffectiveMax) _geminiCap = _geminiEffectiveMax; // don't exceed the new ceiling
-      warnLog('[GeminiGate] Pacing for a heavy/scanned doc — concurrency ≤' + _geminiEffectiveMax + ', staggering call starts ~' + Math.round(_geminiStaggerMs) + 'ms apart (no calls dropped; this run will be a bit slower but just as thorough)');
+      var _pacingSubject = opts.label || 'a heavy/scanned doc';
+      warnLog('[GeminiGate] Pacing for ' + _pacingSubject + ' — concurrency ≤' + _geminiEffectiveMax + ', staggering actual call starts ~' + Math.round(_geminiStaggerMs) + 'ms apart (no calls dropped)');
     } else {
       _geminiEffectiveMax = _GEMINI_MAX_CONCURRENT;
       _geminiStaggerMs = 0;
@@ -4450,7 +4445,7 @@ var createDocPipeline = function(deps) {
   // one (parity with the prior _withRetry). Permanent errors (real auth/quota/config, RECITATION)
   // never retry. Queue-wait never counts toward the timeout; the slot is held until the UNDERLYING
   // transport settles (45s ceiling past the timeout), not just until the race — see #3 below.
-  var _geminiCall = function(fn, initialMs, retryMs, label) {
+  var _geminiCall = function(fn, initialMs, retryMs, label, onTransportStart) {
     // #3 (ChatGPT review 2026-07-10): capture the run's abort signal at ENQUEUE time (H7 publishes
     // per-file/batch controllers into this slot). The transport re-reads the slot only when a call
     // STARTS — so a queued call from a dead run used to start under the NEXT run's live signal.
@@ -4459,7 +4454,11 @@ var createDocPipeline = function(deps) {
     var _gateSignal = (typeof window !== 'undefined' && window.__alloPdfAbortSignal) ? window.__alloPdfAbortSignal : null;
     var _attempt = function(n) {
       var timeoutMs = n === 0 ? initialMs : (retryMs || initialMs);
+      var _attemptQueuedAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
       return _geminiGate(function() {
+        if (typeof onTransportStart === 'function') {
+          try { onTransportStart({ attempt: n, queuedMs: Math.max(0, (((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) - _attemptQueuedAt)) }); } catch (_) {}
+        }
         var _underlying = Promise.resolve().then(fn);
         var _raced = _withTimeout(_underlying, timeoutMs, label + (n ? ' (retry ' + n + ')' : ''));
         // Hold the slot until the UNDERLYING call settles: when the timer wins the race the fetch
@@ -4475,7 +4474,12 @@ var createDocPipeline = function(deps) {
       }, _gateSignal, label).then(function(res) {
         // #15: a retry that then SUCCEEDED — the metric the old `retries` counter claimed to be.
         if (n > 0) _pipelineStats.recoveredRetries = (_pipelineStats.recoveredRetries || 0) + 1;
-        _geminiNoteSuccess();
+        // Some Vision proxy paths resolve an empty 200 body instead of throwing. That is not a
+        // recovery success: counting it as one reset the live storm streak and prematurely reopened
+        // concurrency. Record the signal without adding another retry; callers retain their existing
+        // empty-result fallback behavior.
+        if (res == null || (typeof res === 'string' && !res.trim())) _geminiNoteTransientFail();
+        else _geminiNoteSuccess();
         return res;
       }).catch(function(err) {
         // #3: aborted runs short-circuit — no retry, no breaker/storm accounting.
@@ -4506,14 +4510,16 @@ var createDocPipeline = function(deps) {
           _pulsePipelineWatchdog(); // a retry is activity — keep the dead-man watchdog from clearing a throttled-but-alive run (fix A)
           return new Promise(function(r) { setTimeout(r, _backoff); }).then(function() { return _attempt(n + 1); });
         }
-        // Generic timeout/transient: a single retry, as before. (2026-06-20) On the FINAL give-up,
-        // count this call toward the empty-body/timeout storm signal so a sustained cluster trips the
-        // same breaker the 401 path does — Canvas throttles via empty 200s + timeouts, not only 401s.
-        if (n >= 1) { _geminiNoteTransientFail(); throw err; }
-        warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once...');
+        // Count EVERY failed transport immediately, including the first attempt. Previously a
+        // 3-call wave could launch three retries before the breaker saw even one failure.
+        _geminiNoteTransientFail();
+        if (n >= 1) throw err;
+        // Jitter the one retry so simultaneous empty responses do not re-enter in lockstep.
+        var _transientBackoff = Math.round(2500 * (0.7 + Math.random() * 0.6));
+        warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once after ' + _transientBackoff + 'ms...');
         _pipelineStats.retries++; _pipelineStats.transportRetries = (_pipelineStats.transportRetries || 0) + 1; // #15
         _pulsePipelineWatchdog(); // a retry is activity (fix A)
-        return _attempt(n + 1);
+        return new Promise(function(r) { setTimeout(r, _transientBackoff); }).then(function() { return _attempt(n + 1); });
       });
     };
     return _attempt(0);
@@ -4522,10 +4528,12 @@ var createDocPipeline = function(deps) {
     var args = arguments;
     var promptLen = args[0] ? String(args[0]).length : 0;
     var callNum = ++_pipelineStats.apiCalls;
-    _pipeLog('API→', 'callGemini #' + callNum + ' (' + Math.round(promptLen / 1000) + 'KB prompt)');
+    _pipeLog('API→', 'callGemini #' + callNum + ' queued (' + Math.round(promptLen / 1000) + 'KB prompt)');
     var t0 = performance.now();
     var _localTextCall = _usesLocalTextBackend();
-    return _geminiCall(function() { return _rawCallGemini.apply(null, args); }, _localTextCall ? 420000 : 180000, _localTextCall ? 300000 : 120000, 'callGemini').then(function(result) {
+    return _geminiCall(function() { return _rawCallGemini.apply(null, args); }, _localTextCall ? 420000 : 180000, _localTextCall ? 300000 : 120000, 'callGemini', function(start) {
+      _pipeLog('API-start', 'callGemini #' + callNum + ' transport start' + (start.attempt ? ' (retry ' + start.attempt + ')' : '') + ' after ' + start.queuedMs + 'ms queued');
+    }).then(function(result) {
       var dur = Math.round(performance.now() - t0);
       var respLen = result ? String(result).length : 0;
       _pipelineStats.totalApiMs += dur;
@@ -4541,9 +4549,11 @@ var createDocPipeline = function(deps) {
   var callGeminiVision = _rawCallGeminiVision ? function() {
     var args = arguments;
     var callNum = ++_pipelineStats.visionCalls;
-    _pipeLog('Vision→', 'callGeminiVision #' + callNum);
+    _pipeLog('Vision→', 'callGeminiVision #' + callNum + ' queued');
     var t0 = performance.now();
-    return _geminiCall(function() { return _rawCallGeminiVision.apply(null, args); }, 120000, 90000, 'callGeminiVision').then(function(result) {
+    return _geminiCall(function() { return _rawCallGeminiVision.apply(null, args); }, 120000, 90000, 'callGeminiVision', function(start) {
+      _pipeLog('Vision-start', 'callGeminiVision #' + callNum + ' transport start' + (start.attempt ? ' (retry ' + start.attempt + ')' : '') + ' after ' + start.queuedMs + 'ms queued');
+    }).then(function(result) {
       var dur = Math.round(performance.now() - t0);
       var respLen = result ? String(result).length : 0;
       _pipelineStats.totalApiMs += dur;
@@ -5898,17 +5908,16 @@ var createDocPipeline = function(deps) {
       for (let _round = 0; _round < 2 && _todo.length; _round++) {
         warnLog(`[aiFixChunked:${label}] catch-up round ${_round + 1}: revisiting ${_todo.length} throttle-deferred chunk(s) after a pause`);
         _pulsePipelineWatchdog(); // a deliberate catch-up pause is activity, not a stall
-        await new Promise(function (r) { setTimeout(r, 8000); }); // let the rate-limit window ease before revisiting
+        // Do not guess that an 8-second sleep cleared a rolling quota. Wait through the live
+        // cooldown and require one cheap probe before revisiting document-sized prompts.
+        try { await waitForGeminiCalm({ maxWaitMs: 90000 }); } catch (_) {}
         _deferredIdx.length = 0; // re-collect any chunk STILL throttled this round
-        let _again;
-        if (_localTextMode) {
-          _again = [];
-          for (const ci of _todo) {
-            _emitLocalRemediationProgress(ci, chunks.length, `Retrying chunk ${ci + 1} of ${chunks.length}`, 'fix-retry');
-            _again.push({ ci: ci, out: await _fixOneChunk(chunks[ci], ci) });
-          }
-        } else {
-          _again = await Promise.all(_todo.map(function (ci) { return _fixOneChunk(chunks[ci], ci).then(function (out) { return { ci: ci, out: out }; }); }));
+        // Recovery stays serial even for the cloud backend. Parallel catch-up was the exact
+        // re-fan-out visible in the throttled run (#17/#18, then #19/#20).
+        let _again = [];
+        for (const ci of _todo) {
+          if (_localTextMode) _emitLocalRemediationProgress(ci, chunks.length, `Retrying chunk ${ci + 1} of ${chunks.length}`, 'fix-retry');
+          _again.push({ ci: ci, out: await _fixOneChunk(chunks[ci], ci) });
         }
         for (const { ci, out } of _again) { if (out != null) fixed[ci] = out; } // splice back at the SAME index (original-on-failure = harmless no-op)
         _todo = _deferredIdx.slice();
@@ -9795,8 +9804,20 @@ var createDocPipeline = function(deps) {
       // Downstream reconcileOcrPages already tolerates empty per-page text.
       const pages = [];
       const pageErrors = [];
+      // A timed-out pdf.js RenderTask used to remain alive and poison every later page. Cancel
+      // each failed task, then open a document-level circuit after two consecutive pages cannot
+      // render at all. Vision OCR runs alongside this pass and remains the content fallback.
+      let _renderFailureStreak = 0;
+      let _renderCircuitOpen = false;
       for (let p = 1; p <= pdf.numPages; p++) {
         let canvas = null, renderScale = 2.0, renderViewport = null; // hoisted so the finally can free it on BOTH success and failure
+        if (_renderCircuitOpen) {
+          const _skipMsg = 'Tesseract render circuit open after repeated page-render timeouts; Vision OCR companion remains active';
+          pages.push({ pageNum: p, text: '', words: null, error: _skipMsg });
+          pageErrors.push({ pageNum: p, error: _skipMsg });
+          if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'vision-fallback' });
+          continue;
+        }
         try {
           if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'render' });
           const page = await _withTimeout(pdf.getPage(p), 30000, 'pdf.getPage (OCR p' + p + ')'); // bound getPage too — pdf.js worker can stall
@@ -9814,19 +9835,28 @@ var createDocPipeline = function(deps) {
           // cheap final 1x rung gets the MOST GENEROUS budget: ~1/4 the pixels of 2x, it reliably renders
           // even a heavy page → guaranteed word boxes (positioning) over raw speed. Word positions are
           // scale-invariant (normalized by renderScale), so a 1x render still overlays correctly. (2026-06-19, fixes top-block regression)
-          for (const _sc of [2.0, 1.25, 1.0]) {
+          // After one complete page-render failure, probe the next page at cheap 1x first.
+          // A successful probe resets the ladder; a second failure opens the circuit below.
+          const _renderScales = _renderFailureStreak > 0 ? [1.0] : [2.0, 1.25, 1.0];
+          for (const _sc of _renderScales) {
             const _vp = page.getViewport({ scale: _sc });
             const _c = document.createElement('canvas');
             _c.width = _vp.width; _c.height = _vp.height;
+            let _renderTask = null;
             try {
-              await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 2 ? 45000 : (_sc >= 1.25 ? 35000 : 55000), 'page.render (OCR p' + p + ' @' + _sc + 'x)');
+              _renderTask = page.render({ canvasContext: _c.getContext('2d'), viewport: _vp });
+              await _withTimeout(_renderTask.promise, _sc >= 2 ? 45000 : (_sc >= 1.25 ? 35000 : 55000), 'page.render (OCR p' + p + ' @' + _sc + 'x)');
               canvas = _c; renderScale = _sc; renderViewport = _vp; break;
             } catch (_rErr) {
+              // _withTimeout rejects only the race; cancel the underlying pdf.js work too so it
+              // cannot keep the worker busy and make every following page time out behind it.
+              try { if (_renderTask && typeof _renderTask.cancel === 'function') _renderTask.cancel(); } catch (_) {}
               try { _c.width = 0; _c.height = 0; } catch (_) {}
               if (_sc > 1.0) { try { warnLog('[Tesseract] page ' + p + ' render @' + _sc + 'x failed (' + ((_rErr && _rErr.message) || _rErr) + ') — retrying at a lower scale'); } catch (_) {} }
               else throw _rErr; // all scales failed → fall to the per-page catch (recorded, not silent)
             }
           }
+          _renderFailureStreak = 0; // this page rendered; restore the full quality ladder next page
           if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'ocr' });
           // Bounded, self-healing OCR (see _ocrRecognize): timeout per attempt + transient
           // retry + English fallback. v5 returns ONLY text by default; {blocks:true} opts into
@@ -9843,6 +9873,15 @@ var createDocPipeline = function(deps) {
           const _pmsg = (pageErr && pageErr.message) || String(pageErr);
           pages.push({ pageNum: p, text: '', words: null, error: _pmsg });
           pageErrors.push({ pageNum: p, error: _pmsg });
+          if (_pmsg.indexOf('page.render (OCR p') !== -1) {
+            _renderFailureStreak++;
+            if (_renderFailureStreak >= 2 && p < pdf.numPages) {
+              _renderCircuitOpen = true;
+              try { warnLog('[Tesseract] two consecutive pages could not render — skipping Tesseract rendering for the remaining ' + (pdf.numPages - p) + ' page(s); Vision OCR remains active'); } catch (_) {}
+            }
+          } else {
+            _renderFailureStreak = 0;
+          }
           try { warnLog('[Tesseract] page ' + p + ' failed (' + (pdf.numPages - 1) + ' other pages still attempted): ' + _pmsg); } catch (_) {}
         } finally {
           // Free the canvas on BOTH success and failure — a mid-page render/recognize throw used to
@@ -11973,6 +12012,13 @@ Return ONLY valid JSON:
         try { await ensurePdfLibLoaded(); } catch (_) {}
       }
       const _sliceCapable = !!(typeof window !== 'undefined' && window.PDFLib && window.PDFLib.PDFDocument);
+      // The opening auditor panel is itself a three-call whole-PDF burst and previously ran
+      // before remediation learned that a document was heavy/scanned. Pace it proactively;
+      // this adds only a few seconds but avoids spending the run's quota in its first instant.
+      try {
+        _resetGeminiBreaker();
+        _applyGeminiPacing(true, { maxConcurrent: 2, staggerMs: 1500, label: 'the opening PDF audit' });
+      } catch (_) {}
       let _chunkFirst = false;
       if (_sliceCapable) {
         if (dataSizeKB > _AUDIT_SLICE_BYTES_KB) _chunkFirst = true;
@@ -17446,6 +17492,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // its constant floor of 2 (which minDetectable below keeps). One audit carries the same
           // information at half the loop's dominant API cost (~K_a chunks × passes calls saved).
           updateProgress(4, `Verifying improvements — checking pass ${fixPass + 1} results...`);
+          // A failed fixer wave can trip the breaker immediately. Do not launch the next audit
+          // wave into that same storm; wait for one content-free recovery probe first.
+          try { await waitForGeminiCalm({ maxWaitMs: 120000, shouldAbort: loopCtx.genStale }); } catch (_) {}
           const [reVerify1, reAxe] = await Promise.all([
             auditOutputAccessibility(accessibleHtml),
             runAxeAudit(accessibleHtml)
@@ -34726,11 +34775,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

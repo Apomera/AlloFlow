@@ -61,7 +61,9 @@ describe('anti-drift: the breaker + floor ship the fixes', () => {
   it('the breaker has a transient-storm handler fed from the generic-transient path', () => {
     expect(pipeSrc).toMatch(/var _geminiNoteTransientFail = function/);
     expect(pipeSrc).toMatch(/_GEMINI_TRANSIENT_TRIP = 3/);
-    expect(pipeSrc).toMatch(/if \(n >= 1\) \{ _geminiNoteTransientFail\(\); throw err; \}/);
+    expect(pipeSrc).toMatch(/_geminiNoteTransientFail\(\);\s*\n\s*if \(n >= 1\) throw err;/);
+    expect(pipeSrc).toMatch(/var _transientBackoff = Math\.round\(2500 \* \(0\.7 \+ Math\.random\(\) \* 0\.6\)\)/);
+    expect(pipeSrc).toMatch(/if \(res == null \|\| \(typeof res === 'string' && !res\.trim\(\)\)\) _geminiNoteTransientFail\(\)/);
   });
   it('the transient streak resets on success (so isolated blips do not trip it)', () => {
     expect(pipeSrc).toMatch(/_geminiAuthStreak = 0;\s*\n\s*_geminiTransientStreak = 0;/);
