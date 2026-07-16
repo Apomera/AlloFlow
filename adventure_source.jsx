@@ -18,14 +18,18 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
   const reportRef = useRef(null);
   useFocusTrap(reportRef, true, onClose);
   const { stats, climax, xp, level } = adventureState;
-  const safeStats = stats || { successes: 0, failures: 0, decisions: 0, conceptsFound: [] };
+  const safeStats = stats || { successes: 0, failures: 0, decisions: 0, partials: 0, conceptsFound: [] };
   const totalDecisions = Math.max(1, safeStats.decisions);
   const efficiency = Math.round((safeStats.successes / totalDecisions) * 100);
   const proficiency = Math.max(0, Math.min(100, Number(climax?.masteryScore) || 0));
-  let ratingLabel = t('adventure.mission_report.rating_novice');
-  if (proficiency >= 90) ratingLabel = t('adventure.mission_report.rating_mastery');
-  else if (proficiency >= 70) ratingLabel = t('adventure.mission_report.rating_proficient');
-  else if (proficiency >= 50) ratingLabel = t('adventure.mission_report.rating_developing');
+  // Honest framing (2026-07-16): "Proficiency Rating"/"Mastery" overclaimed what an
+  // AI-scored story number can support. New keys (old keys kept so lang packs are
+  // unaffected); an explicit AI-estimate caption renders under the bar.
+  const performanceLabel = t('adventure.mission_report.performance_rating') || 'Story Performance';
+  let ratingLabel = t('adventure.mission_report.rating2_beginning') || 'Just Beginning';
+  if (proficiency >= 90) ratingLabel = t('adventure.mission_report.rating2_strong') || 'Strong Command';
+  else if (proficiency >= 70) ratingLabel = t('adventure.mission_report.rating2_solid') || 'Solid Command';
+  else if (proficiency >= 50) ratingLabel = t('adventure.mission_report.rating2_developing') || 'Developing';
   return (
     <div ref={reportRef} role="dialog" aria-modal="true" aria-labelledby="adventure-mission-report-title" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 p-4">
       <div className="bg-slate-900 w-full max-w-md rounded-3xl border-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] overflow-hidden relative transform scale-100 animate-in zoom-in-95 duration-500 flex flex-col max-h-[90vh]">
@@ -50,14 +54,34 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             </div>
             <div className="relative z-20">
                 <div className="flex justify-between text-xs font-bold mb-2">
-                    <span className="text-cyan-400 uppercase">{t('adventure.mission_report.proficiency_rating')}</span>
+                    <span className="text-cyan-400 uppercase">{performanceLabel}</span>
                     <span className="text-white">{proficiency}/100 ({ratingLabel})</span>
                 </div>
-                <div role="progressbar" aria-label={t('adventure.mission_report.proficiency_rating')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={proficiency} className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative">
+                <div role="progressbar" aria-label={performanceLabel} aria-valuemin={0} aria-valuemax={100} aria-valuenow={proficiency} className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative">
                     <div
                         className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-1000 ease-out"
                         style={{ width: `${proficiency}%` }}
                     ></div>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1.5 leading-snug">
+                    {t('adventure.mission_report.ai_estimate_note') || 'Estimated by AI from story decisions — a reflection prompt, not a formal assessment.'}
+                </p>
+            </div>
+            {/* 3-band decision breakdown (2026-07-16): partial_success used to be
+                invisible — counted in neither successes nor failures, silently
+                dragging "Efficiency" down. All three bands now show. */}
+            <div className="grid grid-cols-3 gap-2 relative z-20">
+                <div className="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
+                    <span className="text-[10px] font-bold uppercase text-green-400">{t('adventure.mission_report.band_strong') || 'Strong moves'}</span>
+                    <span className="text-xl font-black text-white">{safeStats.successes || 0}</span>
+                </div>
+                <div className="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
+                    <span className="text-[10px] font-bold uppercase text-yellow-400">{t('adventure.mission_report.band_partial') || 'Partial credit'}</span>
+                    <span className="text-xl font-black text-white">{safeStats.partials || 0}</span>
+                </div>
+                <div className="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
+                    <span className="text-[10px] font-bold uppercase text-rose-400">{t('adventure.mission_report.band_misconception') || 'Misconceptions'}</span>
+                    <span className="text-xl font-black text-white">{safeStats.failures || 0}</span>
                 </div>
             </div>
             <div className="grid grid-cols-2 gap-4 relative z-20">

@@ -688,6 +688,12 @@ function AdventureView(props) {
                                                                     className="w-16 min-h-11 text-xs border border-indigo-600 rounded p-2 text-center focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 outline-none font-bold text-indigo-900 bg-white"
                                                                 />
                                                             </div>
+                                                            {/* Climax discoverability (2026-07-16): the toggle defaults OFF and its
+                                                                assessment consequence was invisible — teachers who never found it
+                                                                never got the finale or its Story Performance score. */}
+                                                            <p className="text-[11px] text-slate-600 mt-2 leading-snug">
+                                                                {t('adventure.climax.setup_hint') || "Recommended: adds a final challenge that tests what the story taught. The Mission Debrief's Story Performance comes from how it goes — without it, adventures run in infinite mode."}
+                                                            </p>
                                                         </div>
                                                         <div>
                                                             <label htmlFor="adventure-setup-custom-instructions" className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">

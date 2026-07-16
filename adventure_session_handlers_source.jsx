@@ -5,6 +5,19 @@
 // useCallback wrapper dropped in shim; functions called from event
 // handlers and each other, never passed as memo deps.
 
+// ── Mastery pacing constants (2026-07-16, unified) ──────────────────────────
+// DURING an active climax the prompt instructs the model to shift masteryScore by
+// +20 crit / +10 success / −5 partial|neutral / −15 failure / −25 crit-failure.
+// The local fallback (used when the model returns no usable masteryScore) previously
+// applied a DIFFERENT scale (+8/−2/−8); it now mirrors the prompt's mid-tier values
+// so climax pacing is consistent regardless of which path scored the turn.
+const CLIMAX_OUTCOME_DELTAS = { strategic_success: 10, partial_success: -5, neutral: -5, misconception: -15 };
+// BEFORE the climax, hidden mastery accumulates toward the ≥80 auto-trigger. This is
+// deliberately gentler than the climax scale (exploration shouldn't tank progress),
+// and partial_success now earns a small POSITIVE step instead of being punished
+// like a neutral turn (3-band assessment, same wave).
+const HIDDEN_MASTERY_DELTAS = { strategic_success: 8, partial_success: 3, neutral: -2, misconception: -8 };
+
 const handleDiceRollComplete = (deps) => {
   const { adventureState, pendingAdventureUpdate, adventureChanceMode, adventureDifficulty, adventureCustomInstructions, adventureLanguageMode, adventureInputMode, adventureFreeResponseEnabled, adventureConsistentCharacters, isAdventureStoryMode, isImmersiveMode, isSocialStoryMode, aiBotsActive, narrativeLedger, currentUiLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, inputText, history, isIndependentMode, isTeacherMode, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, adventureArtStyle, adventureCustomArtStyle, imageGenerationStyle, imageAspectRatio, alloBotRef, lastTurnSnapshot, lastReadTurnRef, setAdventureState, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setActiveView, setGenerationStep, setError, setHistory, setGeneratedContent, setHasSavedAdventure, setIsResumingAdventure, setDiceResult, setFailedAdventureAction, setAdventureEffects, setIsProcessing, useLowQualityVisuals, adventureImageDB, addToast, t, warnLog, debugLog, cleanJson, safeJsonParse, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, playSound, handleScoreUpdate, getAdventureGlossaryTerms, generatePixelArtItem, generateAdventureImage, generateNarrativeLedger, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, NARRATIVE_GUARDRAILS, INVISIBLE_NARRATOR_INSTRUCTIONS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES } = deps;
   try { if (window._DEBUG_PHASE_L) console.log("[PhaseL] handleDiceRollComplete fired"); } catch(_) {}
@@ -36,12 +49,14 @@ const handleDiceRollComplete = (deps) => {
       }
       playAdventureEventSound('transition');
       setAdventureState(prev => {
-          const currentStats = prev.stats || { successes: 0, failures: 0, decisions: 0, conceptsFound: [] };
+          const currentStats = prev.stats || { successes: 0, failures: 0, decisions: 0, partials: 0, conceptsFound: [] };
           let newSuccesses = currentStats.successes;
           let newFailures = currentStats.failures;
+          let newPartials = currentStats.partials || 0;
           const outcomeType = data.outcomeType || data.rollDetails?.outcomeType || 'neutral';
           if (outcomeType === 'strategic_success') newSuccesses++;
           if (outcomeType === 'misconception') newFailures++;
+          if (outcomeType === 'partial_success') newPartials++; // 3-band assessment (2026-07-16): partials were invisible
           let newConcepts = [...(currentStats.conceptsFound || [])];
           if (data.conceptsUsed && Array.isArray(data.conceptsUsed)) {
               data.conceptsUsed.forEach(c => {
@@ -51,6 +66,7 @@ const handleDiceRollComplete = (deps) => {
           const newStats = {
               successes: newSuccesses,
               failures: newFailures,
+              partials: newPartials,
               decisions: (currentStats.decisions || 0) + 1,
               conceptsFound: newConcepts
           };
@@ -258,9 +274,8 @@ const handleDiceRollComplete = (deps) => {
               let _candidate = Number(aiMasteryScore);
               if (!Number.isFinite(_candidate)) {
                   const outcomeType = data.outcomeType || data.rollDetails?.outcomeType || 'neutral';
-                  let delta = -2; // Default slight penalty to maintain pressure
-                  if (outcomeType === 'strategic_success') delta = 8;
-                  else if (outcomeType === 'misconception') delta = -8;
+                  // Unified with the prompt's documented scale (CLIMAX_OUTCOME_DELTAS).
+                  const delta = CLIMAX_OUTCOME_DELTAS[outcomeType] !== undefined ? CLIMAX_OUTCOME_DELTAS[outcomeType] : -5;
                   _candidate = _prevSafe + delta;
               } else {
                   const _shift = Math.max(-25, Math.min(25, _candidate - _prevSafe));
@@ -271,9 +286,7 @@ const handleDiceRollComplete = (deps) => {
           let hiddenMastery = currentClimaxState.masteryScore || 0;
           if (!currentClimaxState.isActive) {
               const outcomeType = data.outcomeType || data.rollDetails?.outcomeType || 'neutral';
-              let masteryDelta = -2;
-              if (outcomeType === 'strategic_success') masteryDelta = 8;
-              else if (outcomeType === 'misconception') masteryDelta = -8;
+              const masteryDelta = HIDDEN_MASTERY_DELTAS[outcomeType] !== undefined ? HIDDEN_MASTERY_DELTAS[outcomeType] : -2;
               hiddenMastery = Math.min(100, Math.max(0, hiddenMastery + masteryDelta));
           }
           const adventureGoal = prev.adventureGoal || "Narrative Climax";

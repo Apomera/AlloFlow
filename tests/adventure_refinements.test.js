@@ -126,6 +126,45 @@ describe('F. deterministic-mode score↔outcomeType consistency guard', () => {
   }
 });
 
+describe('H. 3-band assessment + unified scales + honest report framing (2026-07-16 wave 2)', () => {
+  const UI = read('ui_strings.js');
+  const ADV_SRC = read('adventure_source.jsx');
+  const ADV_MOD = read('adventure_module.js');
+  for (const [name, s] of [['source', SESSION_SRC], ['module', SESSION_MOD]]) {
+    it(`session ${name}: partial_success is tracked (was invisible) and scales are named constants`, () => {
+      expect(s).toMatch(/if \(outcomeType === 'partial_success'\) newPartials\+\+/);
+      expect(s).toMatch(/partials: newPartials,/);
+      expect(s).toMatch(/CLIMAX_OUTCOME_DELTAS = \{ strategic_success: 10, partial_success: -5, neutral: -5, misconception: -15 \}/);
+      expect(s).toMatch(/HIDDEN_MASTERY_DELTAS = \{ strategic_success: 8, partial_success: 3, neutral: -2, misconception: -8 \}/);
+      // the old divergent inline fallback scale must be gone
+      expect(s).not.toMatch(/let delta = -2; \/\/ Default slight penalty/);
+    });
+  }
+  for (const [name, s] of [['source', ADV_SRC], ['module', ADV_MOD]]) {
+    it(`mission report ${name}: honest framing + AI-estimate caption + 3 bands`, () => {
+      expect(s).toMatch(/performance_rating/);
+      expect(s).toMatch(/ai_estimate_note/);
+      expect(s).toMatch(/band_strong/);
+      expect(s).toMatch(/band_partial/);
+      expect(s).toMatch(/band_misconception/);
+      expect(s).toMatch(/rating2_strong/);
+    });
+  }
+  it('ui_strings: the new keys exist (old keys kept so lang packs are unaffected)', () => {
+    for (const k of ['"performance_rating"', '"ai_estimate_note"', '"band_strong"', '"band_partial"', '"band_misconception"', '"rating2_strong"', '"setup_hint"']) {
+      expect(UI).toContain(k);
+    }
+    // old keys retained
+    expect(UI).toContain('"proficiency_rating"');
+    expect(UI).toContain('"rating_mastery"');
+  });
+  for (const [name, s] of [['source', VIEW_SRC], ['module', VIEW_MOD]]) {
+    it(`view ${name}: climax setup explainer is present`, () => {
+      expect(s).toMatch(/climax\.setup_hint|adds a final challenge that tests what the story taught/);
+    });
+  }
+});
+
 describe('G. defeat is not celebrated', () => {
   for (const [name, s] of [['source', VIEW_SRC], ['module', VIEW_MOD]]) {
     it(`view ${name}: energy-death game-over suppresses confetti/trophy and shows the defeat treatment`, () => {

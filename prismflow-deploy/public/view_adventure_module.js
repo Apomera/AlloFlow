@@ -867,7 +867,9 @@ function AdventureView(props) {
     onChange: e => handleSetClimaxMinTurns(e.target.value),
     disabled: !isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings,
     className: "w-16 min-h-11 text-xs border border-indigo-600 rounded p-2 text-center focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 outline-none font-bold text-indigo-900 bg-white"
-  }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-[11px] text-slate-600 mt-2 leading-snug"
+  }, t('adventure.climax.setup_hint') || "Recommended: adds a final challenge that tests what the story taught. The Mission Debrief's Story Performance comes from how it goes — without it, adventures run in infinite mode.")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     htmlFor: "adventure-setup-custom-instructions",
     className: "block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between"
   }, /*#__PURE__*/React.createElement("span", null, t('input.custom_instructions'), " ", /*#__PURE__*/React.createElement("span", {
