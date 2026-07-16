@@ -363,6 +363,70 @@ window.StemLab = window.StemLab || {
     return { graph: Object.assign({}, ch.graph, { nodes: nodes }), answerKey: ch.answerKey, targets: ch.targets, strands: ch.strands };
   }
 
+  // ── Printable one-pager — PURE html builder (tested; all student text
+  // escaped). Downloaded as a self-contained .html the family/teacher opens
+  // and prints (portfolio / progress evidence); no pipeline dependency.
+  function _esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function ffBuildPrintableHtml(doc, opts) {
+    opts = opts || {};
+    var sc = ffScaffold(doc && doc.scaffold);
+    var title = (doc && doc.title && doc.title.trim()) ? doc.title.trim() : 'My World of Forms';
+    var rows = [];
+    ((doc && doc.groups) || []).forEach(function (g) {
+      var items = (g.items || []).map(function (it) {
+        var s = '<li>' + _esc(it.text);
+        if (doc.nodeArt && doc.nodeArt[it.id]) s += ' <span class="tag">sculpted</span>';
+        if (it.note && String(it.note).trim()) s += '<div class="note">' + _esc(it.note) + '</div>';
+        return s + '</li>';
+      }).join('');
+      rows.push('<section class="group"><h3>' + _esc(g.title) + '</h3>' + (items ? '<ul>' + items + '</ul>' : '<p class="empty">(empty)</p>') + '</section>');
+    });
+    var coach = '';
+    if (doc && doc.assessment) {
+      var block = function (label, list) {
+        if (!list || !list.length) return '';
+        return '<div class="coach-col"><h4>' + _esc(label) + '</h4><ul>' + list.map(function (s) { return '<li>' + _esc(s) + '</li>'; }).join('') + '</ul></div>';
+      };
+      coach = block('What is working', doc.assessment.strengths) + block('Questions to consider', doc.assessment.questions) + block('Next build steps', doc.assessment.suggestions);
+      if (coach) coach = '<h2>Coach feedback</h2><div class="coach">' + coach + '</div>';
+    }
+    var recall = '';
+    if (doc && Array.isArray(doc.recallLog) && doc.recallLog.length) {
+      recall = '<h2>Recall practice</h2><ul class="recall">' + doc.recallLog.map(function (r) {
+        var when = r.when ? new Date(r.when).toLocaleDateString() : '';
+        var missed = (r.missed && r.missed.length) ? ' — still learning: ' + r.missed.map(_esc).join(', ') : '';
+        return '<li><strong>' + _esc(r.correct + '/' + r.total) + '</strong> ' + _esc(when) + missed + '</li>';
+      }).join('') + '</ul>';
+    }
+    return [
+      '<!doctype html><html><head><meta charset="utf-8"><title>' + _esc(title) + '</title><style>',
+      'body{font-family:system-ui,sans-serif;color:#1e293b;max-width:820px;margin:24px auto;padding:0 16px;line-height:1.45}',
+      'h1{margin:0 0 2px;font-size:26px} .sub{color:#64748b;font-size:13px;margin-bottom:14px}',
+      'img.snap{max-width:100%;border-radius:12px;border:1px solid #cbd5e1;margin:8px 0 16px}',
+      '.group{break-inside:avoid;border:1px solid #e2e8f0;border-radius:10px;padding:8px 14px;margin-bottom:10px}',
+      '.group h3{margin:2px 0 6px;font-size:15px;color:#6d28d9} .group ul{margin:0;padding-left:20px}',
+      '.note{color:#64748b;font-size:12px;font-style:italic} .empty{color:#94a3b8;font-size:12px}',
+      '.tag{font-size:10px;background:#ede9fe;color:#6d28d9;border-radius:6px;padding:1px 5px;vertical-align:middle}',
+      'h2{font-size:16px;margin:18px 0 6px} .coach{display:flex;gap:12px;flex-wrap:wrap} .coach-col{flex:1;min-width:180px;border:1px solid #e2e8f0;border-radius:10px;padding:6px 12px}',
+      '.coach-col h4{margin:4px 0;font-size:13px} .coach-col ul{margin:0;padding-left:18px;font-size:12px}',
+      '.recall{font-size:13px} .printbtn{position:fixed;top:12px;right:12px;padding:8px 14px;font-weight:700;border-radius:8px;border:1px solid #6d28d9;background:#7c3aed;color:#fff;cursor:pointer}',
+      '@media print{.printbtn{display:none}}',
+      '</style></head><body>',
+      '<button class="printbtn" onclick="window.print()">Print</button>',
+      '<h1>🏛️ ' + _esc(title) + '</h1>',
+      '<div class="sub">' + _esc((sc ? sc.name : 'Free Forms')) + (opts.generatedAt ? ' · ' + _esc(opts.generatedAt) : '') + ' · built by hand in AlloFlow Free Forms</div>',
+      (opts.snapshotDataUrl ? '<img class="snap" alt="3D view of the composition" src="' + opts.snapshotDataUrl + '">' : ''),
+      rows.join(''),
+      coach,
+      recall,
+      '</body></html>'
+    ].join('\n');
+  }
+
   window.StemLab.ffPure = {
     FF_SCAFFOLDS: FF_SCAFFOLDS,
     ffScaffold: ffScaffold,
@@ -375,7 +439,8 @@ window.StemLab = window.StemLab || {
     ffBuildAssessPrompt: ffBuildAssessPrompt,
     ffParseAssessment: ffParseAssessment,
     ffDocFromGenerated: ffDocFromGenerated,
-    ffBuildChallenge: ffBuildChallenge
+    ffBuildChallenge: ffBuildChallenge,
+    ffBuildPrintableHtml: ffBuildPrintableHtml
   };
 
   // ═══ TOOL REGISTRATION ═══════════════════════════════════════════════
@@ -428,9 +493,45 @@ window.StemLab = window.StemLab || {
       var _ck = React.useState(null); var checked = _ck[0], setChecked = _ck[1];
       var _hb = React.useState(false); var hintBusy = _hb[0], setHintBusy = _hb[1];
       var _ht = React.useState(''); var hintText = _ht[0], setHintText = _ht[1];
+      var _p3 = React.useState(!!(window.AlloModules && window.AlloModules.Prim3D)); var prim3dReady = _p3[0], setPrim3dReady = _p3[1];
+      var _pp = React.useState(0); var selPart = _pp[0], setSelPart = _pp[1];
       var hostRef = React.useRef(null);
       var handleRef = React.useRef(null);
+      var undoRef = React.useRef([]);   // bounded in-session undo (doc snapshots)
       var hasAI = typeof ctx.callGemini === 'function';
+
+      // ── Undo safety net — every destructive/structural mutation snapshots
+      // the doc first (deep copy, capped, deduped so double-run updaters are
+      // harmless). Session-scoped by design: protects against slips ("deleted
+      // my group"), not a persisted history.
+      var pushUndo = function(d) {
+        if (!d) return;
+        try {
+          var snap = JSON.stringify(d);
+          var st = undoRef.current;
+          if (st.length && st[st.length - 1] === snap) return;
+          st.push(snap);
+          if (st.length > 25) st.shift();
+        } catch (e) {}
+      };
+      var doUndo = function() {
+        var st = undoRef.current;
+        if (!st.length || challenge) return;
+        var snap = st.pop();
+        try {
+          var restored = JSON.parse(snap);
+          setSelectedId(null); setSelPart(0);
+          setDoc(function(d) { restored.rev = ((d && d.rev) || restored.rev || 0) + 1; return restored; });
+          announce(t('stem.freeforms.sr_undone', 'Undone'));
+        } catch (e) {}
+      };
+      var onRootKeyDown = function(e) {
+        if (!(e.ctrlKey || e.metaKey) || (e.key !== 'z' && e.key !== 'Z') || e.shiftKey) return;
+        var tag = e.target && e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;   // native text undo wins inside fields
+        e.preventDefault();
+        doUndo();
+      };
 
       React.useEffect(function() {
         var alive = true;
@@ -504,7 +605,7 @@ window.StemLab = window.StemLab || {
                     return nd;
                   });
                 },
-            onSelectNode: function(id) { setSelectedId(id); },
+            onSelectNode: function(id) { setSelectedId(id); setSelPart(0); setSculptText(''); },
             initialNodeArt: (doc.nodeArt && Object.keys(doc.nodeArt).length) ? doc.nodeArt : null
           });
         } catch (e) { handle = null; }
@@ -515,10 +616,18 @@ window.StemLab = window.StemLab || {
         };
       }, [modulesReady, scaffold, rev, challenge]);
 
-      // ── Doc mutations (structural ⇒ rev bump ⇒ remount) ──
+      // Lazy-load the sculpting engine once an idea is selected (shape studio).
+      React.useEffect(function() {
+        var alive = true;
+        if (selectedId && !prim3dReady) ensurePrim3d(function(ok) { if (alive && ok) setPrim3dReady(true); });
+        return function() { alive = false; };
+      }, [selectedId]);
+
+      // ── Doc mutations (structural ⇒ rev bump ⇒ remount; undo-snapshotted) ──
       var bump = function(mut) {
         setDoc(function(d) {
           if (!d) return d;
+          pushUndo(d);
           var nd = mut(Object.assign({}, d));
           nd.rev = (d.rev || 0) + 1;
           return nd;
@@ -624,11 +733,34 @@ window.StemLab = window.StemLab || {
         });
         return found;
       };
+      // applyRecipe — single write path for EVERY sculpting change (AI, preset,
+      // hand-built part edit, clear). Updates the live 3D handle (no remount)
+      // and persists; null recipe = cleared. Undo-snapshotted.
+      var applyRecipe = function(id, recipe, srMsg) {
+        try {
+          if (handleRef.current) {
+            if (recipe && handleRef.current.setNodeObject) handleRef.current.setNodeObject(id, recipe);
+            else if (!recipe && handleRef.current.clearNodeArt) handleRef.current.clearNodeArt(id);
+          }
+        } catch (e) {}
+        setDoc(function(d) {
+          if (!d) return d;
+          pushUndo(d);
+          var art = Object.assign({}, d.nodeArt || {});
+          if (recipe) art[id] = { type: 'object', recipe: recipe }; else delete art[id];
+          return Object.assign({}, d, { nodeArt: art });
+        });
+        if (srMsg) announce(srMsg);
+      };
+      var currentRecipe = function() {
+        var a = selectedId && doc && doc.nodeArt && doc.nodeArt[selectedId];
+        return (a && a.type === 'object' && a.recipe) ? a.recipe : null;
+      };
       var doSculpt = function() {
         var sel = findItem(selectedId);
         if (!sel || sculptBusy || !hasAI) return;
         var P3D = window.AlloModules && window.AlloModules.Prim3D;
-        if (!P3D) { ensurePrim3d(function(ok) { if (ok) doSculpt(); else if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_engine_failed', 'The sculpting engine could not load.'), 'error'); }); return; }
+        if (!P3D) { ensurePrim3d(function(ok) { if (ok) { setPrim3dReady(true); doSculpt(); } else if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_engine_failed', 'The sculpting engine could not load.'), 'error'); }); return; }
         var subj = (sculptText || '').trim() || sel.item.text;
         setSculptBusy(true);
         ctx.callGemini(P3D.buildRecipePrompt(subj), false, false, 0.85).then(function(resp) {
@@ -636,18 +768,26 @@ window.StemLab = window.StemLab || {
           setSculptBusy(false);
           if (!recipe) { if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error'); return; }
           recipe.name = subj.slice(0, 80);
-          var id = sel.item.id;
-          try { if (handleRef.current && handleRef.current.setNodeObject) handleRef.current.setNodeObject(id, recipe); } catch (e) {}
-          setDoc(function(d) { return d ? Object.assign({}, d, { nodeArt: Object.assign({}, d.nodeArt || {}, (function() { var o = {}; o[id] = { type: 'object', recipe: recipe }; return o; })()) }) : d; });
-          announce(t('stem.freeforms.sr_sculpted', 'Sculpture placed'));
+          setSelPart(0);
+          applyRecipe(sel.item.id, recipe, t('stem.freeforms.sr_sculpted', 'Sculpture placed'));
         }).catch(function() { setSculptBusy(false); if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error'); });
       };
       var doClearArt = function() {
         var sel = findItem(selectedId);
         if (!sel) return;
-        var id = sel.item.id;
-        try { if (handleRef.current && handleRef.current.clearNodeArt) handleRef.current.clearNodeArt(id); } catch (e) {}
-        setDoc(function(d) { if (!d) return d; var art = Object.assign({}, d.nodeArt || {}); delete art[id]; return Object.assign({}, d, { nodeArt: art }); });
+        setSelPart(0);
+        applyRecipe(sel.item.id, null, t('stem.freeforms.sr_art_cleared', 'Sculpture removed'));
+      };
+      // Hand-built sculpting: each button routes a PURE Prim3D recipe op through
+      // applyRecipe — no AI anywhere in this path.
+      var doPartOp = function(op) {
+        var P3D = window.AlloModules && window.AlloModules.Prim3D;
+        var sel = findItem(selectedId);
+        if (!P3D || !sel) return;
+        var r = currentRecipe();
+        var next = op(P3D, r);
+        if (next === r) return;   // no-op (cap hit / invalid index)
+        applyRecipe(sel.item.id, next, null);
       };
 
       // ── Whole-composition AI assessment ──
@@ -686,6 +826,22 @@ window.StemLab = window.StemLab || {
         setChecked(score);
         var srMsg = t('stem.freeforms.sr_recall_score', 'Checked:') + ' ' + score.correct + '/' + score.total;
         try { if (handleRef.current && handleRef.current.flagNodes) handleRef.current.flagNodes(score.results, srMsg); } catch (e) {}
+        // Recall history — persisted evidence a teacher/family can actually use:
+        // which self-authored ideas the student could not yet re-place. Shows in
+        // the recall panel and rides into the printable one-pager.
+        var missed = [];
+        Object.keys(score.results || {}).forEach(function(id) {
+          if (score.results[id] !== 'correct' && missed.length < 8) {
+            var f = findItem(id);
+            if (f) missed.push(f.item.text);
+          }
+        });
+        setDoc(function(d) {
+          if (!d) return d;
+          var log = (Array.isArray(d.recallLog) ? d.recallLog : []).concat([{ when: Date.now(), correct: score.correct, total: score.total, missed: missed }]);
+          if (log.length > 10) log = log.slice(log.length - 10);
+          return Object.assign({}, d, { recallLog: log });
+        });
         if (score.complete) {
           announce('🎉 ' + t('stem.freeforms.sr_recall_complete', 'You rebuilt your whole world from memory!'));
           if (doc && (!doc._xp || !doc._xp.recall) && typeof awardXP === 'function') {
@@ -740,6 +896,25 @@ window.StemLab = window.StemLab || {
         } catch (e) { if (addToast) addToast('⚠️ ' + t('stem.freeforms.snapshot_failed', 'Could not capture the 3D view here.'), 'error'); }
       };
 
+      // ── Printable one-pager (🖨): snapshot + outline + notes + coach + recall
+      // history as a self-contained downloadable HTML (open → Print).
+      var doPrint = function() {
+        if (!doc) return;
+        var snap = null;
+        try { snap = handleRef.current && handleRef.current.snapshot ? handleRef.current.snapshot() : null; } catch (e) {}
+        try {
+          var html = ffBuildPrintableHtml(doc, { snapshotDataUrl: snap, generatedAt: new Date().toLocaleDateString() });
+          var blob = new Blob([html], { type: 'text/html' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          var slug = String(doc.title || 'free-forms').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'free-forms';
+          a.href = url; a.download = slug + '-one-pager.html';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          setTimeout(function() { try { URL.revokeObjectURL(url); } catch (e) {} }, 4000);
+          if (addToast) addToast('🖨 ' + t('stem.freeforms.print_saved', 'One-pager downloaded — open it and print'), 'success');
+        } catch (e) { if (addToast) addToast('⚠️ ' + t('stem.freeforms.print_failed', 'Could not build the one-pager.'), 'error'); }
+      };
+
       // ═══ UI ═══
       var BTN = 'min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer';
       var BTN_GHOST = BTN + ' bg-slate-800/70 border-slate-600 text-slate-200 hover:bg-slate-700';
@@ -792,7 +967,7 @@ window.StemLab = window.StemLab || {
       // ── Builder screen ──
       var inChallenge = !!challenge;
       var placedCount = Object.keys(placed).length;
-      return h('div', { id: 'allo-free-forms', className: 'p-3 md:p-4' },
+      return h('div', { id: 'allo-free-forms', className: 'p-3 md:p-4', onKeyDown: onRootKeyDown },
         renderImportStrip(),
         // header
         h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
@@ -801,7 +976,9 @@ window.StemLab = window.StemLab || {
           !inChallenge ? h('div', { className: 'text-[11px] text-slate-400 hidden md:block flex-1 min-w-0 truncate' }, sc.grammar) : h('div', { className: 'flex-1' }),
           !inChallenge ? h('div', { className: 'text-[11px] font-bold text-slate-300 bg-slate-800/70 border border-slate-700 rounded-full px-3 py-1' },
             stats.groups + ' ' + t('stem.freeforms.groups', 'groups') + ' · ' + stats.items + ' ' + t('stem.freeforms.ideas', 'ideas') + (stats.sculpted ? ' · ' + stats.sculpted + ' ' + t('stem.freeforms.sculpted', 'sculpted') : '')) : null,
+          !inChallenge ? h('button', { className: BTN_GHOST, onClick: doUndo, disabled: !undoRef.current.length, 'aria-label': t('stem.freeforms.undo_tip', 'Undo the last change (Ctrl+Z)'), title: t('stem.freeforms.undo_tip', 'Undo the last change (Ctrl+Z)') }, '↩ ' + t('stem.freeforms.undo', 'Undo')) : null,
           (modulesReady && !modulesFailed) ? h('button', { className: BTN_GHOST, onClick: doSnapshot, title: t('stem.freeforms.snapshot_tip', 'Save a picture of your 3D world') }, '📷 ' + t('stem.freeforms.snapshot', 'Snapshot')) : null,
+          !inChallenge ? h('button', { className: BTN_GHOST, onClick: doPrint, title: t('stem.freeforms.print_tip', 'Download a printable one-pager (snapshot + your ideas + coach feedback)') }, '🖨 ' + t('stem.freeforms.print', 'One-pager')) : null,
           (!inChallenge && doc.arrangement) ? h('button', { className: BTN_GHOST, onClick: resetArrangement }, '↺ ' + t('stem.freeforms.reset_arrangement', 'Reset arrangement')) : null,
           !inChallenge ? h('button', { className: BTN_GHOST, onClick: startChallenge, disabled: !recallEligible,
             title: recallEligible ? t('stem.freeforms.recall_tip', 'Your ideas fall into a tray — put them back from memory') : t('stem.freeforms.recall_needs_more', 'Add at least 4 ideas across 2 groups first') },
@@ -831,7 +1008,14 @@ window.StemLab = window.StemLab || {
               ? h('button', { className: BTN_GHOST + ' w-full mb-1', onClick: doHint, disabled: hintBusy, 'aria-busy': hintBusy ? 'true' : 'false' },
                   (hintBusy ? '… ' : '💡 ') + t('stem.freeforms.recall_hint', 'Hint for the selected idea')) : null,
             h('div', { 'aria-live': 'polite' },
-              hintText ? h('p', { className: 'text-xs text-amber-200 bg-amber-950/50 border border-amber-800 rounded-lg p-2 leading-snug' }, '💡 ' + hintText) : null)
+              hintText ? h('p', { className: 'text-xs text-amber-200 bg-amber-950/50 border border-amber-800 rounded-lg p-2 leading-snug' }, '💡 ' + hintText) : null),
+            // recall history — persisted attempts + which ideas are still settling
+            (doc.recallLog && doc.recallLog.length) ? h('div', { className: 'mt-2' },
+              h('div', { className: 'text-[11px] font-bold text-slate-400 mb-1' }, '📈 ' + t('stem.freeforms.recall_history', 'Recall history')),
+              h('ul', { className: 'space-y-1' }, doc.recallLog.slice().reverse().slice(0, 5).map(function(r, i) {
+                return h('li', { key: i, className: 'text-[11px] text-slate-300 leading-snug' },
+                  r.correct + '/' + r.total + (r.missed && r.missed.length ? ' — ' + t('stem.freeforms.recall_still_learning', 'still learning:') + ' ' + r.missed.slice(0, 4).join(', ') : ' 🎉'));
+              }))) : null
           )
           : h('div', { className: 'ff-sidebar w-80 shrink-0 bg-slate-900/70 border border-slate-700 rounded-2xl p-3 overflow-y-auto', style: { maxHeight: '72vh' } },
             h('label', { className: 'block text-[11px] font-bold text-slate-400 mb-1', htmlFor: 'ff-title' }, t('stem.freeforms.composition_title', 'Composition title')),
@@ -857,7 +1041,7 @@ window.StemLab = window.StemLab || {
                     h('button', {
                       className: 'min-h-[44px] min-w-[32px] text-xs', 'aria-pressed': isSel ? 'true' : 'false',
                       'aria-label': (isSel ? t('stem.freeforms.selected', 'Selected') + ': ' : t('stem.freeforms.select_idea', 'Select idea') + ': ') + it.text,
-                      onClick: function() { setSelectedId(isSel ? null : it.id); }
+                      onClick: function() { setSelectedId(isSel ? null : it.id); setSelPart(0); setSculptText(''); }
                     }, (doc.nodeArt && doc.nodeArt[it.id]) ? '\u{1F5FF}' : '●'),
                     h('input', {
                       defaultValue: it.text, 'aria-label': t('stem.freeforms.idea_text', 'Idea text'),
@@ -887,14 +1071,72 @@ window.StemLab = window.StemLab || {
                 className: 'w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-100 mb-2',
                 onBlur: function(e) { if (e.target.value !== (selected.item.note || '')) editItem(selected.group.id, selected.item.id, { note: e.target.value }); }
               }),
-              hasAI ? h('div', null,
-                h('label', { className: 'block text-[11px] font-bold text-slate-400 mb-1', htmlFor: 'ff-sculpt' }, t('stem.freeforms.sculpt_label', 'Sculpt this idea (describe it)')),
-                h('div', { className: 'flex gap-1' },
-                  h('input', { id: 'ff-sculpt', value: sculptText, onChange: function(e) { setSculptText(e.target.value); }, placeholder: selected.item.text, className: 'flex-1 min-w-0 bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-100' }),
-                  h('button', { className: BTN_HOT, onClick: doSculpt, disabled: sculptBusy, 'aria-busy': sculptBusy ? 'true' : 'false' }, sculptBusy ? '…' : '✨ ' + t('stem.freeforms.sculpt', 'Sculpt'))
-                ),
-                (doc.nodeArt && doc.nodeArt[selected.item.id]) ? h('button', { className: BTN_GHOST + ' mt-1 w-full', onClick: doClearArt }, t('stem.freeforms.clear_art', 'Remove sculpture')) : null
-              ) : null
+              // ── Shape studio — sculpt by hand (no AI needed), from a preset,
+              // or by description. All three paths emit the same Prim3D recipe.
+              (function() {
+                var P3D = window.AlloModules && window.AlloModules.Prim3D;
+                if (!prim3dReady || !P3D) {
+                  return h('div', { className: 'text-[11px] text-slate-500', role: 'status' }, t('stem.freeforms.studio_loading', 'Loading the shape studio…'));
+                }
+                var recipe = currentRecipe();
+                var norm = recipe ? P3D.normalizeRecipe(recipe) : null;
+                var parts = (norm && norm.parts) || [];
+                var pi = Math.min(selPart, Math.max(0, parts.length - 1));
+                var SHAPE_ICONS = { box: '📦', sphere: '⚪', cylinder: '🛢', cone: '🔺', torus: '🍩' };
+                var mini = 'min-h-[44px] min-w-[44px] rounded-lg border border-slate-600 bg-slate-900 text-slate-200 text-xs font-bold hover:bg-slate-700';
+                var nudge = function(field, axis, delta, label) {
+                  return h('button', { key: field + axis + delta, className: mini, 'aria-label': label, title: label,
+                    onClick: function() { doPartOp(function(P, r) { return P.nudgePart(r, pi, field, axis, delta); }); } }, label.split(' ')[0]);
+                };
+                return h('div', null,
+                  h('div', { className: 'text-[11px] font-bold text-slate-400 mb-1' }, '🗿 ' + t('stem.freeforms.studio_label', 'Shape studio')),
+                  // preset shelf — zero-AI quick starts (same recipes the AI emits)
+                  !parts.length ? h('div', { className: 'flex flex-wrap gap-1 mb-1', role: 'group', 'aria-label': t('stem.freeforms.studio_presets', 'Preset shapes') },
+                    (P3D.PRESETS || []).slice(0, 8).map(function(ps) {
+                      return h('button', { key: ps.id, className: mini, title: ps.label, 'aria-label': t('stem.freeforms.studio_place_preset', 'Place preset') + ' ' + ps.label,
+                        onClick: function() { var r = P3D.getPreset(ps.id); if (r) { setSelPart(0); applyRecipe(selected.item.id, r, t('stem.freeforms.sr_sculpted', 'Sculpture placed')); } } }, ps.emoji);
+                    })) : null,
+                  // add-a-part row — the hand-building entry point
+                  h('div', { className: 'flex flex-wrap gap-1 mb-1 items-center', role: 'group', 'aria-label': t('stem.freeforms.studio_add_part', 'Add a part') },
+                    h('span', { className: 'text-[10px] text-slate-500 font-bold' }, '+'),
+                    (P3D.SHAPES || []).map(function(shp) {
+                      return h('button', { key: shp, className: mini, title: t('stem.freeforms.studio_add', 'Add') + ' ' + shp, 'aria-label': t('stem.freeforms.studio_add', 'Add') + ' ' + shp,
+                        onClick: function() { doPartOp(function(P, r) { var n2 = P.addPart(r, shp); return n2; }); setSelPart(parts.length); } }, SHAPE_ICONS[shp] || shp);
+                    })),
+                  // part list + per-part controls (only when something exists)
+                  parts.length ? h('div', null,
+                    h('div', { className: 'flex flex-wrap gap-1 mb-1', role: 'group', 'aria-label': t('stem.freeforms.studio_parts', 'Parts') },
+                      parts.map(function(p, i) {
+                        return h('button', { key: i, className: mini + (i === pi ? ' ring-2 ring-violet-400' : ''), 'aria-pressed': i === pi ? 'true' : 'false',
+                          'aria-label': t('stem.freeforms.studio_part', 'Part') + ' ' + (i + 1) + ': ' + p.shape,
+                          style: { borderBottom: '3px solid ' + p.color },
+                          onClick: function() { setSelPart(i); } }, SHAPE_ICONS[p.shape] || p.shape);
+                      })),
+                    h('div', { className: 'grid grid-cols-6 gap-1 mb-1', role: 'group', 'aria-label': t('stem.freeforms.studio_move', 'Move the selected part') },
+                      nudge('position', 0, -0.08, '◀ ' + t('stem.freeforms.studio_left', 'Left')),
+                      nudge('position', 0, 0.08, '▶ ' + t('stem.freeforms.studio_right', 'Right')),
+                      nudge('position', 1, 0.08, '⬆ ' + t('stem.freeforms.studio_up', 'Up')),
+                      nudge('position', 1, -0.08, '⬇ ' + t('stem.freeforms.studio_down', 'Down')),
+                      nudge('position', 2, 0.08, '↗ ' + t('stem.freeforms.studio_closer', 'Closer')),
+                      nudge('position', 2, -0.08, '↙ ' + t('stem.freeforms.studio_farther', 'Farther'))
+                    ),
+                    h('div', { className: 'grid grid-cols-6 gap-1 mb-1', role: 'group', 'aria-label': t('stem.freeforms.studio_shape_tools', 'Shape tools') },
+                      h('button', { className: mini, title: t('stem.freeforms.studio_bigger', 'Bigger'), 'aria-label': t('stem.freeforms.studio_bigger', 'Bigger'), onClick: function() { doPartOp(function(P, r) { return P.scalePart(r, pi, 1.25); }); } }, '➕'),
+                      h('button', { className: mini, title: t('stem.freeforms.studio_smaller', 'Smaller'), 'aria-label': t('stem.freeforms.studio_smaller', 'Smaller'), onClick: function() { doPartOp(function(P, r) { return P.scalePart(r, pi, 0.8); }); } }, '➖'),
+                      h('button', { className: mini, title: t('stem.freeforms.studio_spin', 'Spin'), 'aria-label': t('stem.freeforms.studio_spin', 'Spin'), onClick: function() { doPartOp(function(P, r) { return P.nudgePart(r, pi, 'rotation', 1, 30); }); } }, '🔄'),
+                      h('button', { className: mini, title: t('stem.freeforms.studio_recolor', 'Change color'), 'aria-label': t('stem.freeforms.studio_recolor', 'Change color'), onClick: function() { doPartOp(function(P, r) { return P.recolorPart(r, pi); }); } }, '🎨'),
+                      h('button', { className: mini, title: t('stem.freeforms.studio_duplicate', 'Duplicate'), 'aria-label': t('stem.freeforms.studio_duplicate', 'Duplicate'), onClick: function() { doPartOp(function(P, r) { return P.duplicatePart(r, pi); }); } }, '⧉'),
+                      h('button', { className: mini, title: t('stem.freeforms.studio_remove_part', 'Remove part'), 'aria-label': t('stem.freeforms.studio_remove_part', 'Remove part'), onClick: function() { doPartOp(function(P, r) { return P.removePart(r, pi); }); setSelPart(Math.max(0, pi - 1)); } }, '✕')
+                    )
+                  ) : null,
+                  // AI describe row — optional, same recipe format
+                  hasAI ? h('div', { className: 'flex gap-1 mt-1' },
+                    h('input', { id: 'ff-sculpt', value: sculptText, onChange: function(e) { setSculptText(e.target.value); }, placeholder: t('stem.freeforms.sculpt_label', 'Or describe it…') + ' ' + selected.item.text, 'aria-label': t('stem.freeforms.sculpt_label', 'Or describe it…'), className: 'flex-1 min-w-0 bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-100' }),
+                    h('button', { className: BTN_HOT, onClick: doSculpt, disabled: sculptBusy, 'aria-busy': sculptBusy ? 'true' : 'false' }, sculptBusy ? '…' : '✨ ' + t('stem.freeforms.sculpt', 'Sculpt'))
+                  ) : null,
+                  parts.length ? h('button', { className: BTN_GHOST + ' mt-1 w-full', onClick: doClearArt }, t('stem.freeforms.clear_art', 'Remove sculpture')) : null
+                );
+              })()
             ) : null
           ),
           // ── 3D stage (cg3d owns its own a11y spine + WebGL fallback) ──

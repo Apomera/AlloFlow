@@ -196,3 +196,31 @@ describe('Free Forms — recall mode (ffBuildChallenge)', () => {
     expect(P.ffBuildChallenge(small, E)).toBe(null);
   });
 });
+
+describe('Free Forms — printable one-pager (ffBuildPrintableHtml)', () => {
+  it('carries title, groups, notes, coach feedback, recall history — all escaped', () => {
+    const d = vennDoc();
+    d.title = 'Mammals <script>alert(1)</script>';
+    d.assessment = { strengths: ['Good "Fur" placement'], questions: [], suggestions: ['Add a reptile & more'] };
+    d.recallLog = [{ when: 0, correct: 3, total: 4, missed: ['Scales'] }];
+    d.nodeArt = { n10: { type: 'object', recipe: { parts: [] } } };
+    const html = P.ffBuildPrintableHtml(d, { generatedAt: '7/16/2026' });
+    expect(html).toContain('Mammals &lt;script&gt;');            // escaped, never raw
+    expect(html).not.toContain('<script>alert');
+    expect(html).toContain('Live birth');
+    expect(html).toContain('mammal thing');                       // the note
+    expect(html).toContain('sculpted');                           // art marker
+    expect(html).toContain('Good &quot;Fur&quot; placement');
+    expect(html).toContain('Add a reptile &amp; more');
+    expect(html).toContain('still learning: Scales');
+    expect(html).toContain('window.print()');
+  });
+
+  it('omits empty sections and survives a bare doc', () => {
+    const html = P.ffBuildPrintableHtml(P.ffNewDoc('free'), {});
+    expect(html).toContain('My World of Forms');
+    expect(html).not.toContain('Coach feedback');
+    expect(html).not.toContain('Recall practice');
+    expect(html).not.toContain('img class="snap"');
+  });
+});

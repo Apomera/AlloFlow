@@ -207,3 +207,58 @@ describe('Prim3D.PRESETS (built-in decoration shelf)', () => {
     });
   });
 });
+
+describe('Prim3D recipe editing ops (hand-built sculpting seams)', () => {
+  const seed = () => P.normalizeRecipe({ name: 'seed', parts: [
+    { shape: 'box', size: [0.4, 0.4, 0.4], position: [0, 0.5, 0], color: '#ef4444' },
+    { shape: 'sphere', size: [0.25], position: [0, 1, 0], color: '#3b82f6' },
+  ] });
+
+  it('addPart appends a normalized starter part and respects MAX_PARTS', () => {
+    const r = P.addPart(null, 'cone');
+    expect(r.parts).toHaveLength(1);
+    expect(r.parts[0].shape).toBe('cone');
+    let full = seed();
+    for (let i = 0; i < 30; i++) full = P.addPart(full, 'box');
+    expect(full.parts.length).toBe(P.MAX_PARTS);
+    expect(P.addPart(full, 'box').parts.length).toBe(P.MAX_PARTS);   // no growth at the cap
+  });
+
+  it('updatePart / nudgePart / scalePart patch one part and stay clamped', () => {
+    const r = seed();
+    expect(P.updatePart(r, 1, { color: '#22c55e' }).parts[1].color).toBe('#22c55e');
+    const moved = P.nudgePart(r, 0, 'position', 1, 0.08);
+    expect(moved.parts[0].position[1]).toBeCloseTo(0.58, 6);
+    expect(moved.parts[1].position[1]).toBe(1);            // other part untouched
+    let big = r;
+    for (let i = 0; i < 40; i++) big = P.scalePart(big, 0, 1.5);
+    expect(big.parts[0].size[0]).toBeLessThanOrEqual(4);   // sculpting-box clamp
+    const spun = P.nudgePart(r, 0, 'rotation', 1, 30);
+    expect(spun.parts[0].rotation[1]).toBe(30);
+    expect(P.nudgePart(r, 0, 'color', 1, 1)).toEqual(r);   // invalid field = no-op
+  });
+
+  it('duplicatePart inserts a visible copy; removePart of the last part returns null', () => {
+    const r = seed();
+    const dup = P.duplicatePart(r, 0);
+    expect(dup.parts).toHaveLength(3);
+    expect(dup.parts[1].shape).toBe('box');
+    expect(dup.parts[1].position[0]).toBeCloseTo(0.2, 6);
+    const one = P.removePart(r, 1);
+    expect(one.parts).toHaveLength(1);
+    expect(P.removePart(one, 0)).toBe(null);               // cleared
+  });
+
+  it('recolorPart cycles the shared palette; edited recipes stay buildObject-safe', () => {
+    const r = seed();
+    const rec = P.recolorPart(r, 0);
+    expect(P.PART_PALETTE).toContain(rec.parts[0].color);
+    expect(rec.parts[0].color).not.toBe(r.parts[0].color);
+    // whole-object transforms survive part edits
+    const tinted = P.normalizeRecipe({ ...seed(), scale: 2, rotY: 90, tint: '#ff00ff' });
+    const edited = P.addPart(tinted, 'torus');
+    expect(edited.scale).toBe(2);
+    expect(edited.rotY).toBe(90);
+    expect(edited.tint).toBe('#ff00ff');
+  });
+});

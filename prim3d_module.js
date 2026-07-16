@@ -316,6 +316,98 @@
     return null;
   }
 
+  // ── Recipe editing ops — PURE seams for HAND-BUILT sculpting ──
+  // Students author their own shapes part-by-part (no AI needed): every op
+  // takes a recipe (or null), returns a fresh NORMALIZED recipe — clamping,
+  // shape whitelisting, and the MAX_PARTS cap all ride the same
+  // normalizeRecipe path AI recipes use, so hand-built and AI-built sculptures
+  // are indistinguishable downstream (buildObject, persistence, refine).
+  // These are deliberately UI-agnostic: Free Forms uses them today; a fuller
+  // sculpting suite (e.g. in Art Studio) can reuse them unchanged.
+  var PART_PALETTE = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#f8fafc', '#334155'];
+  var PART_DEFAULT_SIZE = {
+    box: [0.4, 0.4, 0.4], sphere: [0.25, 0.25, 0.25], cylinder: [0.15, 0.5, 0.15],
+    cone: [0.2, 0.45, 0.2], torus: [0.25, 0.06, 0.06]
+  };
+  function _copyParts(r) {
+    return r.parts.map(function (p) {
+      return { shape: p.shape, size: p.size.slice(), position: p.position.slice(), rotation: p.rotation.slice(), color: p.color };
+    });
+  }
+  function _rebuild(r, parts) {
+    return normalizeRecipe({ name: r ? r.name : '', parts: parts, scale: r ? r.scale : 1, rotY: r ? r.rotY : 0, tint: r ? r.tint : null });
+  }
+  // newPart — a sensible starter part; color cycles the palette by index.
+  function newPart(shape, index) {
+    var sh = SHAPES[shape] ? shape : 'box';
+    return {
+      shape: sh,
+      size: (PART_DEFAULT_SIZE[sh] || PART_DEFAULT_SIZE.box).slice(),
+      position: [0, 0.5, 0],
+      rotation: [0, 0, 0],
+      color: PART_PALETTE[(isNum(index) ? index : 0) % PART_PALETTE.length]
+    };
+  }
+  // addPart — append a starter part (no-op at the MAX_PARTS cap).
+  function addPart(recipe, shape) {
+    var r = recipe ? normalizeRecipe(recipe) : null;
+    var parts = r ? _copyParts(r) : [];
+    if (parts.length >= MAX_PARTS) return r;
+    parts.push(newPart(shape, parts.length));
+    return _rebuild(r, parts);
+  }
+  // updatePart — shallow-patch one part ({shape|size|position|rotation|color}).
+  function updatePart(recipe, index, patch) {
+    var r = normalizeRecipe(recipe);
+    if (!r || !r.parts[index]) return r;
+    var parts = _copyParts(r);
+    parts[index] = Object.assign(parts[index], patch || {});
+    return _rebuild(r, parts);
+  }
+  // removePart — returns NULL when the last part goes (callers treat as "cleared").
+  function removePart(recipe, index) {
+    var r = normalizeRecipe(recipe);
+    if (!r || !r.parts[index]) return r;
+    var parts = _copyParts(r);
+    parts.splice(index, 1);
+    return _rebuild(r, parts);
+  }
+  // duplicatePart — copy inserted right after the original, offset so it's visible.
+  function duplicatePart(recipe, index) {
+    var r = normalizeRecipe(recipe);
+    if (!r || !r.parts[index] || r.parts.length >= MAX_PARTS) return r;
+    var parts = _copyParts(r);
+    var copy = { shape: parts[index].shape, size: parts[index].size.slice(), position: parts[index].position.slice(), rotation: parts[index].rotation.slice(), color: parts[index].color };
+    copy.position[0] += 0.2;
+    parts.splice(index + 1, 0, copy);
+    return _rebuild(r, parts);
+  }
+  // nudgePart — move/spin one part along one axis ('position' units, 'rotation' degrees).
+  function nudgePart(recipe, index, field, axis, delta) {
+    var r = normalizeRecipe(recipe);
+    if (!r || !r.parts[index]) return r;
+    if (field !== 'position' && field !== 'rotation') return r;
+    var a = (axis === 0 || axis === 1 || axis === 2) ? axis : 1;
+    var parts = _copyParts(r);
+    parts[index][field][a] += (isNum(delta) ? delta : 0);
+    return _rebuild(r, parts);   // normalize clamps to the sculpting box
+  }
+  // scalePart — grow/shrink one part (all size dims; normalize clamps).
+  function scalePart(recipe, index, factor) {
+    var r = normalizeRecipe(recipe);
+    if (!r || !r.parts[index] || !isNum(factor) || factor <= 0) return r;
+    var parts = _copyParts(r);
+    parts[index].size = parts[index].size.map(function (s) { return s * factor; });
+    return _rebuild(r, parts);
+  }
+  // recolorPart — step the part's color through the palette.
+  function recolorPart(recipe, index) {
+    var r = normalizeRecipe(recipe);
+    if (!r || !r.parts[index]) return r;
+    var cur = PART_PALETTE.indexOf(r.parts[index].color);
+    return updatePart(r, index, { color: PART_PALETTE[(cur + 1) % PART_PALETTE.length] });
+  }
+
   // ── buildObject — recipe → THREE.Group (no GL context required) ──
   // opts.scale multiplies the whole assembly (1 recipe unit ≈ opts.unit world
   // units, default 1) — the same recipe is a trinket at 70 and a landmark at 900.
@@ -375,6 +467,15 @@
     parseStretchCommand: parseStretchCommand,
     PRESETS: PRESETS,
     getPreset: getPreset,
+    PART_PALETTE: PART_PALETTE,
+    newPart: newPart,
+    addPart: addPart,
+    updatePart: updatePart,
+    removePart: removePart,
+    duplicatePart: duplicatePart,
+    nudgePart: nudgePart,
+    scalePart: scalePart,
+    recolorPart: recolorPart,
     buildObject: buildObject
   };
   console.log('[Prim3D] Registered (p3d/1 — Gemini primitive-assembly sculptures)');
