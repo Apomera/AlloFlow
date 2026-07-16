@@ -213,8 +213,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const handleSetupOfflineSubmissions = async () => {
     const SC = window.AlloModules && window.AlloModules.SubmissionCrypto;
     if (!SC || typeof SC.generateClassKeypair !== "function") {
-      if (window.AlloFlowUX) window.AlloFlowUX.toast("Submission crypto module not loaded yet. Please refresh and try again.", "error");
-      else alert("Submission crypto module not loaded yet. Please refresh and try again.");
+      setSubmissionDialog({ kind: "error", message: "Submission security is not available yet. Please refresh and try again." });
       return;
     }
     setSubmissionDialog(null);
@@ -252,8 +251,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       setSubmissionDialog({ kind: "complete" });
     } catch (err) {
       console.error("handleSetupOfflineSubmissions failed:", err);
-      if (window.AlloFlowUX) window.AlloFlowUX.toast("Could not set up submissions: " + (err && err.message ? err.message : "unknown error"), "error");
-      else alert("Could not set up submissions: " + (err && err.message ? err.message : "unknown error"));
+      setSubmissionDialog({ kind: "error", message: "Could not set up submissions: " + (err && err.message ? err.message : "unknown error") });
     }
   };
   const handleAddGroup = () => {
@@ -590,9 +588,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       },
       className: "w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
     },
-    /* @__PURE__ */ React.createElement("h3", { id: "offline-submission-dialog-title", className: "text-lg font-black text-slate-900" }, submissionDialog.kind === "confirm" ? "Replace the class submission key?" : "Offline submissions are ready"),
-    /* @__PURE__ */ React.createElement("div", { id: "offline-submission-dialog-description", className: "mt-3 space-y-3 text-sm text-slate-700" }, submissionDialog.kind === "confirm" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, "This class already has offline submissions set up."), /* @__PURE__ */ React.createElement("p", null, "Generating a new key invalidates the old key. Student files saved with the old key will no longer be decryptable.")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, "Save the downloaded class-key file in a safe place, such as your class Google Drive folder. You cannot open student submissions without it."), /* @__PURE__ */ React.createElement("p", null, "AlloFlow does not keep a copy. Lost keys and their encrypted submissions cannot be recovered."))),
-    /* @__PURE__ */ React.createElement("div", { className: "mt-6 flex flex-wrap justify-end gap-3" }, submissionDialog.kind === "confirm" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeSubmissionDialog, className: "min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, "Keep existing key"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetupOfflineSubmissions, className: "min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, "Replace key")) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeSubmissionDialog, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, "Done"))
+    /* @__PURE__ */ React.createElement("h3", { id: "offline-submission-dialog-title", className: "text-lg font-black text-slate-900" }, submissionDialog.kind === "confirm" ? "Replace the class submission key?" : submissionDialog.kind === "error" ? "Offline submission setup failed" : "Offline submissions are ready"),
+    /* @__PURE__ */ React.createElement("div", { id: "offline-submission-dialog-description", className: "mt-3 space-y-3 text-sm text-slate-700" }, submissionDialog.kind === "confirm" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, "This class already has offline submissions set up."), /* @__PURE__ */ React.createElement("p", null, "Generating a new key invalidates the old key. Student files saved with the old key will no longer be decryptable.")) : submissionDialog.kind === "error" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, submissionDialog.message), /* @__PURE__ */ React.createElement("p", null, "No class key was changed. Close this message and try again when you are ready.")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, "Save the downloaded class-key file in a safe place, such as your class Google Drive folder. You cannot open student submissions without it."), /* @__PURE__ */ React.createElement("p", null, "AlloFlow does not keep a copy. Lost keys and their encrypted submissions cannot be recovered."))),
+    /* @__PURE__ */ React.createElement("div", { className: "mt-6 flex flex-wrap justify-end gap-3" }, submissionDialog.kind === "confirm" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeSubmissionDialog, className: "min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, "Keep existing key"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetupOfflineSubmissions, className: "min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, "Replace key")) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeSubmissionDialog, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, submissionDialog.kind === "error" ? "Close" : "Done"))
   ))));
 });
 const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
