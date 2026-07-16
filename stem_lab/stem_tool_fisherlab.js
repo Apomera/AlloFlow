@@ -9099,6 +9099,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (e.key === 'b' || e.key === 'B') {
         soundFogSignal();
       }
+      if (boatState.trafficDecisionMade && boatState.trafficTrackHistory.length >= 3 && !boatState.radarCallMade) {
+        var radarShortcutCalls = { '1': 'collision-risk', '2': 'opening', '3': 'changing' };
+        if (radarShortcutCalls[e.key]) reportRadarCall(radarShortcutCalls[e.key]);
+      }
       if (e.key === 'v' || e.key === 'V') {
         var views = ['chase', 'firstperson', 'topdown'];
         var idx = views.indexOf(boatState.cameraView || 'chase');
@@ -11033,8 +11037,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               }, '🦞 Haul Trap (H)') : null
             ),
             h('canvas', { ref: canvasRef, className: 'fl-sim-canvas', role: 'application', tabIndex: 0, style: { width: '100%', height: 460, display: 'block', background: '#9bc4d8' },
-              'aria-label': 'Interactive 3D harbor. Focus this scene to steer with WASD or arrow keys. Press B for the fog horn, F at the fishing grounds, H near a trap, and P to pause.',
-              'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space B F H P V M Escape',
+              'aria-label': 'Interactive 3D harbor. Focus this scene to steer with WASD or arrow keys. Press B for the fog horn, use 1 through 3 for a radar evidence call when prompted, F at the fishing grounds, H near a trap, and P to pause.',
+              'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space B F H P V M 1 2 3 Escape',
               onClick: function(e) { if (e.currentTarget && e.currentTarget.focus) e.currentTarget.focus(); },
               onFocus: function() { flAnnounce('Harbor controls active. Steer with WASD or arrows. Press P to pause.'); } }),
 
@@ -11066,9 +11070,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   h('span', { style: { color: '#fde68a', fontSize: 8, fontWeight: 900, textTransform: 'uppercase' } }, hud.radarCallMade ? 'Radar call logged' : 'Make the radar call - optional bonus'),
                   hud.radarCallMade ? h('span', { style: { color: hud.radarCallCorrect ? '#86efac' : '#fca5a5', fontSize: 8, fontWeight: 800 } }, (hud.radarCallCorrect ? 'Correct' : 'Review') + ': ' + hud.radarCallLabel + (hud.radarCallBonus ? ' +' + hud.radarCallBonus : '')) : h('div', { style: { display: 'flex', gap: 3, flexWrap: 'wrap' } },
                     [
-                      { id: 'collision-risk', label: 'Steady + closing' },
-                      { id: 'opening', label: 'Opening' },
-                      { id: 'changing', label: 'Changing / unclear' }
+                      { id: 'collision-risk', label: 'Steady + closing (1)' },
+                      { id: 'opening', label: 'Opening (2)' },
+                      { id: 'changing', label: 'Changing / unclear (3)' }
                     ].map(function(call) {
                       return h('button', { key: call.id, type: 'button', className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.reportRadarCall) harborRef.current.reportRadarCall(call.id); }, style: { padding: '4px 5px', borderRadius: 5, border: '1px solid rgba(125,211,252,0.38)', background: '#0f2740', color: '#e0f2fe', fontSize: 8, fontWeight: 800, cursor: 'pointer' } }, call.label);
                     }))
@@ -11666,6 +11670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               { k: 'F', d: 'Fish (at fishing waypoint)', c: '#a78bfa' },
               { k: 'H', d: 'Haul lobster trap (near buoy)', c: '#fbbf24' },
               { k: 'B', d: 'Sound prolonged fog-horn blast', c: '#fde68a' },
+              { k: '1 / 2 / 3', d: 'Make prompted radar evidence call', c: '#7dd3fc' },
               { k: 'V', d: 'Cycle camera view', c: '#38bdf8' },
               { k: 'M', d: 'Toggle sound mute', c: '#86efac' },
               { k: 'P / Esc', d: 'Pause or resume', c: '#fde68a' }

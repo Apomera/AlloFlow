@@ -297,7 +297,9 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('soundFogSignal');
     expect(source).toContain('One prolonged blast (B)');
     expect(source).toContain('Sound one prolonged fog-horn blast');
-    expect(source).toContain("'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space B F");
+    expect(source).toContain("'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space B F H P V M 1 2 3 Escape'");
+    expect(source).toContain("var radarShortcutCalls = { '1': 'collision-risk', '2': 'opening', '3': 'changing' }");
+    expect(source).toContain("{ k: '1 / 2 / 3', d: 'Make prompted radar evidence call'");
     expect(source).toContain("activeTraffic.choiceOneAction || 'give-way'");
     expect(source).toContain("' decisions correct · '");
     expect(source).toContain("type: 'fish-haul'");
