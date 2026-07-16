@@ -144,6 +144,129 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   }
 
   // ─────────────────────────────────────────────────────────
+  // WCAG 2.2: reusable app-controlled form dialog for short Learning Lab prompts.
+  var learningLabFormSequence = 0;
+  function askLearningLabForm(options) {
+    return new Promise(function(resolve) {
+      if (typeof document === 'undefined' || !document.body) { resolve(null); return; }
+      options = options || {};
+      var fields = options.fields || [];
+      learningLabFormSequence += 1;
+      var idBase = 'learning-lab-form-' + learningLabFormSequence;
+      var opener = document.activeElement;
+      var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+        return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+      });
+      var overlay = document.createElement('div');
+      overlay.setAttribute('role', 'presentation');
+      overlay.setAttribute('data-learning-lab-form', 'true');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:10010;background:rgba(15,23,42,.80);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+      var dialog = document.createElement('div');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', idBase + '-title');
+      dialog.setAttribute('aria-describedby', idBase + '-description');
+      dialog.style.cssText = 'box-sizing:border-box;width:min(36rem,100%);max-height:calc(100vh - 40px);overflow:auto;background:#0f172a;color:#f8fafc;border:2px solid #22d3ee;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.55);font-family:system-ui,sans-serif;';
+      var title = document.createElement('h2');
+      title.id = idBase + '-title'; title.textContent = String(options.title || 'Enter details');
+      title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#cffafe;';
+      var description = document.createElement('p');
+      description.id = idBase + '-description'; description.textContent = String(options.description || 'Complete the required field.');
+      description.style.cssText = 'margin:0 0 16px;color:#e2e8f0;line-height:1.55;';
+      var formElement = document.createElement('form');
+      formElement.noValidate = true;
+      var controls = [];
+      var error = document.createElement('div');
+      error.id = idBase + '-error'; error.setAttribute('role', 'alert');
+      error.style.cssText = 'min-height:1.5em;margin-top:10px;color:#fecaca;font-weight:700;line-height:1.4;';
+      fields.forEach(function(field, index) {
+        var fieldId = idBase + '-field-' + index;
+        var wrapper = document.createElement('div');
+        wrapper.style.cssText = 'margin-top:12px;';
+        var label = document.createElement('label');
+        label.htmlFor = fieldId; label.textContent = String(field.label || field.name || 'Value') + (field.required === false ? '' : ' (required)');
+        label.style.cssText = 'display:block;margin-bottom:6px;color:#cffafe;font-weight:700;';
+        var control = document.createElement(field.multiline ? 'textarea' : 'input');
+        control.id = fieldId; control.name = String(field.name || ('field' + index));
+        if (!field.multiline) control.type = String(field.type || 'text');
+        if (field.multiline) control.rows = Number(field.rows || 3);
+        control.value = String(field.value || '');
+        control.required = field.required !== false;
+        if (field.maxLength) control.maxLength = Number(field.maxLength);
+        if (field.placeholder) control.placeholder = String(field.placeholder);
+        control.style.cssText = 'box-sizing:border-box;width:100%;min-height:44px;padding:10px 12px;border:2px solid #64748b;border-radius:8px;background:#020617;color:#f8fafc;font:inherit;resize:vertical;';
+        control.addEventListener('input', function() { control.removeAttribute('aria-invalid'); control.removeAttribute('aria-describedby'); error.textContent = ''; });
+        wrapper.appendChild(label); wrapper.appendChild(control); formElement.appendChild(wrapper); controls.push(control);
+      });
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:12px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button'; cancel.textContent = String(options.cancelText || 'Cancel');
+      cancel.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #cbd5e1;border-radius:8px;background:#0f172a;color:#f8fafc;font-weight:700;cursor:pointer;';
+      var submit = document.createElement('button');
+      submit.type = 'submit'; submit.textContent = String(options.submitText || 'Save');
+      submit.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #67e8f9;border-radius:8px;background:#0e7490;color:#fff;font-weight:700;cursor:pointer;';
+      actions.appendChild(cancel); actions.appendChild(submit);
+      formElement.appendChild(error); formElement.appendChild(actions);
+      dialog.appendChild(title); dialog.appendChild(description); dialog.appendChild(formElement);
+      overlay.appendChild(dialog); document.body.appendChild(overlay);
+      blocked.forEach(function(entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+      var settled = false;
+      function finish(values) {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener('keydown', onKeyDown, true);
+        try { overlay.remove(); } catch (e) {}
+        blocked.forEach(function(entry) {
+          if (!entry.hadInert) entry.el.removeAttribute('inert');
+          if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden');
+          else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+        });
+        try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+        resolve(values);
+      }
+      function onKeyDown(event) {
+        event.stopImmediatePropagation();
+        if (event.key === 'Escape') { event.preventDefault(); finish(null); return; }
+        if (event.key !== 'Tab') return;
+        var focusable = controls.concat([cancel, submit]);
+        var first = focusable[0] || cancel;
+        var last = focusable[focusable.length - 1] || submit;
+        if (!dialog.contains(document.activeElement)) { event.preventDefault(); first.focus(); return; }
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+      cancel.addEventListener('click', function() { finish(null); });
+      overlay.addEventListener('click', function(event) { if (event.target === overlay) finish(null); });
+      formElement.addEventListener('submit', function(event) {
+        event.preventDefault();
+        var values = {};
+        var invalid = null;
+        fields.forEach(function(field, index) {
+          var value = controls[index].value.trim();
+          values[field.name || ('field' + index)] = value;
+          if (!invalid && field.required !== false && !value) invalid = { control: controls[index], label: field.label || field.name || 'This field' };
+        });
+        if (invalid) {
+          error.textContent = invalid.label + ' is required.';
+          invalid.control.setAttribute('aria-invalid', 'true');
+          invalid.control.setAttribute('aria-describedby', error.id);
+          invalid.control.focus();
+          return;
+        }
+        var validationMessage = typeof options.validate === 'function' ? options.validate(values) : '';
+        if (validationMessage) {
+          error.textContent = String(validationMessage);
+          if (controls[0]) { controls[0].setAttribute('aria-invalid', 'true'); controls[0].setAttribute('aria-describedby', error.id); controls[0].focus(); }
+          return;
+        }
+        finish(values);
+      });
+      window.addEventListener('keydown', onKeyDown, true);
+      (controls[0] || cancel).focus();
+    });
+  }
+
   // SECTION 1: BLOOM'S TAXONOMY (revised 2001, Anderson + Krathwohl)
   // 6 cognitive levels from low to high demand. Verb lists per level
   // help educators write learning objectives that match the level.
@@ -5455,6 +5578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var fs = R.useState({ front: '', back: '' });
     var form = fs[0];                 var setForm = fs[1];
     var es = R.useState(null);        var editing = es[0];  var setEditing = es[1];
+    var ves = R.useState('');         var formError = ves[0]; var setFormError = ves[1];
     var rs = R.useState(0);           var revIdx = rs[0];   var setRevIdx = rs[1];
     var ss = R.useState(false);       var showBack = ss[0]; var setShowBack = ss[1];
     var revStats = R.useState({ correct: 0, total: 0 });
@@ -5483,16 +5607,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function removeCard(id) {
       setData(Object.assign({}, data, { cards: cards.filter(function(c) { return c.id !== id; }) }));
     }
-    function addDeck() {
-      var name = prompt('Deck name?');
-      if (!name) return;
+    async function addDeck() {
+      var values = await askLearningLabForm({
+        title: 'Create a flashcard deck',
+        description: 'Give the new deck a short, descriptive name.',
+        submitText: 'Create deck',
+        fields: [{ name: 'name', label: 'Deck name', required: true, maxLength: 80 }],
+        validate: function(result) {
+          return decks.some(function(existing) { return existing.toLowerCase() === result.name.toLowerCase(); }) ? 'A deck with that name already exists.' : '';
+        }
+      });
+      if (!values) return;
+      var name = values.name;
       var newDecks = decks.concat([name]);
       setData(Object.assign({}, data, { decks: newDecks }));
       setDeck(name);
     }
-    function removeDeck(name) {
-      if (name === 'Default') { alert('Cannot delete Default deck.'); return; }
-      if (!confirm('Delete deck "' + name + '" and all its cards?')) return;
+    async function removeDeck(name) {
+      if (name === 'Default') return;
+      if (!(await askLearningLabConfirmation('This permanently removes every card in the "' + name + '" deck.', {
+        title: 'Delete "' + name + '" deck?', confirmText: 'Delete deck'
+      }))) return;
       setData(Object.assign({}, data, {
         decks: decks.filter(function(d) { return d !== name; }),
         cards: cards.filter(function(c) { return c.deck !== name; })
@@ -5570,19 +5705,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkSectionHeader('+', editing ? 'Edit card' : 'New flashcard', 'Front = the question or prompt. Back = the answer.', '#06b6d4'),
         tkCard('#06b6d4',
           hh('div', null,
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4, display: 'block' } }, 'Front'),
-            tkTextarea(form.front, function(v) { setForm(Object.assign({}, form, { front: v })); }, 'e.g., "What is the function of mitochondria?"', 3, { marginBottom: 10 }),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4, display: 'block' } }, 'Back'),
-            tkTextarea(form.back, function(v) { setForm(Object.assign({}, form, { back: v })); }, 'e.g., "Powerhouse of the cell — produces ATP via oxidative phosphorylation"', 3, { marginBottom: 10 }),
+            hh('label', { htmlFor: 'learning-lab-flashcard-front', style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4, display: 'block' } }, 'Front (required)'),
+            hh('textarea', { id: 'learning-lab-flashcard-front', value: form.front, required: true, 'aria-invalid': formError && !form.front.trim() ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-flashcard-error' : undefined, onChange: function(e) { setForm(Object.assign({}, form, { front: e.target.value })); setFormError(''); }, placeholder: 'e.g., "What is the function of mitochondria?"', rows: 3, style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical', marginBottom: 10 } }),
+            hh('label', { htmlFor: 'learning-lab-flashcard-back', style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4, display: 'block' } }, 'Back (required)'),
+            hh('textarea', { id: 'learning-lab-flashcard-back', value: form.back, required: true, 'aria-invalid': formError && !form.back.trim() ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-flashcard-error' : undefined, onChange: function(e) { setForm(Object.assign({}, form, { back: e.target.value })); setFormError(''); }, placeholder: 'e.g., "Powerhouse of the cell — produces ATP via oxidative phosphorylation"', rows: 3, style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical', marginBottom: 10 } }),
+            formError ? hh('div', { id: 'learning-lab-flashcard-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: 10 } }, formError) : null,
             hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Deck: ', hh('strong', { style: { color: '#67e8f9' } }, deck))
           )
         ),
         hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setView('decks'); setForm({ front: '', back: '' }); setEditing(null); }, 'ghost'),
+          tkBtn('← Cancel', function() { setView('decks'); setForm({ front: '', back: '' }); setEditing(null); setFormError(''); }, 'ghost'),
           tkBtn('💾 Save card', function() {
-            if (!form.front.trim() || !form.back.trim()) { alert('Both front and back are required.'); return; }
+            if (!form.front.trim() || !form.back.trim()) {
+              var missing = !form.front.trim() && !form.back.trim() ? 'Front and back are required.' : (!form.front.trim() ? 'Front is required.' : 'Back is required.');
+              setFormError(missing);
+              setTimeout(function() { var target = document.getElementById(!form.front.trim() ? 'learning-lab-flashcard-front' : 'learning-lab-flashcard-back'); if (target) target.focus(); }, 0);
+              return;
+            }
             saveCard(Object.assign({}, editing || {}, { front: form.front.trim(), back: form.back.trim(), deck: deck }));
-            setForm({ front: '', back: '' }); setEditing(null); setView('decks');
+            setForm({ front: '', back: '' }); setEditing(null); setFormError(''); setView('decks');
           }, 'primary')
         )
       );
@@ -5608,8 +5749,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { display: 'flex', gap: 4, alignItems: 'flex-start' } },
                     hh('span', { style: { padding: '2px 6px', borderRadius: 999, background: due ? 'rgba(6,182,212,0.18)' : 'rgba(100,116,139,0.18)', color: due ? '#06b6d4' : '#94a3b8', fontSize: 9, fontWeight: 800 } },
                       due ? 'DUE' : 'in ' + (Math.max(0, daysAgo(today) - daysAgo(c.nextDue) || 0)) + 'd'),
-                    hh('button', { onClick: function() { if (confirm('Delete this card?')) removeCard(c.id); },
-                      style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12, padding: 2 }
+                    hh('button', { type: 'button', 'aria-label': 'Delete flashcard: ' + c.front, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the flashcard "' + c.front + '".', { title: 'Delete this flashcard?', confirmText: 'Delete card' })) removeCard(c.id); },
+                      style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 14, minWidth: 44, minHeight: 44, padding: 8 }
                     }, '✕')
                   )
                 ),
@@ -5629,6 +5770,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         decks.map(function(deckName) {
           var dCards = cards.filter(function(c) { return c.deck === deckName; });
           var dDue = dCards.filter(function(c) { return !c.nextDue || c.nextDue <= today; });
+          var deckSummary = [
+            hh('div', { key: 'title', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 } },
+              hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9' } }, '🃏 ' + deckName)
+            ),
+            hh('div', { key: 'count', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, dCards.length + ' card' + (dCards.length !== 1 ? 's' : '')),
+            hh('div', { key: 'due', style: { marginTop: 8, padding: '6px 10px', borderRadius: 6, background: dDue.length > 0 ? 'rgba(6,182,212,0.20)' : 'rgba(100,116,139,0.10)', color: dDue.length > 0 ? '#06b6d4' : '#64748b', fontSize: 10, fontWeight: 800, textAlign: 'center' } },
+              dDue.length > 0 ? '▶ ' + dDue.length + ' due today' : 'no cards due')
+          ];
+          if (deckName !== 'Default') {
+            return hh('div', { key: 'd-' + deckName, style: { position: 'relative', borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(6,182,212,0.40)', borderLeft: '4px solid #06b6d4' } },
+              hh('button', { type: 'button', onClick: function() { setDeck(deckName); setView('cards'); }, style: { display: 'block', width: '100%', minHeight: 80, textAlign: 'left', padding: '14px 58px 14px 14px', border: 'none', borderRadius: 12, background: 'transparent', color: 'inherit', cursor: 'pointer' } }, deckSummary),
+              hh('button', { type: 'button', 'aria-label': 'Delete deck ' + deckName, onClick: function() { removeDeck(deckName); }, style: { position: 'absolute', top: 6, right: 6, minWidth: 44, minHeight: 44, border: 'none', borderRadius: 8, background: 'rgba(2,6,23,0.75)', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 14 } }, '✕')
+            );
+          }
           return hh('button', { key: 'd-' + deckName,
             onClick: function() { setDeck(deckName); setView('cards'); },
             style: {
@@ -5637,16 +5792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               border: '1px solid rgba(6,182,212,0.40)', borderLeft: '4px solid #06b6d4',
               cursor: 'pointer', transition: 'all 200ms ease'
             }
-          },
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 } },
-              hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9' } }, '🃏 ' + deckName),
-              deckName !== 'Default' ? hh('span', { role: 'button', tabIndex: 0, 'aria-label': 'Delete deck ' + deckName, onClick: function(e) { e.stopPropagation(); removeDeck(deckName); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); removeDeck(deckName); } }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕') : null
-            ),
-            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, dCards.length + ' card' + (dCards.length !== 1 ? 's' : '')),
-            hh('div', { style: { marginTop: 8, padding: '6px 10px', borderRadius: 6, background: dDue.length > 0 ? 'rgba(6,182,212,0.20)' : 'rgba(100,116,139,0.10)', color: dDue.length > 0 ? '#06b6d4' : '#64748b', fontSize: 10, fontWeight: 800, textAlign: 'center' } },
-              dDue.length > 0 ? '▶ ' + dDue.length + ' due today' : 'no cards due'
-            )
-          );
+          }, deckSummary);
         }),
         hh('button', {
           onClick: addDeck,
