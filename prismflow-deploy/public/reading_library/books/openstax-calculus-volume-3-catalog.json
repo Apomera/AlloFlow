@@ -29,7 +29,6 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/calculus-volume-3"
   },
-  "cover": null,
   "audio": null,
   "pages": [
     {
@@ -51,5 +50,6 @@
   "stats": {
     "pages": 3,
     "words": 56
-  }
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/0/07/Vector_Field.png"
 }

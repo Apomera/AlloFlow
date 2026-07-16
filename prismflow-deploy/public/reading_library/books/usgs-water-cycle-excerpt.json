@@ -1,1 +1,55 @@
-{"schema":"allo-reading-book@1","slug":"usgs-water-cycle-excerpt","title":"The Water Cycle","description":"A public-domain USGS Water Science School excerpt about where water is stored, how it moves, and how humans affect it.","language":"English","langCode":"en","isRtl":false,"level":"5","orientation":"portrait","sourceId":"usgs","contentType":"nonfiction-excerpt","subjects":["Water","Earth science","Climate","Human impacts"],"authors":["USGS Water Science School"],"illustrators":[],"originalAuthors":[],"publisher":"U.S. Geological Survey","license":"Public Domain / some linked media may vary","licenseUrl":"https://www.usgs.gov/water-science-school/water-cycle","source":{"id":"usgs","name":"U.S. Geological Survey","url":"https://www.usgs.gov/water-science-school/water-cycle"},"cover":null,"audio":null,"pages":[{"n":1,"img":null,"text":"The water cycle describes where water is on Earth and how it moves. Water is stored in the atmosphere, on land, below the ground, in oceans, rivers, lakes, glaciers, ice sheets, and living things."},{"n":2,"img":null,"text":"Water changes form and moves between pools. It evaporates, condenses, falls as precipitation, runs across land, soaks into the ground, flows through aquifers, and returns to rivers or the ocean."},{"n":3,"img":null,"text":"Human water use, land use, and climate change affect where water is stored, how quickly it moves, when it is available, and how clean it is."}],"stats":{"pages":3,"words":90}}
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-water-cycle-excerpt",
+  "title": "The Water Cycle",
+  "description": "A public-domain USGS Water Science School excerpt about where water is stored, how it moves, and how humans affect it.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "nonfiction-excerpt",
+  "subjects": [
+    "Water",
+    "Earth science",
+    "Climate",
+    "Human impacts"
+  ],
+  "authors": [
+    "USGS Water Science School"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/water-science-school/water-cycle",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/water-science-school/water-cycle"
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Simplified-water-cycle.jpg/960px-Simplified-water-cycle.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The water cycle describes where water is on Earth and how it moves. Water is stored in the atmosphere, on land, below the ground, in oceans, rivers, lakes, glaciers, ice sheets, and living things."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Water changes form and moves between pools. It evaporates, condenses, falls as precipitation, runs across land, soaks into the ground, flows through aquifers, and returns to rivers or the ocean."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Human water use, land use, and climate change affect where water is stored, how quickly it moves, when it is available, and how clean it is."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 90
+  }
+}

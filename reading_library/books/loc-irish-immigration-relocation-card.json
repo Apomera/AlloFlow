@@ -10,20 +10,46 @@
   "orientation": "portrait",
   "sourceId": "loc",
   "contentType": "source-card",
-  "subjects": ["History", "Immigration", "U.S. history", "Primary sources"],
-  "authors": ["Library of Congress"],
+  "subjects": [
+    "History",
+    "Immigration",
+    "U.S. history",
+    "Primary sources"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
   "illustrators": [],
   "originalAuthors": [],
   "publisher": "Library of Congress",
   "license": "Item-level rights vary",
   "licenseUrl": "https://www.loc.gov/legal/",
-  "source": { "id": "loc", "name": "Library of Congress", "url": "https://www.loc.gov/classroom-materials/immigration/irish/" },
-  "cover": null,
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/immigration/irish/"
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Emigrants_Leave_Ireland_by_Henry_Doyle_1868.jpg/960px-Emigrants_Leave_Ireland_by_Henry_Doyle_1868.jpg",
   "audio": null,
   "pages": [
-    { "n": 1, "img": null, "text": "This Library of Congress presentation places Irish immigration inside a larger Immigration and Relocation in U.S. History collection." },
-    { "n": 2, "img": null, "text": "Students can trace push and pull factors such as religious conflict, political conditions, economic hardship, land ownership, labor, discrimination, adaptation, and cultural influence." },
-    { "n": 3, "img": null, "text": "Use this source card as a doorway to primary-source investigation rather than a final text. Library of Congress collection items carry their own rights statements." }
+    {
+      "n": 1,
+      "img": null,
+      "text": "This Library of Congress presentation places Irish immigration inside a larger Immigration and Relocation in U.S. History collection."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Students can trace push and pull factors such as religious conflict, political conditions, economic hardship, land ownership, labor, discrimination, adaptation, and cultural influence."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Use this source card as a doorway to primary-source investigation rather than a final text. Library of Congress collection items carry their own rights statements."
+    }
   ],
-  "stats": { "pages": 3, "words": 66 }
+  "stats": {
+    "pages": 3,
+    "words": 66
+  }
 }

@@ -29,7 +29,6 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/mission-areas/natural-hazards"
   },
-  "cover": null,
   "audio": null,
   "pages": [
     {
@@ -51,5 +50,6 @@
   "stats": {
     "pages": 3,
     "words": 55
-  }
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Eruption_at_Nabro_Volcano%2C_Eritrea%2C_06-19-2011.jpg/960px-Eruption_at_Nabro_Volcano%2C_Eritrea%2C_06-19-2011.jpg"
 }

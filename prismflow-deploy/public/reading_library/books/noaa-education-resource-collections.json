@@ -10,8 +10,15 @@
   "orientation": "portrait",
   "sourceId": "noaa",
   "contentType": "source-card",
-  "subjects": ["Weather", "Climate", "Ocean science", "Data literacy"],
-  "authors": ["NOAA Education"],
+  "subjects": [
+    "Weather",
+    "Climate",
+    "Ocean science",
+    "Data literacy"
+  ],
+  "authors": [
+    "NOAA Education"
+  ],
   "illustrators": [],
   "originalAuthors": [],
   "publisher": "National Oceanic and Atmospheric Administration",
@@ -22,7 +29,7 @@
     "name": "NOAA Education",
     "url": "https://www.noaa.gov/education/resource-collections"
   },
-  "cover": null,
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Noaa_ship_oscar_dyson.jpg/960px-Noaa_ship_oscar_dyson.jpg",
   "audio": null,
   "pages": [
     {
@@ -41,5 +48,8 @@
       "text": "Rights note: NOAA is a US government source, but the portal links to many offices and partner resources. Treat this as a trusted catalog and check item-level rights before mirroring a linked worksheet, image, or dataset."
     }
   ],
-  "stats": { "pages": 3, "words": 97 }
+  "stats": {
+    "pages": 3,
+    "words": 97
+  }
 }

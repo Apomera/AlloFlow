@@ -10,8 +10,15 @@
   "orientation": "portrait",
   "sourceId": "loc",
   "contentType": "source-card",
-  "subjects": ["History", "Civics", "Primary sources", "Research"],
-  "authors": ["Library of Congress"],
+  "subjects": [
+    "History",
+    "Civics",
+    "Primary sources",
+    "Research"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
   "illustrators": [],
   "originalAuthors": [],
   "publisher": "Library of Congress",
@@ -22,7 +29,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/programs/teachers/classroom-materials/"
   },
-  "cover": null,
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/LOC_Main_Reading_Room_Highsmith.jpg/960px-LOC_Main_Reading_Room_Highsmith.jpg",
   "audio": null,
   "pages": [
     {
@@ -36,5 +43,8 @@
       "text": "This source belongs in the history and primary-source shelf because it supports document analysis, sourcing, context, corroboration, and evidence-based argument. Rights note: the Library does not own every item in its collections, so item-level copyright and use restrictions must be checked."
     }
   ],
-  "stats": { "pages": 2, "words": 75 }
+  "stats": {
+    "pages": 2,
+    "words": 75
+  }
 }

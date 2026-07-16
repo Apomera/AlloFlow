@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-16T15:58:15.543Z",
+ "generatedAt": "2026-07-16T16:36:16.948Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -52323,7 +52323,7 @@
     "name": "Frontiers for Young Minds",
     "url": "https://kids.frontiersin.org/articles/10.3389/frym.2026.1653389"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/c/cf/GFAJ-1_electron-microscope.jpg",
    "authors": [
     "Paulina Nunez-Valenzuela",
     "Julian O. Ovis-Sanchez",
@@ -52359,7 +52359,7 @@
     "name": "NASA Learning Resources",
     "url": "https://www.nasa.gov/learning-resources/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/jsc2018e078340/jsc2018e078340~medium.jpg",
    "authors": [
     "NASA"
    ],
@@ -52393,7 +52393,7 @@
     "name": "NOAA Education",
     "url": "https://www.noaa.gov/education/resource-collections"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Noaa_ship_oscar_dyson.jpg/960px-Noaa_ship_oscar_dyson.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -52426,7 +52426,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/programs/earthquake-hazards/science-earthquakes"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Wallace_Creek_offset_across_the_San_Andreas_Fault.png/960px-Wallace_Creek_offset_across_the_San_Andreas_Fault.png",
    "authors": [
     "Lisa Wald",
     "U.S. Geological Survey Earthquake Hazards Program"
@@ -52461,7 +52461,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Declaration_of_Sentiments"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/d/da/Elizabeth_Stanton.jpg",
    "authors": [
     "Elizabeth Cady Stanton"
    ],
@@ -52495,7 +52495,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/programs/teachers/classroom-materials/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/LOC_Main_Reading_Room_Highsmith.jpg/960px-LOC_Main_Reading_Room_Highsmith.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -52563,7 +52563,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/books/biology-2e/pages/preface"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Biology_Labouratory%2C_St._Augustine_College_of_Education%2C_Akoka.jpg/960px-Biology_Labouratory%2C_St._Augustine_College_of_Education%2C_Akoka.jpg",
    "authors": [
     "Mary Ann Clark",
     "Matthew Douglas",
@@ -52599,7 +52599,7 @@
     "name": "Frontiers for Young Minds",
     "url": "https://kids.frontiersin.org/articles/10.3389/frym.2026.1666676"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Earthworm_in_a_No-till_Field_near_Brookings%2C_SD_%2814366341997%29.jpg/960px-Earthworm_in_a_No-till_Field_near_Brookings%2C_SD_%2814366341997%29.jpg",
    "authors": [
     "Alma L. Reyes",
     "Michelle E. Afkhami"
@@ -52634,7 +52634,7 @@
     "name": "Frontiers for Young Minds",
     "url": "https://kids.frontiersin.org/articles/10.3389/frym.2026.1664365"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Sea_Star_Tide_Pool_%2843857666465%29.jpg/960px-Sea_Star_Tide_Pool_%2843857666465%29.jpg",
    "authors": [
     "Jannine M. Lencina-Avila",
     "Andrea da Consolacao de Oliveira Carvalho",
@@ -52670,7 +52670,7 @@
     "name": "Frontiers for Young Minds",
     "url": "https://kids.frontiersin.org/articles/10.3389/frym.2026.1783561"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Containers_carrier_with_cranes%2C_Tokyo.jpg/960px-Containers_carrier_with_cranes%2C_Tokyo.jpg",
    "authors": [
     "Arunima Malik"
    ],
@@ -52704,7 +52704,7 @@
     "name": "Frontiers for Young Minds",
     "url": "https://kids.frontiersin.org/articles/10.3389/frym.2026.1756273"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/4/42/Rice_terraces-Nishihata%2CIkoma.jpg",
    "authors": [
     "Awais Mahmood",
     "Hafiz Usman Ghani",
@@ -52740,7 +52740,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/climate-change/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001386/GSFC_20171208_Archive_e001386~medium.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -52774,7 +52774,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/exoplanets/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/PIA22082/PIA22082~small.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -52808,7 +52808,7 @@
     "name": "NOAA Education",
     "url": "https://www.noaa.gov/education/resource-collections/climate/climate-change-impacts"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Gangotri_Glacier%2C_retreat_from_1780_to_2001.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -52842,7 +52842,7 @@
     "name": "NOAA Education",
     "url": "https://www.noaa.gov/education/resource-collections/marine-life/coral-reef-ecosystems"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Coral_Reef_Ecosystem_of_PR.JPG/960px-Coral_Reef_Ecosystem_of_PR.JPG",
    "authors": [
     "NOAA Education"
    ],
@@ -52876,7 +52876,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/water-science-school/water-cycle"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Simplified-water-cycle.jpg/960px-Simplified-water-cycle.jpg",
    "authors": [
     "USGS Water Science School"
    ],
@@ -52910,7 +52910,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/programs/VHP/volcanoes-can-affect-climate"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Volcanoes_Can_Affect_Climate.png/960px-Volcanoes_Can_Affect_Climate.png",
    "authors": [
     "USGS Volcano Hazards Program"
    ],
@@ -52944,7 +52944,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Gettysburg_Address"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Lincoln%27s_Gettysburg_Address%2C_Gettysburg%2C_highlighted_version.png/960px-Lincoln%27s_Gettysburg_Address%2C_Gettysburg%2C_highlighted_version.png",
    "authors": [
     "Abraham Lincoln"
    ],
@@ -52978,7 +52978,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/What_to_the_Slave_Is_the_Fourth_of_July%3F"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Frederick_Douglass_%28circa_1879%29.jpg/960px-Frederick_Douglass_%28circa_1879%29.jpg",
    "authors": [
     "Frederick Douglass"
    ],
@@ -53012,7 +53012,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/dust-bowl-migration/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Dust_storm_approaching_Stratford%2C_Texas.jpg/960px-Dust_storm_approaching_Stratford%2C_Texas.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -53046,7 +53046,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/immigration/irish/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Emigrants_Leave_Ireland_by_Henry_Doyle_1868.jpg/960px-Emigrants_Leave_Ireland_by_Henry_Doyle_1868.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -53080,7 +53080,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/books/astronomy-2e/pages/preface"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg/960px-Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg",
    "authors": [
     "Andrew Fraknoi",
     "David Morrison",
@@ -53116,7 +53116,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/books/us-history/pages/1-introduction"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg/960px-Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg",
    "authors": [
     "P. Scott Corbett",
     "Volker Janssen",
@@ -85399,7 +85399,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/chemistry-2e"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Graduated_chemical_glassware_%28Alessandri_1895.1%29.png/960px-Graduated_chemical_glassware_%28Alessandri_1895.1%29.png",
    "authors": [
     "OpenStax"
    ],
@@ -85433,7 +85433,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/college-physics-2e"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Professor_louise_sherwood_mcdowell_in_wellesley_college_physics_lab_ca_1909-20.jpg/960px-Professor_louise_sherwood_mcdowell_in_wellesley_college_physics_lab_ca_1909-20.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -85467,7 +85467,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/american-government-3e"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/b/bb/North-lawn-1987.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -85501,7 +85501,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/principles-economics-3e"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Standard_Stock_and_Mining_Exchange_trading_floor%2C_Toronto.png/960px-Standard_Stock_and_Mining_Exchange_trading_floor%2C_Toronto.png",
    "authors": [
     "OpenStax"
    ],
@@ -85535,7 +85535,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/psychology-2e"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/c/c3/Chimpanzee_and_human_brain_scaled_to_the_same_size_Thomas_Henry_Huxley.png",
    "authors": [
     "OpenStax"
    ],
@@ -85569,7 +85569,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/introduction-sociology-3e"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Crowd_on_Wall_Street_before_Trinity_Church%2C_New_York_City_LCCN93506590.jpg/960px-Crowd_on_Wall_Street_before_Trinity_Church%2C_New_York_City_LCCN93506590.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -85603,7 +85603,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/writing-guide"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/The_Swan_Pen.png/960px-The_Swan_Pen.png",
    "authors": [
     "OpenStax"
    ],
@@ -85637,7 +85637,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/introduction-philosophy"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Le_Penseur_Mus%C3%A9e_Rodin_Paris_S.1295.jpg/960px-Le_Penseur_Mus%C3%A9e_Rodin_Paris_S.1295.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -85671,7 +85671,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/algebra-and-trigonometry-2e"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/DALL-E_-_Blackboard_drawing_of_anthropomorphic_rhinoceros_wearing_a_business_suit_scratching_his_head_and_looked_confused%2C_with_complicated_mathematic_matrices_multiplications_around_him.jpg/960px-thumbnail.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -85705,7 +85705,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/precalculus-2e"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/d/df/Graph_of_function_of_2_variables.png",
    "authors": [
     "OpenStax"
    ],
@@ -85739,7 +85739,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/introductory-statistics"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Bell_Curve_Showing_100_Faces_to_Illustrate_Percentile_Rank.png",
    "authors": [
     "OpenStax"
    ],
@@ -85773,7 +85773,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/anatomy-and-physiology-2e"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/1/19/Pg_192_Human_Skeleton.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -85807,7 +85807,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/universe/black-holes/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/behemoth-black-hole-found-in-an-unlikely-place_26209716511_o/behemoth-black-hole-found-in-an-unlikely-place_26209716511_o~medium.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -85841,7 +85841,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/solar-system/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/PIA10969/PIA10969~medium.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -85875,7 +85875,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/sun/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000104/GSFC_20171208_Archive_e000104~medium.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -85909,7 +85909,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/moon/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/as16-113-18334/as16-113-18334~medium.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -85943,7 +85943,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/mars/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/PIA04822/PIA04822~thumb.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -85977,7 +85977,7 @@
     "name": "NASA Earth Observatory",
     "url": "https://earthobservatory.nasa.gov/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/PIA17896/PIA17896~medium.jpg",
    "authors": [
     "NASA Earth Observatory"
    ],
@@ -86011,7 +86011,7 @@
     "name": "NASA Climate Kids",
     "url": "https://climatekids.nasa.gov/water-cycle/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/PIA18056/PIA18056~medium.jpg",
    "authors": [
     "NASA Climate Kids"
    ],
@@ -86045,7 +86045,7 @@
     "name": "NASA Climate Kids",
     "url": "https://climatekids.nasa.gov/greenhouse-effect/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/ARC-1978-A78-9066/ARC-1978-A78-9066~medium.jpg",
    "authors": [
     "NASA Climate Kids"
    ],
@@ -86079,7 +86079,7 @@
     "name": "NASA Space Place",
     "url": "https://spaceplace.nasa.gov/comets/en/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/PIA17666/PIA17666~small.jpg",
    "authors": [
     "NASA Space Place"
    ],
@@ -86113,7 +86113,7 @@
     "name": "NASA Space Place",
     "url": "https://spaceplace.nasa.gov/asteroid/en/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/PIA19379/PIA19379~small.jpg",
    "authors": [
     "NASA Space Place"
    ],
@@ -86147,7 +86147,7 @@
     "name": "NOAA Education",
     "url": "https://www.noaa.gov/education/resource-collections/ocean-coasts/ocean-acidification"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Coral_bleaching_Florida_Keys_2023.jpg/960px-Coral_bleaching_Florida_Keys_2023.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -86181,7 +86181,7 @@
     "name": "NOAA Education",
     "url": "https://www.noaa.gov/education/resource-collections/weather-atmosphere/weather-systems-patterns"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/3/34/EB1911_-_Climate_Fig._2.%E2%80%94Supan%E2%80%99s_Temperature_Zones.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -86215,7 +86215,7 @@
     "name": "NOAA Education",
     "url": "https://www.noaa.gov/education/resource-collections/weather-atmosphere/severe-weather"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Chaparral_Supercell_2.JPG/960px-Chaparral_Supercell_2.JPG",
    "authors": [
     "NOAA Education"
    ],
@@ -86249,7 +86249,7 @@
     "name": "NOAA Education",
     "url": "https://www.noaa.gov/education/resource-collections/ocean-coasts/ocean-currents"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Ocean_currents_1943_%28borderless%293.png/960px-Ocean_currents_1943_%28borderless%293.png",
    "authors": [
     "NOAA Education"
    ],
@@ -86283,7 +86283,7 @@
     "name": "NOAA Education",
     "url": "https://www.noaa.gov/education/resource-collections/marine-life"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Humpback_Whale_Breaching_in_Hervey_Bay%2C_Alaska.jpg/960px-Humpback_Whale_Breaching_in_Hervey_Bay%2C_Alaska.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -86317,7 +86317,7 @@
     "name": "NOAA Education",
     "url": "https://www.noaa.gov/education/resource-collections/satellites"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/GOES-P.jpg/960px-GOES-P.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -86351,7 +86351,7 @@
     "name": "NOAA Education",
     "url": "https://www.noaa.gov/education/resource-collections/weather-atmosphere/el-nino"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/b/b7/El_Nino_regional_impacts.png",
    "authors": [
     "NOAA Education"
    ],
@@ -86385,7 +86385,7 @@
     "name": "NOAA Ocean Service",
     "url": "https://oceanservice.noaa.gov/education/tutorial_tides/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Jetty_with_the_ladders_in_last_light_of_the_day.jpg/960px-Jetty_with_the_ladders_in_last_light_of_the_day.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -86419,7 +86419,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/faqs/what-plate-tectonics"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Tectonic_plates.png/960px-Tectonic_plates.png",
    "authors": [
     "U.S. Geological Survey"
    ],
@@ -86453,7 +86453,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/programs/VHP"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/USAID%E2%80%99s_Volcano_Disaster_Assistance_Program_%287941744808%29.jpg/960px-USAID%E2%80%99s_Volcano_Disaster_Assistance_Program_%287941744808%29.jpg",
    "authors": [
     "USGS Volcano Hazards Program"
    ],
@@ -86487,7 +86487,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/programs/landslide-hazards"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Landslide_in_North_Tapanuli_following_heavy_rainfall.jpg/960px-Landslide_in_North_Tapanuli_following_heavy_rainfall.jpg",
    "authors": [
     "USGS Landslide Hazards Program"
    ],
@@ -86521,7 +86521,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/centers/national-minerals-information-center"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Amethyst_Geode_Brazil_2.jpg/960px-Amethyst_Geode_Brazil_2.jpg",
    "authors": [
     "USGS National Minerals Information Center"
    ],
@@ -86555,7 +86555,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/mission-areas/water-resources/science/streamflow-and-water-cycle"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Mountain_Stream_MET_DT1544.jpg/960px-Mountain_Stream_MET_DT1544.jpg",
    "authors": [
     "USGS Water Resources"
    ],
@@ -86589,7 +86589,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/programs/cmhrp"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Beach_erosion_and_accretion_at_Virginia_Beach%2C_Virginia_and_vicinity_%281977%29_%2820350255482%29.jpg/960px-Beach_erosion_and_accretion_at_Virginia_Beach%2C_Virginia_and_vicinity_%281977%29_%2820350255482%29.jpg",
    "authors": [
     "USGS Coastal and Marine Hazards and Resources Program"
    ],
@@ -86623,7 +86623,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/mission-areas/ecosystems"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/c/c4/USGS_Northern_Everglades_image_2001.jpg",
    "authors": [
     "U.S. Geological Survey"
    ],
@@ -86657,7 +86657,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/mission-areas/energy-and-minerals"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/TWIN-BUTTES_MINE._AERIAL_OF_OPEN_PIT_MINE%2C_1%2C000_FEET_DEEP._%28FROM_THE_DOCUMERICA-1_EXHIBITION._FOR_OTHER_IMAGES_IN..._-_NARA_-_553049.jpg/960px-TWIN-BUTTES_MINE._AERIAL_OF_OPEN_PIT_MINE%2C_1%2C000_FEET_DEEP._%28FROM_THE_DOCUMERICA-1_EXHIBITION._FOR_OTHER_IMAGES_IN..._-_NARA_-_553049.jpg",
    "authors": [
     "U.S. Geological Survey"
    ],
@@ -86691,7 +86691,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/primary-source-sets/civil-rights/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Lyndon_Johnson_signing_Civil_Rights_Act%2C_July_2%2C_1964.jpg/960px-Lyndon_Johnson_signing_Civil_Rights_Act%2C_July_2%2C_1964.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -86725,7 +86725,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/primary-source-sets/women-suffrage/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/5/54/Suffrage_parade-New_York_City-May_4_1912.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -86759,7 +86759,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/primary-source-sets/harlem-renaissance/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/3/34/HTDandFamilyHarlemRooftop.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -86793,7 +86793,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/primary-source-sets/industrial-revolution-in-the-united-states/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/f/f8/ScientificAmerican-18561025-fig1.png",
    "authors": [
     "Library of Congress"
    ],
@@ -86827,7 +86827,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/primary-source-sets/immigration-challenges-for-new-americans/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Italian_immigrants_at_Ellis_Island.jpg/960px-Italian_immigrants_at_Ellis_Island.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -86861,7 +86861,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/primary-source-sets/conservation-movement/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Ansel-adams-monolith-the-face-of-half-dome_-_edit1.jpg/960px-Ansel-adams-monolith-the-face-of-half-dome_-_edit1.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -86895,7 +86895,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/The_Federalist_Papers/No._10"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/2015_NYR_12435_0242_000%28federalist_papers_--_jay_john_autograph_draft_manuscript_of_federalist%29.jpg/960px-2015_NYR_12435_0242_000%28federalist_papers_--_jay_john_autograph_draft_manuscript_of_federalist%29.jpg",
    "authors": [
     "James Madison"
    ],
@@ -86929,7 +86929,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Ain%27t_I_a_Woman%3F"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/I_ain%27t_seen_no_messenger_boy_%28NYPL_Hades-608764-1256239%29.jpg/960px-I_ain%27t_seen_no_messenger_boy_%28NYPL_Hades-608764-1256239%29.jpg",
    "authors": [
     "Sojourner Truth"
    ],
@@ -86963,7 +86963,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Emancipation_Proclamation"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Emancipation_Proclamation%2C_01-01-1863_%28Page_5_of_5%29_%283695345254%29.jpg/960px-Emancipation_Proclamation%2C_01-01-1863_%28Page_5_of_5%29_%283695345254%29.jpg",
    "authors": [
     "Abraham Lincoln"
    ],
@@ -86997,7 +86997,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Four_Freedoms_Speech"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Four_Freedoms_1c_1943_issue_U.S._stamp.jpg",
    "authors": [
     "Franklin D. Roosevelt"
    ],
@@ -87031,7 +87031,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Civil_Disobedience_(Thoreau)"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Benjamin_D._Maxham_-_Henry_David_Thoreau_-_Restored.jpg/960px-Benjamin_D._Maxham_-_Henry_David_Thoreau_-_Restored.jpg",
    "authors": [
     "Henry David Thoreau"
    ],
@@ -87065,7 +87065,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Monroe_Doctrine"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/a/ad/Monroe_doctrine.jpg",
    "authors": [
     "James Monroe"
    ],
@@ -87099,7 +87099,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/world-history-volume-1"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/1482_Cosmographia_Germanus.JPG/960px-1482_Cosmographia_Germanus.JPG",
    "authors": [
     "OpenStax"
    ],
@@ -87133,7 +87133,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/world-history-volume-2"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Crystal_Palace_from_the_northeast_from_Dickinson%27s_Comprehensive_Pictures_of_the_Great_Exhibition_of_1851._1854.jpg/960px-Crystal_Palace_from_the_northeast_from_Dickinson%27s_Comprehensive_Pictures_of_the_Great_Exhibition_of_1851._1854.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -87167,7 +87167,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/calculus-volume-1"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Pure-mathematics-formul%C3%A6-blackboard.jpg/960px-Pure-mathematics-formul%C3%A6-blackboard.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -87201,7 +87201,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/calculus-volume-2"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Pure-mathematics-formul%C3%A6-blackboard.jpg/960px-Pure-mathematics-formul%C3%A6-blackboard.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -87235,7 +87235,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/calculus-volume-3"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/0/07/Vector_Field.png",
    "authors": [
     "OpenStax"
    ],
@@ -87269,7 +87269,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/microbiology"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/0/07/Proteus_mirabilis_petri.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -87303,7 +87303,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/organic-chemistry"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/4/48/Hardware-accelerated-molecular-modeling.png",
    "authors": [
     "OpenStax"
    ],
@@ -87337,7 +87337,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/business-ethics"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Business_agreement_handshake_at_coffee_shop.jpg/960px-Business_agreement_handshake_at_coffee_shop.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -87371,7 +87371,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/introduction-political-science"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Urne_Ballot_box_r%C3%A9publique.jpg/960px-Urne_Ballot_box_r%C3%A9publique.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -87405,7 +87405,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/contemporary-mathematics"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/7/70/Golden_spiral_in_rectanglesflip.png",
    "authors": [
     "OpenStax"
    ],
@@ -87439,7 +87439,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/college-success"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Ohio_University_Lecture_Hall.jpg/960px-Ohio_University_Lecture_Hall.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -87473,7 +87473,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/principles-management"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/9/90/The_Principles_of_Scientific_Management%2C_title_page.jpg",
    "authors": [
     "OpenStax"
    ],
@@ -87507,7 +87507,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/mission/webb/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/by-the-dozen-nasas-james-webb-space-telescope-mirrors_23938941370_o/by-the-dozen-nasas-james-webb-space-telescope-mirrors_23938941370_o~small.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -87541,7 +87541,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/mission/hubble/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/PIA05982/PIA05982~medium.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -87575,7 +87575,7 @@
     "name": "NASA",
     "url": "https://www.nasa.gov/humans-in-space/artemis/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/MSFC_081619_Lunar Lander-2/MSFC_081619_Lunar Lander-2~medium.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -87609,7 +87609,7 @@
     "name": "NASA",
     "url": "https://www.nasa.gov/international-space-station/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/iss074e0301636/iss074e0301636~large.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -87643,7 +87643,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/mission/parker-solar-probe/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/KSC-20180419-PH_KLS01_0047/KSC-20180419-PH_KLS01_0047~medium.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -87677,7 +87677,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/mission/tess/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/KSC-20180212-PH_JBS01_0131/KSC-20180212-PH_JBS01_0131~medium.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -87711,7 +87711,7 @@
     "name": "NASA Science",
     "url": "https://science.nasa.gov/mission/chandra/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/9906646/9906646~medium.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -87745,7 +87745,7 @@
     "name": "NASA",
     "url": "https://www.nasa.gov/aeronautics/"
    },
-   "cover": null,
+   "cover": "https://images-assets.nasa.gov/image/AFRC2016-0090-13/AFRC2016-0090-13~medium.jpg",
    "authors": [
     "NASA Science"
    ],
@@ -87779,7 +87779,7 @@
     "name": "NOAA Education",
     "url": "https://www.nhc.noaa.gov/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/1878_Atlantic_hurricane_3_Monthly_Weather_Review_track.png/960px-1878_Atlantic_hurricane_3_Monthly_Weather_Review_track.png",
    "authors": [
     "NOAA Education"
    ],
@@ -87813,7 +87813,7 @@
     "name": "NOAA Education",
     "url": "https://www.weather.gov/safety/tornado"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/A_Texas_twister_in_Wichita_County_April_1964.jpg/960px-A_Texas_twister_in_Wichita_County_April_1964.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -87847,7 +87847,7 @@
     "name": "NOAA Marine Debris Program",
     "url": "https://oceanservice.noaa.gov/facts/marinedebris.html"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Beach_strewn_with_plastic_debris_%288080500982%29.jpg/960px-Beach_strewn_with_plastic_debris_%288080500982%29.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -87881,7 +87881,7 @@
     "name": "NOAA Education",
     "url": "https://oceanservice.noaa.gov/education/tutorial_estuaries/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Rio_de_la_Plata_BA_2.JPG/960px-Rio_de_la_Plata_BA_2.JPG",
    "authors": [
     "NOAA Education"
    ],
@@ -87915,7 +87915,7 @@
     "name": "NOAA Coral Reef Conservation Program",
     "url": "https://coralreef.noaa.gov/education/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/7/7a/NOAA_Coral_Reef_Conservation_Program.png",
    "authors": [
     "NOAA Education"
    ],
@@ -87949,7 +87949,7 @@
     "name": "NOAA Ocean Exploration",
     "url": "https://oceanexplorer.noaa.gov/discover/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/2016_Hohonu_Moana%2C_Exploring_Deepwaters_off_Hawaii_-_Flickr_-_NOAA_Ocean_Exploration_%5E_Research.jpg/960px-2016_Hohonu_Moana%2C_Exploring_Deepwaters_off_Hawaii_-_Flickr_-_NOAA_Ocean_Exploration_%5E_Research.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -87983,7 +87983,7 @@
     "name": "NOAA Fisheries",
     "url": "https://www.fisheries.noaa.gov/topic/sustainable-fisheries"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Fishing_net_Karystos_Euboea_Greece.jpg/960px-Fishing_net_Karystos_Euboea_Greece.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -88017,7 +88017,7 @@
     "name": "National Weather Service",
     "url": "https://www.weather.gov/education/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/NASA_Meteorologists_Launch_Weather_Balloon_Before_Research_Flight_%28AFRC2018-0287-284%29.jpg/960px-NASA_Meteorologists_Launch_Weather_Balloon_Before_Research_Flight_%28AFRC2018-0287-284%29.jpg",
    "authors": [
     "NOAA Education"
    ],
@@ -88051,7 +88051,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/programs/earthquake-hazards"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/c/c3/Sisma_three_components.jpg",
    "authors": [
     "U.S. Geological Survey"
    ],
@@ -88085,7 +88085,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/landsat-missions"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Landsat_Data_Continuity_Mission_Observatory_testing.jpg/960px-Landsat_Data_Continuity_Mission_Observatory_testing.jpg",
    "authors": [
     "U.S. Geological Survey"
    ],
@@ -88119,7 +88119,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/programs/national-geospatial-program/national-map"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/2/2f/USGS_The_National.jpg",
    "authors": [
     "U.S. Geological Survey"
    ],
@@ -88153,7 +88153,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://waterdata.usgs.gov/nwis"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Stream_gauge_in_W%C5%82odawa%2C_July_2018_P01.jpg/960px-Stream_gauge_in_W%C5%82odawa%2C_July_2018_P01.jpg",
    "authors": [
     "U.S. Geological Survey"
    ],
@@ -88187,7 +88187,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/water-science-school/science/groundwater-what-groundwater"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/6/67/Groundwater_grace_2002-2023_US_Southwest.jpg",
    "authors": [
     "U.S. Geological Survey"
    ],
@@ -88221,7 +88221,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/mission-areas/natural-hazards"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Eruption_at_Nabro_Volcano%2C_Eritrea%2C_06-19-2011.jpg/960px-Eruption_at_Nabro_Volcano%2C_Eritrea%2C_06-19-2011.jpg",
    "authors": [
     "U.S. Geological Survey"
    ],
@@ -88255,7 +88255,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/programs/climate-adaptation-science-centers"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Figure_10-_Permafrost_Tunnel_Research_Facility_%2814364317040%29.jpg",
    "authors": [
     "U.S. Geological Survey"
    ],
@@ -88289,7 +88289,7 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/centers/nwhc"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Aerial_view_of_Wertheim_National_Wildlife_Refuge_visitor_center_-_2016_%2830103890404%29.jpg/960px-Aerial_view_of_Wertheim_National_Wildlife_Refuge_visitor_center_-_2016_%2830103890404%29.jpg",
    "authors": [
     "U.S. Geological Survey"
    ],
@@ -88323,7 +88323,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/american-revolution/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Declaration_of_Independence_%281819%29%2C_by_John_Trumbull.jpg/960px-Declaration_of_Independence_%281819%29%2C_by_John_Trumbull.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -88357,7 +88357,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/?q=civil+war"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Men_of_Color_Civil_War_Recruitment_Broadside_1863.png/960px-Men_of_Color_Civil_War_Recruitment_Broadside_1863.png",
    "authors": [
     "Library of Congress"
    ],
@@ -88391,7 +88391,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/japanese-american-internment/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/The_Japanese-American_residents_of_the_camp_in_of_Nyssa%2C_Oregon_elect_the_council_members.jpg/960px-The_Japanese-American_residents_of_the_camp_in_of_Nyssa%2C_Oregon_elect_the_council_members.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -88425,7 +88425,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/?q=great+depression+new+deal"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Lange-MigrantMother02.jpg/960px-Lange-MigrantMother02.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -88459,7 +88459,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/constitution/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Constitution_of_the_United_States_-_DPLA_-_9ca804144bd5965e992ae3528bc3c6a3_%28page_1%29.jpg/960px-Constitution_of_the_United_States_-_DPLA_-_9ca804144bd5965e992ae3528bc3c6a3_%28page_1%29.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -88493,7 +88493,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/?q=westward+expansion"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Territorial_Acquisitions_of_the_United_States.jpg/960px-Territorial_Acquisitions_of_the_United_States.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -88527,7 +88527,7 @@
     "name": "Library of Congress",
     "url": "https://www.loc.gov/classroom-materials/child-labor/"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Child_laborer.jpg/960px-Child_laborer.jpg",
    "authors": [
     "Library of Congress"
    ],
@@ -88561,7 +88561,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Washington%27s_Farewell_Address"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/f/f0/Washington%27s_Farewell_Address.jpg",
    "authors": [
     "George Washington"
    ],
@@ -88595,7 +88595,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Abraham_Lincoln%27s_Second_Inaugural_Address"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Abraham_Lincoln_second_inaugural_address.jpg/960px-Abraham_Lincoln_second_inaugural_address.jpg",
    "authors": [
     "Abraham Lincoln"
    ],
@@ -88629,7 +88629,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Common_Sense"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Commonsense.jpg",
    "authors": [
     "Thomas Paine"
    ],
@@ -88663,7 +88663,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Rights_of_Man"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/2/27/PaineRightsOfMan.png",
    "authors": [
     "Thomas Paine"
    ],
@@ -88697,7 +88697,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Magna_Carta"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Magna_Carta_%28British_Library_Cotton_MS_Augustus_II.106%29.jpg/960px-Magna_Carta_%28British_Library_Cotton_MS_Augustus_II.106%29.jpg",
    "authors": [
     "Traditional / historical document"
    ],
@@ -88731,7 +88731,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/Mayflower_Compact"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Mayflower_in_Plymouth_Harbor%2C_by_William_Halsall.jpg/960px-Mayflower_in_Plymouth_Harbor%2C_by_William_Halsall.jpg",
    "authors": [
     "Mayflower passengers"
    ],
@@ -88765,7 +88765,7 @@
     "name": "Wikisource",
     "url": "https://en.wikisource.org/wiki/The_Souls_of_Black_Folk"
    },
-   "cover": null,
+   "cover": "https://upload.wikimedia.org/wikipedia/commons/5/52/The_Souls_of_Black_Folk_title_page.jpg",
    "authors": [
     "W. E. B. Du Bois"
    ],

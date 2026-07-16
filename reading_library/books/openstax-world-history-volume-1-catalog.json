@@ -29,7 +29,6 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/world-history-volume-1"
   },
-  "cover": null,
   "audio": null,
   "pages": [
     {
@@ -51,5 +50,6 @@
   "stats": {
     "pages": 3,
     "words": 71
-  }
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/1482_Cosmographia_Germanus.JPG/960px-1482_Cosmographia_Germanus.JPG"
 }

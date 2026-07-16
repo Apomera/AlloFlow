@@ -29,7 +29,7 @@
     "name": "NASA Space Place",
     "url": "https://spaceplace.nasa.gov/comets/en/"
   },
-  "cover": null,
+  "cover": "https://images-assets.nasa.gov/image/PIA17666/PIA17666~small.jpg",
   "audio": null,
   "pages": [
     {

@@ -10,19 +10,43 @@
   "orientation": "portrait",
   "sourceId": "openstax",
   "contentType": "textbook-source-card",
-  "subjects": ["Astronomy", "Textbooks", "Space science", "Study guides"],
-  "authors": ["Andrew Fraknoi", "David Morrison", "Sidney Wolff"],
+  "subjects": [
+    "Astronomy",
+    "Textbooks",
+    "Space science",
+    "Study guides"
+  ],
+  "authors": [
+    "Andrew Fraknoi",
+    "David Morrison",
+    "Sidney Wolff"
+  ],
   "illustrators": [],
   "originalAuthors": [],
   "publisher": "OpenStax",
   "license": "CC BY-NC-SA 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
-  "source": { "id": "openstax", "name": "OpenStax", "url": "https://openstax.org/books/astronomy-2e/pages/preface" },
-  "cover": null,
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/astronomy-2e/pages/preface"
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg/960px-Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg",
   "audio": null,
   "pages": [
-    { "n": 1, "img": null, "text": "OpenStax Astronomy 2e is an introductory astronomy textbook written in accessible language. It covers observing the sky, gravity, planets, stars, galaxies, black holes, the Big Bang, and life in the universe." },
-    { "n": 2, "img": null, "text": "This source is useful for high-school enrichment, astronomy electives, dual-enrollment support, or teacher-selected sections. The book is licensed CC BY-NC-SA 4.0." }
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax Astronomy 2e is an introductory astronomy textbook written in accessible language. It covers observing the sky, gravity, planets, stars, galaxies, black holes, the Big Bang, and life in the universe."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This source is useful for high-school enrichment, astronomy electives, dual-enrollment support, or teacher-selected sections. The book is licensed CC BY-NC-SA 4.0."
+    }
   ],
-  "stats": { "pages": 2, "words": 52 }
+  "stats": {
+    "pages": 2,
+    "words": 52
+  }
 }

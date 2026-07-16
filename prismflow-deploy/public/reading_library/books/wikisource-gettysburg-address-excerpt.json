@@ -1,1 +1,55 @@
-{"schema":"allo-reading-book@1","slug":"wikisource-gettysburg-address-excerpt","title":"Gettysburg Address","description":"A public-domain primary-source text of Abraham Lincoln's 1863 Gettysburg Address.","language":"English","langCode":"en","isRtl":false,"level":"6","orientation":"portrait","sourceId":"wikisource","contentType":"primary-source-excerpt","subjects":["History","Civics","Civil War","Primary sources"],"authors":["Abraham Lincoln"],"illustrators":[],"originalAuthors":[],"publisher":"Wikisource","license":"Public Domain","licenseUrl":"https://en.wikisource.org/wiki/Gettysburg_Address","source":{"id":"wikisource","name":"Wikisource","url":"https://en.wikisource.org/wiki/Gettysburg_Address"},"cover":null,"audio":null,"pages":[{"n":1,"img":null,"text":"Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal."},{"n":2,"img":null,"text":"Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure."},{"n":3,"img":null,"text":"It is for us the living, rather, to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced."}],"stats":{"pages":3,"words":80}}
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-gettysburg-address-excerpt",
+  "title": "Gettysburg Address",
+  "description": "A public-domain primary-source text of Abraham Lincoln's 1863 Gettysburg Address.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "primary-source-excerpt",
+  "subjects": [
+    "History",
+    "Civics",
+    "Civil War",
+    "Primary sources"
+  ],
+  "authors": [
+    "Abraham Lincoln"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain",
+  "licenseUrl": "https://en.wikisource.org/wiki/Gettysburg_Address",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Gettysburg_Address"
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Lincoln%27s_Gettysburg_Address%2C_Gettysburg%2C_highlighted_version.png/960px-Lincoln%27s_Gettysburg_Address%2C_Gettysburg%2C_highlighted_version.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "It is for us the living, rather, to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 80
+  }
+}

@@ -29,7 +29,6 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/programs/climate-adaptation-science-centers"
   },
-  "cover": null,
   "audio": null,
   "pages": [
     {
@@ -51,5 +50,6 @@
   "stats": {
     "pages": 3,
     "words": 54
-  }
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Figure_10-_Permafrost_Tunnel_Research_Facility_%2814364317040%29.jpg"
 }

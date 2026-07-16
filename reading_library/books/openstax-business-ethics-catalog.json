@@ -29,7 +29,6 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/business-ethics"
   },
-  "cover": null,
   "audio": null,
   "pages": [
     {
@@ -51,5 +50,6 @@
   "stats": {
     "pages": 3,
     "words": 58
-  }
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Business_agreement_handshake_at_coffee_shop.jpg/960px-Business_agreement_handshake_at_coffee_shop.jpg"
 }

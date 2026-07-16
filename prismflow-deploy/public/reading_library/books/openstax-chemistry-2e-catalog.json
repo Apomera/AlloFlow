@@ -29,7 +29,6 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/chemistry-2e"
   },
-  "cover": null,
   "audio": null,
   "pages": [
     {
@@ -51,5 +50,6 @@
   "stats": {
     "pages": 3,
     "words": 60
-  }
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Graduated_chemical_glassware_%28Alessandri_1895.1%29.png/960px-Graduated_chemical_glassware_%28Alessandri_1895.1%29.png"
 }

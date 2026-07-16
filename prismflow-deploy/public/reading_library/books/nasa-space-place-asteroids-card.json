@@ -29,7 +29,7 @@
     "name": "NASA Space Place",
     "url": "https://spaceplace.nasa.gov/asteroid/en/"
   },
-  "cover": null,
+  "cover": "https://images-assets.nasa.gov/image/PIA19379/PIA19379~small.jpg",
   "audio": null,
   "pages": [
     {

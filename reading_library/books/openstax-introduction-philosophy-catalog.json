@@ -29,7 +29,6 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/introduction-philosophy"
   },
-  "cover": null,
   "audio": null,
   "pages": [
     {
@@ -51,5 +50,6 @@
   "stats": {
     "pages": 3,
     "words": 53
-  }
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Le_Penseur_Mus%C3%A9e_Rodin_Paris_S.1295.jpg/960px-Le_Penseur_Mus%C3%A9e_Rodin_Paris_S.1295.jpg"
 }

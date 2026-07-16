@@ -10,8 +10,17 @@
   "orientation": "portrait",
   "sourceId": "openstax",
   "contentType": "textbook-source-card",
-  "subjects": ["Biology", "Textbooks", "Study guides", "Science"],
-  "authors": ["Mary Ann Clark", "Matthew Douglas", "Jung Choi"],
+  "subjects": [
+    "Biology",
+    "Textbooks",
+    "Study guides",
+    "Science"
+  ],
+  "authors": [
+    "Mary Ann Clark",
+    "Matthew Douglas",
+    "Jung Choi"
+  ],
   "illustrators": [],
   "originalAuthors": [],
   "publisher": "OpenStax",
@@ -22,7 +31,7 @@
     "name": "OpenStax",
     "url": "https://openstax.org/books/biology-2e/pages/preface"
   },
-  "cover": null,
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Biology_Labouratory%2C_St._Augustine_College_of_Education%2C_Akoka.jpg/960px-Biology_Labouratory%2C_St._Augustine_College_of_Education%2C_Akoka.jpg",
   "audio": null,
   "pages": [
     {
@@ -36,5 +45,8 @@
       "text": "This source is best used as a chapter or section picker rather than a single long reading. Rights note: Biology 2e is licensed CC BY-NC-SA 4.0, and OpenStax brand assets are not covered by that content license."
     }
   ],
-  "stats": { "pages": 2, "words": 71 }
+  "stats": {
+    "pages": 2,
+    "words": 71
+  }
 }

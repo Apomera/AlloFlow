@@ -1,1 +1,57 @@
-{"schema":"allo-reading-book@1","slug":"frontiers-ocean-acidification-brief","title":"Ocean Acidification, a Silent Threat to Life on Earth","description":"A Frontiers for Young Minds article seed about ocean chemistry, carbon dioxide, and marine life.","language":"English","langCode":"en","isRtl":false,"level":"5","orientation":"portrait","sourceId":"frontiers","contentType":"science-article","subjects":["Earth science","Ocean science","Climate","Chemistry"],"authors":["Jannine M. Lencina-Avila","Andrea da Consolacao de Oliveira Carvalho","Mariele Paiva"],"illustrators":[],"originalAuthors":[],"publisher":"Frontiers for Young Minds","license":"CC BY 4.0","licenseUrl":"https://creativecommons.org/licenses/by/4.0/","source":{"id":"frontiers","name":"Frontiers for Young Minds","url":"https://kids.frontiersin.org/articles/10.3389/frym.2026.1664365"},"cover":null,"audio":null,"pages":[{"n":1,"img":null,"text":"Ocean acidification begins with a chemistry story: the ocean absorbs carbon dioxide from the air, and some of that carbon changes seawater chemistry. Those changes matter for animals that build shells and skeletons."},{"n":2,"img":null,"text":"This article works well as a bridge between climate science and chemistry. Students can ask how a gas in the atmosphere becomes a change in ocean pH, and why that affects food webs."},{"n":3,"img":null,"text":"The full Frontiers article is CC BY 4.0 and includes examples, figures, references, and reviewer support for younger readers moving into more advanced nonfiction."}],"stats":{"pages":3,"words":90}}
+{
+  "schema": "allo-reading-book@1",
+  "slug": "frontiers-ocean-acidification-brief",
+  "title": "Ocean Acidification, a Silent Threat to Life on Earth",
+  "description": "A Frontiers for Young Minds article seed about ocean chemistry, carbon dioxide, and marine life.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "frontiers",
+  "contentType": "science-article",
+  "subjects": [
+    "Earth science",
+    "Ocean science",
+    "Climate",
+    "Chemistry"
+  ],
+  "authors": [
+    "Jannine M. Lencina-Avila",
+    "Andrea da Consolacao de Oliveira Carvalho",
+    "Mariele Paiva"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Frontiers for Young Minds",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "frontiers",
+    "name": "Frontiers for Young Minds",
+    "url": "https://kids.frontiersin.org/articles/10.3389/frym.2026.1664365"
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Sea_Star_Tide_Pool_%2843857666465%29.jpg/960px-Sea_Star_Tide_Pool_%2843857666465%29.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Ocean acidification begins with a chemistry story: the ocean absorbs carbon dioxide from the air, and some of that carbon changes seawater chemistry. Those changes matter for animals that build shells and skeletons."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This article works well as a bridge between climate science and chemistry. Students can ask how a gas in the atmosphere becomes a change in ocean pH, and why that affects food webs."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "The full Frontiers article is CC BY 4.0 and includes examples, figures, references, and reviewer support for younger readers moving into more advanced nonfiction."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 90
+  }
+}

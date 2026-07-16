@@ -10,19 +10,46 @@
   "orientation": "portrait",
   "sourceId": "openstax",
   "contentType": "textbook-source-card",
-  "subjects": ["U.S. history", "Textbooks", "Civics", "Study guides"],
-  "authors": ["P. Scott Corbett", "Volker Janssen", "John M. Lund", "Todd Pfannestiel", "Sylvie Waskiewicz", "Paul Vickery"],
+  "subjects": [
+    "U.S. history",
+    "Textbooks",
+    "Civics",
+    "Study guides"
+  ],
+  "authors": [
+    "P. Scott Corbett",
+    "Volker Janssen",
+    "John M. Lund",
+    "Todd Pfannestiel",
+    "Sylvie Waskiewicz",
+    "Paul Vickery"
+  ],
   "illustrators": [],
   "originalAuthors": [],
   "publisher": "OpenStax",
   "license": "CC BY-NC-SA 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
-  "source": { "id": "openstax", "name": "OpenStax", "url": "https://openstax.org/books/us-history/pages/1-introduction" },
-  "cover": null,
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/us-history/pages/1-introduction"
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg/960px-Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg",
   "audio": null,
   "pages": [
-    { "n": 1, "img": null, "text": "OpenStax U.S. History is a survey textbook covering early America, colonization, revolution, expansion, slavery, civil war, industrialization, reform, war, civil rights, and modern political and social change." },
-    { "n": 2, "img": null, "text": "Use this source as a chapter picker for older students who need more background than a primary-source excerpt can provide. The book is licensed CC BY-NC-SA 4.0." }
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax U.S. History is a survey textbook covering early America, colonization, revolution, expansion, slavery, civil war, industrialization, reform, war, civil rights, and modern political and social change."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source as a chapter picker for older students who need more background than a primary-source excerpt can provide. The book is licensed CC BY-NC-SA 4.0."
+    }
   ],
-  "stats": { "pages": 2, "words": 54 }
+  "stats": {
+    "pages": 2,
+    "words": 54
+  }
 }

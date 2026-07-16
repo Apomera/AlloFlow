@@ -29,7 +29,6 @@
     "name": "NOAA Marine Debris Program",
     "url": "https://oceanservice.noaa.gov/facts/marinedebris.html"
   },
-  "cover": null,
   "audio": null,
   "pages": [
     {
@@ -51,5 +50,6 @@
   "stats": {
     "pages": 3,
     "words": 62
-  }
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Beach_strewn_with_plastic_debris_%288080500982%29.jpg/960px-Beach_strewn_with_plastic_debris_%288080500982%29.jpg"
 }

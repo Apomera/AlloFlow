@@ -29,7 +29,6 @@
     "name": "OpenStax",
     "url": "https://openstax.org/details/books/writing-guide"
   },
-  "cover": null,
   "audio": null,
   "pages": [
     {
@@ -51,5 +50,6 @@
   "stats": {
     "pages": 3,
     "words": 55
-  }
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/The_Swan_Pen.png/960px-The_Swan_Pen.png"
 }

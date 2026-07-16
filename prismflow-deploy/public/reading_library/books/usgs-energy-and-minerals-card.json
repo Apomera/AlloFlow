@@ -29,7 +29,6 @@
     "name": "U.S. Geological Survey",
     "url": "https://www.usgs.gov/mission-areas/energy-and-minerals"
   },
-  "cover": null,
   "audio": null,
   "pages": [
     {
@@ -51,5 +50,6 @@
   "stats": {
     "pages": 3,
     "words": 57
-  }
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/TWIN-BUTTES_MINE._AERIAL_OF_OPEN_PIT_MINE%2C_1%2C000_FEET_DEEP._%28FROM_THE_DOCUMERICA-1_EXHIBITION._FOR_OTHER_IMAGES_IN..._-_NARA_-_553049.jpg/960px-TWIN-BUTTES_MINE._AERIAL_OF_OPEN_PIT_MINE%2C_1%2C000_FEET_DEEP._%28FROM_THE_DOCUMERICA-1_EXHIBITION._FOR_OTHER_IMAGES_IN..._-_NARA_-_553049.jpg"
 }

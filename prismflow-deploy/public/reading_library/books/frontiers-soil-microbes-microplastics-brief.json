@@ -1,1 +1,56 @@
-{"schema":"allo-reading-book@1","slug":"frontiers-soil-microbes-microplastics-brief","title":"An Invisible Fight in the Soil: Tiny Plastic vs. Soil Microbes!","description":"A Frontiers for Young Minds article seed about soil microbes, microplastics, pollution, and ecosystem health.","language":"English","langCode":"en","isRtl":false,"level":"5","orientation":"portrait","sourceId":"frontiers","contentType":"science-article","subjects":["Biodiversity","Microbiology","Pollution","Ecosystems"],"authors":["Alma L. Reyes","Michelle E. Afkhami"],"illustrators":[],"originalAuthors":[],"publisher":"Frontiers for Young Minds","license":"CC BY 4.0","licenseUrl":"https://creativecommons.org/licenses/by/4.0/","source":{"id":"frontiers","name":"Frontiers for Young Minds","url":"https://kids.frontiersin.org/articles/10.3389/frym.2026.1666676"},"cover":null,"audio":null,"pages":[{"n":1,"img":null,"text":"This article introduces soil microbes as tiny living systems that help plants grow, recycle nutrients, and support healthier ecosystems. The problem is that microplastics can enter soil and disrupt the conditions microbes need to do their work."},{"n":2,"img":null,"text":"Students can use this reading to connect pollution, microbiomes, and systems thinking. A small plastic fragment is not just litter; it can change soil structure, water movement, and which microbes survive."},{"n":3,"img":null,"text":"The full Frontiers article is useful for discussions about environmental choices, evidence, and scale. It includes glossary support and is published under CC BY 4.0."}],"stats":{"pages":3,"words":93}}
+{
+  "schema": "allo-reading-book@1",
+  "slug": "frontiers-soil-microbes-microplastics-brief",
+  "title": "An Invisible Fight in the Soil: Tiny Plastic vs. Soil Microbes!",
+  "description": "A Frontiers for Young Minds article seed about soil microbes, microplastics, pollution, and ecosystem health.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "frontiers",
+  "contentType": "science-article",
+  "subjects": [
+    "Biodiversity",
+    "Microbiology",
+    "Pollution",
+    "Ecosystems"
+  ],
+  "authors": [
+    "Alma L. Reyes",
+    "Michelle E. Afkhami"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Frontiers for Young Minds",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "frontiers",
+    "name": "Frontiers for Young Minds",
+    "url": "https://kids.frontiersin.org/articles/10.3389/frym.2026.1666676"
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Earthworm_in_a_No-till_Field_near_Brookings%2C_SD_%2814366341997%29.jpg/960px-Earthworm_in_a_No-till_Field_near_Brookings%2C_SD_%2814366341997%29.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This article introduces soil microbes as tiny living systems that help plants grow, recycle nutrients, and support healthier ecosystems. The problem is that microplastics can enter soil and disrupt the conditions microbes need to do their work."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Students can use this reading to connect pollution, microbiomes, and systems thinking. A small plastic fragment is not just litter; it can change soil structure, water movement, and which microbes survive."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "The full Frontiers article is useful for discussions about environmental choices, evidence, and scale. It includes glossary support and is published under CC BY 4.0."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 93
+  }
+}

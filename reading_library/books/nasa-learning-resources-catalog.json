@@ -10,8 +10,15 @@
   "orientation": "portrait",
   "sourceId": "nasa",
   "contentType": "source-card",
-  "subjects": ["Space science", "Earth science", "Engineering", "Aeronautics"],
-  "authors": ["NASA"],
+  "subjects": [
+    "Space science",
+    "Earth science",
+    "Engineering",
+    "Aeronautics"
+  ],
+  "authors": [
+    "NASA"
+  ],
   "illustrators": [],
   "originalAuthors": [],
   "publisher": "NASA",
@@ -22,7 +29,7 @@
     "name": "NASA Learning Resources",
     "url": "https://www.nasa.gov/learning-resources/"
   },
-  "cover": null,
+  "cover": "https://images-assets.nasa.gov/image/jsc2018e078340/jsc2018e078340~medium.jpg",
   "audio": null,
   "pages": [
     {
@@ -41,5 +48,8 @@
       "text": "Rights note: NASA says its content is generally not subject to US copyright and may be used for educational or informational purposes. NASA logos, insignia, third-party materials, and identifiable people still need item-level care."
     }
   ],
-  "stats": { "pages": 3, "words": 96 }
+  "stats": {
+    "pages": 3,
+    "words": 96
+  }
 }

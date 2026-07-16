@@ -10,20 +10,46 @@
   "orientation": "portrait",
   "sourceId": "nasa",
   "contentType": "source-card",
-  "subjects": ["Climate", "Earth science", "Satellites", "Data literacy"],
-  "authors": ["NASA Science"],
+  "subjects": [
+    "Climate",
+    "Earth science",
+    "Satellites",
+    "Data literacy"
+  ],
+  "authors": [
+    "NASA Science"
+  ],
   "illustrators": [],
   "originalAuthors": [],
   "publisher": "NASA",
   "license": "Public Domain / NASA Media Usage Guidelines",
   "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
-  "source": { "id": "nasa", "name": "NASA Science", "url": "https://science.nasa.gov/climate-change/" },
-  "cover": null,
+  "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/climate-change/"
+  },
+  "cover": "https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001386/GSFC_20171208_Archive_e001386~medium.jpg",
   "audio": null,
   "pages": [
-    { "n": 1, "img": null, "text": "NASA studies climate change from space by collecting long-term observations of Earth. Satellites help scientists see patterns in temperature, ice, oceans, land cover, atmosphere, and life." },
-    { "n": 2, "img": null, "text": "This source card is useful for older students who need evidence, not just definitions. The full NASA page links to causes, effects, indicators, climate data tools, images, and interactives." },
-    { "n": 3, "img": null, "text": "Rights note: NASA content is generally not subject to U.S. copyright, but NASA names, logos, identifiers, and some third-party material have restrictions. Always keep NASA attribution." }
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA studies climate change from space by collecting long-term observations of Earth. Satellites help scientists see patterns in temperature, ice, oceans, land cover, atmosphere, and life."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This source card is useful for older students who need evidence, not just definitions. The full NASA page links to causes, effects, indicators, climate data tools, images, and interactives."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Rights note: NASA content is generally not subject to U.S. copyright, but NASA names, logos, identifiers, and some third-party material have restrictions. Always keep NASA attribution."
+    }
   ],
-  "stats": { "pages": 3, "words": 81 }
+  "stats": {
+    "pages": 3,
+    "words": 81
+  }
 }
