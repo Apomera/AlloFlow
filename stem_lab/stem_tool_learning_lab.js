@@ -6599,7 +6599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             var val = e[p.id];
             if (!val) return null;
             return hh('div', { key: 'd-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + p.color } },
-              hh('div', { style: { fontSize: 11, fontWeight: 800, color: p.color, marginBottom: 6 } }, p.icon + ' ' + p.label),
+              hh('h3', { style: { margin: '0 0 6px', fontSize: 11, fontWeight: 800, color: p.color } }, p.icon + ' ' + p.label),
               hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, val)
             );
           }).filter(Boolean)
@@ -6609,7 +6609,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           tkBtn('← Back to all', function() { setView('list'); setViewing(null); }, 'ghost'),
           hh('div', { style: { display: 'flex', gap: 6 } },
             tkBtn('✏ Edit', function() { setEditingId(e.id); setForm({ went_well: e.went_well || '', stuck: e.stuck || '', will_try: e.will_try || '', wins: e.wins || '', proud: e.proud || '', overall: e.overall || 7 }); setView('new'); }, 'secondary'),
-            tkBtn('🗑 Delete', function() { if (confirm('Delete this reflection?')) { remove(e.id); setView('list'); } }, 'bad')
+            tkBtn('🗑 Delete', async function() { if (await askLearningLabConfirmation('This permanently removes the reflection from ' + e.date + '.', { title: 'Delete this reflection?', confirmText: 'Delete reflection' })) { remove(e.id); setView('list'); } }, 'bad', { minHeight: 44 })
           )
         )
       );
@@ -6622,15 +6622,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         // Overall rating slider
         tkCard('#f472b6',
           hh('div', null,
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, 'Overall, how was this week?'),
+            hh('label', { htmlFor: 'learning-lab-reflection-overall', style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, 'Overall, how was this week?'),
             hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
               hh('span', null, 'Rough'),
               hh('strong', { style: { fontSize: 18, color: '#f472b6', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.overall + '/10'),
               hh('span', null, 'Great')
             ),
-            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.overall,
+            hh('input', { id: 'learning-lab-reflection-overall', type: 'range', min: 1, max: 10, step: 1, value: form.overall, 'aria-valuetext': form.overall + ' out of 10',
               onChange: function(e2) { setForm(Object.assign({}, form, { overall: parseInt(e2.target.value, 10) })); },
-              style: { width: '100%', accentColor: '#f472b6' }
+              style: { width: '100%', minHeight: 44, accentColor: '#f472b6' }
             })
           )
         ),
@@ -6639,9 +6639,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 14 } },
           PROMPTS.map(function(p) {
             return hh('div', { key: 'p-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + p.color } },
-              hh('div', { style: { fontSize: 12, fontWeight: 800, color: p.color, marginBottom: 2 } }, p.icon + ' ' + p.label),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, p.help),
-              tkTextarea(form[p.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[p.id] = v; return o; })())); }, '', 3)
+              hh('label', { htmlFor: 'learning-lab-reflection-' + p.id, style: { display: 'block', fontSize: 12, fontWeight: 800, color: p.color, marginBottom: 2 } }, p.icon + ' ' + p.label),
+              hh('div', { id: 'learning-lab-reflection-help-' + p.id, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, p.help),
+              hh('textarea', { id: 'learning-lab-reflection-' + p.id, 'aria-describedby': 'learning-lab-reflection-help-' + p.id, value: form[p.id], rows: 3, onChange: function(e2) { var patch = {}; patch[p.id] = e2.target.value; setForm(Object.assign({}, form, patch)); }, style: { width: '100%', minHeight: 88, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' } })
             );
           })
         ),
@@ -6664,7 +6664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           { label: 'Avg week rating', value: entries.length > 0 ? (entries.reduce(function(s, e) { return s + (e.overall || 0); }, 0) / entries.length).toFixed(1) : '—', color: '#a855f7', icon: '⭐' }
         ].map(function(s, i) {
           return hh('div', { key: 'rs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
-            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
+            hh('div', { 'aria-hidden': 'true', style: { fontSize: 14, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 18, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
             hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
           );
@@ -6677,7 +6677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           hh('span', { style: { color: '#22c55e', fontWeight: 800, marginRight: 8 } }, '✓'),
           hh('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12 } }, 'You reflected this week. ', hh('em', { style: { color: '#22c55e' } }, 'Nice.'))
         ),
-        tkBtn('View', function() { setViewing(thisWeekEntry.id); setView('detail'); }, 'secondary', { padding: '4px 10px', fontSize: 10 })
+        tkBtn('View this week\'s reflection', function() { setViewing(thisWeekEntry.id); setView('detail'); }, 'secondary', { minHeight: 44, padding: '8px 12px', fontSize: 10 })
       ) : hh('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(244,114,182,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(244,114,182,0.40)', marginBottom: 12, textAlign: 'center' } },
         hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'No reflection yet for ', hh('strong', null, thisWeek), '. 5 prompts. 5 minutes.'),
         tkBtn('+ Start this week\'s reflection', function() { setForm({ went_well: '', stuck: '', will_try: '', wins: '', proud: '', overall: 7 }); setEditingId(null); setView('new'); }, 'primary')
@@ -6689,7 +6689,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
           entries.map(function(e) {
             var preview = (e.went_well || e.stuck || e.proud || '').substring(0, 60);
-            return hh('button', { key: 'h-' + e.id,
+            return hh('button', { key: 'h-' + e.id, type: 'button',
               onClick: function() { setViewing(e.id); setView('detail'); },
               style: { display: 'block', textAlign: 'left', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(244,114,182,0.20)', borderLeft: '3px solid #f472b6', cursor: 'pointer' }
             },
