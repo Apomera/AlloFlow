@@ -363,6 +363,7 @@ const PLAN_CONTRACTS = Object.freeze({
   generate_sentence_frames: { requires: ['source'], produces: ['sentence-frames'] },
   generate_analysis: { requires: ['source'], produces: ['analysis'] },
   generate_outline: { requires: ['source'], produces: ['outline'] },
+  find_reading: { params: ['topic', 'grade', 'language', 'source', 'format', 'raw'] },
   launch_flashcards: { requires: ['glossary'] },
   export_pack: {
     demoSafe: false,
@@ -370,6 +371,7 @@ const PLAN_CONTRACTS = Object.freeze({
     interaction: 'external',
     reason: 'Starts a file download outside the recorded workflow.'
   },
+  set_font_size: { params: ['size'] },
   translate_document: {
     demoSafe: false,
     requires: ['pipeline'],
@@ -396,7 +398,14 @@ const PLAN_CONTRACTS = Object.freeze({
 
 const DEMO_BLOCKED_COMMANDS = new Set([
   'open_notebook',
+  'open_history',
   'open_class_session',
+  'open_live_session_center',
+  'open_live_poll',
+  'open_quick_check',
+  'open_pictionary_host',
+  'open_group_tools',
+  'open_student_signal',
   'open_class_analytics',
   'open_ai_settings',
   'open_roster',
@@ -437,6 +446,22 @@ function _planCapabilities(ctx) {
   if (ctx && ctx.pipelineOpen) out.add('pipeline');
   return out;
 }
+
+function _contractPlanParams(p, contract) {
+  const clean = _cleanPlanParams(p);
+  const allowed = contract && Array.isArray(contract.params) ? contract.params : [];
+  if (!allowed.length) return {};
+  const out = {};
+  for (const k of allowed) {
+    if (Object.prototype.hasOwnProperty.call(clean, k)) out[k] = clean[k];
+  }
+  return out;
+}
+
+function sanitizeCommandParams(commandOrId, params) {
+  return _contractPlanParams(params, getCommandContract(commandOrId));
+}
+
 
 // Pure, non-mutating plan preflight. It simulates declared produces/requires
 // contracts while still checking today's live command guards. Both AlloBot and
@@ -486,7 +511,7 @@ function validatePlan(ctx, rawSteps, opts = {}) {
       index: i,
       commandId: step.commandId || '',
       label: (cmd && cmd.label) || step.commandId || 'Unknown command',
-      params: _cleanPlanParams(step.params),
+      params: _contractPlanParams(step.params, contract),
       why: typeof step.why === 'string' ? step.why.slice(0, 120) : '',
       status,
       detail,
@@ -508,11 +533,19 @@ function buildAlloCommands(ctx, opts = {}) {
     // ── Navigate ──
     { id: 'open_educator_hub', opensPanel: 'educatorHub', icon: '🏫', roles: 'teacher', label: t('cmd.open_educator_hub', 'Open the Educator Hub'), aliases: ['educator hub', 'teacher hub', 'hub', 'document pipeline', 'remediation pipeline', 'make a document accessible', 'fix a pdf'], hint: t('cmd.open_educator_hub_hint', 'Lesson tools + the Document Pipeline card'), run: (c) => { c.setShowEducatorHub(true); return t('cmd.open_educator_hub_done', 'Educator Hub opened — the Document Pipeline card is near the top.'); } },
     { id: 'open_learning_hub', opensPanel: 'learningHub', icon: '🎓', roles: 'all', label: t('cmd.open_learning_hub', 'Open the Learning Hub'), aliases: ['learning hub', 'student hub', 'games'], hint: t('cmd.open_learning_hub_hint', 'Games, practice, and study tools'), run: (c) => { c.setShowLearningHub(true); return t('cmd.open_learning_hub_done', 'Learning Hub opened.'); } },
+    { id: 'open_source_input', icon: '📝', roles: 'all', label: t('cmd.open_source_input', 'Open source input'), aliases: ['source input', 'source material', 'input panel', 'paste text', 'write text', 'add source', 'new source'], hint: t('cmd.open_source_input_hint', 'Paste, write, search, or generate source material'), run: (c) => { c.openSourceInput(); return t('cmd.open_source_input_done', 'Source input opened.'); } },
+    { id: 'open_history', icon: '🕘', roles: 'all', label: t('cmd.open_history', 'Open history'), aliases: ['history', 'my history', 'saved work', 'previous work', 'recent lessons', 'projects'], hint: t('cmd.open_history_hint', 'Browse saved lessons and projects'), run: (c) => { c.openHistory(); return t('cmd.open_history_done', 'History opened.'); } },
     { id: 'open_document_builder', opensPanel: 'exportPreview', icon: '📝', roles: 'teacher', label: t('cmd.open_document_builder', 'Open the Document Builder'), aliases: ['document builder', 'builder', 'export preview', 'differentiate'], hint: t('cmd.open_document_builder_hint', 'Build and export differentiated documents'), run: (c) => { c.openExportPreview(); return t('cmd.open_document_builder_done', 'Document Builder opened.'); } },
     { id: 'open_wizard', icon: '🪄', roles: 'teacher', label: t('cmd.open_wizard', 'Start the lesson wizard'), aliases: ['wizard', 'new lesson', 'create lesson', 'guided setup'], hint: t('cmd.open_wizard_hint', 'Step-by-step lesson creation'), run: (c) => { c.setShowWizard(true); return t('cmd.open_wizard_done', 'Lesson wizard started.'); } },
     { id: 'open_notebook', opensPanel: 'notebook', icon: '📓', roles: 'all', label: t('cmd.open_notebook', 'Open my notebook'), aliases: ['notebook', 'notes'], hint: t('cmd.open_notebook_hint', 'Saved notes and entries'), run: (c) => { c.setShowNotebook(true); return t('cmd.open_notebook_done', 'Notebook opened.'); } },
     { id: 'open_translate', icon: '🌐', roles: 'teacher', label: t('cmd.open_translate', 'Open translation'), aliases: ['translate', 'translation', 'language', 'translate to', 'translate into'], hint: t('cmd.open_translate_hint', 'Translate the current content'), run: (c) => { c.openTranslateModal(); return t('cmd.open_translate_done', 'Translation dialog opened.'); } },
     { id: 'open_class_session', opensPanel: 'sessionModal', icon: '👥', roles: 'teacher', label: t('cmd.open_class_session', 'Open class session'), aliases: ['class session', 'session', 'live class', 'class code'], hint: t('cmd.open_class_session_hint', 'Start or join a live class session'), run: (c) => { c.setShowSessionModal(true); return t('cmd.open_class_session_done', 'Class session dialog opened.'); } },
+    { id: 'open_live_session_center', icon: '🎛️', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openLiveSessionCenter, label: t('cmd.open_live_session_center', 'Open Live Session Center'), aliases: ['live session center', 'live session', 'session center', 'classroom controls', 'live dock'], hint: t('cmd.open_live_session_center_hint', 'Polls, groups, Pictionary, and session controls'), run: (c) => { c.openLiveSessionCenter(); return t('cmd.open_live_session_center_done', 'Live Session Center opened.'); } },
+    { id: 'open_live_poll', icon: '📊', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openLivePoll, label: t('cmd.open_live_poll', 'Start a live poll'), aliases: ['live poll', 'poll the class', 'class poll', 'ask a poll', 'student poll'], hint: t('cmd.open_live_poll_hint', 'Compose a live poll for the active session'), run: (c) => { c.openLivePoll(); return t('cmd.open_live_poll_done', 'Live poll composer opened. Review it, then broadcast from there.'); } },
+    { id: 'open_quick_check', icon: '⚡', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openQuickCheck, label: t('cmd.open_quick_check', 'Run a quick check'), aliases: ['quick check', 'check understanding', 'confused ready', 'how is this landing', 'ready check'], hint: t('cmd.open_quick_check_hint', 'Prepare a 1-3 confused-to-ready check-in'), run: (c) => { c.openQuickCheck(); return t('cmd.open_quick_check_done', 'Quick Check opened. Review it, then broadcast from there.'); } },
+    { id: 'open_pictionary_host', icon: '🎨', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openPictionaryHost, label: t('cmd.open_pictionary_host', 'Start Concept Pictionary'), aliases: ['concept pictionary', 'pictionary', 'drawing game', 'draw a concept', 'class drawing game'], hint: t('cmd.open_pictionary_host_hint', 'Open the teacher host for Concept Pictionary'), run: (c) => { c.openPictionaryHost(); return t('cmd.open_pictionary_host_done', 'Concept Pictionary opened. Choose a concept and start the round from there.'); } },
+    { id: 'open_group_tools', icon: '👥', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openGroupTools, label: t('cmd.open_group_tools', 'Open group tools'), aliases: ['group tools', 'groups', 'manage groups', 'student groups', 'make groups'], hint: t('cmd.open_group_tools_hint', 'Manage live-session groups'), run: (c) => { c.openGroupTools(); return t('cmd.open_group_tools_done', 'Group tools opened.'); } },
+    { id: 'open_student_signal', icon: '✋', roles: 'all', when: (c) => !!c.activeSessionCode && !c.isTeacherMode && !!c.openStudentSignals, label: t('cmd.open_student_signal', 'Send a teacher signal'), aliases: ['signal teacher', 'help signal', 'quick signal', 'i need help', 'i am confused', 'send signal'], hint: t('cmd.open_student_signal_hint', 'Tell the teacher you need help, more time, or are ready'), run: (c) => { c.openStudentSignals(); return t('cmd.open_student_signal_done', 'Teacher signal panel opened. Pick one option to send.'); } },
     { id: 'open_class_analytics', opensPanel: 'classAnalytics', icon: '📈', roles: 'teacher', label: t('cmd.open_class_analytics', 'Open class analytics'), aliases: ['analytics', 'class data', 'progress data'], hint: t('cmd.open_class_analytics_hint', 'Whole-class progress'), run: (c) => { c.setShowClassAnalytics(true); return t('cmd.open_class_analytics_done', 'Class analytics opened.'); } },
     { id: 'open_export_menu', opensPanel: 'exportMenu', icon: '📤', roles: 'teacher', label: t('cmd.open_export_menu', 'Open the export menu'), aliases: ['export', 'download menu', 'share'], hint: t('cmd.open_export_menu_hint', 'Export the current content'), run: (c) => { c.setShowExportMenu(true); return t('cmd.open_export_menu_done', 'Export menu opened.'); } },
     { id: 'open_ai_settings', icon: '🤖', roles: 'teacher', label: t('cmd.open_ai_settings', 'Open AI settings'), aliases: ['ai settings', 'ai backend', 'api key', 'model settings'], hint: t('cmd.open_ai_settings_hint', 'Configure the AI backend'), run: (c) => { c.setShowAIBackendModal(true); return t('cmd.open_ai_settings_done', 'AI settings opened.'); } },
@@ -544,6 +577,10 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'open_timeline_studio', opensPanel: 'timelineStudio', icon: '🕰️', roles: 'all', label: t('cmd.open_timeline_studio', 'Open Timeline Studio'), aliases: ['timeline studio', 'timeline maker', 'sequence builder', 'chronology', 'history timeline'], hint: t('cmd.open_timeline_studio_hint', 'Build and verify accessible timelines'), run: (c) => { c.openTimelineStudio(); return t('cmd.open_timeline_studio_done', 'Timeline Studio opened.'); } },
     { id: 'open_lingua_practice', opensPanel: 'linguaPractice', icon: 'A/文', roles: 'all', label: t('cmd.open_lingua_practice', 'Open Lingua Practice'), aliases: ['lingua practice', 'language practice', 'practice language', 'vocabulary practice', 'multilingual practice'], hint: t('cmd.open_lingua_practice_hint', 'Practice vocabulary and language from the current source'), run: (c) => { c.openLinguaPractice(); return t('cmd.open_lingua_practice_done', 'Lingua Practice opened.'); } },
     { id: 'open_test_prep_hub', opensPanel: 'testPrepHub', icon: '🧭', roles: 'all', label: t('cmd.open_test_prep_hub', 'Open Test Prep Hub'), aliases: ['test prep', 'test prep hub', 'exam prep', 'practice questions', 'study exams'], hint: t('cmd.open_test_prep_hub_hint', 'Open free practice sets and study tools'), run: (c) => { c.openTestPrepHub(); return t('cmd.open_test_prep_hub_done', 'Test Prep Hub opened.'); } },
+    { id: 'open_research_hub', opensPanel: 'researchHub', icon: '🔍', roles: 'all', label: t('cmd.open_research_hub', 'Open Research Hub'), aliases: ['research hub', 'research', 'credible sources', 'source finder', 'find sources', 'research tool'], hint: t('cmd.open_research_hub_hint', 'Find and organize credible research sources'), run: (c) => { c.openResearchHub(); return t('cmd.open_research_hub_done', 'Research Hub opened.'); } },
+    { id: 'open_lit_lab', opensPanel: 'litLab', icon: '📚', roles: 'all', label: t('cmd.open_lit_lab', 'Open Lit Lab'), aliases: ['lit lab', 'literature lab', 'reading lab', 'story lab', 'literature tools'], hint: t('cmd.open_lit_lab_hint', 'Explore literature and reading activities'), run: (c) => { c.openLitLab(); return t('cmd.open_lit_lab_done', 'Lit Lab opened.'); } },
+    { id: 'open_mind_map', opensPanel: 'mindMap', icon: '🧭', roles: 'all', label: t('cmd.open_mind_map', 'Open Throughline'), aliases: ['throughline', 'mind map', 'unit map', 'lesson map', 'concept map', 'visual map'], hint: t('cmd.open_mind_map_hint', 'Map concepts, lessons, and unit connections'), run: (c) => { c.openMindMap(); return t('cmd.open_mind_map_done', 'Throughline opened.'); } },
+    { id: 'open_poet_tree', opensPanel: 'poetTree', icon: '🌳', roles: 'all', label: t('cmd.open_poet_tree', 'Open Poet Tree'), aliases: ['poet tree', 'poetry tree', 'poem builder', 'poetry lab', 'write poetry'], hint: t('cmd.open_poet_tree_hint', 'Build poems with guided branches'), run: (c) => { c.openPoetTree(); return t('cmd.open_poet_tree_done', 'Poet Tree opened.'); } },
     { id: 'find_reading', opensPanel: 'readingLibrary', icon: '📚', roles: 'all', label: t('cmd.find_reading', 'Find the right book'), aliases: ['find a book', 'find books about', 'recommend a book', 'suggest a book', 'book about', 'books about', 'reading about', 'learn about', 'science article about', 'primary source about'], hint: t('cmd.find_reading_hint', 'Ask by topic, grade, language, source, or type'), run: (c, params) => runFindReadingCommand(c, params || {}, t) },
 
     // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
@@ -637,6 +674,13 @@ function buildAlloCommands(ctx, opts = {}) {
 // command id with a confidence — below threshold we DON'T act (the
 // caller falls through to normal chat, or voice says it didn't catch
 // a command). Returns {handled, narration, commandId, via} or null.
+function _throwIfCommandPlanningAborted(signal) {
+  if (!signal || !signal.aborted) return;
+  const error = new Error('Command planning cancelled.');
+  error.name = 'AbortError';
+  throw error;
+}
+
 async function routeUtterance(ctx, rawText, opts = {}) {
   const text = String(rawText || '').trim();
   if (!text || text.length > 200) return null;
@@ -671,13 +715,14 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   // language param grammar (create_lesson / set_font_size / translate_document / generate_simplified)
   // on both the bot router and the voice loop. (Audit wmb2t8o20, fix 2026-06-15.)
   const _runCmd = (cmd, via, params) => {
+    const safeParams = sanitizeCommandParams(cmd, params || {});
     // preview mode (bot chat): report the match WITHOUT running it, so the chat can confirm first.
-    if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: params || {}, via, destructive: !!cmd.destructive };
+    if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: safeParams, via, destructive: !!cmd.destructive };
     if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t('router.needs_confirm', 'That action needs confirmation — use Ctrl+K to run it.'), commandId: cmd.id, via };
     // Panel-stacking fix (shared with the palette runCmd): close other large surfaces first.
     if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === 'function') { try { ctx.closeOtherPanels(cmd.opensPanel); } catch (_) {} }
     let msg = null;
-    try { msg = cmd.run(ctx, params || {}); } catch (e) { return { handled: true, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via }; }
+    try { msg = cmd.run(ctx, safeParams); } catch (e) { return { handled: true, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via }; }
     return { handled: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via };
   };
   for (const g of _grammars) {
@@ -697,15 +742,21 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   // input (questions about content, long sentences with no verbs we know).
   if (text.split(/\s+/).length > 14) return null;
   try {
-    const menu = commands.map((c) => c.id + ': ' + c.label + (c.aliases && c.aliases.length ? (' (' + c.aliases.slice(0, 3).join(', ') + ')') : '')).join('\n');
-    const out = await ctx.callGemini('A user typed a request to an education app\'s assistant. If it clearly maps to ONE of these app commands, return it; otherwise commandId must be null. Commands:\n' + menu + '\n\nUser: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"commandId": string | null, "params": object, "confidence": number between 0 and 1}. params carries values the user stated (e.g. {"topic": "photosynthesis", "grade": "5"} or {"size": "20"} or {"language": "Vietnamese"}) — empty object if none. Use null commandId unless you are confident they want the APP ACTION (not a content question).');
+    _throwIfCommandPlanningAborted(opts.signal);
+    const menu = commands.map((c) => {
+      const contract = getCommandContract(c);
+      const notes = contract.params.length ? (' [params ' + contract.params.join(', ') + ']') : '';
+      return c.id + ': ' + c.label + (c.aliases && c.aliases.length ? (' (' + c.aliases.slice(0, 3).join(', ') + ')') : '') + notes;
+    }).join('\n');
+    const out = await ctx.callGemini('A user typed a request to an education app\'s assistant. If it clearly maps to ONE of these app commands, return it; otherwise commandId must be null. Commands:\n' + menu + '\n\nUser: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"commandId": string | null, "params": object, "confidence": number between 0 and 1}. params carries values the user stated (e.g. {"topic": "photosynthesis", "grade": "5"} or {"size": "20"} or {"language": "Vietnamese"}) — empty object if none. Use null commandId unless you are confident they want the APP ACTION (not a content question).', false, false, null, null, opts.signal || null);
+    _throwIfCommandPlanningAborted(opts.signal);
     const m = String(out || '').match(/\{[\s\S]*\}/);
     const j = JSON.parse(m ? m[0] : String(out));
     if (j && j.commandId && typeof j.confidence === 'number' && j.confidence >= 0.7) {
       const cmd = commands.find((c) => c.id === j.commandId);
       if (cmd) return _runCmd(cmd, 'ai', j.params || {});
     }
-  } catch (_) {}
+  } catch (error) { if (error && error.name === 'AbortError') throw error; }
   return null;
 }
 
@@ -717,6 +768,7 @@ function runCommandById(ctx, id, params, opts = {}) {
   const cmd = commands.find((c) => c.id === id);
   if (!cmd) return null;
   if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t('router.needs_confirm', 'That action needs confirmation — use Ctrl+K to run it.'), commandId: cmd.id, via: 'confirm' };
+  const safeParams = sanitizeCommandParams(cmd, params || {});
   if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === 'function') { try { ctx.closeOtherPanels(cmd.opensPanel); } catch (_) {} }
   // Phase A (agentic plans): with awaitCompletion, a command that exposes
   // runAsync is executed through it and we resolve when the underlying
@@ -728,7 +780,7 @@ function runCommandById(ctx, id, params, opts = {}) {
   if (opts.awaitCompletion && typeof cmd.runAsync === 'function') {
     const timeoutMs = opts.timeoutMs || 180000;
     let p;
-    try { p = Promise.resolve(cmd.runAsync(ctx, params || {})); }
+    try { p = Promise.resolve(cmd.runAsync(ctx, safeParams)); }
     catch (e) { return Promise.resolve({ handled: true, ok: false, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via: opts.via || 'plan' }); }
     let timerId = null;
     const timer = new Promise((res) => { timerId = setTimeout(() => res({ __alloTimeout: true }), timeoutMs); });
@@ -738,7 +790,7 @@ function runCommandById(ctx, id, params, opts = {}) {
       : { handled: true, ok: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via: opts.via || 'plan' }; })
       .catch((e) => { clearTimer(); return { handled: true, ok: false, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via: opts.via || 'plan' }; });
   }
-  try { const msg = cmd.run(ctx, params || {}); return { handled: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via: opts.via || 'confirm' }; }
+  try { const msg = cmd.run(ctx, safeParams); return { handled: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via: opts.via || 'confirm' }; }
   catch (e) { return { handled: true, ok: false, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via: opts.via || 'confirm' }; }
 }
 
@@ -805,7 +857,9 @@ async function planUtterance(ctx, rawText, opts = {}) {
     return c.id + ': ' + c.label + (notes.length ? ' [' + notes.join('; ') + ']' : '');
   }).join('\n');
   try {
-    const out = await ctx.callGemini('A teacher asked an education app\'s assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n' + menu + '\n\nTask: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. Use 2 to 6 steps. A command with requirements may appear only when the current app state already satisfies them or an EARLIER command explicitly says it produces them. Navigation and guided wizards do not produce content unless their contract says so. A command marked [must be final] cannot have later steps. params carries only values the user stated, using the named params in the menu; use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).');
+    _throwIfCommandPlanningAborted(opts.signal);
+    const out = await ctx.callGemini('A teacher asked an education app\'s assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n' + menu + '\n\nTask: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. Use 2 to 6 steps. A command with requirements may appear only when the current app state already satisfies them or an EARLIER command explicitly says it produces them. Navigation and guided wizards do not produce content unless their contract says so. A command marked [must be final] cannot have later steps. params carries only values the user stated, using the named params in the menu; use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).', false, false, null, null, opts.signal || null);
+    _throwIfCommandPlanningAborted(opts.signal);
     const m = String(out || '').match(/\{[\s\S]*\}/);
     const j = JSON.parse(m ? m[0] : String(out));
     if (!j || !Array.isArray(j.steps) || typeof j.confidence !== 'number' || j.confidence < 0.7) return null;
@@ -822,8 +876,8 @@ async function planUtterance(ctx, rawText, opts = {}) {
       demoSafeOnly: !!opts.demoSafeOnly,
       allowInteractive: !!opts.allowInteractive
     });
-    return report.ok ? cleanSteps : null;
-  } catch (_) { return null; }
+    return report.ok ? report.items.map((item) => ({ commandId: item.commandId, params: item.params, why: item.why })) : null;
+  } catch (error) { if (error && error.name === 'AbortError') throw error; return null; }
 }
 
 // runPlan: sequential executor. Fresh ctx per step (state mirrors like
@@ -870,9 +924,20 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
 // (stop phrase), page hide, or three consecutive errors. Never restarts
 // itself across sessions — opt-in only, every state change narrated.
 function createVoiceLoop(getCtx) {
-  let rec = null, active = false, errStreak = 0;
+  let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null;
+  const cancelRoute = () => {
+    routeSerial++;
+    const controller = routeController;
+    routeController = null;
+    if (controller) { try { controller.abort(); } catch (_) {} }
+  };
   const announce = (msg) => { const c = getCtx(); try { if (window.alloAnnounce) window.alloAnnounce(msg); } catch (_) {} try { if (c && c.addToast) c.addToast(msg, 'info'); } catch (_) {} };
   const stop = (reason) => {
+    cancelRoute();
+    if (pageHideHandler) {
+      try { window.removeEventListener('pagehide', pageHideHandler); } catch (_) {}
+      pageHideHandler = null;
+    }
     if (!active) return;
     active = false;
     try { if (rec) { rec.onend = null; rec.stop(); } } catch (_) {}
@@ -899,9 +964,22 @@ function createVoiceLoop(getCtx) {
         if (!text) return;
         const cc = getCtx();
         if (/^(stop listening|stop voice|voice off)\b/i.test(text)) { stop('Voice control off — the microphone is released.'); return; }
-        const r = await routeUtterance(cc, text, { allowAi: true });
-        if (r && r.handled) announce(r.narration);
-        else announce('Didn’t catch a command in “' + text.slice(0, 60) + '” — try “bigger text” or “open the educator hub”.');
+        if (routeController) { try { routeController.abort(); } catch (_) {} }
+        const currentRouteSerial = ++routeSerial;
+        const controller = typeof AbortController === 'function' ? new AbortController() : null;
+        routeController = controller;
+        const signal = controller ? controller.signal : null;
+        try {
+          const r = await routeUtterance(cc, text, { allowAi: true, signal });
+          if (!active || currentRouteSerial !== routeSerial || (signal && signal.aborted)) return;
+          if (r && r.handled) announce(r.narration);
+          else announce('Didn\u2019t catch a command in \u201c' + text.slice(0, 60) + '\u201d \u2014 try \u201cbigger text\u201d or \u201copen the educator hub\u201d.');
+        } catch (error) {
+          if (!active || currentRouteSerial !== routeSerial || (error && error.name === 'AbortError')) return;
+          announce('Didn\u2019t catch a command in \u201c' + text.slice(0, 60) + '\u201d \u2014 try \u201cbigger text\u201d or \u201copen the educator hub\u201d.');
+        } finally {
+          if (currentRouteSerial === routeSerial) routeController = null;
+        }
       };
       rec.onerror = (ev) => {
         errStreak++;
@@ -917,7 +995,8 @@ function createVoiceLoop(getCtx) {
       active = true;
       errStreak = 0;
       try { if (c && c.setVoiceActive) c.setVoiceActive(true); } catch (_) {}
-      try { window.addEventListener('pagehide', () => stop(), { once: true }); } catch (_) {}
+      pageHideHandler = () => stop();
+      try { window.addEventListener('pagehide', pageHideHandler, { once: true }); } catch (_) { pageHideHandler = null; }
       return true;
     } catch (e) { announce('Voice control could not start: ' + ((e && e.message) || 'unknown')); return false; }
   };
@@ -956,8 +1035,9 @@ function scoreCommand(cmd, q) {
 // un-mapped/new command still renders correctly. Tests still require every registry
 // command to be explicitly grouped so browse metadata cannot silently drift.
 const CMD_GROUP = {
-  open_educator_hub:'navigate', open_learning_hub:'navigate', open_document_builder:'navigate', open_wizard:'navigate',
+  open_educator_hub:'navigate', open_learning_hub:'navigate', open_source_input:'navigate', open_history:'navigate', open_document_builder:'navigate', open_wizard:'navigate',
   open_notebook:'navigate', open_translate:'navigate', open_class_session:'navigate', open_class_analytics:'navigate',
+  open_live_session_center:'live', open_live_poll:'live', open_quick_check:'live', open_pictionary_host:'live', open_group_tools:'live', open_student_signal:'live',
   open_export_menu:'navigate', open_ai_settings:'navigate', go_dashboard:'navigate', open_roster:'navigate', open_project_settings:'navigate',
   generate_quiz:'create', generate_glossary:'create', generate_simplified:'create', generate_sentence_frames:'create',
   generate_analysis:'create', create_lesson:'create', submit_work:'create',
@@ -972,7 +1052,7 @@ const CMD_GROUP = {
   open_stem_lab:'tools', open_storyforge:'tools', open_allohaven:'tools', open_behavior_lens:'tools', open_report_writer:'tools',
   open_symbol_studio:'tools', open_video_studio:'tools', open_cinematic_studio:'tools', open_allo_studio:'tools',
   open_accessibility_lab:'tools', open_lumen:'tools', open_free_forms:'tools', open_community_catalog:'tools', open_dynamic_assessment:'tools', open_reading_library:'tools',
-  open_open_groove:'tools', open_timeline_studio:'tools', open_lingua_practice:'tools', open_test_prep_hub:'tools', find_reading:'tools',
+  open_open_groove:'tools', open_timeline_studio:'tools', open_lingua_practice:'tools', open_test_prep_hub:'tools', open_research_hub:'tools', open_lit_lab:'tools', open_mind_map:'tools', open_poet_tree:'tools', find_reading:'tools',
   stop_reading:'accessibility', toggle_mute:'accessibility', line_spacing_more:'accessibility', line_spacing_less:'accessibility', open_study_timer:'accessibility',
   cycle_reading_theme:'display', set_ui_language:'display', open_sel_hub:'tools', open_submission_inbox:'navigate', toggle_cloud_sync:'navigate', generate_outline:'create', export_pack:'create',
   launch_flashcards:'create', clear_my_answers:'create', clear_workspace:'create', undo_settings:'create', open_persona_chat:'navigate',
@@ -980,11 +1060,12 @@ const CMD_GROUP = {
 };
 const CMD_CONTEXT = {
   pipeline_score:['pipeline'], pipeline_issues:['pipeline'], pipeline_downloads:['pipeline'], pipeline_verification:['pipeline'], pipeline_tour:['pipeline'], translate_document:['pipeline'],
-  open_document_builder:['educatorHub','content'], open_wizard:['educatorHub'], create_lesson:['educatorHub'], open_translate:['educatorHub','content'],
-  open_class_session:['educatorHub'], open_class_analytics:['educatorHub','behaviorLens'], open_roster:['educatorHub'], open_project_settings:['educatorHub'],
+  open_document_builder:['educatorHub','content'], open_source_input:['content'], open_history:['content'], open_wizard:['educatorHub'], create_lesson:['educatorHub'], open_translate:['educatorHub','content'],
+  open_class_session:['educatorHub','liveSession'], open_class_analytics:['educatorHub','behaviorLens'],
+  open_live_session_center:['liveSession'], open_live_poll:['liveSession'], open_quick_check:['liveSession'], open_pictionary_host:['liveSession'], open_group_tools:['liveSession'], open_student_signal:['liveSession'], open_roster:['educatorHub'], open_project_settings:['educatorHub'],
   open_notebook:['learningHub'], toggle_socratic:['learningHub'],
   open_video_studio:['educatorHub','videoStudio'], open_cinematic_studio:['educatorHub','videoStudio','cinematicStudio'], open_allo_studio:['educatorHub','alloStudio'],
-  open_open_groove:['learningHub','openGroove'], open_timeline_studio:['learningHub','timelineStudio'], open_lingua_practice:['learningHub','content','linguaPractice'], open_test_prep_hub:['learningHub','testPrepHub'],
+  open_open_groove:['learningHub','openGroove'], open_timeline_studio:['learningHub','timelineStudio'], open_lingua_practice:['learningHub','content','linguaPractice'], open_test_prep_hub:['learningHub','testPrepHub'], open_research_hub:['learningHub','content','researchHub'], open_lit_lab:['learningHub','litLab'], open_mind_map:['learningHub','content','mindMap'], open_poet_tree:['learningHub','poetTree'],
   generate_quiz:['content'], generate_glossary:['content'], generate_simplified:['content','reading'], generate_sentence_frames:['content'], generate_analysis:['content'], open_export_menu:['content'], find_reading:['content','learningHub','reading'],
   read_this_page:['learningHub','symbolStudio','stemLab','content','reading'],
   font_bigger:['reading'], font_smaller:['reading'], toggle_reading_ruler:['reading'], toggle_line_focus:['reading'], toggle_color_overlay:['reading'], zen_off:['reading'],
@@ -994,15 +1075,15 @@ const CMD_CONTEXT = {
   launch_flashcards:['content','learningHub'], clear_my_answers:['content'], clear_workspace:['content'], open_persona_chat:['content'],
   pipeline_fix_again:['pipeline'], pipeline_stop:['pipeline'], pipeline_new_doc:['pipeline'],
 };
-const GROUP_ORDER = ['navigate','create','tools','accessibility','display','pipeline','help','voice'];
-const GROUP_LABEL_FALLBACK = { navigate:'Navigate', create:'Create from this content', tools:'Open a tool', accessibility:'Reading & access', display:'Display & motion', pipeline:'Pipeline results', help:'Help', voice:'Voice' };
+const GROUP_ORDER = ['navigate','live','create','tools','accessibility','display','pipeline','help','voice'];
+const GROUP_LABEL_FALLBACK = { navigate:'Navigate', live:'Live class', create:'Create from this content', tools:'Open a tool', accessibility:'Reading & access', display:'Display & motion', pipeline:'Pipeline results', help:'Help', voice:'Voice' };
 const COMMAND_RECENTS_KEY = 'allo_command_recents_v1';
 const COMMAND_RECENTS_LIMIT = 5;
 // context → ctx signal (string boolean-key, OR a function for derived ones like reading).
-const CTX_FLAG = { pipeline:'pipelineOpen', educatorHub:'educatorHubOpen', learningHub:'learningHubOpen', symbolStudio:'symbolStudioOpen', videoStudio:'videoStudioOpen', alloStudio:'alloStudioOpen', cinematicStudio:'cinematicStudioOpen', stemLab:'stemLabOpen', openGroove:'openGrooveOpen', timelineStudio:'timelineStudioOpen', linguaPractice:'linguaPracticeOpen', testPrepHub:'testPrepHubOpen', behaviorLens:'behaviorLensOpen', content:'contentLoaded', reading:(c)=>!!(c.zenActive||c.focusActive) };
+const CTX_FLAG = { liveSession:'liveSessionActive', pipeline:'pipelineOpen', educatorHub:'educatorHubOpen', learningHub:'learningHubOpen', symbolStudio:'symbolStudioOpen', videoStudio:'videoStudioOpen', alloStudio:'alloStudioOpen', cinematicStudio:'cinematicStudioOpen', stemLab:'stemLabOpen', openGroove:'openGrooveOpen', timelineStudio:'timelineStudioOpen', linguaPractice:'linguaPracticeOpen', testPrepHub:'testPrepHubOpen', researchHub:'researchHubOpen', litLab:'litLabOpen', mindMap:'mindMapOpen', poetTree:'poetTreeOpen', behaviorLens:'behaviorLensOpen', content:'contentLoaded', reading:(c)=>!!(c.zenActive||c.focusActive) };
 // Priority when several contexts are active (tool > pipeline > hub > content > reading).
-const CTX_PRIORITY = ['videoStudio','alloStudio','cinematicStudio','symbolStudio','stemLab','openGroove','timelineStudio','linguaPractice','testPrepHub','behaviorLens','pipeline','educatorHub','learningHub','content','reading'];
-const CONTEXT_LABEL_FALLBACK = { pipeline:'Here — Pipeline results', educatorHub:'Here — Educator Hub', learningHub:'Here — Learning Hub', symbolStudio:'Here — Symbol Studio', videoStudio:'Here — Video Studio', alloStudio:'Here — AlloStudio', cinematicStudio:'Here — Cinematic Studio', stemLab:'Here — STEM Lab', openGroove:'Here — Open Groove Studio', timelineStudio:'Here — Timeline Studio', linguaPractice:'Here — Lingua Practice', testPrepHub:'Here — Test Prep Hub', behaviorLens:'Here — Behavior Lens', content:'Here — this content', reading:'Here — Reading mode' };
+const CTX_PRIORITY = ['liveSession','videoStudio','alloStudio','cinematicStudio','symbolStudio','stemLab','openGroove','timelineStudio','linguaPractice','testPrepHub','researchHub','litLab','mindMap','poetTree','behaviorLens','pipeline','educatorHub','learningHub','content','reading'];
+const CONTEXT_LABEL_FALLBACK = { liveSession:'Here — Live session', pipeline:'Here — Pipeline results', educatorHub:'Here — Educator Hub', learningHub:'Here — Learning Hub', symbolStudio:'Here — Symbol Studio', videoStudio:'Here — Video Studio', alloStudio:'Here — AlloStudio', cinematicStudio:'Here — Cinematic Studio', stemLab:'Here — STEM Lab', openGroove:'Here — Open Groove Studio', timelineStudio:'Here — Timeline Studio', linguaPractice:'Here — Lingua Practice', testPrepHub:'Here — Test Prep Hub', researchHub:'Here — Research Hub', litLab:'Here — Lit Lab', mindMap:'Here — Throughline', poetTree:'Here — Poet Tree', behaviorLens:'Here — Behavior Lens', content:'Here — this content', reading:'Here — Reading mode' };
 function _activeContexts(ctx) {
   if (!ctx) return [];
   return CTX_PRIORITY.filter((k) => { const f = CTX_FLAG[k]; return typeof f === 'function' ? f(ctx) : !!ctx[f]; });

@@ -28199,6 +28199,27 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // and `stop` is polled by runPlan's shouldStop between steps (never
   // mid-command).
   const _planRunRef = useRef({ running: false, stop: false });
+  // AI command interpretation is single-flight. A newer chat send aborts and
+  // supersedes any older route/plan request before it can post stale output.
+  const _botCommandPlanningRef = useRef({ controller: null, serial: 0 });
+  const _cancelBotCommandPlanning = () => {
+    const active = _botCommandPlanningRef.current || {};
+    if (active.controller) {
+      try { active.controller.abort(); } catch (_) {}
+    }
+    _botCommandPlanningRef.current = {
+      controller: null,
+      serial: (Number(active.serial) || 0) + 1
+    };
+  };
+  // Closing AlloBot invalidates any pending interpretation so a late AI
+  // response cannot leave a stale confirmation card for the next open.
+  useEffect(() => {
+    if (!showUDLGuide) _cancelBotCommandPlanning();
+  }, [showUDLGuide]);
+  useEffect(() => () => {
+    _cancelBotCommandPlanning();
+  }, []);
   // Temporary, fixture-only state used by the official Video Studio tutorial.
   // It is restored after recording finalizes or the studio window closes.
   const _officialTutorialSnapshotRef = useRef(null);
@@ -28216,6 +28237,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setShowNotebook, openTranslateModal: handleSetIsTranslateModalOpenToTrue,
       setShowSessionModal, setShowClassAnalytics, setShowExportMenu, setShowAIBackendModal,
       setShowTextSettings, setShowVoiceSettings, setShowReadThisPage,
+      openSourceInput: () => {
+        setShowEducatorHub(false); setShowLearningHub(false); setActiveSidebarTab('create');
+        setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
+      },
+      openHistory: () => { setShowEducatorHub(false); setShowLearningHub(false); setActiveSidebarTab('history'); },
       handleToggleFocusMode, handleToggleReadingRuler, handleToggleIsHelpMode, handleToggleIsBotVisible,
       handleToggleVisualSupports, handleToggleShowSocraticChat,
       toggleLineFocus: () => setIsLineFocusMode(prev => !prev),
@@ -28238,6 +28264,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       timelineStudioOpen: isTimelineStudioOpen,
       linguaPracticeOpen: isLinguaPracticeOpen,
       testPrepHubOpen: isTestPrepHubOpen,
+      researchHubOpen: showResearchHub,
+      litLabOpen: showLitLab,
+      mindMapOpen: showMindMap,
+      poetTreeOpen: showPoetTree,
+      liveSessionActive: !!activeSessionCode,
       stemLabOpen: showStemLab,
       stemLabTool,
       behaviorLensOpen: showBehaviorLens,
@@ -28347,6 +28378,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           timelineStudio: () => setIsTimelineStudioOpen(false),
           linguaPractice: () => setIsLinguaPracticeOpen(false),
           testPrepHub: () => setIsTestPrepHubOpen(false),
+          researchHub: () => setShowResearchHub(false),
+          litLab: () => setShowLitLab(false),
+          mindMap: () => { setShowMindMap(false); setThroughlineSeedUnitId(null); },
+          poetTree: () => setShowPoetTree(false),
           accessibilityLab: () => setIsAccessibilityLabOpen(false),
           communityCatalog: () => setIsCommunityCatalogOpen(false),
           readingLibrary: () => setIsReadingLibraryOpen(false),
@@ -28387,8 +28422,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       openTimelineStudio: () => setIsTimelineStudioOpen(true),
       openLinguaPractice: () => setIsLinguaPracticeOpen(true),
       openTestPrepHub: () => setIsTestPrepHubOpen(true),
+      openResearchHub: () => setShowResearchHub(true),
+      openLitLab: () => setShowLitLab(true),
+      openMindMap: () => { setThroughlineSeedUnitId(null); setShowMindMap(true); },
+      openPoetTree: () => setShowPoetTree(true),
       openAccessibilityLab: () => setIsAccessibilityLabOpen(true),
       openLumen: () => { setStemLabTool('lumen'); setShowStemLab(true); },
+      openFreeForms: () => { setStemLabTool('freeForms'); setShowStemLab(true); },
       openCommunityCatalog: () => setIsCommunityCatalogOpen(true),
       readingLibraryIndex: readingLibraryIndexForBot,
       openReadingBook: (slug) => {
@@ -28557,6 +28597,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const handleSendUDLMessage = async (manualText = null) => {
     const _AC = window.AlloModules && window.AlloModules.AlloCommands;
     const _rawUtter = (manualText != null ? manualText : udlInput) || '';
+    const _previousBotPlanning = _botCommandPlanningRef.current || {};
+    if (_previousBotPlanning.controller) { try { _previousBotPlanning.controller.abort(); } catch (_) {} }
+    const _botPlanningSerial = (Number(_previousBotPlanning.serial) || 0) + 1;
+    _botCommandPlanningRef.current = { controller: null, serial: _botPlanningSerial };
     // (0) Single-flight guard (2026-07-10): while a plan is EXECUTING, the
     // only message honored is a stop request — anything else would race the
     // running steps (a second plan, a conflicting command, a chat reply
@@ -28731,10 +28775,23 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     // (3) Command PREVIEW — a match only PROPOSES a confirm chip; nothing runs
     //     until the user clicks "Do it".
     if (!_awaitingChoice && _rawUtter !== '__allo_do' && _rawUtter !== '__allo_skip') {
+      const _botPlanningController = typeof AbortController === 'function' ? new AbortController() : null;
+      const _botPlanningRequest = { controller: _botPlanningController, serial: _botPlanningSerial };
+      _botCommandPlanningRef.current = _botPlanningRequest;
+      const _botPlanningSignal = _botPlanningController ? _botPlanningController.signal : null;
+      const _isCurrentBotCommandPlanning = () => _botCommandPlanningRef.current === _botPlanningRequest &&
+        !(_botPlanningSignal && _botPlanningSignal.aborted);
+      const _releaseBotCommandPlanning = () => {
+        if (_botCommandPlanningRef.current === _botPlanningRequest) {
+          _botCommandPlanningRef.current = { controller: null, serial: _botPlanningSerial };
+        }
+      };
       try {
         if (_AC && typeof _AC.routeUtterance === 'function' && _rawUtter.trim()) {
-          const _match = await _AC.routeUtterance(_alloCmdCtx(), _rawUtter, { allowAi: true, preview: true });
+          const _match = await _AC.routeUtterance(_alloCmdCtx(), _rawUtter, { allowAi: true, preview: true, signal: _botPlanningSignal });
+          if (!_isCurrentBotCommandPlanning()) return;
           if (_match && _match.preview && _match.commandId) {
+            _releaseBotCommandPlanning();
             _pendingBotCmdRef.current = { commandId: _match.commandId, params: _match.params || {}, label: _match.label, originalText: _rawUtter };
             if (!manualText) setUdlInput('');
             const _label = _match.label || (t('chat_guide.cmd_generic') || 'run a command');
@@ -28750,6 +28807,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           // have EXECUTED the command already and returned {handled:true}; surface
           // that result rather than double-processing the message.
           if (_match && _match.handled && !_match.preview) {
+            _releaseBotCommandPlanning();
             setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, { role: 'model', text: '✅ ' + (_match.narration || 'Done.') }]);
             if (!manualText) setUdlInput('');
             try { if (window.alloAnnounce) window.alloAnnounce(_match.narration); } catch (_) {}
@@ -28766,8 +28824,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               _AC.looksMultiStep(_rawUtter)) {
             const _planCtx = _alloCmdCtx();
             if (_planCtx.isTeacherMode) {
-              const _steps = await _AC.planUtterance(_planCtx, _rawUtter);
+              const _steps = await _AC.planUtterance(_planCtx, _rawUtter, { signal: _botPlanningSignal });
+              if (!_isCurrentBotCommandPlanning()) return;
               if (_steps && _steps.length >= 2) {
+                _releaseBotCommandPlanning();
                 _pendingBotPlanRef.current = { steps: _steps, originalText: _rawUtter };
                 if (!manualText) setUdlInput('');
                 const _planCmds = (typeof _AC.buildAlloCommands === 'function') ? _AC.buildAlloCommands(_planCtx) : [];
@@ -28787,7 +28847,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
             }
           }
         }
-      } catch (_) { /* the router must never break the chat */ }
+      } catch (error) {
+        const _staleBotPlanning = !_isCurrentBotCommandPlanning() || !!(error && error.name === 'AbortError');
+        _releaseBotCommandPlanning();
+        if (_staleBotPlanning) return;
+        /* the router must never break the chat */
+      }
+      _releaseBotCommandPlanning();
     }
 
     return _sendUdlToChat(manualText);

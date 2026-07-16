@@ -1139,7 +1139,12 @@ class AIProvider {
      * @param {number} [opts.maxTokens=8192] - Max output tokens
      * @returns {Promise<string|Object>} Generated text (or {text, groundingMetadata} if search=true)
      */
-    async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192, onProgress = null } = {}) {
+    async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192, onProgress = null, signal = null } = {}) {
+        if (signal && signal.aborted) {
+            const error = new Error('Text generation cancelled.');
+            error.name = 'AbortError';
+            throw error;
+        }
         if (!prompt) return json ? '{}' : '';
         this._debugLog(`[AIProvider] generateText: backend=${this.backend}, json=${json}, search=${search}`);
         let effectiveMaxTokens = maxTokens;
@@ -1159,9 +1164,9 @@ class AIProvider {
 
         switch (this.backend) {
             case 'gemini':
-                return this._geminiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens });
+                return this._geminiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, signal });
             case 'claude':
-                return this._claudeGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens });
+                return this._claudeGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, signal });
             case 'openai':
             case 'localai':
             case 'lmstudio':
@@ -1169,11 +1174,11 @@ class AIProvider {
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage });
+                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage, signal });
         }
     }
 
-    async _geminiGenerateText(prompt, { json, search, temperature, maxTokens }) {
+    async _geminiGenerateText(prompt, { json, search, temperature, maxTokens, signal }) {
         const buildUrl = (model) => {
             this._debugLog(`[AIProvider] ✉ Using model: ${model}`);
             const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
@@ -1203,12 +1208,14 @@ class AIProvider {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
+            signal,
         };
 
         let response;
         try {
             response = await this._fetchWithRetry(buildUrl(this.models.default), fetchOpts);
         } catch (primaryErr) {
+            if (primaryErr && primaryErr.name === 'AbortError') throw primaryErr;
             const is429 = primaryErr.message && (
                 primaryErr.message.includes('429') ||
                 primaryErr.message.includes('RESOURCE_EXHAUSTED') ||
@@ -1261,7 +1268,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return text || '';
     }
 
-    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress, localProfile = null, localUsage = null } = {}) {
+    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress, localProfile = null, localUsage = null, signal = null } = {}) {
         // ── Additive local-only streaming progress (opt-in; Phase 1) ──────────
         // Cloud is untouched: gemini/claude use their own methods, and hosted
         // 'openai' is excluded by isLocalTextBackend(). This branch engages ONLY
@@ -1288,9 +1295,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         };
         if (_sink && !search && isLocalTextBackend(this.backend)) {
             try {
-                const streamed = await this._openaiStreamText(prompt, { json, temperature, maxTokens, localProfile, localUsage }, _sink);
+                const streamed = await this._openaiStreamText(prompt, { json, temperature, maxTokens, localProfile, localUsage, signal }, _sink);
                 if (typeof streamed === 'string') return streamed;
             } catch (streamErr) {
+                if (streamErr && streamErr.name === 'AbortError') throw streamErr;
                 this._warnLog('[AIProvider] local stream progress failed — falling back to non-stream:', streamErr && streamErr.message ? streamErr.message : streamErr);
                 try { _sink({ ..._localProgressBase, phase: 'fallback', receivedChars: 0, chunks: 0, done: false }); } catch (_) {}
                 // fall through to the unchanged non-stream path
@@ -1338,6 +1346,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 method: 'POST',
                 headers,
                 body: JSON.stringify(payload),
+                signal,
             });
             data = await response.json();
         } finally {
@@ -1362,7 +1371,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     // firing `sink({ phase, backend, receivedChars, chunks, done })` as deltas
     // arrive, and returns the SAME final string the non-stream path produces.
     // Throws on any transport/parse problem so the caller falls back cleanly.
-    async _openaiStreamText(prompt, { json, temperature, maxTokens, localProfile = null, localUsage = null }, sink) {
+    async _openaiStreamText(prompt, { json, temperature, maxTokens, localProfile = null, localUsage = null, signal = null }, sink) {
         const isOllama = this.backend === 'ollama';
         const url = isOllama
             ? `${this.baseUrl}/api/chat`
@@ -1408,6 +1417,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             method: 'POST',
             headers,
             body: JSON.stringify(payload),
+            signal,
         });
 
         const body = response && response.body;
@@ -1501,7 +1511,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return prompt;
     }
 
-    async _claudeGenerateText(prompt, { json, search, temperature, maxTokens }) {
+    async _claudeGenerateText(prompt, { json, search, temperature, maxTokens, signal }) {
         const url = `${this.baseUrl}/v1/messages`;
         const payload = {
             model: this.models.default,
@@ -1524,6 +1534,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 'anthropic-version': '2023-06-01',
             },
             body: JSON.stringify(payload),
+            signal,
         });
         const data = await response.json();
         const text = data.content?.[0]?.text || '';

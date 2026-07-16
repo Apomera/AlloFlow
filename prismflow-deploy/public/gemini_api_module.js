@@ -397,6 +397,7 @@ const createGeminiAPI = (deps) => {
           json: Boolean(jsonMode),
           search: false,
           temperature: temperature == null ? null : Number(temperature),
+          signal,
         });
         try {
           window.__alloLocalFallbackLastUsed = {
@@ -408,6 +409,7 @@ const createGeminiAPI = (deps) => {
         } catch (_) {}
         return { used: true, value };
       } catch (localErr) {
+        if (localErr && localErr.name === 'AbortError') throw localErr;
         try { console.warn('[callGemini] Local fallback failed:', localErr && localErr.message ? localErr.message : localErr); } catch (_) {}
         return { used: false };
       }

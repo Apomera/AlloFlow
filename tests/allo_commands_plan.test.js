@@ -77,6 +77,38 @@ describe('planUtterance', () => {
     expect(steps[0].params).toEqual({ grade: '3' });
   });
 
+  it('forwards AbortSignal and propagates cancellation from AI planning', async () => {
+    const controller = new AbortController();
+    const callGemini = vi.fn(async (_prompt, _json, _search, _temperature, _query, signal) => {
+      expect(signal).toBe(controller.signal);
+      controller.abort();
+      const error = new Error('cancelled');
+      error.name = 'AbortError';
+      throw error;
+    });
+    const { ctx } = mkCtx({ callGemini });
+    await expect(AC.planUtterance(ctx, 'simplify this then make a quiz', { signal: controller.signal })).rejects.toMatchObject({ name: 'AbortError' });
+    expect(callGemini).toHaveBeenCalledOnce();
+  });
+
+  it('rejects a late planner response after cancellation even when the transport resolves', async () => {
+    const controller = new AbortController();
+    const { ctx } = mkCtx({
+      callGemini: async () => {
+        controller.abort();
+        return JSON.stringify({
+          steps: [
+            { commandId: 'generate_simplified', params: { grade: '3' } },
+            { commandId: 'generate_quiz', params: {} },
+          ],
+          confidence: 0.95,
+        });
+      },
+    });
+    await expect(AC.planUtterance(ctx, 'simplify this then make a quiz', { signal: controller.signal }))
+      .rejects.toMatchObject({ name: 'AbortError' });
+  });
+
   it('rejects the whole plan when ANY id is unknown', async () => {
     const { ctx } = mkCtx({
       callGemini: async () => JSON.stringify({
@@ -133,9 +165,9 @@ describe('planUtterance', () => {
     expect(await AC.planUtterance(ctx, 'clear everything then make a quiz')).toBeNull();
   });
 
-  // Hardening (2026-07-10): model-returned params are sanitized to flat,
-  // bounded primitives — no handler ever sees a nested object or huge string.
-  it('sanitizes plan params to flat bounded primitives', async () => {
+  // Hardening (2026-07-10/16): model-returned params are sanitized to flat,
+  // bounded primitives and filtered through each command's declared contract.
+  it('sanitizes plan params to flat bounded contract params', async () => {
     const { ctx } = mkCtx({
       callGemini: async () => JSON.stringify({
         steps: [
@@ -150,9 +182,27 @@ describe('planUtterance', () => {
     expect(steps[0].params.junk).toBeUndefined();
     expect(steps[0].params.list).toBeUndefined();
     expect(steps[0].params.bad).toBeUndefined();
-    expect(steps[0].params.big).toHaveLength(200);
-    expect(steps[0].params.n).toBe(7);
-    expect(steps[0].params.flag).toBe(true);
+    expect(steps[0].params.big).toBeUndefined();
+    expect(steps[0].params.n).toBeUndefined();
+    expect(steps[0].params.flag).toBeUndefined();
+    expect(steps[1].params).toEqual({});
+  });
+
+  it('keeps declared planner params while truncating allowed long strings', async () => {
+    const { ctx } = mkCtx({
+      callGemini: async () => JSON.stringify({
+        steps: [
+          { commandId: 'find_reading', params: { topic: 'climate', raw: 'x'.repeat(500), extra: 'drop me', junk: { nested: true } } },
+          { commandId: 'open_learning_hub', params: { extra: 'drop me too' } },
+        ],
+        confidence: 0.9,
+      }),
+    });
+    const steps = await AC.planUtterance(ctx, 'find readings about climate then open learning hub');
+    expect(steps[0].params.topic).toBe('climate');
+    expect(steps[0].params.raw).toHaveLength(200);
+    expect(steps[0].params.extra).toBeUndefined();
+    expect(steps[0].params.junk).toBeUndefined();
     expect(steps[1].params).toEqual({});
   });
 });
@@ -174,6 +224,9 @@ describe('command contracts and plan validation', () => {
     const unsafe = AC.validatePlan(ctx, [{ commandId: 'open_ai_settings', params: {} }], { demoSafeOnly: true });
     expect(unsafe.ok).toBe(false);
     expect(unsafe.items[0].status).toBe('block');
+    const history = AC.validatePlan(ctx, [{ commandId: 'open_history', params: {} }], { demoSafeOnly: true });
+    expect(history.ok).toBe(false);
+    expect(history.items[0].status).toBe('block');
   });
 
   it('accepts a safe generation chain when source already exists', () => {
@@ -192,6 +245,11 @@ describe('command contracts and plan validation', () => {
     expect(recorder.items[0].detail).toContain('recorder/editor');
     const timeline = AC.validatePlan(ctx, [{ commandId: 'open_timeline_studio', params: {} }], { demoSafeOnly: true });
     expect(timeline.ok).toBe(true);
+    const research = AC.validatePlan(ctx, [{ commandId: 'open_research_hub', params: {} }], { demoSafeOnly: true });
+    expect(research.ok).toBe(true);
+    const live = AC.validatePlan({ ...ctx, activeSessionCode: 'ABC123', openLivePoll: () => {} }, [{ commandId: 'open_live_poll', params: {} }], { demoSafeOnly: true });
+    expect(live.ok).toBe(false);
+    expect(live.items[0].detail).toContain('not allowed');
   });
 
   it('removes demo-blocked commands from the AI planner menu', async () => {
@@ -199,6 +257,7 @@ describe('command contracts and plan validation', () => {
       callGemini: async (prompt) => {
         expect(prompt).not.toContain('create_lesson:');
         expect(prompt).not.toContain('open_ai_settings:');
+        expect(prompt).not.toContain('open_history:');
         return JSON.stringify({ steps: [
           { commandId: 'generate_simplified', params: { grade: '3' } },
           { commandId: 'generate_quiz', params: {} },
@@ -208,6 +267,15 @@ describe('command contracts and plan validation', () => {
     expect(await AC.planUtterance(ctx, 'simplify then quiz', { demoSafeOnly: true })).toHaveLength(2);
   });
 });
+  it('filters params by command contract before execution', async () => {
+    const startLessonFlow = vi.fn();
+    const { ctx } = mkCtx({ startLessonFlow });
+    const pr = await AC.runPlan(ctx, [
+      { commandId: 'create_lesson', params: { topic: 'volcanoes', grade: '5', extra: 'drop me' } },
+    ]);
+    expect(pr.ok).toBe(true);
+    expect(startLessonFlow).toHaveBeenCalledWith({ topic: 'volcanoes', grade: '5' });
+  });
   it('executes sequentially and AWAITS each async step to completion', async () => {
     const { ctx, log } = mkCtx();
     const events = [];
@@ -290,6 +358,25 @@ describe('AlloBot plan recovery wiring', () => {
     expect(app).toContain("value: '__allo_plan_run'");
     expect(app).toContain('if (!_pendingPlan.resume || !_planUndoRef.current)');
     expect(app).toContain('_pendingBotPlanRef.current = null;');
+  });
+  it('keeps AI command discovery single-flight and suppresses stale results in both app sources', () => {
+    for (const path of ['AlloFlowANTI.txt', 'prismflow-deploy/src/App.jsx', 'prismflow-deploy/src/AlloFlowANTI.txt']) {
+      const app = readFileSync(path, 'utf-8');
+      expect(app).toContain('const _botCommandPlanningRef = useRef({ controller: null, serial: 0 });');
+      expect(app).toContain('_previousBotPlanning.controller.abort()');
+      expect(app).toContain('{ allowAi: true, preview: true, signal: _botPlanningSignal }');
+      expect(app).toContain('{ signal: _botPlanningSignal }');
+      expect(app.match(/if \(!_isCurrentBotCommandPlanning\(\)\) return;/g)).toHaveLength(2);
+      expect(app).toContain("error && error.name === 'AbortError'");
+    }
+  });
+  it('cancels pending AI command discovery when AlloBot closes or unmounts', () => {
+    for (const path of ['AlloFlowANTI.txt', 'prismflow-deploy/src/App.jsx', 'prismflow-deploy/src/AlloFlowANTI.txt']) {
+      const app = readFileSync(path, 'utf-8');
+      expect(app).toContain('const _cancelBotCommandPlanning = () => {');
+      expect(app).toContain('if (!showUDLGuide) _cancelBotCommandPlanning();');
+      expect(app).toContain('useEffect(() => () => {\n    _cancelBotCommandPlanning();\n  }, []);');
+    }
   });
 });
 describe('runCommandById awaitCompletion isolation', () => {

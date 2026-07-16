@@ -113,6 +113,18 @@ describe('command coverage drift guards', () => {
     const missing = deps.filter((name) => !provided.has(name) && !notCtxDeps.has(name));
     expect(missing).toEqual([]);
   });
+
+  it('keeps natural-language param grammars backed by command contracts', () => {
+    const source = readRoot('allo_commands_source.jsx');
+    const grammarBlock = source.match(/const _grammars = \[([\s\S]*?)\n\s*\];/);
+    expect(grammarBlock).toBeTruthy();
+    const entries = grammarBlock[1].split(/\n\s*\{/).filter((entry) => entry.includes("id: '"));
+    const paramGrammarIds = [...new Set(entries.filter((entry) => /\bparams\s*:/.test(entry)).map((entry) => entry.match(/id:\s*'([^']+)'/)[1]))];
+    expect(paramGrammarIds).toEqual(expect.arrayContaining(['find_reading', 'create_lesson', 'set_font_size', 'translate_document', 'generate_simplified']));
+    const missingContracts = paramGrammarIds.filter((id) => AC.getCommandContract(id).params.length === 0);
+    expect(missingContracts).toEqual([]);
+  });
+
 });
 
 describe('scoreCommand', () => {
@@ -163,6 +175,60 @@ describe('buildAlloCommands (role + when filtering)', () => {
     expect(student).not.toContain('open_allo_studio');
     expect(student).toEqual(expect.arrayContaining(['open_open_groove', 'open_timeline_studio', 'open_lingua_practice', 'open_test_prep_hub']));
   });
+
+  it('exposes source/history and Learning Hub tool launchers across roles', () => {
+    const teacher = ids({});
+    expect(teacher).toEqual(expect.arrayContaining([
+      'open_source_input', 'open_history', 'open_research_hub', 'open_lit_lab', 'open_mind_map', 'open_poet_tree',
+    ]));
+    const student = ids({ isIndependentMode: true });
+    expect(student).toEqual(expect.arrayContaining([
+      'open_source_input', 'open_history', 'open_research_hub', 'open_lit_lab', 'open_mind_map', 'open_poet_tree',
+    ]));
+  });
+
+  it('exposes live-session commands only in the right live class roles', () => {
+    const liveTeacher = ids({
+      isTeacherMode: true,
+      activeSessionCode: 'ABC123',
+      openLiveSessionCenter: vi.fn(),
+      openLivePoll: vi.fn(),
+      openQuickCheck: vi.fn(),
+      openPictionaryHost: vi.fn(),
+      openGroupTools: vi.fn(),
+      openStudentSignals: vi.fn(),
+    });
+    expect(liveTeacher).toEqual(expect.arrayContaining([
+      'open_live_session_center', 'open_live_poll', 'open_quick_check', 'open_pictionary_host', 'open_group_tools',
+    ]));
+    expect(liveTeacher).not.toContain('open_student_signal');
+
+    const liveStudent = ids({
+      isIndependentMode: true,
+      isTeacherMode: false,
+      activeSessionCode: 'ABC123',
+      openStudentSignals: vi.fn(),
+      openLivePoll: vi.fn(),
+    });
+    expect(liveStudent).toContain('open_student_signal');
+    expect(liveStudent).not.toContain('open_live_poll');
+
+    expect(ids({ isTeacherMode: true, openLivePoll: vi.fn() })).not.toContain('open_live_poll');
+  });
+});
+
+describe('command param contracts', () => {
+  it('exposes a contract-aware sanitizer for non-executing surfaces', () => {
+    expect(AC.sanitizeCommandParams('create_lesson', { topic: ' volcanoes ', grade: '5', hidden: 'drop me', nested: { bad: true } })).toEqual({
+      topic: 'volcanoes',
+      grade: '5',
+    });
+    expect(AC.sanitizeCommandParams('find_reading', { topic: 'climate', raw: 'x'.repeat(500), hidden: 'drop me' })).toMatchObject({
+      topic: 'climate',
+      raw: expect.stringMatching(/^x{200}$/),
+    });
+    expect(AC.sanitizeCommandParams('open_learning_hub', { hidden: 'drop me' })).toEqual({});
+  });
 });
 
 describe('routeUtterance', () => {
@@ -193,6 +259,72 @@ describe('routeUtterance', () => {
     expect(startNewPdfAudit).not.toHaveBeenCalled(); // not confirmed -> not run
     await AC.routeUtterance(ctx, 'start over with a new document', { confirmed: true });
     expect(startNewPdfAudit).toHaveBeenCalled(); // confirmed -> run
+  });
+
+  it('keeps deterministic grammar params declared in command contracts', async () => {
+    const cases = [
+      {
+        text: 'find books about climate change in Spanish from StoryWeaver for grade 5',
+        ctx: {},
+        keys: ['topic', 'grade', 'language', 'source'],
+      },
+      {
+        text: 'create a lesson about volcanoes for grade 5',
+        ctx: { startLessonFlow: vi.fn() },
+        keys: ['topic', 'grade'],
+      },
+      {
+        text: 'set text size to 20',
+        ctx: { setFontSizeTo: vi.fn() },
+        keys: ['size'],
+      },
+      {
+        text: 'translate this into Vietnamese',
+        ctx: { pipelineOpen: true, prefillTranslateLang: vi.fn() },
+        keys: ['language'],
+      },
+      {
+        text: 'simplify this to grade 3',
+        ctx: { hasSourceOrAnalysis: true, generateSimplified: vi.fn() },
+        keys: ['grade'],
+      },
+    ];
+    for (const item of cases) {
+      const match = await AC.routeUtterance(item.ctx, item.text, { preview: true, allowAi: false });
+      expect(match && match.preview).toBe(true);
+      const contractKeys = AC.getCommandContract(match.commandId).params;
+      expect(contractKeys).toEqual(expect.arrayContaining(item.keys));
+      const presentParamKeys = Object.entries(match.params || {}).filter(([, value]) => value != null && value !== '').map(([key]) => key);
+      expect(contractKeys).toEqual(expect.arrayContaining(presentParamKeys));
+    }
+  });
+
+  it('advertises declared params to the AI router and filters its response', async () => {
+    const startLessonFlow = vi.fn();
+    const callGemini = vi.fn(async (prompt) => {
+      expect(prompt).toContain('create_lesson:');
+      expect(prompt).toContain('[params topic, grade]');
+      return JSON.stringify({
+        commandId: 'create_lesson',
+        params: { topic: 'volcanoes', grade: '5', hidden: 'drop me' },
+        confidence: 0.9,
+      });
+    });
+    const r = await AC.routeUtterance({ startLessonFlow, callGemini }, 'prepare materials around volcanoes', { allowAi: true });
+    expect(r).toMatchObject({ handled: true, commandId: 'create_lesson', via: 'ai' });
+    expect(startLessonFlow).toHaveBeenCalledWith({ topic: 'volcanoes', grade: '5' });
+  });
+
+  it('rejects a late AI router response after cancellation even when the transport resolves', async () => {
+    const controller = new AbortController();
+    const startLessonFlow = vi.fn();
+    const callGemini = vi.fn(async () => {
+      controller.abort();
+      return JSON.stringify({ commandId: 'create_lesson', params: { topic: 'volcanoes' }, confidence: 0.95 });
+    });
+    await expect(AC.routeUtterance({ startLessonFlow, callGemini }, 'prepare materials around volcanoes', { allowAi: true, signal: controller.signal }))
+      .rejects.toMatchObject({ name: 'AbortError' });
+    expect(startLessonFlow).not.toHaveBeenCalled();
   });
 });
 
@@ -329,6 +461,104 @@ describe('reading librarian command', () => {
   });
 });
 
+describe('createVoiceLoop single-flight routing', () => {
+  const speechEvent = (text) => {
+    const result = [{ transcript: text }];
+    result.isFinal = true;
+    return { results: [result] };
+  };
+
+  const installFakeRecognition = () => {
+    const instances = [];
+    class FakeSpeechRecognition {
+      constructor() {
+        this.start = vi.fn();
+        this.stop = vi.fn();
+        instances.push(this);
+      }
+    }
+    const previous = window.SpeechRecognition;
+    window.SpeechRecognition = FakeSpeechRecognition;
+    return {
+      instances,
+      restore: () => {
+        if (previous === undefined) delete window.SpeechRecognition;
+        else window.SpeechRecognition = previous;
+      },
+    };
+  };
+
+  it('supersedes a slow AI route when a newer transcript arrives', async () => {
+    const fake = installFakeRecognition();
+    try {
+      let resolveFirst;
+      let firstSignal;
+      const callGemini = vi.fn((_prompt, _json, _search, _temperature, _query, signal) => {
+        firstSignal = signal;
+        return new Promise((resolve) => { resolveFirst = resolve; });
+      });
+      const fontBigger = vi.fn(() => 18);
+      const setShowLearningHub = vi.fn();
+      const addToast = vi.fn();
+      const setVoiceActive = vi.fn();
+      const ctx = { callGemini, fontBigger, setShowLearningHub, addToast, setVoiceActive };
+      const loop = AC.createVoiceLoop(() => ctx);
+
+      expect(loop.start()).toBe(true);
+      const recognition = fake.instances[0];
+      const first = recognition.onresult(speechEvent('prepare materials around volcanoes'));
+      await vi.waitFor(() => expect(callGemini).toHaveBeenCalledOnce());
+
+      await recognition.onresult(speechEvent('bigger text'));
+      expect(firstSignal.aborted).toBe(true);
+      expect(fontBigger).toHaveBeenCalledOnce();
+
+      resolveFirst(JSON.stringify({ commandId: 'open_learning_hub', params: {}, confidence: 0.95 }));
+      await first;
+      expect(setShowLearningHub).not.toHaveBeenCalled();
+      loop.stop();
+    } finally {
+      fake.restore();
+    }
+  });
+
+  it('aborts pending interpretation when the stop phrase releases the microphone', async () => {
+    const fake = installFakeRecognition();
+    const removePageHideListener = vi.spyOn(window, 'removeEventListener');
+    try {
+      let resolveRoute;
+      let routeSignal;
+      const callGemini = vi.fn((_prompt, _json, _search, _temperature, _query, signal) => {
+        routeSignal = signal;
+        return new Promise((resolve) => { resolveRoute = resolve; });
+      });
+      const setShowLearningHub = vi.fn();
+      const addToast = vi.fn();
+      const setVoiceActive = vi.fn();
+      const ctx = { callGemini, setShowLearningHub, addToast, setVoiceActive };
+      const loop = AC.createVoiceLoop(() => ctx);
+
+      expect(loop.start()).toBe(true);
+      const recognition = fake.instances[0];
+      const pending = recognition.onresult(speechEvent('prepare materials around volcanoes'));
+      await vi.waitFor(() => expect(callGemini).toHaveBeenCalledOnce());
+      await recognition.onresult(speechEvent('stop listening'));
+
+      expect(routeSignal.aborted).toBe(true);
+      expect(loop.isActive()).toBe(false);
+      expect(recognition.stop).toHaveBeenCalledOnce();
+      expect(setVoiceActive).toHaveBeenLastCalledWith(false);
+      expect(removePageHideListener).toHaveBeenCalledWith('pagehide', expect.any(Function));
+
+      resolveRoute(JSON.stringify({ commandId: 'open_learning_hub', params: {}, confidence: 0.95 }));
+      await pending;
+      expect(setShowLearningHub).not.toHaveBeenCalled();
+    } finally {
+      removePageHideListener.mockRestore();
+      fake.restore();
+    }
+  });
+});
 describe('runCommandById (executes a confirmed, previewed command)', () => {
   it('runs the command by id', () => {
     const handleToggleIsBotVisible = vi.fn();
@@ -347,6 +577,47 @@ describe('runCommandById (executes a confirmed, previewed command)', () => {
     expect(r).toMatchObject({ handled: true, commandId: 'open_timeline_studio' });
     expect(closeOtherPanels).toHaveBeenCalledWith('timelineStudio');
     expect(openTimelineStudio).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens source input and history through host navigation handlers', () => {
+    const openSourceInput = vi.fn();
+    const source = AC.runCommandById({ openSourceInput }, 'open_source_input', {});
+    expect(source).toMatchObject({ handled: true, commandId: 'open_source_input' });
+    expect(openSourceInput).toHaveBeenCalledTimes(1);
+
+    const openHistory = vi.fn();
+    const history = AC.runCommandById({ openHistory }, 'open_history', {});
+    expect(history).toMatchObject({ handled: true, commandId: 'open_history' });
+    expect(openHistory).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens Learning Hub subtools through one host handler and closes peer panels', () => {
+    const cases = [
+      ['open_research_hub', 'researchHub', 'openResearchHub'],
+      ['open_lit_lab', 'litLab', 'openLitLab'],
+      ['open_mind_map', 'mindMap', 'openMindMap'],
+      ['open_poet_tree', 'poetTree', 'openPoetTree'],
+    ];
+    for (const [commandId, panel, handlerName] of cases) {
+      const closeOtherPanels = vi.fn();
+      const handler = vi.fn();
+      const r = AC.runCommandById({ closeOtherPanels, [handlerName]: handler }, commandId, {});
+      expect(r).toMatchObject({ handled: true, commandId });
+      expect(closeOtherPanels).toHaveBeenCalledWith(panel);
+      expect(handler).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('opens live-class tools through guarded live-session handlers', () => {
+    const openLivePoll = vi.fn();
+    const poll = AC.runCommandById({ isTeacherMode: true, activeSessionCode: 'ABC123', openLivePoll }, 'open_live_poll', {});
+    expect(poll).toMatchObject({ handled: true, commandId: 'open_live_poll' });
+    expect(openLivePoll).toHaveBeenCalledTimes(1);
+
+    const openStudentSignals = vi.fn();
+    const signal = AC.runCommandById({ isTeacherMode: false, isIndependentMode: true, activeSessionCode: 'ABC123', openStudentSignals }, 'open_student_signal', {});
+    expect(signal).toMatchObject({ handled: true, commandId: 'open_student_signal' });
+    expect(openStudentSignals).toHaveBeenCalledTimes(1);
   });
 
   it('still gates a destructive command until confirmed:true', () => {

@@ -343,6 +343,7 @@ const PLAN_CONTRACTS = Object.freeze({
   generate_sentence_frames: { requires: ["source"], produces: ["sentence-frames"] },
   generate_analysis: { requires: ["source"], produces: ["analysis"] },
   generate_outline: { requires: ["source"], produces: ["outline"] },
+  find_reading: { params: ["topic", "grade", "language", "source", "format", "raw"] },
   launch_flashcards: { requires: ["glossary"] },
   export_pack: {
     demoSafe: false,
@@ -350,6 +351,7 @@ const PLAN_CONTRACTS = Object.freeze({
     interaction: "external",
     reason: "Starts a file download outside the recorded workflow."
   },
+  set_font_size: { params: ["size"] },
   translate_document: {
     demoSafe: false,
     requires: ["pipeline"],
@@ -375,7 +377,14 @@ const PLAN_CONTRACTS = Object.freeze({
 });
 const DEMO_BLOCKED_COMMANDS = /* @__PURE__ */ new Set([
   "open_notebook",
+  "open_history",
   "open_class_session",
+  "open_live_session_center",
+  "open_live_poll",
+  "open_quick_check",
+  "open_pictionary_host",
+  "open_group_tools",
+  "open_student_signal",
   "open_class_analytics",
   "open_ai_settings",
   "open_roster",
@@ -413,6 +422,19 @@ function _planCapabilities(ctx) {
   if (ctx && ctx.contentLoaded) out.add("content");
   if (ctx && ctx.pipelineOpen) out.add("pipeline");
   return out;
+}
+function _contractPlanParams(p, contract) {
+  const clean = _cleanPlanParams(p);
+  const allowed = contract && Array.isArray(contract.params) ? contract.params : [];
+  if (!allowed.length) return {};
+  const out = {};
+  for (const k of allowed) {
+    if (Object.prototype.hasOwnProperty.call(clean, k)) out[k] = clean[k];
+  }
+  return out;
+}
+function sanitizeCommandParams(commandOrId, params) {
+  return _contractPlanParams(params, getCommandContract(commandOrId));
 }
 function validatePlan(ctx, rawSteps, opts = {}) {
   const list = (Array.isArray(rawSteps) ? rawSteps : []).slice(0, 8);
@@ -457,7 +479,7 @@ function validatePlan(ctx, rawSteps, opts = {}) {
       index: i,
       commandId: step.commandId || "",
       label: cmd && cmd.label || step.commandId || "Unknown command",
-      params: _cleanPlanParams(step.params),
+      params: _contractPlanParams(step.params, contract),
       why: typeof step.why === "string" ? step.why.slice(0, 120) : "",
       status,
       detail,
@@ -484,6 +506,14 @@ function buildAlloCommands(ctx, opts = {}) {
       c.setShowLearningHub(true);
       return t("cmd.open_learning_hub_done", "Learning Hub opened.");
     } },
+    { id: "open_source_input", icon: "\u{1F4DD}", roles: "all", label: t("cmd.open_source_input", "Open source input"), aliases: ["source input", "source material", "input panel", "paste text", "write text", "add source", "new source"], hint: t("cmd.open_source_input_hint", "Paste, write, search, or generate source material"), run: (c) => {
+      c.openSourceInput();
+      return t("cmd.open_source_input_done", "Source input opened.");
+    } },
+    { id: "open_history", icon: "\u{1F558}", roles: "all", label: t("cmd.open_history", "Open history"), aliases: ["history", "my history", "saved work", "previous work", "recent lessons", "projects"], hint: t("cmd.open_history_hint", "Browse saved lessons and projects"), run: (c) => {
+      c.openHistory();
+      return t("cmd.open_history_done", "History opened.");
+    } },
     { id: "open_document_builder", opensPanel: "exportPreview", icon: "\u{1F4DD}", roles: "teacher", label: t("cmd.open_document_builder", "Open the Document Builder"), aliases: ["document builder", "builder", "export preview", "differentiate"], hint: t("cmd.open_document_builder_hint", "Build and export differentiated documents"), run: (c) => {
       c.openExportPreview();
       return t("cmd.open_document_builder_done", "Document Builder opened.");
@@ -503,6 +533,30 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_class_session", opensPanel: "sessionModal", icon: "\u{1F465}", roles: "teacher", label: t("cmd.open_class_session", "Open class session"), aliases: ["class session", "session", "live class", "class code"], hint: t("cmd.open_class_session_hint", "Start or join a live class session"), run: (c) => {
       c.setShowSessionModal(true);
       return t("cmd.open_class_session_done", "Class session dialog opened.");
+    } },
+    { id: "open_live_session_center", icon: "\u{1F39B}\uFE0F", roles: "teacher", when: (c) => !!c.activeSessionCode && !!c.openLiveSessionCenter, label: t("cmd.open_live_session_center", "Open Live Session Center"), aliases: ["live session center", "live session", "session center", "classroom controls", "live dock"], hint: t("cmd.open_live_session_center_hint", "Polls, groups, Pictionary, and session controls"), run: (c) => {
+      c.openLiveSessionCenter();
+      return t("cmd.open_live_session_center_done", "Live Session Center opened.");
+    } },
+    { id: "open_live_poll", icon: "\u{1F4CA}", roles: "teacher", when: (c) => !!c.activeSessionCode && !!c.openLivePoll, label: t("cmd.open_live_poll", "Start a live poll"), aliases: ["live poll", "poll the class", "class poll", "ask a poll", "student poll"], hint: t("cmd.open_live_poll_hint", "Compose a live poll for the active session"), run: (c) => {
+      c.openLivePoll();
+      return t("cmd.open_live_poll_done", "Live poll composer opened. Review it, then broadcast from there.");
+    } },
+    { id: "open_quick_check", icon: "\u26A1", roles: "teacher", when: (c) => !!c.activeSessionCode && !!c.openQuickCheck, label: t("cmd.open_quick_check", "Run a quick check"), aliases: ["quick check", "check understanding", "confused ready", "how is this landing", "ready check"], hint: t("cmd.open_quick_check_hint", "Prepare a 1-3 confused-to-ready check-in"), run: (c) => {
+      c.openQuickCheck();
+      return t("cmd.open_quick_check_done", "Quick Check opened. Review it, then broadcast from there.");
+    } },
+    { id: "open_pictionary_host", icon: "\u{1F3A8}", roles: "teacher", when: (c) => !!c.activeSessionCode && !!c.openPictionaryHost, label: t("cmd.open_pictionary_host", "Start Concept Pictionary"), aliases: ["concept pictionary", "pictionary", "drawing game", "draw a concept", "class drawing game"], hint: t("cmd.open_pictionary_host_hint", "Open the teacher host for Concept Pictionary"), run: (c) => {
+      c.openPictionaryHost();
+      return t("cmd.open_pictionary_host_done", "Concept Pictionary opened. Choose a concept and start the round from there.");
+    } },
+    { id: "open_group_tools", icon: "\u{1F465}", roles: "teacher", when: (c) => !!c.activeSessionCode && !!c.openGroupTools, label: t("cmd.open_group_tools", "Open group tools"), aliases: ["group tools", "groups", "manage groups", "student groups", "make groups"], hint: t("cmd.open_group_tools_hint", "Manage live-session groups"), run: (c) => {
+      c.openGroupTools();
+      return t("cmd.open_group_tools_done", "Group tools opened.");
+    } },
+    { id: "open_student_signal", icon: "\u270B", roles: "all", when: (c) => !!c.activeSessionCode && !c.isTeacherMode && !!c.openStudentSignals, label: t("cmd.open_student_signal", "Send a teacher signal"), aliases: ["signal teacher", "help signal", "quick signal", "i need help", "i am confused", "send signal"], hint: t("cmd.open_student_signal_hint", "Tell the teacher you need help, more time, or are ready"), run: (c) => {
+      c.openStudentSignals();
+      return t("cmd.open_student_signal_done", "Teacher signal panel opened. Pick one option to send.");
     } },
     { id: "open_class_analytics", opensPanel: "classAnalytics", icon: "\u{1F4C8}", roles: "teacher", label: t("cmd.open_class_analytics", "Open class analytics"), aliases: ["analytics", "class data", "progress data"], hint: t("cmd.open_class_analytics_hint", "Whole-class progress"), run: (c) => {
       c.setShowClassAnalytics(true);
@@ -607,6 +661,22 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_test_prep_hub", opensPanel: "testPrepHub", icon: "\u{1F9ED}", roles: "all", label: t("cmd.open_test_prep_hub", "Open Test Prep Hub"), aliases: ["test prep", "test prep hub", "exam prep", "practice questions", "study exams"], hint: t("cmd.open_test_prep_hub_hint", "Open free practice sets and study tools"), run: (c) => {
       c.openTestPrepHub();
       return t("cmd.open_test_prep_hub_done", "Test Prep Hub opened.");
+    } },
+    { id: "open_research_hub", opensPanel: "researchHub", icon: "\u{1F50D}", roles: "all", label: t("cmd.open_research_hub", "Open Research Hub"), aliases: ["research hub", "research", "credible sources", "source finder", "find sources", "research tool"], hint: t("cmd.open_research_hub_hint", "Find and organize credible research sources"), run: (c) => {
+      c.openResearchHub();
+      return t("cmd.open_research_hub_done", "Research Hub opened.");
+    } },
+    { id: "open_lit_lab", opensPanel: "litLab", icon: "\u{1F4DA}", roles: "all", label: t("cmd.open_lit_lab", "Open Lit Lab"), aliases: ["lit lab", "literature lab", "reading lab", "story lab", "literature tools"], hint: t("cmd.open_lit_lab_hint", "Explore literature and reading activities"), run: (c) => {
+      c.openLitLab();
+      return t("cmd.open_lit_lab_done", "Lit Lab opened.");
+    } },
+    { id: "open_mind_map", opensPanel: "mindMap", icon: "\u{1F9ED}", roles: "all", label: t("cmd.open_mind_map", "Open Throughline"), aliases: ["throughline", "mind map", "unit map", "lesson map", "concept map", "visual map"], hint: t("cmd.open_mind_map_hint", "Map concepts, lessons, and unit connections"), run: (c) => {
+      c.openMindMap();
+      return t("cmd.open_mind_map_done", "Throughline opened.");
+    } },
+    { id: "open_poet_tree", opensPanel: "poetTree", icon: "\u{1F333}", roles: "all", label: t("cmd.open_poet_tree", "Open Poet Tree"), aliases: ["poet tree", "poetry tree", "poem builder", "poetry lab", "write poetry"], hint: t("cmd.open_poet_tree_hint", "Build poems with guided branches"), run: (c) => {
+      c.openPoetTree();
+      return t("cmd.open_poet_tree_done", "Poet Tree opened.");
     } },
     { id: "find_reading", opensPanel: "readingLibrary", icon: "\u{1F4DA}", roles: "all", label: t("cmd.find_reading", "Find the right book"), aliases: ["find a book", "find books about", "recommend a book", "suggest a book", "book about", "books about", "reading about", "learn about", "science article about", "primary source about"], hint: t("cmd.find_reading_hint", "Ask by topic, grade, language, source, or type"), run: (c, params) => runFindReadingCommand(c, params || {}, t) },
     // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
@@ -861,6 +931,12 @@ function buildAlloCommands(ctx, opts = {}) {
     }
   })()));
 }
+function _throwIfCommandPlanningAborted(signal) {
+  if (!signal || !signal.aborted) return;
+  const error = new Error("Command planning cancelled.");
+  error.name = "AbortError";
+  throw error;
+}
 async function routeUtterance(ctx, rawText, opts = {}) {
   const text = String(rawText || "").trim();
   if (!text || text.length > 200) return null;
@@ -882,7 +958,8 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   let commands = buildAlloCommands(ctx);
   if (opts.preview) commands = commands.filter((c) => !c.chatSkip);
   const _runCmd = (cmd, via, params) => {
-    if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: params || {}, via, destructive: !!cmd.destructive };
+    const safeParams = sanitizeCommandParams(cmd, params || {});
+    if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: safeParams, via, destructive: !!cmd.destructive };
     if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation \u2014 use Ctrl+K to run it."), commandId: cmd.id, via };
     if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
       try {
@@ -892,7 +969,7 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     }
     let msg = null;
     try {
-      msg = cmd.run(ctx, params || {});
+      msg = cmd.run(ctx, safeParams);
     } catch (e) {
       return { handled: true, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via };
     }
@@ -917,15 +994,22 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   if (!opts.allowAi || typeof ctx.callGemini !== "function") return null;
   if (text.split(/\s+/).length > 14) return null;
   try {
-    const menu = commands.map((c) => c.id + ": " + c.label + (c.aliases && c.aliases.length ? " (" + c.aliases.slice(0, 3).join(", ") + ")" : "")).join("\n");
-    const out = await ctx.callGemini("A user typed a request to an education app's assistant. If it clearly maps to ONE of these app commands, return it; otherwise commandId must be null. Commands:\n" + menu + '\n\nUser: "' + text.replace(/"/g, "'") + '"\n\nReturn ONLY JSON: {"commandId": string | null, "params": object, "confidence": number between 0 and 1}. params carries values the user stated (e.g. {"topic": "photosynthesis", "grade": "5"} or {"size": "20"} or {"language": "Vietnamese"}) \u2014 empty object if none. Use null commandId unless you are confident they want the APP ACTION (not a content question).');
+    _throwIfCommandPlanningAborted(opts.signal);
+    const menu = commands.map((c) => {
+      const contract = getCommandContract(c);
+      const notes = contract.params.length ? " [params " + contract.params.join(", ") + "]" : "";
+      return c.id + ": " + c.label + (c.aliases && c.aliases.length ? " (" + c.aliases.slice(0, 3).join(", ") + ")" : "") + notes;
+    }).join("\n");
+    const out = await ctx.callGemini("A user typed a request to an education app's assistant. If it clearly maps to ONE of these app commands, return it; otherwise commandId must be null. Commands:\n" + menu + '\n\nUser: "' + text.replace(/"/g, "'") + '"\n\nReturn ONLY JSON: {"commandId": string | null, "params": object, "confidence": number between 0 and 1}. params carries values the user stated (e.g. {"topic": "photosynthesis", "grade": "5"} or {"size": "20"} or {"language": "Vietnamese"}) \u2014 empty object if none. Use null commandId unless you are confident they want the APP ACTION (not a content question).', false, false, null, null, opts.signal || null);
+    _throwIfCommandPlanningAborted(opts.signal);
     const m = String(out || "").match(/\{[\s\S]*\}/);
     const j = JSON.parse(m ? m[0] : String(out));
     if (j && j.commandId && typeof j.confidence === "number" && j.confidence >= 0.7) {
       const cmd = commands.find((c) => c.id === j.commandId);
       if (cmd) return _runCmd(cmd, "ai", j.params || {});
     }
-  } catch (_) {
+  } catch (error) {
+    if (error && error.name === "AbortError") throw error;
   }
   return null;
 }
@@ -935,6 +1019,7 @@ function runCommandById(ctx, id, params, opts = {}) {
   const cmd = commands.find((c) => c.id === id);
   if (!cmd) return null;
   if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation \u2014 use Ctrl+K to run it."), commandId: cmd.id, via: "confirm" };
+  const safeParams = sanitizeCommandParams(cmd, params || {});
   if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
     try {
       ctx.closeOtherPanels(cmd.opensPanel);
@@ -945,7 +1030,7 @@ function runCommandById(ctx, id, params, opts = {}) {
     const timeoutMs = opts.timeoutMs || 18e4;
     let p;
     try {
-      p = Promise.resolve(cmd.runAsync(ctx, params || {}));
+      p = Promise.resolve(cmd.runAsync(ctx, safeParams));
     } catch (e) {
       return Promise.resolve({ handled: true, ok: false, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: opts.via || "plan" });
     }
@@ -968,7 +1053,7 @@ function runCommandById(ctx, id, params, opts = {}) {
     });
   }
   try {
-    const msg = cmd.run(ctx, params || {});
+    const msg = cmd.run(ctx, safeParams);
     return { handled: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via: opts.via || "confirm" };
   } catch (e) {
     return { handled: true, ok: false, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: opts.via || "confirm" };
@@ -1027,7 +1112,9 @@ async function planUtterance(ctx, rawText, opts = {}) {
     return c.id + ": " + c.label + (notes.length ? " [" + notes.join("; ") + "]" : "");
   }).join("\n");
   try {
-    const out = await ctx.callGemini("A teacher asked an education app's assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n" + menu + '\n\nTask: "' + text.replace(/"/g, "'") + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. Use 2 to 6 steps. A command with requirements may appear only when the current app state already satisfies them or an EARLIER command explicitly says it produces them. Navigation and guided wizards do not produce content unless their contract says so. A command marked [must be final] cannot have later steps. params carries only values the user stated, using the named params in the menu; use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).');
+    _throwIfCommandPlanningAborted(opts.signal);
+    const out = await ctx.callGemini("A teacher asked an education app's assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n" + menu + '\n\nTask: "' + text.replace(/"/g, "'") + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. Use 2 to 6 steps. A command with requirements may appear only when the current app state already satisfies them or an EARLIER command explicitly says it produces them. Navigation and guided wizards do not produce content unless their contract says so. A command marked [must be final] cannot have later steps. params carries only values the user stated, using the named params in the menu; use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).', false, false, null, null, opts.signal || null);
+    _throwIfCommandPlanningAborted(opts.signal);
     const m = String(out || "").match(/\{[\s\S]*\}/);
     const j = JSON.parse(m ? m[0] : String(out));
     if (!j || !Array.isArray(j.steps) || typeof j.confidence !== "number" || j.confidence < 0.7) return null;
@@ -1044,8 +1131,9 @@ async function planUtterance(ctx, rawText, opts = {}) {
       demoSafeOnly: !!opts.demoSafeOnly,
       allowInteractive: !!opts.allowInteractive
     });
-    return report.ok ? cleanSteps : null;
-  } catch (_) {
+    return report.ok ? report.items.map((item) => ({ commandId: item.commandId, params: item.params, why: item.why })) : null;
+  } catch (error) {
+    if (error && error.name === "AbortError") throw error;
     return null;
   }
 }
@@ -1097,7 +1185,18 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
   return { ok: true, results, remainingSteps: [] };
 }
 function createVoiceLoop(getCtx) {
-  let rec = null, active = false, errStreak = 0;
+  let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null;
+  const cancelRoute = () => {
+    routeSerial++;
+    const controller = routeController;
+    routeController = null;
+    if (controller) {
+      try {
+        controller.abort();
+      } catch (_) {
+      }
+    }
+  };
   const announce = (msg) => {
     const c = getCtx();
     try {
@@ -1110,6 +1209,14 @@ function createVoiceLoop(getCtx) {
     }
   };
   const stop = (reason) => {
+    cancelRoute();
+    if (pageHideHandler) {
+      try {
+        window.removeEventListener("pagehide", pageHideHandler);
+      } catch (_) {
+      }
+      pageHideHandler = null;
+    }
     if (!active) return;
     active = false;
     try {
@@ -1151,9 +1258,27 @@ function createVoiceLoop(getCtx) {
           stop("Voice control off \u2014 the microphone is released.");
           return;
         }
-        const r = await routeUtterance(cc, text, { allowAi: true });
-        if (r && r.handled) announce(r.narration);
-        else announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or \u201Copen the educator hub\u201D.");
+        if (routeController) {
+          try {
+            routeController.abort();
+          } catch (_) {
+          }
+        }
+        const currentRouteSerial = ++routeSerial;
+        const controller = typeof AbortController === "function" ? new AbortController() : null;
+        routeController = controller;
+        const signal = controller ? controller.signal : null;
+        try {
+          const r = await routeUtterance(cc, text, { allowAi: true, signal });
+          if (!active || currentRouteSerial !== routeSerial || signal && signal.aborted) return;
+          if (r && r.handled) announce(r.narration);
+          else announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or \u201Copen the educator hub\u201D.");
+        } catch (error) {
+          if (!active || currentRouteSerial !== routeSerial || error && error.name === "AbortError") return;
+          announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or \u201Copen the educator hub\u201D.");
+        } finally {
+          if (currentRouteSerial === routeSerial) routeController = null;
+        }
       };
       rec.onerror = (ev) => {
         errStreak++;
@@ -1179,9 +1304,11 @@ function createVoiceLoop(getCtx) {
         if (c && c.setVoiceActive) c.setVoiceActive(true);
       } catch (_) {
       }
+      pageHideHandler = () => stop();
       try {
-        window.addEventListener("pagehide", () => stop(), { once: true });
+        window.addEventListener("pagehide", pageHideHandler, { once: true });
       } catch (_) {
+        pageHideHandler = null;
       }
       return true;
     } catch (e) {
@@ -1212,12 +1339,20 @@ function scoreCommand(cmd, q) {
 const CMD_GROUP = {
   open_educator_hub: "navigate",
   open_learning_hub: "navigate",
+  open_source_input: "navigate",
+  open_history: "navigate",
   open_document_builder: "navigate",
   open_wizard: "navigate",
   open_notebook: "navigate",
   open_translate: "navigate",
   open_class_session: "navigate",
   open_class_analytics: "navigate",
+  open_live_session_center: "live",
+  open_live_poll: "live",
+  open_quick_check: "live",
+  open_pictionary_host: "live",
+  open_group_tools: "live",
+  open_student_signal: "live",
   open_export_menu: "navigate",
   open_ai_settings: "navigate",
   go_dashboard: "navigate",
@@ -1279,6 +1414,10 @@ const CMD_GROUP = {
   open_timeline_studio: "tools",
   open_lingua_practice: "tools",
   open_test_prep_hub: "tools",
+  open_research_hub: "tools",
+  open_lit_lab: "tools",
+  open_mind_map: "tools",
+  open_poet_tree: "tools",
   find_reading: "tools",
   stop_reading: "accessibility",
   toggle_mute: "accessibility",
@@ -1309,11 +1448,19 @@ const CMD_CONTEXT = {
   pipeline_tour: ["pipeline"],
   translate_document: ["pipeline"],
   open_document_builder: ["educatorHub", "content"],
+  open_source_input: ["content"],
+  open_history: ["content"],
   open_wizard: ["educatorHub"],
   create_lesson: ["educatorHub"],
   open_translate: ["educatorHub", "content"],
-  open_class_session: ["educatorHub"],
+  open_class_session: ["educatorHub", "liveSession"],
   open_class_analytics: ["educatorHub", "behaviorLens"],
+  open_live_session_center: ["liveSession"],
+  open_live_poll: ["liveSession"],
+  open_quick_check: ["liveSession"],
+  open_pictionary_host: ["liveSession"],
+  open_group_tools: ["liveSession"],
+  open_student_signal: ["liveSession"],
   open_roster: ["educatorHub"],
   open_project_settings: ["educatorHub"],
   open_notebook: ["learningHub"],
@@ -1325,6 +1472,10 @@ const CMD_CONTEXT = {
   open_timeline_studio: ["learningHub", "timelineStudio"],
   open_lingua_practice: ["learningHub", "content", "linguaPractice"],
   open_test_prep_hub: ["learningHub", "testPrepHub"],
+  open_research_hub: ["learningHub", "content", "researchHub"],
+  open_lit_lab: ["learningHub", "litLab"],
+  open_mind_map: ["learningHub", "content", "mindMap"],
+  open_poet_tree: ["learningHub", "poetTree"],
   generate_quiz: ["content"],
   generate_glossary: ["content"],
   generate_simplified: ["content", "reading"],
@@ -1357,13 +1508,13 @@ const CMD_CONTEXT = {
   pipeline_stop: ["pipeline"],
   pipeline_new_doc: ["pipeline"]
 };
-const GROUP_ORDER = ["navigate", "create", "tools", "accessibility", "display", "pipeline", "help", "voice"];
-const GROUP_LABEL_FALLBACK = { navigate: "Navigate", create: "Create from this content", tools: "Open a tool", accessibility: "Reading & access", display: "Display & motion", pipeline: "Pipeline results", help: "Help", voice: "Voice" };
+const GROUP_ORDER = ["navigate", "live", "create", "tools", "accessibility", "display", "pipeline", "help", "voice"];
+const GROUP_LABEL_FALLBACK = { navigate: "Navigate", live: "Live class", create: "Create from this content", tools: "Open a tool", accessibility: "Reading & access", display: "Display & motion", pipeline: "Pipeline results", help: "Help", voice: "Voice" };
 const COMMAND_RECENTS_KEY = "allo_command_recents_v1";
 const COMMAND_RECENTS_LIMIT = 5;
-const CTX_FLAG = { pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", symbolStudio: "symbolStudioOpen", videoStudio: "videoStudioOpen", alloStudio: "alloStudioOpen", cinematicStudio: "cinematicStudioOpen", stemLab: "stemLabOpen", openGroove: "openGrooveOpen", timelineStudio: "timelineStudioOpen", linguaPractice: "linguaPracticeOpen", testPrepHub: "testPrepHubOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
-const CTX_PRIORITY = ["videoStudio", "alloStudio", "cinematicStudio", "symbolStudio", "stemLab", "openGroove", "timelineStudio", "linguaPractice", "testPrepHub", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
-const CONTEXT_LABEL_FALLBACK = { pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 AlloStudio", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
+const CTX_FLAG = { liveSession: "liveSessionActive", pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", symbolStudio: "symbolStudioOpen", videoStudio: "videoStudioOpen", alloStudio: "alloStudioOpen", cinematicStudio: "cinematicStudioOpen", stemLab: "stemLabOpen", openGroove: "openGrooveOpen", timelineStudio: "timelineStudioOpen", linguaPractice: "linguaPracticeOpen", testPrepHub: "testPrepHubOpen", researchHub: "researchHubOpen", litLab: "litLabOpen", mindMap: "mindMapOpen", poetTree: "poetTreeOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
+const CTX_PRIORITY = ["liveSession", "videoStudio", "alloStudio", "cinematicStudio", "symbolStudio", "stemLab", "openGroove", "timelineStudio", "linguaPractice", "testPrepHub", "researchHub", "litLab", "mindMap", "poetTree", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
+const CONTEXT_LABEL_FALLBACK = { liveSession: "Here \u2014 Live session", pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 AlloStudio", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", researchHub: "Here \u2014 Research Hub", litLab: "Here \u2014 Lit Lab", mindMap: "Here \u2014 Throughline", poetTree: "Here \u2014 Poet Tree", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
 function _activeContexts(ctx) {
   if (!ctx) return [];
   return CTX_PRIORITY.filter((k) => {
