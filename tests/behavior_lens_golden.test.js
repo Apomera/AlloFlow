@@ -270,9 +270,10 @@ describe('layer 6 — should-fix sweep regressions (2026-06-02 pass 2)', () => {
     expect(MODULE_SRC).toMatch(/const\s+\[includeAi,\s*setIncludeAi\]\s*=\s*useState\(false\)/);
   });
 
-  it('destructive deletes are gated on window.confirm (≥4 sites)', () => {
-    const confirms = (MODULE_SRC.match(/window\.confirm\(/g) || []).length;
-    expect(confirms).toBeGreaterThanOrEqual(4);
+  it('destructive actions use the accessible confirmation service (7 sites)', () => {
+    const confirmations = (MODULE_SRC.match(/await askBehaviorLensConfirmation\(/g) || []).length;
+    expect(confirmations).toBe(7);
+    expect(MODULE_SRC).not.toMatch(/(?<![\w.])(?:window\.)?confirm\s*\(/);
   });
 
   it('every <div role="progressbar"> carries aria-valuenow (WCAG 2.1)', () => {

@@ -39,6 +39,76 @@
 
     // ─── Mobile Responsiveness CSS ──────────────────────────────────────
     // Inject once — provides @media overrides for iPad & phone layouts
+    var behaviorLensConfirmSequence = 0;
+    function askBehaviorLensConfirmation(message, options) {
+        return new Promise(function(resolve) {
+            if (!document.body) { resolve(false); return; }
+            options = options || {};
+            behaviorLensConfirmSequence += 1;
+            var idBase = 'behavior-lens-confirm-' + behaviorLensConfirmSequence;
+            var opener = document.activeElement;
+            var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+                return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+            });
+            var overlay = document.createElement('div');
+            overlay.setAttribute('role', 'presentation');
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(15,23,42,.78);display:flex;align-items:center;justify-content:center;padding:20px;';
+            var dialog = document.createElement('div');
+            dialog.setAttribute('role', 'alertdialog');
+            dialog.setAttribute('aria-modal', 'true');
+            dialog.setAttribute('aria-labelledby', idBase + '-title');
+            dialog.setAttribute('aria-describedby', idBase + '-description');
+            dialog.style.cssText = 'box-sizing:border-box;width:min(32rem,100%);background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);font-family:system-ui,sans-serif;';
+            var title = document.createElement('h2');
+            title.id = idBase + '-title';
+            title.textContent = String(options.title || 'Please confirm');
+            title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#0f172a;';
+            var description = document.createElement('p');
+            description.id = idBase + '-description';
+            description.textContent = String(message || 'Continue with this action?');
+            description.style.cssText = 'margin:0;color:#334155;line-height:1.55;white-space:pre-line;';
+            var actions = document.createElement('div');
+            actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px;';
+            var cancel = document.createElement('button');
+            cancel.type = 'button';
+            cancel.textContent = String(options.cancelText || 'Cancel');
+            cancel.style.cssText = 'min-height:44px;padding:9px 16px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;cursor:pointer;';
+            var confirm = document.createElement('button');
+            confirm.type = 'button';
+            confirm.textContent = String(options.confirmText || 'Delete');
+            confirm.style.cssText = 'min-height:44px;padding:9px 16px;border:2px solid #b91c1c;border-radius:8px;background:#b91c1c;color:#fff;font-weight:700;cursor:pointer;';
+            actions.appendChild(cancel); actions.appendChild(confirm);
+            dialog.appendChild(title); dialog.appendChild(description); dialog.appendChild(actions);
+            overlay.appendChild(dialog); document.body.appendChild(overlay);
+            blocked.forEach(function(entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+            var settled = false;
+            function finish(accepted) {
+                if (settled) return;
+                settled = true;
+                document.removeEventListener('keydown', onKeyDown, true);
+                try { overlay.remove(); } catch (e) {}
+                blocked.forEach(function(entry) {
+                    if (!entry.hadInert) entry.el.removeAttribute('inert');
+                    if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden'); else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+                });
+                try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+                resolve(accepted === true);
+            }
+            function onKeyDown(event) {
+                if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); return; }
+                if (event.key !== 'Tab') return;
+                if (!dialog.contains(document.activeElement)) { event.preventDefault(); cancel.focus(); return; }
+                if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); confirm.focus(); }
+                else if (!event.shiftKey && document.activeElement === confirm) { event.preventDefault(); cancel.focus(); }
+            }
+            cancel.addEventListener('click', function() { finish(false); });
+            confirm.addEventListener('click', function() { finish(true); });
+            overlay.addEventListener('click', function(event) { if (event.target === overlay) finish(false); });
+            document.addEventListener('keydown', onKeyDown, true);
+            cancel.focus();
+        });
+    }
+
     if (!document.getElementById('bl-mobile-css')) {
         const styleEl = document.createElement('style');
         styleEl.id = 'bl-mobile-css';
@@ -936,12 +1006,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             if (addToast) addToast(tt('behavior_lens.abc.entry_saved', 'ABC entry saved ✅'), 'success');
         };
 
-        const handleDelete = (id) => {
+        const handleDelete = async (id) => {
             // Confirm before destroying a permanent observation — there is no
             // undo, and bulk delete already confirms, so single delete should
             // too (matches the crisis-contact removal pattern).
             const msg = (t && t('behavior_lens.confirm.delete_entry')) || 'Delete this ABC entry? This cannot be undone.';
-            if (typeof window !== 'undefined' && window.confirm && !window.confirm(msg)) return;
+            if (!await askBehaviorLensConfirmation(msg, { title: 'Delete ABC entry', confirmText: 'Delete entry' })) return;
             setEntries(prev => prev.filter(e => e.id !== id));
             setSelectedIds(prev => { const n = new Set(prev); n.delete(id); return n; });
             if (addToast) addToast(tt('behavior_lens.abc.entry_deleted', 'Entry deleted'), 'info');
@@ -1983,14 +2053,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             setNewLabel('');
         };
 
-        const removeCounter = (id) => {
+        const removeCounter = async (id) => {
             if (counters.length <= 1) return;
             const c = counters.find(x => x.id === id);
             const count = c ? c.count : 0;
             // Only prompt when the counter has un-saved tallies to lose
             if (count > 0) {
                 const msg = (t && t('behavior_lens.confirm.remove_counter')) || `Remove this counter? You'll lose ${count} tallies that haven't been saved as a session.`;
-                if (!window.confirm(msg)) return;
+                if (!await askBehaviorLensConfirmation(msg, { title: 'Remove frequency counter', confirmText: 'Remove counter' })) return;
             }
             setCounters(prev => prev.filter(c => c.id !== id));
             if (addToast) addToast(tt('behavior_lens.toast.counter_removed', 'Counter removed'), 'info');
@@ -2111,13 +2181,13 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     className: `px-5 py-2 rounded-full text-sm font-bold transition-colors ${running ? 'bg-amber-500 hover:bg-amber-400' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'}`
                 }, running ? '⏸ Pause' : '▶ Start'),
                 h('button', { "aria-label": "Reset all counts and timer",
-                    onClick: () => {
+                    onClick: async () => {
                         // Reset wipes an unsaved running count — confirm when
                         // there is anything to lose (this button sits next to
                         // Start/Pause and there is no undo).
                         const hasData = elapsed > 0 || counters.some(c => (c.count || 0) > 0);
                         const msg = (t && t('behavior_lens.confirm.reset_counts')) || 'Reset all counts and the timer? This cannot be undone.';
-                        if (hasData && !window.confirm(msg)) return;
+                        if (hasData && !await askBehaviorLensConfirmation(msg, { title: 'Reset frequency data', confirmText: 'Reset counts' })) return;
                         setCounters(prev => prev.map(c => ({ ...c, count: 0 }))); setElapsed(0); setRunning(false);
                     },
                     className: 'px-5 py-2 rounded-full bg-white/10 hover:bg-white/20 text-sm font-bold transition-colors'
@@ -3765,11 +3835,11 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
             if (addToast) addToast(tt('behavior_lens.toast.progress_logged', 'Progress logged 📊'), 'success');
         };
 
-        const deleteGoal = (goalId) => {
+        const deleteGoal = async (goalId) => {
             const g = savedGoals.find(x => x.id === goalId);
             const label = g && g.specific ? `"${g.specific.slice(0, 40)}${g.specific.length > 40 ? '…' : ''}"` : 'this goal';
             const msg = (t && t('behavior_lens.confirm.delete_goal')) || `Delete ${label}? This can't be undone.`;
-            if (!window.confirm(msg)) return;
+            if (!await askBehaviorLensConfirmation(msg, { title: 'Delete behavior goal', confirmText: 'Delete goal' })) return;
             setSavedGoals(prev => prev.filter(g => g.id !== goalId));
             if (addToast) addToast(tt('behavior_lens.toast.goal_removed', 'Goal removed'), 'info');
         };
@@ -5092,14 +5162,14 @@ Provide a brief impact interpretation and return ONLY valid JSON:
         };
 
         const addContact = () => setContacts(prev => [...prev, { id: uid(), name: '', role: '', phone: '' }]);
-        const removeContact = (i) => {
+        const removeContact = async (i) => {
             // Crisis-plan contacts (parent, principal, psychologist) — deleting one
             // and discovering it during an actual incident is the worst-case.
             // Confirm + toast on every removal.
             const c = contacts[i] || {};
             const label = c.name || c.role || `contact #${i + 1}`;
             const msg = (t && t('behavior_lens.confirm.remove_contact')) || `Remove "${label}" from the crisis plan? This can't be undone.`;
-            if (!window.confirm(msg)) return;
+            if (!await askBehaviorLensConfirmation(msg, { title: 'Remove crisis contact', confirmText: 'Remove contact' })) return;
             setContacts(prev => prev.filter((_, idx) => idx !== i));
             if (addToast) addToast(t('behavior_lens.toast.contact_removed') || `Removed "${label}"`, 'info');
         };
@@ -7231,11 +7301,11 @@ Respond only with the student's words:`;
             if (addToast) addToast(tt('behavior_lens.toast.reflection_saved_2', 'Reflection saved 🌟'), 'success');
         };
 
-        const deleteEntry = (id) => {
+        const deleteEntry = async (id) => {
             const e = entries.find(x => x.id === id);
             const when = e && e.timestamp ? fmtDate(e.timestamp) : 'this entry';
             const msg = (t && t('behavior_lens.confirm.delete_self_check')) || `Delete the self-check from ${when}? This can't be undone.`;
-            if (!window.confirm(msg)) return;
+            if (!await askBehaviorLensConfirmation(msg, { title: 'Delete self-check entry', confirmText: 'Delete entry' })) return;
             const updated = entries.filter(e => e.id !== id);
             setEntries(updated);
             try { localStorage.setItem(storageKey, JSON.stringify(updated)); } catch (e) { /* ignore */ }
@@ -9550,7 +9620,7 @@ Rules:
             // Reset button
             h('div', { className: 'text-center pt-2' },
                 h('button', { "aria-label": "Reset All Progress",
-                    onClick: () => { if (confirm('Reset all skill progress? This cannot be undone.')) { setCompleted([]); if (addToast) addToast(t('toasts.skill_progress_reset'), 'info'); } },
+                    onClick: async () => { if (await askBehaviorLensConfirmation('Reset all skill progress? This cannot be undone.', { title: 'Reset skill progress', confirmText: 'Reset progress' })) { setCompleted([]); if (addToast) addToast(t('toasts.skill_progress_reset'), 'info'); } },
                     className: 'text-[11px] text-slate-600 hover:text-red-400 transition-colors'
                 }, '↺ Reset All Progress')
             )
