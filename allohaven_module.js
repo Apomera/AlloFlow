@@ -178,6 +178,43 @@
   //     toolData               — cross-tool state aggregator (read-only)
   //     setStemLabTool(id)     — for modes that deep-link into STEM Lab
   //   }
+  // Visible and announced validation fallback for standalone or partially loaded hosts.
+  function notifyAlloHaven(message, type) {
+    message = String(message || 'AlloHaven needs your attention.');
+    type = type || 'info';
+    try {
+      if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') {
+        window.AlloFlowUX.toast(message, type);
+        return;
+      }
+    } catch (e) {}
+    try {
+      var live = document.getElementById('allo-live-allohaven');
+      if (live) {
+        live.setAttribute('role', type === 'error' || type === 'warning' ? 'alert' : 'status');
+        live.setAttribute('aria-live', type === 'error' || type === 'warning' ? 'assertive' : 'polite');
+        live.textContent = '';
+        setTimeout(function() { live.textContent = message; }, 20);
+      }
+      var notice = document.getElementById('allohaven-inline-notice');
+      if (!notice) {
+        notice = document.createElement('div');
+        notice.id = 'allohaven-inline-notice';
+        document.body.appendChild(notice);
+      }
+      var urgent = type === 'error' || type === 'warning';
+      notice.setAttribute('role', urgent ? 'alert' : 'status');
+      notice.setAttribute('aria-live', urgent ? 'assertive' : 'polite');
+      notice.setAttribute('aria-atomic', 'true');
+      notice.textContent = message;
+      notice.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(36rem,calc(100vw - 32px));padding:12px 18px;border-radius:10px;background:' + (urgent ? '#854d0e' : '#1e293b') + ';color:#fff;font:600 14px/1.45 system-ui,sans-serif;box-shadow:0 8px 24px rgba(15,23,42,.35);z-index:100001;';
+      if (notice._alloHavenTimer) clearTimeout(notice._alloHavenTimer);
+      notice._alloHavenTimer = setTimeout(function() { try { notice.remove(); } catch (e) {} }, 6000);
+    } catch (e) {
+      try { console.warn('[AlloHaven]', message); } catch (_) {}
+    }
+  }
+
   if (!window.AlloHavenArcade) {
     window.AlloHavenArcade = {
       _registry: {},
@@ -6478,8 +6515,7 @@
           return (c.front || '').trim() && (c.back || '').trim();
         });
         if (nonEmpty.length === 0) {
-          if (window.AlloFlowUX) window.AlloFlowUX.toast('Add at least one card with both a front and back.', 'warning');
-          else alert('Add at least one card with both a front and back.');
+          notifyAlloHaven('Add at least one card with both a front and back.', 'warning');
           return;
         }
         var cleaned = Object.assign({}, draft, { data: { cards: nonEmpty } });
@@ -6487,8 +6523,7 @@
       } else if (draft.type === 'acronym') {
         var letters = (draft.data.letters || '').trim();
         if (!letters) {
-          if (window.AlloFlowUX) window.AlloFlowUX.toast('Type a word or letter sequence first.', 'warning');
-          else alert('Type a word or letter sequence first.');
+          notifyAlloHaven('Type a word or letter sequence first.', 'warning');
           return;
         }
         var paddedMeanings = letters.split('').map(function(_, i) {
@@ -6499,8 +6534,7 @@
       } else if (draft.type === 'notes') {
         var text = (draft.data.text || '').trim();
         if (!text) {
-          if (window.AlloFlowUX) window.AlloFlowUX.toast('Write something first.', 'warning');
-          else alert('Write something first.');
+          notifyAlloHaven('Write something first.', 'warning');
           return;
         }
         p.onSave(Object.assign({}, draft, { data: { text: text } }));
@@ -6508,13 +6542,11 @@
         var targetId = (draft.data && draft.data.targetDecorationId) || null;
         var assoc = (draft.data && draft.data.association || '').trim();
         if (!targetId) {
-          if (window.AlloFlowUX) window.AlloFlowUX.toast('Pick a decoration to link to first.', 'warning');
-          else alert('Pick a decoration to link to first.');
+          notifyAlloHaven('Pick a decoration to link to first.', 'warning');
           return;
         }
         if (!assoc) {
-          if (window.AlloFlowUX) window.AlloFlowUX.toast('Write a short association — what does this remind you of?', 'warning');
-          else alert('Write a short association — what does this remind you of?');
+          notifyAlloHaven('Write a short association — what does this remind you of?', 'warning');
           return;
         }
         var preserved = (existing && existing.type === 'image-link' && existing.data) || {};
