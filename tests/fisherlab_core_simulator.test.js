@@ -232,6 +232,29 @@ describe('Fisher Lab voyage progression', () => {
   });
 });
 
+describe('Fisher Lab catch evidence', () => {
+  it('classifies minimum-size and slot boundaries from the measured fish', () => {
+    const { getCoreFishRuleEvidence } = window.__FisherLabCore;
+    const minimumSpecies = { minSize: 18, slot: null };
+    const slotSpecies = { minSize: 19, slot: '19-24 inches' };
+
+    expect(getCoreFishRuleEvidence(17, minimumSpecies)).toMatchObject({ legalToRetain: false, expectedReason: 'below-minimum' });
+    expect(getCoreFishRuleEvidence(18, minimumSpecies)).toMatchObject({ legalToRetain: true, expectedReason: 'within-rule' });
+    expect(getCoreFishRuleEvidence(19, slotSpecies)).toMatchObject({ legalToRetain: true, expectedReason: 'within-rule' });
+    expect(getCoreFishRuleEvidence(24, slotSpecies)).toMatchObject({ legalToRetain: true, expectedReason: 'within-rule' });
+    expect(getCoreFishRuleEvidence(25, slotSpecies)).toMatchObject({ legalToRetain: false, expectedReason: 'above-slot' });
+  });
+
+  it('requires both a correct evidence log and a correct classification', () => {
+    const { evaluateCoreFishDecision } = window.__FisherLabCore;
+    const species = { minSize: 19, slot: '19-24 inches' };
+
+    expect(evaluateCoreFishDecision(25, species, 'release-required', 'above-slot')).toMatchObject({ correct: true, classificationCorrect: true, evidenceCorrect: true });
+    expect(evaluateCoreFishDecision(25, species, 'release-required', 'below-minimum')).toMatchObject({ correct: false, classificationCorrect: true, evidenceCorrect: false });
+    expect(evaluateCoreFishDecision(20, species, 'release-required', 'within-rule')).toMatchObject({ correct: false, classificationCorrect: false, evidenceCorrect: true });
+  });
+});
+
 describe('Fisher Lab simulator safeguards', () => {
   it('keeps keyboard control focused, fuel bounded, and catch decisions explicit', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
@@ -303,6 +326,11 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("activeTraffic.choiceOneAction || 'give-way'");
     expect(source).toContain("' decisions correct · '");
     expect(source).toContain("type: 'fish-haul'");
+    expect(source).toContain('inspect the measurement and training rule');
+    expect(source).not.toContain("(isKeeper ? ' — KEEPER'");
+    expect(source).toContain('1. Log the measurement evidence');
+    expect(source).toContain("name: 'fl-fish-evidence'");
+    expect(source).toContain("disabled: !fishEvidence");
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true'");
     expect(source).not.toContain('resumeSim');
     expect(source).not.toContain('hud.fuel || 100');

@@ -577,6 +577,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     if (closestRange >= 12 && elapsed <= 14) return { id: 'safe', label: 'Safe separation', bonus: 5 };
     return { id: 'complete', label: 'Maneuver complete', bonus: 0 };
   }
+  function getCoreFishRuleEvidence(length, species) {
+    var measured = Number(length);
+    var slotBounds = species && species.slot ? String(species.slot).match(/\d+(?:\.\d+)?/g) : null;
+    var minimum = species && typeof species.minSize === 'number' ? species.minSize : null;
+    var evidence = { legalToRetain: true, expectedReason: 'no-size-rule', expectedLabel: 'No size restriction in this activity', ruleLabel: 'No size score in this activity' };
+
+    if (slotBounds && slotBounds.length >= 2) {
+      var lower = Number(slotBounds[0]);
+      var upper = Number(slotBounds[1]);
+      evidence.ruleLabel = 'Slot: ' + lower + '-' + upper + ' in';
+      if (measured < lower) {
+        evidence.legalToRetain = false;
+        evidence.expectedReason = 'below-minimum';
+        evidence.expectedLabel = measured + ' in is below the ' + lower + ' in slot minimum';
+      } else if (measured > upper) {
+        evidence.legalToRetain = false;
+        evidence.expectedReason = 'above-slot';
+        evidence.expectedLabel = measured + ' in is above the ' + upper + ' in slot maximum';
+      } else {
+        evidence.expectedReason = 'within-rule';
+        evidence.expectedLabel = measured + ' in falls within the ' + lower + '-' + upper + ' in slot';
+      }
+    } else if (minimum !== null) {
+      evidence.ruleLabel = 'Minimum: ' + minimum + ' in';
+      evidence.legalToRetain = measured >= minimum;
+      evidence.expectedReason = evidence.legalToRetain ? 'within-rule' : 'below-minimum';
+      evidence.expectedLabel = evidence.legalToRetain ? measured + ' in meets the ' + minimum + ' in minimum' : measured + ' in is below the ' + minimum + ' in minimum';
+    }
+    return evidence;
+  }
+
+  function evaluateCoreFishDecision(length, species, action, reason) {
+    var evidence = getCoreFishRuleEvidence(length, species);
+    var expectedAction = evidence.legalToRetain ? 'retain' : 'release-required';
+    var classificationCorrect = action === expectedAction;
+    var evidenceCorrect = reason === evidence.expectedReason;
+    var correct = classificationCorrect && evidenceCorrect;
+    var explanation = correct ? 'Evidence confirmed: ' + evidence.expectedLabel + '.' : !evidenceCorrect ? 'Evidence review: ' + evidence.expectedLabel + '.' : evidence.legalToRetain ? 'The measurement permits retention under this training rule; voluntary release remains allowed.' : 'The measurement requires release under this training rule.';
+    return { correct: correct, classificationCorrect: classificationCorrect, evidenceCorrect: evidenceCorrect, legalToRetain: evidence.legalToRetain, expectedAction: expectedAction, expectedReason: evidence.expectedReason, expectedLabel: evidence.expectedLabel, ruleLabel: evidence.ruleLabel, explanation: explanation };
+  }
+
   function scoreCoreDecision(score, streak, correct, multiplier) {
     var nextStreak = correct ? streak + 1 : 0;
     var baseReward = 25 + Math.min(20, Math.max(0, nextStreak - 1) * 5);
@@ -619,6 +660,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     evaluateCoreRadarCall: evaluateCoreRadarCall,
     getCoreManeuverWindow: getCoreManeuverWindow,
     gradeCoreEncounter: gradeCoreEncounter,
+    getCoreFishRuleEvidence: getCoreFishRuleEvidence,
+    evaluateCoreFishDecision: evaluateCoreFishDecision,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
     getCoreObjective: getCoreObjective,
@@ -9660,27 +9703,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
 
         boatState.fishLanded += 1;
-        var isKeeper = true;
-        if (typeof sp.minSize === 'number') {
-          isKeeper = (len >= sp.minSize);
-        }
-        if (sp.slot) {
-          // If there is a slot range (e.g. "19-24 inches"), check if fish is inside it
-          var bounds = sp.slot.match(/\d+/g);
-          if (bounds && bounds.length >= 2) {
-            var minB = parseInt(bounds[0], 10);
-            var maxB = parseInt(bounds[1], 10);
-            isKeeper = (len >= minB && len <= maxB);
-          }
-        }
-        
+        var isKeeper = getCoreFishRuleEvidence(len, sp).legalToRetain;
+
         setPaused(true, false);
         statusCb({
           type: 'fish-haul',
           species: sp,
           length: len,
           isKeeper: isKeeper,
-          text: 'Landed a ' + len + '" ' + sp.name + (isKeeper ? ' — KEEPER' : ' — release (' + (sp.slot ? 'slot ' + sp.slot : 'min ' + sp.minSize + '"') + ')')
+          text: 'Landed a ' + len + '" ' + sp.name + ' — inspect the measurement and training rule'
         });
         // The learner decides keep or release in the inspection overlay.
       }
@@ -10023,6 +10054,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var activeLobster = activeLobsterHook[0], setActiveLobster = activeLobsterHook[1];
     var activeFishHook = useState(null);
     var activeFish = activeFishHook[0], setActiveFish = activeFishHook[1];
+    var fishEvidenceHook = useState(null);
+    var fishEvidence = fishEvidenceHook[0], setFishEvidence = fishEvidenceHook[1];
     var activeTrafficHook = useState(null);
     var activeTraffic = activeTrafficHook[0], setActiveTraffic = activeTrafficHook[1];
     var caliperHook = useState(3.5);
@@ -10179,7 +10212,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         setActiveLobster(ev);
         setCaliperVal(3.5);
       }
-      if (ev.type === 'fish-haul') setActiveFish(ev);
+      if (ev.type === 'fish-haul') {
+        setFishEvidence(null);
+        setActiveFish(ev);
+      }
       if (ev.type === 'traffic-encounter') setActiveTraffic(ev.encounter);
       if (ev.type === 'mission-complete') {
         var saved = loadState();
@@ -11217,22 +11253,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               )
             ) : null,
 
-            activeFish ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-fish-inspection-title', style: { position: 'absolute', inset: 0, zIndex: 90, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.94)' } },
-              h('div', { style: { width: 'min(560px, 100%)', padding: 18, borderRadius: 8, border: '1px solid rgba(125,211,252,0.5)', background: 'linear-gradient(145deg,#082f49,#0f172a)', boxShadow: '0 22px 60px rgba(0,0,0,0.6)' } },
-                h('div', { style: { color: '#7dd3fc', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Catch inspection · simulation paused'),
-                h('h3', { id: 'fl-fish-inspection-title', style: { margin: '5px 0 8px', color: '#f8fafc', fontSize: 22 } }, activeFish.species.emoji + ' ' + activeFish.species.name + ' · ' + activeFish.length + ' in'),
-                h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, activeFish.species.idMarks),
-                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 8, margin: '12px 0' } },
-                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#fde68a', fontSize: 11 } }, 'Training rule'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 12 } }, activeFish.species.slot ? 'Slot: ' + activeFish.species.slot : activeFish.species.minSize ? 'Minimum: ' + activeFish.species.minSize + ' in' : 'No size score in this activity')),
-                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#a7f3d0', fontSize: 11 } }, 'Stewardship context'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11, lineHeight: 1.4 } }, activeFish.species.stewardship))
-                ),
-                h('p', { style: { color: '#bae6fd', fontSize: 12, fontWeight: 800 } }, 'Classify this catch. “Legal to retain” describes the training rule; voluntary release is always allowed.'),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-                  h('button', { type: 'button', ref: decisionFocusRef, className: 'fl-btn', onClick: function() { var correct = !!activeFish.isKeeper; var msg = correct ? 'Correct: this fish meets the training size rule.' : 'Incorrect: this fish must be released under the training size rule.'; pushStatus({ type: 'fish', species: activeFish.species, length: activeFish.length, isKeeper: correct, text: msg }); if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', 'keep', correct, activeFish.species.id); flAnnounce(msg); setActiveFish(null); }, style: { flex: '1 1 200px', padding: 11, border: 0, borderRadius: 7, background: '#059669', color: '#fff', fontWeight: 900, cursor: 'pointer' } }, 'Legal to retain'),
-                  h('button', { type: 'button', className: 'fl-btn', onClick: function() { var correct = !activeFish.isKeeper; var msg = correct ? 'Correct: this fish must be released under the training size rule.' : 'Not quite: this fish meets the size rule, though voluntary release remains allowed.'; pushStatus({ type: correct ? 'complete' : 'guidance', text: msg }); if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', 'release', correct, activeFish.species.id); flAnnounce(msg); setActiveFish(null); }, style: { flex: '1 1 200px', padding: 11, border: '1px solid rgba(148,163,184,0.5)', borderRadius: 7, background: '#334155', color: '#fff', fontWeight: 900, cursor: 'pointer' } }, 'Must release')
+            activeFish ? (function() {
+              var ruleEvidence = getCoreFishRuleEvidence(activeFish.length, activeFish.species);
+              var evidenceOptions = [
+                { id: 'within-rule', label: 'Measurement meets the size or slot rule' },
+                { id: 'below-minimum', label: 'Measurement is below the minimum' }
+              ];
+              if (activeFish.species.slot) evidenceOptions.push({ id: 'above-slot', label: 'Measurement is above the slot maximum' });
+              if (!activeFish.species.slot && typeof activeFish.species.minSize !== 'number') evidenceOptions = [{ id: 'no-size-rule', label: 'No size restriction is scored here' }];
+              function submitFishDecision(action) {
+                var result = evaluateCoreFishDecision(activeFish.length, activeFish.species, action, fishEvidence);
+                var msg = (result.correct ? 'Correct. ' : 'Review needed. ') + result.explanation;
+                pushStatus({ type: result.correct && action === 'retain' ? 'fish' : result.correct ? 'complete' : 'guidance', species: activeFish.species, length: activeFish.length, isKeeper: result.correct && action === 'retain', text: msg });
+                if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', action === 'retain' ? 'keep' : 'release', result.correct, activeFish.species.id);
+                flAnnounce(msg);
+                setActiveFish(null);
+                setFishEvidence(null);
+              }
+              return h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-fish-inspection-title', 'aria-describedby': 'fl-fish-inspection-help', style: { position: 'absolute', inset: 0, zIndex: 90, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.94)', overflowY: 'auto' } },
+                h('div', { style: { width: 'min(600px, 100%)', padding: 18, borderRadius: 8, border: '1px solid rgba(125,211,252,0.5)', background: 'linear-gradient(145deg,#082f49,#0f172a)', boxShadow: '0 22px 60px rgba(0,0,0,0.6)' } },
+                  h('div', { style: { color: '#7dd3fc', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Catch inspection · simulation paused'),
+                  h('h3', { id: 'fl-fish-inspection-title', style: { margin: '5px 0 8px', color: '#f8fafc', fontSize: 22 } }, activeFish.species.emoji + ' ' + activeFish.species.name + ' · ' + activeFish.length + ' in'),
+                  h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, activeFish.species.idMarks),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 8, margin: '12px 0' } },
+                    h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#fde68a', fontSize: 11 } }, 'Training rule'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 12 } }, ruleEvidence.ruleLabel)),
+                    h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#a7f3d0', fontSize: 11 } }, 'Stewardship context'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11, lineHeight: 1.4 } }, activeFish.species.stewardship))
+                  ),
+                  h('fieldset', { style: { margin: '12px 0', padding: 10, borderRadius: 7, border: '1px solid rgba(125,211,252,0.35)' } },
+                    h('legend', { style: { padding: '0 5px', color: '#bae6fd', fontSize: 12, fontWeight: 900 } }, '1. Log the measurement evidence'),
+                    h('div', { style: { display: 'grid', gap: 7 } }, evidenceOptions.map(function(option, index) {
+                      return h('label', { key: option.id, style: { display: 'flex', alignItems: 'flex-start', gap: 8, color: '#e2e8f0', fontSize: 12, lineHeight: 1.4, cursor: 'pointer' } },
+                        h('input', { ref: index === 0 ? decisionFocusRef : null, type: 'radio', name: 'fl-fish-evidence', value: option.id, checked: fishEvidence === option.id, onChange: function() { setFishEvidence(option.id); }, style: { marginTop: 2, accentColor: '#38bdf8' } }), option.label);
+                    }))
+                  ),
+                  h('p', { id: 'fl-fish-inspection-help', style: { color: '#bae6fd', fontSize: 12, fontWeight: 800 } }, '2. Classify the catch. Choose evidence first; voluntary release remains allowed outside this scoring exercise.'),
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                    h('button', { type: 'button', className: 'fl-btn', disabled: !fishEvidence, onClick: function() { submitFishDecision('retain'); }, style: { flex: '1 1 200px', padding: 11, border: 0, borderRadius: 7, background: fishEvidence ? '#059669' : '#475569', color: '#fff', fontWeight: 900, cursor: fishEvidence ? 'pointer' : 'not-allowed' } }, 'Legal to retain'),
+                    h('button', { type: 'button', className: 'fl-btn', disabled: !fishEvidence, onClick: function() { submitFishDecision('release-required'); }, style: { flex: '1 1 200px', padding: 11, border: '1px solid rgba(148,163,184,0.5)', borderRadius: 7, background: fishEvidence ? '#334155' : '#1e293b', color: '#fff', fontWeight: 900, cursor: fishEvidence ? 'pointer' : 'not-allowed' } }, 'Must release')
+                  )
                 )
-              )
-            ) : null,
+              );
+            })() : null,
 
             hud.missionComplete ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-debrief-title', style: { position: 'absolute', inset: 0, zIndex: 85, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.88)' } },
               h('div', { style: { width: 'min(500px,100%)', padding: 20, borderRadius: 8, border: '1px solid rgba(52,211,153,0.55)', background: 'linear-gradient(145deg,#064e3b,#082f49 58%,#0f172a)', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.65)' } },
