@@ -448,11 +448,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     pnw: { vessel: 'harbor patrol boat', vesselKind: 'workboat', rule: 'COLREGS Rule 15', situation: 'A power-driven patrol boat is crossing from your port side in open water.', correctAction: 'stand-on', correctLabel: 'Maintain course and speed', incorrectLabel: 'Make an unnecessary port alteration', explanation: 'You are the stand-on vessel in this crossing. Predictability matters: hold course and speed, monitor bearing and range, and act only if the give-way vessel does not.', maneuverType: 'stand-on', approachSide: 'port', maneuverLabel: 'Hold stand-on course', maneuverInstruction: 'Maintain heading within 8° and speed within 1.5 kt for 5 seconds while monitoring closest approach.' },
     greatlakes: { vessel: 'channel tug', vesselKind: 'workboat', rule: 'COLREGS Rule 15', situation: 'A power-driven tug without a tow is crossing from port and has your skiff on its starboard side.', correctAction: 'stand-on', correctLabel: 'Stand on and keep a close watch', incorrectLabel: 'Turn toward the tug', explanation: 'With no tow or restricted-maneuverability signal, the ordinary crossing rule applies. The tug gives way; your skiff maintains course and speed while monitoring.', maneuverType: 'stand-on', approachSide: 'port', maneuverLabel: 'Hold stand-on course', maneuverInstruction: 'Maintain heading within 8° and speed within 1.5 kt for 5 seconds while monitoring closest approach.' }
   };
+  var CORE_COLREGS_RESTRICTED = {
+    maine: { vessel: 'radar contact bearing 035°', vesselKind: 'radar', rule: 'COLREGS Rule 19', situation: 'Rain and dusk obscure a power-driven vessel detected by radar forward of your starboard beam. The vessels are not in sight of one another.', correctAction: 'restricted-safe', correctLabel: 'Reduce speed and avoid a port alteration', incorrectLabel: 'Hold speed under stand-on rules', explanation: 'Rule 19 applies when vessels are not in sight in restricted visibility. There is no stand-on vessel. Proceed at a safe speed, assess close-quarters risk, and avoid altering to port for a vessel forward of the beam.', maneuverType: 'restricted', approachSide: 'starboard', maneuverLabel: 'Navigate restricted visibility', maneuverInstruction: 'Reduce to 2 kt or less, avoid more than 8° of port alteration, and monitor the radar contact for 5 seconds.', radarOnly: true, choiceOneAction: 'restricted-safe', choiceOneLabel: 'Reduce speed and avoid a port alteration', choiceTwoAction: 'stand-on', choiceTwoLabel: 'Hold speed under stand-on rules', lookoutReport: 'Radar shows a contact forward of the starboard beam with decreasing range. The other vessel is not visually acquired; ordinary stand-on and give-way roles do not apply.' },
+    chesapeake: { vessel: 'radar contact off Thomas Point', vesselKind: 'radar', rule: 'COLREGS Rule 19', situation: 'Rain and dusk obscure a power-driven vessel detected by radar forward of your starboard beam. The vessels are not in sight of one another.', correctAction: 'restricted-safe', correctLabel: 'Reduce speed and avoid a port alteration', incorrectLabel: 'Hold speed under stand-on rules', explanation: 'Rule 19 applies when vessels are not in sight in restricted visibility. There is no stand-on vessel. Proceed at a safe speed, assess close-quarters risk, and avoid altering to port for a vessel forward of the beam.', maneuverType: 'restricted', approachSide: 'starboard', maneuverLabel: 'Navigate restricted visibility', maneuverInstruction: 'Reduce to 2 kt or less, avoid more than 8° of port alteration, and monitor the radar contact for 5 seconds.', radarOnly: true, choiceOneAction: 'restricted-safe', choiceOneLabel: 'Reduce speed and avoid a port alteration', choiceTwoAction: 'stand-on', choiceTwoLabel: 'Hold speed under stand-on rules', lookoutReport: 'Radar shows a contact forward of the starboard beam with decreasing range. The other vessel is not visually acquired; ordinary stand-on and give-way roles do not apply.' },
+    pnw: { vessel: 'radar contact in rain', vesselKind: 'radar', rule: 'COLREGS Rule 19', situation: 'Rain and dusk obscure a power-driven vessel detected by radar forward of your starboard beam. The vessels are not in sight of one another.', correctAction: 'restricted-safe', correctLabel: 'Reduce speed and avoid a port alteration', incorrectLabel: 'Hold speed under stand-on rules', explanation: 'Rule 19 applies when vessels are not in sight in restricted visibility. There is no stand-on vessel. Proceed at a safe speed, assess close-quarters risk, and avoid altering to port for a vessel forward of the beam.', maneuverType: 'restricted', approachSide: 'starboard', maneuverLabel: 'Navigate restricted visibility', maneuverInstruction: 'Reduce to 2 kt or less, avoid more than 8° of port alteration, and monitor the radar contact for 5 seconds.', radarOnly: true, choiceOneAction: 'restricted-safe', choiceOneLabel: 'Reduce speed and avoid a port alteration', choiceTwoAction: 'stand-on', choiceTwoLabel: 'Hold speed under stand-on rules', lookoutReport: 'Radar shows a contact forward of the starboard beam with decreasing range. The other vessel is not visually acquired; ordinary stand-on and give-way roles do not apply.' },
+    greatlakes: { vessel: 'radar contact near the channel', vesselKind: 'radar', rule: 'COLREGS Rule 19', situation: 'Rain and dusk obscure a power-driven vessel detected by radar forward of your starboard beam. The vessels are not in sight of one another.', correctAction: 'restricted-safe', correctLabel: 'Reduce speed and avoid a port alteration', incorrectLabel: 'Hold speed under stand-on rules', explanation: 'Rule 19 applies when vessels are not in sight in restricted visibility. There is no stand-on vessel. Proceed at a safe speed, assess close-quarters risk, and avoid altering to port for a vessel forward of the beam.', maneuverType: 'restricted', approachSide: 'starboard', maneuverLabel: 'Navigate restricted visibility', maneuverInstruction: 'Reduce to 2 kt or less, avoid more than 8° of port alteration, and monitor the radar contact for 5 seconds.', radarOnly: true, choiceOneAction: 'restricted-safe', choiceOneLabel: 'Reduce speed and avoid a port alteration', choiceTwoAction: 'stand-on', choiceTwoLabel: 'Hold speed under stand-on rules', lookoutReport: 'Radar shows a contact forward of the starboard beam with decreasing range. The other vessel is not visually acquired; ordinary stand-on and give-way roles do not apply.' }
+  };
+  Object.keys(CORE_COLREGS_STAND_ON).forEach(function(region) {
+    CORE_COLREGS_STAND_ON[region].choiceOneAction = 'give-way';
+    CORE_COLREGS_STAND_ON[region].choiceOneLabel = CORE_COLREGS_STAND_ON[region].incorrectLabel;
+    CORE_COLREGS_STAND_ON[region].choiceTwoAction = 'stand-on';
+    CORE_COLREGS_STAND_ON[region].choiceTwoLabel = CORE_COLREGS_STAND_ON[region].correctLabel;
+    CORE_COLREGS_STAND_ON[region].lookoutReport = 'Constant bearing and decreasing range indicate risk of collision. Maintain a predictable course and speed while watching for the give-way vessel to act.';
+  });
   Object.keys(CORE_COLREGS_ENCOUNTERS).forEach(function(region) {
     CORE_COLREGS_ENCOUNTERS[region].maneuverType = 'give-way';
     CORE_COLREGS_ENCOUNTERS[region].approachSide = 'starboard';
     CORE_COLREGS_ENCOUNTERS[region].maneuverLabel = 'Execute give-way maneuver';
     CORE_COLREGS_ENCOUNTERS[region].maneuverInstruction = 'Reduce below 2.5 kt and alter at least 15° to starboard.';
+    CORE_COLREGS_ENCOUNTERS[region].choiceOneAction = 'give-way';
+    CORE_COLREGS_ENCOUNTERS[region].choiceOneLabel = CORE_COLREGS_ENCOUNTERS[region].correctLabel;
+    CORE_COLREGS_ENCOUNTERS[region].choiceTwoAction = 'stand-on';
+    CORE_COLREGS_ENCOUNTERS[region].choiceTwoLabel = CORE_COLREGS_ENCOUNTERS[region].incorrectLabel;
+    CORE_COLREGS_ENCOUNTERS[region].lookoutReport = 'Constant bearing and decreasing range indicate risk of collision. Decide early and make a substantial, visible maneuver.';
   });
   var CORE_VOYAGE_MODES = {
     guided: { id: 'guided', label: 'Guided', tagline: 'Full fuel, calm daylight, generous targets', startFuel: 100, fuelBurn: 0.42, scoreMultiplier: 1, requiredFuel: 15, requiredAccuracy: 60, safeSpeed: 5, weather: 'clear', timeOfDay: 'day' },
@@ -466,7 +484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return CORE_VOYAGE_MODES[mode] || CORE_VOYAGE_MODES.guided;
   }
   function getCoreEncounter(region, mode) {
-    var source = mode === 'skipper' ? CORE_COLREGS_STAND_ON : CORE_COLREGS_ENCOUNTERS;
+    var source = mode === 'master' ? CORE_COLREGS_RESTRICTED : mode === 'skipper' ? CORE_COLREGS_STAND_ON : CORE_COLREGS_ENCOUNTERS;
     return source[region] || source.maine;
   }
   function evaluateCoreEncounter(region, action, mode) {
@@ -479,6 +497,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     while (headingDelta < -Math.PI) headingDelta += Math.PI * 2;
     var headingDeviation = Math.abs(headingDelta * 180 / Math.PI);
     var speedDeviation = Math.abs(Math.abs(currentSpeed) - Math.abs(startSpeed));
+    if (type === 'restricted') {
+      var restrictedSpeed = Math.abs(currentSpeed) <= 2;
+      var portTurnDegrees = Math.max(0, headingDelta * 180 / Math.PI);
+      var avoidedPortAlteration = portTurnDegrees <= 8;
+      var cautiousObservation = elapsed >= 5;
+      return { criterionOne: restrictedSpeed, criterionTwo: avoidedPortAlteration, observedEnough: cautiousObservation, headingDeviation: headingDeviation, speedDeviation: speedDeviation, turnDegrees: 0, portTurnDegrees: portTurnDegrees, complete: restrictedSpeed && avoidedPortAlteration && cautiousObservation };
+    }
     if (type === 'stand-on') {
       var courseSteady = headingDeviation <= 8;
       var speedSteady = speedDeviation <= 1.5;
@@ -511,7 +536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   }
   function gradeCoreEncounter(correct, reviewed, maneuverType, elapsed, closestRange) {
     if (!correct || reviewed) return { id: 'review', label: 'Review required', bonus: 0 };
-    var promptLimit = maneuverType === 'stand-on' ? 8 : 7;
+    var promptLimit = maneuverType === 'stand-on' ? 8 : maneuverType === 'restricted' ? 9 : 7;
     if (closestRange >= 18 && elapsed <= promptLimit) return { id: 'excellent', label: 'Excellent watch', bonus: 10 };
     if (closestRange >= 12 && elapsed <= 14) return { id: 'safe', label: 'Safe separation', bonus: 5 };
     return { id: 'complete', label: 'Maneuver complete', bonus: 0 };
@@ -9386,7 +9411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       // Trigger one visible regional traffic encounter after clearing the harbor entrance.
       if (boatState.passedRedNun && !boatState.trafficEncounterTriggered && boat.position.distanceTo(dock.position) > 22) {
         boatState.trafficEncounterTriggered = true;
-        trafficVessel.visible = true;
+        trafficVessel.visible = !encounterProfile.radarOnly;
         trafficVessel.position.set(trafficTravelDirection > 0 ? -26 : 26, 0, boat.position.z - 18);
         trafficVessel.rotation.y = trafficTravelDirection > 0 ? Math.PI / 2 : -Math.PI / 2;
         setPaused(true, false);
@@ -9422,10 +9447,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
       }
       var trafficRisk = boatState.trafficDecisionMade ? evaluateCoreCollisionRisk(boatState.trafficStartRange, trafficRange, boatState.trafficClosestRange, boatState.trafficStartBearing, trafficRelativeBearing) : { id: 'monitoring', label: 'Monitoring bearing and range', bearingChange: 0, rangeChange: 0, constantBearing: false, closing: false, opening: false };
-      if (boatState.trafficDecisionMade && trafficVessel.visible) {
+      if (boatState.trafficDecisionMade) {
         trafficVessel.position.x += trafficTravelDirection * dt * 4.2;
         if ((trafficTravelDirection < 0 && trafficVessel.position.x < -34) || (trafficTravelDirection > 0 && trafficVessel.position.x > 34)) trafficVessel.visible = false;
       }
+      var trafficContactActive = boatState.trafficDecisionMade && ((trafficTravelDirection < 0 && trafficVessel.position.x >= -34) || (trafficTravelDirection > 0 && trafficVessel.position.x <= 34));
 
       // Reached Halfway Rock
       if (!boatState.reachedHalfwayRock) {
@@ -9579,7 +9605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
       var objectiveDistance = boat.position.distanceTo(objectiveTarget.position);
       var objectiveBearing = relativeCoreBearing(boatState.heading, boat.position.x, boat.position.z, objectiveTarget.position.x, objectiveTarget.position.z) * 180 / Math.PI;
-      if (objective.id === 'maneuver') objectiveBearing = encounterProfile.maneuverType === 'stand-on' ? 0 : 25;
+      if (objective.id === 'maneuver') objectiveBearing = encounterProfile.maneuverType === 'give-way' ? 25 : 0;
 
       var hudPayload = {
         speed: boatState.speed,
@@ -9619,6 +9645,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         trafficHeadingDeviation: trafficManeuver.headingDeviation,
         trafficSpeedDeviation: trafficManeuver.speedDeviation,
         trafficTurnDegrees: trafficManeuver.turnDegrees,
+        trafficPortTurnDegrees: trafficManeuver.portTurnDegrees || 0,
         trafficRange: trafficRange,
         trafficRelativeBearing: trafficRelativeBearing,
         trafficRiskId: trafficRisk.id,
@@ -9630,6 +9657,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         trafficOpening: trafficRisk.opening,
         trafficClosestRange: boatState.trafficClosestRange,
         trafficManeuverSeconds: boatState.trafficManeuverSeconds,
+        trafficRadarOnly: !!encounterProfile.radarOnly,
+        trafficContactActive: trafficContactActive,
         trafficGradeId: boatState.trafficGradeId,
         trafficGradeLabel: boatState.trafficGradeLabel,
         trafficGradeBonus: boatState.trafficGradeBonus,
@@ -10704,6 +10733,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var trafficPlotY = -Math.cos(trafficPlotAngle) * trafficPlotRadius;
       var trafficRiskColor = hud.trafficRiskId === 'collision-risk' ? '#fca5a5' : hud.trafficRiskId === 'opening' ? '#86efac' : hud.trafficRiskId === 'bearing-changing' ? '#7dd3fc' : '#fde68a';
       var trafficGradeColor = hud.trafficGradeId === 'excellent' ? '#fde68a' : hud.trafficGradeId === 'safe' ? '#86efac' : hud.trafficGradeId === 'review' ? '#fdba74' : '#bae6fd';
+      var trafficIsStandOn = hud.trafficManeuverType === 'stand-on';
+      var trafficIsRestricted = hud.trafficManeuverType === 'restricted';
       function setHeldControl(key, pressed) {
         if (harborRef.current && harborRef.current.setControl) harborRef.current.setControl(key, pressed);
       }
@@ -10834,7 +10865,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', color: '#fbbf24', fontSize: 22, lineHeight: 1, transform: 'rotate(' + (hud.objectiveBearing || 0) + 'deg)', transition: 'transform 0.2s ease' } }, '↑'),
                 h('div', { style: { minWidth: 0, textAlign: 'left' } },
                   h('strong', { style: { display: 'block', color: '#f8fafc', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, hud.objectiveLabel || 'Preparing route'),
-                  h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 9 } }, hud.objectiveDistance == null ? 'Acquiring waypoint' : hud.objectiveId === 'maneuver' ? (hud.trafficManeuverType === 'stand-on' ? 'Maintain course · monitor closest approach' : 'Alter starboard · open closest approach') : hud.objectiveDistance.toFixed(1) + ' sim range · ' + (Math.abs(hud.objectiveBearing || 0) < 12 ? 'on course' : (hud.objectiveBearing || 0) < 0 ? 'turn port' : 'turn starboard'))
+                  h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 9 } }, hud.objectiveDistance == null ? 'Acquiring waypoint' : hud.objectiveId === 'maneuver' ? (trafficIsRestricted ? 'Reduce speed · avoid port alteration' : trafficIsStandOn ? 'Maintain course · monitor closest approach' : 'Alter starboard · open closest approach') : hud.objectiveDistance.toFixed(1) + ' sim range · ' + (Math.abs(hud.objectiveBearing || 0) < 12 ? 'on course' : (hud.objectiveBearing || 0) < 0 ? 'turn port' : 'turn starboard'))
                 )
               ),
               hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('div', { style: { marginTop: 7, paddingTop: 7, borderTop: '1px solid rgba(125,211,252,0.25)', display: 'grid', gap: 4, textAlign: 'left' } },
@@ -10849,13 +10880,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   )
                 ),
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficCriterionOne ? '#86efac' : '#fef3c7', fontSize: 9 } },
-                  h('span', null, (hud.trafficCriterionOne ? '✓ ' : '○ ') + (hud.trafficManeuverType === 'stand-on' ? 'Course steady ≤ 8°' : 'Safe speed ≤ 2.5 kt')),
-                  h('strong', null, hud.trafficManeuverType === 'stand-on' ? (hud.trafficHeadingDeviation || 0).toFixed(1) + '°' : Math.abs(hud.speed || 0).toFixed(1) + ' kt')),
+                  h('span', null, (hud.trafficCriterionOne ? '✓ ' : '○ ') + (trafficIsRestricted ? 'Safe speed ≤ 2.0 kt' : trafficIsStandOn ? 'Course steady ≤ 8°' : 'Safe speed ≤ 2.5 kt')),
+                  h('strong', null, trafficIsStandOn ? (hud.trafficHeadingDeviation || 0).toFixed(1) + '°' : Math.abs(hud.speed || 0).toFixed(1) + ' kt')),
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficCriterionTwo ? '#86efac' : '#fef3c7', fontSize: 9 } },
-                  h('span', null, (hud.trafficCriterionTwo ? '✓ ' : '○ ') + (hud.trafficManeuverType === 'stand-on' ? 'Speed steady ± 1.5 kt' : 'Alter 15° starboard')),
-                  h('strong', null, hud.trafficManeuverType === 'stand-on' ? (hud.trafficSpeedDeviation || 0).toFixed(1) + ' kt' : Math.min(99, hud.trafficTurnDegrees || 0).toFixed(0) + '°')),
-                hud.trafficManeuverType === 'stand-on' ? h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficObservedEnough ? '#86efac' : '#fef3c7', fontSize: 9 } },
-                  h('span', null, (hud.trafficObservedEnough ? '✓ ' : '○ ') + 'Observe crossing 5 s'),
+                  h('span', null, (hud.trafficCriterionTwo ? '✓ ' : '○ ') + (trafficIsRestricted ? 'Avoid port alteration > 8°' : trafficIsStandOn ? 'Speed steady ± 1.5 kt' : 'Alter 15° starboard')),
+                  h('strong', null, trafficIsRestricted ? (hud.trafficPortTurnDegrees || 0).toFixed(1) + '° port' : trafficIsStandOn ? (hud.trafficSpeedDeviation || 0).toFixed(1) + ' kt' : Math.min(99, hud.trafficTurnDegrees || 0).toFixed(0) + '°')),
+                (trafficIsStandOn || trafficIsRestricted) ? h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficObservedEnough ? '#86efac' : '#fef3c7', fontSize: 9 } },
+                  h('span', null, (hud.trafficObservedEnough ? '✓ ' : '○ ') + (trafficIsRestricted ? 'Navigate cautiously 5 s' : 'Observe crossing 5 s')),
                   h('strong', null, Math.min(5, hud.trafficManeuverSeconds || 0).toFixed(1) + ' s')) : null,
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: '#bae6fd', fontSize: 9 } },
                   h('span', null, 'Closest range'),
@@ -10889,7 +10920,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('div', null, 'Fish: ', h('b', { style: { color: '#fbbf24' } }, hud.fishLanded || 0)),
                 h('div', null, 'Lobster Keepers: ', h('b', { style: { color: '#fbbf24' } }, hud.keeperLobsters || 0)),
                 h('div', null, 'Traps Hauled: ', h('b', { style: { color: '#bae6fd' } }, hud.lobstersHauled || 0)),
-                hud.trafficVesselVisible ? h('div', { style: { marginTop: 3, color: '#fde68a', fontWeight: 900 } }, 'Traffic: vessel clearing') : null
+                hud.trafficContactActive ? h('div', { style: { marginTop: 3, color: '#fde68a', fontWeight: 900 } }, hud.trafficRadarOnly ? 'Radar: contact tracking' : 'Traffic: vessel clearing') : null
               ),
               // Throttle level indicator bar
               h('div', { style: { marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 } },
@@ -10905,7 +10936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, fontWeight: 800, color: '#bae6fd', marginBottom: 5 } }, h('span', null, mission.title), h('span', { style: { color: '#fde68a' } }, (hud.stewardshipScore || 0) + ' pts')),
               h('div', { style: { height: 5, borderRadius: 4, overflow: 'hidden', background: 'rgba(148,163,184,0.22)', marginBottom: 6 } }, h('div', { style: { width: missionProgressPct + '%', height: '100%', background: 'linear-gradient(90deg,#22c55e,#38bdf8)', transition: 'width 0.25s ease' } })),
               h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Navigate red nun correctly' : '○ Pass red nun on starboard'),
-              h('div', { style: { fontSize: 10, color: hud.trafficManeuverReviewed || (hud.trafficDecisionMade && !hud.trafficDecisionCorrect) ? '#fdba74' : 'inherit' } }, hud.trafficManeuverComplete ? (hud.trafficManeuverReviewed ? '△ ' + hud.trafficManeuverLabel + ' reviewed' : '✓ ' + hud.trafficManeuverLabel) : hud.trafficDecisionMade ? (hud.trafficManeuverType === 'stand-on' ? '○ Hold course + speed for 5 s' : '○ Slow + alter 15° starboard') : '○ Resolve crossing traffic'),
+              h('div', { style: { fontSize: 10, color: hud.trafficManeuverReviewed || (hud.trafficDecisionMade && !hud.trafficDecisionCorrect) ? '#fdba74' : 'inherit' } }, hud.trafficManeuverComplete ? (hud.trafficManeuverReviewed ? '△ ' + hud.trafficManeuverLabel + ' reviewed' : '✓ ' + hud.trafficManeuverLabel) : hud.trafficDecisionMade ? (trafficIsRestricted ? '○ Slow + avoid port alteration' : trafficIsStandOn ? '○ Hold course + speed for 5 s' : '○ Slow + alter 15° starboard') : '○ Resolve crossing traffic'),
               hud.trafficManeuverComplete ? h('div', { 'aria-label': 'Traffic encounter debrief. ' + (hud.trafficGradeLabel || 'Maneuver complete') + '. Closest approach ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : 'not available') + ' simulation units. Response time ' + (hud.trafficManeuverSeconds || 0).toFixed(1) + ' seconds.', style: { margin: '5px 0 6px', padding: '5px 0', borderTop: '1px solid rgba(125,211,252,0.22)', borderBottom: '1px solid rgba(125,211,252,0.22)' } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: trafficGradeColor, fontSize: 9, fontWeight: 900, textTransform: 'uppercase' } },
                   h('span', null, 'Encounter · ' + (hud.trafficGradeLabel || 'Complete')),
@@ -10949,17 +10980,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             activeTraffic ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-traffic-title', style: { position: 'absolute', inset: 0, zIndex: 92, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.94)' } },
               h('div', { style: { width: 'min(590px,100%)', padding: 18, borderRadius: 8, border: '1px solid rgba(251,191,36,0.55)', background: 'linear-gradient(145deg,#422006,#082f49 58%,#0f172a)', boxShadow: '0 22px 60px rgba(0,0,0,0.65)' } },
                 h('div', { style: { color: '#fde68a', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Traffic encounter · simulation paused'),
-                h('h3', { id: 'fl-traffic-title', style: { margin: '5px 0 4px', color: '#f8fafc', fontSize: 22 } }, activeTraffic.vessel + ' on crossing course'),
+                h('h3', { id: 'fl-traffic-title', style: { margin: '5px 0 4px', color: '#f8fafc', fontSize: 22 } }, activeTraffic.vessel + (activeTraffic.radarOnly ? ' forward of beam' : ' on crossing course')),
                 h('div', { className: 'fl-pill', style: { marginBottom: 10, background: 'rgba(251,191,36,0.18)', color: '#fde68a' } }, activeTraffic.rule),
                 h('p', { style: { color: '#dbeafe', fontSize: 13, lineHeight: 1.55 } }, activeTraffic.situation),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 8, margin: '12px 0' } },
-                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#7dd3fc', fontSize: 11 } }, 'Lookout report'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11, lineHeight: 1.4 } }, 'Constant bearing and decreasing range indicate risk of collision. Decide early and make a substantial, visible maneuver.')),
-                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#a7f3d0', fontSize: 11 } }, 'Your vessel'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11, lineHeight: 1.4 } }, 'You are operating a small power-driven fishing skiff. Choose your responsibility, not the maneuver you hope the other vessel makes.'))
+                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#7dd3fc', fontSize: 11 } }, 'Lookout report'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11, lineHeight: 1.4 } }, activeTraffic.lookoutReport || 'Constant bearing and decreasing range indicate risk of collision. Decide early and clearly.')),
+                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#a7f3d0', fontSize: 11 } }, 'Your vessel'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11, lineHeight: 1.4 } }, 'You are operating a small power-driven fishing skiff. Choose the safe action for the actual conditions; never assume stand-on status when visibility rules apply.'))
                 ),
                 h('p', { style: { color: '#f8fafc', fontSize: 12, fontWeight: 900 } }, 'What is your safest COLREGS action?'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-                  h('button', { type: 'button', ref: decisionFocusRef, className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.resolveTrafficEncounter) harborRef.current.resolveTrafficEncounter('give-way'); setActiveTraffic(null); }, style: { flex: '1 1 220px', padding: 11, border: '1px solid rgba(125,211,252,0.55)', borderRadius: 7, background: '#164e63', color: '#f0f9ff', fontWeight: 900, cursor: 'pointer' } }, activeTraffic.correctAction === 'give-way' ? activeTraffic.correctLabel : activeTraffic.incorrectLabel),
-                  h('button', { type: 'button', className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.resolveTrafficEncounter) harborRef.current.resolveTrafficEncounter('stand-on'); setActiveTraffic(null); }, style: { flex: '1 1 220px', padding: 11, border: '1px solid rgba(148,163,184,0.65)', borderRadius: 7, background: '#334155', color: '#f8fafc', fontWeight: 900, cursor: 'pointer' } }, activeTraffic.correctAction === 'stand-on' ? activeTraffic.correctLabel : activeTraffic.incorrectLabel)
+                  h('button', { type: 'button', ref: decisionFocusRef, className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.resolveTrafficEncounter) harborRef.current.resolveTrafficEncounter(activeTraffic.choiceOneAction || 'give-way'); setActiveTraffic(null); }, style: { flex: '1 1 220px', padding: 11, border: '1px solid rgba(125,211,252,0.55)', borderRadius: 7, background: '#164e63', color: '#f0f9ff', fontWeight: 900, cursor: 'pointer' } }, activeTraffic.choiceOneLabel || (activeTraffic.correctAction === 'give-way' ? activeTraffic.correctLabel : activeTraffic.incorrectLabel)),
+                  h('button', { type: 'button', className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.resolveTrafficEncounter) harborRef.current.resolveTrafficEncounter(activeTraffic.choiceTwoAction || 'stand-on'); setActiveTraffic(null); }, style: { flex: '1 1 220px', padding: 11, border: '1px solid rgba(148,163,184,0.65)', borderRadius: 7, background: '#334155', color: '#f8fafc', fontWeight: 900, cursor: 'pointer' } }, activeTraffic.choiceTwoLabel || (activeTraffic.correctAction === 'stand-on' ? activeTraffic.correctLabel : activeTraffic.incorrectLabel))
                 )
               )
             ) : null,

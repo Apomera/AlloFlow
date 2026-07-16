@@ -94,6 +94,16 @@ describe('Fisher Lab voyage progression', () => {
     });
     expect(evaluateCoreEncounter('maine', 'stand-on', 'skipper').correct).toBe(true);
     expect(evaluateCoreEncounter('maine', 'give-way', 'skipper').correct).toBe(false);
+
+    expect(getCoreEncounter('maine', 'master')).toMatchObject({
+      vesselKind: 'radar',
+      rule: 'COLREGS Rule 19',
+      correctAction: 'restricted-safe',
+      maneuverType: 'restricted',
+      radarOnly: true
+    });
+    expect(evaluateCoreEncounter('maine', 'restricted-safe', 'master').correct).toBe(true);
+    expect(evaluateCoreEncounter('maine', 'stand-on', 'master').correct).toBe(false);
   });
 
   it('requires both safe speed and a clear starboard alteration when giving way', () => {
@@ -112,6 +122,18 @@ describe('Fisher Lab voyage progression', () => {
     expect(evaluateCoreManeuver('stand-on', Math.PI, Math.PI + Math.PI / 12, 3, 3.5, 5)).toMatchObject({ criterionOne: false, complete: false });
     expect(evaluateCoreManeuver('stand-on', Math.PI, Math.PI, 3, 5, 5)).toMatchObject({ criterionTwo: false, complete: false });
     expect(evaluateCoreManeuver('stand-on', Math.PI, Math.PI, 3, 3, 4.9)).toMatchObject({ observedEnough: false, complete: false });
+  });
+
+  it('requires safe speed, no unsafe port alteration, and cautious observation under Rule 19', () => {
+    const { evaluateCoreManeuver } = window.__FisherLabCore;
+
+    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI, 4, 1.5, 5)).toMatchObject({ criterionOne: true, criterionTwo: true, observedEnough: true, complete: true });
+    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI, 4, 3, 5)).toMatchObject({ criterionOne: false, complete: false });
+    const unsafePortTurn = evaluateCoreManeuver('restricted', Math.PI, Math.PI + Math.PI / 12, 4, 1.5, 5);
+    expect(unsafePortTurn).toMatchObject({ criterionTwo: false, complete: false });
+    expect(unsafePortTurn.portTurnDegrees).toBeCloseTo(15);
+    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI - Math.PI / 6, 4, 1.5, 5)).toMatchObject({ criterionTwo: true, portTurnDegrees: 0, complete: true });
+    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI, 4, 1.5, 4.9)).toMatchObject({ observedEnough: false, complete: false });
   });
 
   it('interprets bearing and range trends for closest-point-of-approach watch', () => {
@@ -137,6 +159,8 @@ describe('Fisher Lab voyage progression', () => {
     expect(gradeCoreEncounter(true, false, 'stand-on', 5.5, 20)).toEqual({ id: 'excellent', label: 'Excellent watch', bonus: 10 });
     expect(gradeCoreEncounter(true, false, 'give-way', 6.5, 20)).toEqual({ id: 'excellent', label: 'Excellent watch', bonus: 10 });
     expect(gradeCoreEncounter(true, false, 'stand-on', 9, 20)).toEqual({ id: 'safe', label: 'Safe separation', bonus: 5 });
+    expect(gradeCoreEncounter(true, false, 'restricted', 8.5, 20)).toEqual({ id: 'excellent', label: 'Excellent watch', bonus: 10 });
+    expect(gradeCoreEncounter(true, false, 'restricted', 10, 20)).toEqual({ id: 'safe', label: 'Safe separation', bonus: 5 });
     expect(gradeCoreEncounter(true, false, 'give-way', 10, 15)).toEqual({ id: 'safe', label: 'Safe separation', bonus: 5 });
     expect(gradeCoreEncounter(true, false, 'give-way', 15, 10)).toEqual({ id: 'complete', label: 'Maneuver complete', bonus: 0 });
     expect(gradeCoreEncounter(false, false, 'give-way', 4, 25)).toEqual({ id: 'review', label: 'Review required', bonus: 0 });
@@ -169,7 +193,7 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('objectiveBearing');
     expect(source).toContain("type: 'traffic-encounter'");
     expect(source).toContain('resolveTrafficEncounter');
-    expect(source).toContain('trafficVessel.visible = true');
+    expect(source).toContain('trafficVessel.visible = !encounterProfile.radarOnly');
     expect(source).toContain("activeRegion === 'chesapeake'");
     expect(source).toContain('Traffic: vessel clearing');
     expect(source).toContain('trafficManeuverSeconds >= 20');
@@ -178,7 +202,7 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('Safe speed ≤ 2.5 kt');
     expect(source).toContain("label: 'Reduce speed or reverse'");
     expect(source).toContain('trafficManeuverComplete ? 1 : 0');
-    expect(source).toContain("if (objective.id === 'maneuver') objectiveBearing = encounterProfile.maneuverType === 'stand-on' ? 0 : 25;");
+    expect(source).toContain("if (objective.id === 'maneuver') objectiveBearing = encounterProfile.maneuverType === 'give-way' ? 25 : 0;");
     expect(source).toContain('Alter starboard · open closest approach');
     expect(source).toContain('Maintain course · monitor closest approach');
     expect(source).toContain('Observe crossing 5 s');
@@ -187,6 +211,10 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('Closest point of approach watch.');
     expect(source).toContain('gradeCoreEncounter');
     expect(source).toContain('Traffic encounter debrief.');
+    expect(source).toContain('COLREGS Rule 19');
+    expect(source).toContain('Radar: contact tracking');
+    expect(source).toContain('Navigate cautiously 5 s');
+    expect(source).toContain("activeTraffic.choiceOneAction || 'give-way'");
     expect(source).toContain("' decisions correct · '");
     expect(source).toContain("type: 'fish-haul'");
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true'");
