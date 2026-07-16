@@ -296,6 +296,13 @@ function ExportPreviewView(props) {
   const mountedRef = React.useRef(true);
   const findCursorRef = React.useRef({ node: null, offset: 0 });
   const openerRef = React.useRef(null);
+  const promptForBuilderText = React.useCallback(async (message, defaultValue, options) => {
+    if (!(window.AlloFlowUX && typeof window.AlloFlowUX.prompt === "function")) {
+      addToast && addToast("The text-entry dialog is still loading. Please try again in a moment.", "error");
+      return null;
+    }
+    return window.AlloFlowUX.prompt(message, defaultValue || "", options || {});
+  }, [addToast]);
   React.useEffect(() => () => {
     mountedRef.current = false;
     imageInsertRunRef.current += 1;
@@ -782,8 +789,15 @@ function ExportPreviewView(props) {
         title: `Delete "${preset.name}" preset`
       },
       /* @__PURE__ */ React.createElement(X, { size: 10 })
-    )))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const name = prompt("Preset name:");
+    )))), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+      const name = await promptForBuilderText("Enter a name for this export preset.", "", {
+        title: "Save export preset",
+        confirmText: "Save preset",
+        cancelText: "Cancel",
+        placeholder: "Preset name",
+        maxLength: 80,
+        validate: (value) => value.trim() ? null : "Enter a preset name."
+      });
       if (name && name.trim()) saveExportPreset(name.trim());
     }, className: "mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[11px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all" }, "+ Save Current as Preset")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Format"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", role: "radiogroup", "aria-label": "Export format", onKeyDown: handleRadioGroupKeyDown }, [["print", "\u{1F4C4} PDF"], ["worksheet", "\u{1F4DD} Worksheet"], ["html", "\u{1F4BB} HTML"], ["slides", "\u{1F4CA} Slides"]].map(([m, label]) => /* @__PURE__ */ React.createElement("button", { key: m, role: "radio", "aria-checked": exportPreviewMode === m, tabIndex: exportPreviewMode === m ? 0 : -1, onClick: () => setExportPreviewMode(m), className: `flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? "bg-indigo-600 text-white" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}` }, label)))), /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Appearance", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Style"), setShowBrandProfileEditor && /* @__PURE__ */ React.createElement(
       "button",
@@ -2108,17 +2122,34 @@ function ExportPreviewView(props) {
     ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-0.5", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => {
+        onClick: async () => {
           const doc = exportPreviewRef.current?.contentDocument;
           if (!doc) return;
-          const url = prompt("Link URL:");
+          const selection = doc.getSelection?.();
+          const savedRange = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+          const url = await promptForBuilderText("Enter the destination for this link.", "", {
+            title: "Insert link",
+            confirmText: "Insert link",
+            cancelText: "Cancel",
+            placeholder: "https://example.org or #section",
+            inputType: "url",
+            maxLength: 2048,
+            validate: (value) => {
+              const candidate = value.trim();
+              if (!candidate) return "Enter a link URL.";
+              const scheme = candidate.match(/^\s*([a-zA-Z][a-zA-Z0-9+.-]*)\s*:/);
+              return !scheme || ["http", "https", "mailto", "tel"].includes(scheme[1].toLowerCase()) ? null : "Only web (http/https), mailto:, tel:, and internal links are allowed.";
+            }
+          });
           if (!url) return;
           const _u = url.trim();
           const _schemeMatch = _u.match(/^\s*([a-zA-Z][a-zA-Z0-9+.-]*)\s*:/);
           const _okScheme = !_schemeMatch || ["http", "https", "mailto", "tel"].includes(_schemeMatch[1].toLowerCase());
-          if (!_okScheme) {
-            alert("Only web (http/https), mailto:, tel:, and internal links are allowed.");
-            return;
+          if (!_okScheme) return;
+          if (savedRange && savedRange.commonAncestorContainer?.isConnected) {
+            selection.removeAllRanges();
+            selection.addRange(savedRange);
+            exportPreviewRef.current?.contentWindow?.focus();
           }
           doc.execCommand("createLink", false, _u);
         },
