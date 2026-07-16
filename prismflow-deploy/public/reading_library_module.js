@@ -2651,6 +2651,12 @@
     var _fm = useState(false); var findMoreOpen = _fm[0]; var setFindMoreOpen = _fm[1];
     var _collection = useState(null); var selectedCollectionId = _collection[0]; var setSelectedCollectionId = _collection[1];
     var _visible = useState(VISIBLE_BOOK_BATCH); var visibleLimit = _visible[0]; var setVisibleLimit = _visible[1];
+    // Lazy catalog cards: the core index omits the ~895 Gutenberg link-out
+    // stubs; they are fetched from index.cardsFile only when a card-bearing
+    // view needs them (History / All shelves, or any search). extraCards holds
+    // them once loaded; cardsStatus gates the one-shot fetch.
+    var _cards = useState(null); var extraCards = _cards[0]; var setExtraCards = _cards[1];
+    var _cardsStatus = useState('unloaded'); var cardsStatus = _cardsStatus[0]; var setCardsStatus = _cardsStatus[1];
     // Reader page-color theme, lifted here so the whole modal (not just the
     // reading surface) can wear it. Seeded from the persisted pref; the reader's
     // Aa panel keeps it in sync via onThemeChange.
@@ -2688,7 +2694,37 @@
       return function () { window.removeEventListener('keydown', onKey, true); };
     }, [openBook, props.onClose]);
 
-    var books = (index.data && index.data.books) || [];
+    var books = useMemo(function () {
+      var core = (index.data && index.data.books) || [];
+      return extraCards && extraCards.length ? core.concat(extraCards) : core;
+    }, [index.data, extraCards]);
+
+    // Fetch the lazy card index once, merging its books into the browse list.
+    var loadCards = useCallback(function () {
+      if (cardsStatus !== 'unloaded' || !index.data || index.status !== 'ok') return;
+      var file = index.data.cardsFile;
+      if (!file) { setCardsStatus('loaded'); return; } // old single-file index
+      setCardsStatus('loading');
+      var base = index.base || DATA_BASES[0];
+      var bust = base.indexOf('http') === 0 ? '?t=' + Date.now() : '';
+      fetch(base + file + bust)
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (data) {
+          setExtraCards((data && Array.isArray(data.books)) ? data.books : []);
+          setCardsStatus('loaded');
+        })
+        .catch(function () { setCardsStatus('unloaded'); }); // stay retryable
+    }, [cardsStatus, index.data, index.status, index.base]);
+
+    // The catalog cards only appear on the History and All shelves, and in any
+    // search (searches always span the whole library so a stub is findable by
+    // subject). Pull them in the moment the reader enters such a view.
+    var viewNeedsCards = selectedCollectionId === 'history' || selectedCollectionId === 'all' ||
+      filters.searchAll || filters.search.trim() !== '';
+    useEffect(function () {
+      if (viewNeedsCards && cardsStatus === 'unloaded' && index.status === 'ok') loadCards();
+    }, [viewNeedsCards, cardsStatus, index.status, loadCards]);
+
     var selectedCollection = collectionById(selectedCollectionId);
     var collectionBooks = useMemo(function () {
       if (!selectedCollection) return books;
@@ -3014,6 +3050,11 @@
           index.status === 'loading' ? tr('readinglib_loading', 'Loading the library…') :
           index.status === 'error' ? e('span', { className: 'text-red-600' },
             tr('readinglib_load_error', 'Could not load the library:') + ' ' + index.error) :
+          // Empty view while the lazy catalog cards are still in flight — say
+          // "loading" rather than a false "no matches" (a subject search may
+          // only hit stubs). A non-empty view keeps its normal count; the
+          // cards merge in silently when they arrive.
+          (filtered.length === 0 && viewNeedsCards && cardsStatus === 'loading') ? ('⏳ ' + tr('readinglib_loading_more', 'Loading more…')) :
           filtered.length === 0 ? tr('readinglib_empty', 'No books match those filters yet.') :
           (function () {
             var searchingAll = filters.searchAll && filters.search.trim();

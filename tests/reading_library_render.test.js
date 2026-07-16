@@ -28,6 +28,10 @@ const LIB_DIR = path.join(ROOT, 'reading_library');
 
 let React, ReactDOMClient, act, ReadingLibrary;
 const index = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'index.json'), 'utf8'));
+const cardIndex = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'index_cards.json'), 'utf8'));
+// The browse-facing catalog is the union: core books plus the lazily-loaded
+// catalog cards. Fixtures and card assertions must use the merged list.
+const allBooks = index.books.concat(cardIndex.books);
 // A deterministic RTL fixture: the first Arabic book in the index.
 const rtlEntry = index.books.find((b) => b.language === 'Arabic');
 const rtlBook = JSON.parse(fs.readFileSync(path.join(LIB_DIR, rtlEntry.file), 'utf8'));
@@ -48,7 +52,8 @@ beforeAll(() => {
   window.fetch = (url) => {
     const u = String(url);
     let payload = null;
-    if (u.includes('index.json')) payload = index;
+    if (u.includes('index_cards.json')) payload = cardIndex;
+    else if (u.includes('index.json')) payload = index;
     else {
       const m = /books\/([^?]+\.json)/.exec(u);
       if (m) {
@@ -71,6 +76,9 @@ afterEach(() => {
 });
 
 const flush = async () => { await act(async () => { await Promise.resolve(); }); };
+// The lazy card index loads via fetch().then().then()->setState; give the
+// promise chain and its re-render several ticks to settle.
+const settle = async () => { for (let i = 0; i < 6; i++) await flush(); };
 
 function textOf(el) { return (el && el.textContent) || ''; }
 
@@ -153,8 +161,8 @@ describe('browse view', () => {
     await flush();
     expect(textOf(host)).toContain('History & primary sources');
     await chooseCollection('All sources');
-    selectLang(''); await flush();
-    expect(textOf(host)).toContain(index.books.length + ' ');
+    selectLang(''); await settle(); // All sources pulls in the lazy catalog cards
+    expect(textOf(host)).toContain(allBooks.length + ' ');
     clickByText(host, 'button', 'Collections');
     await flush();
     await chooseStories();
@@ -177,7 +185,7 @@ describe('browse view', () => {
     // search must work through the subjects field. Pick a card whose first
     // subject has a token that appears in NO title/author/description — the
     // only way the card can match is via subjects.
-    const cards = index.books.filter((b) => b.contentType === 'public-domain-catalog-card');
+    const cards = cardIndex.books.filter((b) => b.contentType === 'public-domain-catalog-card');
     let fixture = null, term = '';
     outer: for (const c of cards) {
       for (const s of c.subjects || []) {
@@ -185,7 +193,7 @@ describe('browse view', () => {
         if (!token) continue;
         const t = token.toLowerCase();
         const hitsElsewhere = (b) => (b.title + ' ' + (b.authors || []).join(' ') + ' ' + (b.description || '')).toLowerCase().includes(t);
-        if (!hitsElsewhere(c) && !index.books.some(hitsElsewhere)) { fixture = c; term = token; break outer; }
+        if (!hitsElsewhere(c) && !allBooks.some(hitsElsewhere)) { fixture = c; term = token; break outer; }
       }
     }
     expect(fixture).toBeTruthy();
@@ -193,18 +201,39 @@ describe('browse view', () => {
     await chooseCollection('History & primary sources');
     const search = host.querySelector('input[aria-label="Search"]');
     setInputValue(search, term);
-    await flush();
+    await settle(); // the searched card lives in the lazy index — let it load
     expect(textOf(host)).toContain(fixture.title);
     // the matching card renders its subject-head chips
     const head = String(fixture.subjects[0]).split(' -- ')[0].trim().slice(0, 40);
     expect(textOf(host)).toContain(head);
   });
 
+  it('lazy-loads the catalog-card index only when a card-bearing view needs it', async () => {
+    // A distinctive catalog-card title that lives only in the lazy index.
+    const cardEntry = cardIndex.books.find((b) => b.contentType === 'public-domain-catalog-card' && b.title && b.title.length > 8);
+    expect(cardEntry).toBeTruthy();
+    await mount();
+    await chooseStories();
+    selectLang(''); await settle();
+    // Default Stories shelf: the lazy cards were never fetched, so a
+    // History-only stub is absent even after everything settles.
+    expect(textOf(host)).not.toContain(cardEntry.title);
+    // Entering History triggers the one-shot lazy fetch; the stub appears.
+    clickByText(host, 'button', 'Collections');
+    await flush();
+    await chooseCollection('History & primary sources');
+    selectLang(''); await settle();
+    const search = host.querySelector('input[aria-label="Search"]');
+    setInputValue(search, cardEntry.title.slice(0, 18));
+    await settle();
+    expect(textOf(host)).toContain(cardEntry.title);
+  });
+
   it('the "Readable in app" toggle hides link-out source cards', async () => {
     await mount();
     await chooseCollection('History & primary sources');
-    selectLang(''); await flush();
-    const history = index.books.filter((b) => ['wikisource', 'loc', 'gutenberg'].includes(b.sourceId));
+    selectLang(''); await settle(); // History pulls in the lazy catalog cards
+    const history = allBooks.filter((b) => ['wikisource', 'loc', 'gutenberg'].includes(b.sourceId));
     const readable = history.filter((b) => !/card/.test(b.contentType));
     expect(textOf(host)).toContain(history.length + ' ');
     clickByText(host, 'button', 'Readable in app');

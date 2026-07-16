@@ -37,6 +37,9 @@ const ROOT = __dirname;
 const BOOKS_DIR = path.join(ROOT, 'books');
 const CURATION_PATH = path.join(ROOT, 'curation.json');
 const INDEX_PATH = path.join(ROOT, 'index.json');
+const CARD_INDEX_PATH = path.join(ROOT, 'index_cards.json');
+// Content type split out of the core index and loaded lazily by the module.
+const LAZY_CARD_TYPE = 'public-domain-catalog-card';
 const OPEN_CATALOG_PATH = path.join(ROOT, 'open_catalog.json');
 const CLI_ARGS = process.argv.slice(2);
 
@@ -473,19 +476,37 @@ async function fetchAll(onlySlug) {
     langs[b.language] = langs[b.language] || { name: b.language, code: b.langCode, count: 0 };
     langs[b.language].count++;
   }
+  // Lazy-split: the 895 Project Gutenberg catalog-CARD stubs (link-out only,
+  // no in-app text, all on the History shelf) are ~0.9 MB of a 3.6 MB index
+  // that every reader parses on open. Ship them in a second file that the
+  // module fetches only when a card-bearing view (History / All / search)
+  // actually needs them; the default Stories/Science/Study shelves and the
+  // language stats stay complete without it.
+  const generatedAt = new Date().toISOString();
+  const coreBooks = indexBooks.filter((b) => b.contentType !== LAZY_CARD_TYPE);
+  const cardBooks = indexBooks.filter((b) => b.contentType === LAZY_CARD_TYPE);
   const index = {
     schema: 'allo-reading-library-index@1',
-    generatedAt: new Date().toISOString(),
+    generatedAt,
     attribution: {
       text: 'Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.',
       url: 'https://storyweaver.org.in',
       licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     },
     languages: Object.values(langs).sort((a, b) => b.count - a.count),
-    books: indexBooks,
+    cardsFile: path.basename(CARD_INDEX_PATH),
+    cardsCount: cardBooks.length,
+    books: coreBooks,
   };
   fs.writeFileSync(INDEX_PATH, JSON.stringify(index, null, 1));
-  console.log('\nWrote index.json:', indexBooks.length, 'books,', Object.keys(langs).length, 'languages.');
+  const cardIndex = {
+    schema: 'allo-reading-library-index-cards@1',
+    generatedAt, // MUST match index.json so the byte-parity/freshness test holds
+    books: cardBooks,
+  };
+  fs.writeFileSync(CARD_INDEX_PATH, JSON.stringify(cardIndex, null, 1));
+  console.log('\nWrote index.json:', coreBooks.length, 'core books,', Object.keys(langs).length, 'languages.');
+  console.log('Wrote ' + path.basename(CARD_INDEX_PATH) + ':', cardBooks.length, 'lazy catalog cards.');
   if (failures.length) console.log('Failures:', JSON.stringify(failures, null, 2));
 }
 

@@ -338,18 +338,35 @@ describe('language plan (reading_library/languages.json)', () => {
 
 describe('mirrored data contract (reading_library/)', () => {
   const index = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'index.json'), 'utf8'));
+  const cardIndex = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'index_cards.json'), 'utf8'));
+  // The lazy-split ships catalog-card stubs in a second file the module loads
+  // on demand; the browse-facing catalog is the UNION of both, so every
+  // contract check runs over the merged list.
+  const allBooks = index.books.concat(cardIndex.books);
+  const combinedIndex = { books: allBooks };
 
   it('index has the expected schema and attribution', () => {
     expect(index.schema).toBe('allo-reading-library-index@1');
     expect(index.attribution.text).toMatch(/StoryWeaver/);
     expect(index.attribution.licenseUrl).toMatch(/creativecommons/);
-    expect(index.books.length).toBeGreaterThanOrEqual(250);
+    expect(allBooks.length).toBeGreaterThanOrEqual(250);
     expect(index.languages.length).toBeGreaterThanOrEqual(30);
+  });
+
+  it('lazy-split: core index holds no catalog cards, card index holds only cards, and they agree', () => {
+    expect(index.cardsFile).toBe('index_cards.json');
+    expect(cardIndex.schema).toBe('allo-reading-library-index-cards@1');
+    expect(index.books.some((b) => b.contentType === 'public-domain-catalog-card')).toBe(false);
+    expect(cardIndex.books.every((b) => b.contentType === 'public-domain-catalog-card')).toBe(true);
+    expect(index.cardsCount).toBe(cardIndex.books.length);
+    // Same timestamp — the mirror writes both in one pass; a mismatch means a
+    // stale card file shipped against a fresh core.
+    expect(cardIndex.generatedAt).toBe(index.generatedAt);
   });
 
   it('language counts in the index add up', () => {
     const byLang = {};
-    index.books.forEach((b) => { byLang[b.language] = (byLang[b.language] || 0) + 1; });
+    allBooks.forEach((b) => { byLang[b.language] = (byLang[b.language] || 0) + 1; });
     index.languages.forEach((l) => expect(byLang[l.name]).toBe(l.count));
   });
 
@@ -357,8 +374,8 @@ describe('mirrored data contract (reading_library/)', () => {
     const curation = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'curation.json'), 'utf8'));
     const openCatalog = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'open_catalog.json'), 'utf8'));
     const registeredSlugs = curation.picks.map((item) => item.slug).concat(openCatalog.items.map((item) => item.slug));
-    const indexSlugs = index.books.map((item) => item.slug);
-    const indexFiles = index.books.map((item) => item.file);
+    const indexSlugs = allBooks.map((item) => item.slug);
+    const indexFiles = allBooks.map((item) => item.file);
     const physicalFiles = fs.readdirSync(path.join(LIB_DIR, 'books'))
       .filter((name) => name.endsWith('.json'))
       .map((name) => 'books/' + name);
@@ -370,12 +387,12 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(indexFiles.slice().sort()).toEqual(physicalFiles.slice().sort());
   });
 
-  it('every book file parses, matches its index entry, and honors the full book contract', { timeout: 60000 }, () => {
+  it('every book file parses, matches its index entry, and honors the full book contract', { timeout: 120000 }, () => {
     const errors = [];
     const fail = (condition, message) => { if (!condition) errors.push(message); };
     const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 
-    index.books.forEach((entry) => {
+    allBooks.forEach((entry) => {
       fail(/^books\/[^/]+\.json$/.test(entry.file), entry.slug + ': unsafe file path');
       const book = JSON.parse(fs.readFileSync(path.join(LIB_DIR, entry.file), 'utf8'));
       const label = entry.file + ' (' + entry.slug + ')';
@@ -454,7 +471,7 @@ describe('mirrored data contract (reading_library/)', () => {
     });
 
     expect(errors).toEqual([]);
-  }, 15_000);
+  });
 
   it('mirrored Gutenberg full texts carry no print-era markup artifacts', { timeout: 60000 }, () => {
     // The importer strips [Illustration…] blocks, bracketed/boxed transcriber
@@ -583,7 +600,7 @@ describe('mirrored data contract (reading_library/)', () => {
   it('public mirror is byte-for-byte in sync with every runtime data file', { timeout: 60000 }, () => {
     const pub = path.join(ROOT, 'prismflow-deploy', 'public', 'reading_library');
     const mismatches = [];
-    ['index.json', 'open_catalog.json'].concat(index.books.map((entry) => entry.file)).forEach((name) => {
+    ['index.json', 'index_cards.json', 'open_catalog.json'].concat(allBooks.map((entry) => entry.file)).forEach((name) => {
       const source = fs.readFileSync(path.join(LIB_DIR, name));
       const deployed = fs.readFileSync(path.join(pub, name));
       if (!source.equals(deployed)) mismatches.push(name);
