@@ -7086,6 +7086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var setData = props.setData;
     var fs = R.useState({ activity: '', autonomy: 5, competence: 5, relatedness: 5, notes: '' });
     var form = fs[0]; var setForm = fs[1];
+    var ves = R.useState(''); var formError = ves[0]; var setFormError = ves[1];
 
     var DIMENSIONS = [
       { id: 'autonomy',     label: 'Autonomy',     icon: '🎯', color: '#a855f7', help: 'Do I feel like I have choice / agency in this?' },
@@ -7114,10 +7115,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     };
 
     function save() {
-      if (!form.activity.trim()) { alert('Need an activity name.'); return; }
+      if (!form.activity.trim()) { setFormError('Activity name is required.'); setTimeout(function() { var target = document.getElementById('learning-lab-motivation-activity'); if (target) target.focus(); }, 0); return; }
       var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
       setData({ audits: [entry].concat(data.audits || []) });
       setForm({ activity: '', autonomy: 5, competence: 5, relatedness: 5, notes: '' });
+      setFormError('');
+      llAnnounce('Motivation audit saved.');
     }
     function remove(id) { setData({ audits: (data.audits || []).filter(function(e) { return e.id !== id; }) }); }
 
@@ -7130,34 +7133,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       tkCard('#ec4899',
         hh('div', null,
-          hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'What activity are you auditing?'),
-          tkInput(form.activity, function(v) { setForm(Object.assign({}, form, { activity: v })); }, 'e.g., "AP Chemistry class" or "Cross-country practice"', { marginBottom: 16 }),
+          hh('label', { htmlFor: 'learning-lab-motivation-activity', style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'What activity are you auditing? (required)'),
+          hh('input', { id: 'learning-lab-motivation-activity', type: 'text', value: form.activity, required: true, 'aria-invalid': formError ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-motivation-error' : undefined, onChange: function(e) { setForm(Object.assign({}, form, { activity: e.target.value })); setFormError(''); }, placeholder: 'e.g., "AP Chemistry class" or "Cross-country practice"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 10, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } }),
+          formError ? hh('div', { id: 'learning-lab-motivation-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: 16 } }, formError) : null,
 
           // 3 dimension sliders
           DIMENSIONS.map(function(dim) {
             return hh('div', { key: 'dim-' + dim.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + dim.color, marginBottom: 10 } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                 hh('div', null,
-                  hh('strong', { style: { fontSize: 12, color: dim.color, marginRight: 8 } }, dim.icon + ' ' + dim.label),
-                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, dim.help)
+                  hh('label', { htmlFor: 'learning-lab-motivation-' + dim.id, style: { fontSize: 12, color: dim.color, marginRight: 8, fontWeight: 800 } }, dim.icon + ' ' + dim.label),
+                  hh('span', { id: 'learning-lab-motivation-help-' + dim.id, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, dim.help)
                 ),
                 hh('strong', { style: { fontSize: 16, color: dim.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, form[dim.id] + '/10')
               ),
-              hh('input', { type: 'range', min: 0, max: 10, step: 1, value: form[dim.id],
+              hh('input', { id: 'learning-lab-motivation-' + dim.id, type: 'range', min: 0, max: 10, step: 1, value: form[dim.id], 'aria-describedby': 'learning-lab-motivation-help-' + dim.id, 'aria-valuetext': form[dim.id] + ' out of 10',
                 onChange: function(e) { setForm(Object.assign({}, form, (function() { var o = {}; o[dim.id] = parseInt(e.target.value, 10); return o; })())); },
-                style: { width: '100%', accentColor: dim.color }
+                style: { width: '100%', minHeight: 44, accentColor: dim.color }
               })
             );
           }),
 
-          tkTextarea(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'Notes (optional)', 2, { marginBottom: 10 }),
-          tkBtn('💾 Save audit', save, 'primary')
+          hh('label', { htmlFor: 'learning-lab-motivation-notes', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#f472b6', marginBottom: 4 } }, 'Notes (optional)'),
+          hh('textarea', { id: 'learning-lab-motivation-notes', value: form.notes, rows: 2, onChange: function(e) { setForm(Object.assign({}, form, { notes: e.target.value })); }, style: { width: '100%', minHeight: 72, padding: '10px 12px', marginBottom: 10, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' } }),
+          tkBtn('💾 Save audit', save, 'primary', { minHeight: 44 })
         )
       ),
 
       // Adaptive suggestions for weakest dimension
-      form.activity ? hh('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, ' + weakest.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + weakest.color + '40', borderLeft: '4px solid ' + weakest.color, marginBottom: 12 } },
-        hh('div', { style: { fontSize: 12, fontWeight: 800, color: weakest.color, marginBottom: 8 } }, '🎯 To boost your weakest: ' + weakest.label),
+      form.activity ? hh('section', { 'aria-labelledby': 'learning-lab-motivation-suggestion-title', style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, ' + weakest.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + weakest.color + '40', borderLeft: '4px solid ' + weakest.color, marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-motivation-suggestion-title', style: { margin: '0 0 8px', fontSize: 12, fontWeight: 800, color: weakest.color } }, '🎯 To boost your weakest: ' + weakest.label),
         hh('ul', { style: { margin: 0, paddingLeft: 18, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.7 } },
           BOOST_SUGGESTIONS[weakest.id].map(function(s, i) {
             return hh('li', { key: 's-' + i, style: { marginBottom: 4 } }, s);
@@ -7167,7 +7172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       // History
       audits.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Past audits'),
+        hh('h3', { style: { margin: '0 0 8px', fontSize: 12, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em' } }, '📚 Past audits'),
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
           audits.slice(0, 10).map(function(a) {
             var tot = a.autonomy + a.competence + a.relatedness;
@@ -7176,10 +7181,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('strong', { style: { fontSize: 12, color: '#f472b6' } }, a.activity),
                 hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
                   hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, a.date),
-                  hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { type: 'button', 'aria-label': 'Delete motivation audit: ' + a.activity, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the motivation audit for "' + a.activity + '".', { title: 'Delete this motivation audit?', confirmText: 'Delete audit' })) remove(a.id); }, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } },
+              hh('div', { role: 'img', 'aria-label': 'Autonomy ' + a.autonomy + ', competence ' + a.competence + ', relatedness ' + a.relatedness + ', total ' + tot + ' out of 30', style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } },
                 '🎯 A:' + a.autonomy + ' · 💪 C:' + a.competence + ' · 🤝 R:' + a.relatedness + ' = ' + tot + '/30'
               )
             );
