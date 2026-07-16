@@ -6799,11 +6799,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         recommendations: scored,
         generatedAt: todayISO()
       });
+      llAnnounce('Study strategy plan generated. Recommendations are ready below.');
     }
     function savePlan() {
       if (!result) return;
       var plan = { id: tkId(), savedAt: todayISO(), subject: form.subject || 'Untitled', form: form, top3: result.recommendations.slice(0, 3) };
       setData({ savedPlans: [plan].concat(data.savedPlans || []) });
+      llAnnounce('Study strategy plan saved.');
     }
     function deletePlan(id) {
       setData({ savedPlans: (data.savedPlans || []).filter(function(p) { return p.id !== id; }) });
@@ -6815,37 +6817,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // Input form
       tkCard('#a855f7',
         hh('div', null,
-          hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Subject / topic'),
-          tkInput(form.subject, function(v) { setForm(Object.assign({}, form, { subject: v })); }, 'e.g., "Biology Chapter 5 — cells"', { marginBottom: 12 }),
+          hh('label', { htmlFor: 'learning-lab-strategy-subject', style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Subject / topic'),
+          hh('input', { id: 'learning-lab-strategy-subject', type: 'text', value: form.subject, onChange: function(e) { setForm(Object.assign({}, form, { subject: e.target.value })); }, placeholder: 'e.g., "Biology Chapter 5 — cells"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 12, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } }),
 
-          hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'What kind of assessment?'),
-          hh('div', { style: { display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' } },
-            ASSESSMENT_TYPES.map(function(a) {
-              return hh('button', { key: 'a-' + a.id,
-                onClick: function() { setForm(Object.assign({}, form, { assessment: a.id })); },
-                style: { padding: '8px 12px', borderRadius: 6, background: form.assessment === a.id ? '#a855f7' : 'rgba(168,85,247,0.10)', color: form.assessment === a.id ? '#fff' : '#c084fc', border: '1px solid rgba(168,85,247,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-              }, a.icon + ' ' + a.label);
-            })
+          hh('fieldset', { style: { border: 0, padding: 0, margin: '0 0 12px' } },
+            hh('legend', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 4 } }, 'What kind of assessment?'),
+            hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+              ASSESSMENT_TYPES.map(function(a) {
+                return hh('button', { key: 'a-' + a.id, type: 'button', 'aria-pressed': form.assessment === a.id,
+                  onClick: function() { setForm(Object.assign({}, form, { assessment: a.id })); },
+                  style: { minHeight: 44, padding: '8px 12px', borderRadius: 6, background: form.assessment === a.id ? '#a855f7' : 'rgba(168,85,247,0.10)', color: form.assessment === a.id ? '#fff' : '#c084fc', border: '1px solid rgba(168,85,247,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                }, a.icon + ' ' + a.label);
+              })
+            )
           ),
 
           hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 } },
             hh('div', null,
-              hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Days until ' + (form.assessment || 'assessment')),
-              hh('input', { type: 'number', min: 1, max: 60, value: form.days,
+              hh('label', { htmlFor: 'learning-lab-strategy-days', style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Days until ' + (form.assessment || 'assessment')),
+              hh('input', { id: 'learning-lab-strategy-days', type: 'number', min: 1, max: 60, value: form.days,
                 onChange: function(e) { setForm(Object.assign({}, form, { days: parseInt(e.target.value, 10) })); },
-                style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#a855f7', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 6, boxSizing: 'border-box', textAlign: 'center', fontWeight: 800 }
+                style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 14, color: '#a855f7', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 6, boxSizing: 'border-box', textAlign: 'center', fontWeight: 800 }
               })
             ),
             hh('div', null,
-              hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Current knowledge'),
-              hh('div', { style: { display: 'flex', gap: 4 } },
-                PRIOR_LEVELS.map(function(p) {
-                  return hh('button', { key: 'p-' + p.id,
-                    onClick: function() { setForm(Object.assign({}, form, { prior: p.id })); },
-                    style: { flex: 1, padding: '8px 4px', borderRadius: 6, background: form.prior === p.id ? p.color + '30' : 'rgba(15,23,42,0.5)', color: form.prior === p.id ? p.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (form.prior === p.id ? p.color : 'rgba(100,116,139,0.30)'), fontSize: 14, cursor: 'pointer' },
-                    title: p.label
-                  }, p.icon);
-                })
+              hh('fieldset', { style: { border: 0, padding: 0, margin: 0 } },
+                hh('legend', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 4 } }, 'Current knowledge'),
+                hh('div', { style: { display: 'flex', gap: 4 } },
+                  PRIOR_LEVELS.map(function(p) {
+                    return hh('button', { key: 'p-' + p.id, type: 'button', 'aria-label': p.label, 'aria-pressed': form.prior === p.id,
+                      onClick: function() { setForm(Object.assign({}, form, { prior: p.id })); },
+                      style: { flex: 1, minWidth: 44, minHeight: 44, padding: '8px 4px', borderRadius: 6, background: form.prior === p.id ? p.color + '30' : 'rgba(15,23,42,0.5)', color: form.prior === p.id ? p.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (form.prior === p.id ? p.color : 'rgba(100,116,139,0.30)'), fontSize: 14, cursor: 'pointer' }
+                    }, p.icon);
+                  })
+                )
               )
             )
           ),
@@ -6858,14 +6863,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       result ? tkCard('#a855f7',
         hh('div', null,
           hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 } },
-            hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, '✨ Your prioritized plan'),
-            tkBtn('💾 Save this plan', savePlan, 'good', { padding: '6px 12px', fontSize: 10 })
+            hh('h3', { id: 'learning-lab-strategy-results-title', style: { margin: 0, fontSize: 13, fontWeight: 800, color: '#c084fc' } }, '✨ Your prioritized plan'),
+            tkBtn('💾 Save this plan', savePlan, 'good', { minHeight: 44, padding: '8px 12px', fontSize: 10 })
           ),
-          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          hh('div', { role: 'list', 'aria-labelledby': 'learning-lab-strategy-results-title', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             result.recommendations.map(function(s, i) {
               var rank = i + 1;
               var rankColor = rank <= 3 ? '#10b981' : rank <= 6 ? '#fbbf24' : '#94a3b8';
-              return hh('div', { key: 'rec-' + s.id, style: {
+              return hh('div', { key: 'rec-' + s.id, role: 'listitem', style: {
                 display: 'flex', alignItems: 'flex-start', gap: 8,
                 padding: 10, borderRadius: 8,
                 background: 'rgba(15,23,42,0.5)',
@@ -6891,7 +6896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       // Saved plans
       (data.savedPlans || []).length > 0 ? hh('div', { style: { marginTop: 14 } },
-        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Saved plans'),
+        hh('h3', { style: { margin: '0 0 8px', fontSize: 12, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em' } }, '📚 Saved plans'),
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
           (data.savedPlans || []).map(function(p) {
             return hh('div', { key: 'sp-' + p.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(168,85,247,0.30)', borderLeft: '3px solid #a855f7' } },
@@ -6899,7 +6904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('div', { style: { fontSize: 12, color: '#c084fc', fontWeight: 700 } }, p.subject),
                 hh('div', { style: { display: 'flex', gap: 4 } },
                   hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, relDate(p.savedAt)),
-                  hh('button', { onClick: function() { deletePlan(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { type: 'button', 'aria-label': 'Delete saved plan: ' + p.subject, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the saved strategy plan for "' + p.subject + '".', { title: 'Delete this saved plan?', confirmText: 'Delete plan' })) deletePlan(p.id); }, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
               hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } },
