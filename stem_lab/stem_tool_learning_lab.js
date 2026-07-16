@@ -7269,6 +7269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var ps = R.useState(null);                var picked = ps[0];   var setPicked = ps[1];
     var rs = R.useState('');                  var response = rs[0]; var setResponse = rs[1];
     var vs = R.useState('library');           var view = vs[0];     var setView = vs[1]; // library | answer | history
+    var ves = R.useState('');                 var responseError = ves[0]; var setResponseError = ves[1];
 
     var CATEGORIES = [
       { id: 'metacog',   label: 'Metacognition',         color: '#9333ea', icon: '🧠' },
@@ -7316,23 +7317,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var responses = data.responses || [];
 
     function saveResponse() {
-      if (!picked || !response.trim()) { alert('Pick a prompt + write something.'); return; }
+      if (!picked) return;
+      if (!response.trim()) { setResponseError('Write a response before saving.'); setTimeout(function() { var target = document.getElementById('learning-lab-reflection-response'); if (target) target.focus(); }, 0); return; }
       var entry = { id: tkId(), promptId: picked.id, promptText: picked.text, text: response.trim(), date: todayISO() };
       setData({ responses: [entry].concat(responses) });
-      setResponse(''); setPicked(null); setView('library');
+      setResponse(''); setResponseError(''); setPicked(null); setView('library');
+      llAnnounce('Reflection response saved.');
     }
 
     if (view === 'history') {
       return hh('div', { style: { padding: 14 } },
         tkSectionHeader('📓', 'My reflection history', responses.length + ' saved responses', '#a855f7'),
-        tkBtn('← Back to prompts', function() { setView('library'); }, 'ghost'),
+        tkBtn('← Back to prompts', function() { setView('library'); }, 'ghost', { minHeight: 44 }),
         responses.length === 0 ? tkEmptyState('📓', 'No responses yet. Browse prompts and start writing.', null, null)
         : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 } },
             responses.map(function(r) {
               var cat = CATEGORIES.filter(function(c) { return c.id === (PROMPTS.filter(function(p) { return p.id === r.promptId; })[0] || {}).cat; })[0] || CATEGORIES[0];
               return hh('div', { key: 'r-' + r.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + cat.color } },
                 hh('div', { style: { fontSize: 10, color: cat.color, fontWeight: 700, marginBottom: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, cat.icon + ' ' + r.date),
-                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 6 } }, 'Q: ' + r.promptText),
+                hh('h3', { style: { margin: '0 0 6px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Question: ' + r.promptText),
                 hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, r.text)
               );
             })
@@ -7346,12 +7349,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkSectionHeader('📝', cat.icon + ' ' + cat.label, 'Take your time. No right answer.', cat.color),
         hh('div', { style: { padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, ' + cat.color + '15, rgba(15,23,42,0.7))', border: '2px solid ' + cat.color, marginBottom: 12 } },
           hh('div', { style: { fontSize: 9, color: cat.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, 'Prompt'),
-          hh('div', { style: { fontSize: 15, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, fontStyle: 'italic' } }, picked.text)
+          hh('h3', { id: 'learning-lab-reflection-prompt', style: { margin: 0, fontSize: 15, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, fontStyle: 'italic' } }, picked.text)
         ),
-        tkTextarea(response, setResponse, 'Your response...', 8, { marginBottom: 10 }),
+        hh('label', { htmlFor: 'learning-lab-reflection-response', style: { display: 'block', fontSize: 11, fontWeight: 800, color: cat.color, marginBottom: 4 } }, 'Your response'),
+        hh('textarea', { id: 'learning-lab-reflection-response', 'aria-describedby': 'learning-lab-reflection-prompt' + (responseError ? ' learning-lab-reflection-response-error' : ''), 'aria-invalid': responseError ? 'true' : undefined, value: response, rows: 8, onChange: function(e) { setResponse(e.target.value); setResponseError(''); }, placeholder: 'Write your response', style: { width: '100%', minHeight: 176, padding: '10px 12px', marginBottom: responseError ? 4 : 10, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' } }),
+        responseError ? hh('div', { id: 'learning-lab-reflection-response-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: 10 } }, responseError) : null,
         hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Different prompt', function() { setPicked(null); setResponse(''); setView('library'); }, 'ghost'),
-          tkBtn('💾 Save my response', saveResponse, 'primary')
+          tkBtn('← Different prompt', function() { setPicked(null); setResponse(''); setResponseError(''); setView('library'); }, 'ghost', { minHeight: 44 }),
+          tkBtn('💾 Save my response', saveResponse, 'primary', { minHeight: 44 })
         )
       );
     }
@@ -7361,18 +7366,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 12 } },
         hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, responses.length + ' saved responses'),
-        tkBtn('📓 My history', function() { setView('history'); }, 'secondary')
+        tkBtn('📓 My history', function() { setView('history'); }, 'secondary', { minHeight: 44 })
       ),
 
       CATEGORIES.map(function(cat) {
         var catPrompts = PROMPTS.filter(function(p) { return p.cat === cat.id; });
         return hh('div', { key: 'c-' + cat.id, style: { marginBottom: 16 } },
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: cat.color, marginBottom: 8, padding: '6px 12px', background: cat.color + '12', borderRadius: 6, display: 'inline-block' } }, cat.icon + ' ' + cat.label),
+          hh('h3', { style: { margin: '0 0 8px', fontSize: 12, fontWeight: 800, color: cat.color, padding: '6px 12px', background: cat.color + '12', borderRadius: 6, display: 'inline-block' } }, cat.icon + ' ' + cat.label),
           hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
             catPrompts.map(function(p) {
-              return hh('button', { key: 'p-' + p.id,
-                onClick: function() { setPicked(p); setResponse(''); setView('answer'); },
-                style: { display: 'block', textAlign: 'left', padding: '10px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid ' + cat.color + '20', borderLeft: '3px solid ' + cat.color, fontSize: 12, lineHeight: 1.5, cursor: 'pointer' }
+              return hh('button', { key: 'p-' + p.id, type: 'button',
+                onClick: function() { setPicked(p); setResponse(''); setResponseError(''); setView('answer'); },
+                style: { display: 'block', width: '100%', minHeight: 44, textAlign: 'left', padding: '10px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid ' + cat.color + '20', borderLeft: '3px solid ' + cat.color, fontSize: 12, lineHeight: 1.5, cursor: 'pointer' }
               }, p.text);
             })
           )
