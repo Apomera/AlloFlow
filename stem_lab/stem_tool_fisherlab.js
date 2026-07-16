@@ -562,6 +562,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var labels = { 'collision-risk': 'Steady bearing + closing range', opening: 'Opening range', changing: 'Bearing changing or unclear' };
     return { correct: call === expected, expected: expected, expectedLabel: labels[expected], evidence: evidence };
   }
+  function getCoreManeuverWindow(elapsed, limit) {
+    var duration = Math.max(1, Number(limit) || 20);
+    var used = Math.max(0, Number(elapsed) || 0);
+    var remaining = Math.max(0, duration - used);
+    var remainingPct = Math.max(0, Math.min(100, remaining / duration * 100));
+    var urgency = remaining <= 5 ? 'critical' : remaining <= 10 ? 'warning' : 'normal';
+    return { duration: duration, elapsed: used, remaining: remaining, remainingPct: remainingPct, urgency: urgency, expired: remaining <= 0 };
+  }
   function gradeCoreEncounter(correct, reviewed, maneuverType, elapsed, closestRange) {
     if (!correct || reviewed) return { id: 'review', label: 'Review required', bonus: 0 };
     var promptLimit = maneuverType === 'stand-on' ? 8 : maneuverType === 'restricted' ? 9 : 7;
@@ -609,6 +617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     appendCoreRadarPlot: appendCoreRadarPlot,
     summarizeCoreRadarTrail: summarizeCoreRadarTrail,
     evaluateCoreRadarCall: evaluateCoreRadarCall,
+    getCoreManeuverWindow: getCoreManeuverWindow,
     gradeCoreEncounter: gradeCoreEncounter,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
@@ -8964,6 +8973,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       radarCallCorrect: false,
       radarCallLabel: null,
       radarCallBonus: 0,
+      trafficWindowTenWarned: false,
+      trafficWindowFiveWarned: false,
       trafficGradeId: null,
       trafficGradeLabel: null,
       trafficGradeBonus: 0,
@@ -9531,6 +9542,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           boatState.trafficTrackSampleSeconds = 0;
         }
         boatState.trafficManeuverSeconds += dt;
+        var maneuverWindowState = getCoreManeuverWindow(boatState.trafficManeuverSeconds, 20);
+        if (maneuverWindowState.remaining <= 10 && !boatState.trafficWindowTenWarned) {
+          boatState.trafficWindowTenWarned = true;
+          statusCb({ type: 'guidance', text: 'Maneuver window: 10 seconds remain before review.' });
+          flAnnounce('Ten seconds remain in the maneuver window.');
+        }
+        if (maneuverWindowState.remaining <= 5 && !boatState.trafficWindowFiveWarned) {
+          boatState.trafficWindowFiveWarned = true;
+          statusCb({ type: 'guidance', text: 'Maneuver window: 5 seconds remain before review.' });
+          flAnnounce('Five seconds remain. Complete the required maneuver actions.');
+        }
         boatState.trafficClosestRange = Math.min(boatState.trafficClosestRange, trafficRange);
         if (trafficManeuver.complete) {
           boatState.trafficManeuverComplete = true;
@@ -9543,7 +9565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           boatState.stewardshipScore += maneuverBonus + performanceBonus;
           statusCb({ type: encounterGrade.id === 'review' ? 'guidance' : 'milestone', text: encounterGrade.label + ' · CPA ' + boatState.trafficClosestRange.toFixed(1) + ' · ' + boatState.trafficManeuverSeconds.toFixed(1) + ' s · +' + (maneuverBonus + performanceBonus) + ' points' });
           flAnnounce(encounterProfile.maneuverLabel + ' complete. ' + encounterGrade.label + '.');
-        } else if (boatState.trafficManeuverSeconds >= 20) {
+        } else if (maneuverWindowState.expired) {
           boatState.trafficManeuverComplete = true;
           boatState.trafficManeuverReviewed = true;
           var reviewGrade = gradeCoreEncounter(boatState.trafficDecisionCorrect, true, encounterProfile.maneuverType, boatState.trafficManeuverSeconds, boatState.trafficClosestRange);
@@ -9898,6 +9920,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.radarCallCorrect = false;
         boatState.radarCallLabel = null;
         boatState.radarCallBonus = 0;
+        boatState.trafficWindowTenWarned = false;
+        boatState.trafficWindowFiveWarned = false;
         boatState.trafficGradeId = null;
         boatState.trafficGradeLabel = null;
         boatState.trafficGradeBonus = 0;
@@ -10868,6 +10892,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       });
       var trafficPlotLesson = hud.trafficConstantBearing && hud.trafficClosing ? 'Steady bearing + shrinking range = collision risk' : hud.trafficOpening ? 'Growing range = contact opening' : 'Compare each timed bearing and range plot';
       var trafficEvidence = summarizeCoreRadarTrail(trafficTrackHistory);
+      var maneuverWindow = getCoreManeuverWindow(hud.trafficManeuverSeconds, 20);
+      var maneuverWindowColor = maneuverWindow.urgency === 'critical' ? '#fca5a5' : maneuverWindow.urgency === 'warning' ? '#fde68a' : '#86efac';
       var trafficGradeColor = hud.trafficGradeId === 'excellent' ? '#fde68a' : hud.trafficGradeId === 'safe' ? '#86efac' : hud.trafficGradeId === 'review' ? '#fdba74' : '#bae6fd';
       var trafficIsStandOn = hud.trafficManeuverType === 'stand-on';
       var trafficIsRestricted = hud.trafficManeuverType === 'restricted';
@@ -11005,7 +11031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 )
               ),
               hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('div', { style: { marginTop: 7, paddingTop: 7, borderTop: '1px solid rgba(125,211,252,0.25)', display: 'grid', gap: 4, textAlign: 'left' } },
-                h('div', { 'aria-label': 'Closest point of approach watch with ' + trafficTrackDots.length + ' timed radar plots. ' + (hud.trafficRiskLabel || 'Monitoring bearing and range') + '. Bearing change ' + (hud.trafficBearingChange || 0).toFixed(1) + ' degrees. Range change ' + (hud.trafficRangeChange || 0).toFixed(1) + ' simulation units.', style: { display: 'grid', gridTemplateColumns: '54px minmax(0,1fr)', gap: 7, alignItems: 'center', paddingBottom: 5, marginBottom: 1, borderBottom: '1px solid rgba(125,211,252,0.18)' } },
+                h('div', { 'aria-label': 'Closest point of approach watch with ' + trafficTrackDots.length + ' timed radar plots. ' + (hud.trafficRiskLabel || 'Monitoring bearing and range') + '. Bearing change ' + (hud.trafficBearingChange || 0).toFixed(1) + ' degrees. Range change ' + (hud.trafficRangeChange || 0).toFixed(1) + ' simulation units. ' + maneuverWindow.remaining.toFixed(1) + ' seconds remain before review.', style: { display: 'grid', gridTemplateColumns: '54px minmax(0,1fr)', gap: 7, alignItems: 'center', paddingBottom: 5, marginBottom: 1, borderBottom: '1px solid rgba(125,211,252,0.18)' } },
                   h('div', { 'aria-hidden': 'true', style: { position: 'relative', width: 50, height: 50, borderRadius: '50%', border: '1px solid rgba(125,211,252,0.55)', background: 'radial-gradient(circle, transparent 31%, rgba(125,211,252,0.18) 32%, transparent 34%, transparent 64%, rgba(125,211,252,0.18) 65%, transparent 67%), linear-gradient(90deg, transparent 49%, rgba(125,211,252,0.22) 50%, transparent 52%), linear-gradient(transparent 49%, rgba(125,211,252,0.22) 50%, transparent 52%)' } },
                     h('span', { style: { position: 'absolute', left: '50%', top: '50%', width: 6, height: 8, borderRadius: '50% 50% 35% 35%', background: '#f8fafc', transform: 'translate(-50%,-50%)' } }),
                     trafficTrackDots.map(function(dot, dotIndex) {
@@ -11043,6 +11069,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 (trafficIsStandOn || trafficIsRestricted) ? h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficObservedEnough ? '#86efac' : '#fef3c7', fontSize: 9 } },
                   h('span', null, (hud.trafficObservedEnough ? '✓ ' : '○ ') + (trafficIsRestricted ? 'Navigate cautiously 5 s' : 'Observe crossing 5 s')),
                   h('strong', null, Math.min(5, hud.trafficManeuverSeconds || 0).toFixed(1) + ' s')) : null,
+                h('div', { 'aria-label': 'Maneuver window. ' + maneuverWindow.remaining.toFixed(1) + ' seconds remain before review.', style: { display: 'grid', gap: 3, paddingTop: 3 } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: maneuverWindowColor, fontSize: 9, fontWeight: 800 } },
+                    h('span', null, 'Maneuver window'),
+                    h('span', null, maneuverWindow.remaining.toFixed(1) + ' s left')),
+                  h('div', { 'aria-hidden': 'true', style: { width: '100%', height: 4, overflow: 'hidden', borderRadius: 4, background: 'rgba(148,163,184,0.24)' } },
+                    h('div', { style: { width: maneuverWindow.remainingPct.toFixed(1) + '%', height: '100%', background: maneuverWindowColor, transition: 'width 0.15s linear, background 0.2s ease' } }))),
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: '#bae6fd', fontSize: 9 } },
                   h('span', null, 'Closest range'),
                   h('strong', null, isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) + ' sim' : 'tracking'))

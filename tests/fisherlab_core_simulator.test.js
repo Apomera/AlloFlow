@@ -198,6 +198,17 @@ describe('Fisher Lab voyage progression', () => {
     expect(evaluateCoreRadarCall(changingTrail, 'changing')).toMatchObject({ correct: true, expected: 'changing' });
   });
 
+  it('keeps the visible maneuver countdown aligned with the review deadline', () => {
+    const { getCoreManeuverWindow } = window.__FisherLabCore;
+
+    expect(getCoreManeuverWindow(0, 20)).toEqual({ duration: 20, elapsed: 0, remaining: 20, remainingPct: 100, urgency: 'normal', expired: false });
+    expect(getCoreManeuverWindow(10, 20)).toMatchObject({ remaining: 10, remainingPct: 50, urgency: 'warning', expired: false });
+    expect(getCoreManeuverWindow(15, 20)).toMatchObject({ remaining: 5, remainingPct: 25, urgency: 'critical', expired: false });
+    expect(getCoreManeuverWindow(20, 20)).toMatchObject({ remaining: 0, remainingPct: 0, urgency: 'critical', expired: true });
+    expect(getCoreManeuverWindow(30, 20)).toMatchObject({ remaining: 0, remainingPct: 0, expired: true });
+    expect(getCoreManeuverWindow(-5, 0)).toMatchObject({ duration: 20, elapsed: 0, remaining: 20 });
+  });
+
   it('grades prompt, well-separated encounters without rewarding incorrect or timed-out work', () => {
     const { gradeCoreEncounter } = window.__FisherLabCore;
 
@@ -241,7 +252,7 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('trafficVessel.visible = !encounterProfile.radarOnly');
     expect(source).toContain("activeRegion === 'chesapeake'");
     expect(source).toContain('Traffic: vessel clearing');
-    expect(source).toContain('trafficManeuverSeconds >= 20');
+    expect(source).toContain('maneuverWindowState.expired');
     expect(source).toContain("encounterProfile.maneuverLabel + ' complete");
     expect(source).toContain("mode === 'skipper' ? CORE_COLREGS_STAND_ON");
     expect(source).toContain('Safe speed ≤ 2.5 kt');
@@ -267,6 +278,12 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("pointerEvents: 'auto', display: 'grid'");
     expect(source).toContain('Make the radar call - optional bonus');
     expect(source).toContain('Radar evidence call already logged.');
+    expect(source).toContain('getCoreManeuverWindow');
+    expect(source).toContain('Maneuver window: 10 seconds remain before review.');
+    expect(source).toContain('Maneuver window: 5 seconds remain before review.');
+    expect(source).toContain("'Maneuver window. ' + maneuverWindow.remaining.toFixed(1)");
+    expect(source).toContain('maneuverWindowState.expired');
+    expect(source).not.toContain('trafficManeuverSeconds >= 20');
     expect(source).toContain("'Radar call: ' + (hud.radarCallCorrect ? 'correct' : 'review')");
     expect(source).toContain('Rule 35 signal: ');
     expect(source).toContain('Steady bearing and closing range show collision risk');
