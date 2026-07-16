@@ -20246,69 +20246,157 @@ figure[data-img-idx] { break-inside: avoid; }
 @media print { body { padding: 0.5in; } .sr-only { display: none; } label input[type="file"] { display: none !important; } label:has(input[type="file"]) { display: none !important; } button[onclick*="pdfCropImage"] { display: none !important; } }
 </style>
 <script>
-// Image crop adjustment UI — opens a modal with the full PDF page, user drags a selection, re-crops
+// Accessible image crop adjustment UI with pointer and keyboard coordinate controls.
+window.__pdfCropNotify = function(message) {
+  try {
+    var oldNotice = document.getElementById('alloflow-pdf-crop-notice');
+    if (oldNotice) oldNotice.remove();
+    var notice = document.createElement('div');
+    notice.id = 'alloflow-pdf-crop-notice';
+    notice.setAttribute('role', 'alert');
+    notice.setAttribute('aria-live', 'assertive');
+    notice.setAttribute('aria-atomic', 'true');
+    notice.textContent = String(message || 'The crop could not be updated.');
+    notice.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(36rem,calc(100vw - 32px));padding:12px 18px;border-radius:10px;background:#991b1b;color:#fff;font:600 14px/1.45 system-ui,sans-serif;box-shadow:0 8px 24px rgba(15,23,42,.35);z-index:10001;';
+    document.body.appendChild(notice);
+    setTimeout(function() { try { notice.remove(); } catch (e) {} }, 6000);
+  } catch (e) {}
+};
 window.__pdfCropImage = function(imgId) {
+  var opener = document.activeElement;
   var figure = document.getElementById(imgId + '-figure');
   if (!figure) return;
   var cropStr = figure.getAttribute('data-crop');
-  if (!cropStr) { alert('No crop data available for this image.'); return; }
+  if (!cropStr) { window.__pdfCropNotify('No crop data is available for this image.'); return; }
   var crop;
-  try { crop = JSON.parse(cropStr); } catch(e) { alert('Invalid crop data.'); return; }
+  try { crop = JSON.parse(cropStr); } catch(e) { window.__pdfCropNotify('The saved crop data is invalid.'); return; }
   var pageSrc = window.__pdfPageCanvases && window.__pdfPageCanvases[crop.page];
-  if (!pageSrc) { alert('Full page image not available. Re-run remediation to enable cropping.'); return; }
+  if (!pageSrc) { window.__pdfCropNotify('The full page image is unavailable. Run remediation again to enable cropping.'); return; }
 
-  // Create modal overlay
+  var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+    return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+  });
   var overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.7);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem';
-  overlay.setAttribute('role', 'dialog');
-  overlay.setAttribute('aria-label', 'Adjust image crop');
+  overlay.setAttribute('role', 'presentation');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,0.78);display:flex;align-items:center;justify-content:center;padding:1rem';
 
-  var header = document.createElement('div');
-  header.style.cssText = 'color:white;font-size:14px;font-weight:bold;margin-bottom:8px;text-align:center';
-  header.textContent = 'Drag to select crop region, then click Apply';
-  overlay.appendChild(header);
+  var dialog = document.createElement('div');
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  dialog.setAttribute('aria-labelledby', 'alloflow-pdf-crop-title');
+  dialog.setAttribute('aria-describedby', 'alloflow-pdf-crop-instructions alloflow-pdf-crop-error');
+  dialog.style.cssText = 'box-sizing:border-box;width:min(64rem,96vw);max-height:96vh;overflow:auto;background:#fff;color:#0f172a;border-radius:12px;padding:18px;box-shadow:0 24px 70px rgba(0,0,0,.45);font-family:system-ui,sans-serif';
+  overlay.appendChild(dialog);
+
+  var header = document.createElement('h2');
+  header.id = 'alloflow-pdf-crop-title';
+  header.style.cssText = 'margin:0 0 6px;font-size:1.25rem;line-height:1.3;color:#0f172a';
+  header.textContent = 'Adjust image crop';
+  dialog.appendChild(header);
+
+  var instructions = document.createElement('p');
+  instructions.id = 'alloflow-pdf-crop-instructions';
+  instructions.style.cssText = 'margin:0 0 12px;color:#334155;line-height:1.5';
+  instructions.textContent = 'Drag over the page image or edit the crop coordinates. Coordinate fields provide the same crop controls without dragging.';
+  dialog.appendChild(instructions);
 
   var wrapper = document.createElement('div');
-  wrapper.style.cssText = 'position:relative;max-width:90vw;max-height:70vh;overflow:auto;background:#222;border-radius:8px;border:2px solid #555';
-  overlay.appendChild(wrapper);
+  wrapper.style.cssText = 'position:relative;max-width:100%;max-height:54vh;overflow:auto;background:#222;border-radius:8px;border:2px solid #64748b';
+  dialog.appendChild(wrapper);
 
   var pageImg = document.createElement('img');
   pageImg.src = pageSrc;
-  pageImg.style.cssText = 'display:block;max-width:100%;user-select:none;-webkit-user-drag:none';
+  pageImg.alt = 'Full PDF page for selecting an image crop';
+  pageImg.style.cssText = 'display:block;max-width:100%;user-select:none;-webkit-user-drag:none;touch-action:none';
   pageImg.draggable = false;
   wrapper.appendChild(pageImg);
 
-  // Selection box
   var sel = document.createElement('div');
-  sel.style.cssText = 'position:absolute;border:2px dashed #2563eb;background:rgba(37,99,235,0.15);pointer-events:none;display:none';
+  sel.setAttribute('aria-hidden', 'true');
+  sel.style.cssText = 'position:absolute;border:3px dashed #1d4ed8;background:rgba(219,234,254,0.35);pointer-events:none;display:none;box-sizing:border-box';
   wrapper.appendChild(sel);
 
-  // Position the selection to match current crop (scaled to displayed image)
-  pageImg.onload = function() {
+  var controls = document.createElement('fieldset');
+  controls.style.cssText = 'margin:14px 0 0;padding:12px;border:1px solid #94a3b8;border-radius:8px';
+  var legend = document.createElement('legend');
+  legend.textContent = 'Crop coordinates in full-page pixels';
+  legend.style.cssText = 'padding:0 5px;font-weight:700;color:#0f172a';
+  controls.appendChild(legend);
+  var controlGrid = document.createElement('div');
+  controlGrid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:10px';
+  controls.appendChild(controlGrid);
+  dialog.appendChild(controls);
+
+  function makeCoordinateInput(labelText, value) {
+    var group = document.createElement('div');
+    var label = document.createElement('label');
+    var input = document.createElement('input');
+    var inputId = 'alloflow-pdf-crop-' + labelText.toLowerCase();
+    label.setAttribute('for', inputId);
+    label.textContent = labelText;
+    label.style.cssText = 'display:block;margin-bottom:4px;font-weight:700;color:#0f172a';
+    input.id = inputId;
+    input.type = 'number';
+    input.inputMode = 'numeric';
+    input.min = '0';
+    input.step = '1';
+    input.value = String(Math.round(Number(value) || 0));
+    input.style.cssText = 'box-sizing:border-box;width:100%;min-height:44px;border:2px solid #64748b;border-radius:7px;padding:8px;color:#0f172a;background:#fff;font:16px/1.4 system-ui,sans-serif';
+    group.appendChild(label); group.appendChild(input); controlGrid.appendChild(group);
+    return input;
+  }
+  var xInput = makeCoordinateInput('X', crop.x);
+  var yInput = makeCoordinateInput('Y', crop.y);
+  var widthInput = makeCoordinateInput('Width', crop.w);
+  var heightInput = makeCoordinateInput('Height', crop.h);
+  xInput.max = String(Math.max(0, crop.canvasW - 1));
+  yInput.max = String(Math.max(0, crop.canvasH - 1));
+  widthInput.max = String(crop.canvasW);
+  heightInput.max = String(crop.canvasH);
+
+  var error = document.createElement('p');
+  error.id = 'alloflow-pdf-crop-error';
+  error.setAttribute('role', 'alert');
+  error.hidden = true;
+  error.style.cssText = 'margin:10px 0 0;color:#991b1b;font-weight:700';
+  dialog.appendChild(error);
+  function showError(message) {
+    error.textContent = message;
+    error.hidden = false;
+  }
+  function clearError() { error.hidden = true; error.textContent = ''; }
+  function numberValue(input) { return Number(input.value); }
+  function renderSelectionFromInputs() {
+    if (!pageImg.clientWidth || !pageImg.clientHeight) return;
     var scaleX = pageImg.clientWidth / crop.canvasW;
     var scaleY = pageImg.clientHeight / crop.canvasH;
-    sel.style.left = (crop.x * scaleX) + 'px';
-    sel.style.top = (crop.y * scaleY) + 'px';
-    sel.style.width = (crop.w * scaleX) + 'px';
-    sel.style.height = (crop.h * scaleY) + 'px';
+    var x = Math.max(0, Math.min(numberValue(xInput) || 0, crop.canvasW));
+    var y = Math.max(0, Math.min(numberValue(yInput) || 0, crop.canvasH));
+    var w = Math.max(0, Math.min(numberValue(widthInput) || 0, crop.canvasW - x));
+    var h = Math.max(0, Math.min(numberValue(heightInput) || 0, crop.canvasH - y));
+    sel.style.left = (x * scaleX) + 'px';
+    sel.style.top = (y * scaleY) + 'px';
+    sel.style.width = (w * scaleX) + 'px';
+    sel.style.height = (h * scaleY) + 'px';
     sel.style.display = 'block';
-  };
+  }
+  [xInput, yInput, widthInput, heightInput].forEach(function(input) {
+    input.addEventListener('input', function() { clearError(); renderSelectionFromInputs(); });
+  });
+  pageImg.onload = renderSelectionFromInputs;
 
-  // Drag to create new selection
   var dragging = false, startX = 0, startY = 0;
-  wrapper.onmousedown = function(e) {
-    if (e.target === pageImg || e.target === wrapper) {
-      var rect = pageImg.getBoundingClientRect();
-      startX = e.clientX - rect.left;
-      startY = e.clientY - rect.top;
-      dragging = true;
-      sel.style.left = startX + 'px'; sel.style.top = startY + 'px';
-      sel.style.width = '0'; sel.style.height = '0';
-      sel.style.display = 'block';
-      e.preventDefault();
-    }
+  pageImg.onpointerdown = function(e) {
+    var rect = pageImg.getBoundingClientRect();
+    startX = Math.max(0, Math.min(e.clientX - rect.left, pageImg.clientWidth));
+    startY = Math.max(0, Math.min(e.clientY - rect.top, pageImg.clientHeight));
+    dragging = true;
+    try { pageImg.setPointerCapture(e.pointerId); } catch (er) {}
+    sel.style.left = startX + 'px'; sel.style.top = startY + 'px';
+    sel.style.width = '0'; sel.style.height = '0'; sel.style.display = 'block';
+    e.preventDefault();
   };
-  wrapper.onmousemove = function(e) {
+  pageImg.onpointermove = function(e) {
     if (!dragging) return;
     var rect = pageImg.getBoundingClientRect();
     var cx = Math.max(0, Math.min(e.clientX - rect.left, pageImg.clientWidth));
@@ -20318,52 +20406,83 @@ window.__pdfCropImage = function(imgId) {
     sel.style.width = Math.abs(cx - startX) + 'px';
     sel.style.height = Math.abs(cy - startY) + 'px';
   };
-  wrapper.onmouseup = function() { dragging = false; };
-
-  // Buttons
-  var btnRow = document.createElement('div');
-  btnRow.style.cssText = 'display:flex;gap:8px;margin-top:10px';
-
-  var applyBtn = document.createElement('button');
-  applyBtn.textContent = 'Apply Crop';
-  applyBtn.style.cssText = 'padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:8px;font-weight:bold;font-size:13px;cursor:pointer';
-  applyBtn.onclick = function() {
+  function finishPointerSelection(e) {
+    if (!dragging) return;
+    dragging = false;
+    try { pageImg.releasePointerCapture(e.pointerId); } catch (er) {}
     var scaleX = crop.canvasW / pageImg.clientWidth;
     var scaleY = crop.canvasH / pageImg.clientHeight;
-    var sx = parseInt(sel.style.left) * scaleX;
-    var sy = parseInt(sel.style.top) * scaleY;
-    var sw = parseInt(sel.style.width) * scaleX;
-    var sh = parseInt(sel.style.height) * scaleY;
-    if (sw < 10 || sh < 10) { alert('Selection too small. Drag a larger area.'); return; }
-    // Re-crop from stored full-page canvas
+    xInput.value = String(Math.round(parseFloat(sel.style.left) * scaleX));
+    yInput.value = String(Math.round(parseFloat(sel.style.top) * scaleY));
+    widthInput.value = String(Math.round(parseFloat(sel.style.width) * scaleX));
+    heightInput.value = String(Math.round(parseFloat(sel.style.height) * scaleY));
+    clearError(); renderSelectionFromInputs();
+  }
+  pageImg.onpointerup = finishPointerSelection;
+  pageImg.onpointercancel = finishPointerSelection;
+
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:14px';
+  var cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.style.cssText = 'min-height:44px;padding:9px 18px;background:#fff;color:#0f172a;border:2px solid #475569;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer';
+  var applyBtn = document.createElement('button');
+  applyBtn.type = 'button';
+  applyBtn.textContent = 'Apply crop';
+  applyBtn.style.cssText = 'min-height:44px;padding:9px 18px;background:#1d4ed8;color:#fff;border:2px solid #1d4ed8;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer';
+  btnRow.appendChild(cancelBtn); btnRow.appendChild(applyBtn); dialog.appendChild(btnRow);
+
+  var settled = false;
+  function closeDialog() {
+    if (settled) return;
+    settled = true;
+    document.removeEventListener('keydown', onKeyDown, true);
+    try { overlay.remove(); } catch (e) {}
+    blocked.forEach(function(entry) {
+      if (!entry.hadInert) entry.el.removeAttribute('inert');
+      if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden'); else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+    });
+    try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+  }
+  function onKeyDown(e) {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeDialog(); return; }
+    if (e.key !== 'Tab') return;
+    var focusable = [xInput, yInput, widthInput, heightInput, cancelBtn, applyBtn];
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (!dialog.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+  cancelBtn.onclick = closeDialog;
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) closeDialog(); });
+  applyBtn.onclick = function() {
+    var sx = numberValue(xInput), sy = numberValue(yInput), sw = numberValue(widthInput), sh = numberValue(heightInput);
+    if (![sx, sy, sw, sh].every(Number.isFinite)) { showError('Enter numeric crop coordinates.'); return; }
+    if (sx < 0 || sy < 0 || sw < 10 || sh < 10 || sx + sw > crop.canvasW || sy + sh > crop.canvasH) {
+      showError('Enter a crop at least 10 by 10 pixels that stays within the full page.');
+      return;
+    }
+    clearError();
     var tmpImg = new Image();
     tmpImg.onload = function() {
       var c = document.createElement('canvas');
       c.width = Math.round(sw); c.height = Math.round(sh);
       c.getContext('2d').drawImage(tmpImg, Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh), 0, 0, c.width, c.height);
-      var dataUrl = c.toDataURL('image/jpeg', 0.85); // P3: source is the opaque JPEG page cache — PNG only inflated size ~10×
+      var dataUrl = c.toDataURL('image/jpeg', 0.85);
       var container = document.getElementById(imgId + '-container');
       var img = container && container.querySelector('img');
-      if (img) { img.src = dataUrl; }
-      // Update crop data on figure for potential re-crop
+      if (img) img.src = dataUrl;
       figure.setAttribute('data-crop', JSON.stringify({ page: crop.page, x: Math.round(sx), y: Math.round(sy), w: Math.round(sw), h: Math.round(sh), canvasW: crop.canvasW, canvasH: crop.canvasH }));
-      document.body.removeChild(overlay);
+      closeDialog();
     };
     tmpImg.src = pageSrc;
   };
-  btnRow.appendChild(applyBtn);
 
-  var cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.style.cssText = 'padding:8px 20px;background:#64748b;color:white;border:none;border-radius:8px;font-weight:bold;font-size:13px;cursor:pointer';
-  cancelBtn.onclick = function() { document.body.removeChild(overlay); };
-  btnRow.appendChild(cancelBtn);
-
-  overlay.appendChild(btnRow);
   document.body.appendChild(overlay);
-  // Focus trap
-  applyBtn.focus();
-  overlay.onkeydown = function(e) { if (e.key === 'Escape') { document.body.removeChild(overlay); } };
+  blocked.forEach(function(entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+  document.addEventListener('keydown', onKeyDown, true);
+  xInput.focus(); xInput.select();
 };
 </script>
 </head>
