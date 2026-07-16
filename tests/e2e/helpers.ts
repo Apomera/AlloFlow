@@ -27,13 +27,24 @@ export async function bootAlloFlow(page: Page, mode: 'learning' | 'full' = 'lear
     ? page.locator('[role="button"][aria-label^="Learning Tools."]').first()
     : page.locator('[role="button"][aria-label^="Full Platform."]').first();
 
-  console.log('Waiting for mode picker card to be visible...');
-  await card.waitFor({ state: 'visible', timeout: 30000 });
-  console.log('Mode picker card is visible! Clicking it...');
-  await page.waitForTimeout(1000); // Allow hydration
-  // Click without force to ensure standard actionability (not covered, etc.)
-  await card.click({ timeout: 15000 });
-  await page.waitForTimeout(2000);
+  // A remembered mode can restore directly into the app, so accept either
+  // valid boot state instead of waiting forever for a first-run picker that
+  // will never appear.
+  const sourceInput = page.getByRole('textbox', { name: /Source material input/i }).first();
+  console.log('Waiting for the mode picker or the ready app...');
+  const bootState = await Promise.race([
+    card.waitFor({ state: 'visible', timeout: 30000 }).then(() => 'picker' as const),
+    sourceInput.waitFor({ state: 'visible', timeout: 30000 }).then(() => 'app' as const),
+  ]);
+  if (bootState === 'picker') {
+    console.log('Mode picker card is visible! Clicking it...');
+    await page.waitForTimeout(1000); // Allow hydration
+    // Click without force to ensure standard actionability (not covered, etc.)
+    await card.click({ timeout: 15000 });
+    await page.waitForTimeout(2000);
+  } else {
+    console.log('AlloFlow restored directly into the ready app.');
+  }
 
   // Dismiss tutorial overlays
   for (const sel of [

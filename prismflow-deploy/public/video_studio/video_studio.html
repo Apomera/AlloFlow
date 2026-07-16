@@ -455,6 +455,10 @@
         <div class="card">
           <h2>Takes</h2>
           <div class="takes" id="takesList"></div>
+          <div class="row" id="demoStitchRow" hidden style="display:none">
+            <button class="action" id="demoStitchBtn" type="button">Stitch continuation takes</button>
+            <span class="status" id="demoStitchStatus" style="margin-top:0"></span>
+          </div>
           <p class="status" id="takesEmpty">No takes yet — record one first.</p>
         </div>
         <div class="stage">
@@ -5026,6 +5030,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var raw = new Blob(recChunks, { type: rawType });
     recChunks = [];
     teardownStreams();
+    // MediaRecorder is definitively inactive in onstop. Recompute demo locks
+    // here so a delayed auto-stop cannot leave planning controls disabled.
+    syncDemoPlanSourceControls();
+    syncDemoExecutionControls();
     $('pauseBtn').hidden = true; $('stopBtn').hidden = true;
     $('recIndicator').hidden = true;
     $('startBtn').disabled = false; $('startBtn').textContent = '⏺ Start recording';
@@ -5034,7 +5042,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       // Consume demo state here too — leaking demoState.active past this
       // early return would rename and caption the NEXT unrelated take.
       if (demoState.active) {
-        demoState.active = false; demoState.events = []; demoState.activeSteps = [];
+        demoState.active = false; demoState.events = []; demoState.activeSteps = []; demoState.activeSeriesId = null; demoState.activeSeriesPart = 1;
         cleanupOfficialTutorial();
         restoreDemoMicPreference();
         setStatus($('demoStatus'), 'The demo take was empty — nothing was captured.', 'warn');
@@ -5060,10 +5068,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         demoCuesForVoice = demoCues.slice();
         autoNarrationVoice = demoState.voice || '';
         take.isDemo = true;
+        if (demoState.activeSeriesId) {
+          take.demoSeriesId = String(demoState.activeSeriesId).replace(/[^a-z0-9_-]/gi, '').slice(0, 80);
+          take.demoSeriesPart = Math.max(1, Math.round(Number(demoState.activeSeriesPart) || 1));
+        }
         take.demoExpectedNarrationCount = autoNarrationVoice ? demoCues.length : 0;
         take.demoAudioMode = autoNarrationVoice ? 'automatic' : ($('demoAudioMode').value || 'captions');
         take.demoPolish = cleanDemoPolish(demoState.activePolish);
-        demoState.active = false; demoState.activePolish = null; demoState.events = []; demoState.activeSteps = [];
+        demoState.active = false; demoState.activePolish = null; demoState.activeSeriesId = null; demoState.activeSeriesPart = 1; demoState.events = []; demoState.activeSteps = [];
         cleanupOfficialTutorial();
         restoreDemoMicPreference();
         setStatus($('demoStatus'), demoCues.length ? 'Demo take saved with ' + demoCues.length + ' instructional captions — review them in Edit & Captions before exporting.' : 'Demo take saved (no step captions were recorded).', demoCues.length ? 'ok' : 'warn');
@@ -5475,7 +5487,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
   function inflateDraft(r) {
-    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], transcriptEdits: vsSanitizeTranscriptEdits(r.transcriptEdits || [], r.duration || 0), transcriptWords: vsSanitizeTranscriptWords(r.transcriptWords || [], r.duration || 0), transcriptCleanupQueue: Array.isArray(r.transcriptCleanupQueue) ? r.transcriptCleanupQueue.slice(0, 240) : [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), scenePlan: r.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(r.mediaCredits || []), finishReview: r.finishReview || {}, isDemo: !!r.isDemo, demoPolish: r.demoPolish ? cleanDemoPolish(r.demoPolish) : null, demoAudioMode: r.demoAudioMode || null, demoExpectedNarrationCount: Math.max(0, Number(r.demoExpectedNarrationCount) || 0), demoQualityScore: Math.max(0, Number(r.demoQualityScore) || 0), zooms: r.zooms || [], audio: cleanAudioState(r.audio, r.duration || 0), musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
+    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], transcriptEdits: vsSanitizeTranscriptEdits(r.transcriptEdits || [], r.duration || 0), transcriptWords: vsSanitizeTranscriptWords(r.transcriptWords || [], r.duration || 0), transcriptCleanupQueue: Array.isArray(r.transcriptCleanupQueue) ? r.transcriptCleanupQueue.slice(0, 240) : [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), scenePlan: r.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(r.mediaCredits || []), finishReview: r.finishReview || {}, isDemo: !!r.isDemo, demoSeriesId: String(r.demoSeriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null, demoSeriesPart: Math.max(0, Math.round(Number(r.demoSeriesPart) || 0)), demoPolish: r.demoPolish ? cleanDemoPolish(r.demoPolish) : null, demoAudioMode: r.demoAudioMode || null, demoExpectedNarrationCount: Math.max(0, Number(r.demoExpectedNarrationCount) || 0), demoQualityScore: Math.max(0, Number(r.demoQualityScore) || 0), zooms: r.zooms || [], audio: cleanAudioState(r.audio, r.duration || 0), musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
   }
   function openDraftRow(r) {
     var existing = takes.find(function (t) { return t.id === r.id; });
@@ -7319,24 +7331,40 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     setStatus($('visualStatus'), segs.length + ' visual description line' + (segs.length === 1 ? '' : 's') + ' drafted; ' + approvedVisualDescriptions(t).length + ' approved.', approvedVisualDescriptions(t).length ? 'ok' : 'warn');
   }
 
-  function bridgeRequest(type, payload, timeoutMs) {
+  function bridgeRequest(type, payload, timeoutMs, options) {
+    options = options || {};
     return new Promise(function (resolve) {
       if (!opener || opener.closed) { resolve({ error: 'needs the AlloFlow window' }); return; }
       var id = 'nr' + (++aiNarrSeq) + '-' + Date.now().toString(36);
-      var responseType = type.replace('-request', '-response');
-      var timer = setTimeout(function () { window.removeEventListener('message', onMsg); resolve({ error: 'timed out' }); }, timeoutMs || 90000);
-      function onMsg(ev) {
-        if (isOpenerMessage(ev, responseType, id)) {
-          clearTimeout(timer);
-          window.removeEventListener('message', onMsg);
-          resolve(ev.data);
-        }
-      }
-      window.addEventListener('message', onMsg);
-      if (!postToOpener(Object.assign({ type: type, id: id }, payload))) {
-        clearTimeout(timer);
+      var signal = options.signal || null;
+      var timer = null;
+      var settled = false;
+      function cleanup() {
+        if (timer) clearTimeout(timer);
         window.removeEventListener('message', onMsg);
-        resolve({ error: 'AlloFlow bridge is not connected. Reopen Video Studio from AlloFlow and try again.' });
+        if (signal && typeof signal.removeEventListener === 'function') signal.removeEventListener('abort', onAbort);
+      }
+      function finish(value) {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(value);
+      }
+      function onAbort() { finish({ error: 'cancelled', cancelled: true }); }
+      if (typeof options.onRequestId === 'function') { try { options.onRequestId(id); } catch (_) {} }
+      var responseType = type.replace('-request', '-response');
+      function onMsg(ev) {
+        if (isOpenerMessage(ev, responseType, id)) finish(ev.data);
+      }
+      if (signal && signal.aborted) { onAbort(); return; }
+      window.addEventListener('message', onMsg);
+      if (signal && typeof signal.addEventListener === 'function') signal.addEventListener('abort', onAbort, { once: true });
+      timer = setTimeout(function () {
+        if (typeof options.onTimeout === 'function') { try { options.onTimeout(id); } catch (_) {} }
+        finish({ error: 'timed out' });
+      }, timeoutMs || 90000);
+      if (!postToOpener(Object.assign({ type: type, id: id }, payload))) {
+        finish({ error: 'AlloFlow bridge is not connected. Reopen Video Studio from AlloFlow and try again.' });
       }
     });
   }
@@ -8275,6 +8303,53 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // ── Takes / editor ──
   function currentTake() { return (Array.isArray(takes) ? takes : []).find(function (t) { return t.id === selectedTakeId; }) || null; }
 
+  var demoSeriesRestorePending = Object.create(null);
+  function demoContinuationSeriesTakes(take) {
+    var seriesId = take && String(take.demoSeriesId || '');
+    if (!seriesId) return [];
+    return takes.filter(function (item) { return item && item.demoSeriesId === seriesId; }).sort(function (a, b) {
+      var partDiff = (Number(a.demoSeriesPart) || 0) - (Number(b.demoSeriesPart) || 0);
+      return partDiff || String(a.createdAt || '').localeCompare(String(b.createdAt || ''));
+    });
+  }
+  function restoreSavedDemoSeriesTakes(seriesId) {
+    seriesId = String(seriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80);
+    if (!seriesId || demoSeriesRestorePending[seriesId]) return;
+    demoSeriesRestorePending[seriesId] = true;
+    withDb(function (db) {
+      var release = function () { delete demoSeriesRestorePending[seriesId]; };
+      try {
+        var request = db.transaction(STORE, 'readonly').objectStore(STORE).getAll();
+        request.onerror = release;
+        request.onsuccess = function () {
+          var added = 0;
+          (request.result || []).filter(function (row) {
+            return row && String(row.demoSeriesId || '') === seriesId && row.blob;
+          }).sort(function (a, b) {
+            return (Number(a.demoSeriesPart) || 0) - (Number(b.demoSeriesPart) || 0) || String(a.createdAt || '').localeCompare(String(b.createdAt || ''));
+          }).forEach(function (row) {
+            if (takes.some(function (take) { return take.id === row.id; })) return;
+            takes.push(inflateDraft(row));
+            added += 1;
+          });
+          release();
+          if (added) renderTakes();
+        };
+      } catch (_) { release(); }
+    });
+  }
+  function updateDemoStitchControl() {
+    var row = $('demoStitchRow');
+    if (!row) return;
+    var take = currentTake();
+    var parts = demoContinuationSeriesTakes(take);
+    if (parts.length < 2 && take && take.demoSeriesId) restoreSavedDemoSeriesTakes(take.demoSeriesId);
+    row.hidden = parts.length < 2;
+    row.style.display = parts.length < 2 ? 'none' : '';
+    $('demoStitchBtn').textContent = parts.length >= 2 ? ('Stitch ' + parts.length + ' continuation takes') : 'Stitch continuation takes';
+    $('demoStitchStatus').textContent = parts.length >= 2 ? ('Parts ' + parts.map(function (part) { return part.demoSeriesPart || '?'; }).join(', ') + ' are ready in recording order.') : '';
+  }
+
   function renderTakes() {
     var list = $('takesList');
     list.innerHTML = '';
@@ -8317,6 +8392,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       row.appendChild(nm); row.appendChild(meta); row.appendChild(del);
       list.appendChild(row);
     });
+    updateDemoStitchControl();
     renderSceneBuilder();
   }
 
@@ -8361,6 +8437,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     updateEditCaptionPreview();
     updateEditOverlayPreview();
     ensurePeaks(t).then(drawWave);
+    updateDemoStitchControl();
     renderSceneBuilder();
   }
 
@@ -8518,6 +8595,28 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       duration: Math.max(0.5, Math.min(12, Number(duration) || (cardType === 'pause' ? 4 : 2.5))),
       transition: sceneItems.length ? sceneDefaultTransition() : 'cut'
     };
+  }
+  function stitchDemoContinuationTakes() {
+    var parts = demoContinuationSeriesTakes(currentTake());
+    if (parts.length < 2) { updateDemoStitchControl(); return; }
+    if (sceneItems.length) {
+      var replace = true;
+      try { replace = window.confirm('Replace the current Scene Builder sequence with these ' + parts.length + ' continuation takes?'); } catch (_) {}
+      if (!replace) return;
+    }
+    sceneItems = parts.map(function (take) {
+      var item = sceneClipItemFromTake(take);
+      item.transition = 'cut';
+      return item;
+    });
+    if (sceneItems[0]) sceneItems[0].transition = 'cut';
+    renderSceneBuilder();
+    setStatus($('sceneStatus'), parts.length + ' continuation takes stitched in recording order. Review or preview the sequence, then prepare the scene export.', 'ok');
+    $('demoStitchStatus').textContent = 'Stitched as one ' + fmtClock(sceneTotalDuration()) + ' sequence.';
+    announce('Continuation takes stitched in recording order');
+    var sceneCard = $('sceneStatus').closest('.card');
+    if (sceneCard && sceneCard.scrollIntoView) sceneCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(function () { if ($('scenePreviewBtn')) $('scenePreviewBtn').focus(); }, 0);
   }
   function addSceneClipFromCurrentTake() {
     var t = currentTake();
@@ -8892,6 +8991,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     try { loadScenePlanObject(t.scenePlan, 'Bundled scene plan'); }
     catch (e) { setStatus($('sceneStatus'), 'Could not use the bundled scene plan - ' + (e && e.message || e), 'bad'); }
   }
+  if ($('demoStitchBtn')) $('demoStitchBtn').addEventListener('click', stitchDemoContinuationTakes);
   if ($('sceneAddTakeBtn')) $('sceneAddTakeBtn').addEventListener('click', addSceneClipFromCurrentTake);
   if ($('sceneAddAllBtn')) $('sceneAddAllBtn').addEventListener('click', addAllTakesToScene);
   if ($('sceneApplyTemplateBtn')) $('sceneApplyTemplateBtn').addEventListener('click', applySceneTemplate);
@@ -10489,7 +10589,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var DEMO_CONTINUATION_MAX_AGE = 12 * 60 * 60 * 1000;
   var DEMO_TEMPLATE_KEY = 'vs_demo_templates_v1';
   var demoTemplates = [];
-  var demoState = { steps: null, originalSteps: null, activeSteps: [], active: false, activePolish: null, events: [], running: false, rehearsing: false, abandoned: false, voice: '', previousMicOn: null, officialId: null, preflightOk: false, commandReport: null, preflightVersion: 0, restoringDraft: false, continuation: null };
+  var demoState = { steps: null, originalSteps: null, activeSteps: [], active: false, activePolish: null, activeSeriesId: null, activeSeriesPart: 1, seriesId: null, seriesPart: 1, events: [], running: false, rehearsing: false, abandoned: false, voice: '', previousMicOn: null, officialId: null, preflightOk: false, commandReport: null, preflightVersion: 0, restoringDraft: false, continuation: null };
+  var demoPreflightController = null;
+  var demoStartPending = false;
+  var demoRehearsePending = false;
+  var demoManualPreflightPending = false;
+  var demoPlanSourceBusy = false;
   function cleanDemoResultHold(value) {
     if (value == null || value === '') return 2.2;
     var seconds = Number(value);
@@ -10655,6 +10760,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!template || demoState.running) return false;
     cleanupOfficialTutorial();
     clearDemoContinuation();
+    demoState.seriesId = null; demoState.seriesPart = 1;
     demoState.restoringDraft = true;
     demoState.officialId = template.officialId;
     demoState.steps = template.steps.map(prepareDemoStep);
@@ -10750,6 +10856,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         savedAt: Date.now(),
         completed: Math.max(0, Math.round(Number(demoState.continuation.completed) || 0)),
         total: Math.max(0, Math.round(Number(demoState.continuation.total) || 0)),
+        seriesId: String(demoState.continuation.seriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null,
+        part: Math.max(2, Math.round(Number(demoState.continuation.part) || 2)),
         steps: demoState.continuation.steps.slice(0, 8).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; })
       };
       if (!payload.steps.length) return false;
@@ -10773,10 +10881,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     // the later-step count visible in status, but do not expose a control that
     // could start another plan before that command has actually released it.
     if (!plan.remainingSteps.length || plan.timedOut) return plan;
+    var seriesId = String(demoState.activeSeriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || ('demo_series_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+    var currentPart = Math.max(1, Math.round(Number(demoState.activeSeriesPart) || 1));
+    demoState.activeSeriesId = seriesId;
+    demoState.activeSeriesPart = currentPart;
     demoState.continuation = {
       steps: plan.remainingSteps.map(cleanDemoDraftStep),
       completed: plan.completed,
-      total: plan.total
+      total: plan.total,
+      seriesId: seriesId,
+      part: currentPart + 1
     };
     saveDemoContinuation();
     showDemoContinuationControls();
@@ -10792,7 +10906,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     demoState.continuation = {
       steps: steps,
       completed: Math.max(0, Math.round(Number(data.completed) || 0)),
-      total: Math.max(steps.length, Math.round(Number(data.total) || 0))
+      total: Math.max(steps.length, Math.round(Number(data.total) || 0)),
+      seriesId: String(data.seriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null,
+      part: Math.max(2, Math.round(Number(data.part) || 2))
     };
     showDemoContinuationControls();
     setStatus($('demoStatus'), 'Restored ' + steps.length + ' saved unfinished step' + (steps.length === 1 ? '' : 's') + ' (' + demoState.continuation.completed + ' of ' + demoState.continuation.total + ' complete). Continue when ready; command readiness will be checked again first.', 'ok');
@@ -10811,6 +10927,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (Array.prototype.some.call($('demoAudioMode').options, function (option) { return option.value === data.audioMode; })) $('demoAudioMode').value = data.audioMode;
     applyDemoPolish(data.polish);
     demoState.officialId = null;
+    demoState.seriesId = null; demoState.seriesPart = 1;
     demoState.steps = steps.map(prepareDemoStep);
     demoState.originalSteps = steps.map(cleanDemoDraftStep);
     renderDemoPlan();
@@ -10841,6 +10958,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   async function runDemoPreflight() {
     var version = ++demoState.preflightVersion;
+    if (demoPreflightController) { try { demoPreflightController.abort(); } catch (_) {} }
+    var preflightController = typeof AbortController === 'function' ? new AbortController() : null;
+    demoPreflightController = preflightController;
+    try {
     var storageKnown = false, availableBytes = 0;
     var steps = approvedDemoSteps();
     var pacingAudit = demoPacingAudit(steps);
@@ -10862,7 +10983,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (version !== demoState.preflightVersion) return { ok: false, stale: true, blockingCount: 1, warningCount: 0, items: [] };
     if (steps.length && !demoState.officialId && opener && !opener.closed) {
       try {
-        var response = await bridgeRequest('allostudio-demovalidate-request', { steps: steps }, 30000);
+        var response = await bridgeRequest('allostudio-demovalidate-request', { steps: steps }, 30000, { signal: preflightController ? preflightController.signal : null });
         if (version !== demoState.preflightVersion) return { ok: false, stale: true, blockingCount: 1, warningCount: 0, items: [] };
         if (response && !response.error && response.report) {
           demoState.commandReport = response.report;
@@ -10906,6 +11027,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       availableBytes: availableBytes,
       recordingBusy: !!(rec && rec.state !== 'inactive')
     }));
+    } finally {
+      if (demoPreflightController === preflightController) demoPreflightController = null;
+    }
   }
   function restoreDemoMicPreference() {
     if (demoState.previousMicOn == null) return;
@@ -11217,9 +11341,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
     var hasPlan = !!(demoState.steps && demoState.steps.length);
     var hasApproved = approvedDemoSteps().length > 0;
-    $('demoStartBtn').disabled = !hasApproved;
-    $('demoRehearseBtn').disabled = !hasApproved;
-    $('demoPreflightBtn').disabled = !hasApproved;
+    syncDemoExecutionControls();
     $('demoPlanResetBtn').hidden = !hasPlan || !!demoState.officialId;
     $('demoDraftClearBtn').hidden = !hasPlan || !!demoState.officialId;
     renderDemoTemplateControls();
@@ -11274,6 +11396,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (demoState.running || (rec && rec.state !== 'inactive') || !demoState.continuation || !demoState.continuation.steps.length) return;
     var pending = demoState.continuation;
     clearDemoContinuation();
+    demoState.seriesId = String(pending.seriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null;
+    demoState.seriesPart = Math.max(2, Math.round(Number(pending.part) || 2));
     demoState.steps = pending.steps.map(prepareDemoStep);
     demoState.originalSteps = pending.steps.map(cleanDemoDraftStep);
     renderDemoPlan();
@@ -11344,31 +11468,63 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!$('demoPlanBtn').disabled) $('demoPlanBtn').click();
   });
   var demoPlanRequestGeneration = 0;
+  var demoPlanBridgeRequestId = null;
+  var demoPlanBridgeController = null;
   var demoPlanDefaultLabel = $('demoPlanBtn').textContent;
+  function syncDemoPlanSourceControls() {
+    var recording = !!demoState.running || !!(rec && rec.state !== 'inactive');
+    var locked = !!demoPlanSourceBusy || recording || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
+    $('demoPlanBtn').disabled = locked;
+    $('demoOfficialTextBtn').disabled = locked;
+  }
+  function syncDemoExecutionControls() {
+    var hasPlan = !!approvedDemoSteps().length;
+    var recording = !!demoState.running || !!(rec && rec.state !== 'inactive');
+    var locked = recording || !!demoPlanSourceBusy || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
+    $('demoStartBtn').disabled = locked || !hasPlan;
+    $('demoRehearseBtn').disabled = locked || !hasPlan;
+    $('demoPreflightBtn').disabled = locked || !hasPlan;
+  }
   function setDemoPlanningBusy(busy) {
-    $('demoPlanBtn').disabled = !!busy;
+    demoPlanSourceBusy = !!busy;
+    syncDemoPlanSourceControls();
+    syncDemoExecutionControls();
     $('demoPlanBtn').setAttribute('aria-busy', busy ? 'true' : 'false');
     $('demoPlanBtn').textContent = busy ? 'Planning demo...' : demoPlanDefaultLabel;
     $('demoPlanCancelBtn').hidden = !busy;
   }
   $('demoPlanCancelBtn').addEventListener('click', function () {
     if ($('demoPlanCancelBtn').hidden) return;
+    if (demoPlanBridgeRequestId) postToOpener({ type: 'allostudio-demoplan-cancel', requestId: demoPlanBridgeRequestId });
+    demoPlanBridgeRequestId = null;
     demoPlanRequestGeneration++;
+    if (demoPlanBridgeController) { try { demoPlanBridgeController.abort(); } catch (_) {} }
+    demoPlanBridgeController = null;
     setDemoPlanningBusy(false);
-    setStatus($('demoStatus'), 'Planning cancelled. Nothing ran, and any late planner response will be ignored.', 'ok');
+    setStatus($('demoStatus'), 'Planning cancelled. Nothing ran, and AlloFlow was asked to stop the AI request.', 'ok');
     announce('Demo planning cancelled. Nothing ran.');
     $('demoPlanBtn').focus();
   });
   $('demoPlanBtn').addEventListener('click', async function () {
+    if (demoState.running || (rec && rec.state !== 'inactive') || demoPlanSourceBusy) {
+      setStatus($('demoStatus'), 'Finish the current demo or recording before replacing its plan.', 'warn');
+      return;
+    }
     var goal = $('demoGoal').value.trim();
     if (!goal) { setStatus($('demoStatus'), 'Describe what the demo should show first.', 'warn'); return; }
     if (!opener || opener.closed) { setStatus($('demoStatus'), 'Demo Autopilot needs the AlloFlow window (it uses the app’s command registry and Gemini connection).', 'warn'); return; }
     cleanupOfficialTutorial();
     var generation = ++demoPlanRequestGeneration;
+    var bridgeController = typeof AbortController === 'function' ? new AbortController() : null;
+    demoPlanBridgeController = bridgeController;
     setDemoPlanningBusy(true);
     setStatus($('demoStatus'), 'Asking Gemini to plan steps from AlloFlow’s command list (your goal text only — no video)…');
     try {
-      var resp = await bridgeRequest('allostudio-demoplan-request', { goal: goal }, 60000);
+      var resp = await bridgeRequest('allostudio-demoplan-request', { goal: goal }, 60000, {
+        signal: bridgeController ? bridgeController.signal : null,
+        onRequestId: function (id) { if (generation === demoPlanRequestGeneration) demoPlanBridgeRequestId = id; },
+        onTimeout: function (id) { if (generation === demoPlanRequestGeneration) postToOpener({ type: 'allostudio-demoplan-cancel', requestId: id }); }
+      });
       if (generation !== demoPlanRequestGeneration) return;
       if (resp.error) {
         setStatus($('demoStatus'), 'Could not draft a plan: ' + resp.error, 'bad');
@@ -11376,6 +11532,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         setStatus($('demoStatus'), 'Gemini couldn’t map that goal to a safe, runnable command sequence. Describe concrete visible actions — for example “open the Educator Hub, then open the Document Builder”.', 'warn');
       } else {
         clearDemoContinuation();
+        demoState.seriesId = null; demoState.seriesPart = 1;
         demoState.officialId = null;
         demoState.steps = resp.steps.map(function (step) { return prepareDemoStep(Object.assign({}, step, { _included: true })); });
         demoState.originalSteps = demoState.steps.map(function (step) { return Object.assign({}, step); });
@@ -11386,18 +11543,31 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     } catch (e) {
       setStatus($('demoStatus'), 'Could not draft a plan: ' + String((e && e.message) || e).slice(0, 140), 'bad');
     } finally {
-      if (generation === demoPlanRequestGeneration) setDemoPlanningBusy(false);
+      if (generation === demoPlanRequestGeneration) {
+        demoPlanBridgeRequestId = null;
+        if (demoPlanBridgeController === bridgeController) demoPlanBridgeController = null;
+        setDemoPlanningBusy(false);
+      }
     }
   });
   $('demoOfficialTextBtn').addEventListener('click', async function () {
+    var btn = $('demoOfficialTextBtn');
+    if (demoState.running || (rec && rec.state !== 'inactive') || demoPlanSourceBusy) {
+      setStatus($('demoStatus'), 'Finish the current demo, recording, or plan request before loading a tutorial.', 'warn');
+      return;
+    }
     if (!opener || opener.closed) { setStatus($('demoStatus'), 'The official tutorial needs the AlloFlow window.', 'warn'); return; }
-    var btn = $('demoOfficialTextBtn'); btn.disabled = true;
+    demoPlanSourceBusy = true;
+    syncDemoPlanSourceControls();
+    syncDemoExecutionControls();
+    btn.setAttribute('aria-busy', 'true');
     setStatus($('demoStatus'), 'Loading the release-matched Text Adaptation tutorial...');
     try {
       var resp = await bridgeRequest('allostudio-official-tutorial-request', { tutorialId: 'text-adaptation' }, 30000);
       if (resp.error) throw new Error(resp.error);
       if (!resp.steps || !resp.steps.length) throw new Error('The tutorial manifest was empty.');
       clearDemoContinuation();
+      demoState.seriesId = null; demoState.seriesPart = 1;
       demoState.officialId = 'text-adaptation';
       demoState.steps = resp.steps.map(function (step) { return prepareDemoStep(Object.assign({}, step, { _included: true })); });
       demoState.originalSteps = demoState.steps.map(function (step) { return Object.assign({}, step); });
@@ -11408,7 +11578,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     } catch (e) {
       setStatus($('demoStatus'), 'Could not load the official tutorial: ' + String((e && e.message) || e).slice(0, 140), 'bad');
     } finally {
-      btn.disabled = false;
+      demoPlanSourceBusy = false;
+      btn.setAttribute('aria-busy', 'false');
+      syncDemoPlanSourceControls();
+      syncDemoExecutionControls();
     }
   });
   function cleanupOfficialTutorial(keepPlan) {
@@ -11428,25 +11601,77 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     setStatus($('demoStatus'), (d.phase === 'start' ? '⏳' : '✅') + ' Step ' + ((Number(d.index) || 0) + 1) + ': ' + String(d.label || '').slice(0, 120), 'ok');
   });
-  $('demoPreflightBtn').addEventListener('click', runDemoPreflight);
+  async function runManualDemoPreflight() {
+    if (!approvedDemoSteps().length || demoState.running || demoStartPending || demoRehearsePending || demoManualPreflightPending) return;
+    demoManualPreflightPending = true;
+    $('demoPreflightBtn').setAttribute('aria-busy', 'true');
+    syncDemoPlanSourceControls();
+    syncDemoExecutionControls();
+    setStatus($('demoStatus'), 'Refreshing demo readiness...');
+    try {
+      var preflight = await runDemoPreflight();
+      if (preflight.stale) {
+        setStatus($('demoStatus'), 'The plan changed during preflight. Run it again for the current steps.', 'warn');
+      } else {
+        setStatus($('demoStatus'), preflight.ok ? 'Preflight refreshed. The current plan is ready.' : 'Preflight refreshed. Review the blocking items below.', preflight.ok ? 'ok' : 'bad');
+      }
+    } catch (e) {
+      setStatus($('demoStatus'), 'Preflight could not finish: ' + String((e && e.message) || e).slice(0, 140), 'bad');
+    } finally {
+      demoManualPreflightPending = false;
+      $('demoPreflightBtn').setAttribute('aria-busy', 'false');
+      syncDemoPlanSourceControls();
+      syncDemoExecutionControls();
+    }
+  }
+  $('demoPreflightBtn').addEventListener('click', runManualDemoPreflight);
   $('demoAudioMode').addEventListener('change', function () { demoState.preflightOk = false; saveDemoDraft(); if (demoState.steps) runDemoPreflight(); });
   readDemoTemplates();
   renderDemoTemplateControls();
   restoreDemoDraft();
   restoreDemoContinuation();
   $('demoRehearseBtn').addEventListener('click', async function () {
-    if (!approvedDemoSteps().length || demoState.running) return;
-    setStatus($('demoStatus'), 'Checking the approved plan without running any app actions…');
-    var preflight = await runDemoPreflight();
-    setStatus($('demoStatus'), preflight.ok ? 'Readiness check passed. No app actions ran; record when ready.' : 'Readiness check found blocking items. No app actions ran.', preflight.ok ? 'ok' : 'bad');
+    if (!approvedDemoSteps().length || demoState.running || demoStartPending || demoRehearsePending || demoManualPreflightPending) return;
+    demoRehearsePending = true;
+    syncDemoPlanSourceControls();
+    syncDemoExecutionControls();
+    setStatus($('demoStatus'), 'Checking the approved plan without running any app actions...');
+    try {
+      var preflight = await runDemoPreflight();
+      if (preflight.stale) {
+        setStatus($('demoStatus'), 'The plan changed during the readiness check. Run it again for the current steps.', 'warn');
+        return;
+      }
+      setStatus($('demoStatus'), preflight.ok ? 'Readiness check passed. No app actions ran; record when ready.' : 'Readiness check found blocking items. No app actions ran.', preflight.ok ? 'ok' : 'bad');
+    } catch (e) {
+      setStatus($('demoStatus'), 'Readiness check could not finish: ' + String((e && e.message) || e).slice(0, 140), 'bad');
+    } finally {
+      demoRehearsePending = false;
+      syncDemoPlanSourceControls();
+      syncDemoExecutionControls();
+    }
   });
   $('demoStartBtn').addEventListener('click', async function () {
     var steps = approvedDemoSteps();
     if (!steps.length) { setStatus($('demoStatus'), 'Draft a plan first, and keep at least one step ticked.', 'warn'); return; }
     if (!opener || opener.closed) { setStatus($('demoStatus'), 'Demo Autopilot needs the AlloFlow window.', 'warn'); return; }
     if (rec && rec.state !== 'inactive') { setStatus($('demoStatus'), 'Already recording — stop the current take first.', 'warn'); return; }
-    if (demoState.running) return;
-    var preflight = await runDemoPreflight();
+    if (demoState.running || demoStartPending || demoRehearsePending || demoManualPreflightPending) return;
+    demoStartPending = true;
+    syncDemoPlanSourceControls();
+    syncDemoExecutionControls();
+    var preflight = null;
+    try {
+      preflight = await runDemoPreflight();
+    } catch (e) {
+      setStatus($('demoStatus'), 'Readiness check could not finish: ' + String((e && e.message) || e).slice(0, 140), 'bad');
+    } finally {
+      demoStartPending = false;
+      syncDemoPlanSourceControls();
+      syncDemoExecutionControls();
+    }
+    if (!preflight) return;
+    if (preflight.stale) { setStatus($('demoStatus'), 'The plan changed during the readiness check. Press Record again for the current steps.', 'warn'); return; }
     if (!preflight.ok) { setStatus($('demoStatus'), 'Recording is blocked until preflight passes.', 'bad'); return; }
     clearDemoContinuation();
     srcMode = 'screen'; syncSrcButtons();
@@ -11457,8 +11682,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     setStatus($('demoStatus'), 'Pick the AlloFlow TAB in the share dialog, then switch to that tab — the demo starts on its own.', 'ok');
     setDemoPrivacyIndicator('waiting for your browser-tab choice. Automatic actions remain paused until the AlloFlow tab is verified.', 'warn');
     demoState.activePolish = currentDemoPolish();
+    demoState.activeSeriesId = demoState.seriesId || null;
+    demoState.activeSeriesPart = Math.max(1, Math.round(Number(demoState.seriesPart) || 1));
+    demoState.seriesId = null; demoState.seriesPart = 1;
     demoState.active = true; demoState.events = []; demoState.activeSteps = steps.map(cleanDemoDraftStep); demoState.running = true;
-    $('demoStartBtn').disabled = true;
+    syncDemoPlanSourceControls();
+    syncDemoExecutionControls();
     try {
       await startRecording();
       if (!rec || rec.state === 'inactive') {
@@ -11519,6 +11748,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       setStatus($('demoStatus'), 'Demo problem: ' + String((e && e.message) || e).slice(0, 140) + ' — stop the recording manually if it is still running.', 'warn');
     } finally {
       demoState.running = false;
+      syncDemoPlanSourceControls();
+      syncDemoExecutionControls();
       $('demoStopBtn').hidden = true;
       var hasPlan = !!(demoState.steps && demoState.steps.length);
       $('demoStartBtn').disabled = !hasPlan;
@@ -11536,6 +11767,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     demoState.abandoned = true;
     demoState.running = false;
     if (rec && rec.state !== 'inactive') stopRecording();
+    syncDemoPlanSourceControls();
+    syncDemoExecutionControls();
     $('demoStopBtn').hidden = true;
     var hasPlan = !!(demoState.steps && demoState.steps.length);
     $('demoStartBtn').disabled = !hasPlan;
@@ -12916,7 +13149,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     withDb(function (db) {
       try {
         var tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, transcriptEdits: vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0), transcriptWords: vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0), transcriptCleanupQueue: normalizeWordCleanupQueue(take, wordCleanupWords(take)), visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(take.mediaCredits || []), finishReview: take.finishReview || {}, isDemo: !!take.isDemo, demoPolish: take.demoPolish ? cleanDemoPolish(take.demoPolish) : null, demoAudioMode: take.demoAudioMode || null, demoExpectedNarrationCount: Math.max(0, Number(take.demoExpectedNarrationCount) || 0), demoQualityScore: Math.max(0, Number(take.demoQualityScore) || 0), zooms: take.zooms || [], audio: cleanAudioState(take.audio, take.duration || 0), musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
+        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, transcriptEdits: vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0), transcriptWords: vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0), transcriptCleanupQueue: normalizeWordCleanupQueue(take, wordCleanupWords(take)), visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(take.mediaCredits || []), finishReview: take.finishReview || {}, isDemo: !!take.isDemo, demoSeriesId: String(take.demoSeriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null, demoSeriesPart: Math.max(0, Math.round(Number(take.demoSeriesPart) || 0)), demoPolish: take.demoPolish ? cleanDemoPolish(take.demoPolish) : null, demoAudioMode: take.demoAudioMode || null, demoExpectedNarrationCount: Math.max(0, Number(take.demoExpectedNarrationCount) || 0), demoQualityScore: Math.max(0, Number(take.demoQualityScore) || 0), zooms: take.zooms || [], audio: cleanAudioState(take.audio, take.duration || 0), musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
         tx.oncomplete = refreshProjectShelfSoon;
       } catch (_) {}
     });

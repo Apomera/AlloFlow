@@ -3077,6 +3077,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var bridgeTokenRef = useRef(null);
     var rootRef = useRef(null);
     var demoRunRef = useRef({ running: false, stop: false, kind: null, cleanupAfterStop: false });
+    var demoPlanRef = useRef({ id: null, controller: null, cancelled: false });
 
     function postToStudio(win, msg) {
       try {
@@ -3396,14 +3397,33 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           };
           var planFn = propsRef.current.onPlanDemo;
           if (typeof planFn !== 'function') { dpRespond({ error: 'demo-planner-unavailable' }); return; }
-          Promise.resolve().then(function () { return planFn(String(dpReq.goal || '').slice(0, 300)); }).then(function (out) {
+          var previousPlan = demoPlanRef.current;
+          if (previousPlan && previousPlan.controller) { previousPlan.cancelled = true; try { previousPlan.controller.abort(); } catch (_) {} }
+          var planController = typeof AbortController === 'function' ? new AbortController() : null;
+          var planState = { id: String(dpReq.id || '').slice(0, 100), controller: planController, cancelled: false };
+          demoPlanRef.current = planState;
+          var releasePlan = function () {
+            if (demoPlanRef.current === planState) demoPlanRef.current = { id: null, controller: null, cancelled: false };
+          };
+          Promise.resolve().then(function () { return planFn(String(dpReq.goal || '').slice(0, 300), { signal: planController ? planController.signal : null, requestId: planState.id }); }).then(function (out) {
+            if (planState.cancelled || demoPlanRef.current !== planState) { releasePlan(); return; }
             var steps = (out && Array.isArray(out.steps)) ? out.steps.slice(0, 8).map(function (s) {
               return { commandId: String((s && s.commandId) || '').slice(0, 60), params: (s && s.params && typeof s.params === 'object') ? s.params : {}, paramNames: Array.isArray(s && s.paramNames) ? s.paramNames.slice(0, 8).map(function (p) { return String(p).slice(0, 40); }) : [], why: String((s && s.why) || '').slice(0, 120), label: String((s && s.label) || (s && s.commandId) || '').slice(0, 90) };
             }).filter(function (s) { return s.commandId; }) : [];
             dpRespond({ steps: steps });
+            releasePlan();
           }).catch(function (e) {
+            if (planState.cancelled || (e && e.name === 'AbortError')) { releasePlan(); return; }
             dpRespond({ error: String((e && e.message) || e).slice(0, 200) });
+            releasePlan();
           });
+        } else if (ev.data.type === 'allostudio-demoplan-cancel') {
+          var cancelPlanId = String(ev.data.requestId || '').slice(0, 100);
+          var activePlan = demoPlanRef.current;
+          if (activePlan && activePlan.id === cancelPlanId) {
+            activePlan.cancelled = true;
+            if (activePlan.controller) { try { activePlan.controller.abort(); } catch (_) {} }
+          }
         } else if (ev.data.type === 'allostudio-demovalidate-request') {
           // Non-mutating readiness check shared with AlloBot. The app validates
           // command safety, live guards, declared prerequisites, and parameters.
@@ -3584,6 +3604,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             addToast(T('video_studio.cinematic_unavailable', 'Cinematic Studio is not available from this view.'), 'error');
           }
         } else if (ev.data.type === 'allostudio-closed') {
+          var closingPlan = demoPlanRef.current;
+          if (closingPlan && closingPlan.controller) { closingPlan.cancelled = true; try { closingPlan.controller.abort(); } catch (_) {} }
+          demoPlanRef.current = { id: null, controller: null, cancelled: false };
           var closeCleanupFn = propsRef.current.onCleanupOfficialTutorial;
           if (demoRunRef.current.running) {
             demoRunRef.current.stop = true;

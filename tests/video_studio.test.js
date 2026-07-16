@@ -242,6 +242,74 @@ describe('Scene builder popup wiring', () => {
     expect(moduleText).toContain('bridgeTokenRef.current = null');
     expect(moduleText).not.toMatch(/postMessage\([^\n]*['"]\*['"]/);
   });
+  it('cleans bridge listeners immediately on abort and after timeout', async () => {
+    const html = popup();
+    const start = html.indexOf('  function bridgeRequest(');
+    const end = html.indexOf('  // -- Localization:', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const factory = new Function(
+      'opener',
+      'window',
+      'isOpenerMessage',
+      'postToOpener',
+      'let aiNarrSeq = 0;\n' + html.slice(start, end) + '\nreturn bridgeRequest;'
+    );
+    const listeners = new Set();
+    const fakeWindow = {
+      addEventListener: (type, listener) => { if (type === 'message') listeners.add(listener); },
+      removeEventListener: (type, listener) => { if (type === 'message') listeners.delete(listener); },
+    };
+    const bridgeRequest = factory(
+      { closed: false },
+      fakeWindow,
+      () => false,
+      () => true
+    );
+
+    const controller = new AbortController();
+    const pending = bridgeRequest('fixture-request', {}, 5000, { signal: controller.signal });
+    expect(listeners.size).toBe(1);
+    controller.abort();
+    await expect(pending).resolves.toEqual({ error: 'cancelled', cancelled: true });
+    expect(listeners.size).toBe(0);
+
+    let timedOutId = '';
+    await expect(bridgeRequest('fixture-request', {}, 5, {
+      onTimeout: (id) => { timedOutId = id; },
+    })).resolves.toEqual({ error: 'timed out' });
+    expect(timedOutId).toMatch(/^nr/);
+    expect(listeners.size).toBe(0);
+
+    const disconnected = factory(
+      { closed: false },
+      fakeWindow,
+      () => false,
+      () => false
+    );
+    await expect(disconnected('fixture-request', {}, 5000)).resolves.toEqual({
+      error: 'AlloFlow bridge is not connected. Reopen Video Studio from AlloFlow and try again.',
+    });
+    expect(listeners.size).toBe(0);
+
+    const responding = factory(
+      { closed: false },
+      fakeWindow,
+      (event, responseType, id) => event.data.type === responseType && event.data.id === id,
+      (message) => {
+        Array.from(listeners).forEach((listener) => listener({
+          data: { type: 'fixture-response', id: message.id, ok: true },
+        }));
+        return true;
+      }
+    );
+    await expect(responding('fixture-request', {}, 5000)).resolves.toEqual({
+      type: 'fixture-response',
+      id: expect.stringMatching(/^nr/),
+      ok: true,
+    });
+    expect(listeners.size).toBe(0);
+  });
   it('keeps the scene assembly controls in the editor', () => {
     const html = popup();
     expect(html).toContain('<h2>Scene builder</h2>');
@@ -2088,8 +2156,31 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('id="demoPlanCancelBtn"');
     expect(html).toContain('var demoPlanRequestGeneration = 0');
     expect(html).toContain("setAttribute('aria-busy', busy ? 'true' : 'false')");
-    expect(html).toContain('Planning cancelled. Nothing ran, and any late planner response will be ignored.');
+    expect(html).toContain('Planning cancelled. Nothing ran, and AlloFlow was asked to stop the AI request.');
     expect(html).toContain('if (generation !== demoPlanRequestGeneration) return;');
+    expect(html).toContain('var demoPlanBridgeRequestId = null');
+    expect(html).toContain('var demoPlanBridgeController = null');
+    expect(html).toContain("postToOpener({ type: 'allostudio-demoplan-cancel'");
+    expect(html).toContain("typeof options.onRequestId === 'function'");
+    expect(html).toContain("signal.addEventListener('abort', onAbort, { once: true })");
+    expect(html).toContain("signal.removeEventListener('abort', onAbort)");
+    expect(html).toContain("typeof options.onTimeout === 'function'");
+    expect(html).toContain('demoPlanBridgeController.abort()');
+    expect(html).toContain("onTimeout: function (id) { if (generation === demoPlanRequestGeneration) postToOpener({ type: 'allostudio-demoplan-cancel'");
+    expect(html).toContain('var demoPreflightController = null');
+    expect(html).toContain('demoPreflightController.abort()');
+    expect(html).toContain("{ signal: preflightController ? preflightController.signal : null }");
+    expect(html).toContain('var demoPlanSourceBusy = false');
+    expect(html).toContain('function syncDemoPlanSourceControls()');
+    expect(html).toContain('function syncDemoExecutionControls()');
+    expect(html).toContain('var demoStartPending = false');
+    expect(html).toContain('var demoRehearsePending = false');
+    expect(html).toContain('var demoManualPreflightPending = false');
+    expect(html).toContain('async function runManualDemoPreflight()');
+    expect(html).toContain("$('demoPreflightBtn').setAttribute('aria-busy', 'true')");
+    expect(html).toContain("$('demoPreflightBtn').addEventListener('click', runManualDemoPreflight)");
+    expect(html).toContain("btn.setAttribute('aria-busy', 'true')");
+    expect(html).toContain('demoState.running || demoStartPending || demoRehearsePending');
     expect(html).toContain("if (e.key !== 'Enter' || (!e.ctrlKey && !e.metaKey)");
     expect(html).toContain("if (!$('demoPlanBtn').disabled) $('demoPlanBtn').click();");
     expect(html).toContain('id="demoPlanList"');
@@ -2104,16 +2195,22 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('vsBuildDemoCaptionCues(demoState.events, dur)');
     expect(html).toContain("bridgeRequest('allostudio-tts-request', { text: cue.text, voice: job.voice }");
     expect(html).toContain("take.name = 'Demo · ' + take.name;");
+    expect(html).toMatch(/function finalizeTake\(\)[\s\S]{0,500}syncDemoPlanSourceControls\(\);[\s\S]{0,120}syncDemoExecutionControls\(\);/);
     // Module: relays with param clamping and single-flight.
     const m = moduleText();
     expect(m).toContain("ev.data.type === 'allostudio-demoplan-request'");
+    expect(m).toContain("ev.data.type === 'allostudio-demoplan-cancel'");
+    expect(m).toContain('var demoPlanRef = useRef(');
+    expect(m).toContain("typeof AbortController === 'function' ? new AbortController() : null");
+    expect(m).toContain("planFn(String(dpReq.goal || '').slice(0, 300), { signal:");
     expect(m).toContain("ev.data.type === 'allostudio-demorun-request'");
     expect(m).toContain("ev.data.type === 'allostudio-demostop'");
     expect(m).toContain('propsRef.current.onRunDemoPlan');
     expect(m).toContain("{ error: 'a demo is already running' }");
     // ANTI: props reuse AlloBot's planner/runner + shared single-flight guard.
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
-    expect(anti).toContain('onPlanDemo: async (goal) => {');
+    expect(anti).toContain('onPlanDemo: async (goal, options = {}) => {');
+    expect(anti).toContain('signal: options.signal || null');
     expect(anti).toContain('onRunDemoPlan: async (steps, hooks, options) => {');
     expect(anti).toContain('AC.planUtterance(_alloCmdCtx()');
     expect(anti).toContain('AC.runPlan(() => _alloCmdCtx(), [list[i]]');
@@ -2146,7 +2243,7 @@ describe('take persistence + export hardening wiring', () => {
     expect(m).toContain("(typeof pv === 'number' && isFinite(pv)) || typeof pv === 'boolean'");
     // Single-step demos plan via the single-command router fallback.
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
-    expect(anti).toContain('AC.routeUtterance(_alloCmdCtx(), cleanGoal, { allowAi: true, preview: true })');
+    expect(anti).toContain('AC.routeUtterance(_alloCmdCtx(), cleanGoal, { allowAi: true, preview: true, signal: options.signal || null })');
     expect(anti).toContain('The command planner is still loading — wait a moment and try again.');
   });
   it('ships the fixture-safe official Text Adaptation tutorial and narration recovery controls', () => {
@@ -2176,6 +2273,15 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('function offerDemoContinuation(steps, response)');
     expect(html).toContain('function dismissDemoContinuation()');
     expect(html).toContain("var progressText = ' (' + completed + '/' + total + ' complete)'");
+    expect(html).toContain('id="demoStitchRow"');
+    expect(html).toContain('id="demoStitchBtn"');
+    expect(html).toContain('id="demoStitchStatus"');
+    expect(html).toContain('function demoContinuationSeriesTakes(take)');
+    expect(html).toContain('function restoreSavedDemoSeriesTakes(seriesId)');
+    expect(html).toContain('function stitchDemoContinuationTakes()');
+    expect(html).toContain("item.transition = 'cut'");
+    expect(html).toContain('demoSeriesId: String(take.demoSeriesId ||');
+    expect(html).toContain('demoSeriesPart: Math.max(0, Math.round(Number(take.demoSeriesPart)');
     expect(html).toContain('id="demoDraftClearBtn"');
     expect(html).toContain('id="demoScriptReviewBtn"');
     expect(html).toContain('id="demoScriptCopyBtn"');

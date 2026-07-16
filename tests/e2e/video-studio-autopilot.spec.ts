@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 const studioHtml = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf8');
 
 test('official tutorial checks readiness, records, quality-checks, and recovers narration', async ({ page, context }) => {
+  test.setTimeout(75_000);
   await context.addInitScript(() => {
     const makeStream = () => {
       const canvas = document.createElement('canvas');
@@ -67,12 +68,12 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
                   { commandId: request.goal === 'Slow planning fixture' ? 'stale-step' : 'first-step', label: request.goal === 'Slow planning fixture' ? 'Stale delayed step' : 'First custom step', why: 'Start here', params: { topic: 'fractions' }, paramNames: ['topic'] },
                   { commandId: 'second-step', label: 'Second custom step', why: 'Then continue' }
                 ] });
-                if (request.goal === 'Slow planning fixture') setTimeout(respond, 500); else respond();
+                if (request.goal === 'Slow planning fixture') setTimeout(respond, 1500); else respond();
               }
               if (request.type === 'allostudio-demovalidate-request') {
                 const items = (request.steps || []).map((step, index) => ({ commandId: step.commandId, label: step.commandId, status: window.validationBlocked && index === 0 ? 'block' : 'ready', detail: window.validationBlocked && index === 0 ? 'Fixture prerequisite is missing.' : '', params: step.params || {}, contract: { params: [] } }));
                 const blockingCount = items.filter(item => item.status === 'block').length;
-                reply(event.source, request, 'allostudio-demovalidate-response', { report: { ok: blockingCount === 0, blockingCount, warningCount: 0, items } });
+                setTimeout(() => reply(event.source, request, 'allostudio-demovalidate-response', { report: { ok: blockingCount === 0, blockingCount, warningCount: 0, items } }), 350);
               }
               if (request.type === 'allostudio-demorun-request') {
                 const sendStep = (index, phase, label, narration, delay) => setTimeout(() => {
@@ -83,7 +84,7 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
                 setTimeout(() => reply(event.source, request, 'allostudio-demorun-response', { ok: false, stopped: true, completed: 1, reason: 'Fixture early stop.' }), 360);
               }
               if (request.type === 'allostudio-official-tutorial-request') {
-                reply(event.source, request, 'allostudio-official-tutorial-response', {
+                const respond = () => reply(event.source, request, 'allostudio-official-tutorial-response', {
                   generatedFrom: 'GUIDED_STEPS',
                   steps: [
                     { id: 'source-input', commandId: 'source-input', anchorId: 'tour-input-panel', label: 'Source Material', beats: [
@@ -96,6 +97,7 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
                     ] }
                   ]
                 });
+                setTimeout(respond, 800);
               }
               if (request.type === 'allostudio-official-tutorial-run-request') {
                 window.lastRunSteps = request.steps;
@@ -153,8 +155,35 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await studio.waitForLoadState('domcontentloaded');
   await studio.setViewportSize({ width: 560, height: 900 });
 
+  await studio.evaluate(() => {
+    const target = window as any;
+    target.__bridgeOriginalAdd = window.addEventListener;
+    target.__bridgeOriginalRemove = window.removeEventListener;
+    target.__bridgeTrackedMessageListeners = new Set<any>();
+    target.addEventListener = function (type: string, listener: any, options?: any) {
+      if (type === 'message') target.__bridgeTrackedMessageListeners.add(listener);
+      return target.__bridgeOriginalAdd.call(window, type, listener, options);
+    };
+    target.removeEventListener = function (type: string, listener: any, options?: any) {
+      if (type === 'message') target.__bridgeTrackedMessageListeners.delete(listener);
+      return target.__bridgeOriginalRemove.call(window, type, listener, options);
+    };
+  });
+
   const demoGoal = studio.locator('#demoGoal');
   const demoPlanButton = studio.locator('#demoPlanBtn');
+  const demoTransitionLocks = () => studio.evaluate(() => {
+    const disabled = (id: string) => (document.getElementById(id) as HTMLButtonElement).disabled;
+    return {
+      plan: disabled('demoPlanBtn'),
+      official: disabled('demoOfficialTextBtn'),
+      start: disabled('demoStartBtn'),
+      rehearse: disabled('demoRehearseBtn'),
+      preflight: disabled('demoPreflightBtn'),
+    };
+  });
+  const allDemoTransitionsLocked = { plan: true, official: true, start: true, rehearse: true, preflight: true };
+  const allDemoTransitionsUnlocked = { plan: false, official: false, start: false, rehearse: false, preflight: false };
   await expect(demoPlanButton).toBeVisible();
   const composerBox = await studio.locator('.demo-goal-composer').boundingBox();
   const planButtonBox = await demoPlanButton.boundingBox();
@@ -165,14 +194,26 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await demoGoal.press('Control+Enter');
   await expect(demoPlanButton).toBeDisabled();
   await expect(demoPlanButton).toHaveAttribute('aria-busy', 'true');
+  await expect(studio.locator('#demoOfficialTextBtn')).toBeDisabled();
   await expect(studio.locator('#demoPlanCancelBtn')).toBeVisible();
   await studio.locator('#demoPlanCancelBtn').click();
+  await expect.poll(() => page.evaluate(() => window.bridgeLog.includes('allostudio-demoplan-cancel'))).toBe(true);
+  await expect.poll(() => studio.evaluate(() => (window as any).__bridgeTrackedMessageListeners.size)).toBe(0);
   await expect(demoPlanButton).toBeEnabled();
+  await expect(studio.locator('#demoOfficialTextBtn')).toBeEnabled();
   await expect(demoPlanButton).toHaveAttribute('aria-busy', 'false');
   await expect(studio.locator('#demoPlanCancelBtn')).toBeHidden();
   await expect(studio.locator('#demoStatus')).toContainText('Planning cancelled. Nothing ran');
   await studio.waitForTimeout(650);
   await expect(studio.locator('#demoPlanList')).not.toContainText('Stale delayed step');
+  await studio.evaluate(() => {
+    const target = window as any;
+    target.addEventListener = target.__bridgeOriginalAdd;
+    target.removeEventListener = target.__bridgeOriginalRemove;
+    delete target.__bridgeOriginalAdd;
+    delete target.__bridgeOriginalRemove;
+    delete target.__bridgeTrackedMessageListeners;
+  });
   await demoGoal.fill('Custom workflow fixture');
   await demoGoal.press('Control+Enter');
   await expect(studio.locator('#demoPlanSummary')).toContainText('2 approved steps');
@@ -202,7 +243,11 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('[data-demo-step-readiness="0"]')).toContainText('Ready');
   await page.evaluate(() => { (window as any).validationBlocked = true; });
   await studio.locator('#demoPreflightBtn').click();
+  await expect(studio.locator('#demoPreflightBtn')).toHaveAttribute('aria-busy', 'true');
+  await expect.poll(demoTransitionLocks).toEqual(allDemoTransitionsLocked);
   await expect(studio.locator('[data-demo-step-readiness="0"]')).toContainText('Blocked');
+  await expect(studio.locator('#demoPreflightBtn')).toHaveAttribute('aria-busy', 'false');
+  await expect.poll(demoTransitionLocks).toEqual(allDemoTransitionsUnlocked);
   await expect(studio.locator('#demoRepairBtn')).toBeVisible();
   await page.evaluate(() => { (window as any).validationBlocked = false; });
   await studio.locator('#demoRepairBtn').click();
@@ -210,6 +255,11 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('#demoRepairBtn')).toBeHidden();
   await studio.locator('#demoPlanResetBtn').click();
   await expect(studio.locator('#demoPlanList > div').first()).toContainText('First custom step');
+  await studio.locator('#demoRehearseBtn').click();
+  await expect.poll(demoTransitionLocks).toEqual(allDemoTransitionsLocked);
+  await expect(studio.locator('#demoStatus')).toContainText('Readiness check passed. No app actions ran');
+  await expect(demoPlanButton).toBeEnabled();
+  await expect(studio.locator('#demoOfficialTextBtn')).toBeEnabled();
 
   await studio.locator('#demoPolishPanel summary').click();
   await studio.locator('#demoOpeningTitle').fill('Fractions in AlloFlow');
@@ -228,6 +278,22 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
 
   await studio.locator('#demoAudioMode').selectOption('captions');
   await studio.locator('#demoStartBtn').click();
+  await expect.poll(demoTransitionLocks).toEqual(allDemoTransitionsLocked);
+  await expect(studio.locator('#takesList .take')).toHaveCount(1, { timeout: 15_000 });
+  await expect.poll(() => studio.evaluate(() => new Promise<number>((resolve) => {
+    const open = indexedDB.open('allo_video_studio');
+    open.onerror = () => resolve(0);
+    open.onsuccess = () => {
+      const db = open.result;
+      const request = db.transaction('takes', 'readonly').objectStore('takes').getAll();
+      request.onerror = () => { db.close(); resolve(0); };
+      request.onsuccess = () => {
+        const count = request.result.filter((take) => !!take.demoSeriesId).length;
+        db.close();
+        resolve(count);
+      };
+    };
+  }))).toBeGreaterThanOrEqual(1);
   await expect(studio.locator('#demoContinueEditBtn')).toBeVisible({ timeout: 10000 });
   await expect(studio.locator('#demoContinueEditBtn')).toBeEnabled();
   await expect(studio.locator('#demoContinueEditBtn')).toHaveText('Continue 1 unfinished step (1/2 complete)');
@@ -258,9 +324,22 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('#demoPlanList > div')).toHaveCount(1);
   await expect(studio.locator('#demoPlanList')).toContainText('Second custom step');
   await expect(studio.locator('#demoPreflightStatus')).toContainText('Preflight passed');
+  await studio.locator('#demoStartBtn').click();
+  await expect(studio.locator('#demoStitchBtn')).toBeVisible({ timeout: 15_000 });
+  await expect(studio.locator('#demoStitchBtn')).toHaveText('Stitch 2 continuation takes');
+  await studio.locator('#demoStitchBtn').click();
+  await expect(studio.locator('#sceneList .scene-row')).toHaveCount(2);
+  await expect(studio.locator('#sceneStatus')).toContainText('2 continuation takes stitched in recording order');
+  await expect(studio.locator('#sceneList .scene-row').nth(0)).toContainText('Demo');
+  await expect(studio.locator('#sceneList .scene-row').nth(1)).toContainText('Demo');
+  await studio.locator('#tabRecord').click();
   await studio.locator('#demoAudioMode').selectOption('auto-Kore');
   await studio.locator('#demoOfficialTextBtn').click();
+  await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'true');
+  await expect.poll(demoTransitionLocks).toEqual(allDemoTransitionsLocked);
   await expect(studio.locator('#demoPlanList')).toContainText('Text Adaptation');
+  await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'false');
+  await expect(demoPlanButton).toBeEnabled();
   await studio.getByLabel('Step 1 narration').fill('Teacher-approved source walkthrough.');
   await studio.getByLabel('Step 1 result hold seconds').fill('0.5');
   await studio.getByLabel('Step 1 result hold seconds').press('Tab');
@@ -269,6 +348,8 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('#demoPreflightStatus')).toContainText('Preflight passed');
   await studio.locator('#demoRehearseBtn').click();
   await expect(studio.locator('#demoStatus')).toContainText('Readiness check passed. No app actions ran');
+  await expect(demoPlanButton).toBeEnabled();
+  await expect(studio.locator('#demoOfficialTextBtn')).toBeEnabled();
   await expect(studio.locator('#demoStopBtn')).toBeHidden();
   expect(await page.evaluate(() => (window as any).bridgeLog.filter((type: string) => type === 'allostudio-official-tutorial-run-request').length)).toBe(0);
   await expect(studio.locator('#demoPrivacyIndicator')).toContainText('not recording');
