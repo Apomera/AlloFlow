@@ -15,6 +15,7 @@ let React;
 let ReactDOMClient;
 let act;
 let SimplifiedView;
+let RealKaraokeStore;
 let root;
 let host;
 let audioInstances;
@@ -41,6 +42,11 @@ beforeAll(() => {
   loadAlloModule('view_simplified_module.js');
   SimplifiedView = window.AlloModules.SimplifiedView;
   if (!SimplifiedView) throw new Error('SimplifiedView did not register');
+  // Keep a handle on the REAL store exports: afterEach deletes the window
+  // binding, and the module's double-load guard prevents re-registration.
+  loadAlloModule('karaoke_audio_store_module.js');
+  RealKaraokeStore = window.AlloModules.KaraokeAudioStore;
+  if (!RealKaraokeStore) throw new Error('KaraokeAudioStore did not register');
 });
 
 afterEach(() => {
@@ -275,5 +281,66 @@ describe('SimplifiedView Edit Audio mode', () => {
     });
 
     expect(toggle.getAttribute('aria-label')).toContain('1 of 2 sentences saved');
+  });
+  it('shows clips captured by playback as saved when using the REAL karaoke store (key agreement)', async () => {
+    // Aaron's 2026-07-15/16 repro. Playback (phase_k playSequence) captures the
+    // clip under the sentence it actually spoke: paragraph text split by
+    // splitTextToSentences — headings merge into the following sentence, no
+    // length caps. Edit Audio lists sentences via KS.splitSentences. Earlier
+    // tests stubbed the store, so a divergence between those two splitters
+    // (the 2026-07-15 line-split + 120-char cap) was invisible here: capture
+    // succeeded but every edit-mode row stayed "missing". This mounts the real
+    // view WITH the real store module and asserts the two paths converge.
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => 'blob:captured-real-store'),
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(),
+    });
+    window.AlloModules.KaraokeAudioStore = RealKaraokeStore;
+    const store = RealKaraokeStore.createStore();
+    RealKaraokeStore.current = store;
+    RealKaraokeStore.currentResourceId = 'resource-edit-audio';
+
+    const longSentence = 'The first sentence keeps going with clause after clause so that any ' +
+      'hidden length cap in the sentence splitter would break it into several separate audio units.';
+    const data = `Heading without punctuation\n${longSentence} Short second sentence.`;
+
+    // What playSequence captures: the cleaned sentence it spoke (whitespace
+    // collapsed, heading merged — splitTextToSentences only splits on .!?).
+    const playbackUnits = [
+      `Heading without punctuation ${longSentence}`,
+      'Short second sentence.',
+    ];
+    playbackUnits.forEach((sentence) => {
+      expect(store.put(sentence, Buffer.from('clip').toString('base64'), 'audio/mpeg', 'ai-played', {
+        voice: 'Kore', speed: 1, language: 'English', provider: 'played-tts-mp3',
+      })).toBeTruthy();
+    });
+
+    window.__alloRegenerateSentenceAudio = vi.fn();
+    window.__alloRemoveSentenceAudio = vi.fn(async () => true);
+    window.__alloStoreRecordedSentenceAudio = vi.fn(async () => true);
+
+    mount(baseProps({ generatedContent: { id: 'resource-edit-audio', type: 'simplified', data } }));
+    const toggle = host.querySelector('button[aria-label^="Edit audio."]');
+    expect(toggle.getAttribute('aria-label')).toContain('2 of 2 sentences saved');
+    act(() => { toggle.click(); });
+
+    // Every listed sentence resolves to the captured clip — and the list has
+    // exactly the two units playback produced (no extra "missing" rows from a
+    // divergent splitter).
+    expect(button('Remove saved audio for sentence 1')).toBeTruthy();
+    expect(button('Remove saved audio for sentence 2')).toBeTruthy();
+    expect(button('Play audio for sentence 1').disabled).toBe(false);
+    expect(button('Play audio for sentence 2').disabled).toBe(false);
+    expect(button('Play audio for sentence 3')).toBeNull();
+
+    RealKaraokeStore.current = null;
+    RealKaraokeStore.currentResourceId = null;
   });
 });

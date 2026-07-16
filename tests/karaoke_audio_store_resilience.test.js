@@ -88,13 +88,37 @@ describe('KaraokeAudioStore resilience', () => {
     expect(store.metadataOf(sentence)).toBeNull();
   });
 
-  it('preserves source lines and bounds long units to complete local-TTS clips', () => {
-    const longLine = Array.from({ length: 42 }, (_, index) => `word${index}`).join(' ') + '.';
-    const sentences = KS.splitSentences(`A heading without punctuation\n${longLine}`);
+  it('splits with the same boundaries playback uses, so store keys converge across paths', () => {
+    // Aaron's 2026-07-15/16 repro: Save-TTS/capture keyed off KS.splitSentences
+    // while playback (phase_k handleSpeak/playSequence) keyed off
+    // PureHelpers.splitTextToSentences. When those diverge (line-splitting or a
+    // length cap on ONE side), prepped clips stop serving playback and captured
+    // clips never appear in Edit Audio. The exported splitter must therefore
+    // delegate to the app's canonical splitter, whatever the input shape.
+    loadAlloModule('pure_helpers_module.js');
+    const PH = window.AlloModules.PureHelpers;
+    expect(typeof PH.splitTextToSentences).toBe('function');
 
-    expect(sentences[0]).toBe('A heading without punctuation');
-    expect(sentences.slice(1).join(' ')).toBe(longLine);
-    expect(sentences.every((sentence) => sentence.length <= 120)).toBe(true);
+    const longSentence = 'This deliberately long sentence keeps going with clause after clause, ' +
+      'so that any hidden length cap inside the karaoke splitter would cut it into ' +
+      'multiple units and orphan the clip playback stores under the whole sentence.';
+    const paragraph = `A heading without punctuation\nDr. Rivera explains photosynthesis. ${longSentence}`;
+
+    const storeUnits = KS.splitSentences(paragraph);
+    const playbackUnits = PH.splitTextToSentences(paragraph.replace(/\s+/g, ' ').trim(), {});
+    expect(storeUnits.map(KS.keyFor)).toEqual(playbackUnits.map(KS.keyFor));
+
+    // The symptom-level contract: a clip captured under the sentence playback
+    // spoke is found under the sentence the prep/edit list enumerates.
+    const store = KS.createStore();
+    playbackUnits.forEach((sentence) => {
+      expect(store.put(sentence, b64(32), 'audio/mpeg', 'ai-played')).toBeTruthy();
+    });
+    storeUnits.forEach((sentence) => {
+      expect(store.has(sentence)).toBe(true);
+      expect(store.get(sentence)).toMatch(/^blob:stored-/);
+    });
+    expect(store.missing(storeUnits)).toEqual([]);
   });
 
   it('encodes MP3 cooperatively so background capture yields to playback', async () => {
