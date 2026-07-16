@@ -237,6 +237,10 @@ describe('Fisher Lab simulator safeguards', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
 
     expect(source).toContain('if (document.activeElement !== canvas) return;');
+    expect(source).toContain("document.addEventListener('visibilitychange', onVisibilityChange)");
+    expect(source).toContain("document.removeEventListener('visibilitychange', onVisibilityChange)");
+    expect(source).toContain('Simulation paused because the tab became inactive');
+    expect(source).toContain('simulation remains paused until you resume');
     expect(source).toContain("role: 'application', tabIndex: 0");
     expect(source).toContain('boatState.fuel = Math.max(0');
     expect(source).toContain('boatState.speed *= Math.exp(-0.9 * dt);');

@@ -9131,6 +9131,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
       hudCb(Object.assign({}, lastHud, { paused: boatState.paused }));
     }
+    var pausedForVisibility = false;
+    function onVisibilityChange() {
+      if (document.hidden) {
+        if (!boatState.paused) {
+          pausedForVisibility = true;
+          setPaused(true, false);
+          statusCb({ type: 'system', text: 'Simulation paused because the tab became inactive' });
+        }
+      } else if (pausedForVisibility) {
+        pausedForVisibility = false;
+        statusCb({ type: 'system', text: 'Tab active - simulation remains paused until you resume' });
+        flAnnounce('Harbor simulation remains paused. Press P or use Resume when ready.');
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange);
     function soundFogSignal() {
       if (encounterProfile.maneuverType !== 'restricted' || !boatState.trafficDecisionMade || boatState.trafficManeuverComplete) {
         statusCb({ type: 'guidance', text: 'The prolonged fog signal is required during the active restricted-visibility encounter.' });
@@ -9842,6 +9857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         window.removeEventListener('keydown', onKeyDown);
         window.removeEventListener('keyup', onKeyUp);
         window.removeEventListener('resize', onResize);
+        document.removeEventListener('visibilitychange', onVisibilityChange);
         try { AF.dispose(); } catch (_) {}
         try { renderer.dispose(); } catch (_) {}
         if (audioCtx) {
