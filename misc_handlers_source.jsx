@@ -282,9 +282,21 @@ const handleLoadProject = (e, deps) => {
             // Without it the file is just ciphertext; a wrong password or tampering fails the
             // authenticated GCM check and we stop rather than load garbage.
             if (window.AlloModules && window.AlloModules.AlloCrypto && window.AlloModules.AlloCrypto.isEncryptedEnvelope(rawData)) {
-                const _pw = (window.AlloFlowUX && window.AlloFlowUX.prompt)
-                    ? await window.AlloFlowUX.prompt(t('save.enter_password') || 'This project is password-protected. Enter the password to open it.', '', { inputType: 'password', title: t('save.encrypted_title') || 'Encrypted project' })
-                    : ((typeof window !== 'undefined' && window.prompt) ? window.prompt(t('save.enter_password') || 'Enter the password:') : null);
+                if (!(window.AlloFlowUX && typeof window.AlloFlowUX.prompt === 'function')) {
+                    if (addToast) addToast(t('save.password_dialog_loading') || 'The password dialog is still loading. Please wait a moment and try again.', 'error');
+                    return;
+                }
+                const _pw = await window.AlloFlowUX.prompt(
+                    t('save.enter_password') || 'This project is password-protected. Enter the password to open it.',
+                    '',
+                    {
+                        inputType: 'password',
+                        title: t('save.encrypted_title') || 'Encrypted project',
+                        confirmText: t('save.open_project') || 'Open project',
+                        cancelText: t('common.cancel') || 'Cancel',
+                        maxLength: 1024,
+                    }
+                );
                 if (!_pw) { return; }
                 try { rawData = await window.AlloModules.AlloCrypto.decryptJSON(rawData, _pw); }
                 catch (_e) { if (addToast) addToast(t('save.decrypt_failed') || 'Wrong password, or the file is corrupt.', 'error'); return; }
