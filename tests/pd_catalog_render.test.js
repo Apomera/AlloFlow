@@ -132,7 +132,7 @@ function loadWithCore() {
 function validModuleObj() {
   return {
     schema_version: 'pd-1.0', kind: 'pd_module',
-    metadata: { id: 'gen', title: 'Generated', topic: 'X', summary: 's', estMinutes: 15, audience: 'educator', license: 'CC-BY-SA-4.0' },
+    metadata: { id: 'gen', version: '1.0.0', language: 'en-US', title: 'Generated', topic: 'X', summary: 's', estMinutes: 15, audience: 'educator', license: 'CC-BY-SA-4.0' },
     sections: [
       { title: 'Learn', activities: [{ id: 'read-1', type: 'read', title: 'R', content: { body: 'b', keyPoints: ['a', 'b', 'c'] }, gate: { kind: 'none' } }] },
       { title: 'Check', activities: [{ id: 'quiz-1', type: 'quiz', title: 'Q', gate: { kind: 'score', threshold: 0.75 }, content: { questions: [
@@ -224,7 +224,7 @@ describe('video + checklist runner views', () => {
     schema_version: 'pd-1.0', kind: 'pd_module',
     metadata: { id: 'vc', title: 'VC Module', topic: 'T' },
     sections: [
-      { title: 'Watch', activities: [{ id: 'v1', type: 'video', title: 'Watch it', content: { url: 'https://example.org/v', body: 'a clip' }, gate: { kind: 'none' } }] },
+      { title: 'Watch', activities: [{ id: 'v1', type: 'video', title: 'Watch it', content: { url: 'https://example.org/v', body: 'a clip', captions: true, captionsUrl: 'https://example.org/captions.vtt', transcript: 'Transcript text.', transcriptUrl: 'https://example.org/transcript', accessibleAlternative: 'A text-based equivalent is available.' }, gate: { kind: 'none' } }] },
       { title: 'Commit', activities: [{ id: 'c1', type: 'checklist', title: 'Commit', content: { items: ['Try A', 'Try B'] }, gate: { kind: 'none' } }] },
     ],
   };
@@ -235,6 +235,12 @@ describe('video + checklist runner views', () => {
     expect(html).toContain('Watch the video');
     expect(html).toContain('https://example.org/v');
     expect(html).toContain('watched this');
+    expect(html).toContain('Captions are available');
+    expect(html).toContain('Open captions file');
+    expect(html).toContain('Read transcript');
+    expect(html).toContain('Transcript text.');
+    expect(html).toContain('Open transcript');
+    expect(html).toContain('Accessible alternative: A text-based equivalent is available.');
   });
 
   it('ChecklistActivity renders each item as a checkbox', () => {
@@ -277,6 +283,65 @@ describe('sim activity (AI-assessed scenario)', () => {
     expect(p).toMatch(/masteryScore/);
     expect(p).toMatch(/feedback/);
     expect(p).toMatch(/FORMATIVE/i);
+    expect(p).toMatch(/qualitativeAnalysis/);
+    expect(p).toMatch(/untrusted evidence/i);
+    expect(p).toMatch(/human review, not a credential decision/i);
+  });
+
+  it('renders structured qualitative evidence as formative, human-reviewable notes', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.SimActivity, {
+      activity: simModule.sections[0].activities[0],
+      raw: {
+        response: 'I would listen and offer choices.',
+        masteryScore: 82,
+        feedback: 'A thoughtful start.',
+        qualitativeAnalysis: {
+          strengths: ['Centers the learner'],
+          growthAreas: ['Name a concrete follow-up'],
+          criterionEvidence: [{
+            criterion: 'Empathy', assessment: 'developing',
+            evidence: 'The response begins with listening.', feedback: 'Add a check for understanding.'
+          }],
+        },
+      },
+      onRaw() {},
+    });
+    expect(html).toContain('Qualitative evidence notes');
+    expect(html).toContain('Centers the learner');
+    expect(html).toContain('Empathy: developing');
+    expect(html).toContain('Evidence: The response begins with listening.');
+    expect(html).toMatch(/do not make a credential decision/i);
+  });
+
+  it('sanitizes malformed resumed qualitative data at the render boundary', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.SimActivity, {
+      activity: simModule.sections[0].activities[0],
+      raw: {
+        response: 'Saved response', masteryScore: 70,
+        qualitativeAnalysis: {
+          strengths: [{ unexpected: true }],
+          criterionEvidence: [
+            null,
+            { criterion: 'Empathy', assessment: 'met', evidence: 'Listened first.', feedback: 'Continue.' },
+            'not-an-object',
+          ],
+        },
+      },
+      onRaw() {},
+    });
+    expect(html).toContain('Empathy: met');
+    expect(html).toContain('Listened first.');
+    expect(html).not.toContain('[object Object]');
+  });
+
+  it('binds asynchronous feedback to the submitted response and remounts per activity', () => {
+    expect(SRC).toContain('var submittedResponse = response;');
+    expect(SRC).toContain("disabled: status === 'scoring'");
+    expect(SRC).toContain('buildSimScorePrompt(c, submittedResponse)');
+    expect(SRC).toContain('response: submittedResponse, masteryScore: ms');
+    expect(SRC).toContain('key: act.id');
   });
 
   it('PdRunner renders a sim module step', () => {
@@ -436,7 +501,17 @@ describe('review fixes (PdSubmit, JSON extraction, AI provenance)', () => {
     expect(html).toMatch(/privately/i);
     expect(html).toContain('Scan for PII');
     expect(html).toContain('Schema check: OK');
+    expect(html).toMatch(/ready for a rendered WCAG 2\.2 AA audit/i);
     expect(html).toContain('Submit for review');
+  });
+
+  it('surfaces and gates accessibility-authoring issues before submission', () => {
+    const { CC } = loadWithCore();
+    const draft = validModuleObj();
+    delete draft.metadata.language;
+    const html = render(CC.PdSubmit, { addToast() {}, initialJson: JSON.stringify(draft) });
+    expect(html).toMatch(/Accessibility preflight needs attention/i);
+    expect(html).toMatch(/primary language/i);
   });
 
   it('extractFirstJsonObject skips a stray brace in prose before the JSON', () => {
@@ -490,6 +565,126 @@ describe('path-certificate rows + import edge cases', () => {
   });
 });
 
+describe('PD content binding and learner-state regressions', () => {
+  it('changes the module fingerprint when material content changes', () => {
+    const { CC, PdCore } = loadWithCore();
+    const original = validModuleObj();
+    const changed = JSON.parse(JSON.stringify(original));
+    changed.sections[1].activities[0].content.questions[0].prompt = 'A materially different prompt';
+    expect(CC._pdFingerprint(changed, PdCore)).not.toBe(CC._pdFingerprint(original, PdCore));
+    expect(CC._pdFingerprint(changed, {})).not.toBe(CC._pdFingerprint(original, {}));
+  });
+
+  it('prefers the PdCore content digest when the API is available', () => {
+    const { CC } = loadWithCore();
+    expect(CC._pdFingerprint(validModuleObj(), { moduleContentDigest: () => 'core-digest' })).toBe('core-digest');
+  });
+
+  it('persists every scenario edit and invalidates stale AI feedback', () => {
+    const { CC } = loadWithCore();
+    const patches = [];
+    CC._persistSimEdit((patch) => patches.push(patch), 'first draft');
+    CC._persistSimEdit((patch) => patches.push(patch), 'revised draft');
+    expect(patches).toHaveLength(2);
+    expect(patches[1]).toEqual({ response: 'revised draft', masteryScore: null, feedback: '', qualitativeAnalysis: null });
+  });
+
+  it('requires explicit quiz submission before progression', () => {
+    const { CC, PdCore } = loadWithCore();
+    const quiz = {
+      id: 'q-submit', type: 'quiz', title: 'Submit first', gate: { kind: 'score', threshold: 1 },
+      content: { questions: [{ prompt: 'Pick A', options: ['A', 'B'], correctIndex: 0 }] },
+    };
+    const unsubmitted = CC._evaluatePdActivityGate(PdCore, quiz, { answers: [0], submitted: false });
+    expect(unsubmitted.passed).toBe(false);
+    expect(unsubmitted.reason).toBe('unsubmitted');
+    const submitted = CC._evaluatePdActivityGate(PdCore, quiz, { answers: [0], submitted: true });
+    expect(submitted.passed).toBe(true);
+    expect(SRC).toContain('Submit your answers to continue.');
+  });
+
+  it('stamps a deterministic module ID before validating an AI draft', async () => {
+    const { CC, PdCore } = loadWithCore();
+    const draft = validModuleObj();
+    delete draft.metadata.id;
+    delete draft.metadata.version;
+    delete draft.metadata.language;
+    const res = await CC._generatePdModule({ topic: 'X' }, { callAI: async () => JSON.stringify(draft), getCore: () => PdCore });
+    expect(res.ok).toBe(true);
+    expect(res.module.metadata.id).toBe('generated');
+    expect(res.module.metadata.version).toBe('1.0.0');
+    expect(res.module.metadata.language).toBe('en-US');
+  });
+});
+
+describe('PD manifest content binding', () => {
+  it('requires digest/version/language bindings and fails closed on every mismatch', () => {
+    const { CC, PdCore } = loadWithCore();
+    const mod = validModuleObj();
+    const digest = PdCore.moduleContentDigest(mod);
+    const binding = { contentDigest: digest, version: '1.0.0', language: 'en-US' };
+    expect(CC._verifyPdManifestEntryDigest(PdCore, {}, mod).ok).toBe(false);
+    expect(CC._verifyPdManifestEntryDigest(PdCore, binding, mod)).toMatchObject({ ok: true, verified: true });
+    expect(CC._verifyPdManifestEntryDigest(PdCore, { ...binding, version: '' }, mod).ok).toBe(false);
+    expect(CC._verifyPdManifestEntryDigest(PdCore, { ...binding, version: '2.0.0' }, mod).ok).toBe(false);
+    expect(CC._verifyPdManifestEntryDigest(PdCore, { ...binding, language: 'fr' }, mod).ok).toBe(false);
+    expect(CC._verifyPdManifestEntryDigest(PdCore, { ...binding, contentDigest: 'wrong' }, mod).ok).toBe(false);
+    expect(CC._verifyPdManifestEntryDigest({}, binding, mod).ok).toBe(false);
+  });
+});
+
+describe('PD local-history trust semantics', () => {
+  it('forces locally recorded completion to self-reported and unverified', () => {
+    const { CC } = loadWithCore();
+    try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
+    CC._recordPdCompletion({
+      moduleId: 'local', complete: true, completedAt: '2026-06-20',
+      trust: 'institution-verified', verified: true, verificationStatus: 'verified',
+    });
+    const entry = CC._loadPdHistory()[0];
+    expect(entry.trust).toBe('self-reported');
+    expect(entry.verified).toBe(false);
+    expect(entry.verificationStatus).toBe('unverified');
+    expect(entry.historyOrigin).toBe('local-device');
+    expect(CC._isPersonalPdCompletionEntry(entry)).toBe(true);
+    try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
+  });
+
+  it('downgrades imported verification claims while preserving personal progress', () => {
+    const { CC } = loadWithCore();
+    try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
+    const res = CC._importPdHistory({ entries: [{
+      moduleId: 'imported', complete: true, completedAt: '2026-06-21',
+      trust: 'institution-verified', verified: true, verificationStatus: 'verified',
+    }] });
+    expect(res.ok).toBe(true);
+    const entry = CC._loadPdHistory()[0];
+    expect(entry).toMatchObject({
+      trust: 'self-reported', verified: false, verificationStatus: 'unverified', historyOrigin: 'imported-history',
+    });
+    expect(CC._isPersonalPdCompletionEntry(entry)).toBe(true);
+    try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
+  });
+  it('counts completion only for the exact current manifest version and digest', () => {
+    const { CC } = loadWithCore();
+    const entry = CC._normalizePdHistoryEntry({
+      moduleId: 'module-a', moduleVersion: '1.0.0',
+      contentDigest: 'sha256:' + 'a'.repeat(64), complete: true,
+    }, 'local-device');
+    expect(CC._pdHistoryEntryMatchesBinding(entry, {
+      version: '1.0.0', contentDigest: 'sha256:' + 'a'.repeat(64),
+    })).toBe(true);
+    expect(CC._pdHistoryEntryMatchesBinding(entry, {
+      version: '2.0.0', contentDigest: 'sha256:' + 'a'.repeat(64),
+    })).toBe(false);
+    expect(CC._pdHistoryEntryMatchesBinding(entry, {
+      version: '1.0.0', contentDigest: 'sha256:' + 'b'.repeat(64),
+    })).toBe(false);
+    expect(CC._pdHistoryEntryMatchesBinding(entry, {})).toBe(false);
+  });
+
+});
+
 describe('credential client orchestration (mocked fetch)', () => {
   let origFetch;
   beforeAll(() => { origFetch = globalThis.fetch; });
@@ -516,17 +711,108 @@ describe('credential client orchestration (mocked fetch)', () => {
 
   it('verifyPdCredential uses the server fallback when WebCrypto is absent', async () => {
     const { CC } = loadWithCore(); // sandbox window has no crypto.subtle → server path
-    stubFetch((url) => (url.indexOf('/verifyPd') !== -1 ? { status: 200, body: { ok: true, valid: true } } : { status: 404, body: {} }));
-    const r = await CC._verifyPdCredential({ payload: { a: 1 }, signature: 'x' });
+    stubFetch((url) => (url.indexOf('/verifyPd') !== -1 ? { status: 200, body: { ok: true, valid: true, credential_profile: 'reviewed-evidence', assurance: { institutional: true, reviewed: true } } } : { status: 404, body: {} }));
+    const r = await CC._verifyPdCredential({ payload: { credential_profile: 'reviewed-evidence', a: 1 }, signature: 'x' });
     expect(r.valid).toBe(true);
     expect(r.method).toBe('server');
+    expect(r.assurance).toMatchObject({ institutional: true, reviewed: true });
+  });
+
+  it('routes self-paced profiles through trusted server verification and preserves non-institutional assurance', async () => {
+    const { CC } = loadWithCore();
+    stubFetch(() => ({ status: 200, body: { ok: true, valid: true, credential_profile: 'self-paced-non-institutional', assurance: { institutional: false, reviewed: false } } }));
+    const r = await CC._verifyPdCredential({ payload: { credential_profile: 'self-paced-non-institutional' }, signature: 'x' });
+    expect(r).toMatchObject({ valid: true, method: 'server', credentialProfile: 'self-paced-non-institutional', assurance: { institutional: false, reviewed: false } });
+  });
+
+  it('rejects unsupported profiles without a network request', async () => {
+    const { CC } = loadWithCore();
+    let calls = 0;
+    stubFetch(() => { calls += 1; return { status: 200, body: { ok: true, valid: true } }; });
+    const r = await CC._verifyPdCredential({ payload: { credential_profile: 'invented-profile' }, signature: 'x' });
+    expect(r.valid).toBe(false);
+    expect(r.error).toMatch(/unsupported credential profile/i);
+    expect(calls).toBe(0);
+  });
+
+  it('rejects server attempts to relabel or promote a signed profile', async () => {
+    const { CC } = loadWithCore();
+    const credential = { payload: { credential_profile: 'self-paced-non-institutional' }, signature: 'x' };
+    stubFetch(() => ({ status: 200, body: { ok: true, valid: true, credential_profile: 'reviewed-evidence', assurance: { institutional: true, reviewed: true } } }));
+    let r = await CC._verifyPdCredential(credential);
+    expect(r.error).toMatch(/profile mismatch/i);
+    stubFetch(() => ({ status: 200, body: { ok: true, valid: true, credential_profile: 'self-paced-non-institutional', assurance: { institutional: true, reviewed: true } } }));
+    r = await CC._verifyPdCredential(credential);
+    expect(r.error).toMatch(/assurance mismatch/i);
   });
 
   it('verifyPdCredential reports "could not check" (not "invalid") when the server returns no verdict', async () => {
     const { CC } = loadWithCore();
     stubFetch(() => ({ status: 501, body: { ok: false, error: 'No issuer public key configured.' } }));
-    const r = await CC._verifyPdCredential({ payload: {}, signature: 'x' });
+    const r = await CC._verifyPdCredential({ payload: { credential_profile: 'reviewed-evidence' }, signature: 'x' });
     expect(r.valid).toBe(false);
     expect(r.error).toMatch(/issuer public key|HTTP 501/i);
+  });
+});
+describe('PD typed-response paste policy', () => {
+  it('defaults to allowed and records no event', () => {
+    const { CC } = loadWithCore();
+    expect(CC._resolvePdPastePolicy({}, null)).toEqual({ mode: 'allowed' });
+    expect(CC._recordPdPasteEvent({}, 'reflect-1', { mode: 'allowed' }, 'private clipboard text', '2026-07-16T12:00:00Z'))
+      .toEqual({ blocked: false, patch: null });
+  });
+
+  it('records only disclosed event metadata in monitored mode', () => {
+    const { CC } = loadWithCore();
+    const result = CC._recordPdPasteEvent({}, 'reflect-1', { mode: 'monitored' }, 'private clipboard text', '2026-07-16T12:00:00Z', 'reflect-1-reflect');
+    expect(result.blocked).toBe(false);
+    expect(result.patch.integrityEvents[0]).toMatchObject({
+      eventType: 'paste', activityId: 'reflect-1', fieldId: 'reflect-1-reflect',
+      charCount: 22, wordCount: 3, blocked: false,
+    });
+    expect(JSON.stringify(result.patch)).not.toContain('private clipboard text');
+  });
+
+  it('blocks only explicit restricted policies and names the accessible alternative', () => {
+    const { CC } = loadWithCore();
+    const policy = { mode: 'restricted', accessibleAlternative: 'Submit an audio response instead.' };
+    const result = CC._recordPdPasteEvent({}, 'sim-1', policy, 'draft', '2026-07-16T12:00:00Z', 'sim-1-resp');
+    expect(result.blocked).toBe(true);
+    expect(result.patch.integrityEvents[0].blocked).toBe(true);
+    expect(result.patch.integrityEvents[0].fieldId).toBe('sim-1-resp');
+    expect(CC._pdPastePolicyNotice(policy)).toContain('Submit an audio response instead.');
+    expect(CC._pdPastePolicyNotice(policy)).toMatch(/never automatically fail/i);
+  });
+
+  it('uses an activity policy over the module policy', () => {
+    const { CC } = loadWithCore();
+    expect(CC._resolvePdPastePolicy(
+      { assessmentPolicy: { paste: { mode: 'monitored' } } },
+      { mode: 'restricted', accessibleAlternative: 'Alternative' },
+    ).mode).toBe('monitored');
+  });
+
+  it('renders the disclosure and associates it with a typed response', () => {
+    const { CC } = loadWithCore();
+    const mod = {
+      schema_version: 'pd-1.0', kind: 'pd_module',
+      metadata: { id: 'paste-disclosure', title: 'Paste disclosure' },
+      assessmentPolicy: { paste: { mode: 'monitored' } },
+      sections: [{ title: 'Apply', activities: [{
+        id: 'reflect-1', type: 'reflect', title: 'Reflect',
+        content: { prompt: 'Describe your next step.' }, gate: { kind: 'none' },
+      }] }],
+    };
+    const html = render(CC.PdRunner, { module: mod, addToast() {}, onExit() {} });
+    expect(html).toContain('records only the time and size of paste events');
+    expect(html).toContain('id="reflect-1-paste-policy"');
+    expect(html).toContain('aria-describedby="reflect-1-paste-policy"');
+  });
+});
+describe('PD signing UI trust boundary', () => {
+  it('hides legacy self-paced signing unless the instance explicitly enables it', () => {
+    expect(SRC).toContain("window.__alloPdAllowSelfPacedIssuance === true");
+    expect(SRC).toContain("ev.complete && allowSelfPacedSigning && e('button'");
+    expect(SRC).toContain('Institutional credentials are issued only after authorized evidence and accessibility review');
   });
 });

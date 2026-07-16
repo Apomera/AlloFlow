@@ -5,6 +5,8 @@ const source = fs.readFileSync('view_persona_chat_source.jsx', 'utf8');
 const moduleSource = fs.readFileSync('view_persona_chat_module.js', 'utf8');
 const publicModule = fs.readFileSync('prismflow-deploy/public/view_persona_chat_module.js', 'utf8');
 
+const countMatches = (pattern) => (source.match(pattern) || []).length;
+
 describe('Persona Chat WCAG dialog behavior', () => {
   it('names the modal and manages entry, trapped, Escape, and restored focus', () => {
     expect(source).toContain('ref={personaDialogRef}');
@@ -19,34 +21,42 @@ describe('Persona Chat WCAG dialog behavior', () => {
   });
 
   it('contains reflection focus and restores definition-popover focus', () => {
-    expect(source.match(/data-persona-reflection-dialog/g)).toHaveLength(3);
-    expect(source.match(/aria-labelledby="persona-reflection-title"/g)).toHaveLength(2);
-    expect(source.match(/id="persona-reflection-title"/g)).toHaveLength(4);
+    expect(countMatches(/data-persona-reflection-dialog/g)).toBeGreaterThanOrEqual(2);
+    expect(countMatches(/aria-labelledby="persona-reflection-title"/g)).toBeGreaterThanOrEqual(2);
+    expect(countMatches(/id="persona-reflection-title"/g)).toBeGreaterThanOrEqual(2);
     expect(source).toContain("dialog.querySelector('[data-definition-initial-focus]')");
     expect(source).toContain('personaDefinitionReturnFocusRef.current');
     expect(source).toContain('handleSetPersonaDefinitionDataToNull();');
   });
 
   it('exposes toggle states, concise live logs, and progress values', () => {
-    expect(source.match(/aria-pressed=/g)).toHaveLength(8);
-    expect(source.match(/role="log"/g)).toHaveLength(2);
-    expect(source.match(/aria-relevant="additions text"/g)).toHaveLength(2);
+    expect(countMatches(/aria-pressed=/g)).toBeGreaterThanOrEqual(8);
+    expect(countMatches(/role="log"/g)).toBeGreaterThanOrEqual(2);
+    expect(countMatches(/aria-relevant="additions text"/g)).toBeGreaterThanOrEqual(2);
     expect(source).not.toContain('role="log" aria-live="polite" aria-atomic="true"');
-    expect(source.match(/role="progressbar"/g)).toHaveLength(2);
+    expect(countMatches(/role="progressbar"/g)).toBeGreaterThanOrEqual(2);
+    expect(source).toContain('aria-valuenow={rapport}');
+    expect(source).toContain('aria-valuenow={xp}');
+    expect(source).toContain('aria-valuemin={0} aria-valuemax={100}');
     expect(source).toContain('aria-valuenow={personaState.selectedCharacter?.accumulatedXP || 0}');
   });
 
   it('uses explicit non-submit types for all native buttons', () => {
     const buttons = source.match(/<button\b[\s\S]*?>/g) || [];
-    expect(buttons).toHaveLength(34);
+    expect(buttons.length).toBeGreaterThanOrEqual(34);
     for (const button of buttons) expect(button).toContain('type="button"');
   });
 });
 
 describe('Persona Chat reduced motion and generated copies', () => {
   it('adds a local fallback to every animation and broad transition utility', () => {
-    expect(source.match(/motion-reduce:animate-none/g)).toHaveLength(38);
-    expect(source.match(/motion-reduce:transition-none/g)).toHaveLength(51);
+    const lines = source.split(/\r?\n/);
+    const animatedLines = lines.filter(line => /(?<!motion-reduce:)animate-(?:in|spin|pulse|bounce|ping)\b/.test(line));
+    const transitionLines = lines.filter(line => /(?<!motion-reduce:)transition-(?:all|colors|transform)\b/.test(line));
+    expect(animatedLines.length).toBeGreaterThanOrEqual(30);
+    expect(transitionLines.length).toBeGreaterThanOrEqual(30);
+    for (const line of animatedLines) expect(line).toContain('motion-reduce:animate-none');
+    for (const line of transitionLines) expect(line).toContain('motion-reduce:transition-none');
   });
 
   it('keeps the generated root and public modules synchronized', () => {

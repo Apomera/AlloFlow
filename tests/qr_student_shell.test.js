@@ -270,7 +270,7 @@ describe('Canvas-managed QR auth sequencing', () => {
     expect(sessionModalSource).toContain('This code was not saved to Firebase, so students cannot join it.');
     expect(rootSource).toContain('aria-labelledby="alloflow-homework-qr-title"');
     expect(rootSource).toContain('Take-home assignment');
-    expect(rootSource).toContain('Student AI off &middot; No live session');
+    expect(rootSource).toContain("qrShareModal.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'Student AI off'");
     expect(rootSource).toContain('This QR does not join your class, show a session code, or connect to live pacing.');
     expect(rootSource).toContain("_makeAlloQrSvg(url, 'AlloFlow homework assignment QR')");
     expect(phaseOModule).toBe(phaseOPublicModule);
@@ -440,7 +440,7 @@ describe('homework QR hardening', () => {
     expect(rootSource).toContain('const printQrSheet = useCallback');
     expect(rootSource).toContain("printQrSheet(qrShareSvg, 'AlloFlow homework assignment'");
     expect(rootSource).toContain("openStudentQrPreview(mbLive.joinUrl, 'live-session link as a student')");
-    expect(rootSource).toContain('Ready to scan · AI tools off · Active until you end the session');
+    expect(rootSource).toContain("mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'AI tools off'");
     expect(rootSource).toContain('This homework link was revoked or is no longer available.');
     expect(rootSource).toContain('This homework link has expired.');
     expect(rootSource).toContain('It may be damaged or truncated');    expect(rootSource).toContain("safeGetItem('allo_recent_qr_shares')");

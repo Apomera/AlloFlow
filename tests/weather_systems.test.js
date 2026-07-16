@@ -25,6 +25,33 @@ describe('Weather Systems science kernel', () => {
     expect(after.pressure).toBeGreaterThan(kernel.projectConditions(state, 5).pressure);
   });
 
+  it('builds a station meteogram around the modeled front-passage hour', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const state = kernel.resolvedState({ scenario: 'coldFront' });
+    const central = { id: 'central', name: 'Central School', x: 0.48, y: 0.66, elevation: 90 };
+    const series = kernel.stationTimeSeries(state, central, 12, 1);
+    expect(kernel.frontPassageHour(state, central)).toBe(2.8);
+    expect(series.points).toHaveLength(13);
+    expect(series.before.airMass).toBe('ahead');
+    expect(series.after.airMass).toBe('behind');
+    expect(series.deltas.temperature).toBeLessThan(0);
+    expect(series.deltas.pressure).toBeGreaterThan(0);
+    expect(series.deltas.windShift).toBeGreaterThanOrEqual(70);
+  });
+
+  it('compares two scenario patterns at a synchronized model hour', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const state = kernel.resolvedState({ scenario: 'coldFront', simHour: 6 });
+    const comparison = kernel.compareScenarioPatterns(state, 'fair', 6);
+    expect(comparison.hour).toBe(6);
+    expect(comparison.activeScenario.id).toBe('coldFront');
+    expect(comparison.comparisonScenario.id).toBe('fair');
+    expect(comparison.metrics).toHaveLength(6);
+    expect(comparison.strongest).toBeTruthy();
+    expect(comparison.strongest.normalizedDifference).toBeGreaterThan(0);
+    expect(comparison.controlled).toBe(false);
+  });
+
   it('builds a deterministic nine-member ensemble with bounded agreement', () => {
     const kernel = window.WeatherSystemsKernel;
     const state = kernel.resolvedState({ scenario: 'winterStorm' });
@@ -89,12 +116,81 @@ describe('Weather Systems science kernel', () => {
     expect(weak.score).toBeLessThan(50);
     expect(strong.score).toBe(100);
   });
+
+  it('normalizes a live weather observation for the immersive scene', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const live = kernel.normalizeLiveWeatherResponse({
+      timezone: 'America/New_York', timezone_abbreviation: 'EDT',
+      current: {
+        time: '2026-07-16T14:00', temperature_2m: 28.4, relative_humidity_2m: 74,
+        precipitation: 1.2, weather_code: 95, cloud_cover: 88, surface_pressure: 1004.6,
+        wind_speed_10m: 22.1, wind_direction_10m: 215, visibility: 8400
+      }
+    }, 'Portland, Maine, United States', 43.6591, -70.2568);
+    expect(live.label).toBe('Portland, Maine, United States');
+    expect(live.latitude).toBe(43.6591);
+    expect(live.longitude).toBe(-70.2568);
+    expect(live.condition).toBe('Thunderstorms');
+    expect(live.cloudCover).toBe(88);
+    expect(live.visibility).toBe(8400);
+    expect(live.source).toBe('Open-Meteo');
+    expect(() => kernel.normalizeLiveWeatherResponse({}, 'Missing', 0, 0)).toThrow(/current conditions/);
+  });
 });
 
 describe('Weather Systems grade-banded views', () => {
+  it('renders a privacy-safe immersive 3D model fallback', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: { tab: 'immersive', scenario: 'coldFront' } }, { gradeLevel: '8th Grade' });
+    expect(html).toContain('id="weather-tab-immersive"');
+    expect(html).toContain('Immersive 3D Weather Space');
+    expect(html).toContain('data-weather-immersive-lab');
+    expect(html).toContain('data-weather-immersive-canvas');
+    expect(html).toContain('Loading the 3D atmosphere engine');
+    expect(html).toContain('Teaching model scene');
+    expect(html).toContain('data-weather-live-control');
+    expect(html).toContain('Nothing loads automatically');
+    expect(html).toContain('Use my location');
+    expect(html).toContain('City, state, or country');
+    expect(html).toContain('data-weather-vr-control');
+    expect(html).toContain('Check headset and enter VR');
+    expect(html).toContain('Educational visualization only');
+  });
+
+  it('maps a loaded live observation into the immersive weather dashboard', () => {
+    const html = renderTool('weatherSystems', {
+      _threeLoaded: true,
+      weatherSystems: {
+        tab: 'immersive', immersiveDataSource: 'live',
+        liveWeather: {
+          label: 'Portland, Maine, United States', latitude: 43.6591, longitude: -70.2568,
+          observedAt: '2026-07-16T14:00', timezone: 'EDT', temperature: 28.4, humidity: 74,
+          precipitation: 1.2, weatherCode: 95, condition: 'Thunderstorms', cloudCover: 88,
+          pressure: 1004.6, windSpeed: 22.1, windDir: 215, visibility: 8400,
+          source: 'Open-Meteo', sourceUrl: 'https://open-meteo.com/'
+        }
+      }
+    }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('3D engine ready');
+    expect(html).toContain('Live observation scene');
+    expect(html).toContain('Portland, Maine, United States');
+    expect(html).toContain('Live observations');
+    expect(html).toContain('LIVE');
+    expect(html).toContain('Thunderstorms | Observed 2026-07-16T14:00 EDT.');
+    expect(html).toContain('8.4 km');
+    expect(html).toContain('href="https://open-meteo.com/"');
+    expect(html).toContain('Coordinates are rounded and stored only with this local lab state.');
+    expect(html).toContain('aria-label="Immersive weather layer guide"');
+  });
+
   it('renders the map lab with observations, model controls, and trend data', () => {
     const html = renderTool('weatherSystems', { weatherSystems: { tab: 'map', scenario: 'coldFront' } }, { gradeLevel: '7th Grade' });
     expect(html).toContain('Weather Systems &amp; Forecasting');
+    expect(html).toContain('data-weather-investigation-pathway');
+    expect(html).toContain('Investigation Pathway');
+    expect(html).toContain('Recommended next: Log an observation.');
+    expect(html).toContain('0 of 5 stages');
+    expect(html).toContain('aria-label="Weather investigation pathway progress"');
+    expect(html).toContain('aria-current="step"');
     expect(html).toContain('Observation station');
     expect(html).toContain('Log this observation');
     expect(html).toContain('Vertical air-mass cross-section');
@@ -103,21 +199,84 @@ describe('Weather Systems grade-banded views', () => {
     expect(html).toContain('data-weather-station-model');
     expect(html).toContain('12-hour model trend');
     expect(html).toContain('Front speed');
-    expect(html).toContain('aria-label="Approaching Cold Front weather map');
+    expect(html).toContain('id="weather-tab-map"');
+    expect(html).toContain('aria-controls="weather-panel-map"');
+    expect(html).toContain('role="tabpanel"');
+    expect(html).toContain('id="weather-panel-map"');
+    expect(html).toContain('aria-labelledby="weather-tab-map"');
     expect(html).toContain('data-weather-atmosphere-storyline');
     expect(html).toContain('Atmosphere Storyline');
     expect(html).toContain('data-weather-canvas-visual-key');
     expect(html).toContain('Canvas visual key');
     expect(html).toContain('Selected station pulses amber');
     expect(html).toContain('Radar: light to intense');
-    expect(html).toContain('aria-describedby="weather-map-visual-key"');
-    expect(html).toContain('Visible layers include pressure contours, fronts, radar intensity and sweep, and directional wind tracers.');
+    expect(html).toContain('id="weather-map-description"');
+    expect(html).toContain('Approaching Cold Front weather map at model hour 0.');
+    expect(html).toContain('Visible layers include pressure contours, fronts, radar intensity and sweep, and directional wind tracers. Selected station: Central School.');
+    expect(html).toContain('data-weather-map-canvas="true"');
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).not.toContain('width="960"');
+    expect(html).toContain('focus-visible:ring-2');
+    expect(html).toContain('motion-reduce:transition-none');
+    expect(html).not.toContain('text-[9px]');
     expect(html).toContain('data-weather-visual-scene-studio');
     expect(html).toContain('Visual Scene Studio');
     expect(html).toContain('aria-label="Weather map visual presets"');
     expect(html).toContain('Fine-tune layers');
     expect(html).toContain('4/4 visible');
     expect(html).toContain('Visual presets change only the displayed layers.');
+    expect(html).toContain('data-weather-change-lens');
+    expect(html).toContain('Next 3-hour Evidence Lens');
+    expect(html).toContain('Dominant evidence signal');
+    expect(html).toContain('Select evidence to continue');
+    expect(html).toContain('Evidence lens from model hour 0 to 3.');
+    expect(html).toContain('data-weather-pattern-compare');
+    expect(html).toContain('Pattern Compare Studio');
+    expect(html).toContain('Approaching Cold Front');
+    expect(html).toContain('High Pressure Day');
+    expect(html).toContain('Pattern comparison, not a controlled test');
+    expect(html).toContain('Open controlled test');
+  });
+
+  it('switches the evidence lens to a recent-change view at the model boundary', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'map', scenario: 'coldFront', simHour: 24
+    } }, { gradeLevel: '7th Grade' });
+    expect(html).toContain('Recent 3-hour Evidence Lens');
+    expect(html).toContain('T +21 → T +24');
+    expect(html).toContain('Evidence lens from model hour 21 to 24.');
+    expect(html).toContain('Select measurable changes to carry into your forecast, then explain how they support your claim.');
+  });
+
+  it('builds a selectable evidence tray in the Map Lab', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'map', scenario: 'coldFront', lensEvidence: ['pressure', 'windShift']
+    } }, { gradeLevel: '7th Grade' });
+    expect(html).toContain('2 evidence cards selected');
+    expect(html).toContain('Carry 2 to forecast');
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain('Selected');
+  });
+
+  it('compares a chosen weather system at the same model hour', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'map', scenario: 'coldFront', compareScenario: 'winterStorm', simHour: 6
+    } }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('Same time: T +6');
+    expect(html).toContain('Coastal Winter Storm');
+    expect(html).toContain('Largest pattern contrast');
+    expect(html).toContain('active side includes your slider changes');
+    expect(html).toContain('comparison uses preset defaults');
+    expect(html).toContain('does not prove which variable caused it');
+  });
+
+  it('simplifies pattern comparison language for early learners', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'map', scenario: 'fair', compareScenario: 'warmFront', simHour: 3
+    } }, { gradeLevel: '1st Grade' });
+    expect(html).toContain('Pattern Compare Studio');
+    expect(html).toContain('Look for what is the same and different in two kinds of weather.');
+    expect(html).toContain('This is the biggest difference shown in the cards.');
   });
 
   it('identifies a custom visual-layer mix without changing model controls', () => {
@@ -148,6 +307,36 @@ describe('Weather Systems grade-banded views', () => {
     expect(html).toContain('By T +9');
     expect(html).toContain('Evidence cue');
     expect(html).toContain('Storyline chapters are projections from this transparent teaching model');
+  });
+
+  it('recommends the first incomplete investigation stage', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'forecast', scenario: 'coldFront',
+      observationLog: [{ id: 'one' }],
+      lensEvidence: ['pressure'],
+      experimentsRun: 1,
+      forecastsIssued: 1,
+      forecastHistory: [{ attempt: 1, score: 70 }]
+    } }, { gradeLevel: '7th Grade' });
+    expect(html).toContain('4 of 5 stages');
+    expect(html).toContain('Next: Revise');
+    expect(html).toContain('Recommended next: Revise and verify again.');
+    expect(html).toContain('Revise. Recommended next step. Compare two verified forecasts.');
+  });
+
+  it('celebrates a complete investigation cycle', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'forecast', scenario: 'coldFront',
+      observationLog: [{ id: 'one' }],
+      patternCompared: true,
+      experimentsRun: 1,
+      forecastsIssued: 2,
+      forecastHistory: [{ attempt: 1, score: 70 }, { attempt: 2, score: 90 }]
+    } }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('5 of 5 stages');
+    expect(html).toContain('Cycle complete');
+    expect(html).toContain('Investigation cycle complete. Keep testing new scenarios and improving explanations.');
+    expect(html).toContain('Revise. Complete. Compare two verified forecasts.');
   });
 
   it('guides learners toward the next meteorologist badge', () => {
@@ -182,6 +371,18 @@ describe('Weather Systems grade-banded views', () => {
     expect(html).toContain('Hide badges');
   });
 
+  it('renders a selected-station front-passage meteogram', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'map', scenario: 'coldFront', selectedStation: 'coast'
+    } }, { gradeLevel: '7th Grade' });
+    expect(html).toContain('Front-Passage Meteogram');
+    expect(html).toContain('12-hour model trend at Harbor Point');
+    expect(html).toContain('Front near T +6.2 h');
+    expect(html).toContain('Modeled front passage near T +6.2 h');
+    expect(html).toContain('Twelve-hour meteogram for Harbor Point');
+    expect(html).toContain('data-weather-front-meteogram');
+  });
+
   it('supports a station-network boundary challenge', () => {
     const html = renderTool('weatherSystems', { weatherSystems: {
       tab: 'map', scenario: 'coldFront', simHour: 6,
@@ -199,11 +400,17 @@ describe('Weather Systems grade-banded views', () => {
   it('simplifies controls for early elementary learners', () => {
     const html = renderTool('weatherSystems', { weatherSystems: { tab: 'map' } }, { gradeLevel: '1st Grade' });
     expect(html).toContain('Weather controls');
+    expect(html).toContain('Weather Detective Path');
+    expect(html).toContain('Look closely');
+    expect(html).toContain('Try a change');
+    expect(html).toContain('Share a forecast');
     expect(html).not.toContain('Instability index');
     expect(html).not.toContain('Sea-level pressure</span>');
     expect(html).not.toContain('Decode the station model');
     expect(html).not.toContain('Station Network: Find the Boundary');
     expect(html).toContain('The air is');
+    expect(html).toContain('Before, during, and after');
+    expect(html).toContain('12-hour weather story');
   });
 
   it('renders a grade-banded cause-and-effect investigation', () => {
@@ -253,6 +460,10 @@ describe('Weather Systems grade-banded views', () => {
     expect(forecast).toContain('aria-label="Forecast readiness"');
     expect(forecast).toContain('Transparent scoring rubric');
     expect(forecast).toContain('Reasoning: teacher/peer review');
+    expect(forecast).toContain('data-weather-cer-composer');
+    expect(forecast).toContain('CER Composer');
+    expect(forecast).toContain('Claim Evidence Reasoning sentence frames');
+    expect(forecast).toContain('0 / 20 minimum characters');
     expect(forecast).toContain('Your next move');
     expect(forecast).toContain('data-weather-forecast-journal');
     expect(forecast).toContain('Forecast Revision Journal');
@@ -261,13 +472,275 @@ describe('Weather Systems grade-banded views', () => {
     expect(forecast).toContain('Weather Broadcast Studio');
     expect(forecast).toContain('Add weather, timing, hazard, action to complete this briefing.');
     expect(forecast).toContain('aria-label="Broadcast briefing completeness"');
+    expect(forecast).toContain('data-weather-reasoning-pulse');
+    expect(forecast).toContain('Reasoning Pulse Check');
+    expect(forecast).toContain('Verify at least one forecast to unlock the reasoning check.');
+    expect(forecast).toContain('aria-label="Reasoning pulse completion"');
+    expect(forecast).toContain('This diagnostic highlights explanations to revisit. It is not a quiz grade');
+    expect(forecast).toContain('data-weather-peer-review');
+    expect(forecast).toContain('Peer Review Exchange');
+    expect(forecast).toContain('Verify at least one forecast before exchanging peer feedback.');
+    expect(forecast).toContain('aria-label="Peer review completeness"');
+    expect(forecast).toContain('Review the reasoning, not the person.');
+    expect(forecast).toContain('data-weather-reflection-ticket');
+    expect(forecast).toContain('Reflection &amp; Exit Ticket');
+    expect(forecast).toContain('Verify at least one forecast to unlock the reflection exit ticket.');
+    expect(forecast).toContain('aria-label="Learner reflection completeness"');
+    expect(forecast).toContain('This self-assessment describes learning readiness, not forecast accuracy or a grade.');
 
     const guide = renderTool('weatherSystems', { weatherSystems: { tab: 'teacher' } }, { gradeLevel: '5th Grade' });
     expect(guide).toContain('Predict - Observe - Explain - Revise');
+    expect(guide).toContain('data-weather-teacher-checkpoints');
+    expect(guide).toContain('Teacher Checkpoint Dashboard');
+    expect(guide).toContain('0 of 5 checkpoints ready');
+    expect(guide).toContain('aria-label="Teacher checkpoint readiness"');
+    expect(guide).toContain('they are not a grade or proof of scientific understanding');
+    expect(guide).toContain('data-weather-teacher-conference-planner');
+    expect(guide).toContain('Teacher Conference Planner');
+    expect(guide).toContain('0 of 4 look-fors reviewed');
+    expect(guide).toContain('aria-label="Teacher look-fors reviewed"');
+    expect(guide).toContain('Do not enter student names or sensitive personal information.');
+    expect(guide).toContain('data-weather-teacher-handoff');
+    expect(guide).toContain('Teacher Handoff Brief');
+    expect(guide).toContain('Copy handoff brief');
+    expect(guide).toContain('RECORDED INTERACTION EVIDENCE (NOT A GRADE)');
+    expect(guide).toContain('No teacher note recorded.');
     expect(guide).toContain('Grade-band progression');
     expect(guide).toContain('Model boundaries');
+    expect(guide).toContain('Immersive 3D and VR are optional representations.');
+    expect(guide).toContain('Live observations describe current conditions');
     expect(guide).toContain('MS-ESS2-5');
   });
+
+  it('prioritizes the first incomplete teacher checkpoint from recorded work', () => {
+    const guide = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'teacher', scenario: 'coldFront',
+      observationLog: [{ id: 'central-0', station: 'Central School' }],
+      patternCompared: true, experimentsRun: 1, forecastsIssued: 1,
+      evidence: ['pressure', 'front'], reasoning: 'Pressure is falling as the front approaches.',
+      forecastHistory: [{ attempt: 1, score: 76, evidenceCount: 2, reasoning: 'Pressure is falling as the front approaches.' }]
+    } }, { gradeLevel: '7th Grade' });
+    expect(guide).toContain('4 of 5 checkpoints ready');
+    expect(guide).toContain('aria-valuenow="4"');
+    expect(guide).toContain('Suggested conference focus: Revision');
+    expect(guide).toContain('One verified forecast is ready to revise and compare.');
+    expect(guide).toContain('Open student stage: Revision');
+  });
+
+  it('shifts a complete teacher dashboard toward transfer and model limits', () => {
+    const guide = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'teacher', scenario: 'coldFront',
+      observationLog: [{ id: 'central-0', station: 'Central School' }],
+      lensEvidence: ['pressure'], experimentsRun: 1, forecastsIssued: 2,
+      evidence: ['pressure', 'front', 'radar'], reasoning: 'Pressure and wind changes support an approaching front.',
+      forecastHistory: [
+        { attempt: 1, score: 68, evidenceCount: 2, reasoning: 'Pressure is falling.' },
+        { attempt: 2, score: 86, evidenceCount: 3, reasoning: 'Pressure and wind changes support an approaching front.' }
+      ]
+    } }, { gradeLevel: '10th Grade' });
+    expect(guide).toContain('5 of 5 checkpoints ready');
+    expect(guide).toContain('aria-valuenow="5"');
+    expect(guide).toContain('Latest revision improved the model-match score by 18 points.');
+    expect(guide).toContain('Suggested conference focus: Transfer and model limits');
+    expect(guide).toContain('Compare the teaching model with local weather observations.');
+  });
+  it('records teacher-authored look-fors and prioritizes the next conference focus', () => {
+    const guide = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'teacher',
+      teacherRatings: { observe: 'secure', compare: 'developing', explain: 'emerging' },
+      teacherConferenceNote: 'Ask for a second measurement before accepting the causal explanation.'
+    } }, { gradeLevel: '7th Grade' });
+    expect(guide).toContain('3 of 4 look-fors reviewed');
+    expect(guide).toContain('1 secure');
+    expect(guide).toContain('aria-valuenow="3"');
+    expect(guide).toContain('Suggested next look-for: Forecast, justify, and revise');
+    expect(guide).toContain('Ask for a second measurement before accepting the causal explanation.');
+    expect(guide).toContain('aria-label="Rate Select relevant station evidence"');
+    expect(guide).toContain('aria-pressed="true"');
+  });
+
+  it('moves a fully secure conference record to a transfer challenge', () => {
+    const guide = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'teacher',
+      teacherRatings: { observe: 'secure', compare: 'secure', explain: 'secure', revise: 'secure' }
+    } }, { gradeLevel: '10th Grade' });
+    expect(guide).toContain('4 of 4 look-fors reviewed');
+    expect(guide).toContain('4 secure');
+    expect(guide).toContain('aria-valuenow="4"');
+    expect(guide).toContain('Transfer challenge');
+    expect(guide).toContain('Invite transfer to a new scenario.');
+  });
+
+  it('uses early-learner language in teacher conference look-fors', () => {
+    const guide = renderTool('weatherSystems', { weatherSystems: { tab: 'teacher' } }, { gradeLevel: '1st Grade' });
+    expect(guide).toContain('aria-label="K-2 teacher conference look-fors"');
+    expect(guide).toContain('Notice a weather clue');
+    expect(guide).toContain('Tell what changed');
+    expect(guide).toContain('Try one change');
+    expect(guide).toContain('Share and improve');
+  });
+
+  it('builds a portable teacher handoff from interaction and teacher evidence', () => {
+    const guide = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'teacher', scenario: 'coldFront', simHour: 6,
+      observationLog: [{ id: 'central-0', station: 'Central School' }],
+      patternCompared: true, experimentsRun: 1, forecastsIssued: 2,
+      teacherRatings: { observe: 'secure', compare: 'developing', explain: 'secure', revise: 'secure' },
+      teacherConferenceNote: 'Ask the learner to explain why the wind shift supports the forecast.',
+      reflectionShift: 'verification', reflectionReadiness: 'transfer',
+      reflectionQuestion: 'Would a mountain change where the heaviest rain falls?', reflectionSubmitted: true,
+      reasoningPulseResponses: { systems: 'approaching', saturation: 'temperatureOnly', fairTest: 'oneVariable' },
+      peerReviewStrength: 'reasoning', peerReviewMove: 'explainLink',
+      peerReviewFeedback: 'The evidence is relevant. Explain the wind shift connection.', peerReviewSubmitted: true,
+      forecastHistory: [
+        { attempt: 1, score: 68, evidenceCount: 2 },
+        { attempt: 2, score: 86, evidenceCount: 3 }
+      ]
+    } }, { gradeLevel: '7th Grade' });
+    expect(guide).toContain('data-weather-teacher-handoff');
+    expect(guide).toContain('WEATHER SYSTEMS TEACHER HANDOFF');
+    expect(guide).toContain('Scenario: Approaching Cold Front');
+    expect(guide).toContain('Model time: T +6 hours');
+    expect(guide).toContain('Investigation checkpoints ready: 5/5');
+    expect(guide).toContain('Latest model-match score: 86/100 with 3 evidence sources');
+    expect(guide).toContain('Latest score change: +18 points');
+    expect(guide).toContain('Learner exit ticket: Saved');
+    expect(guide).toContain('Reasoning pulse: 2/3 explanations supported; 3/3 answered');
+    expect(guide).toContain('Reasoning review focus: Moisture and saturation');
+    expect(guide).toContain('Peer review: Saved');
+    expect(guide).toContain('Peer-identified strength: Claim-evidence connection');
+    expect(guide).toContain('Peer revision move: Explain how the evidence supports the claim');
+    expect(guide).toContain('Peer feedback: The evidence is relevant. Explain the wind shift connection.');
+    expect(guide).toContain('Thinking changed by: Forecast verification');
+    expect(guide).toContain('Self-assessed explanation readiness: Ready to apply to a new system');
+    expect(guide).toContain('Learner next question: Would a mountain change where the heaviest rain falls?');
+    expect(guide).toContain('Analyze interacting patterns: Developing');
+    expect(guide).toContain('Ask the learner to explain why the wind shift supports the forecast.');
+    expect(guide).toContain('aria-label="Copy Teacher Handoff Brief to clipboard"');
+    expect(guide).toContain('aria-label="Teacher Handoff Brief plain text"');
+  });
+
+  it('saves a complete learner reflection after forecast verification', () => {
+    const forecast = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'forecast', scenario: 'coldFront', forecastsIssued: 1,
+      reflectionShift: 'experiment', reflectionReadiness: 'explain',
+      reflectionQuestion: 'How would a faster front change the timing?',
+      reflectionSubmitted: true
+    } }, { gradeLevel: '7th Grade' });
+    expect(forecast).toContain('data-weather-reflection-ticket');
+    expect(forecast).toContain('Reflection &amp; Exit Ticket');
+    expect(forecast).toContain('✓ Saved');
+    expect(forecast).toContain('aria-label="Learner reflection completeness"');
+    expect(forecast).toContain('aria-valuenow="3"');
+    expect(forecast).toContain('The controlled test');
+    expect(forecast).toContain('I can explain with evidence');
+    expect(forecast).toContain('How would a faster front change the timing?');
+    expect(forecast).toContain('✓ Exit ticket saved');
+  });
+
+  it('uses early-learner language for reflection and transfer', () => {
+    const forecast = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'forecast', scenario: 'fair', forecastsIssued: 1
+    } }, { gradeLevel: '1st Grade' });
+    expect(forecast).toContain('Weather Thinking Check');
+    expect(forecast).toContain('0/2');
+    expect(forecast).toContain('Partner Weather Talk');
+    expect(forecast).toContain('What was strong?');
+    expect(forecast).toContain('What could make it even better?');
+    expect(forecast).toContain('I noticed... I wonder...');
+    expect(forecast).toContain('Use more than one clue');
+    expect(forecast).toContain('Try one change');
+    expect(forecast).toContain('Think Back &amp; Share');
+    expect(forecast).toContain('What helped your idea change?');
+    expect(forecast).toContain('How ready are you to tell your weather story?');
+    expect(forecast).toContain('What do you still wonder?');
+    expect(forecast).toContain('I can try a new story');
+  });
+
+  it('supports a complete middle-grades reasoning pulse with explanatory feedback', () => {
+    const forecast = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'forecast', scenario: 'coldFront', forecastsIssued: 1,
+      reasoningPulseResponses: { systems: 'approaching', saturation: 'smallSpread', fairTest: 'oneVariable' }
+    } }, { gradeLevel: '7th Grade' });
+    expect(forecast).toContain('data-weather-reasoning-pulse');
+    expect(forecast).toContain('Reasoning Pulse Check');
+    expect(forecast).toContain('3/3 explanations supported');
+    expect(forecast).toContain('aria-label="Reasoning pulse completion"');
+    expect(forecast).toContain('aria-valuenow="3"');
+    expect(forecast).toContain('✓ Supported.');
+    expect(forecast).toContain('A controlled test changes one variable while holding the others fixed');
+  });
+
+  it('surfaces a misconception as a Teacher Handoff review focus', () => {
+    const guide = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'teacher', scenario: 'coldFront', forecastsIssued: 1,
+      reasoningPulseResponses: { systems: 'approaching', saturation: 'temperatureOnly', fairTest: 'oneVariable' }
+    } }, { gradeLevel: '7th Grade' });
+    expect(guide).toContain('Reasoning pulse: 2/3 explanations supported; 3/3 answered');
+    expect(guide).toContain('Reasoning review focus: Moisture and saturation');
+  });
+
+  it('saves structured peer feedback after a verified forecast', () => {
+    const forecast = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'forecast', scenario: 'coldFront', forecastsIssued: 1,
+      peerReviewStrength: 'reasoning', peerReviewMove: 'explainLink',
+      peerReviewFeedback: 'I notice the pressure evidence is clear. Explain how the wind shift supports the timing.',
+      peerReviewSubmitted: true
+    } }, { gradeLevel: '7th Grade' });
+    expect(forecast).toContain('data-weather-peer-review');
+    expect(forecast).toContain('Peer Review Exchange');
+    expect(forecast).toContain('✓ Review saved');
+    expect(forecast).toContain('aria-label="Peer review completeness"');
+    expect(forecast).toContain('aria-valuenow="3"');
+    expect(forecast).toContain('Claim-evidence connection');
+    expect(forecast).toContain('Explain how the evidence supports the claim');
+    expect(forecast).toContain('I notice the pressure evidence is clear.');
+    expect(forecast).toContain('✓ Peer review saved');
+  });
+
+  it('personalizes grade-banded CER sentence frames from forecast evidence', () => {
+    const middle = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'forecast', scenario: 'coldFront',
+      predictionPrecip: 'rain', predictionTiming: '0-3',
+      evidence: ['pressure', 'windShift'],
+      carriedEvidence: { signalTitle: 'System strengthening', ids: ['pressure', 'windShift'], startHour: 0, endHour: 3 }
+    } }, { gradeLevel: '7th Grade' });
+    expect(middle).toContain('I predict rain will begin within 0 to 3 hours.');
+    expect(middle).toContain('My strongest evidence is pressure tendency, wind direction and speed.');
+    expect(middle).toContain('system strengthening connects the observations to the forecast.');
+    expect(middle).toContain('2 of 3');
+
+    const early = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'forecast', scenario: 'fair', reasoning: 'Clouds are changing.'
+    } }, { gradeLevel: '1st Grade' });
+    expect(early).toContain('Tell Your Weather Story');
+    expect(early).toContain('Add a claim');
+    expect(early).toContain('Add why it matters');
+    expect(early).toContain('20 / 10 minimum characters');
+  });
+
+  it('preserves Map Lab evidence provenance in the Forecast Mission', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'forecast', scenario: 'coldFront',
+      evidence: ['pressure', 'windShift'],
+      carriedEvidence: {
+        startHour: 0,
+        endHour: 3,
+        signalTitle: 'System strengthening',
+        signalText: 'Falling pressure and rising precipitation potential support this claim.',
+        ids: ['pressure', 'windShift']
+      }
+    } }, { gradeLevel: '7th Grade' });
+    expect(html).toContain('data-weather-carried-evidence');
+    expect(html).toContain('Evidence carried from the Map Lab');
+    expect(html).toContain('T +0 to T +3');
+    expect(html).toContain('Pressure tendency');
+    expect(html).toContain('Wind direction and speed');
+    expect(html).toContain('Dominant signal: System strengthening');
+    expect(html).toContain('Review map evidence');
+    expect(html).toContain('2/3');
+  });
+
   it('celebrates a fully prepared forecast before verification', () => {
     const html = renderTool('weatherSystems', { weatherSystems: {
       tab: 'forecast',
@@ -282,6 +755,9 @@ describe('Weather Systems grade-banded views', () => {
     } }, { gradeLevel: '10th Grade' });
     expect(html).toContain('aria-label="Forecast readiness"');
     expect(html).toContain('aria-valuenow="100"');
+    expect(html).toContain('aria-label="Claim Evidence Reasoning completeness"');
+    expect(html).toContain('aria-valuenow="3"');
+    expect(html).toContain('CER structure ready');
     expect(html).toContain('Ready to verify');
     expect(html).toContain('Forecast complete');
     expect(html).toContain('All readiness signals are complete. Verify when ready.');
@@ -310,13 +786,14 @@ describe('Weather Systems grade-banded views', () => {
       scenario: 'coldFront',
       forecastHistory: [
         { attempt: 1, score: 55, precip: 'rain', timing: '7-12', hazard: 'highWind', action: 'monitor', confidence: 60, evidenceCount: 1, modelHour: 0 },
-        { attempt: 2, score: 85, precip: 'storms', timing: '4-6', hazard: 'lightning', action: 'indoors', confidence: 80, evidenceCount: 3, modelHour: 3 }
+        { attempt: 2, score: 85, precip: 'storms', timing: '4-6', hazard: 'lightning', action: 'indoors', confidence: 80, evidenceCount: 3, reasoning: 'Falling pressure and the wind shift support an approaching cold front.', modelHour: 3 }
       ]
     } }, { gradeLevel: '10th Grade' });
     expect(html).toContain('Forecast Revision Journal');
     expect(html).toContain('Revision improved by 30 points');
     expect(html).toContain('Forecast #2 - latest');
     expect(html).toContain('3 evidence sources');
+    expect(html).toContain('Falling pressure and the wind shift support an approaching cold front.');
     expect(html).toContain('aria-label="Verified forecast attempts"');
     expect(html).toContain('aria-label="Forecast 2 score"');
     expect(html).toContain('aria-valuenow="85"');

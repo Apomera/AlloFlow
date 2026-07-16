@@ -226,10 +226,13 @@ describe('Open Groove project core', () => {
     expect(presets.map(preset => preset.name)).toContain('Solo Violin');
     expect(presets.map(preset => preset.name)).toContain('Flute');
     expect(presets.map(preset => preset.name)).toContain('Trumpet');
+    expect(presets.map(preset => preset.name)).toEqual(expect.arrayContaining(['Harp', 'Classical Guitar', 'Choir Ah', 'Celesta']));
     const families = OG.ogListSynthPatchFamilies();
     expect(families.find(group => group.family === 'Strings').presets.map(preset => preset.id)).toContain('soloViolin');
     expect(families.find(group => group.family === 'Woodwinds').presets.map(preset => preset.id)).toContain('clarinet');
     expect(families.find(group => group.family === 'Brass').presets.map(preset => preset.id)).toContain('trombone');
+    expect(families.find(group => group.family === 'Plucked Strings').presets.map(preset => preset.id)).toEqual(expect.arrayContaining(['harp', 'classicalGuitar']));
+    expect(families.find(group => group.family === 'Voice').presets.map(preset => preset.id)).toContain('choirAh');
     const violinProfile = OG.ogBuildInstrumentProfile('soloViolin');
     expect(violinProfile).toMatchObject({
       name: 'Solo Violin',
@@ -238,6 +241,22 @@ describe('Open Groove project core', () => {
     });
     expect(violinProfile.samplePlan.articulations).toContain('sustain');
     expect(OG.ogListInstrumentProfiles().map(profile => profile.presetId)).toContain('trumpet');
+    expect(OG.ogBuildInstrumentProfile('harp')).toMatchObject({
+      family: 'Plucked Strings',
+      role: 'harmony',
+      roleLabel: 'Harmony',
+      rangeLabel: 'C1-G7',
+      samplePlan: { recommendedNotes: ['E2', 'A2', 'D3', 'G3', 'C4', 'E4'] }
+    });
+    expect(OG.ogBuildInstrumentProfile('choirAh')).toMatchObject({ family: 'Voice', roleLabel: 'Harmony', sourceLabel: 'Built-in choir-like synth', rangeLabel: 'C2-C6' });
+    expect(OG.ogNormalizeInstrumentRole('Plucked Strings')).toBe('pluck');
+    const roleGuides = OG.ogListInstrumentRoleGuides();
+    expect(roleGuides.map(guide => guide.role)).toEqual(expect.arrayContaining(['bass', 'harmony', 'keys', 'melody', 'lead', 'pad', 'pluck', 'mallet']));
+    const harmonyGuide = OG.ogBuildInstrumentRoleGuide('harmony');
+    expect(harmonyGuide).toMatchObject({ label: 'Harmony', compositionTip: expect.stringContaining('middle register') });
+    expect(harmonyGuide.starterPresetIds).toEqual(expect.arrayContaining(['harp', 'choirAh']));
+    expect(harmonyGuide.presets.map(preset => preset.presetId)).toEqual(expect.arrayContaining(['harp', 'choirAh']));
+    expect(OG.ogListInstrumentProfiles({ role: 'harmony' }).map(profile => profile.presetId)).toEqual(expect.arrayContaining(['harp', 'choirAh']));
     expect(OG.ogGetSynthPatchPreset('classicPiano').instrument.partials.length).toBeGreaterThan(1);
     expect(OG.ogGetSynthPatchPreset('wideUnisonLead').instrument).toMatchObject({
       engine: 'unison-layered-subtractive',
@@ -262,6 +281,13 @@ describe('Open Groove project core', () => {
       oscillator: 'sawtooth',
       filter: { type: 'lowpass' }
     });
+    const choirPatch = OG.ogApplySynthPatchPreset(brassProject, brassProject.tracks[1].id, 'choirAh');
+    expect(choirPatch).toMatchObject({
+      name: 'Choir Ah',
+      presetId: 'choirAh',
+      oscillator: 'sine',
+      unison: { voices: 5 }
+    });
 
     const generatedA = OG.ogRandomizeSynthInstrument(projectA, synthA.id, { seed: 'lesson-1' });
     const generatedB = OG.ogRandomizeSynthInstrument(projectB, synthB.id, { seed: 'lesson-1' });
@@ -271,17 +297,262 @@ describe('Open Groove project core', () => {
     expect(OG.ogValidateProject(projectB)).toEqual([]);
   });
 
-  it('exports a simple MusicXML sketch from notation events', () => {
+  it('reports synth notes that fall outside the selected instrument range', () => {
+    const project = OG.ogCreateProject({ title: 'Range Lesson' });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    OG.ogApplySynthPatchPreset(project, synth.id, 'flute');
+    OG.ogSetNoteStep(project, pattern.id, synth.id, 'B3', 0, 16, { on: true });
+    OG.ogSetNoteStep(project, pattern.id, synth.id, 'C4', 1, 16, { on: true });
+    OG.ogSetNoteStep(project, pattern.id, synth.id, 'E7', 2, 16, { on: true });
+
+    const report = OG.ogBuildInstrumentRangeReport(project, pattern.id, synth.id);
+    expect(report).toMatchObject({
+      available: true,
+      presetId: 'flute',
+      instrumentName: 'Flute',
+      rangeLabel: 'C4-D7',
+      noteCount: 3,
+      inRangeCount: 1,
+      outOfRangeCount: 2,
+      belowCount: 1,
+      aboveCount: 1
+    });
+    expect(report.outOfRangeNotes.map(note => note.pitch)).toEqual(['B3', 'E7']);
+    expect(report.summary).toContain('2 of 3 notes');
+
+    const fit = OG.ogFitTrackNotesToInstrumentRange(project, pattern.id, synth.id);
+    expect(fit).toMatchObject({ changedCount: 2, summary: '2 notes moved into Flute range.' });
+    expect(fit.changes.map(change => [change.fromPitch, change.toPitch, change.semitones])).toEqual([
+      ['B3', 'B4', 12],
+      ['E7', 'E6', -12]
+    ]);
+    const fittedReport = OG.ogBuildInstrumentRangeReport(project, pattern.id, synth.id);
+    expect(fittedReport).toMatchObject({ noteCount: 3, inRangeCount: 3, outOfRangeCount: 0 });
+    expect(pattern.events.filter(event => event.type === 'note').map(event => event.notation.spelling)).toEqual(['B4', 'C4', 'E6']);
+    expect(OG.ogBuildInstrumentRange('choirAh')).toMatchObject({ rangeLabel: 'C2-C6', lowMidi: 36, highMidi: 84 });
+
+    const flutePalette = OG.ogBuildPlayablePitchPalette(project, 'flute', { centerPitch: 'C5', maxCount: 12 });
+    expect(flutePalette).toMatchObject({ available: true, presetId: 'flute', rangeLabel: 'C4-D7' });
+    expect(flutePalette.pitches).toHaveLength(12);
+    expect(flutePalette.pitches.every(entry => entry.midi >= 60 && entry.midi <= 98 && entry.inRange)).toBe(true);
+
+    const bassPalette = OG.ogBuildPlayablePitchPalette(project, 'roundSub', { centerPitch: 'C5', maxCount: 16 });
+    expect(bassPalette).toMatchObject({ available: true, presetId: 'roundSub', rangeLabel: 'C1-C3' });
+    expect(bassPalette.pitchNames).toContain('C3');
+    expect(bassPalette.pitchNames).not.toContain('C4');
+    expect(bassPalette.pitches.every(entry => entry.midi >= 24 && entry.midi <= 48)).toBe(true);
+
+    const fallbackPalette = OG.ogBuildPlayablePitchPalette(project, null, { maxCount: 8 });
+    expect(fallbackPalette).toMatchObject({ available: false, instrumentName: 'Default staff', rangeLabel: 'C4-C6' });
+    expect(fallbackPalette.pitches).toHaveLength(8);
+  });
+
+  it('exports a clef-aware MusicXML sketch from notation events', () => {
     const project = OG.ogCreateProject();
     const pattern = project.patterns[0];
     const synth = project.tracks[1];
     OG.ogSetNoteStep(project, pattern.id, synth.id, 'Eb4', 0, 16, { on: true });
     const xml = OG.ogBuildMusicXmlSketch(project, pattern.id, synth.id);
     expect(xml).toContain('<score-partwise version="3.1">');
+    expect(xml).toContain('<creator type="software">Open Groove Studio</creator>');
+    expect(xml).toContain('<clef><sign>G</sign><line>2</line></clef>');
     expect(xml).toContain('<step>E</step><alter>-1</alter><octave>4</octave>');
     expect(xml).toContain('<divisions>960</divisions>');
+
+    const bassProject = OG.ogCreateProject({ title: 'Bass XML' });
+    const bassPattern = bassProject.patterns[0];
+    const bassSynth = bassProject.tracks[1];
+    OG.ogApplySynthPatchPreset(bassProject, bassSynth.id, 'roundSub');
+    OG.ogSetStaffNote(bassProject, bassPattern.id, bassSynth.id, { startBar: 0, startBeat: 1, pitch: 'G2', duration: 'q' });
+    const bassXml = OG.ogBuildMusicXmlSketch(bassProject, bassPattern.id, bassSynth.id, { clef: 'auto' });
+    expect(bassXml).toContain('<work-title>Bass XML</work-title>');
+    expect(bassXml).toContain('<clef><sign>F</sign><line>4</line></clef>');
+    expect(bassXml).toContain('<step>G</step><octave>2</octave>');
+
+    const forcedTrebleXml = OG.ogBuildMusicXmlSketch(bassProject, bassPattern.id, bassSynth.id, { clef: 'treble' });
+    expect(forcedTrebleXml).toContain('<clef><sign>G</sign><line>2</line></clef>');
   });
 
+  it('imports MusicXML notes, rests, and chords into notation events', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<score-partwise version="3.1">
+  <part-list><score-part id="P1"><part-name>Lesson</part-name></score-part></part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes><divisions>2</divisions><time><beats>4</beats><beat-type>4</beat-type></time></attributes>
+      <note><pitch><step>C</step><octave>4</octave></pitch><duration>2</duration></note>
+      <note><rest/><duration>6</duration></note>
+    </measure>
+    <measure number="2">
+      <note><pitch><step>E</step><octave>4</octave></pitch><duration>4</duration></note>
+      <note><chord/><pitch><step>G</step><octave>4</octave></pitch><duration>4</duration></note>
+    </measure>
+  </part>
+</score-partwise>`;
+    const result = OG.ogImportMusicXmlSketch(project, pattern.id, synth.id, xml);
+    const notes = pattern.events.filter((event) => event.type === 'note' && event.trackId === synth.id);
+    expect(result).toMatchObject({ noteCount: 3, measureCount: 2, partId: 'P1' });
+    expect(pattern.bars).toBeGreaterThanOrEqual(2);
+    expect(notes.map((event) => event.pitch)).toEqual(['C4', 'E4', 'G4']);
+    expect(notes[0]).toMatchObject({ startTick: 0, durationTicks: 960, source: 'musicXmlImport', role: 'notation' });
+    expect(notes[1]).toMatchObject({ startTick: 3840, durationTicks: 1920 });
+    expect(notes[2]).toMatchObject({ startTick: 3840, durationTicks: 1920 });
+  });
+
+  it('imports MusicXML enharmonic and double accidentals with correct pitch', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<score-partwise version="3.1">
+  <part-list><score-part id="P1"><part-name>Accidentals</part-name></score-part></part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes><divisions>1</divisions><time><beats>4</beats><beat-type>4</beat-type></time></attributes>
+      <note><pitch><step>E</step><alter>1</alter><octave>4</octave></pitch><duration>1</duration></note>
+      <note><pitch><step>C</step><alter>-1</alter><octave>4</octave></pitch><duration>1</duration></note>
+      <note><pitch><step>C</step><alter>2</alter><octave>4</octave></pitch><duration>1</duration></note>
+      <note><pitch><step>D</step><alter>-2</alter><octave>4</octave></pitch><duration>1</duration></note>
+    </measure>
+  </part>
+</score-partwise>`;
+    const result = OG.ogImportMusicXmlSketch(project, pattern.id, synth.id, xml);
+    const notes = pattern.events.filter((event) => event.type === 'note' && event.trackId === synth.id);
+    expect(result.noteCount).toBe(4);
+    expect(notes.map((event) => event.pitch)).toEqual(['F4', 'B3', 'D4', 'C4']);
+    expect(notes.map((event) => event.midi)).toEqual([65, 59, 62, 60]);
+    expect(notes.map((event) => event.startTick)).toEqual([0, 960, 1920, 2880]);
+  });
+  it('applies imported MusicXML time signatures before placing later measures', () => {
+    const project = OG.ogCreateProject({ ppq: 960, timeSignature: [4, 4] });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<score-partwise version="3.1">
+  <part-list><score-part id="P1"><part-name>Meter Lesson</part-name></score-part></part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes><divisions>1</divisions><time><beats>3</beats><beat-type>4</beat-type></time></attributes>
+      <note><rest/><duration>3</duration></note>
+    </measure>
+    <measure number="2">
+      <note><pitch><step>D</step><octave>4</octave></pitch><duration>1</duration></note>
+    </measure>
+  </part>
+</score-partwise>`;
+    const result = OG.ogImportMusicXmlSketch(project, pattern.id, synth.id, xml);
+    const notes = pattern.events.filter((event) => event.type === 'note' && event.trackId === synth.id);
+    expect(result.timeSignature).toEqual([3, 4]);
+    expect(project.timeSignature).toEqual([3, 4]);
+    expect(OG.ogTicksPerMeasure(project)).toBe(2880);
+    expect(notes).toHaveLength(1);
+    expect(notes[0]).toMatchObject({ pitch: 'D4', startTick: 2880, durationTicks: 960 });
+  });
+  it('imports selected parts from score-timewise MusicXML files', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<score-timewise version="3.1">
+  <part-list>
+    <score-part id="P1"><part-name>Lead</part-name></score-part>
+    <score-part id="P2"><part-name>Bass</part-name></score-part>
+  </part-list>
+  <measure number="1">
+    <part id="P1"><attributes><divisions>2</divisions></attributes><note><pitch><step>C</step><octave>5</octave></pitch><duration>2</duration></note></part>
+    <part id="P2"><attributes><divisions>2</divisions></attributes><note><pitch><step>F</step><octave>3</octave></pitch><duration>4</duration></note></part>
+  </measure>
+  <measure number="2">
+    <part id="P1"><note><pitch><step>D</step><octave>5</octave></pitch><duration>2</duration></note></part>
+    <part id="P2"><note><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration></note></part>
+  </measure>
+</score-timewise>`;
+    const result = OG.ogImportMusicXmlSketch(project, pattern.id, synth.id, xml, { partId: 'P2' });
+    const notes = pattern.events.filter((event) => event.type === 'note' && event.trackId === synth.id);
+    expect(result).toMatchObject({ noteCount: 2, measureCount: 2, partId: 'P2' });
+    expect(notes.map((event) => event.pitch)).toEqual(['F3', 'A3']);
+    expect(notes.map((event) => event.startTick)).toEqual([0, 3840]);
+    expect(notes.map((event) => event.durationTicks)).toEqual([1920, 960]);
+  });
+  it('keeps sparse score-timewise part timing when a selected part skips a measure', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<score-timewise version="3.1">
+  <part-list>
+    <score-part id="P1"><part-name>Lead</part-name></score-part>
+    <score-part id="P2"><part-name>Bass</part-name></score-part>
+  </part-list>
+  <measure number="1">
+    <part id="P1"><attributes><divisions>2</divisions></attributes><note><pitch><step>C</step><octave>5</octave></pitch><duration>4</duration></note></part>
+  </measure>
+  <measure number="2">
+    <part id="P1"><note><pitch><step>D</step><octave>5</octave></pitch><duration>2</duration></note></part>
+    <part id="P2"><attributes><divisions>2</divisions></attributes><note><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration></note></part>
+  </measure>
+</score-timewise>`;
+    const result = OG.ogImportMusicXmlSketch(project, pattern.id, synth.id, xml, { partId: 'P2' });
+    const notes = pattern.events.filter((event) => event.type === 'note' && event.trackId === synth.id);
+    expect(result).toMatchObject({ noteCount: 1, measureCount: 2, partId: 'P2' });
+    expect(notes).toHaveLength(1);
+    expect(notes[0]).toMatchObject({ pitch: 'A3', startTick: 3840, durationTicks: 960 });
+  });
+  it('merges tied MusicXML notes into one sustained notation event', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<score-partwise version="3.1">
+  <part-list><score-part id="P1"><part-name>Tie Lesson</part-name></score-part></part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes><divisions>1</divisions><time><beats>4</beats><beat-type>4</beat-type></time></attributes>
+      <note>
+        <pitch><step>C</step><octave>4</octave></pitch>
+        <duration>4</duration>
+        <tie type="start"/>
+        <notations><tied type="start"/></notations>
+      </note>
+    </measure>
+    <measure number="2">
+      <note>
+        <pitch><step>C</step><octave>4</octave></pitch>
+        <duration>2</duration>
+        <tie type="stop"/>
+        <notations><tied type="stop"/></notations>
+      </note>
+    </measure>
+  </part>
+</score-partwise>`;
+    const result = OG.ogImportMusicXmlSketch(project, pattern.id, synth.id, xml);
+    const notes = pattern.events.filter((event) => event.type === 'note' && event.trackId === synth.id);
+    expect(result).toMatchObject({ noteCount: 1, measureCount: 2, tieMergeCount: 1 });
+    expect(notes).toHaveLength(1);
+    expect(notes[0]).toMatchObject({ pitch: 'C4', startTick: 0, durationTicks: 5760 });
+    expect(notes[0].notation.tie).toMatchObject({ imported: true, start: true, stop: true, segments: 2 });
+  });
+  it('round-trips simple staff notation through MusicXML import', () => {
+    const source = OG.ogCreateProject({ title: 'Round Trip XML' });
+    const sourcePattern = source.patterns[0];
+    const sourceSynth = source.tracks[1];
+    OG.ogSetStaffNote(source, sourcePattern.id, sourceSynth.id, { startBar: 0, startBeat: 1, pitch: 'Bb4', duration: 'q' });
+    OG.ogSetStaffNote(source, sourcePattern.id, sourceSynth.id, { startBar: 0, startBeat: 2, pitch: 'D5', duration: 'h' });
+    const xml = OG.ogBuildMusicXmlSketch(source, sourcePattern.id, sourceSynth.id);
+
+    const target = OG.ogCreateProject();
+    const targetPattern = target.patterns[0];
+    const targetSynth = target.tracks[1];
+    const result = OG.ogImportMusicXmlSketch(target, targetPattern.id, targetSynth.id, xml);
+    const imported = targetPattern.events.filter((event) => event.type === 'note' && event.trackId === targetSynth.id);
+    expect(result.noteCount).toBe(2);
+    expect(imported.map((event) => event.pitch)).toEqual(['Bb4', 'D5']);
+    expect(imported.map((event) => event.startTick)).toEqual([0, 960]);
+  });
   it('exports a standard MIDI file with pitched notes and drum hits', () => {
     const project = OG.ogCreateProject({ bpm: 120, ppq: 960 });
     const pattern = project.patterns[0];
@@ -404,6 +675,27 @@ describe('Open Groove project core', () => {
     });
     expect(rest).toMatchObject({ rest: true, removed: 1 });
     expect(OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id }).measures[0].notes).toHaveLength(0);
+
+    OG.ogApplySynthPatchPreset(project, synth.id, 'roundSub');
+    OG.ogSetStaffNote(project, pattern.id, synth.id, {
+      startBar: 0,
+      startBeat: 2,
+      pitch: 'G2',
+      duration: 'q',
+      replaceSlot: true
+    });
+    expect(OG.ogInferStaffClef(project, synth.id, { clef: 'auto' })).toBe('bass');
+    expect(OG.ogNormalizeStaffClef('bass')).toBe('bass');
+    const bassStaff = OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id, clef: 'auto' });
+    expect(bassStaff).toMatchObject({ clef: 'bass', clefLabel: 'Bass' });
+    const bassNote = bassStaff.measures[0].notes.find(item => item.pitch === 'G2');
+    expect(bassNote.y).toBeCloseTo(bassStaff.geometry.bottomY, 5);
+    expect(bassNote.ledgerLines).toHaveLength(0);
+
+    const forcedTreble = OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id, clef: 'treble' });
+    expect(forcedTreble).toMatchObject({ clef: 'treble', clefLabel: 'Treble' });
+    const forcedTrebleNote = forcedTreble.measures[0].notes.find(item => item.pitch === 'G2');
+    expect(forcedTrebleNote.ledgerLines.length).toBeGreaterThan(bassNote.ledgerLines.length);
   });
 
   it('bridges notation notes to grid steps, scale names, chords, and performance offsets', () => {
@@ -459,6 +751,7 @@ describe('Open Groove project core', () => {
     const project = OG.ogCreateProject({ title: 'Melody Lesson', tonic: 'C', mode: 'minor' });
     const pattern = project.patterns[0];
     const synth = project.tracks[1];
+    OG.ogApplySynthPatchPreset(project, synth.id, 'brightLead');
     OG.ogApplyChordProgression(project, pattern.id, synth.id, [
       { root: 'C', quality: 'minor' },
       { root: 'Eb', quality: 'major' }
@@ -476,7 +769,26 @@ describe('Open Groove project core', () => {
     expect(phrase.noteCount).toBeGreaterThan(0);
     expect(phrase.events.every(event => event.role === 'melody' && event.source === 'phrase')).toBe(true);
     expect(phrase.events.every(event => scalePitchClasses.includes(event.midi % 12))).toBe(true);
+    expect(phrase.rangeFitCount).toBe(0);
+    expect(phrase.instrumentRange).toMatchObject({ presetId: 'brightLead', rangeLabel: 'C3-C6' });
     expect(OG.ogBuildNotationPreview(project, pattern.id).notes.some(note => note.role === 'melody')).toBe(true);
+
+    const bassProject = OG.ogCreateProject({ title: 'Bass Melody Lesson', tonic: 'C', mode: 'minor' });
+    const bassPattern = bassProject.patterns[0];
+    const bassSynth = bassProject.tracks[1];
+    OG.ogApplySynthPatchPreset(bassProject, bassSynth.id, 'roundSub');
+    const bassPhrase = OG.ogWriteMelodyPhrase(bassProject, bassPattern.id, bassSynth.id, {
+      style: 'ascending',
+      startBar: 0,
+      bars: 1,
+      seed: 'bass-range-phrase',
+      octave: 4
+    });
+    expect(bassPhrase.instrumentRange).toMatchObject({ presetId: 'roundSub', rangeLabel: 'C1-C3' });
+    expect(bassPhrase.rangeFitCount).toBeGreaterThan(0);
+    expect(bassPhrase.events.every(event => event.midi >= 24 && event.midi <= 48)).toBe(true);
+    expect(bassPhrase.events.every(event => event.pitch === event.notation.spelling)).toBe(true);
+    expect(OG.ogBuildInstrumentRangeReport(bassProject, bassPattern.id, bassSynth.id)).toMatchObject({ outOfRangeCount: 0 });
 
     const rewritten = OG.ogWriteMelodyPhrase(project, pattern.id, synth.id, {
       style: 'callResponse',
@@ -822,6 +1134,20 @@ describe('Open Groove project core', () => {
     expect(resetVoice).toMatchObject({ character: 'electronic', kitId: 'openGrooveElectronicKit', pitch: 1.08, brightness: 1.22, noise: 0.86 });
     expect(shapedPad.proceduralVoiceDefault).toMatchObject({ character: 'electronic', pitch: 1.08, brightness: 1.22 });
     expect(shapedAsset.proceduralVoiceDefault).toMatchObject({ character: 'electronic', pitch: 1.08, brightness: 1.22 });
+    const voicePresets = OG.ogListProceduralVoicePresets();
+    expect(voicePresets.map(preset => preset.id)).toEqual(expect.arrayContaining(['tight', 'deep', 'bright', 'warm', 'airy']));
+    voicePresets[0].voice.pitch = 9;
+    expect(OG.ogGetProceduralVoicePreset(voicePresets[0].id).voice.pitch).not.toBe(9);
+    const deepVoice = OG.ogApplyPadProceduralVoicePreset(project, drums.id, 'pad_1', 'deep');
+    expect(deepVoice).toMatchObject({ character: 'electronic', kitId: 'openGrooveElectronicKit', pitch: 0.82, brightness: 0.78, body: 1.32 });
+    expect(shapedAsset.proceduralVoice).toMatchObject({ pitch: 0.82, brightness: 0.78, body: 1.32 });
+    expect(OG.ogDescribeProceduralVoice(deepVoice)).toMatchObject({ summary: 'Low / Warm / Medium / Clean / Defined / Full' });
+    expect(OG.ogDescribePadProceduralVoice(project, drums.id, 'pad_1').fields.map(field => field.label)).toEqual(['Register', 'Timbre', 'Envelope', 'Texture', 'Transient', 'Body']);
+    const voiceCompare = OG.ogComparePadProceduralVoice(project, drums.id, 'pad_1');
+    expect(voiceCompare).toMatchObject({ changedCount: 6, summary: 'Pitch -0.26, Bright -0.44, Decay +0.34, +3 more' });
+    expect(voiceCompare.changed.find(change => change.id === 'click')).toMatchObject({ delta: -0.63, direction: 'lower' });
+    expect(OG.ogResetPadProceduralVoice(project, drums.id, 'pad_1')).toMatchObject({ pitch: 1.08, brightness: 1.22, noise: 0.86 });
+    expect(OG.ogComparePadProceduralVoice(project, drums.id, 'pad_1')).toMatchObject({ changedCount: 0, summary: 'Matches factory voice' });
     const randomizedA = OG.ogRandomizePadProceduralVoice(project, drums.id, 'pad_1', { seed: 'voice-1', amount: 0.42 });
     expect(randomizedA.pitch).toBeGreaterThanOrEqual(0.5);
     expect(randomizedA.pitch).toBeLessThanOrEqual(2);

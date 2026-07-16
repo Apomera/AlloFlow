@@ -34,14 +34,13 @@ describe('Test Prep Hub exam-pack contract', () => {
     expect(new Set(eppp.items.map((item) => item.domainId)).size).toBe(8);
     expect(eppp.items.every((item) => item.reviewStatus === 'source-reviewed')).toBe(true);
     expect(eppp.items.every((item) => item.references.length > 0)).toBe(true);
-    expect(eppp.items.slice(0, 8).every((item) => item.choiceRationales.length === item.choices.length)).toBe(true);
-    expect(eppp.items.slice(500).every((item) => item.choiceRationales.length === item.choices.length)).toBe(true);
+    expect(eppp.items.every((item) => item.choiceRationales.length === item.choices.length)).toBe(true);
     expect(eppp.legacyUrl).toBe('./test_prep/eppp_legacy/index.html?embedded=1');
-    expect(eppp.legacyAuditUrl).toBe('./test_prep/eppp_legacy/content_audit.json');
-    expect(eppp.nextReviewDocketUrl).toBe('./test_prep/eppp_legacy/next_review_docket.json');
-    expect(eppp.curation500Url).toBe('./test_prep/eppp_legacy/curation_500.json');
-    expect(eppp.curation1000Url).toBe('./test_prep/eppp_legacy/curation_1500.json');
-    expect(eppp.expansionAuditUrl).toBe('./test_prep/eppp_native_expansion_1500_audit.json');
+    expect(eppp.legacyAuditUrl).toBe('');
+    expect(eppp.nextReviewDocketUrl).toBe('');
+    expect(eppp.curation500Url).toBe('');
+    expect(eppp.curation1000Url).toBe('');
+    expect(eppp.expansionAuditUrl).toBe('');
     expect(eppp.blueprintLabel).toContain('2026-2027');
     expect(eppp.officialBlueprintUrl).toMatch(/^https:\/\/asppb\.net\//);
     expect(eppp.transitionNotice).toContain('integrated six-domain EPPP');
@@ -61,6 +60,21 @@ describe('Test Prep Hub exam-pack contract', () => {
     }
     expect(Hub.batchMeta(eppp, 99)).toMatchObject({ batchNumber: 1, batchCount: 15, position: 100, startIndex: 0, endIndex: 100 });
     expect(Hub.batchMeta(eppp, 100)).toMatchObject({ batchNumber: 2, batchCount: 15, position: 1, startIndex: 100, endIndex: 200 });
+  });
+
+  it('keeps the repaired Pack 2 answer keys aligned with their explanations', () => {
+    const eppp = Hub.listPacks().find((pack) => pack.id === 'eppp-part-one');
+    const packTwo = eppp.items.slice(100, 200);
+    const custodyItem = packTwo.find((item) => item.id === 'eppp-b008-professional-1');
+    const allianceItem = packTwo.find((item) => item.id === 'eppp-b008-intervention-1');
+
+    expect(custodyItem).toBeTruthy();
+    expect(custodyItem.choices[custodyItem.answerIndex]).toContain('conflicting forensic and therapeutic roles');
+    expect(custodyItem.choiceRationales[custodyItem.answerIndex]).toContain('conflicting obligations');
+    expect(allianceItem).toBeTruthy();
+    expect(allianceItem.choices[allianceItem.answerIndex]).toContain('consistent correlate of treatment outcome');
+    expect(allianceItem.choiceRationales[allianceItem.answerIndex]).toContain('positive association');
+    expect([custodyItem, allianceItem].every((item) => item.choiceRationales.length === item.choices.length)).toBe(true);
   });
 
   it('builds descriptive domain and confidence diagnostics without a pass claim', () => {
@@ -224,6 +238,60 @@ describe('Test Prep Hub exam-pack contract', () => {
     expect(analytics.confidenceSummary.sure).toMatchObject({ correct: 11, total: 14, percent: 79 });
   });
 
+  it('builds deterministic domain and difficulty focus sets and preserves targeting metadata', () => {
+    const pack = Hub.normalizePack({
+      id: 'targeted-fixture', title: 'Targeted fixture', status: 'ready',
+      domains: [{ id: 'alpha', label: 'Alpha domain' }, { id: 'beta', label: 'Beta domain' }],
+      items: [
+        { id: 'alpha-foundation', domainId: 'alpha', difficulty: 'foundation', prompt: 'Foundation?', choices: ['Yes', 'No'], answerIndex: 0 },
+        { id: 'alpha-intermediate', domainId: 'alpha', difficulty: 'intermediate', prompt: 'Intermediate?', choices: ['Yes', 'No'], answerIndex: 0 },
+        { id: 'alpha-advanced-warning', domainId: 'alpha', difficulty: 'advanced', prompt: 'Advanced warning candidate?', choices: ['Yes', 'No'], answerIndex: 0, diagnosticWarnings: ['warning-only'] },
+        { id: 'alpha-advanced-two', domainId: 'alpha', difficulty: 'advanced', prompt: 'Advanced two?', choices: ['Yes', 'No'], answerIndex: 0 },
+        { id: 'beta-advanced', domainId: 'beta', difficulty: 'advanced', prompt: 'Beta?', choices: ['Yes', 'No'], answerIndex: 0 },
+      ],
+    });
+    const options = { domainId: 'Alpha', difficulties: ['Intermediate', 'advanced', 'advanced'], limit: 20, seed: 'stable-focus-seed' };
+    const first = Hub.buildTargetedSet(pack, options);
+    const repeated = Hub.buildTargetedSet(pack, options);
+
+    expect(first).toMatchObject({
+      strategy: 'domain-difficulty-targeted-v1',
+      packId: 'targeted-fixture',
+      domainId: 'alpha',
+      domainLabel: 'Alpha domain',
+      difficulties: ['intermediate', 'advanced'],
+      requestedLength: 20,
+      eligibleCount: 3,
+      limit: 3,
+    });
+    expect(repeated.itemIds).toEqual(first.itemIds);
+    expect(new Set(first.itemIds)).toEqual(new Set(['alpha-intermediate', 'alpha-advanced-warning', 'alpha-advanced-two']));
+    expect(first.items.every((item) => item.domainId === 'alpha' && ['intermediate', 'advanced'].includes(item.difficulty))).toBe(true);
+    expect(Hub.buildTargetedSet(pack, { domainId: 'missing', limit: 20 }).items).toEqual([]);
+
+    const focusedPack = { ...pack, items: first.items };
+    const answers = Object.fromEntries(first.items.map((item) => [item.id, item.answerIndex]));
+    const recorded = Hub.recordAttempt({ attempts: [] }, focusedPack, answers, {}, 1234, {
+      mode: 'targeted',
+      label: 'Domain focus: Alpha domain',
+      targetDomainId: 'Alpha',
+      targetDifficulties: ['Intermediate', 'advanced', 'advanced'],
+      itemIds: first.itemIds,
+    });
+    expect(recorded.attempts[0]).toMatchObject({
+      mode: 'targeted',
+      targetDomainId: 'alpha',
+      targetDifficulties: ['intermediate', 'advanced'],
+      correct: 3,
+      total: 3,
+      itemIds: first.itemIds,
+    });
+    expect(Hub.normalizeProgress(recorded).attempts[0]).toMatchObject({
+      targetDomainId: 'alpha',
+      targetDifficulties: ['intermediate', 'advanced'],
+    });
+  });
+
   it('normalizes stored attempts and excludes impossible records', () => {
     const progress = Hub.normalizeProgress({
       attempts: [
@@ -257,8 +325,16 @@ describe('Test Prep Hub host contract', () => {
     expect(legacyApp).not.toMatch(/AUTH & PAYWALL GATE|renderPaywall/);
     expect(legacyIndex).toContain('alloflow_embed.js');
     const legacyBridge = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/alloflow_embed.js'), 'utf8');
+    const legacyEmbedCss = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/alloflow_embed.css'), 'utf8');
+    const deployedLegacyEmbedCss = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_legacy/alloflow_embed.css'), 'utf8');
     expect(legacyBridge).toContain('not official EPPP equating');
+    expect(legacyBridge).not.toContain('legacy workspace');
+    expect(legacyIndex).toContain('AlloFlow Study Suite');
+    expect(legacyIndex).not.toContain('AlloFlow Legacy Workspace');
     expect(deployedLegacyIndex).toBe(legacyIndex);
+    expect(legacyEmbedCss).toContain('0.875rem/1.45');
+    expect(legacyEmbedCss).not.toContain('14px/1.45');
+    expect(deployedLegacyEmbedCss).toBe(legacyEmbedCss);
     expect(fs.existsSync(resolve(process.cwd(), 'dev-tools/import_eppp_legacy.cjs'))).toBe(true);
   });
 });

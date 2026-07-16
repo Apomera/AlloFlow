@@ -122,10 +122,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for spaceColony 1`] = `
 {
-  "buttons": 13,
-  "inputs": 6,
-  "lengthBucket": 78,
-  "sha": "505ea1ba503a8131",
+  "buttons": 16,
+  "inputs": 7,
+  "lengthBucket": 100,
+  "sha": "5cb80c5760b0aeb8",
   "svgs": 1,
 }
 `;

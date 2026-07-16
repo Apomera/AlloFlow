@@ -201,6 +201,7 @@ describe('project JSON saves', () => {
 describe('Project Settings progressive disclosure', () => {
   const defaultSettings = () => ({
     hideStudentAiFeatures: false,
+    allowStudentByokAi: false,
     allowDictation: true,
     allowSocraticTutor: true,
     allowFreeResponse: true,
@@ -251,6 +252,7 @@ describe('Project Settings progressive disclosure', () => {
     expect(html).toContain('Balanced');
     expect(html).toContain('Everyday controls');
     expect(html).toContain('Hide student AI tools');
+    expect(html).toContain('Allow students to connect their own AI provider');
     expect(html).toContain('<details');
     expect(html).toContain('Advanced lesson configuration');
     expect(html).toContain('Preferred name or codename');
@@ -273,6 +275,24 @@ describe('Project Settings progressive disclosure', () => {
     expect(toggle.props.checked).toBe(false);
     toggle.props.onChange({ target: { checked: true } });
     expect(settings.hideStudentAiFeatures).toBe(true);
+  });
+
+  it('keeps personal student AI off by default and requires an explicit teacher opt-in', () => {
+    let settings = defaultSettings();
+    const tree = ProjectSettingsView({
+      t: (key) => key,
+      studentProjectSettings: settings,
+      setStudentProjectSettings(updater) { settings = updater(settings); },
+      isTeacherMode: true,
+      handleSetIsProjectSettingsOpenToFalse() {}
+    });
+    const toggle = find(tree, (node) => node.type === 'input' && node.props.id === 'proj-allow-student-byok-ai');
+
+    expect(toggle).toBeTruthy();
+    expect(toggle.props.checked).toBe(false);
+    toggle.props.onChange({ target: { checked: true } });
+    expect(settings.allowStudentByokAi).toBe(true);
+    expect(settings.hideStudentAiFeatures).toBe(false);
   });
 
   it('applies presets without silently changing cloud-storage consent', () => {

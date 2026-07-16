@@ -14,14 +14,14 @@ beforeAll(() => {
 });
 
 describe('Praxis PLT K–6 5622 diagnostic bank', () => {
-  it('registers two ready 100-item diagnostics with the exact selected-response category proportions', () => {
+  it('registers two source diagnostics plus three guided-review banks with the exact selected-response category proportions', () => {
     expect(pack).toBeTruthy();
     expect(pack).toMatchObject({ status: 'ready', batchSize: 100, simulationItemCount: 70, simulationTimeMinutes: 70, officialSelectedResponseCount: 70, officialConstructedResponseCount: 4 });
-    expect(pack.items).toHaveLength(200);
-    expect(pack.sections).toEqual([
-      { id: 'diagnostic-batch-1', label: 'Independent 100-item diagnostic batch 1', timeMinutes: null },
-      { id: 'diagnostic-batch-2', label: 'Independent 100-item diagnostic batch 2', timeMinutes: null },
-    ]);
+    expect(pack.items).toHaveLength(500);
+    expect(pack.sections).toHaveLength(5);
+    expect(pack.sections.map((section) => section.id)).toEqual(['diagnostic-batch-1', 'diagnostic-batch-2', 'guided-review-bank-1', 'guided-review-bank-2', 'guided-review-bank-3']);
+    expect(pack.sections.map((section) => section.kind)).toEqual(['source-diagnostic', 'source-diagnostic', 'guided-review', 'guided-review', 'guided-review']);
+    expect(pack).toMatchObject({ sourceDiagnosticBatchCount: 2, guidedReviewBatchCount: 3 });
     expect(Object.fromEntries(pack.domains.map((domain) => [domain.id, domain.weight]))).toEqual({
       'students-as-learners': 0.30,
       'instructional-process': 0.30,
@@ -36,11 +36,11 @@ describe('Praxis PLT K–6 5622 diagnostic bank', () => {
     }
   });
 
-  it('keeps every item original, fully explained, source-reviewed, and chapter-linked', () => {
+  it('keeps every item original and fully explained, with the review tier stated honestly per item', () => {
     const prompts = pack.items.map((item) => item.prompt.toLowerCase().replace(/\s+/g, ' ').trim());
-    expect(new Set(prompts).size).toBe(200);
-    expect(new Set(pack.items.map((item) => item.id)).size).toBe(200);
-    for (const item of pack.items) {
+    expect(new Set(prompts).size).toBe(500);
+    expect(new Set(pack.items.map((item) => item.id)).size).toBe(500);
+    pack.items.forEach((item, index) => {
       expect(item.type).toBe('single-choice');
       expect(item.choices).toHaveLength(4);
       expect(new Set(item.choices).size).toBe(4);
@@ -48,10 +48,21 @@ describe('Praxis PLT K–6 5622 diagnostic bank', () => {
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales.every((entry) => entry.length >= 100)).toBe(true);
       expect(item.references).toContain('https://www.ets.org/pdfs/praxis/5622.pdf');
-      expect(item).toMatchObject({ reviewStatus: 'source-reviewed', qaStatus: 'qa-passed' });
+      // Two honest tiers: 200 source-reviewed questions, then 300 guided-review
+      // activities that MUST NOT claim qa-passed until experts validate them.
+      if (index < 200) expect(item).toMatchObject({ reviewStatus: 'source-reviewed', qaStatus: 'qa-passed' });
+      else expect(item).toMatchObject({ reviewStatus: 'assistant-reviewed-guided-practice-only', qaStatus: 'review-required' });
       expect(item.skillIds).toHaveLength(1);
       expect(item.chapterIds).toHaveLength(1);
-    }
+    });
+  });
+
+  it('is candid that guided activities are not independent, expert-validated exam questions', () => {
+    expect(pack.bankDisclosure).toContain('not 500 independent exam questions');
+    expect(pack.assistantReview).toMatchObject({ sourceItems: 200, guidedReviewItems: 300, verdict: 'reviewed-target-not-met' });
+    // No guided-tier item may launder into the reviewed tier.
+    expect(pack.items.filter((item) => item.qaStatus === 'qa-passed')).toHaveLength(200);
+    expect(pack.items.filter((item) => item.qaStatus === 'review-required').every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only')).toBe(true);
   });
 
   it('builds category and confidence diagnostics without inventing a scaled score or pass decision', () => {
@@ -62,7 +73,7 @@ describe('Praxis PLT K–6 5622 diagnostic bank', () => {
     for (const item of misses) answers[item.id] = (item.answerIndex + 1) % 4;
     const diagnostic = Hub.buildBatchDiagnostic(pack, answers, confidence, 0);
     const rows = Object.fromEntries(diagnostic.domainRows.map((row) => [row.id, row]));
-    expect(diagnostic).toMatchObject({ batchNumber: 1, batchCount: 2, firstQuestion: 1, lastQuestion: 100, correct: 98, total: 100, percent: 98, isFinalBatch: false });
+    expect(diagnostic).toMatchObject({ batchNumber: 1, batchCount: 5, firstQuestion: 1, lastQuestion: 100, correct: 98, total: 100, percent: 98, isFinalBatch: false });
     expect(rows['students-as-learners']).toMatchObject({ correct: 29, total: 30, missed: 1 });
     expect(rows.assessment).toMatchObject({ correct: 19, total: 20, missed: 1 });
     expect(diagnostic.feedback.join(' ')).toContain('Lowest accuracy in this batch');
@@ -83,14 +94,14 @@ describe('Praxis PLT K–6 5622 diagnostic bank', () => {
     expect(answerText).toContain('remove an access barrier without changing the essential construct');
   });
 
-  it('publishes zero-finding QA and exact deployment mirrors', () => {
+  it('publishes structurally-clean QA with honest tier counts and exact deployment mirrors', () => {
     const read = (file) => fs.readFileSync(resolve(process.cwd(), file), 'utf8');
     const qa = JSON.parse(read('test_prep/plt_k6_5622_native_qa.json'));
-    expect(qa.summary).toMatchObject({ totalItems: 200, passedItems: 200, reviewRequiredItems: 0, findings: 0, status: 'pass' });
+    expect(qa.summary).toMatchObject({ totalItems: 500, passedItems: 500, findings: 0, status: 'pass', sourceItems: 200, guidedReasoningItems: 300, contentDistinctnessStatus: 'target-not-met', assistantReviewVerdict: 'reviewed-target-not-met' });
     expect(qa.blueprint).toMatchObject({ officialSelectedResponseCount: 70, officialConstructedResponseCount: 4, officialTotalTimeMinutes: 120, recommendedSelectedResponseMinutes: 70, recommendedConstructedResponseMinutes: 50, caseAnalysis: { constructedResponseQuestions: 4, percentageOfExam: 25, caseHistories: 2 } });
-    expect(qa.diagnosticBatch).toMatchObject({ batchCount: 2, batchSize: 100, categories: { 'students-as-learners': 30, 'instructional-process': 30, assessment: 20, 'professional-development-leadership-community': 20 } });
+    expect(qa.diagnosticBatch).toMatchObject({ batchCount: 5, batchSize: 100, categories: { 'students-as-learners': 30, 'instructional-process': 30, assessment: 20, 'professional-development-leadership-community': 20 } });
     expect(qa.standard.limitation).toContain('independent practicing K–6 educator validation');
     expect(qa.standard.limitation).toContain('official constructed-response scoring');
     for (const name of ['plt_k6_5622_items.json', 'plt_k6_5622_pack.json', 'plt_k6_5622_native_qa.json', 'plt_k6_5622_native_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
-  });
-});
+  }, 20000);
+}, 20000);

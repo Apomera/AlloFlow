@@ -30,7 +30,7 @@ describe('sec-annot-escape — esc() neutralizes HTML in untrusted annotation fi
 
   it('anti-drift: both author/title innerHTML insertions are wrapped in esc()', () => {
     expect(docSrc).toContain("esc(a.authorName || 'Voice note')");      // voice expanded-header
-    expect(docSrc).toContain("'<div class=\"alloflow-anno-item-meta\">' + esc(title)"); // sidebar meta
+    expect(docSrc).toContain("'<span class=\"alloflow-anno-item-meta\">' + esc(title)"); // sidebar meta
   });
 });
 

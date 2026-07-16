@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
@@ -103,6 +103,29 @@ async function clickButton(text) {
   await act(async () => { button.click(); });
 }
 
+function expectIndependentTargetedSession(pack) {
+  const session = JSON.parse(localStorage.getItem('alloflow_test_prep_session_v1'));
+  expect(session).toMatchObject({ packId: pack.id, mode: 'targeted' });
+  expect(session.itemIds.length).toBeGreaterThan(0);
+  expect(session.itemIds.length).toBeLessThanOrEqual(20);
+  const byId = new Map(pack.items.map((item) => [item.id, item]));
+  expect(session.itemIds.every((id) => {
+    const item = byId.get(id);
+    return item && item.examItemStatus !== 'not-approved-as-independent-exam-item';
+  })).toBe(true);
+  expect(host.textContent).toContain('Question 1 of ' + session.itemIds.length);
+  return session;
+}
+
+function replaceWindowProperty(name, value) {
+  const descriptor = Object.getOwnPropertyDescriptor(window, name);
+  Object.defineProperty(window, name, { configurable: true, writable: true, value });
+  return () => {
+    if (descriptor) Object.defineProperty(window, name, descriptor);
+    else delete window[name];
+  };
+}
+
 async function expectNoAxeViolations(label) {
   const results = await axe.run(host, AXE_OPTIONS);
   const summary = results.violations.map((violation) =>
@@ -127,6 +150,138 @@ describe('Test Prep Hub render flow', () => {
     expect(findButton('Check answer').disabled).toBe(true);
     await expectNoAxeViolations('practice question');
   }, 30_000);
+
+  it('scales every Hub typography tier with an explicit full-surface mode', async () => {
+    await mount();
+
+    const dialog = host.querySelector('[role="dialog"]');
+    const style = host.querySelector('style[data-test-prep-accessibility-styles="true"]');
+    const toggle = findButton('Larger text');
+    expect(dialog.getAttribute('data-test-prep-text-size')).toBe('standard');
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+    expect(style).toBeTruthy();
+    for (const tier of ['text-xs', 'text-sm', 'text-base', 'text-lg', 'text-xl', 'text-2xl', 'text-3xl', 'text-4xl', 'text-5xl']) {
+      expect(style.textContent).toContain('.' + tier);
+    }
+
+    await clickButton('Larger text');
+    expect(dialog.getAttribute('data-test-prep-text-size')).toBe('large');
+    expect(findButton('Standard text').getAttribute('aria-pressed')).toBe('true');
+
+    await clickButton('Standard text');
+    expect(dialog.getAttribute('data-test-prep-text-size')).toBe('standard');
+    expect(findButton('Larger text').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('plays the shared TTS URL and lets the learner stop question audio', async () => {
+    const audio = {
+      play: vi.fn().mockResolvedValue(undefined),
+      pause: vi.fn(),
+      onplay: null,
+      onended: null,
+      onerror: null,
+    };
+    const AudioMock = vi.fn(function MockAudio(url) {
+      audio.src = url;
+      return audio;
+    });
+    const restoreAudio = replaceWindowProperty('Audio', AudioMock);
+    const callTTS = vi.fn().mockResolvedValue('blob:question-audio');
+    const addToast = vi.fn();
+
+    try {
+      await mount({ callTTS, addToast });
+      await clickButton('Open practice pack');
+      const pack = Hub.listPacks().find((candidate) => candidate.id === 'workplace-safety-foundations-demo');
+      const expectedText = pack.items[0].prompt + '. ' + pack.items[0].choices.map((choice, index) => String.fromCharCode(65 + index) + ', ' + choice).join('. ');
+
+      expect(findButton('Read question').getAttribute('aria-pressed')).toBe('false');
+      await clickButton('Read question');
+      await waitForText('Stop reading', 2_000);
+
+      expect(callTTS).toHaveBeenCalledTimes(1);
+      expect(callTTS.mock.calls[0][0]).toBe(expectedText);
+      expect(callTTS.mock.calls[0][3]).toMatchObject({ maxRetries: 2 });
+      expect(callTTS.mock.calls[0][3].signal).toBeTruthy();
+      expect(AudioMock).toHaveBeenCalledWith('blob:question-audio');
+      expect(audio.play).toHaveBeenCalledTimes(1);
+      expect(findButton('Stop reading').getAttribute('aria-pressed')).toBe('true');
+
+      await clickButton('Stop reading');
+      expect(audio.pause).toHaveBeenCalledTimes(1);
+      expect(findButton('Read question').getAttribute('aria-pressed')).toBe('false');
+      expect(addToast).toHaveBeenCalledWith('Read-aloud stopped.', 'info');
+    } finally {
+      restoreAudio();
+    }
+  });
+
+  it('falls back to browser speech when generated audio fails after playback starts', async () => {
+    const audio = { play: vi.fn().mockResolvedValue(undefined), pause: vi.fn(), onplay: null, onended: null, onerror: null };
+    const AudioMock = vi.fn(function MockAudio() { return audio; });
+    const restoreAudio = replaceWindowProperty('Audio', AudioMock);
+    const utterances = [];
+    function MockSpeechSynthesisUtterance(text) { this.text = text; utterances.push(this); }
+    const speechSynthesis = { cancel: vi.fn(), speak: vi.fn() };
+    const restoreSpeech = replaceWindowProperty('speechSynthesis', speechSynthesis);
+    const restoreUtterance = replaceWindowProperty('SpeechSynthesisUtterance', MockSpeechSynthesisUtterance);
+    const callTTS = vi.fn().mockResolvedValue('blob:question-audio');
+
+    try {
+      await mount({ callTTS });
+      await clickButton('Open practice pack');
+      await clickButton('Read question');
+      await waitForText('Stop reading', 2_000);
+      expect(typeof audio.onerror).toBe('function');
+
+      await act(async () => { audio.onerror(); });
+      expect(utterances).toHaveLength(1);
+      expect(speechSynthesis.speak).toHaveBeenCalledWith(utterances[0]);
+      expect(utterances[0].text).toBe(callTTS.mock.calls[0][0]);
+      expect(findButton('Stop reading').getAttribute('aria-pressed')).toBe('true');
+    } finally {
+      restoreUtterance();
+      restoreSpeech();
+      restoreAudio();
+    }
+  });
+
+  it.each([
+    ['returns no audio URL', () => Promise.resolve(null)],
+    ['rejects', () => Promise.reject(new Error('TTS unavailable'))],
+  ])('falls back to browser speech when shared TTS %s and surfaces speech errors', async (_label, ttsImplementation) => {
+    const utterances = [];
+    function MockSpeechSynthesisUtterance(text) {
+      this.text = text;
+      utterances.push(this);
+    }
+    const speechSynthesis = { cancel: vi.fn(), speak: vi.fn() };
+    const restoreSpeech = replaceWindowProperty('speechSynthesis', speechSynthesis);
+    const restoreUtterance = replaceWindowProperty('SpeechSynthesisUtterance', MockSpeechSynthesisUtterance);
+    const callTTS = vi.fn(ttsImplementation);
+    const addToast = vi.fn();
+
+    try {
+      await mount({ callTTS, addToast });
+      await clickButton('Open practice pack');
+      await clickButton('Read question');
+      await waitForText('Stop reading', 2_000);
+
+      expect(callTTS).toHaveBeenCalledTimes(1);
+      expect(utterances).toHaveLength(1);
+      expect(speechSynthesis.speak).toHaveBeenCalledWith(utterances[0]);
+      expect(utterances[0].text).toBe(callTTS.mock.calls[0][0]);
+
+      await act(async () => { utterances[0].onerror({ error: 'synthesis-failed' }); });
+      await waitForText('Read-aloud is unavailable in this environment.', 2_000);
+      const status = host.querySelector('p[role="status"]');
+      expect(status.className).not.toContain('sr-only');
+      expect(addToast).toHaveBeenCalledWith('Read-aloud is unavailable in this environment.', 'warning');
+    } finally {
+      restoreUtterance();
+      restoreSpeech();
+    }
+  });
 
   it('opens contextual notes and a non-predictive weekly activity plan', async () => {
     await mount();
@@ -232,6 +387,78 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('Question 1 of 20');
     await expectNoAxeViolations('custom quiz practice');
   }, 30_000);
+  it('starts an accessible EPPP Domain focus set without a skills catalog and saves its targeting metadata', async () => {
+    await mount();
+    const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
+    await act(async () => { openButtons[1].click(); });
+    await waitForText('Choose a study mode');
+
+    const domainSelect = host.querySelector('select[aria-label="Domain focus domain"]');
+    const difficultySelect = host.querySelector('select[aria-label="Domain focus difficulty"]');
+    expect(domainSelect).toBeTruthy();
+    expect(difficultySelect).toBeTruthy();
+    expect(host.querySelector('select[aria-label="Target practice skill"]')).toBeNull();
+    expect(Array.from(domainSelect.options).map((option) => option.textContent)).toContain('Assessment and diagnosis');
+
+    await act(async () => {
+      domainSelect.value = 'assessment';
+      domainSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      difficultySelect.value = 'higher-challenge';
+      difficultySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(host.textContent).toMatch(/20 of \d+ matching questions ready\./);
+    await clickButton('Start Domain focus');
+    expect(host.textContent).toContain('Domain focus: Assessment and diagnosis');
+    expect(host.textContent).toContain('intermediate and advanced');
+    expect(host.textContent).toContain('Question 1 of 20');
+
+    const session = JSON.parse(localStorage.getItem('alloflow_test_prep_session_v1'));
+    expect(session).toMatchObject({
+      packId: 'eppp-part-one',
+      mode: 'targeted',
+      targetDomainId: 'assessment',
+      targetDifficulties: ['intermediate', 'advanced'],
+    });
+    expect(session.itemIds).toHaveLength(20);
+    await expectNoAxeViolations('EPPP Domain focus practice');
+  }, 30_000);
+
+  it('opens the future EPPP preview at study options and targets any future domain without skill tags', async () => {
+    await mount();
+    const previewCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('2027 Blueprint Preview'));
+    expect(previewCard).toBeTruthy();
+    const openButton = Array.from(previewCard.querySelectorAll('button')).find((button) => button.textContent.includes('Open preview pack'));
+    expect(openButton).toBeTruthy();
+    await act(async () => { openButton.click(); });
+    await waitForText('Choose a study mode');
+
+    const domainSelect = host.querySelector('select[aria-label="Domain focus domain"]');
+    const difficultySelect = host.querySelector('select[aria-label="Domain focus difficulty"]');
+    expect(Array.from(domainSelect.options).map((option) => option.value).filter(Boolean)).toEqual([
+      'scientific-orientation',
+      'assessment',
+      'intervention',
+      'consultation-supervision',
+      'interpersonal-relationships',
+      'ethical-professional-practice',
+    ]);
+    expect(host.querySelector('select[aria-label="Target practice skill"]')).toBeNull();
+    await act(async () => {
+      domainSelect.value = 'ethical-professional-practice';
+      domainSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      difficultySelect.value = 'advanced';
+      difficultySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(host.textContent).toContain('4 of 4 matching questions ready.');
+    await clickButton('Start Domain focus');
+    expect(host.textContent).toContain('Domain focus: Ethical and Professional Practice');
+    expect(host.textContent).toContain('Question 1 of 4');
+    expect(host.textContent).toContain('Unofficial integrated 2027 blueprint practice');
+    const session = JSON.parse(localStorage.getItem('alloflow_test_prep_session_v1'));
+    expect(session).toMatchObject({ packId: 'eppp-integrated-2027-preview', targetDomainId: 'ethical-professional-practice', targetDifficulties: ['advanced'] });
+    await expectNoAxeViolations('future EPPP Domain focus');
+  }, 30_000);
+
   it('browses, filters, and opens the native EPPP learning catalog', async () => {
     await mount();
     const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
@@ -250,7 +477,7 @@ describe('Test Prep Hub render flow', () => {
     expect(chapterCard).toBeTruthy();
     await expectNoAxeViolations('learning library catalog');
     await act(async () => { chapterCard.querySelector('button').click(); });
-    const frame = host.querySelector('iframe[title="Selected EPPP chapter workspace"]');
+    const frame = host.querySelector('iframe[title="Selected EPPP chapter"]');
     expect(frame).toBeTruthy();
     expect(frame.getAttribute('src')).toContain('page=textbook#ch-4');
   }, 30_000);
@@ -296,7 +523,7 @@ describe('Test Prep Hub render flow', () => {
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'parapro-1755-practice-1');
     await clickButton('Start Practice Bank 2');
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -335,7 +562,7 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: Main Ideas, Details, and Evidence');
-    expect(host.textContent).toContain('Question 1 of ' + Math.min(20, pack.items.filter((item) => item.skillIds.includes('reading-main-evidence')).length));
+    expectIndependentTargetedSession(pack);
   }, 30_000);
 
   it('uses 5355 diagnostics, timed simulation, and native special-education learning', async () => {
@@ -352,7 +579,7 @@ describe('Test Prep Hub render flow', () => {
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-special-education-5355');
     await clickButton('Start Practice Bank 2');
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -390,7 +617,7 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: Development, Context, and Learner Variability');
-    expect(host.textContent).toContain('Question 1 of 18');
+    expectIndependentTargetedSession(pack);
   }, 30_000);
 
   it('uses 5422 diagnostics, timed simulation, and native school-counselor learning', async () => {
@@ -407,7 +634,7 @@ describe('Test Prep Hub render flow', () => {
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-school-counselor-5422');
     await clickButton('Start Practice Bank 2');
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -445,7 +672,7 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: School Counselor Role, Identity, and Program Foundations');
-    expect(host.textContent).toContain('Question 1 of 16');
+    expectIndependentTargetedSession(pack);
   }, 30_000);
 
   it('uses 5403 diagnostics, timed simulation, and native school-psychologist learning', async () => {
@@ -462,7 +689,7 @@ describe('Test Prep Hub render flow', () => {
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-school-psychologist-5403');
     await clickButton('Start Practice Bank 2');
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -500,7 +727,7 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: Problem Solving, Multimethod Assessment, and Data Integration');
-    expect(host.textContent).toContain('Question 1 of 20');
+    expectIndependentTargetedSession(pack);
   }, 30_000);
 
   it('uses 5331 diagnostics, timed simulation, and native SLP learning', async () => {
@@ -517,7 +744,7 @@ describe('Test Prep Hub render flow', () => {
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-speech-language-pathology-5331');
     await clickButton('Start Practice Bank 2');
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -555,7 +782,7 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: Anatomy, Physiology, Development, and Scientific Foundations');
-    expect(host.textContent).toContain('Question 1 of 18');
+    expectIndependentTargetedSession(pack);
   }, 30_000);
 
   it('uses 5343 diagnostics, timed simulation, and native audiology learning', async () => {
@@ -572,7 +799,7 @@ describe('Test Prep Hub render flow', () => {
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-audiology-5343');
     await clickButton('Start Practice Bank 2');
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -610,7 +837,7 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: Auditory Anatomy, Physiology, Acoustics, and Instrumentation');
-    expect(host.textContent).toContain('Question 1 of 20');
+    expectIndependentTargetedSession(pack);
   }, 30_000);
 
   it('uses 5302 diagnostics, mixed-format guidance, response workshops, and native reading-specialist learning', async () => {
@@ -627,7 +854,7 @@ describe('Test Prep Hub render flow', () => {
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-reading-specialist-5302');
     await clickButton('Start Practice Bank 2');
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain(pack.items[100].prompt);
     await clickButton('Practice options');
     await waitForText('Resume saved practice');
@@ -662,7 +889,7 @@ describe('Test Prep Hub render flow', () => {
     expect(firstCheck.textContent).toContain('Literacy components develop');
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: Literacy Foundations, Development, and Learner Profiles');
-    expect(host.textContent).toContain('Question 1 of 16');
+    expectIndependentTargetedSession(pack);
   }, 30_000);
 
   it('uses 5412 diagnostics, timed simulation, and native educational-leadership learning', async () => {
@@ -680,7 +907,7 @@ describe('Test Prep Hub render flow', () => {
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-educational-leadership-5412');
     await clickButton('Start Practice Bank 2');
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -715,7 +942,7 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: Mission, Vision, Goals, and Core Values');
-    expect(host.textContent).toContain('Question 1 of 18');
+    expectIndependentTargetedSession(pack);
   }, 30_000);
 
 
@@ -735,7 +962,7 @@ describe('Test Prep Hub render flow', () => {
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-plt-k6-5622');
     await clickButton('Start Practice Bank 2');
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -775,7 +1002,7 @@ describe('Test Prep Hub render flow', () => {
     expect(firstCheck.textContent).toContain('Schema influences');
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: Learning Theory, Cognition, and Transfer');
-    expect(host.textContent).toContain('Question 1 of 16');
+    expectIndependentTargetedSession(pack);
   }, 30_000);
 
 
@@ -796,7 +1023,7 @@ describe('Test Prep Hub render flow', () => {
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-core-5752');
     expect(pack.officialSubtests).toHaveLength(3);
     await clickButton('Start Practice Bank 2');
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -837,7 +1064,7 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: Main Ideas, Details, and Inferences');
-    expect(host.textContent).toContain('Question 1 of 20');
+    expectIndependentTargetedSession(pack);
   }, 30_000);
 
 
@@ -856,7 +1083,7 @@ describe('Test Prep Hub render flow', () => {
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-esol-5362');
     await clickButton('Start Practice Bank 2');
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -894,11 +1121,11 @@ describe('Test Prep Hub render flow', () => {
     expect(firstCheck.textContent).toContain('Correct');
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: Phonology, Morphology, Syntax, and Language Structure');
-    expect(host.textContent).toContain('Question 1 of 18');
+    expectIndependentTargetedSession(pack);
   }, 30_000);
 
 
-  it('opens the native EPPP pilot and the complete guarded legacy workspace', async () => {
+  it('keeps internal migration records out of the EPPP learner experience', async () => {
 
     await mount();
     const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
@@ -912,34 +1139,12 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain('Question bank item 1 of 1500');
     expect(host.textContent).toContain('1,500 source-reviewed practice items');
-    expect(host.textContent).toContain('Legacy source lead');
-    expect(host.textContent).toContain('Source reviewed');
-    expect(host.textContent).toContain('Independent expert review pending');
+    expect(host.textContent).toContain('Source review recorded');
+    expect(host.textContent).toContain('Independent professional and psychometric validation is separate');
     expect(host.querySelector('a[href*="eppp_native_qa.md"]')).toBeTruthy();
-    expect(host.textContent).toContain('Open complete legacy workspace');
-    await waitForText('2,933');
-    expect(host.textContent).toContain('Legacy-bank migration audit');
-    expect(host.textContent).toContain('2,933');
-    expect(host.textContent).toContain('28.2%');
-    expect(host.textContent).toContain('B · 86.3%');
-    expect(host.textContent).toContain('Legacy learning-library inventory');
-    expect(host.textContent).toContain('415');
-    expect(host.textContent).toContain('255');
-    expect(host.textContent).toContain('1,583');
-    expect(host.textContent).toContain('1,443 / 2,933 legacy items');
-    expect(host.textContent).toContain('All 2,933 legacy questions are in the review universe');
-    expect(host.querySelector('a[href*="content_inventory.md"]')).toBeTruthy();
-    expect(host.querySelector('a[href*="review_ledger.md"]')).toBeTruthy();
-    expect(host.querySelector('a[href*="curation_500.md"]')).toBeTruthy();
-    expect(host.querySelectorAll('input[type="radio"]')).toHaveLength(4);
-
-    await clickButton('Open complete legacy workspace');
-    const frame = host.querySelector('iframe[title="Pass the EPPP legacy workspace"]');
-    expect(frame).toBeTruthy();
-    expect(frame.getAttribute('src')).toContain('test_prep/eppp_legacy/index.html');
-    expect(host.querySelectorAll('input[type="radio"]')).toHaveLength(0);
-
-    await clickButton('Return to native pilot');
+    expect(host.textContent.toLowerCase()).not.toContain('legacy');
+    expect(host.textContent).not.toContain('Migration provenance');
+    expect(host.querySelector('iframe[title*="legacy"]')).toBeNull();
     expect(host.querySelectorAll('input[type="radio"]')).toHaveLength(4);
 
     const eppp = Hub.listPacks().find((candidate) => candidate.id === 'eppp-part-one');
@@ -960,12 +1165,15 @@ describe('Test Prep Hub render flow', () => {
     }
     expect(host.textContent).toContain('Question 9 of 100');
     const migratedRadios = Array.from(host.querySelectorAll('input[type="radio"]'));
-    await act(async () => { migratedRadios[eppp.items[8].answerIndex].click(); });
+    const migratedWrongAnswer = (eppp.items[8].answerIndex + 1) % eppp.items[8].choices.length;
+    await act(async () => { migratedRadios[migratedWrongAnswer].click(); });
     await clickButton('Check answer');
-    expect(host.textContent).toContain('Migration provenance');
-    expect(host.textContent).toContain('legacy-313b8d365ea7d566');
+    expect(host.textContent).not.toContain('Migration provenance');
+    expect(host.textContent).not.toContain('legacy-313b8d365ea7d566');
     expect(host.textContent).not.toContain('Content QA passed.');
-    expect(host.textContent).not.toContain('Why the other options do not fit');
+    expect(host.textContent).toContain('Your answer:');
+    expect(host.textContent).toContain('Supported answer:');
+    expect(host.textContent).toContain('Why the other options do not fit');
     await expectNoAxeViolations('EPPP migrated item');
   }, 30_000);
 

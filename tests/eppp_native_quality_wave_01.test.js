@@ -39,7 +39,8 @@ describe('EPPP native quality repair wave 01', () => {
       expect(mojibake.test(instructionalText), item.id).toBe(false);
       expect(staleKey.test(instructionalText), item.id).toBe(false);
       expect(stackedModifiers.test(instructionalText), item.id).toBe(false);
-      expect(item.qaReviewedAt).toBe('2026-07-15');
+      expect(item.qaReviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(Date.parse(item.qaReviewedAt + 'T00:00:00Z')).toBeGreaterThanOrEqual(Date.parse('2026-07-15T00:00:00Z'));
     }
   });
 

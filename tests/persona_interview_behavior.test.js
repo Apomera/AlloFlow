@@ -5,7 +5,8 @@ import vm from 'node:vm';
 const personaSource = fs.readFileSync('personas_source.jsx', 'utf8');
 
 function createHarness({ personaState, resource, callGemini, callGeminiImageEdit, isPersonaFreeResponse = true }) {
-  const safety = { aiCheck: vi.fn() };
+  const safety = { aiCheck: vi.fn(), check: vi.fn(() => []) };
+  const safetyFlagHandler = vi.fn();
   const scoreUpdates = [];
   const toasts = [];
   const historyStart = [{ ...resource }];
@@ -89,7 +90,7 @@ function createHarness({ personaState, resource, callGemini, callGeminiImageEdit
     t: (key) => key,
     handleScoreUpdate: (...args) => scoreUpdates.push(args),
     playSound: vi.fn(),
-    handleAiSafetyFlag: vi.fn(),
+    handleAiSafetyFlag: safetyFlagHandler,
     callImagen: vi.fn(),
     resilientJsonParse: async (text) => JSON.parse(text),
   });
@@ -108,6 +109,7 @@ function createHarness({ personaState, resource, callGemini, callGeminiImageEdit
   return {
     api,
     safety,
+    safetyFlagHandler,
     scoreUpdates,
     toasts,
     get state() { return state; },
@@ -147,7 +149,7 @@ describe('Persona interview state integrity', () => {
         selectedCharacters: [],
         chatHistory: [{ role: 'model', text: 'Hola' }],
         avatarUrl: candidate.avatarUrl,
-        suggestions: [],
+        suggestions: ['Pregunta'],
         panelSuggestions: [],
         isLoading: false,
         harmonyScore: 10,
@@ -167,7 +169,7 @@ describe('Persona interview state integrity', () => {
       isPersonaFreeResponse: false,
     });
 
-    await harness.api.handlePersonaChatSubmit('Pregunta');
+    await harness.api.handlePersonaChatSubmit('Pregunta', true);
     expect(harness.generated.data[0].chatHistory).toHaveLength(3);
     expect(harness.generated.data[0].rapport).toBe(15);
     expect(harness.generated.data[0].quests[0].isCompleted).toBe(true);
@@ -190,7 +192,108 @@ describe('Persona interview state integrity', () => {
     expect(harness.safety.aiCheck).toHaveBeenCalledWith('Pregunta', 'persona', 'test-key', expect.any(Function));
   });
 
-  it('safety-checks panel input, bounds model deltas, and persists both panelists on close', async () => {
+  it('invalidates a late reply when a different interview opens', async () => {
+    let resolveReply;
+    const pendingReply = new Promise((resolve) => { resolveReply = resolve; });
+    const ada = { name: 'Ada', role: 'Mathematician', greeting: 'Hello', avatarUrl: 'data:image/png;base64,AAAA', rapport: 10, quests: [] };
+    const grace = { name: 'Grace', role: 'Computer scientist', greeting: 'Welcome', avatarUrl: 'data:image/png;base64,BBBB', rapport: 20, quests: [] };
+    const resource = { id: 'persona-race', type: 'persona', data: [ada, grace] };
+    const harness = createHarness({
+      personaState: { mode: 'single', options: [ada, grace], selectedCharacter: ada, selectedCharacters: [], chatHistory: [{ role: 'model', text: 'Hello' }], avatarUrl: ada.avatarUrl, suggestions: [], panelSuggestions: [], isLoading: false, harmonyScore: 10, earnedBadges: [] },
+      resource,
+      callGemini: vi.fn(() => pendingReply),
+      callGeminiImageEdit: vi.fn(),
+    });
+
+    const oldRequest = harness.api.handlePersonaChatSubmit('Old question');
+    harness.api.handleClosePersonaChat();
+    await harness.api.handleSelectPersona(grace);
+    resolveReply(JSON.stringify({ response: 'Late Ada answer', rapportChange: 20 }));
+    await oldRequest;
+
+    expect(harness.state.selectedCharacter.name).toBe('Grace');
+    expect(harness.state.chatHistory).toEqual([{ role: 'model', text: 'Welcome' }]);
+    expect(harness.state.selectedCharacter.rapport).toBe(20);
+    expect(harness.scoreUpdates).toHaveLength(0);
+  });
+
+  it('enforces multiple-choice mode inside the submit handler', async () => {
+    const character = { name: 'Ada', role: 'Mathematician', greeting: 'Hello', avatarUrl: 'data:image/png;base64,AAAA', rapport: 10, quests: [] };
+    const gemini = vi.fn()
+      .mockResolvedValueOnce(JSON.stringify({ response: 'Answer', rapportChange: 0 }))
+      .mockResolvedValueOnce('[]');
+    const harness = createHarness({
+      personaState: { mode: 'single', selectedCharacter: character, selectedCharacters: [], chatHistory: [{ role: 'model', text: 'Hello' }], avatarUrl: character.avatarUrl, suggestions: ['Allowed question'], panelSuggestions: [], isLoading: false, harmonyScore: 10, earnedBadges: [] },
+      resource: { id: 'persona-mc', type: 'persona', data: [character] },
+      callGemini: gemini,
+      callGeminiImageEdit: vi.fn(),
+      isPersonaFreeResponse: false,
+    });
+
+    await harness.api.handlePersonaChatSubmit('Injected arbitrary text');
+    expect(gemini).not.toHaveBeenCalled();
+    expect(harness.safety.aiCheck).not.toHaveBeenCalled();
+    expect(harness.toasts.at(-1)).toEqual(['persona.panel_choose_response', 'warning']);
+
+    await harness.api.handlePersonaChatSubmit('Allowed question', true);
+    expect(gemini).toHaveBeenCalled();
+    expect(harness.safety.aiCheck).toHaveBeenCalledWith('Allowed question', 'persona', 'test-key', expect.any(Function));
+  });
+
+  it('preserves panel choices until core accepts one, then clears them with the claimed turn', async () => {
+    let resolveReply;
+    const pendingReply = new Promise((resolve) => { resolveReply = resolve; });
+    const charA = { name: 'A', role: 'Leader', greeting: 'Hello', rapport: 20, quests: [] };
+    const charB = { name: 'B', role: 'Writer', greeting: 'Welcome', rapport: 20, quests: [] };
+    const panelSuggestions = [
+      { text: 'Support A', tier: 'supportive' },
+      { text: 'Support B', tier: 'supportive' },
+      { text: 'Challenge A', tier: 'challenging' },
+      { text: 'Challenge B', tier: 'challenging' },
+      { text: 'Compare both', tier: 'neutral' },
+      { text: 'Find evidence', tier: 'neutral' },
+    ];
+    const gemini = vi.fn().mockImplementationOnce(() => pendingReply).mockResolvedValueOnce('[]');
+    const harness = createHarness({
+      personaState: {
+        mode: 'panel', selectedCharacter: charA, selectedCharacters: [charA, charB],
+        chatHistory: [{ role: 'model', speakerName: 'A', text: 'Hello' }],
+        avatarUrl: null, suggestions: [], panelSuggestions, isLoading: false,
+        harmonyScore: 10, earnedBadges: [],
+      },
+      resource: { id: 'persona-panel-mc', type: 'persona', data: [charA, charB] },
+      callGemini: gemini,
+      callGeminiImageEdit: vi.fn(),
+      isPersonaFreeResponse: false,
+    });
+
+    await harness.api.handlePanelChatSubmit('Injected arbitrary text');
+    expect(gemini).not.toHaveBeenCalled();
+    expect(harness.state.panelSuggestions).toEqual(panelSuggestions);
+    expect(harness.state.isLoading).toBe(false);
+
+    const acceptedTurn = harness.api.handlePanelChatSubmit('Compare both', true);
+    expect(gemini).toHaveBeenCalledTimes(1);
+    expect(harness.state.panelSuggestions).toEqual([]);
+    expect(harness.state.isLoading).toBe(true);
+    expect(harness.state.chatHistory.at(-1)).toEqual({ role: 'user', text: 'Compare both' });
+
+    resolveReply(JSON.stringify({
+      dialogue: [
+        { speaker: 'A', text: 'A response' },
+        { speaker: 'B', text: 'B response' },
+      ],
+      updates: {
+        charA: { rapportChange: 0 },
+        charB: { rapportChange: 0 },
+        harmony: { scoreChange: 0 },
+      },
+    }));
+    await acceptedTurn;
+    expect(harness.state.isLoading).toBe(false);
+  });
+
+  it('safety-checks panel input, bounds model deltas, sanitizes dialogue, and persists both panelists on close', async () => {
     const charA = {
       name: 'A',
       role: 'Leader',
@@ -236,6 +339,8 @@ describe('Persona interview state integrity', () => {
       callGemini: vi.fn().mockResolvedValue(JSON.stringify({
         dialogue: [
           { speaker: 'A', text: 'Respuesta A', translation: 'Answer A' },
+          { speaker: 'Unknown', text: 'Injected speaker' },
+          { speaker: 'B', text: '   ' },
           { speaker: 'B', text: 'Respuesta B', translation: 'Answer B' },
         ],
         updates: {
@@ -257,6 +362,7 @@ describe('Persona interview state integrity', () => {
     expect(harness.state.selectedCharacters[0].accumulatedXP).toBe(90);
     expect(harness.state.selectedCharacters[1].accumulatedXP).toBe(50);
     expect(harness.state.chatHistory.at(-1).translation).toBe('Answer B');
+    expect(harness.state.chatHistory.some((message) => message.speakerName === 'Unknown')).toBe(false);
 
     harness.api.handleClosePersonaChat();
     const savedA = harness.generated.data.find((item) => item.name === 'A');
@@ -272,20 +378,101 @@ describe('Persona interview state integrity', () => {
     expect(harness.generated.title).toBe(resource.title);
     expect(harness.isOpen).toBe(false);
   });
+
+  it('deduplicates rapid duplicate submissions before React state catches up', async () => {
+    let resolveReply;
+    const pendingReply = new Promise((resolve) => { resolveReply = resolve; });
+    const character = { name: 'Ada', role: 'Mathematician', avatarUrl: null, rapport: 10, quests: [] };
+    const gemini = vi.fn().mockImplementationOnce(() => pendingReply).mockResolvedValueOnce('[]');
+    const harness = createHarness({
+      personaState: { mode: 'single', selectedCharacter: character, selectedCharacters: [], chatHistory: [], avatarUrl: null, suggestions: [], panelSuggestions: [], isLoading: false, harmonyScore: 10, earnedBadges: [] },
+      resource: { id: 'persona-dedupe', type: 'persona', data: [character] },
+      callGemini: gemini,
+      callGeminiImageEdit: vi.fn(),
+    });
+
+    const first = harness.api.handlePersonaChatSubmit('One question');
+    const duplicate = harness.api.handlePersonaChatSubmit('One question');
+    expect(gemini).toHaveBeenCalledTimes(1);
+    resolveReply(JSON.stringify({ response: 'One answer', rapportChange: 0 }));
+    await Promise.all([first, duplicate]);
+    expect(harness.state.chatHistory.filter(message => message.role === 'user')).toHaveLength(1);
+  });
+
+  it('keeps only the newest portrait reaction when image edits resolve out of order', async () => {
+    let resolveFirst;
+    let resolveSecond;
+    const character = { name: 'Ada', role: 'Mathematician', avatarUrl: 'data:image/png;base64,AAAA', rapport: 10, quests: [] };
+    const imageEdit = vi.fn()
+      .mockImplementationOnce(() => new Promise(resolve => { resolveFirst = resolve; }))
+      .mockImplementationOnce(() => new Promise(resolve => { resolveSecond = resolve; }));
+    const harness = createHarness({
+      personaState: { mode: 'single', selectedCharacter: character, selectedCharacters: [], chatHistory: [], avatarUrl: character.avatarUrl, suggestions: [], panelSuggestions: [], isLoading: false, harmonyScore: 10, earnedBadges: [] },
+      resource: { id: 'persona-reactions', type: 'persona', data: [character] },
+      callGemini: vi.fn(),
+      callGeminiImageEdit: imageEdit,
+    });
+
+    const first = harness.api.updatePersonaReaction('first expression');
+    const second = harness.api.updatePersonaReaction('newest expression');
+    resolveSecond('data:image/png;base64,SECOND');
+    await second;
+    resolveFirst('data:image/png;base64,FIRST');
+    await first;
+    expect(harness.state.avatarUrl).toBe('data:image/png;base64,SECOND');
+    expect(harness.generated.data[0].avatarUrl).toBe('data:image/png;base64,SECOND');
+  });
+
+  it('records synchronous local safety flags before the async safety check', async () => {
+    const character = { name: 'Ada', role: 'Mathematician', avatarUrl: null, rapport: 10, quests: [] };
+    const harness = createHarness({
+      personaState: { mode: 'single', selectedCharacter: character, selectedCharacters: [], chatHistory: [], avatarUrl: null, suggestions: [], panelSuggestions: [], isLoading: false, harmonyScore: 10, earnedBadges: [] },
+      resource: { id: 'persona-safety', type: 'persona', data: [character] },
+      callGemini: vi.fn().mockResolvedValueOnce(JSON.stringify({ response: 'Safe reply', rapportChange: 0 })).mockResolvedValueOnce('[]'),
+      callGeminiImageEdit: vi.fn(),
+    });
+    harness.safety.check.mockReturnValue([{ type: 'critical', reason: 'local match' }]);
+    await harness.api.handlePersonaChatSubmit('critical phrase');
+    expect(harness.safetyFlagHandler).toHaveBeenCalledWith(expect.objectContaining({ type: 'critical', source: 'persona' }));
+    expect(harness.safety.aiCheck).toHaveBeenCalled();
+  });
 });
 
 describe('Persona persistence contracts', () => {
   it('uses project-safe resource types and scoped, size-capped resume snapshots', () => {
     const viewSource = fs.readFileSync('view_persona_chat_source.jsx', 'utf8');
     const reflectionSource = fs.readFileSync('phase_k_helpers_source.jsx', 'utf8');
+    const appSource = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+    const uiStrings = fs.readFileSync('ui_strings.js', 'utf8');
     expect(personaSource).toContain("type: 'persona-transcript'");
     expect(reflectionSource).toContain("type: 'persona-reflection'");
     expect(viewSource).toContain("resourceId: _personaSnapshotResourceId");
-    expect(viewSource).toContain('var _personaSnapshotEnabled = Boolean(_personaSnapshotResourceId && _personaSnapshotStudentId)');
+    expect(viewSource).toContain('var _personaSnapshotEnabled = Boolean(_personaSnapshotResourceId && _personaSnapshotStudentId && _personaRetentionDays > 0)');
+    expect(viewSource).toContain('_hashPersonaScope');
+    expect(viewSource).toContain("localStorage.getItem('allo_persona_resume_days')");
+    expect(viewSource).toContain("chatHistory: (st.chatHistory || []).slice(-80)");
     expect(viewSource).not.toContain("studentNickname || 'anonymous'");
     expect(viewSource).toContain("copy.avatarUrl.length >= 300000");
     expect(viewSource).toContain("delete copy.chatHistory");
     expect(viewSource).toContain("_handleCloseAndClearSnapshot");
-    expect(viewSource).not.toContain("ds.remove('persona_sessions', 'active')");
+    expect(viewSource).toContain("ds.remove('persona_sessions', 'active')");
+    const editorStart = appSource.indexOf('const [personaTeacherEditor, setPersonaTeacherEditor] = useState(null)');
+    const editorEnd = appSource.indexOf('const [showLedger, setShowLedger]', editorStart);
+    const editorContract = appSource.slice(editorStart, editorEnd);
+    expect(editorStart).toBeGreaterThanOrEqual(0);
+    expect(editorContract).toContain('useFocusTrap(personaTeacherEditorRef, Boolean(personaTeacherEditor)');
+    expect(editorContract).toContain('const openPersonaTeacherEditor =');
+    expect(editorContract).toContain('const savePersonaTeacherEditor =');
+    expect(editorContract).toContain("guardrailsSource: 'teacher'");
+    expect(editorContract).toContain('Math.max(0, Math.min(100, Math.round(parsedDifficulty)))');
+    expect(editorContract).toContain('isCompleted: existing.isCompleted === true');
+    expect(editorContract).toContain('setGeneratedContent(nextResource)');
+    expect(editorContract).toContain('setHistory(prev => prev.map(item => item.id === generatedContent.id ? nextResource : item))');
+    expect(appSource).toContain('isTeacherMode && personaTeacherEditor && (');
+    expect(appSource).toContain('onClick={savePersonaTeacherEditor}');
+    expect(appSource).toContain("clearNamespace('persona_sessions')");
+    expect(appSource).toContain("t('persona.resume_retention')");
+    expect(uiStrings).toContain('\"simulation_disclaimer\"');
+    expect(uiStrings).toContain('\"ai_feedback\"');
   });
-});
+});

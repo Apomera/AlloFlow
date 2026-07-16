@@ -53,7 +53,7 @@ describe('ParaPro native learning library', () => {
   it('links every one of the 200 questions to exactly one compatible skill and chapter', () => {
     const skillById = Object.fromEntries(library.skills.map((skill) => [skill.id, skill]));
     const chapterById = Object.fromEntries(library.chapters.map((chapter) => [chapter.id, chapter]));
-    expect(pack.items).toHaveLength(200);
+    expect(pack.items).toHaveLength(500);
     for (const item of pack.items) {
       expect(item.skillIds).toHaveLength(1);
       expect(item.chapterIds).toHaveLength(1);

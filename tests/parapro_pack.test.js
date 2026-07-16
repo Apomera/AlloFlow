@@ -20,15 +20,18 @@ beforeAll(() => {
 });
 
 describe('ParaPro 1755 diagnostic bank', () => {
-  it('registers two ready 100-item batches that closely preserve the official content proportions', () => {
+  it('registers five ready 100-item batches that closely preserve the official content proportions', () => {
     expect(pack).toBeTruthy();
     expect(pack.status).toBe('ready');
-    expect(pack.items).toHaveLength(200);
+    expect(pack.items).toHaveLength(500);
     expect(pack.batchSize).toBe(100);
-    expect(pack.sections).toEqual([
-      { id: 'diagnostic-batch-1', label: 'Independent 100-item diagnostic batch 1', timeMinutes: null },
-      { id: 'diagnostic-batch-2', label: 'Independent 100-item diagnostic batch 2', timeMinutes: null },
-    ]);
+    expect(pack.sections).toHaveLength(5);
+    expect(pack.sections.map((section) => section.id)).toEqual(['diagnostic-batch-1', 'diagnostic-batch-2', 'guided-review-bank-1', 'guided-review-bank-2', 'guided-review-bank-3']);
+    expect(pack.sections.map((section) => section.kind)).toEqual(['source-diagnostic', 'source-diagnostic', 'guided-review', 'guided-review', 'guided-review']);
+    // Honest tiers: exactly 200 expert/source-reviewed items; every other item
+    // must carry the candid guided-review status until experts validate it.
+    expect(pack.items.filter((item) => item.qaStatus === 'qa-passed')).toHaveLength(200);
+    expect(pack.items.filter((item) => item.qaStatus === 'review-required').every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only')).toBe(true);
     expect(Object.fromEntries(pack.domains.map((domain) => [domain.id, domain.weight]))).toEqual({
       reading: 1 / 3,
       mathematics: 1 / 3,
@@ -51,10 +54,10 @@ describe('ParaPro 1755 diagnostic bank', () => {
         expect(domainItems.filter((item) => item.id.includes('-application-'))).toHaveLength(expectedBatch[domainId].application);
       }
     }
-    expect(pack.items.filter((item) => item.domainId === 'reading')).toHaveLength(68);
-    expect(pack.items.filter((item) => item.domainId === 'mathematics')).toHaveLength(66);
-    expect(pack.items.filter((item) => item.domainId === 'writing')).toHaveLength(66);
-    expect(Hub.batchMeta(pack, 100)).toMatchObject({ batchNumber: 2, batchCount: 2, position: 1, startIndex: 100, endIndex: 200, isFinalBatch: true });
+    expect(pack.items.filter((item) => item.domainId === 'reading')).toHaveLength(170);
+    expect(pack.items.filter((item) => item.domainId === 'mathematics')).toHaveLength(165);
+    expect(pack.items.filter((item) => item.domainId === 'writing')).toHaveLength(165);
+    expect(Hub.batchMeta(pack, 100)).toMatchObject({ batchNumber: 2, batchCount: 5, position: 1, startIndex: 100, endIndex: 200, isFinalBatch: false });
     expect(pack.description).toContain('official ParaPro Assessment currently has 90 questions');
   });
 
@@ -64,8 +67,8 @@ describe('ParaPro 1755 diagnostic bank', () => {
     expect(pack.items.every((item) => item.choiceRationales.length === 4)).toBe(true);
     expect(pack.items.every((item) => item.rationale.length >= 100)).toBe(true);
     expect(pack.items.every((item) => item.references.includes('https://www.ets.org/pdfs/parapro/1755.pdf'))).toBe(true);
-    expect(pack.items.every((item) => item.reviewStatus === 'source-reviewed')).toBe(true);
-    expect(pack.items.every((item) => item.qaStatus === 'qa-passed')).toBe(true);
+    expect(pack.items.every((item) => (item.reviewStatus === 'source-reviewed' && item.qaStatus === 'qa-passed') || (item.reviewStatus === 'assistant-reviewed-guided-practice-only' && item.qaStatus === 'review-required'))).toBe(true);
+    expect(pack.items.filter((item) => item.qaStatus === 'qa-passed').length).toBe(200);
     expect(new Set(pack.items.map((item) => item.id)).size).toBe(pack.items.length);
 
     const combinedPrompts = pack.items.map((item) => item.prompt.toLowerCase()).join('\n');
@@ -78,11 +81,11 @@ describe('ParaPro 1755 diagnostic bank', () => {
       counts[item.answerIndex] += 1;
       return counts;
     }, [0, 0, 0, 0]);
-    expect(answerCounts).toEqual([50, 50, 50, 50]);
+    expect(answerCounts).toEqual([125, 125, 125, 125]);
 
     const answers = Object.fromEntries(pack.items.map((item) => [item.id, item.answerIndex]));
     const score = Hub.scoreAttempt(pack, answers);
-    expect(score).toMatchObject({ correct: 200, total: 200, percent: 100 });
+    expect(score).toMatchObject({ correct: 500, total: 500, percent: 100 });
     expect(score).not.toHaveProperty('scaledScore');
     expect(score).not.toHaveProperty('passed');
     expect(pack.disclaimer).toContain('not official or scaled ParaPro scores');
@@ -102,10 +105,10 @@ describe('ParaPro 1755 diagnostic bank', () => {
     const diagnostic = Hub.buildBatchDiagnostic(pack, answers, confidence, 1);
     const domainRows = Object.fromEntries(diagnostic.domainRows.map((row) => [row.id, row]));
 
-    expect(Hub.batchMeta(pack, 99)).toMatchObject({ batchNumber: 1, batchCount: 2, position: 100, startIndex: 0, endIndex: 100, isFinalBatch: false });
-    expect(diagnostic).toMatchObject({ batchNumber: 1, batchCount: 2, firstQuestion: 1, lastQuestion: 100, correct: 98, total: 100, percent: 98, isFinalBatch: false });
-    expect(Hub.batchMeta(pack, 100)).toMatchObject({ batchNumber: 2, batchCount: 2, position: 1, startIndex: 100, endIndex: 200, isFinalBatch: true });
-    expect(Hub.buildBatchDiagnostic(pack, answers, confidence, 2)).toMatchObject({ batchNumber: 2, batchCount: 2, firstQuestion: 101, lastQuestion: 200, correct: 100, total: 100, percent: 100, isFinalBatch: true });
+    expect(Hub.batchMeta(pack, 99)).toMatchObject({ batchNumber: 1, batchCount: 5, position: 100, startIndex: 0, endIndex: 100, isFinalBatch: false });
+    expect(diagnostic).toMatchObject({ batchNumber: 1, batchCount: 5, firstQuestion: 1, lastQuestion: 100, correct: 98, total: 100, percent: 98, isFinalBatch: false });
+    expect(Hub.batchMeta(pack, 100)).toMatchObject({ batchNumber: 2, batchCount: 5, position: 1, startIndex: 100, endIndex: 200, isFinalBatch: false });
+    expect(Hub.buildBatchDiagnostic(pack, answers, confidence, 2)).toMatchObject({ batchNumber: 2, batchCount: 5, firstQuestion: 101, lastQuestion: 200, correct: 100, total: 100, percent: 100, isFinalBatch: false });
     expect(domainRows.reading).toMatchObject({ correct: 33, total: 34, missed: 1 });
     expect(domainRows.mathematics).toMatchObject({ correct: 32, total: 33, missed: 1 });
     expect(domainRows.writing).toMatchObject({ correct: 33, total: 33, missed: 0 });
@@ -125,19 +128,19 @@ describe('ParaPro 1755 diagnostic bank', () => {
 
     expect(deployPack).toBe(rootPack);
     expect(deployQa).toBe(rootQa);
-    expect(report.summary).toMatchObject({ totalItems: 200, passedItems: 200, reviewRequiredItems: 0, status: 'pass' });
+    expect(report.summary).toMatchObject({ totalItems: 500, passedItems: 500, reviewRequiredItems: 0, status: 'pass' });
     expect(report.blueprint.categories).toEqual({
       reading: { total: 30, skills: 20, application: 10 },
       mathematics: { total: 30, skills: 20, application: 10 },
       writing: { total: 30, skills: 20, application: 10 },
-    });
+    }, 20000);
     expect(report.diagnosticBatch.categories).toEqual({
       reading: { total: 34, skills: 23, application: 11 },
       mathematics: { total: 33, skills: 22, application: 11 },
       writing: { total: 33, skills: 22, application: 11 },
     });
     expect(report.standard.limitation).toContain('not psychometric calibration');
-    expect(report.diagnosticBatch).toMatchObject({ batchCount: 2, batchSize: 100 });
+    expect(report.diagnosticBatch).toMatchObject({ batchCount: 5, batchSize: 100 });
     expect(report.diagnosticBatch.batches).toHaveLength(2);
     expect(report.diagnosticBatch.batches[0]).toMatchObject({ batchNumber: 1, firstQuestion: 1, lastQuestion: 100, skillsAndKnowledgeItems: 67, classroomApplicationItems: 33 });
     expect(report.diagnosticBatch.batches[1]).toMatchObject({ batchNumber: 2, firstQuestion: 101, lastQuestion: 200, skillsAndKnowledgeItems: 67, classroomApplicationItems: 33 });

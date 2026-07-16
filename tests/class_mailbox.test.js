@@ -197,6 +197,18 @@ describe('ANTI mailbox client helpers', () => {
         expect(entry.c).toBe('ABC23');
         expect(entry.k).toBe('k_secret_k_secret_20');
         expect(entry.u).toContain('script.google.com');
+        expect(entry.aiPolicy).toBeUndefined();
+
+        const byokUrl = H._buildAlloMailboxEntryUrl('allo_mb', {
+            u: 'https://script.google.com/macros/s/ABC/exec',
+            c: 'ABC23',
+            k: 'k_secret_k_secret_20',
+            aiPolicy: 'student-byok',
+        });
+        expect(new URL(byokUrl).searchParams.get('allo_ai')).toBe('byok');
+        const encodedHandoff = new URL(byokUrl).searchParams.get('allo_mb');
+        const decodedHandoff = JSON.parse(Buffer.from(encodedHandoff, 'base64url').toString('utf8'));
+        expect(decodedHandoff.aiPolicy).toBeUndefined();
     });
 
     it('_alloMailboxCall posts preflight-free text/plain and surfaces server error codes', async () => {
@@ -393,11 +405,12 @@ describe('resilience helpers', () => {
 describe('ANTI wiring pins', () => {
     it('student mailbox entries never touch Firebase', () => {
         const live = sliceBetween('// Mailbox live-session student entry', '// Mailbox-hosted homework entry');
-        expect(live).toMatch(/__alloInstallQrStudentAiGuard/);
+        expect(live).toMatch(/_alloSetQrStudentAiPolicy/);
         expect(live).not.toMatch(/_alloEnsureAuthenticatedUser|getDoc|doc\(db|onSnapshot/);
         const hosted = sliceBetween('// Mailbox-hosted homework entry', "if (activeView === 'adventure'");
         expect(hosted).toMatch(/getpack/);
         expect(hosted).toMatch(/setPendingQrAssignmentResource\(firstResource\)/);
+        expect(hosted).toMatch(/_alloSetQrStudentAiPolicy/);
         expect(hosted).not.toMatch(/_alloEnsureAuthenticatedUser|getDoc|doc\(db|onSnapshot/);
     });
 

@@ -14,16 +14,19 @@ beforeAll(() => {
 });
 
 describe('Praxis Reading Specialist 5302 diagnostic bank', () => {
-  it('registers two ready 100-item diagnostics and distinguishes the mixed official format', () => {
+  it('registers five ready 100-item diagnostics and distinguishes the mixed official format', () => {
     expect(pack).toBeTruthy();
     expect(pack).toMatchObject({ status: 'ready', batchSize: 100, simulationItemCount: 95, simulationTimeMinutes: 150, simulationLabel: '95-question selected-response timed segment', officialSelectedResponseCount: 95, officialConstructedResponseCount: 2 });
     expect(pack.simulationNote).toContain('selected-response items only');
     expect(pack.simulationNote).toContain('does not score constructed responses');
-    expect(pack.items).toHaveLength(200);
-    expect(pack.sections).toEqual([
-      { id: 'diagnostic-batch-1', label: 'Independent 100-item diagnostic batch 1', timeMinutes: null },
-      { id: 'diagnostic-batch-2', label: 'Independent 100-item diagnostic batch 2', timeMinutes: null },
-    ]);
+    expect(pack.items).toHaveLength(500);
+    expect(pack.sections).toHaveLength(5);
+    expect(pack.sections.map((section) => section.id)).toEqual(['diagnostic-batch-1', 'diagnostic-batch-2', 'guided-review-bank-1', 'guided-review-bank-2', 'guided-review-bank-3']);
+    expect(pack.sections.map((section) => section.kind)).toEqual(['source-diagnostic', 'source-diagnostic', 'guided-review', 'guided-review', 'guided-review']);
+    // Honest tiers: exactly 200 expert/source-reviewed items; every other item
+    // must carry the candid guided-review status until experts validate it.
+    expect(pack.items.filter((item) => item.qaStatus === 'qa-passed')).toHaveLength(200);
+    expect(pack.items.filter((item) => item.qaStatus === 'review-required').every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only')).toBe(true);
     expect(Object.fromEntries(pack.domains.map((domain) => [domain.id, domain.weight]))).toEqual({ 'curriculum-instruction': 0.37, assessment: 0.23, 'professional-leadership': 0.15 });
     const expected = { 'curriculum-instruction': 49, assessment: 31, 'professional-leadership': 20 };
     for (let batchIndex = 0; batchIndex < 2; batchIndex += 1) {
@@ -35,8 +38,8 @@ describe('Praxis Reading Specialist 5302 diagnostic bank', () => {
 
   it('keeps all items original, fully explained, source-reviewed, and chapter-linked', () => {
     const prompts = pack.items.map((item) => item.prompt.toLowerCase().replace(/\s+/g, ' ').trim());
-    expect(new Set(prompts).size).toBe(200);
-    expect(new Set(pack.items.map((item) => item.id)).size).toBe(200);
+    expect(new Set(prompts).size).toBe(500);
+    expect(new Set(pack.items.map((item) => item.id)).size).toBe(500);
     for (const item of pack.items) {
       expect(item.type).toBe('single-choice');
       expect(item.choices).toHaveLength(4);
@@ -45,7 +48,7 @@ describe('Praxis Reading Specialist 5302 diagnostic bank', () => {
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales.every((entry) => entry.length >= 100)).toBe(true);
       expect(item.references).toContain('https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf');
-      expect(item).toMatchObject({ reviewStatus: 'source-reviewed', qaStatus: 'qa-passed' });
+      expect(['source-reviewed | qa-passed', 'assistant-reviewed-guided-practice-only | review-required']).toContain(item.reviewStatus + ' | ' + item.qaStatus);
       expect(item.skillIds).toHaveLength(1);
       expect(item.chapterIds).toHaveLength(1);
     }
@@ -59,7 +62,7 @@ describe('Praxis Reading Specialist 5302 diagnostic bank', () => {
     for (const item of misses) answers[item.id] = (item.answerIndex + 1) % 4;
     const diagnostic = Hub.buildBatchDiagnostic(pack, answers, confidence, 0);
     const rows = Object.fromEntries(diagnostic.domainRows.map((row) => [row.id, row]));
-    expect(diagnostic).toMatchObject({ batchNumber: 1, batchCount: 2, firstQuestion: 1, lastQuestion: 100, correct: 98, total: 100, percent: 98, isFinalBatch: false });
+    expect(diagnostic).toMatchObject({ batchNumber: 1, batchCount: 5, firstQuestion: 1, lastQuestion: 100, correct: 98, total: 100, percent: 98, isFinalBatch: false });
     expect(rows['curriculum-instruction']).toMatchObject({ correct: 48, total: 49, missed: 1 });
     expect(rows.assessment).toMatchObject({ correct: 30, total: 31, missed: 1 });
     expect(diagnostic.feedback.join(' ')).toContain('Lowest accuracy in this batch');
@@ -83,10 +86,10 @@ describe('Praxis Reading Specialist 5302 diagnostic bank', () => {
   it('publishes zero-finding QA and exact deployment mirrors', () => {
     const read = (file) => fs.readFileSync(resolve(process.cwd(), file), 'utf8');
     const qa = JSON.parse(read('test_prep/reading_specialist_5302_native_qa.json'));
-    expect(qa.summary).toMatchObject({ totalItems: 200, passedItems: 200, reviewRequiredItems: 0, findings: 0, status: 'pass' });
+    expect(qa.summary).toMatchObject({ totalItems: 500, passedItems: 500, reviewRequiredItems: 0, findings: 0, status: 'pass' });
     expect(qa.blueprint).toMatchObject({ officialQuestionCount: 97, selectedResponseCount: 95, constructedResponseCount: 2, timeMinutes: 150, categories: { 'curriculum-instruction': { questions: 47, percentage: 37 }, assessment: { questions: 29, percentage: 23 }, 'professional-leadership': { questions: 19, percentage: 15 }, application: { questions: 2, percentage: 25, responseType: 'constructed-response' } } });
-    expect(qa.diagnosticBatch).toMatchObject({ batchCount: 2, batchSize: 100, categories: { 'curriculum-instruction': 49, assessment: 31, 'professional-leadership': 20 } });
+    expect(qa.diagnosticBatch).toMatchObject({ batchCount: 5, batchSize: 100, categories: { 'curriculum-instruction': 49, assessment: 31, 'professional-leadership': 20 } });
     expect(qa.standard.limitation).toContain('independent reading-specialist validation');
     for (const name of ['reading_specialist_5302_items.json', 'reading_specialist_5302_pack.json', 'reading_specialist_5302_native_qa.json', 'reading_specialist_5302_native_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
-  });
+  }, 20000);
 });

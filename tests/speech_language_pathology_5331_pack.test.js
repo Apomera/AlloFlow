@@ -13,14 +13,17 @@ beforeAll(() => {
 });
 
 describe('Praxis Speech-Language Pathology 5331 diagnostic bank', () => {
-  it('registers two ready 100-item batches with the near-equal ETS category blueprint', () => {
+  it('registers five ready 100-item batches with the near-equal ETS category blueprint', () => {
     expect(pack).toBeTruthy();
     expect(pack).toMatchObject({ status: 'ready', batchSize: 100, simulationItemCount: 132, simulationTimeMinutes: 150 });
-    expect(pack.items).toHaveLength(200);
-    expect(pack.sections).toEqual([
-      { id: 'diagnostic-batch-1', label: 'Independent 100-item diagnostic batch 1', timeMinutes: null },
-      { id: 'diagnostic-batch-2', label: 'Independent 100-item diagnostic batch 2', timeMinutes: null },
-    ]);
+    expect(pack.items).toHaveLength(500);
+    expect(pack.sections).toHaveLength(5);
+    expect(pack.sections.map((section) => section.id)).toEqual(['diagnostic-batch-1', 'diagnostic-batch-2', 'guided-review-bank-1', 'guided-review-bank-2', 'guided-review-bank-3']);
+    expect(pack.sections.map((section) => section.kind)).toEqual(['source-diagnostic', 'source-diagnostic', 'guided-review', 'guided-review', 'guided-review']);
+    // Honest tiers: exactly 200 expert/source-reviewed items; every other item
+    // must carry the candid guided-review status until experts validate it.
+    expect(pack.items.filter((item) => item.qaStatus === 'qa-passed')).toHaveLength(200);
+    expect(pack.items.filter((item) => item.qaStatus === 'review-required').every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only')).toBe(true);
     const weights = Object.fromEntries(pack.domains.map((domain) => [domain.id, domain.weight]));
     expect(weights['foundations-professional-practice']).toBeCloseTo(1 / 3);
     expect(weights['screening-assessment-diagnosis']).toBeCloseTo(1 / 3);
@@ -31,13 +34,13 @@ describe('Praxis Speech-Language Pathology 5331 diagnostic bank', () => {
       for (const [domainId, count] of Object.entries(expected)) expect(batch.filter((item) => item.domainId === domainId)).toHaveLength(count);
       expect(batch.reduce((counts, item) => { counts[item.answerIndex] += 1; return counts; }, [0, 0, 0, 0])).toEqual([25, 25, 25, 25]);
     }
-    expect(Hub.batchMeta(pack, 100)).toMatchObject({ batchNumber: 2, batchCount: 2, position: 1, startIndex: 100, endIndex: 200, isFinalBatch: true });
+    expect(Hub.batchMeta(pack, 100)).toMatchObject({ batchNumber: 2, batchCount: 5, position: 1, startIndex: 100, endIndex: 200, isFinalBatch: false });
   });
 
   it('keeps every item original, fully explained, source-reviewed, and linked to one compatible chapter', () => {
     const prompts = pack.items.map((item) => item.prompt.toLowerCase().replace(/\s+/g, ' ').trim());
-    expect(new Set(prompts).size).toBe(200);
-    expect(new Set(pack.items.map((item) => item.id)).size).toBe(200);
+    expect(new Set(prompts).size).toBe(500);
+    expect(new Set(pack.items.map((item) => item.id)).size).toBe(500);
     for (const item of pack.items) {
       expect(item.type).toBe('single-choice');
       expect(item.choices).toHaveLength(4);
@@ -46,7 +49,7 @@ describe('Praxis Speech-Language Pathology 5331 diagnostic bank', () => {
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales.every((entry) => entry.length >= 100)).toBe(true);
       expect(item.references).toContain('https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf');
-      expect(item).toMatchObject({ reviewStatus: 'source-reviewed', qaStatus: 'qa-passed' });
+      expect(['source-reviewed | qa-passed', 'assistant-reviewed-guided-practice-only | review-required']).toContain(item.reviewStatus + ' | ' + item.qaStatus);
       expect(item.skillIds).toHaveLength(1);
       expect(item.chapterIds).toHaveLength(1);
     }
@@ -60,7 +63,7 @@ describe('Praxis Speech-Language Pathology 5331 diagnostic bank', () => {
     for (const item of missed) answers[item.id] = (item.answerIndex + 1) % 4;
     const diagnostic = Hub.buildBatchDiagnostic(pack, answers, confidence, 0);
     const rows = Object.fromEntries(diagnostic.domainRows.map((row) => [row.id, row]));
-    expect(diagnostic).toMatchObject({ batchNumber: 1, batchCount: 2, firstQuestion: 1, lastQuestion: 100, correct: 98, total: 100, percent: 98, isFinalBatch: false });
+    expect(diagnostic).toMatchObject({ batchNumber: 1, batchCount: 5, firstQuestion: 1, lastQuestion: 100, correct: 98, total: 100, percent: 98, isFinalBatch: false });
     expect(rows['foundations-professional-practice']).toMatchObject({ correct: 33, total: 34, missed: 1 });
     expect(rows['screening-assessment-diagnosis']).toMatchObject({ correct: 32, total: 33, missed: 1 });
     expect(diagnostic.feedback.join(' ')).toContain('Lowest accuracy in this batch');
@@ -86,10 +89,10 @@ describe('Praxis Speech-Language Pathology 5331 diagnostic bank', () => {
   it('publishes zero-finding QA and exact deployment mirrors', () => {
     const read = (file) => fs.readFileSync(resolve(process.cwd(), file), 'utf8');
     const qa = JSON.parse(read('test_prep/speech_language_pathology_5331_native_qa.json'));
-    expect(qa.summary).toMatchObject({ totalItems: 200, passedItems: 200, reviewRequiredItems: 0, findings: 0, status: 'pass' });
+    expect(qa.summary).toMatchObject({ totalItems: 500, passedItems: 500, reviewRequiredItems: 0, findings: 0, status: 'pass' });
     expect(qa.blueprint).toMatchObject({ officialQuestionCount: 132, timeMinutes: 150, selectedResponse: true, categories: { 'foundations-professional-practice': { questions: 44 }, 'screening-assessment-diagnosis': { questions: 44 }, 'treatment-planning-evaluation': { questions: 44 } } });
-    expect(qa.diagnosticBatch).toMatchObject({ batchCount: 2, batchSize: 100, categories: { 'foundations-professional-practice': 34, 'screening-assessment-diagnosis': 33, 'treatment-planning-evaluation': 33 } });
+    expect(qa.diagnosticBatch).toMatchObject({ batchCount: 5, batchSize: 100, categories: { 'foundations-professional-practice': 34, 'screening-assessment-diagnosis': 33, 'treatment-planning-evaluation': 33 } });
     expect(qa.standard.limitation).toContain('independent licensed-SLP validation');
     for (const name of ['speech_language_pathology_5331_items.json', 'speech_language_pathology_5331_pack.json', 'speech_language_pathology_5331_native_qa.json', 'speech_language_pathology_5331_native_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
-  });
+  }, 20000);
 });

@@ -79,10 +79,151 @@ describe('world-space simulation consistency', () => {
     expect(RR.vehicleRectsOverlap(car, size, sameLaneOverlap, size)).toBe(true);
     expect(RR.vehicleRectsOverlap(car, size, clear, size)).toBe(false);
     expect(RR.vehicleRectsOverlap(car, size, perpendicular, size)).toBe(true);
+    expect(RR.vehicleFootprint('school_bus')).toEqual({ length: 10, width: 2.5 });
+  });
+
+  it('collides the rotated body with scenery even when the center cell is clear', () => {
+    const size = RR.vehicleFootprint('car');
+    const obstacleAt = (ox, oy, cell = 1) => (x, y) => x === ox && y === oy ? cell : 0;
+    const noseHit = RR.vehicleGridCollision({ x: 0, y: 0, heading: 0 }, size, obstacleAt(2, 0));
+    expect(noseHit).toMatchObject({ hit: true, cell: 1, x: 2, y: 0 });
+    expect(RR.vehicleGridCollision({ x: 0, y: 0, heading: 0 }, size, obstacleAt(3, 0)).hit).toBe(false);
+    expect(RR.vehicleGridCollision({ x: 0, y: 0, heading: Math.PI / 2 }, size, obstacleAt(0, 2)).hit).toBe(true);
+    expect(RR.vehicleGridCollision({ x: 0, y: 0, heading: 0 }, size, obstacleAt(2, 0, 7)).hit).toBe(true);
+    expect(RR.vehicleGridCollision({ x: 0, y: 0, heading: 0 }, size, obstacleAt(2, 0, 4)).hit).toBe(false);
   });
 });
 
 // ───────────────────────────── physics ───────────────────────────────
+
+describe('physical road layouts', () => {
+  it('uses one lane per direction on local roads and two on arterials/interstates', () => {
+    const local = RR.scenarioRoadLayout('residential');
+    const arterial = RR.scenarioRoadLayout('suburban');
+    const interstate = RR.scenarioRoadLayout('highway');
+    expect(local.lanesPerDirection).toBe(1);
+    expect(arterial.lanesPerDirection).toBe(2);
+    expect(interstate.lanesPerDirection).toBe(2);
+    expect(arterial.laneCenters).toHaveLength(2);
+    expect(interstate.laneCenters).toHaveLength(2);
+  });
+
+  it('keeps lane centers inside edge lines and provides highway-scale lane widths', () => {
+    for (const id of Object.keys(RR.CONTINUOUS_SCENARIO_PROFILES)) {
+      const layout = RR.scenarioRoadLayout(id);
+      expect(layout.laneCenters.at(-1)).toBeLessThan(layout.edgeLineOffset);
+      expect(layout.laneWidth).toBeGreaterThan(2.8);
+    }
+    expect(RR.scenarioRoadLayout('highway').laneWidth).toBeGreaterThanOrEqual(3.6);    const highway = RR.scenarioRoadLayout('highway');
+    expect(highway.shoulderWidth).toBeCloseTo(2.4);
+    expect(highway.pavedHalfWidth).toBeCloseTo(10.4);
+    expect(RR.roadsideOffsetFor(RR.CONTINUOUS_SCENARIO_PROFILES.highway, 1.2)).toBeCloseTo(11.6);
+    expect(RR.roadsideOffsetFor(RR.CONTINUOUS_SCENARIO_PROFILES.residential, 1.2)).toBeCloseTo(5.3);
+  });
+
+  it('derives banking from curvature, not an angled straight heading, and caps it', () => {
+    const angledStraight = { headingAt: () => 0.5 };
+    const gentleCurve = { headingAt: (y) => y * 0.02 };
+    const sharpCurve = { headingAt: (y) => y * 2 };
+    expect(RR.roadBankAngleAt(angledStraight, 10, {})).toBe(0);
+    expect(Math.abs(RR.roadBankAngleAt(gentleCurve, 10, {}))).toBeGreaterThan(0);
+    expect(Math.abs(RR.roadBankAngleAt(sharpCurve, 10, {}))).toBeLessThanOrEqual(0.06);
+    const flatWorld = { profile: {}, spline: { centerAt: () => 48, heightAt: () => 2, headingAt: () => 0.5 } };
+    expect(RR.roadSurfacePoseAt(flatWorld, 52, 10).height).toBe(2);
+    const bankedWorld = { profile: {}, spline: { centerAt: () => 48, heightAt: () => 2, headingAt: (y) => y * 0.02 } };
+    const pose = RR.roadSurfacePoseAt(bankedWorld, 52, 10);
+    expect(pose.height).not.toBe(2);
+    expect(pose.lateralOffset).toBeGreaterThan(4);
+  });
+
+  it('propagates authored lane counts and median width into generated chunks', () => {
+    const suburbanWorld = RR.createScenarioWorld(RR.SCENARIOS.find((s) => s.id === 'suburban'));
+    const highwayWorld = RR.createScenarioWorld(RR.SCENARIOS.find((s) => s.id === 'highway'));
+    expect(suburbanWorld.getChunk(0).lanesPerDirection).toBe(2);
+    expect(highwayWorld.getChunk(0)).toMatchObject({ lanesPerDirection: 2, medianWidth: 1, isHighway: true });    const highwayChunk = highwayWorld.getChunk(2);
+    const y = 5;
+    const center = highwayChunk.roadCenters[y];
+    expect(highwayChunk).toMatchObject({ shoulderWidth: 2.4 });
+    expect(highwayChunk.cells[y][center + 10]).toBe(0);
+    expect(highwayChunk.cells[y][center + 11]).toBe(2);
+  });
+  it('authors a converging highway entrance ramp in both geometry and the collision grid', () => {
+    const layout = RR.scenarioRoadLayout('highway');
+    const start = RR.highwayRampPoseAt(90, layout);
+    const taper = RR.highwayRampPoseAt(72, layout);
+    const merged = RR.highwayRampPoseAt(60, layout);
+    expect(start.active).toBe(true);
+    expect(start.mergeProgress).toBe(0);
+    expect(taper.offset).toBeLessThan(start.offset);
+    expect(merged.offset).toBeCloseTo(layout.laneCenters.at(-1), 5);
+    expect(RR.highwayRampPoseAt(55, layout).active).toBe(false);
+
+    const world = RR.createScenarioWorld(RR.SCENARIOS.find((s) => s.id === 'highway'));
+    const y = 81;
+    const ramp = RR.highwayRampPoseAt(y, layout);
+    expect(world.getChunk(Math.floor(y / RR.CHUNK_SIZE)).highwayRamp).toBe(true);
+    expect(world.getCell(Math.floor(world.spline.centerAt(y) + ramp.offset), y)).toBe(0);
+  });
+
+  it('scores highway merge signaling and acceleration once at the taper end', () => {
+    const layout = RR.scenarioRoadLayout('highway');
+    let safe = RR.assessHighwayMergeFrame({}, { y: 72 }, { y: 70, speed: 48 * RR.MPH_TO_MS }, -1, 0.1, layout);
+    safe = RR.assessHighwayMergeFrame(safe.state, { y: 61 }, { y: 59, speed: 48 * RR.MPH_TO_MS }, -1, 0.1, layout);
+    expect(safe.events).toEqual(['merge_complete']);
+    expect(safe.state.completed).toBe(true);
+    const repeated = RR.assessHighwayMergeFrame(safe.state, { y: 59 }, { y: 58, speed: 48 * RR.MPH_TO_MS }, 0, 0.1, layout);
+    expect(repeated.events).toEqual([]);
+
+    let unsafe = RR.assessHighwayMergeFrame({}, { y: 72 }, { y: 70, speed: 30 * RR.MPH_TO_MS }, 0, 0.1, layout);
+    unsafe = RR.assessHighwayMergeFrame(unsafe.state, { y: 61 }, { y: 59, speed: 30 * RR.MPH_TO_MS }, 0, 0.1, layout);
+    expect(unsafe.events).toEqual(expect.arrayContaining(['missing_merge_signal', 'merged_too_slow']));
+  });
+  it('aligns construction flaggers, cone collision cells, and alternating flow', () => {
+    const scenario = RR.SCENARIOS.find((s) => s.id === 'construction');
+    const world = RR.createScenarioWorld(scenario);
+    const ordinary = world.getChunk(0);
+    const work = world.getChunk(1);
+    expect(ordinary.workZone).toBe(false);
+    expect(work).toMatchObject({ workZone: true, hasIntersection: false, signalType: 'flagger' });
+    const coneCells = work.cells.flat().filter((cell) => cell === 8);
+    expect(coneCells).toHaveLength(9);
+    expect(RR.isStaticObstacleCell(8)).toBe(true);
+
+    const bounds = RR.workZoneBoundsForChunk(1);
+    expect(bounds).toEqual({ startY: 35, endY: 61, playerStopY: 61, opposingStopY: 35 });
+    expect(RR.workZoneConeOffset(0)).toBeCloseTo(-0.4);
+    expect(RR.workZoneConeOffset(8)).toBeCloseTo(-2.7);
+    expect(RR.flaggerStopsDirection('red', -1)).toBe(true);
+    expect(RR.flaggerStopsDirection('red', 1)).toBe(false);
+    expect(RR.flaggerStopsDirection('green', -1)).toBe(false);
+    expect(RR.flaggerStopsDirection('green', 1)).toBe(true);
+    expect(RR.flaggerStopsDirection('yellow', -1)).toBe(true);
+    expect(RR.flaggerStopsDirection('yellow', 1)).toBe(true);
+    const signal = { type: 'flagger', state: 'red', timer: 0, redDur: 1, greenDur: 1, yellowDur: 0.5 };
+    RR.updateSignals([signal], 1.1);
+    expect(signal).toMatchObject({ state: 'yellow', _flaggerNextState: 'green' });
+    expect(RR.flaggerStopsDirection(signal.state, -1)).toBe(true);
+    expect(RR.flaggerStopsDirection(signal.state, 1)).toBe(true);
+    RR.updateSignals([signal], 0.6);
+    expect(signal.state).toBe('green');
+    RR.updateSignals([signal], 1.1);
+    expect(signal).toMatchObject({ state: 'yellow', _flaggerNextState: 'red' });
+    RR.updateSignals([signal], 0.6);
+    expect(signal.state).toBe('red');
+  });
+});
+
+describe('surface-dependent road physics', () => {
+  it('makes pavement fastest and grass substantially less stable', () => {
+    const pavement = RR.surfaceDynamicsForCell(0);
+    const sidewalk = RR.surfaceDynamicsForCell(4);
+    const grass = RR.surfaceDynamicsForCell(2);
+    expect(pavement.offRoad).toBe(false);
+    expect(sidewalk.gripMultiplier).toBeLessThan(pavement.gripMultiplier);
+    expect(grass.gripMultiplier).toBeLessThan(sidewalk.gripMultiplier);
+    expect(grass.rollingMultiplier).toBeGreaterThan(sidewalk.rollingMultiplier);
+  });
+});
 
 describe('frictionCoef', () => {
   it('orders surfaces dry > fog > rain > snow > ice', () => {
@@ -96,6 +237,51 @@ describe('frictionCoef', () => {
   it('normalizeWeather maps the lab-facing "dry" onto the sim key "clear"', () => {
     expect(RR.normalizeWeather('dry')).toBe('clear');
     expect(RR.normalizeWeather('rain')).toBe('rain');
+  });
+});
+
+describe('tire, ABS, and standing-water dynamics', () => {
+  it('preserves dry grip and reduces wet grip as tread wears', () => {
+    const dry = RR.computeTireDynamics('clear', 40, 0, 0, { tread32: 7, psi: 32, absEnabled: true }, false);
+    const wetGood = RR.computeTireDynamics('rain', 40, 0, 0, { tread32: 9, psi: 32, absEnabled: true }, false);
+    const wetWorn = RR.computeTireDynamics('rain', 40, 0, 0, { tread32: 2, psi: 32, absEnabled: true }, false);
+    expect(dry.mu).toBeCloseTo(RR.frictionCoef('clear'), 6);
+    expect(wetGood.mu).toBeGreaterThan(wetWorn.mu);
+    expect(wetWorn.mu).toBeLessThan(RR.frictionCoef('rain'));
+  });
+
+  it('activates ABS under excessive brake demand and preserves more steering than locked wheels', () => {
+    const abs = RR.computeTireDynamics('rain', 40, 1, 0.5, { tread32: 7, psi: 32, absEnabled: true }, false);
+    const locked = RR.computeTireDynamics('rain', 40, 1, 0.5, { tread32: 7, psi: 32, absEnabled: false }, false);
+    expect(abs.absActive).toBe(true);
+    expect(abs.wheelLocked).toBe(false);
+    expect(locked.wheelLocked).toBe(true);
+    expect(abs.steeringFactor).toBeGreaterThan(locked.steeringFactor);
+    expect(abs.brakingMu).toBeGreaterThan(locked.brakingMu);
+  });
+
+  it('lowers the hydroplaning threshold for worn tread and removes grip above it', () => {
+    const goodThreshold = RR.hydroplaneThresholdMph(32, 9, 0.35);
+    const wornThreshold = RR.hydroplaneThresholdMph(32, 2, 0.35);
+    const puddle = RR.computeTireDynamics('rain', 55, 0, 0.3, { tread32: 7, psi: 32, absEnabled: true }, true);
+    expect(wornThreshold).toBeLessThan(goodThreshold);
+    expect(puddle.hydroplaneSeverity).toBeGreaterThan(0);
+    expect(puddle.mu).toBeLessThan(puddle.surfaceMu);
+    expect(puddle.steeringFactor).toBeLessThan(1);
+  });
+
+  it('detects stable puddles at the same geometry used by the streamed road', () => {
+    const world = RR.createInfiniteWorld(12345);
+    let found = null;
+    for (let y = 0; y < RR.CHUNK_SIZE && !found; y += 0.5) {
+      const center = world.spline.centerAt(y);
+      for (let x = center - 6; x <= center + 6; x += 0.5) {
+        if (RR.streamedPuddleAt(world, x, y)) { found = { x, y }; break; }
+      }
+    }
+    expect(found).not.toBeNull();
+    expect(RR.streamedPuddleAt(world, found.x, found.y)).toBe(true);
+    expect(RR.streamedPuddleAt(world, world.spline.centerAt(found.y) + 12, found.y)).toBe(false);
   });
 });
 
@@ -487,7 +673,7 @@ describe('continuous scripted worlds', () => {
       expect(chunk.biome).toBe('suburban');
       expect(chunk.hasIntersection).toBe(false);
       expect(chunk.isHighway).toBe(true);
-      expect(chunk.roadHalfWidth).toBe(6.5);
+      expect(chunk.roadHalfWidth).toBe(RR.CONTINUOUS_SCENARIO_PROFILES.highway.roadHalfWidth);
       expect(RR.worldPostedLimitMph(highway, chunk, 25)).toBe(65);
       const row = chunk.cells[Math.floor(RR.CHUNK_SIZE / 2)];
       expect(row[Math.round(chunk.roadCenters[Math.floor(RR.CHUNK_SIZE / 2)])]).toBe(6);
@@ -505,6 +691,36 @@ describe('continuous scripted worlds', () => {
     expect(schoolChunk.hasIntersection).toBe(false);
     expect(schoolChunk.landmark.type.id).toBe('school');
     expect(RR.worldPostedLimitMph(school, schoolChunk, 25)).toBe(15);
+  });
+
+  it('models downtown as two legal one-way lanes with alternating one-way cross streets', () => {
+    const profile = RR.CONTINUOUS_SCENARIO_PROFILES.downtown;
+    const layout = RR.oneWayRoadLayoutFor(profile);
+    expect(layout.enabled).toBe(true);
+    expect(layout.direction).toBe(-1);
+    expect(layout.laneCenters[0]).toBeCloseTo(-2.1, 8);
+    expect(layout.laneCenters[1]).toBeCloseTo(2.1, 8);
+    expect(layout.laneDividerOffsets).toEqual([0]);
+    expect(RR.isWrongWayTravel(profile, -Math.PI / 2)).toBe(false);
+    expect(RR.isWrongWayTravel(profile, Math.PI / 2)).toBe(true);
+    expect(RR.isWrongWayTravel(profile, 0)).toBe(false); // legal turn across the intersection deadband
+
+    const world = RR.createScenarioWorld({ id: 'downtown', speedLimit: 30 });
+    const first = world.getChunk(1);
+    const second = world.getChunk(3);
+    expect(first.hasIntersection).toBe(true);
+    expect(second.hasIntersection).toBe(true);
+    expect(first.oneWay).toBe(true);
+    expect(first.crossStreetOneWayDirection).toBe(1);
+    expect(second.crossStreetOneWayDirection).toBe(-1);
+  });
+
+  it('spawns all downtown traffic in the legal direction across both one-way lanes', () => {
+    const downtown = RR.SCENARIOS.find((s) => s.id === 'downtown');
+    const cars = RR.spawnTraffic(downtown).filter((t) => !t.crossStreet);
+    expect(cars.length).toBeGreaterThan(1);
+    expect(cars.every((t) => Math.sin(t.heading) < -0.99)).toBe(true);
+    expect([...new Set(cars.map((t) => t.laneOffset.toFixed(3)))].sort()).toEqual(['-2.100', '2.100']);
   });
 
   it('spawns and tags streamed pedestrians for safe chunk cleanup', () => {
@@ -576,8 +792,9 @@ describe('spawn placement follows the road curve', () => {
         if (t.crossStreet) continue; // east-west cars ride the cross streets
         if (t._roundaboutState) continue; // dedicated circular/approach geometry is tested separately
         const dx = Math.abs(t.x - center(scn.id, t.y));
-        const maxLaneOffset = scn.id === 'highway' ? 5.0 : 4.2;
-        expect(dx, scn.id + ' car at x=' + t.x.toFixed(1) + ',y=' + t.y.toFixed(1)).toBeLessThanOrEqual(maxLaneOffset);
+        const layout = RR.scenarioRoadLayout(scn.id);
+        expect(dx, scn.id + ' car at x=' + t.x.toFixed(1) + ',y=' + t.y.toFixed(1)).toBeLessThanOrEqual(layout.edgeLineOffset);
+        expect(layout.laneCenters.some((c) => Math.abs(c - dx) < 0.001), scn.id + ' car must spawn at a real lane center').toBe(true);
       }
     }
   });

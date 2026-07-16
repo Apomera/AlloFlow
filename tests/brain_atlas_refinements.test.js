@@ -94,7 +94,7 @@ describe('brainAtlas refinement contracts', () => {
     expect(synapses).toMatch(/uncluttered development map/);
 
     expect(src).toContain('function pulsePoint(pt, color, label)');
-    expect(src).toContain('legendChip(x0 + 8, 66');
+    expect(src).toContain('brainAtlasDrawLegendGrid(x0 + 8, lifespanLegendY, pW - 16, lifespanLegendItems');
     expect(src).toContain('spike_cycle_decoder_neuron');
     expect(src).toContain('SPIKE CYCLE DECODER');
     expect(src).toContain('Threshold -55');

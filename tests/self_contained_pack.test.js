@@ -104,8 +104,9 @@ describe('pack URL read/build', () => {
     it('builds the share URL on the configured student base with the pack in the fragment only', () => {
         const H = buildHelpers({ windowObj: { location: { href: 'https://example.test/app', hash: '', search: '' } } });
         const url = H._buildAlloPackShareUrl('1.abc123');
-        expect(url).toBe('https://alloflow-cdn.pages.dev/app/#allo_pack=1.abc123');
-        expect(url.includes('?')).toBe(false);
+        expect(url).toBe('https://alloflow-cdn.pages.dev/app/?allo_ai=off#allo_pack=1.abc123');
+        const byokUrl = H._buildAlloPackShareUrl('1.abc123', 'student-byok');
+        expect(byokUrl).toBe('https://alloflow-cdn.pages.dev/app/?allo_ai=byok#allo_pack=1.abc123');
     });
 
     it('returns empty when no student-reachable base exists', () => {
@@ -132,7 +133,7 @@ describe('ANTI wiring pins', () => {
         const start = anti.indexOf('// Self-contained homework entry (#allo_pack');
         expect(start).toBeGreaterThan(-1);
         const effect = anti.slice(start, anti.indexOf('}, []);', start) + 7);
-        expect(effect).toMatch(/__alloInstallQrStudentAiGuard/);
+        expect(effect).toMatch(/_alloSetQrStudentAiPolicy/);
         expect(effect).toMatch(/setIsStudentLinkMode\(true\)/);
         expect(effect).toMatch(/setPendingQrAssignmentResource\(firstResource\)/);
         expect(effect).not.toMatch(/_alloEnsureAuthenticatedUser|getDoc|doc\(db/);

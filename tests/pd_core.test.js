@@ -12,6 +12,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 
 const ROOT = process.cwd();
 
@@ -67,6 +68,29 @@ describe('validatePdModule', () => {
     expect(PD.validatePdModule(m).ok).toBe(false);
   });
 
+  it('requires the exact supported schema version and a stable module id', () => {
+    const wrongVersion = fixtureModule(); wrongVersion.schema_version = 'pd-2.0';
+    expect(PD.validatePdModule(wrongVersion).error).toMatch(/unsupported schema_version/i);
+
+    const missingId = fixtureModule(); delete missingId.metadata.id;
+    expect(PD.validatePdModule(missingId).error).toMatch(/metadata\.id/);
+
+    const unstableId = fixtureModule(); unstableId.metadata.id = 'spaces are not stable';
+    expect(PD.validatePdModule(unstableId).error).toMatch(/metadata\.id/);
+  });
+
+  it('validates required activity content and rejects executable URLs', () => {
+    const missingReadBody = fixtureModule(); missingReadBody.sections[0].activities[0].content.body = '  ';
+    expect(PD.validatePdModule(missingReadBody).error).toMatch(/content\.body/);
+
+    const missingReflectPrompt = fixtureModule(); delete missingReflectPrompt.sections[0].activities[2].content.prompt;
+    expect(PD.validatePdModule(missingReflectPrompt).error).toMatch(/content\.prompt/);
+
+    const unsafeLink = fixtureModule();
+    unsafeLink.sections[0].activities[0].content.links = [{ label: 'Run', url: 'javascript:alert(1)' }];
+    expect(PD.validatePdModule(unsafeLink).error).toMatch(/safe URL/i);
+  });
+
   it('rejects a quiz with no answer key (uncompletable)', () => {
     const m = fixtureModule();
     delete m.sections[0].activities[1].content.questions[0].correctIndex;
@@ -94,6 +118,21 @@ describe('validatePdModule', () => {
     m.sections[0].activities[2].id = 'r1';
     expect(PD.validatePdModule(m).ok).toBe(false);
   });
+
+  it('validates optional paste policy and requires an accessible restriction path', () => {
+    const monitored = fixtureModule();
+    monitored.assessmentPolicy = { paste: { mode: 'monitored' } };
+    expect(PD.validatePdModule(monitored).ok).toBe(true);
+
+    const restricted = fixtureModule();
+    restricted.sections[0].activities[2].assessmentPolicy = { paste: { mode: 'restricted' } };
+    expect(PD.validatePdModule(restricted).error).toMatch(/accessibleAlternative or accommodationContact/);
+    restricted.sections[0].activities[2].assessmentPolicy.paste.accessibleAlternative = 'Learner may submit an audio response.';
+    expect(PD.validatePdModule(restricted).ok).toBe(true);
+
+    const invalid = fixtureModule(); invalid.assessmentPolicy = { paste: { mode: 'blocked' } };
+    expect(PD.validatePdModule(invalid).error).toMatch(/allowed, monitored, or restricted/);
+  });
 });
 
 describe('normalizeResult', () => {
@@ -107,13 +146,19 @@ describe('normalizeResult', () => {
     expect(PD.normalizeResult(readAct, { acknowledged: true }).completed).toBe(true);
   });
 
-  it('quiz scores fraction correct and needs all answered to complete', () => {
+  it('quiz scores answers but requires explicit submission to complete and pass', () => {
     const all = PD.normalizeResult(quizAct, { answers: [0, 1, 0, 1] });
     expect(all.score).toBe(1);
-    expect(all.completed).toBe(true);
-    const half = PD.normalizeResult(quizAct, { answers: [0, 0, 0, 1] });
+    expect(all.completed).toBe(false);
+    expect(PD.evaluateGate(quizAct, all)).toMatchObject({ passed: false, reason: 'incomplete' });
+
+    const submitted = PD.normalizeResult(quizAct, { answers: [0, 1, 0, 1], submitted: true });
+    expect(submitted.completed).toBe(true);
+    expect(PD.evaluateGate(quizAct, submitted).passed).toBe(true);
+
+    const half = PD.normalizeResult(quizAct, { answers: [0, 0, 0, 1], submitted: true });
     expect(half.score).toBe(0.75);
-    const partial = PD.normalizeResult(quizAct, { answers: [0, 1] });
+    const partial = PD.normalizeResult(quizAct, { answers: [0, 1], submitted: true });
     expect(partial.completed).toBe(false);
   });
 
@@ -137,12 +182,16 @@ describe('evaluateGate', () => {
   });
 
   it('score gate passes at/above threshold, fails below', () => {
-    expect(PD.evaluateGate(quizAct, { completed: true, score: 0.75 }).passed).toBe(true);
-    expect(PD.evaluateGate(quizAct, { completed: true, score: 0.5 }).passed).toBe(false);
+    expect(PD.evaluateGate(quizAct, { completed: true, score: 0.75, raw: { submitted: true } }).passed).toBe(true);
+    expect(PD.evaluateGate(quizAct, { completed: true, score: 0.5, raw: { submitted: true } }).passed).toBe(false);
+  });
+
+  it('defensively rejects a hand-constructed quiz result without submission evidence', () => {
+    expect(PD.evaluateGate(quizAct, { completed: true, score: 1 }).reason).toBe('unsubmitted');
   });
 
   it('score gate with no score fails', () => {
-    expect(PD.evaluateGate(quizAct, { completed: true, score: null }).passed).toBe(false);
+    expect(PD.evaluateGate(quizAct, { completed: true, score: null, raw: { submitted: true } }).passed).toBe(false);
   });
 });
 
@@ -152,7 +201,7 @@ describe('evaluateModule + buildCompletionRecord', () => {
   function results(quizScore, reflectDone, readDone) {
     return {
       r1: { completed: readDone, score: null },
-      q1: { completed: true, score: quizScore },
+      q1: { completed: true, score: quizScore, raw: { submitted: true } },
       f1: { completed: reflectDone, score: null }
     };
   }
@@ -173,6 +222,9 @@ describe('evaluateModule + buildCompletionRecord', () => {
   it('builds an honestly-labelled, deterministic completion record', () => {
     const rec = PD.buildCompletionRecord(m, results(1, true, true), { name: 'Pat' }, '2026-06-19T00:00:00.000Z');
     expect(rec.schema_version).toBe('pd-completion-1.0');
+    expect(rec.moduleVersion).toBe(null);
+    expect(rec.contentDigest).toBe(PD.moduleContentDigest(m));
+    expect(rec.contentDigest).toMatch(/^sha256:[0-9a-f]{64}$/);
     expect(rec.complete).toBe(true);
     expect(rec.completedAt).toBe('2026-06-19T00:00:00.000Z');
     expect(rec.issuer.kind).toBe('self-paced');
@@ -193,7 +245,7 @@ describe('evaluateModule + buildCompletionRecord', () => {
     const r = {
       r: PD.normalizeResult(mod.sections[0].activities[0], { text: 'my reflection' }),
       c: PD.normalizeResult(mod.sections[0].activities[1], { checked: [true, false, true] }),
-      s: PD.normalizeResult(mod.sections[0].activities[2], { response: 'my response', masteryScore: 70, feedback: 'good' }),
+      s: PD.normalizeResult(mod.sections[0].activities[2], { response: 'my response', masteryScore: 70, feedback: 'good', qualitativeAnalysis: { strengths: ['Uses evidence'], growthAreas: ['Add a follow-up'], criterionEvidence: [{ criterion: 'Empathy', assessment: 'developing', evidence: 'Listens first', feedback: 'Check understanding' }], unknown: 'discard me' } }),
     };
     const rec = PD.buildCompletionRecord(mod, r, { name: 'Pat' }, '2026-06-20T00:00:00.000Z');
     const byType = {}; rec.responses.forEach((x) => { byType[x.type] = x; });
@@ -201,6 +253,64 @@ describe('evaluateModule + buildCompletionRecord', () => {
     expect(byType.checklist.response).toEqual(['A', 'C']);   // only checked items
     expect(byType.sim.response).toBe('my response');
     expect(byType.sim.masteryScore).toBe(70);
+    expect(byType.sim.qualitativeAnalysis).toEqual({
+      strengths: ['Uses evidence'],
+      growthAreas: ['Add a follow-up'],
+      criterionEvidence: [{ criterion: 'Empathy', assessment: 'developing', evidence: 'Listens first', feedback: 'Check understanding' }],
+    });
+    expect(JSON.stringify(byType.sim)).not.toContain('discard me');
+  });
+
+  it('bounds and allow-lists AI-assisted qualitative analysis', () => {
+    const criterionItems = [{
+      criterion: ' Alignment ',
+      assessment: 'unsupported-value',
+      evidence: 'e'.repeat(1200),
+      feedback: 'f'.repeat(1200),
+      extra: 'secret',
+    }].concat(Array.from({ length: 14 }, (_, i) => ({
+      criterion: 'Criterion ' + i,
+      assessment: 'met',
+      evidence: 'evidence',
+      feedback: 'feedback',
+    })));
+    const analysis = PD.sanitizeQualitativeAnalysis({
+      strengths: [' Specific evidence '].concat(Array.from({ length: 10 }, (_, i) => 'Strength ' + i)),
+      growthAreas: [null, ' Next step '],
+      criterionEvidence: criterionItems,
+      injected: 'discard',
+    });
+    expect(analysis.strengths).toHaveLength(8);
+    expect(analysis.strengths[0]).toBe('Specific evidence');
+    expect(analysis.growthAreas).toEqual(['Next step']);
+    expect(analysis.criterionEvidence).toHaveLength(12);
+    expect(analysis.criterionEvidence[0]).toEqual({
+      criterion: 'Alignment', assessment: 'not-assessed',
+      evidence: 'e'.repeat(1000), feedback: 'f'.repeat(1000),
+    });
+    expect(JSON.stringify(analysis)).not.toMatch(/secret|discard/);
+    expect(PD.sanitizeQualitativeAnalysis({ injected: 'only unknown data' })).toBeNull();
+  });
+
+  it('keeps integrity event metadata but never copies pasted text', () => {
+    const mod = fixtureModule();
+    mod.assessmentPolicy = { paste: { mode: 'monitored' } };
+    const raw = {
+      text: 'My reflection',
+      integrityEvents: [{
+        type: 'paste', timestamp: '2026-07-16T12:00:00Z', charCount: 120,
+        wordCount: 20, blocked: false, fieldId: 'reflection-1',
+        pastedText: 'NEVER STORE THIS', clipboardText: 'NEVER STORE THIS'
+      }]
+    };
+    const r = { f1: PD.normalizeResult(mod.sections[0].activities[2], raw) };
+    const rec = PD.buildCompletionRecord(mod, r, { name: 'Pat' }, '2026-07-16T12:01:00Z');
+    expect(rec.integrityEvents).toEqual([{
+      activityId: 'f1', eventType: 'paste', policyMode: 'monitored',
+      occurredAt: '2026-07-16T12:00:00Z', characterCount: 120,
+      wordCount: 20, blocked: false, fieldId: 'reflection-1'
+    }]);
+    expect(JSON.stringify(rec.integrityEvents)).not.toContain('NEVER STORE THIS');
   });
 });
 
@@ -238,7 +348,7 @@ describe('shipped PD catalog', () => {
     const allCorrect = quiz.content.questions.map(q => q.correctIndex);
     const resultsById = {
       'read-representation': PD.normalizeResult(seed.sections[0].activities[0], { acknowledged: true }),
-      'quiz-representation': PD.normalizeResult(quiz, { answers: allCorrect }),
+      'quiz-representation': PD.normalizeResult(quiz, { answers: allCorrect, submitted: true }),
       'reflect-representation': PD.normalizeResult(seed.sections[2].activities[0], { text: 'Add a diagram and a transcript.' })
     };
     expect(PD.evaluateModule(seed, resultsById).complete).toBe(true);
@@ -250,7 +360,7 @@ describe('video + checklist activity types', () => {
   function checklistAct() { return { id: 'c', type: 'checklist', title: 'Commit', content: { items: ['Try A', 'Try B', 'Try C'] }, gate: { kind: 'none' } }; }
 
   function moduleWith(act) {
-    return { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { title: 'T' }, sections: [{ title: 'S', activities: [act] }] };
+    return { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { id: 'activity-fixture', title: 'T' }, sections: [{ title: 'S', activities: [act] }] };
   }
 
   it('validates a video activity and rejects one without a url', () => {
@@ -259,6 +369,8 @@ describe('video + checklist activity types', () => {
     const v = PD.validatePdModule(bad);
     expect(v.ok).toBe(false);
     expect(v.error).toMatch(/content\.url/);
+    const unsafe = moduleWith(videoAct()); unsafe.sections[0].activities[0].content.url = 'data:text/html,bad';
+    expect(PD.validatePdModule(unsafe).error).toMatch(/safe content\.url/);
   });
 
   it('validates a checklist activity and rejects one without items', () => {
@@ -289,7 +401,7 @@ describe('video + checklist activity types', () => {
 
 describe('sim activity type (AI-assessed scenario)', () => {
   function simAct(gate) { return { id: 's', type: 'sim', title: 'Scenario', content: { scenario: 'A student is upset.', rubric: 'empathy' }, gate: gate || { kind: 'none' } }; }
-  function moduleWith(act) { return { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { title: 'T' }, sections: [{ title: 'S', activities: [act] }] }; }
+  function moduleWith(act) { return { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { id: 'sim-fixture', title: 'T' }, sections: [{ title: 'S', activities: [act] }] }; }
 
   it('validates a sim with a scenario and rejects one without', () => {
     expect(PD.validatePdModule(moduleWith(simAct())).ok).toBe(true);
@@ -297,6 +409,8 @@ describe('sim activity type (AI-assessed scenario)', () => {
     const v = PD.validatePdModule(bad);
     expect(v.ok).toBe(false);
     expect(v.error).toMatch(/scenario/);
+    const noRubric = moduleWith(simAct()); delete noRubric.sections[0].activities[0].content.rubric;
+    expect(PD.validatePdModule(noRubric).error).toMatch(/rubric/);
   });
 
   it('rejects a score gate on sim (formative-only — never gates advancement)', () => {
@@ -330,12 +444,15 @@ describe('credential canonicalization + payload (Tier-2)', () => {
   });
 
   it('buildCredentialPayload borrows VC field names + keeps honest framing', () => {
-    const rec = { moduleId: 'm', moduleTitle: 'M', topic: 'T', complete: true, completedAt: '2026-06-20', learner: { name: 'Pat' }, perActivity: [{ passed: true }, { passed: true }, { passed: false }] };
+    const rec = { moduleId: 'm', moduleVersion: '2026.1', contentDigest: 'sha256:abc', moduleTitle: 'M', topic: 'T', complete: true, completedAt: '2026-06-20', learner: { name: 'Pat' }, perActivity: [{ passed: true }, { passed: true }, { passed: false }] };
     const p = PD.buildCredentialPayload(rec, 'AlloFlow PD', '2026-06-22T00:00:00Z');
     expect(p.type).toBe('PdCompletionAttestation');
     expect(p.issuer.name).toBe('AlloFlow PD');
     expect(p.issuanceDate).toBe('2026-06-22T00:00:00Z');
     expect(p.credentialSubject.moduleId).toBe('m');
+    expect(p.credentialSubject.moduleVersion).toBe('2026.1');
+    expect(p.credentialSubject.contentDigest).toBe('sha256:abc');
+    expect(p.credentialSubject.achievement.contentDigest).toBe('sha256:abc');
     expect(p.credentialSubject.name).toBe('Pat');
     expect(p.credentialSubject.achievement.activitiesPassed).toBe(2);
     expect(p.credentialSubject.achievement.activitiesTotal).toBe(3);
@@ -345,6 +462,79 @@ describe('credential canonicalization + payload (Tier-2)', () => {
   it('canonical form of a payload is stable across key-order / round-trip', () => {
     const p = PD.buildCredentialPayload({ moduleId: 'm', complete: true }, 'X', 'T');
     expect(PD.canonicalize(p)).toBe(PD.canonicalize(JSON.parse(JSON.stringify(p))));
+  });
+});
+
+describe('accessibility authoring readiness', () => {
+  it('is ready for rendered audit only after static authoring checks pass', () => {
+    const mod = fixtureModule(); mod.metadata.language = 'en';
+    const audit = PD.auditAccessibilityReadiness(mod);
+    expect(audit.status).toBe('ready-for-render-audit');
+    expect(audit.conformanceClaim).toBe(false);
+    expect(audit.standardTarget).toBe('WCAG 2.2 AA');
+    expect(audit.warnings.map((x) => x.code)).toContain('render-audit-required');
+  });
+
+  it('returns structured review findings without making legacy modules invalid', () => {
+    const mod = fixtureModule();
+    mod.sections[0].title = ' ';
+    mod.sections[0].activities[0].content.body = '';
+    mod.sections[0].activities[0].content.links = [{ label: '', url: 'javascript:bad' }];
+    mod.sections[0].activities[2].content.prompt = '';
+    mod.sections.push({ title: 'Media', activities: [{
+      id: 'v1', type: 'video', title: 'Watch', content: { url: 'https://example.org/video' }, gate: { kind: 'none' }
+    }] });
+    const audit = PD.auditAccessibilityReadiness(mod);
+    const codes = audit.issues.map((x) => x.code);
+    expect(audit.status).toBe('review-required');
+    expect(codes).toEqual(expect.arrayContaining([
+      'metadata-language-missing', 'section-title-missing', 'read-body-empty',
+      'link-label-missing', 'link-url-unsafe', 'reflect-prompt-empty',
+      'video-captions-missing', 'video-alternative-missing'
+    ]));
+    expect(PD.validatePdModule(readJson('catalog/pd/approved/udl-representation-quickstart.json')).ok).toBe(true);
+  });
+});
+
+describe('module content digest', () => {
+  it('matches SHA-256 of canonical content and is key-order independent', () => {
+    const mod = fixtureModule();
+    const expected = createHash('sha256').update(PD.canonicalize(mod), 'utf8').digest('hex');
+    expect(PD.moduleContentDigest(mod)).toBe('sha256:' + expected);
+    const reordered = { sections: mod.sections, metadata: mod.metadata, kind: mod.kind, schema_version: mod.schema_version };
+    expect(PD.moduleContentDigest(reordered)).toBe('sha256:' + expected);
+  });
+
+  it('changes when material learning or assessment content changes', () => {
+    const baseline = fixtureModule();
+    const digest = PD.moduleContentDigest(baseline);
+    const mutations = [
+      (m) => { m.metadata.title = 'Different title'; },
+      (m) => { m.sections[0].activities[0].content.body = 'Different reading'; },
+      (m) => { m.sections[0].activities[1].content.questions[0].prompt = 'Different prompt'; },
+      (m) => { m.sections[0].activities[1].content.questions[0].options[0] = 'Different option'; },
+      (m) => { m.sections[0].activities[1].content.questions[0].correctIndex = 1; },
+      (m) => { m.sections[0].activities[1].gate.threshold = 1; },
+      (m) => { m.sections[0].activities[2].content.prompt = 'Different reflection'; },
+    ];
+    for (const mutate of mutations) {
+      const changed = JSON.parse(JSON.stringify(baseline));
+      mutate(changed);
+      expect(PD.moduleContentDigest(changed)).not.toBe(digest);
+    }
+  });
+
+  it('propagates an explicit publisher version into the completion binding', () => {
+    const mod = fixtureModule(); mod.metadata.version = '2026.1';
+    const r = {
+      r1: PD.normalizeResult(mod.sections[0].activities[0], { acknowledged: true }),
+      q1: PD.normalizeResult(mod.sections[0].activities[1], { answers: [0, 1, 0, 1], submitted: true }),
+      f1: PD.normalizeResult(mod.sections[0].activities[2], { text: 'Apply it.' }),
+    };
+    const record = PD.buildCompletionRecord(mod, r, { name: 'Pat' }, '2026-07-16T00:00:00Z');
+    expect(record.moduleVersion).toBe('2026.1');
+    expect(record.contentDigest).toBe(PD.moduleContentDigest(mod));
+    expect(record.complete).toBe(true);
   });
 });
 

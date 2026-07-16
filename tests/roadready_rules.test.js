@@ -1856,3 +1856,44 @@ describe('RoadReady rules-of-road content', () => {
     }
   });
 });
+
+describe('RoadReady visual geometry invariants', () => {
+  it.each(ROADREADY_FILES)('%s keeps downtown one-way markings, traffic, and routing aligned', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('oneWay: true, oneWayDirection: -1, oneWayLanes: 2');
+    expect(src).toContain('function oneWayRoadLayoutFor(profileOrChunk)');
+    expect(src).toContain('if (chunk.oneWay && arrowPointsTowardIntersection !== chunk.oneWayDirection) return');
+    expect(src).toContain('color: chunk.crossStreetOneWayDirection ? 0xffffff : 0xfacc15');
+    expect(src).toContain("owCtx.fillText('ONE WAY', 192, 52)");
+    expect(src).toContain('var crossDirections = sigChunk.crossStreetOneWayDirection');
+    expect(src).toContain('var requiredCrossDir = turnChunkForIntent.crossStreetOneWayDirection');
+    expect(src).toContain("addToast('🚨 WRONG WAY — one-way street! -15')");
+    expect(src).not.toContain("downtown: { biome: 'commercial', intersectionEvery: 2, intersectionPhase: 1, signalType: 'light', roadHalfWidth: 4.5, pedestrianCount: 4 },");
+  });
+
+  it.each(ROADREADY_FILES)('%s keeps roadside visuals outside the authored paved edge', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('shoulderWidth: 2.4');
+    expect(src).toContain('function roadsideOffsetFor(profileOrChunk, clearance)');
+    expect(src).toContain('var ambElevationGroup = new T.Group()');
+    expect(src).toContain('ambElevationGroup.position.y = ambGroundY');
+    expect(src).toContain('roadsideOffsetFor(chunk, 0.25)');
+    expect(src).toContain('var splineHeightAtZ = function(worldZ)');
+    expect(src).toContain('var cwBank = roadBankAngleAt(iw.spline, crosswalkGridY, iw.profile || chunk)');
+    expect(src).toContain('var dsHalf = roadHalfW * 0.92');
+    expect(src).toContain('var rumbleOffset = roadLayout.edgeLineOffset + 0.18');
+    expect(src).toContain('var rBankLift = Math.sin(rBank) * rumbleOffset');
+    expect(src).toContain('snPile.position.set(snX, snGroundY + snHeight / 2, snZ)');
+    expect(src).toContain('splineHeightAtZ(mistZ) + 0.3');
+    expect(src).toContain("pc.fillText('STOP', 128, 130)");
+    expect(src).toContain("pc.fillText('SLOW', 128, 130)");
+    expect(src).not.toContain('var spSignX = spSplineCX + speedSide * (MAX_ROAD_WIDTH + 1.2)');
+    expect(src).not.toContain('var parkedCarX = ambSplineCenter + ambSide * (MAX_ROAD_WIDTH + 0.9)');
+    expect(src).not.toContain('grCx + grSide * 4.0');
+    expect(src).not.toContain('var rumbleOffset = roadHalfW + 0.08');
+    expect(src).not.toContain('slCx + slSide * 4.5');
+    expect(src).not.toContain('var upX = upCx + upSide * 5.2');
+    expect(src).not.toContain('snPile.position.set(snX, snHeight / 2, snZ)');
+    expect(src).not.toContain('var pudSide = weatherRng() < 0.5 ? -1 : 1');
+  });
+});
