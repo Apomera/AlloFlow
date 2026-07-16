@@ -261,6 +261,19 @@ describe('Fisher Lab catch evidence', () => {
     expect(getCoreFishHandlingGuidance('release-required', false)).toMatchObject({ id: 'release', label: 'Release handling' });
     expect(getCoreFishHandlingGuidance('retain', false).id).toBe('release');
   });
+
+  it('normalizes and caps catch field notes for the voyage debrief', () => {
+    const { appendCoreCatchDecision } = window.__FisherLabCore;
+    let history = [];
+    for (let index = 0; index < 5; index += 1) {
+      history = appendCoreCatchDecision(history, { kind: index % 2 ? 'shellfish' : 'finfish', label: 'Catch ' + index, length: index === 4 ? 'bad' : 10 + index, action: index % 2 ? 'release' : 'keep', correct: index !== 3, evidence: 'Evidence ' + index });
+    }
+
+    expect(history).toHaveLength(4);
+    expect(history[0]).toMatchObject({ label: 'Catch 1', kind: 'shellfish', action: 'release' });
+    expect(history[2]).toMatchObject({ label: 'Catch 3', correct: false });
+    expect(history[3]).toMatchObject({ label: 'Catch 4', length: null });
+  });
 });
 
 describe('Fisher Lab shellfish caliper', () => {
@@ -398,6 +411,14 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('Continue voyage');
     expect(source).toContain("fishDecisionResult, shellfishDecisionResult");
     expect(source).toContain("disabled: !!shellfishDecisionResult");
+    expect(source).toContain('appendCoreCatchDecision');
+    expect(source).toContain('catchDecisionHistory: boatState.catchDecisionHistory.slice()');
+    expect(source).toContain('boatState.catchDecisionHistory = []');
+    expect(source).toContain("'aria-label': 'Catch field notes'");
+    expect(source).toContain("maxHeight: 'calc(100% - 24px)'");
+    expect(source).toContain("!activeTraffic && !hud.missionComplete");
+    expect(source).toContain("shellfishDecisionResult, hud.missionComplete");
+    expect(source).toContain("ref: decisionFocusRef, type: 'button', className: 'fl-btn', onClick: restartCoreMission");
     expect(source).not.toContain('GLFC CRAYFISH LAWS');
     expect(source).not.toContain('minSize: 3, slot:');
     expect(source).not.toContain('CITATION: Possession of');

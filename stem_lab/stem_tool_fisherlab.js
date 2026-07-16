@@ -651,6 +651,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return { id: 'retain', label: 'Retained catch care', text: 'Record species and length, dispatch humanely, chill the fish promptly, and count it toward the active bag limit.' };
   }
 
+  function appendCoreCatchDecision(history, entry) {
+    var prior = Array.isArray(history) ? history : [];
+    if (!entry) return prior.slice(-4);
+    var measured = Number(entry.length);
+    var note = {
+      kind: entry.kind === 'shellfish' ? 'shellfish' : 'finfish',
+      label: String(entry.label || entry.speciesId || 'Catch'),
+      length: isFinite(measured) ? measured : null,
+      action: entry.action === 'keep' ? 'keep' : 'release',
+      correct: !!entry.correct,
+      evidence: String(entry.evidence || 'Evidence not recorded')
+    };
+    return prior.concat([note]).slice(-4);
+  }
+
   function scoreCoreDecision(score, streak, correct, multiplier) {
     var nextStreak = correct ? streak + 1 : 0;
     var baseReward = 25 + Math.min(20, Math.max(0, nextStreak - 1) * 5);
@@ -699,6 +714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreShellfishReleaseReason: getCoreShellfishReleaseReason,
     getCoreShellfishHandlingGuidance: getCoreShellfishHandlingGuidance,
     getCoreFishHandlingGuidance: getCoreFishHandlingGuidance,
+    appendCoreCatchDecision: appendCoreCatchDecision,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
     getCoreObjective: getCoreObjective,
@@ -9034,6 +9050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       decisionStreak: 0,
       correctDecisions: 0,
       totalDecisions: 0,
+      catchDecisionHistory: [],
       targetFishDecision: false,
       trapDecisionMade: false,
       trafficEncounterTriggered: false,
@@ -9314,12 +9331,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       flAnnounce((result.correct ? 'Correct. ' : 'Review needed. ') + encounterProfile.maneuverInstruction);
     }
 
-    function resolveCatch(kind, action, correct, speciesId, holdPaused) {
+    function resolveCatch(kind, action, correct, speciesId, holdPaused, fieldNote) {
       var scored = scoreCoreDecision(boatState.stewardshipScore, boatState.decisionStreak, correct, voyageMode.scoreMultiplier);
       boatState.stewardshipScore = scored.score;
       boatState.decisionStreak = scored.streak;
       boatState.totalDecisions += 1;
       if (correct) boatState.correctDecisions += 1;
+      boatState.catchDecisionHistory = appendCoreCatchDecision(boatState.catchDecisionHistory, Object.assign({}, fieldNote || {}, { kind: kind, action: action, correct: correct, speciesId: speciesId }));
       if (kind === 'shellfish') {
         boatState.lobstersHauled += 1;
         boatState.trapDecisionMade = correct || boatState.trapDecisionMade;
@@ -9848,6 +9866,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         decisionStreak: boatState.decisionStreak,
         correctDecisions: boatState.correctDecisions,
         totalDecisions: boatState.totalDecisions,
+        catchDecisionHistory: boatState.catchDecisionHistory.slice(),
         targetFishDecision: boatState.targetFishDecision,
         trapDecisionMade: boatState.trapDecisionMade,
         trafficDecisionMade: boatState.trafficDecisionMade,
@@ -9960,8 +9979,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       setPaused: function(paused) {
         setPaused(paused, true);
       },
-      resolveCatch: function(kind, action, correct, speciesId, holdPaused) {
-        resolveCatch(kind, action, correct, speciesId, holdPaused);
+      resolveCatch: function(kind, action, correct, speciesId, holdPaused, fieldNote) {
+        resolveCatch(kind, action, correct, speciesId, holdPaused, fieldNote);
       },
       resolveTrafficEncounter: function(action) {
         resolveTrafficEncounter(action);
@@ -10019,6 +10038,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.decisionStreak = 0;
         boatState.correctDecisions = 0;
         boatState.totalDecisions = 0;
+        boatState.catchDecisionHistory = [];
         boatState.fuelDepletedWarned = false;
         boatState.earlyDockWarned = false;
         boatState.unsafeSpeedWarned = false;
@@ -10181,12 +10201,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     useEffect(function() {
-      if (!activeFish && !activeLobster && !activeTraffic) return;
+      if (!activeFish && !activeLobster && !activeTraffic && !hud.missionComplete) return;
       var focusTimer = setTimeout(function() {
         if (decisionFocusRef.current && decisionFocusRef.current.focus) decisionFocusRef.current.focus();
       }, 80);
       return function() { clearTimeout(focusTimer); };
-    }, [activeFish, activeLobster, activeTraffic, fishDecisionResult, shellfishDecisionResult]);
+    }, [activeFish, activeLobster, activeTraffic, fishDecisionResult, shellfishDecisionResult, hud.missionComplete]);
 
     // Regenerate checkpoint specimen on region changes
     useEffect(function() {
@@ -10980,6 +11000,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var missionProgressPct = Math.round(completedObjectives / 6 * 100);
       var fuelValue = hud.fuel == null ? 100 : Math.max(0, hud.fuel);
       var decisionAccuracy = hud.totalDecisions ? Math.round((hud.correctDecisions || 0) / hud.totalDecisions * 100) : 0;
+      var catchDecisionHistory = Array.isArray(hud.catchDecisionHistory) ? hud.catchDecisionHistory : [];
       var modeProfile = getCoreVoyageMode(voyageMode);
       var voyageRank = getCoreVoyageRank(hud.stewardshipScore || 0, decisionAccuracy, fuelValue);
       var trafficPlotAngle = (hud.trafficRelativeBearing || 0) * Math.PI / 180;
@@ -11314,7 +11335,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 var handling = getCoreFishHandlingGuidance(action, result.legalToRetain);
                 var msg = (result.correct ? 'Correct. ' : 'Review needed. ') + result.explanation;
                 pushStatus({ type: result.correct && action === 'retain' ? 'fish' : result.correct ? 'complete' : 'guidance', species: activeFish.species, length: activeFish.length, isKeeper: result.correct && action === 'retain', text: msg });
-                if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', action === 'retain' ? 'keep' : 'release', result.correct, activeFish.species.id, true);
+                if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', action === 'retain' ? 'keep' : 'release', result.correct, activeFish.species.id, true, { label: activeFish.species.name, length: activeFish.length, evidence: result.expectedLabel });
                 setFishDecisionResult({ result: result, handling: handling, message: msg });
                 flAnnounce(msg + ' ' + handling.label + '. ' + handling.text);
               }
@@ -11362,7 +11383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             })() : null,
 
             hud.missionComplete ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-debrief-title', style: { position: 'absolute', inset: 0, zIndex: 85, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.88)' } },
-              h('div', { style: { width: 'min(500px,100%)', padding: 20, borderRadius: 8, border: '1px solid rgba(52,211,153,0.55)', background: 'linear-gradient(145deg,#064e3b,#082f49 58%,#0f172a)', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.65)' } },
+              h('div', { style: { width: 'min(540px,100%)', maxHeight: 'calc(100% - 24px)', overflowY: 'auto', padding: 20, borderRadius: 8, border: '1px solid rgba(52,211,153,0.55)', background: 'linear-gradient(145deg,#064e3b,#082f49 58%,#0f172a)', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.65)' } },
                 h('div', { style: { color: '#6ee7b7', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, modeProfile.label + ' voyage · safe return'),
                 h('h3', { id: 'fl-debrief-title', style: { margin: '6px 0 2px', color: '#fff', fontSize: 24 } }, mission.title),
                 h('div', { style: { color: voyageRank.color, fontSize: 13, fontWeight: 900, textTransform: 'uppercase' } }, Array(voyageRank.stars + 1).join('★') + ' ' + voyageRank.label),
@@ -11370,8 +11391,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('p', { style: { color: '#dbeafe', fontSize: 12 } }, (hud.correctDecisions || 0) + ' of ' + (hud.totalDecisions || 0) + ' decisions correct · ' + fuelValue.toFixed(0) + '% fuel remaining · ' + Math.max(0, Math.round((hud.elapsed || 0) / 60)) + ' min'),
                 h('p', { style: { color: trafficGradeColor, fontSize: 11, fontWeight: 800 } }, 'Traffic watch: ' + (hud.trafficGradeLabel || 'complete') + ' · CPA ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : '—') + ' · ' + (hud.trafficManeuverSeconds || 0).toFixed(1) + ' s'),
                 h('p', { style: { color: fuelValue >= modeProfile.requiredFuel && decisionAccuracy >= modeProfile.requiredAccuracy ? '#a7f3d0' : '#fdba74', fontSize: 11, lineHeight: 1.5 } }, fuelValue >= modeProfile.requiredFuel && decisionAccuracy >= modeProfile.requiredAccuracy ? 'Challenge standard met: accurate decisions and a prudent reserve.' : 'Next target: at least ' + modeProfile.requiredFuel + '% fuel and ' + modeProfile.requiredAccuracy + '% classification accuracy.'),
+                catchDecisionHistory.length ? h('div', { 'aria-label': 'Catch field notes', style: { margin: '12px 0', paddingTop: 10, borderTop: '1px solid rgba(186,230,253,0.28)', textAlign: 'left' } },
+                  h('div', { style: { marginBottom: 5, color: '#bae6fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Catch field notes'),
+                  catchDecisionHistory.map(function(note, noteIndex) {
+                    return h('div', { key: noteIndex, style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '3px 10px', padding: '7px 0', borderBottom: noteIndex < catchDecisionHistory.length - 1 ? '1px solid rgba(148,163,184,0.18)' : 'none' } },
+                      h('strong', { style: { color: '#f8fafc', fontSize: 11 } }, note.label + (note.length == null ? '' : ' · ' + Number(note.length).toFixed(2) + ' in')),
+                      h('span', { style: { color: note.correct ? '#86efac' : '#fde68a', fontSize: 10, fontWeight: 900 } }, note.correct ? 'Confirmed' : 'Review'),
+                      h('span', { style: { gridColumn: '1 / -1', color: '#cbd5e1', fontSize: 10, lineHeight: 1.4 } }, (note.action === 'keep' ? 'Retain' : 'Release') + ' · ' + note.evidence)
+                    );
+                  })
+                ) : null,
                 h('div', { style: { display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 8 } },
-                  h('button', { type: 'button', className: 'fl-btn', onClick: restartCoreMission, style: { padding: '10px 16px', border: 0, borderRadius: 7, background: '#34d399', color: '#052e2b', fontWeight: 900, cursor: 'pointer' } }, 'Replay voyage'),
+                  h('button', { ref: decisionFocusRef, type: 'button', className: 'fl-btn', onClick: restartCoreMission, style: { padding: '10px 16px', border: 0, borderRadius: 7, background: '#34d399', color: '#052e2b', fontWeight: 900, cursor: 'pointer' } }, 'Replay voyage'),
                   h('button', { type: 'button', className: 'fl-btn', onClick: stopSim, style: { padding: '10px 16px', border: '1px solid rgba(186,230,253,0.4)', borderRadius: 7, background: 'rgba(15,23,42,0.7)', color: '#e0f2fe', fontWeight: 900, cursor: 'pointer' } }, 'Return to briefing')
                 )
               )
@@ -11444,7 +11475,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 var message = action === 'keep' ? correct ? 'Correct. This ' + typeLabel + ' meets the training profile at ' + activeLobster.length.toFixed(2) + ' inches and may be retained.' : 'Review needed. Release is required because ' + reason + '.' : correct ? 'Correct. Release is required because ' + reason + '.' : 'Review needed. This specimen meets the training profile; voluntary release is allowed, but this classification asks whether harvest is permitted.';
                 var handling = getCoreShellfishHandlingGuidance(action, activeLobster.isKeeper);
                 pushStatus({ type: correct && action === 'keep' ? 'lobster' : correct ? 'complete' : action === 'keep' ? 'violation' : 'guidance', length: activeLobster.length, isKeeper: correct && action === 'keep', text: message });
-                if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('shellfish', action, correct, activeLobster.specimenType, true);
+                if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('shellfish', action, correct, activeLobster.specimenType, true, { label: typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1), length: activeLobster.length, evidence: caliperVal.toFixed(2) + ' in gauge · ' + (activeLobster.region === 'greatlakes' ? 'field measurement profile' : activeLobster.region + ' training profile') });
                 setShellfishDecisionResult({ correct: correct, action: action, message: message, handling: handling });
                 flAnnounce(message + ' ' + handling.label + '. ' + handling.text);
               }
