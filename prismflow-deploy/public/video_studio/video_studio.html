@@ -335,6 +335,7 @@
         <div class="demo-goal-actions">
           <span class="demo-goal-hint" id="demoGoalHelp">Generate a reviewable plan before anything runs. Shortcut: Ctrl/⌘ + Enter.</span>
           <button class="action" id="demoPlanBtn" type="button">✨ 1 · Generate demo plan</button>
+          <button class="quiet" id="demoPlanCancelBtn" type="button" hidden>Cancel planning</button>
         </div>
       </div>
       <div class="row" style="margin:8px 0">
@@ -11342,15 +11343,33 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     e.preventDefault();
     if (!$('demoPlanBtn').disabled) $('demoPlanBtn').click();
   });
+  var demoPlanRequestGeneration = 0;
+  var demoPlanDefaultLabel = $('demoPlanBtn').textContent;
+  function setDemoPlanningBusy(busy) {
+    $('demoPlanBtn').disabled = !!busy;
+    $('demoPlanBtn').setAttribute('aria-busy', busy ? 'true' : 'false');
+    $('demoPlanBtn').textContent = busy ? 'Planning demo...' : demoPlanDefaultLabel;
+    $('demoPlanCancelBtn').hidden = !busy;
+  }
+  $('demoPlanCancelBtn').addEventListener('click', function () {
+    if ($('demoPlanCancelBtn').hidden) return;
+    demoPlanRequestGeneration++;
+    setDemoPlanningBusy(false);
+    setStatus($('demoStatus'), 'Planning cancelled. Nothing ran, and any late planner response will be ignored.', 'ok');
+    announce('Demo planning cancelled. Nothing ran.');
+    $('demoPlanBtn').focus();
+  });
   $('demoPlanBtn').addEventListener('click', async function () {
     var goal = $('demoGoal').value.trim();
     if (!goal) { setStatus($('demoStatus'), 'Describe what the demo should show first.', 'warn'); return; }
     if (!opener || opener.closed) { setStatus($('demoStatus'), 'Demo Autopilot needs the AlloFlow window (it uses the app’s command registry and Gemini connection).', 'warn'); return; }
     cleanupOfficialTutorial();
-    var btn = $('demoPlanBtn'); btn.disabled = true;
+    var generation = ++demoPlanRequestGeneration;
+    setDemoPlanningBusy(true);
     setStatus($('demoStatus'), 'Asking Gemini to plan steps from AlloFlow’s command list (your goal text only — no video)…');
     try {
       var resp = await bridgeRequest('allostudio-demoplan-request', { goal: goal }, 60000);
+      if (generation !== demoPlanRequestGeneration) return;
       if (resp.error) {
         setStatus($('demoStatus'), 'Could not draft a plan: ' + resp.error, 'bad');
       } else if (!resp.steps || !resp.steps.length) {
@@ -11366,8 +11385,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       }
     } catch (e) {
       setStatus($('demoStatus'), 'Could not draft a plan: ' + String((e && e.message) || e).slice(0, 140), 'bad');
+    } finally {
+      if (generation === demoPlanRequestGeneration) setDemoPlanningBusy(false);
     }
-    btn.disabled = false;
   });
   $('demoOfficialTextBtn').addEventListener('click', async function () {
     if (!opener || opener.closed) { setStatus($('demoStatus'), 'The official tutorial needs the AlloFlow window.', 'warn'); return; }

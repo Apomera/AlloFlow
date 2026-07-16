@@ -2085,6 +2085,11 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('id="demoGoalHelp"');
     expect(html).toContain('aria-keyshortcuts="Control+Enter Meta+Enter"');
     expect(html).toContain('Generate demo plan</button>');
+    expect(html).toContain('id="demoPlanCancelBtn"');
+    expect(html).toContain('var demoPlanRequestGeneration = 0');
+    expect(html).toContain("setAttribute('aria-busy', busy ? 'true' : 'false')");
+    expect(html).toContain('Planning cancelled. Nothing ran, and any late planner response will be ignored.');
+    expect(html).toContain('if (generation !== demoPlanRequestGeneration) return;');
     expect(html).toContain("if (e.key !== 'Enter' || (!e.ctrlKey && !e.metaKey)");
     expect(html).toContain("if (!$('demoPlanBtn').disabled) $('demoPlanBtn').click();");
     expect(html).toContain('id="demoPlanList"');

@@ -63,10 +63,11 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
               const request = event.data || {};
               window.bridgeLog.push(request.type);
               if (request.type === 'allostudio-demoplan-request') {
-                reply(event.source, request, 'allostudio-demoplan-response', { steps: [
-                  { commandId: 'first-step', label: 'First custom step', why: 'Start here', params: { topic: 'fractions' }, paramNames: ['topic'] },
+                const respond = () => reply(event.source, request, 'allostudio-demoplan-response', { steps: [
+                  { commandId: request.goal === 'Slow planning fixture' ? 'stale-step' : 'first-step', label: request.goal === 'Slow planning fixture' ? 'Stale delayed step' : 'First custom step', why: 'Start here', params: { topic: 'fractions' }, paramNames: ['topic'] },
                   { commandId: 'second-step', label: 'Second custom step', why: 'Then continue' }
                 ] });
+                if (request.goal === 'Slow planning fixture') setTimeout(respond, 500); else respond();
               }
               if (request.type === 'allostudio-demovalidate-request') {
                 const items = (request.steps || []).map((step, index) => ({ commandId: step.commandId, label: step.commandId, status: window.validationBlocked && index === 0 ? 'block' : 'ready', detail: window.validationBlocked && index === 0 ? 'Fixture prerequisite is missing.' : '', params: step.params || {}, contract: { params: [] } }));
@@ -153,13 +154,25 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await studio.setViewportSize({ width: 560, height: 900 });
 
   const demoGoal = studio.locator('#demoGoal');
-  const demoPlanButton = studio.getByRole('button', { name: /Generate demo plan/ });
+  const demoPlanButton = studio.locator('#demoPlanBtn');
   await expect(demoPlanButton).toBeVisible();
   const composerBox = await studio.locator('.demo-goal-composer').boundingBox();
   const planButtonBox = await demoPlanButton.boundingBox();
   expect(composerBox).not.toBeNull();
   expect(planButtonBox).not.toBeNull();
   expect(planButtonBox!.width).toBeGreaterThan(composerBox!.width * 0.85);
+  await demoGoal.fill('Slow planning fixture');
+  await demoGoal.press('Control+Enter');
+  await expect(demoPlanButton).toBeDisabled();
+  await expect(demoPlanButton).toHaveAttribute('aria-busy', 'true');
+  await expect(studio.locator('#demoPlanCancelBtn')).toBeVisible();
+  await studio.locator('#demoPlanCancelBtn').click();
+  await expect(demoPlanButton).toBeEnabled();
+  await expect(demoPlanButton).toHaveAttribute('aria-busy', 'false');
+  await expect(studio.locator('#demoPlanCancelBtn')).toBeHidden();
+  await expect(studio.locator('#demoStatus')).toContainText('Planning cancelled. Nothing ran');
+  await studio.waitForTimeout(650);
+  await expect(studio.locator('#demoPlanList')).not.toContainText('Stale delayed step');
   await demoGoal.fill('Custom workflow fixture');
   await demoGoal.press('Control+Enter');
   await expect(studio.locator('#demoPlanSummary')).toContainText('2 approved steps');
