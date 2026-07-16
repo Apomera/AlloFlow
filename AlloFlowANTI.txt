@@ -8036,6 +8036,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_moonmission.js',
         'stem_lab/stem_tool_music.js',
         'stem_lab/stem_tool_geometryworld.js',
+        'stem_lab/stem_tool_freeforms.js',
         'stem_lab/stem_tool_spaceexplorer.js',
         'stem_lab/stem_tool_roadready.js',
         'stem_lab/stem_tool_firstresponse.js',

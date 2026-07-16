@@ -1,0 +1,718 @@
+// ═══════════════════════════════════════════
+// stem_tool_freeforms.js — Free Forms: a constructive 3D "World of Forms"
+//
+// ARCHITECTURE NOTES (for contributors)
+// ─────────────────────────────────────
+// The inverse of the Visual Organizer's AI-filled 3D views: here the STUDENT
+// authors the content and the AI only coaches. Pick an archetypal form (any of
+// the 12 organizer-shaped spatial grammars from the ConceptGraph engine, or a
+// free space), populate it by hand, arrange it in 3D, sculpt per-idea Prim3D
+// art, then ask the AI to assess the composition as a whole.
+//
+// Reused organs (all lazy-loaded from the CDN root, same trick as geosandbox's
+// ensurePrim3d):
+//   • concept_graph_engine_module.js — acg/v1 graphs, applyStructureLayout
+//     (the organizer-shaped grammars), arrangements.
+//   • concept_graph_3d_module.js — the orbitable editable WebGL view with its
+//     own a11y reading spine + graceful WebGL fallback.
+//   • prim3d_module.js — recipe sculptures (same engine as Memory Palace and
+//     Geometry Sandbox AI-Sculpt). Recipes are small JSON → safe to persist.
+//
+// State (in ctx.toolData.freeForms):
+//   scaffold: <structureType> | 'free' | null (null = picker screen)
+//   title, rev (bump = remount the 3D view), nextId (stable uid counter)
+//   groups: [{ id, title, items: [{ id, text, note }] }]   ← the SOURCE OF TRUTH
+//   arrangement: {axes, axisValues, categories} | null      ← 3D placement edits
+//   nodeArt: { nodeId: { type:'object', recipe } }          ← Prim3D recipes ONLY
+//   assessment: { strengths[], questions[], suggestions[] } | null
+//
+// Design rules:
+//   1. The DOM authoring panel is the accessible source of truth — every create/
+//      rename/delete is a plain button/input, no in-canvas-only affordance. The
+//      3D view adds spatial arrangement on top (drag / strand chips / nudges via
+//      the cg3d editable contract) and stays fully usable by keyboard.
+//   2. Strand moves made INSIDE the 3D view reconcile BACK into the groups doc
+//      (ffReconcileMembership), so sidebar and space never disagree.
+//   3. Structural edits bump doc.rev → the 3D view remounts (entrance stagger);
+//      arrangement edits persist WITHOUT a remount (the live handle already moved).
+//   4. AI is optional everywhere: no callGemini ⇒ sculpt/assess hide, the
+//      constructive core still works. Assessment is formative — no grades, no
+//      scores, never rewrites student text.
+//   5. Sculptures persist as recipes (tiny JSON), never images — a whole world
+//      stays saveable.
+//
+// PURE, unit-tested seams on window.StemLab.ffPure: ffNewDoc / ffGraphFromDoc /
+// ffComposeGraph / ffReconcileMembership / ffRenameCategory / ffBuildAssessPrompt /
+// ffParseAssessment / ffStats / FF_SCAFFOLDS.
+// Contributors: run `node --check` after edits; tests at
+// tests/freeforms_pure.test.js.
+// ═══════════════════════════════════════════
+
+window.StemLab = window.StemLab || {
+  _registry: {}, _order: [],
+  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
+  isRegistered: function(id) { return !!this._registry[id]; },
+  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
+};
+
+(function() {
+  'use strict';
+
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  function announce(msg) {
+    try {
+      var lr = document.getElementById('allo-live-freeforms');
+      if (!lr) {
+        lr = document.createElement('div');
+        lr.id = 'allo-live-freeforms';
+        lr.setAttribute('aria-live', 'polite');
+        lr.setAttribute('aria-atomic', 'true');
+        lr.setAttribute('role', 'status');
+        lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+        document.body.appendChild(lr);
+      }
+      lr.textContent = msg;
+    } catch (e) {}
+  }
+
+  // Scoped contrast + focus lift (same conventions as the other 3D lab tools).
+  (function() {
+    if (document.getElementById('allo-freeforms-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-freeforms-css';
+    st.textContent = [
+      '#allo-free-forms { color: #f8fafc; }',
+      '#allo-free-forms button:focus-visible, #allo-free-forms input:focus-visible, #allo-free-forms select:focus-visible, #allo-free-forms textarea:focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px rgba(250,204,21,0.28) !important; }',
+      '#allo-free-forms input::placeholder, #allo-free-forms textarea::placeholder { color: #cbd5e1 !important; opacity: 1 !important; }',
+      '#allo-free-forms .ff-card { transition: transform 0.15s ease, border-color 0.15s ease; }',
+      '#allo-free-forms .ff-card:hover { transform: translateY(-2px); border-color: #a78bfa; }',
+      '@media (max-width: 900px) { #allo-free-forms .ff-split { flex-direction: column !important; } #allo-free-forms .ff-sidebar { width: 100% !important; max-height: 42vh; } #allo-free-forms .ff-stage { min-height: 380px; } }',
+      '@media (forced-colors: active) { #allo-free-forms button, #allo-free-forms input, #allo-free-forms textarea { forced-color-adjust: auto; border: 1px solid CanvasText !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
+  // ── Module loaders (CDN-root discovery, same regex trick as geosandbox) ──
+  function _cdnBase() {
+    var base = 'https://alloflow-cdn.pages.dev/', q = '';
+    try {
+      var scr = document.querySelectorAll('script[src]');
+      for (var i = 0; i < scr.length; i++) {
+        var src = scr[i].getAttribute('src') || '';
+        var m = src.match(/^(.*\/)(?:stem_lab\/stem_tool_freeforms|stem_lab\/stem_tool_geosandbox|memory_palace_module|concept_graph_3d_module|prim3d_module)\.js(\?.*)?$/);
+        if (m) { base = m[1]; q = m[2] || ''; break; }
+      }
+    } catch (e) {}
+    return { base: base, q: q };
+  }
+  function _loadScript(file, check, cb) {
+    if (check()) { cb(true); return; }
+    var b = _cdnBase();
+    try {
+      var el = document.createElement('script'); el.src = b.base + file + b.q; el.async = true;
+      el.onload = function() { cb(!!check()); };
+      el.onerror = function() { cb(false); };
+      document.head.appendChild(el);
+    } catch (e) { cb(false); }
+  }
+  function ensureConceptGraph(cb) {
+    _loadScript('concept_graph_engine_module.js',
+      function() { return window.AlloModules && window.AlloModules.ConceptGraphEngine; },
+      function(okE) {
+        if (!okE) { cb(false); return; }
+        _loadScript('concept_graph_3d_module.js',
+          function() { return window.AlloModules && window.AlloModules.ConceptGraph3D; },
+          cb);
+      });
+  }
+  function ensurePrim3d(cb) {
+    _loadScript('prim3d_module.js',
+      function() { return window.AlloModules && window.AlloModules.Prim3D; },
+      cb);
+  }
+
+  // ═══ PURE CORE (window.StemLab.ffPure) ═══════════════════════════════
+
+  // The archetypal forms. `type` feeds engine.applyStructureLayout verbatim
+  // ('free' opts out); `grammar` is reused by the picker AND the assessment
+  // prompt so the AI judges against the same spatial meaning the student saw;
+  // `starters` seed renamable group titles (student content, not UI strings).
+  var FF_SCAFFOLDS = [
+    { type: 'Venn Diagram', icon: '\u{1FAE7}', name: 'Venn', grammar: 'two overlapping sets — items true of both float in the shared lens between the clusters', starters: ['Set A', 'Set B', 'Shared'] },
+    { type: 'T-Chart', icon: '\u{1F9F1}', name: 'T-Chart', grammar: 'two contrasting columns standing as walls that face each other across a gap', starters: ['Left', 'Right'] },
+    { type: 'Fishbone', icon: '\u{1F41F}', name: 'Fishbone', grammar: 'cause categories as ribs angling into a spine that points at the central effect', starters: ['Category 1', 'Category 2', 'Category 3', 'Category 4'] },
+    { type: 'Cause and Effect', icon: '⚡', name: 'Cause & Effect', grammar: 'causes flow into the central event, which flows out to its effects', starters: ['Causes', 'Effects'] },
+    { type: 'Frayer Model', icon: '\u{1F532}', name: 'Frayer Model', grammar: 'one term at the very center with four corner clusters around it', starters: ['Definition', 'Characteristics', 'Examples', 'Non-Examples'] },
+    { type: 'KWL Chart', icon: '\u{1F9ED}', name: 'KWL Journey', grammar: 'three stations along a learning journey that bends through depth', starters: ['Know', 'Want to Know', 'Learned'] },
+    { type: 'See-Think-Wonder', icon: '\u{1F441}️', name: 'See-Think-Wonder', grammar: 'observing, interpreting, and questioning as three linked stations', starters: ['See', 'Think', 'Wonder'] },
+    { type: 'Claim-Evidence-Reasoning', icon: '\u{1F3D7}️', name: 'Claim-Evidence-Reasoning', grammar: 'evidence pillars at the base hold up the reasoning, which holds up the claim', starters: ['Claim', 'Evidence', 'Reasoning'] },
+    { type: 'Story Map', icon: '⛰️', name: 'Story Mountain', grammar: 'story stages climb to the climax and descend to the resolution — height is tension', starters: ['Exposition', 'Rising Action', 'Climax', 'Falling Action', 'Resolution'] },
+    { type: 'Flow Chart', icon: '\u{1F300}', name: 'Flow Path', grammar: 'steps advance along a corkscrew path through space', starters: ['Step 1', 'Step 2', 'Step 3'] },
+    { type: 'Key Concept Map', icon: '\u{1FA90}', name: 'Orbit Map', grammar: 'idea clusters orbit one central concept like moons', starters: ['Idea A', 'Idea B', 'Idea C'] },
+    { type: 'Problem Solution', icon: '\u{1F6E0}️', name: 'Problem & Solutions', grammar: 'solution clusters orbit the central problem', starters: ['Solution 1', 'Solution 2'] },
+    { type: 'free', icon: '✨', name: 'Free Space', grammar: 'no template — your groups become floating layers you arrange however you like', starters: ['Ideas'] }
+  ];
+  function ffScaffold(type) {
+    for (var i = 0; i < FF_SCAFFOLDS.length; i++) { if (FF_SCAFFOLDS[i].type === type) return FF_SCAFFOLDS[i]; }
+    return null;
+  }
+
+  function ffNewDoc(scaffoldType) {
+    var sc = ffScaffold(scaffoldType);
+    var starters = (sc && sc.starters) || ['Ideas'];
+    return {
+      scaffold: scaffoldType || null,
+      title: '',
+      rev: 1,
+      nextId: starters.length + 1,
+      groups: starters.map(function(title, i) { return { id: 'g' + (i + 1), title: title, items: [] }; }),
+      arrangement: null,
+      nodeArt: {},
+      assessment: null,
+      _xp: {}
+    };
+  }
+
+  // Doc → acg/v1 graph with STABLE ids (uids survive insert/delete, so saved
+  // arrangements and sculptures never mis-key the way index-derived ids would).
+  function ffGraphFromDoc(doc) {
+    var g = { version: 'acg/v1', title: (doc && doc.title) || '', axes: null, nodes: [], edges: [], layers: [], meta: { generated: { structureType: (doc && doc.scaffold && doc.scaffold !== 'free') ? doc.scaffold : null } } };
+    g.nodes.push({ id: 'root', label: (doc && doc.title) || 'My World of Forms', type: 'main', x: 0, y: 0, z: 0, category: null });
+    ((doc && doc.groups) || []).forEach(function(grp) {
+      g.nodes.push({ id: grp.id, label: grp.title, type: 'branch', x: 0, y: 0, z: 0, category: grp.title });
+      g.edges.push({ id: 'e_root_' + grp.id, fromId: 'root', toId: grp.id, type: 'elaborates' });
+      (grp.items || []).forEach(function(it) {
+        g.nodes.push({ id: it.id, label: it.text, type: 'item', x: 0, y: 0, z: 0, category: grp.title, summary: it.note || '' });
+        g.edges.push({ id: 'e_' + grp.id + '_' + it.id, fromId: grp.id, toId: it.id, type: 'elaborates' });
+      });
+    });
+    return g;
+  }
+
+  // Full pipeline: doc → shaped layout → default fill → saved arrangement wins.
+  function ffComposeGraph(doc, E) {
+    var g = ffGraphFromDoc(doc);
+    if (doc && doc.scaffold && doc.scaffold !== 'free' && E.applyStructureLayout) g = E.applyStructureLayout(g, { structureType: doc.scaffold });
+    if (E.ensureDefaultAxisValues) g = E.ensureDefaultAxisValues(g);
+    if (doc && doc.arrangement && E.applyArrangement) g = E.applyArrangement(g, doc.arrangement);
+    return g;
+  }
+
+  // Strand moves made inside the 3D view (categories = {nodeId: groupTitle})
+  // reconcile back into the groups doc so the sidebar agrees with the space.
+  // Returns { doc, moved } — doc is a NEW object only when something moved.
+  function ffReconcileMembership(doc, categories) {
+    if (!doc || !categories) return { doc: doc, moved: 0 };
+    var byTitle = {};
+    (doc.groups || []).forEach(function(g) { if (byTitle[g.title] == null) byTitle[g.title] = g.id; });
+    var moves = [];
+    (doc.groups || []).forEach(function(g) {
+      (g.items || []).forEach(function(it) {
+        var target = categories[it.id];
+        if (typeof target === 'string' && target && target !== g.title && byTitle[target] != null) {
+          moves.push({ item: it, fromId: g.id, toId: byTitle[target] });
+        }
+      });
+    });
+    if (!moves.length) return { doc: doc, moved: 0 };
+    var groups = doc.groups.map(function(g) { return Object.assign({}, g, { items: (g.items || []).slice() }); });
+    var byId = {}; groups.forEach(function(g) { byId[g.id] = g; });
+    moves.forEach(function(mv) {
+      var from = byId[mv.fromId], to = byId[mv.toId];
+      var idx = from.items.indexOf(mv.item);
+      if (idx >= 0) { from.items.splice(idx, 1); to.items.push(mv.item); }
+    });
+    return { doc: Object.assign({}, doc, { groups: groups }), moved: moves.length };
+  }
+
+  // Group rename: keep a saved arrangement's category strings in step.
+  function ffRenameCategory(arrangement, oldTitle, newTitle) {
+    if (!arrangement || !arrangement.categories || oldTitle === newTitle) return arrangement;
+    var cats = {}, changed = false;
+    Object.keys(arrangement.categories).forEach(function(id) {
+      var v = arrangement.categories[id];
+      if (v === oldTitle) { cats[id] = newTitle; changed = true; } else { cats[id] = v; }
+    });
+    return changed ? Object.assign({}, arrangement, { categories: cats }) : arrangement;
+  }
+
+  function ffStats(doc) {
+    var groups = 0, items = 0, notes = 0, sculpted = 0;
+    ((doc && doc.groups) || []).forEach(function(g) {
+      groups++;
+      (g.items || []).forEach(function(it) {
+        items++;
+        if (it.note && String(it.note).trim()) notes++;
+        if (doc.nodeArt && doc.nodeArt[it.id]) sculpted++;
+      });
+    });
+    return { groups: groups, items: items, notes: notes, sculpted: sculpted };
+  }
+
+  // Formative whole-composition feedback. Deliberately: no grades, no scores,
+  // questions never contain answers, never rewrites student text. The prompt
+  // shows the SAME spatial grammar the student saw, so the AI assesses meaning
+  // against the form's logic — it never sees pixels (semantics-first, like the
+  // whole ConceptGraph stack).
+  function ffBuildAssessPrompt(doc) {
+    var sc = ffScaffold(doc && doc.scaffold);
+    var lines = [
+      'You are a warm, encouraging teacher looking at a 3D composition a student built themselves in a tool called Free Forms.',
+      sc && sc.type !== 'free'
+        ? 'They built it inside the "' + sc.name + '" form, whose spatial grammar is: ' + sc.grammar + '.'
+        : 'They built it in free space (no template), arranging groups of ideas however they liked.',
+      (doc && doc.title && doc.title.trim()) ? 'Their title: "' + doc.title.trim() + '"' : 'They have not titled it yet.',
+      '',
+      'Their groups and ideas (notes in parentheses are their own annotations; [sculpted] means they built a small 3D artwork for that idea):'
+    ];
+    ((doc && doc.groups) || []).forEach(function(g) {
+      var row = '- ' + g.title + ':';
+      var parts = (g.items || []).map(function(it) {
+        var s = '"' + it.text + '"';
+        if (it.note && String(it.note).trim()) s += ' (note: ' + String(it.note).trim() + ')';
+        if (doc.nodeArt && doc.nodeArt[it.id]) s += ' [sculpted]';
+        return s;
+      });
+      lines.push(parts.length ? row + ' ' + parts.join(', ') : row + ' (empty so far)');
+    });
+    var arranged = !!(doc && doc.arrangement && doc.arrangement.axisValues && Object.keys(doc.arrangement.axisValues).length);
+    if (arranged) lines.push('', 'They also hand-arranged some placements in 3D space.');
+    lines.push(
+      '',
+      'Respond as a coach, not a grader:',
+      '- "strengths": up to 3 specific strengths, quoting their own words where possible.',
+      '- "questions": up to 3 short Socratic questions that push their thinking about the form\'s logic (empty spots, items that might belong elsewhere, missing relationships). NEVER include the answer in a question.',
+      '- "suggestions": up to 3 concrete, kind next-build steps.',
+      'No grades, no scores, no rewriting their text. Keep every sentence student-friendly and school-appropriate.',
+      'Return ONLY JSON exactly of this shape: {"strengths":["..."],"questions":["..."],"suggestions":["..."]}'
+    );
+    return lines.join('\n');
+  }
+
+  function ffParseAssessment(text) {
+    var s = String(text || '').trim();
+    s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    var a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a >= 0 && b > a) s = s.slice(a, b + 1);
+    var parsed;
+    try { parsed = JSON.parse(s); } catch (e) { return null; }
+    if (!parsed || typeof parsed !== 'object') return null;
+    function arr(v) {
+      return (Array.isArray(v) ? v : []).filter(function(x) { return typeof x === 'string' && x.trim(); }).slice(0, 4);
+    }
+    var out = { strengths: arr(parsed.strengths), questions: arr(parsed.questions), suggestions: arr(parsed.suggestions) };
+    return (out.strengths.length || out.questions.length || out.suggestions.length) ? out : null;
+  }
+
+  window.StemLab.ffPure = {
+    FF_SCAFFOLDS: FF_SCAFFOLDS,
+    ffScaffold: ffScaffold,
+    ffNewDoc: ffNewDoc,
+    ffGraphFromDoc: ffGraphFromDoc,
+    ffComposeGraph: ffComposeGraph,
+    ffReconcileMembership: ffReconcileMembership,
+    ffRenameCategory: ffRenameCategory,
+    ffStats: ffStats,
+    ffBuildAssessPrompt: ffBuildAssessPrompt,
+    ffParseAssessment: ffParseAssessment
+  };
+
+  // ═══ TOOL REGISTRATION ═══════════════════════════════════════════════
+
+  window.StemLab.registerTool('freeForms', {
+    icon: '\u{1F3DB}️', label: 'Free Forms',
+    desc: 'Build your own World of Forms: fill an archetypal 3D structure (Venn, story mountain, fishbone…) with your OWN ideas, sculpt them, and get AI coaching on the whole composition.',
+    color: 'violet', category: 'creative',
+
+    init: function(ctx) {
+      ensureConceptGraph(function(ok) {
+        if (!ok && ctx.addToast) ctx.addToast('⚠️ Free Forms: the 3D engine could not load — the builder panel still works.', 'info');
+        if (ctx.setToolData) ctx.setToolData(function(p) { return Object.assign({}, p, { _ffModulesReady: !!ok }); });
+      });
+    },
+
+    cleanup: function() {},
+
+    render: function(ctx) {
+      var React = ctx.React;
+      var h = React.createElement;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function(k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k) ? (fb != null ? fb : k) : v; };
+      var addToast = ctx.addToast;
+      var awardXP = ctx.awardXP;
+      var announceToSR = ctx.announceToSR || announce;
+
+      return (function() {
+
+      var labToolData = ctx.toolData || {};
+      var doc = labToolData.freeForms || null;
+      var setDoc = function(updater) {
+        ctx.setToolData(function(prev) {
+          prev = prev || {};
+          var cur = prev.freeForms || null;
+          var next = (typeof updater === 'function') ? updater(cur) : updater;
+          return Object.assign({}, prev, { freeForms: next });
+        });
+      };
+
+      var _ready = React.useState(!!(window.AlloModules && window.AlloModules.ConceptGraphEngine && window.AlloModules.ConceptGraph3D));
+      var modulesReady = _ready[0], setModulesReady = _ready[1];
+      var _fail = React.useState(false); var modulesFailed = _fail[0], setModulesFailed = _fail[1];
+      var _sel = React.useState(null); var selectedId = _sel[0], setSelectedId = _sel[1];
+      var _sb = React.useState(false); var sculptBusy = _sb[0], setSculptBusy = _sb[1];
+      var _ab = React.useState(false); var assessBusy = _ab[0], setAssessBusy = _ab[1];
+      var _sp = React.useState(''); var sculptText = _sp[0], setSculptText = _sp[1];
+      var hostRef = React.useRef(null);
+      var handleRef = React.useRef(null);
+      var hasAI = typeof ctx.callGemini === 'function';
+
+      React.useEffect(function() {
+        var alive = true;
+        if (!modulesReady) ensureConceptGraph(function(ok) { if (!alive) return; if (ok) setModulesReady(true); else setModulesFailed(true); });
+        return function() { alive = false; };
+      }, []);
+
+      // ── Mount / remount the 3D view on structural changes only (doc.rev) ──
+      var scaffold = doc && doc.scaffold;
+      var rev = (doc && doc.rev) || 0;
+      React.useEffect(function() {
+        if (!modulesReady || !doc || !scaffold || !hostRef.current) return;
+        var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        var CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+        if (!E || !CG3D) return;
+        var graph;
+        try { graph = ffComposeGraph(doc, E); } catch (e) { return; }
+        var handle = null;
+        try {
+          handle = CG3D.render(hostRef.current, graph, {
+            t: ctx.t,
+            editable: true,
+            onArrangementChange: function(arr) {
+              setDoc(function(d) {
+                if (!d) return d;
+                var nd = Object.assign({}, d, { arrangement: arr });
+                if (arr && arr.categories) {
+                  var rec = ffReconcileMembership(nd, arr.categories);
+                  if (rec.moved) nd = rec.doc;
+                }
+                return nd;
+              });
+            },
+            onSelectNode: function(id) { setSelectedId(id); },
+            initialNodeArt: (doc.nodeArt && Object.keys(doc.nodeArt).length) ? doc.nodeArt : null
+          });
+        } catch (e) { handle = null; }
+        handleRef.current = handle;
+        return function() {
+          try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
+          if (handleRef.current === handle) handleRef.current = null;
+        };
+      }, [modulesReady, scaffold, rev]);
+
+      // ── Doc mutations (structural ⇒ rev bump ⇒ remount) ──
+      var bump = function(mut) {
+        setDoc(function(d) {
+          if (!d) return d;
+          var nd = mut(Object.assign({}, d));
+          nd.rev = (d.rev || 0) + 1;
+          return nd;
+        });
+      };
+      var chooseScaffold = function(type) {
+        setSelectedId(null);
+        setDoc(function(d) {
+          if (d && d.groups && d.groups.some(function(g) { return (g.items || []).length; })) {
+            // keep the student's content; only the form (and its layout) changes
+            return Object.assign({}, d, { scaffold: type, arrangement: null, rev: (d.rev || 0) + 1 });
+          }
+          return ffNewDoc(type);
+        });
+        announce(t('stem.freeforms.sr_form_chosen', 'Form chosen'));
+      };
+      var backToPicker = function() { setSelectedId(null); setDoc(function(d) { return d ? Object.assign({}, d, { scaffold: null }) : d; }); };
+      var setTitle = function(v) { bump(function(d) { d.title = v; return d; }); };
+      var renameGroup = function(gid, title) {
+        bump(function(d) {
+          var old = null;
+          d.groups = d.groups.map(function(g) {
+            if (g.id !== gid) return g;
+            old = g.title;
+            return Object.assign({}, g, { title: title });
+          });
+          if (old != null && d.arrangement) d.arrangement = ffRenameCategory(d.arrangement, old, title);
+          return d;
+        });
+      };
+      var addGroup = function() {
+        bump(function(d) {
+          var id = 'g' + d.nextId;
+          d.nextId = (d.nextId || 1) + 1;
+          d.groups = d.groups.concat([{ id: id, title: t('stem.freeforms.new_group', 'New group') + ' ' + d.groups.length, items: [] }]);
+          return d;
+        });
+      };
+      var deleteGroup = function(gid) {
+        if (selectedId) setSelectedId(null);
+        bump(function(d) {
+          var gone = d.groups.filter(function(g) { return g.id === gid; })[0];
+          d.groups = d.groups.filter(function(g) { return g.id !== gid; });
+          if (gone) {
+            var art = Object.assign({}, d.nodeArt || {});
+            var avs = d.arrangement && d.arrangement.axisValues ? Object.assign({}, d.arrangement.axisValues) : null;
+            var cats = d.arrangement && d.arrangement.categories ? Object.assign({}, d.arrangement.categories) : null;
+            (gone.items || []).forEach(function(it) { delete art[it.id]; if (avs) delete avs[it.id]; if (cats) delete cats[it.id]; });
+            d.nodeArt = art;
+            if (d.arrangement) d.arrangement = Object.assign({}, d.arrangement, avs ? { axisValues: avs } : {}, cats ? { categories: cats } : {});
+          }
+          return d;
+        });
+      };
+      var addItem = function(gid, text) {
+        var txt = String(text || '').trim();
+        if (!txt) return;
+        bump(function(d) {
+          var id = 'n' + d.nextId;
+          d.nextId = (d.nextId || 1) + 1;
+          d.groups = d.groups.map(function(g) { return g.id === gid ? Object.assign({}, g, { items: (g.items || []).concat([{ id: id, text: txt, note: '' }]) }) : g; });
+          return d;
+        });
+        announce(t('stem.freeforms.sr_idea_added', 'Idea added'));
+        var st = ffStats(doc);
+        if (doc && (!doc._xp || !doc._xp.compose) && st.items + 1 >= 5 && typeof awardXP === 'function') {
+          awardXP('freeForms', 10, 'World of Forms builder');
+          setDoc(function(d) { return d ? Object.assign({}, d, { _xp: Object.assign({}, d._xp || {}, { compose: true }) }) : d; });
+        }
+      };
+      var editItem = function(gid, iid, patch) {
+        bump(function(d) {
+          d.groups = d.groups.map(function(g) {
+            if (g.id !== gid) return g;
+            return Object.assign({}, g, { items: (g.items || []).map(function(it) { return it.id === iid ? Object.assign({}, it, patch) : it; }) });
+          });
+          return d;
+        });
+      };
+      var deleteItem = function(gid, iid) {
+        if (selectedId === iid) setSelectedId(null);
+        bump(function(d) {
+          d.groups = d.groups.map(function(g) { return g.id === gid ? Object.assign({}, g, { items: (g.items || []).filter(function(it) { return it.id !== iid; }) }) : g; });
+          var art = Object.assign({}, d.nodeArt || {}); delete art[iid]; d.nodeArt = art;
+          if (d.arrangement) {
+            var avs = Object.assign({}, d.arrangement.axisValues || {}); delete avs[iid];
+            var cats = Object.assign({}, d.arrangement.categories || {}); delete cats[iid];
+            d.arrangement = Object.assign({}, d.arrangement, { axisValues: avs, categories: cats });
+          }
+          return d;
+        });
+      };
+      var resetArrangement = function() {
+        bump(function(d) { d.arrangement = null; return d; });
+        announce(t('stem.freeforms.sr_reset', 'Arrangement reset to the form’s shape'));
+      };
+
+      // ── Sculpt (Prim3D recipes; live handle updated, NO remount) ──
+      var findItem = function(id) {
+        var found = null;
+        ((doc && doc.groups) || []).forEach(function(g) {
+          (g.items || []).forEach(function(it) { if (it.id === id) found = { group: g, item: it }; });
+        });
+        return found;
+      };
+      var doSculpt = function() {
+        var sel = findItem(selectedId);
+        if (!sel || sculptBusy || !hasAI) return;
+        var P3D = window.AlloModules && window.AlloModules.Prim3D;
+        if (!P3D) { ensurePrim3d(function(ok) { if (ok) doSculpt(); else if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_engine_failed', 'The sculpting engine could not load.'), 'error'); }); return; }
+        var subj = (sculptText || '').trim() || sel.item.text;
+        setSculptBusy(true);
+        ctx.callGemini(P3D.buildRecipePrompt(subj), false, false, 0.85).then(function(resp) {
+          var recipe = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
+          setSculptBusy(false);
+          if (!recipe) { if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error'); return; }
+          recipe.name = subj.slice(0, 80);
+          var id = sel.item.id;
+          try { if (handleRef.current && handleRef.current.setNodeObject) handleRef.current.setNodeObject(id, recipe); } catch (e) {}
+          setDoc(function(d) { return d ? Object.assign({}, d, { nodeArt: Object.assign({}, d.nodeArt || {}, (function() { var o = {}; o[id] = { type: 'object', recipe: recipe }; return o; })()) }) : d; });
+          announce(t('stem.freeforms.sr_sculpted', 'Sculpture placed'));
+        }).catch(function() { setSculptBusy(false); if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error'); });
+      };
+      var doClearArt = function() {
+        var sel = findItem(selectedId);
+        if (!sel) return;
+        var id = sel.item.id;
+        try { if (handleRef.current && handleRef.current.clearNodeArt) handleRef.current.clearNodeArt(id); } catch (e) {}
+        setDoc(function(d) { if (!d) return d; var art = Object.assign({}, d.nodeArt || {}); delete art[id]; return Object.assign({}, d, { nodeArt: art }); });
+      };
+
+      // ── Whole-composition AI assessment ──
+      var stats = ffStats(doc);
+      var doAssess = function() {
+        if (!doc || assessBusy || !hasAI || stats.items < 3) return;
+        setAssessBusy(true);
+        ctx.callGemini(ffBuildAssessPrompt(doc), false, false, 0.6).then(function(resp) {
+          setAssessBusy(false);
+          var a = ffParseAssessment(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
+          if (!a) { if (addToast) addToast('⚠️ ' + t('stem.freeforms.assess_failed', 'The coach could not respond — try again.'), 'error'); return; }
+          setDoc(function(d) { return d ? Object.assign({}, d, { assessment: a }) : d; });
+          announce(t('stem.freeforms.sr_assessed', 'Coaching feedback is ready below the builder panel'));
+          if (doc && (!doc._xp || !doc._xp.assess) && typeof awardXP === 'function') {
+            awardXP('freeForms', 5, 'Asked the coach');
+            setDoc(function(d) { return d ? Object.assign({}, d, { _xp: Object.assign({}, d._xp || {}, { assess: true }) }) : d; });
+          }
+        }).catch(function() { setAssessBusy(false); if (addToast) addToast('⚠️ ' + t('stem.freeforms.assess_failed', 'The coach could not respond — try again.'), 'error'); });
+      };
+
+      // ═══ UI ═══
+      var BTN = 'min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer';
+      var BTN_GHOST = BTN + ' bg-slate-800/70 border-slate-600 text-slate-200 hover:bg-slate-700';
+      var BTN_HOT = BTN + ' bg-violet-600 border-violet-500 text-white hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed';
+
+      // ── Picker screen ──
+      if (!doc || !doc.scaffold) {
+        return h('div', { id: 'allo-free-forms', className: 'p-4 md:p-6' },
+          h('div', { className: 'max-w-5xl mx-auto' },
+            h('h2', { className: 'text-2xl font-black text-violet-200 mb-1' }, '\u{1F3DB}️ ' + t('stem.freeforms.title', 'Free Forms')),
+            h('p', { className: 'text-sm text-slate-300 mb-1' }, t('stem.freeforms.tagline', 'Build your own World of Forms: pick an archetypal structure, fill it with YOUR ideas, arrange it in 3D, and sculpt what matters.')),
+            h('p', { className: 'text-xs text-slate-400 mb-4' }, t('stem.freeforms.tagline2', 'You are the author here — the AI only coaches, and only when you ask.')),
+            doc && doc.groups && doc.groups.some(function(g) { return (g.items || []).length; })
+              ? h('p', { className: 'text-xs text-amber-300 mb-3' }, t('stem.freeforms.keep_content_hint', 'Your groups and ideas stay — choosing a form just changes the shape of the space.'))
+              : null,
+            h('div', { className: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3', role: 'list' },
+              FF_SCAFFOLDS.map(function(sc) {
+                return h('button', {
+                  key: sc.type, role: 'listitem',
+                  className: 'ff-card text-left bg-slate-800/70 border-2 border-slate-700 rounded-2xl p-4 min-h-[44px]',
+                  onClick: function() { chooseScaffold(sc.type); },
+                  'aria-label': sc.name + '. ' + sc.grammar
+                },
+                  h('div', { className: 'text-3xl mb-2', 'aria-hidden': 'true' }, sc.icon),
+                  h('div', { className: 'font-black text-slate-100 text-sm mb-1' }, sc.name),
+                  h('div', { className: 'text-[11px] leading-snug text-slate-400' }, sc.grammar)
+                );
+              })
+            )
+          )
+        );
+      }
+
+      var sc = ffScaffold(doc.scaffold) || FF_SCAFFOLDS[FF_SCAFFOLDS.length - 1];
+      var selected = selectedId ? findItem(selectedId) : null;
+
+      // ── Builder screen ──
+      return h('div', { id: 'allo-free-forms', className: 'p-3 md:p-4' },
+        // header
+        h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
+          h('button', { className: BTN_GHOST, onClick: backToPicker, 'aria-label': t('stem.freeforms.change_form', 'Change form') }, '← ' + t('stem.freeforms.forms', 'Forms')),
+          h('div', { className: 'text-lg font-black text-violet-200' }, sc.icon + ' ' + sc.name),
+          h('div', { className: 'text-[11px] text-slate-400 hidden md:block flex-1 min-w-0 truncate' }, sc.grammar),
+          h('div', { className: 'text-[11px] font-bold text-slate-300 bg-slate-800/70 border border-slate-700 rounded-full px-3 py-1' },
+            stats.groups + ' ' + t('stem.freeforms.groups', 'groups') + ' · ' + stats.items + ' ' + t('stem.freeforms.ideas', 'ideas') + (stats.sculpted ? ' · ' + stats.sculpted + ' ' + t('stem.freeforms.sculpted', 'sculpted') : '')),
+          doc.arrangement ? h('button', { className: BTN_GHOST, onClick: resetArrangement }, '↺ ' + t('stem.freeforms.reset_arrangement', 'Reset arrangement')) : null,
+          hasAI ? h('button', { className: BTN_HOT, onClick: doAssess, disabled: assessBusy || stats.items < 3, 'aria-busy': assessBusy ? 'true' : 'false',
+            title: stats.items < 3 ? t('stem.freeforms.assess_needs_items', 'Add at least 3 ideas first') : t('stem.freeforms.assess_tip', 'Ask the AI coach to look at your whole composition') },
+            (assessBusy ? '… ' : '\u{1F9E0} ') + t('stem.freeforms.assess', 'Assess my composition')) : null
+        ),
+        // split: sidebar + 3D stage
+        h('div', { className: 'ff-split flex gap-3 items-stretch' },
+          // ── authoring sidebar (the accessible source of truth) ──
+          h('div', { className: 'ff-sidebar w-80 shrink-0 bg-slate-900/70 border border-slate-700 rounded-2xl p-3 overflow-y-auto', style: { maxHeight: '72vh' } },
+            h('label', { className: 'block text-[11px] font-bold text-slate-400 mb-1', htmlFor: 'ff-title' }, t('stem.freeforms.composition_title', 'Composition title')),
+            h('input', {
+              id: 'ff-title', key: 'title-' + rev, defaultValue: doc.title || '',
+              placeholder: t('stem.freeforms.title_placeholder', 'What is this world about?'),
+              className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-2 text-sm text-slate-100 mb-3',
+              onBlur: function(e) { if (e.target.value !== doc.title) setTitle(e.target.value); }
+            }),
+            doc.groups.map(function(g) {
+              return h('div', { key: g.id + '-' + rev, className: 'mb-3 bg-slate-800/60 border border-slate-700 rounded-xl p-2' },
+                h('div', { className: 'flex items-center gap-1 mb-1' },
+                  h('input', {
+                    defaultValue: g.title, 'aria-label': t('stem.freeforms.group_name', 'Group name'),
+                    className: 'flex-1 min-w-0 bg-transparent border border-transparent focus:border-slate-500 rounded px-1 py-1 text-sm font-black text-violet-200',
+                    onBlur: function(e) { var v = e.target.value.trim(); if (v && v !== g.title) renameGroup(g.id, v); }
+                  }),
+                  h('button', { className: 'min-h-[44px] min-w-[44px] rounded-lg text-slate-400 hover:text-rose-300 hover:bg-slate-700', 'aria-label': t('stem.freeforms.delete_group', 'Delete group') + ' ' + g.title, onClick: function() { deleteGroup(g.id); } }, '\u{1F5D1}️')
+                ),
+                (g.items || []).map(function(it) {
+                  var isSel = selectedId === it.id;
+                  return h('div', { key: it.id, className: 'flex items-center gap-1 mb-1 rounded-lg ' + (isSel ? 'bg-violet-900/40 ring-1 ring-violet-500' : '') },
+                    h('button', {
+                      className: 'min-h-[44px] min-w-[32px] text-xs', 'aria-pressed': isSel ? 'true' : 'false',
+                      'aria-label': (isSel ? t('stem.freeforms.selected', 'Selected') + ': ' : t('stem.freeforms.select_idea', 'Select idea') + ': ') + it.text,
+                      onClick: function() { setSelectedId(isSel ? null : it.id); }
+                    }, (doc.nodeArt && doc.nodeArt[it.id]) ? '\u{1F5FF}' : '●'),
+                    h('input', {
+                      defaultValue: it.text, 'aria-label': t('stem.freeforms.idea_text', 'Idea text'),
+                      className: 'flex-1 min-w-0 bg-transparent border border-transparent focus:border-slate-500 rounded px-1 py-1 text-sm text-slate-100',
+                      onBlur: function(e) { var v = e.target.value.trim(); if (v && v !== it.text) editItem(g.id, it.id, { text: v }); }
+                    }),
+                    h('button', { className: 'min-h-[44px] min-w-[36px] rounded-lg text-slate-500 hover:text-rose-300 hover:bg-slate-700 text-xs', 'aria-label': t('stem.freeforms.delete_idea', 'Delete idea') + ' ' + it.text, onClick: function() { deleteItem(g.id, it.id); } }, '✕')
+                  );
+                }),
+                h('form', {
+                  className: 'flex gap-1 mt-1',
+                  onSubmit: function(e) { e.preventDefault(); var inp = e.target.elements['ff-add-' + g.id]; if (inp) { addItem(g.id, inp.value); inp.value = ''; } }
+                },
+                  h('input', { name: 'ff-add-' + g.id, placeholder: t('stem.freeforms.add_idea_placeholder', 'Add an idea…'), 'aria-label': t('stem.freeforms.add_idea_to', 'Add an idea to') + ' ' + g.title, className: 'flex-1 min-w-0 bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-sm text-slate-100' }),
+                  h('button', { type: 'submit', className: BTN_GHOST }, '+')
+                )
+              );
+            }),
+            h('button', { className: BTN_GHOST + ' w-full', onClick: addGroup }, '+ ' + t('stem.freeforms.add_group', 'Add a group')),
+            // selected-idea detail: note + sculpt
+            selected ? h('div', { className: 'mt-3 bg-violet-950/50 border border-violet-700 rounded-xl p-2' },
+              h('div', { className: 'text-xs font-black text-violet-200 mb-1' }, '✦ ' + selected.item.text),
+              h('label', { className: 'block text-[11px] font-bold text-slate-400 mb-1', htmlFor: 'ff-note' }, t('stem.freeforms.note_label', 'Note to self (shows in 3D)')),
+              h('textarea', {
+                id: 'ff-note', key: 'note-' + selected.item.id + '-' + rev, defaultValue: selected.item.note || '', rows: 2,
+                placeholder: t('stem.freeforms.note_placeholder', 'Why does this idea live here?'),
+                className: 'w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-100 mb-2',
+                onBlur: function(e) { if (e.target.value !== (selected.item.note || '')) editItem(selected.group.id, selected.item.id, { note: e.target.value }); }
+              }),
+              hasAI ? h('div', null,
+                h('label', { className: 'block text-[11px] font-bold text-slate-400 mb-1', htmlFor: 'ff-sculpt' }, t('stem.freeforms.sculpt_label', 'Sculpt this idea (describe it)')),
+                h('div', { className: 'flex gap-1' },
+                  h('input', { id: 'ff-sculpt', value: sculptText, onChange: function(e) { setSculptText(e.target.value); }, placeholder: selected.item.text, className: 'flex-1 min-w-0 bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-100' }),
+                  h('button', { className: BTN_HOT, onClick: doSculpt, disabled: sculptBusy, 'aria-busy': sculptBusy ? 'true' : 'false' }, sculptBusy ? '…' : '✨ ' + t('stem.freeforms.sculpt', 'Sculpt'))
+                ),
+                (doc.nodeArt && doc.nodeArt[selected.item.id]) ? h('button', { className: BTN_GHOST + ' mt-1 w-full', onClick: doClearArt }, t('stem.freeforms.clear_art', 'Remove sculpture')) : null
+              ) : null
+            ) : null
+          ),
+          // ── 3D stage (cg3d owns its own a11y spine + WebGL fallback) ──
+          h('div', { className: 'ff-stage flex-1 min-w-0 relative bg-[#0b1020] border border-slate-700 rounded-2xl overflow-hidden', style: { minHeight: '540px', maxHeight: '72vh' } },
+            (!modulesReady && !modulesFailed) ? h('div', { className: 'absolute inset-0 flex items-center justify-center text-slate-300 text-sm', role: 'status' }, '\u{1F9ED} ' + t('stem.freeforms.loading_3d', 'Loading the 3D space…')) : null,
+            modulesFailed ? h('div', { className: 'absolute inset-0 flex items-center justify-center text-center p-6 text-slate-300 text-sm', role: 'status' }, '⚠️ ' + t('stem.freeforms.no_3d', 'The 3D space could not load here — your builder panel still works, and everything you write is saved.')) : null,
+            h('div', { ref: hostRef, className: 'absolute inset-0' })
+          )
+        ),
+        // hint line
+        h('p', { className: 'text-[11px] text-slate-500 mt-2' }, t('stem.freeforms.stage_hint', 'In the space: drag an idea to place it · drag the background to orbit · scroll to zoom · [ and ] move a selected idea between groups.')),
+        // assessment cards
+        doc.assessment ? h('div', { className: 'mt-3 grid md:grid-cols-3 gap-3', 'aria-label': t('stem.freeforms.coach_heading', 'Coaching feedback') },
+          [['strengths', '\u{1F4AA}', t('stem.freeforms.strengths', 'What is working')],
+           ['questions', '\u{1F914}', t('stem.freeforms.questions', 'Questions to consider')],
+           ['suggestions', '\u{1F331}', t('stem.freeforms.suggestions', 'Next build steps')]].map(function(cfg) {
+            var list = doc.assessment[cfg[0]] || [];
+            if (!list.length) return null;
+            return h('div', { key: cfg[0], className: 'bg-slate-900/70 border border-slate-700 rounded-2xl p-3' },
+              h('div', { className: 'text-xs font-black text-violet-200 mb-2' }, cfg[1] + ' ' + cfg[2]),
+              h('ul', { className: 'space-y-1' }, list.map(function(s, i) { return h('li', { key: i, className: 'text-xs text-slate-300 leading-snug' }, s); }))
+            );
+          })
+        ) : null
+      );
+
+      })();
+    }
+  });
+})();
