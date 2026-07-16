@@ -26293,7 +26293,7 @@
           }, 'Download your data as JSON, or restore from a prior backup. Useful when switching browsers or devices.'),
           h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
             h('button', {
-              onClick: function() {
+              onClick: async function() {
                 try {
                   var raw = JSON.stringify(state, null, 2);
                   // FERPA voice gate: decoration voice notes embed a student's
@@ -26301,8 +26301,7 @@
                   // CONFIDENTIAL when audio is present (mirrors the project-save
                   // + Symbol Studio backup pattern); audio-free backups unaffected.
                   var _hasVoice = raw.indexOf('data:audio') !== -1;
-                  if (_hasVoice && typeof window !== 'undefined' && typeof window.confirm === 'function'
-                      && !window.confirm("This backup includes a voice recording saved on a student's decoration. A recorded voice is identifiable, FERPA-protected student data.\n\nSave the file only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nDownload anyway?")) {
+                  if (_hasVoice && !await askAlloHavenConfirmation("This backup includes a voice recording saved on a student's decoration. A recorded voice is identifiable, FERPA-protected student data.\n\nSave the file only to a school-approved, encrypted location. Do not email it or put it in personal cloud storage.", { title: 'Download confidential backup', confirmText: 'Download backup' })) {
                     addToast('Backup cancelled.');
                     return;
                   }
@@ -26338,14 +26337,14 @@
                   var file = ev.target && ev.target.files && ev.target.files[0];
                   if (!file) return;
                   var reader = new FileReader();
-                  reader.onload = function(e) {
+                  reader.onload = async function(e) {
                     try {
                       var parsed = JSON.parse(e.target.result);
                       if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.decorations)) {
                         addToast('Not a valid AlloHaven backup file.');
                         return;
                       }
-                      var ok = window.confirm('Restore from this backup? This replaces ALL current data — decorations, journal, tokens, stories, settings. Cannot be undone.');
+                      var ok = await askAlloHavenConfirmation('Restore from this backup? This replaces all current data: decorations, journal, tokens, stories, and settings. This cannot be undone.', { title: 'Restore AlloHaven backup', confirmText: 'Replace all data' });
                       if (!ok) return;
                       var merged = Object.assign({}, DEFAULT_STATE, parsed);
                       setStateMulti(merged);
