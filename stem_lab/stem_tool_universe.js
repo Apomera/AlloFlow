@@ -287,8 +287,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Planetary Nebula', icon: '\uD83C\uDF00', color: '#a78bfa', desc: 'Low-mass stars gently shed their outer layers into beautiful expanding gas shells, enriching space with heavier elements.', temp: '10,000-200,000 K (central star)', size: '~1 light-year', duration: '~10,000 years' },
             { name: 'White Dwarf', icon: '\u26AA', color: 'var(--allo-stem-text, #e2e8f0)', desc: 'The Earth-sized remnant core. No fusion. Slowly cools over billions of years. Will eventually become a black dwarf (none exist yet).', temp: '8,000-40,000 K (cooling)', size: 'Earth-sized', duration: 'Trillions of years to cool' },
             { name: 'Supernova', icon: '\uD83D\uDCA5', color: '#f97316', desc: 'Massive stars (8+ solar masses) die in spectacular explosions brighter than entire galaxies! Creates elements heavier than iron (gold, platinum, uranium).', temp: '10 billion K (briefly)', size: 'Visible across galaxies', duration: 'Weeks to months' },
-            { name: 'Neutron Star', icon: '\uD83D\uDCAB', color: '#67e8f9', desc: 'A city-sized ball of neutrons spinning at 700 rotations/second. A teaspoon weighs 6 billion tons. Pulsars are spinning neutron stars.', temp: '~1 million K', size: '~20 km diameter', duration: 'Effectively forever' },
-            { name: 'Black Hole', icon: '\uD83D\uDD73', color: '#1a1a2a', desc: 'If the star is massive enough (25+ solar masses), the core collapses past neutron star density into a singularity. Nothing escapes the event horizon.', temp: 'N/A (Hawking radiation: ~nanokelvin)', size: 'Event horizon: ~60 km for 10 solar masses', duration: '10\u00B9\u2070\u2070 years (Hawking evaporation)' }
+            { name: 'Neutron Star', icon: '\uD83D\uDCAB', color: '#67e8f9', desc: 'A city-sized ball of neutrons that can spin up to ~700 rotations/second. A teaspoon weighs 6 billion tons. Pulsars are spinning neutron stars.', temp: '~1 million K', size: '~20 km diameter', duration: 'Effectively forever' },
+            { name: 'Black Hole', icon: '\uD83D\uDD73', color: '#1a1a2a', desc: 'If the star is massive enough (25+ solar masses), the core collapses past neutron star density into a singularity. Nothing escapes the event horizon.', temp: 'N/A (Hawking radiation: ~nanokelvin)', size: 'Event horizon: ~60 km across for 10 solar masses', duration: '10\u00B9\u2070\u2070 years (Hawking evaporation)' }
           ];
 
           // --- Cosmic Distance Ladder ---
@@ -330,7 +330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { year: '1957', name: 'Sputnik 1', agency: 'USSR', desc: 'First artificial satellite. Launched the Space Age with a simple radio beep heard worldwide.', icon: '\uD83D\uDEF0' },
             { year: '1961', name: 'Vostok 1', agency: 'USSR', desc: 'Yuri Gagarin becomes the first human in space, completing one orbit of Earth in 108 minutes.', icon: '\uD83E\uDDD1\u200D\uD83D\uDE80' },
             { year: '1969', name: 'Apollo 11', agency: 'NASA', desc: 'Neil Armstrong and Buzz Aldrin walk on the Moon. "One small step for man, one giant leap for mankind."', icon: '\uD83C\uDF15' },
-            { year: '1977', name: 'Voyager 1 & 2', agency: 'NASA', desc: 'Twin probes explore all four gas giants. Voyager 1 is now the farthest human-made object, in interstellar space.', icon: '\uD83D\uDE80' },
+            { year: '1977', name: 'Voyager 1 & 2', agency: 'NASA', desc: 'Between them, the twin probes explored all four giant planets (Voyager 2 visited all four). Voyager 1 is now the farthest human-made object, in interstellar space.', icon: '\uD83D\uDE80' },
             { year: '1990', name: 'Hubble Space Telescope', agency: 'NASA/ESA', desc: 'Revolutionized astronomy with Deep Field images, measured the expansion rate of the universe.', icon: '\uD83D\uDD2D' },
             { year: '1997', name: 'Cassini-Huygens', agency: 'NASA/ESA', desc: 'Explored Saturn for 13 years. Huygens probe landed on Titan. Discovered geysers on Enceladus.', icon: '\uD83E\uDE90' },
             { year: '2004', name: 'Spirit & Opportunity', agency: 'NASA', desc: 'Mars rovers. Opportunity lasted 14 years (designed for 90 days!) and found evidence of ancient water.', icon: '\uD83D\uDD34' },
@@ -420,12 +420,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Asteroid Impact', energy: 'Varies (Chicxulub: 10^25 J)', freq: '~100 Myr for extinction-class', desc: 'The Chicxulub impactor (10 km wide) ended the dinosaurs 66 Mya. Smaller impacts (Tunguska 1908, Chelyabinsk 2013) happen more frequently. NASA\'s DART mission proved we can deflect asteroids.', danger: 'Depends on size and speed', icon: '\u2604' },
             { name: 'Supernova Near Earth', energy: '10^44 joules', freq: '~few per century (galaxy-wide)', desc: 'A supernova within 30 light-years could destroy the ozone layer via cosmic rays, causing mass extinction from UV radiation. The nearest candidate (IK Pegasi) is 150 ly away \u2014 safe for now.', danger: 'Dangerous within ~30 ly', icon: '\uD83D\uDCA5' },
             { name: 'Solar Superflare', energy: '10^26+ joules', freq: 'Unknown for our Sun', desc: 'Some Sun-like stars produce superflares 100-10,000x stronger than the strongest recorded solar flare. If our Sun did this, it could fry satellite electronics, knock out power grids, and increase radiation.', danger: 'Infrastructure collapse', icon: '\u2600\uFE0F' },
-            { name: 'Galaxy Collision', energy: 'Gravitational', freq: 'Common over Gyr timescales', desc: 'The Milky Way will collide with Andromeda in ~4.5 billion years. Despite billions of stars in each galaxy, direct star collisions are extremely unlikely \u2014 but gravitational disruption will reshape both galaxies entirely.', danger: 'Stellar orbit disruption (very long-term)', icon: '\uD83C\uDF00' }
+            { name: 'Galaxy Collision', energy: 'Gravitational', freq: 'Common over Gyr timescales', desc: 'The Milky Way may merge with Andromeda in about 4-5 billion years (2025 studies put the odds near 50/50). Even in a merger, direct star collisions are extremely unlikely \u2014 but gravitational disruption will reshape both galaxies entirely.', danger: 'Stellar orbit disruption (very long-term)', icon: '\uD83C\uDF00' }
           ];
 
           // Electromagnetic spectrum in astronomy
           var EM_SPECTRUM = [
-            { name: 'Radio Waves', wavelength: '> 1 mm', sees: 'Pulsars, quasars, CMB, 21-cm hydrogen line, fast radio bursts', telescope: 'Arecibo, ALMA, VLA, FAST, SKA', color: '#ef4444', desc: 'Penetrates dust clouds. Essential for studying cold gas, mapping the Milky Way, and SETI.' },
+            { name: 'Radio Waves', wavelength: '> 1 mm', sees: 'Pulsars, quasars, CMB, 21-cm hydrogen line, fast radio bursts', telescope: 'ALMA, VLA, FAST, SKA (and historically Arecibo, until 2020)', color: '#ef4444', desc: 'Penetrates dust clouds. Essential for studying cold gas, mapping the Milky Way, and SETI.' },
             { name: 'Microwaves', wavelength: '1 mm \u2013 1 m', sees: 'Cosmic Microwave Background (CMB), Sunyaev-Zel\'dovich effect', telescope: 'Planck, WMAP, COBE, ACT', color: '#f97316', desc: 'The CMB is the oldest light in the universe. Tiny temperature variations reveal the seeds of all cosmic structure.' },
             { name: 'Infrared', wavelength: '700 nm \u2013 1 mm', sees: 'Dust-shrouded star formation, exoplanet atmospheres, early galaxies', telescope: 'JWST, Spitzer, Herschel, WISE', color: '#eab308', desc: 'Sees through dust! JWST observes in infrared to see the most distant (and thus oldest) galaxies in the universe.' },
             { name: 'Visible Light', wavelength: '400 \u2013 700 nm', sees: 'Stars, galaxies, nebulae, planets', telescope: 'Hubble, VLT, Keck, ELT, Rubin', color: '#22c55e', desc: 'What our eyes see. Most of classical astronomy. Hubble\'s visible-light images revolutionized public engagement with space.' },
@@ -444,7 +444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Human', size: '~1.7 m', power: 0, desc: 'You are here. Made of atoms forged in stars, organized by 3.8 billion years of evolution.', icon: '\uD83E\uDDD1' },
             { name: 'Earth', size: '1.27 \u00D7 10\u2077 m', power: 7, desc: 'Our home planet. Thin atmosphere, liquid water, magnetic field \u2014 the conditions for life.', icon: '\uD83C\uDF0D' },
             { name: 'Sun', size: '1.39 \u00D7 10\u2079 m', power: 9, desc: '109 Earths fit across. A G2V main-sequence star, 4.6 billion years old, halfway through its life.', icon: '\u2600\uFE0F' },
-            { name: 'Solar System', size: '~9 \u00D7 10\u00B9\u00B2 m', power: 12, desc: 'From the Sun to the Oort Cloud. Light takes ~1.5 years to cross. 8 planets and hundreds of known moons.', icon: '\uD83E\uDE90' },
+            { name: 'Solar System', size: '~9 \u00D7 10\u00B9\u00B2 m', power: 12, desc: 'From the Sun out past Neptune and the Kuiper Belt. Light takes ~4 hours to reach Neptune. 8 planets and hundreds of known moons.', icon: '\uD83E\uDE90' },
             { name: 'Light-Year', size: '9.46 \u00D7 10\u00B9\u2075 m', power: 15, desc: 'The distance light travels in one year. Nearest star (Proxima Centauri): 4.24 light-years away.', icon: '\u2B50' },
             { name: 'Milky Way', size: '~10\u00B2\u2070 m (100,000 ly)', power: 20, desc: '200-400 billion stars. Our solar system orbits the center every 230 million years (one "galactic year").', icon: '\uD83C\uDF00' },
             { name: 'Galaxy Supercluster', size: '~5 \u00D7 10\u00B2\u2074 m (500 Mly)', power: 24, desc: 'Laniakea, our home supercluster, contains 100,000+ galaxies gravitationally connected.', icon: '\uD83C\uDF0C' },
@@ -494,7 +494,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Cheetah (fastest land animal)', speed: '120 km/h', mps: 33, frac: '0.00001%', icon: '\uD83D\uDC06', color: '#65a30d' },
             { name: 'Commercial jet', speed: '900 km/h', mps: 250, frac: '0.00008%', icon: '\u2708', color: '#3b82f6' },
             { name: 'ISS orbital speed', speed: '28,000 km/h', mps: 7700, frac: '0.003%', icon: '\uD83D\uDEF0', color: '#6366f1' },
-            { name: 'New Horizons (fastest spacecraft)', speed: '58,000 km/h', mps: 16000, frac: '0.005%', icon: '\uD83D\uDE80', color: '#8b5cf6' },
+            { name: 'New Horizons (fastest launch speed)', speed: '58,000 km/h', mps: 16000, frac: '0.005%', icon: '\uD83D\uDE80', color: '#8b5cf6' },
             { name: 'Earth orbiting the Sun', speed: '107,000 km/h', mps: 30000, frac: '0.01%', icon: '\uD83C\uDF0D', color: '#0ea5e9' },
             { name: 'Sun orbiting the Milky Way', speed: '828,000 km/h', mps: 230000, frac: '0.08%', icon: '\u2600\uFE0F', color: '#f59e0b' },
             { name: 'Milky Way through space', speed: '2.1 million km/h', mps: 600000, frac: '0.2%', icon: '\uD83C\uDF00', color: '#f97316' },
@@ -509,7 +509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Backyard Worlds: Planet 9', url: 'zooniverse.org', desc: 'Search WISE infrared data for brown dwarfs and the hypothetical Planet Nine. Citizen scientists discovered over 100 new brown dwarfs and 1,500+ cold worlds.', field: 'Brown dwarfs / Planet 9 search', icon: '\uD83D\uDD0D' },
             { name: 'Supernova Hunters', url: 'zooniverse.org', desc: 'Spot supernovae in galaxy images by looking for new bright points that weren\'t there before. Real-time alerts sent to professional telescopes for follow-up.', field: 'Transient detection', icon: '\uD83D\uDCA5' },
             { name: 'Globe at Night', url: 'globeatnight.org', desc: 'Measure light pollution from your location by counting visible stars. Contributes to the global light pollution database. Great classroom activity!', field: 'Light pollution monitoring', icon: '\uD83C\uDF03' },
-            { name: 'SETI@home / Breakthrough Listen', url: 'breakthroughinitiatives.org', desc: 'Search for technosignatures from extraterrestrial intelligence in radio telescope data. Breakthrough Listen is the most comprehensive SETI program ever, scanning 1 million stars.', field: 'Search for ET intelligence', icon: '\uD83D\uDC7D' }
+            { name: 'Breakthrough Listen (SETI)', url: 'breakthroughinitiatives.org', desc: 'Search for technosignatures from extraterrestrial intelligence in radio telescope data. Breakthrough Listen is the most comprehensive SETI program ever, scanning 1 million stars.', field: 'Search for ET intelligence', icon: '\uD83D\uDC7D' }
           ];
 
           // Cosmology glossary
@@ -546,12 +546,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { date: 'Sep 14', event: 'First life (microbes)', real: '4.1 billion years ago', icon: '\uD83E\uDDA0' },
             { date: 'Nov 9', event: 'First complex cells', real: '2 billion years ago', icon: '\uD83E\uDDEC' },
             { date: 'Dec 5', event: 'First multicellular life', real: '800 million years ago', icon: '\uD83E\uDD9A' },
-            { date: 'Dec 14', event: 'Cambrian Explosion', real: '530 million years ago', icon: '\uD83D\uDC1A' },
-            { date: 'Dec 17', event: 'First land plants', real: '470 million years ago', icon: '\uD83C\uDF3F' },
+            { date: 'Dec 17', event: 'Cambrian Explosion', real: '530 million years ago', icon: '\uD83D\uDC1A' },
+            { date: 'Dec 19', event: 'First land plants', real: '470 million years ago', icon: '\uD83C\uDF3F' },
             { date: 'Dec 25', event: 'Dinosaurs appear', real: '230 million years ago', icon: '\uD83E\uDD95' },
             { date: 'Dec 30, 06:24', event: 'Dinosaurs go extinct', real: '66 million years ago', icon: '\u2604' },
             { date: 'Dec 31, 22:24', event: 'First humans', real: '2.5 million years ago', icon: '\uD83E\uDDD1' },
-            { date: 'Dec 31, 23:59:32', event: 'Pyramids built', real: '~4,500 years ago', icon: '\uD83D\uDDFF' },
+            { date: 'Dec 31, 23:59:50', event: 'Pyramids built', real: '~4,500 years ago', icon: '\uD83D\uDDFF' },
             { date: 'Dec 31, 23:59:59', event: 'Modern science', real: '~500 years ago', icon: '\uD83D\uDD2C' }
           ];
 
@@ -566,7 +566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           // Black hole anatomy
           var BLACK_HOLE_PARTS = [
             { name: 'Singularity', desc: 'The infinitely dense point at the center where all the mass is concentrated. Our physics breaks down here \u2014 general relativity and quantum mechanics conflict.', color: '#000000' },
-            { name: 'Event Horizon', desc: 'The point of no return. Once anything crosses this boundary, not even light can escape. For a 10-solar-mass black hole, this is about 30 km across.', color: '#1a1a2a' },
+            { name: 'Event Horizon', desc: 'The point of no return. Once anything crosses this boundary, not even light can escape. For a 10-solar-mass black hole, this is about 30 km in radius (roughly 60 km across).', color: '#1a1a2a' },
             { name: 'Photon Sphere', desc: 'At 1.5x the event horizon radius, photons orbit the black hole. Light can theoretically circle it here, but the orbit is unstable.', color: '#4a3a6a' },
             { name: 'Accretion Disk', desc: 'Superheated matter spiraling into the black hole at near light speed. Friction heats it to millions of degrees, emitting intense X-rays. This is what the EHT photographed.', color: '#f97316' },
             { name: 'Relativistic Jets', desc: 'Powerful beams of matter and energy ejected from the poles at 99.5% the speed of light. Can extend millions of light-years! Powered by magnetic fields in the accretion disk.', color: '#6366f1' },
@@ -929,7 +929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
               desc: 'Our Milky Way galaxy assembles over billions of years by merging with dozens of smaller galaxies. A central bar forms, majestic spiral arms develop, and 200\u2013400 billion stars settle into orbits around a supermassive black hole (Sagittarius A*, 4 million solar masses). The galactic disk, halo, and bulge take shape. Heavy elements from generations of stellar deaths accumulate, making rocky planets possible.',
 
-              facts: ['The Milky Way consumed the Gaia-Enceladus dwarf galaxy ~10 billion years ago', 'Our galaxy contains 200\u2013400 billion stars and at least 100 billion planets', 'The central black hole (Sgr A*) has 4 million times the Sun\'s mass', 'The galaxy is ~13.6 billion years old, nearly as old as the universe itself', 'The Milky Way\'s spiral arms are density waves, not permanent structures', 'Our galaxy will collide with Andromeda in ~4.5 billion years (Milkomeda)']
+              facts: ['The Milky Way consumed the Gaia-Enceladus dwarf galaxy ~10 billion years ago', 'Our galaxy contains 200\u2013400 billion stars and at least 100 billion planets', 'The central black hole (Sgr A*) has 4 million times the Sun\'s mass', 'The galaxy is ~13.6 billion years old, nearly as old as the universe itself', 'The Milky Way\'s spiral arms are density waves, not permanent structures', 'Our galaxy may merge with Andromeda in about 4-5 billion years ("Milkomeda") - recent studies put the odds near 50/50']
 
             },
 
