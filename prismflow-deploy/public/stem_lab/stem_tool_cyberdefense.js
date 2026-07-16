@@ -30,6 +30,83 @@
   function sfxWarDetected()  { if (window.__cyberWarMuted) return; cyberdTone(440, 0.1, "triangle", 0.05); setTimeout(function(){ cyberdTone(554, 0.12, "triangle", 0.05); }, 110); }
   function sfxWarSucceeded() { if (window.__cyberWarMuted) return; cyberdTone(220, 0.2, "sawtooth", 0.04); setTimeout(function(){ cyberdTone(165, 0.3, "sawtooth", 0.04); }, 180); }
 
+  // WCAG 2.2: replace native confirmations with a labelled, keyboard-contained
+  // alert dialog. Capture-phase handling also prevents War Room shortcuts from
+  // changing background game state while a decision is open.
+  var cyberDefenseConfirmSequence = 0;
+  function askCyberDefenseConfirmation(message, options) {
+    return new Promise(function(resolve) {
+      if (typeof document === 'undefined' || !document.body) { resolve(false); return; }
+      options = options || {};
+      cyberDefenseConfirmSequence += 1;
+      var idBase = 'cyber-defense-confirm-' + cyberDefenseConfirmSequence;
+      var opener = document.activeElement;
+      var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+        return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+      });
+      var overlay = document.createElement('div');
+      overlay.setAttribute('role', 'presentation');
+      overlay.setAttribute('data-cyber-defense-confirm', 'true');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(2,6,23,.84);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+      var dialog = document.createElement('div');
+      dialog.setAttribute('role', 'alertdialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', idBase + '-title');
+      dialog.setAttribute('aria-describedby', idBase + '-description');
+      dialog.style.cssText = 'box-sizing:border-box;width:min(34rem,100%);max-height:calc(100vh - 40px);overflow:auto;background:#0f172a;color:#f8fafc;border:2px solid #a5b4fc;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.6);font-family:system-ui,sans-serif;';
+      var title = document.createElement('h2');
+      title.id = idBase + '-title';
+      title.textContent = String(options.title || 'Please confirm');
+      title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#f8fafc;';
+      var description = document.createElement('p');
+      description.id = idBase + '-description';
+      description.textContent = String(message || 'Continue with this action?');
+      description.style.cssText = 'margin:0;color:#e2e8f0;line-height:1.55;white-space:pre-line;';
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = String(options.cancelText || 'Cancel');
+      cancel.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #cbd5e1;border-radius:8px;background:#0f172a;color:#f8fafc;font-weight:700;cursor:pointer;';
+      var confirmButton = document.createElement('button');
+      confirmButton.type = 'button';
+      confirmButton.textContent = String(options.confirmText || 'Continue');
+      confirmButton.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #c7d2fe;border-radius:8px;background:#4338ca;color:#fff;font-weight:700;cursor:pointer;';
+      actions.appendChild(cancel); actions.appendChild(confirmButton);
+      dialog.appendChild(title); dialog.appendChild(description); dialog.appendChild(actions);
+      overlay.appendChild(dialog); document.body.appendChild(overlay);
+      blocked.forEach(function(entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+      var settled = false;
+      function finish(accepted) {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener('keydown', onKeyDown, true);
+        try { overlay.remove(); } catch (e) {}
+        blocked.forEach(function(entry) {
+          if (!entry.hadInert) entry.el.removeAttribute('inert');
+          if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden');
+          else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+        });
+        try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+        resolve(accepted === true);
+      }
+      function onKeyDown(event) {
+        // The app installs game shortcuts on window; do not let any modal keystroke reach them.
+        event.stopImmediatePropagation();
+        if (event.key === 'Escape') { event.preventDefault(); finish(false); return; }
+        if (event.key !== 'Tab') return;
+        if (!dialog.contains(document.activeElement)) { event.preventDefault(); cancel.focus(); return; }
+        if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); confirmButton.focus(); }
+        else if (!event.shiftKey && document.activeElement === confirmButton) { event.preventDefault(); cancel.focus(); }
+      }
+      cancel.addEventListener('click', function() { finish(false); });
+      confirmButton.addEventListener('click', function() { finish(true); });
+      overlay.addEventListener('click', function(event) { if (event.target === overlay) finish(false); });
+      window.addEventListener('keydown', onKeyDown, true);
+      cancel.focus();
+    });
+  }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-cyberdefense')) return;
@@ -1332,11 +1409,13 @@
             setTimeout(warLivePush, 100); // next render cycle sees hosting=true
             if (ctx.addToast) ctx.addToast('\uD83D\uDD34 Now broadcasting to session ' + warLive.sessionCode, 'success');
           }
-          function warLiveStartObserving() {
+          async function warLiveStartObserving() {
             if (!warLive.available) { if (ctx.addToast) ctx.addToast('Live observe unavailable \u2014 check session code', 'info'); return; }
             // Warn if observing will overwrite an active local campaign
             if (warRoomActive && !warRoomVerdict) {
-              var ok = confirm('Observing will replace your active campaign with the host\'s view. Your local progress will be lost. Continue?');
+              var ok = await askCyberDefenseConfirmation('Observing will replace your active campaign with the host\'s view. Your local progress will be lost.', {
+                title: 'Observe live campaign', confirmText: 'Replace and observe'
+              });
               if (!ok) return;
             }
             upd({ warRoomLiveMode: 'observing', warRoomLiveLastSync: 0 }); // reset sync ts so next snapshot always applies
@@ -3960,13 +4039,15 @@
                             var file = ev.target.files && ev.target.files[0];
                             if (!file) return;
                             var reader = new FileReader();
-                            reader.onload = function(e2) {
+                            reader.onload = async function(e2) {
                               try {
                                 var parsed = JSON.parse(e2.target.result);
                                 if (!parsed || parsed._tool !== 'cyberDefense/warRoom') {
                                   if (ctx.addToast) ctx.addToast('Not a War Room backup file', 'info'); return;
                                 }
-                                if (!confirm('Restore War Room data? This MERGES the backup into your current data (existing history entries with the same campaign id are kept).')) return;
+                                if (!(await askCyberDefenseConfirmation('This merges the backup into your current data. Existing history entries with the same campaign ID are kept.', {
+                                  title: 'Restore War Room data', confirmText: 'Merge backup'
+                                }))) return;
                                 // Merge history: dedupe by id + at timestamp, cap at 20
                                 var existing = warRoomCampaignHistory || [];
                                 var incoming = parsed.campaignHistory || [];
@@ -3992,11 +4073,12 @@
                         })
                       ),
                       el('button', {
-                        onClick: function() {
-                          if (confirm('Clear campaign history? This cannot be undone. (Achievements are kept.)')) {
-                            upd('warRoomCampaignHistory', []);
-                            if (ctx.addToast) ctx.addToast('History cleared', 'info');
-                          }
+                        onClick: async function() {
+                          if (!(await askCyberDefenseConfirmation('Clear campaign history? This cannot be undone. Achievements are kept.', {
+                            title: 'Clear campaign history', confirmText: 'Clear history'
+                          }))) return;
+                          upd('warRoomCampaignHistory', []);
+                          if (ctx.addToast) ctx.addToast('History cleared', 'info');
                         },
                         style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(239,68,68,0.35)', background: 'rgba(239,68,68,0.1)', color: '#fca5a5', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDDD1\uFE0F Clear')
                     )
@@ -4067,8 +4149,10 @@
                                   title: t('stem.cyberdefense.watch_a_step_by_step_playback_of_this_', 'Watch a step-by-step playback of this campaign'),
                                   style: { padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(236,72,153,0.35)', background: 'rgba(236,72,153,0.15)', color: '#f9a8d4', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, '\uD83D\uDCFD\uFE0F'),
                                 canReplay && el('button', {
-                                  onClick: function() {
-                                    if (warRoomActive && !warRoomVerdict && !confirm('Start this campaign? Your current in-progress campaign will be reset.')) return;
+                                  onClick: async function() {
+                                    if (warRoomActive && !warRoomVerdict && !(await askCyberDefenseConfirmation('Start this campaign? Your current in-progress campaign will be reset.', {
+                                      title: 'Replay saved campaign', confirmText: 'Reset and replay'
+                                    }))) return;
                                     upd({ warRoomTeacherDashOpen: false });
                                     startCampaign(h.difficulty, h.theme, h.id);
                                   },
@@ -4156,8 +4240,10 @@
                         );
                       })(),
                       warRoomCustomCards.length > 0 && el('button', {
-                        onClick: function() {
-                          if (!confirm('Remove all ' + warRoomCustomCards.length + ' custom card(s)?')) return;
+                        onClick: async function() {
+                          if (!(await askCyberDefenseConfirmation('Remove all ' + warRoomCustomCards.length + ' custom card(s)?', {
+                            title: 'Clear custom cards', confirmText: 'Remove all cards'
+                          }))) return;
                           upd({ warRoomCustomCards: [], warRoomCustomCardsError: null });
                           if (ctx.addToast) ctx.addToast('Custom cards cleared', 'info');
                         },
@@ -4256,8 +4342,10 @@
                     ),
                     // Reset settings — restores UDL/accessibility defaults without touching progress
                     ((warRoomPlainLanguage || warRoomSoundMuted || warRoomA11y.dyslexiaFont || warRoomA11y.largeText || warRoomA11y.highContrast || warRoomA11y.colorBlind || warRoomA11y.ttsAuto || warRoomA11y.noShortcuts || warRoomA11y.noTimerAutoResolve) ? el('button', {
-                      onClick: function() {
-                        if (!confirm('Reset UDL / Access options to defaults? Achievements and history are kept.')) return;
+                      onClick: async function() {
+                        if (!(await askCyberDefenseConfirmation('Reset UDL and accessibility options to defaults? Achievements and history are kept.', {
+                          title: 'Reset access options', confirmText: 'Reset options'
+                        }))) return;
                         warTtsStop();
                         upd({
                           warRoomPlainLanguage: false,
@@ -4502,10 +4590,11 @@
                       el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.35 } }, 'One-click random theme + difficulty. Great for warmup.')
                     ),
                     el('button', {
-                      onClick: function() {
-                        if (confirm('Boss Mode: 3 rounds (Exploitation \u2192 C2 \u2192 Actions), tight 10-budget cap, APT adversary. Tougher scoring. Ready?')) {
-                          startCampaign('threatHunter', 'apt', null, { bossMode: true });
-                        }
+                      onClick: async function() {
+                        if (!(await askCyberDefenseConfirmation('Boss Mode has 3 rounds (Exploitation \u2192 C2 \u2192 Actions), a tight 10-budget cap, an APT adversary, and tougher scoring.', {
+                          title: 'Start Boss Mode?', confirmText: 'Start Boss Mode'
+                        }))) return;
+                        startCampaign('threatHunter', 'apt', null, { bossMode: true });
                       },
                       'aria-label': t('stem.cyberdefense.start_boss_mode_campaign', 'Start Boss Mode campaign'),
                       style: { padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(244,63,94,0.4)', background: 'linear-gradient(135deg, rgba(244,63,94,0.14), rgba(234,179,8,0.06))', color: '#fca5a5', fontSize: 12, fontWeight: 800, cursor: 'pointer', textAlign: 'left' } },
@@ -5482,13 +5571,14 @@
                       })(),
                       // Quit Campaign (abandon mid-run; confirms first)
                       !warLiveIsObserving && el('button', {
-                        onClick: function() {
-                          if (confirm('Quit this campaign? Your progress this run will be lost and it will NOT appear in your history.')) {
-                            warTtsStop();
-                            upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null, warRoomRoundResolved: false, warRoomLastResolution: null, warRoomHouseRulesActive: null });
-                            sfxCyberdClick();
-                            if (ctx.announceToSR) ctx.announceToSR('Campaign abandoned.');
-                          }
+                        onClick: async function() {
+                          if (!(await askCyberDefenseConfirmation('Your progress in this run will be lost and it will not appear in your history.', {
+                            title: 'Quit this campaign?', confirmText: 'Quit campaign'
+                          }))) return;
+                          warTtsStop();
+                          upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null, warRoomRoundResolved: false, warRoomLastResolution: null, warRoomHouseRulesActive: null });
+                          sfxCyberdClick();
+                          if (ctx.announceToSR) ctx.announceToSR('Campaign abandoned.');
                         },
                         'aria-label': t('stem.cyberdefense.quit_this_campaign', 'Quit this campaign'),
                         style: { width: '100%', marginTop: 6, padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
