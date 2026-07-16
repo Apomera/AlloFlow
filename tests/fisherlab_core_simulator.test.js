@@ -253,6 +253,14 @@ describe('Fisher Lab catch evidence', () => {
     expect(evaluateCoreFishDecision(25, species, 'release-required', 'below-minimum')).toMatchObject({ correct: false, classificationCorrect: true, evidenceCorrect: false });
     expect(evaluateCoreFishDecision(20, species, 'release-required', 'within-rule')).toMatchObject({ correct: false, classificationCorrect: false, evidenceCorrect: true });
   });
+
+  it('pairs each outcome with appropriate catch-handling guidance', () => {
+    const { getCoreFishHandlingGuidance } = window.__FisherLabCore;
+
+    expect(getCoreFishHandlingGuidance('retain', true)).toMatchObject({ id: 'retain', label: 'Retained catch care' });
+    expect(getCoreFishHandlingGuidance('release-required', false)).toMatchObject({ id: 'release', label: 'Release handling' });
+    expect(getCoreFishHandlingGuidance('retain', false).id).toBe('release');
+  });
 });
 
 describe('Fisher Lab simulator safeguards', () => {
@@ -331,6 +339,12 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('1. Log the measurement evidence');
     expect(source).toContain("name: 'fl-fish-evidence'");
     expect(source).toContain("disabled: !fishEvidence");
+    expect(source).toContain('Deckhand review');
+    expect(source).toContain('Continue voyage');
+    expect(source).toContain("getCoreFishHandlingGuidance(action, result.legalToRetain)");
+    expect(source).toContain("activeFish, activeLobster, activeTraffic, fishDecisionResult");
+    expect(source).toContain("}, 80);");
+    expect(source).toContain("return function() { clearTimeout(focusTimer); };");
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true'");
     expect(source).not.toContain('resumeSim');
     expect(source).not.toContain('hud.fuel || 100');
