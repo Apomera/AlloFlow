@@ -452,6 +452,7 @@
   function mountGL(holder, THREE, scene, opts, state) {
     var w = holder.clientWidth || 800, hgt = holder.clientHeight || 480;
     var renderer = new THREE.WebGLRenderer({ antialias: true });
+    try { renderer.xr.enabled = true; } catch (e) {}   // harmless in 2D; powers the optional Enter-VR path
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(w, hgt);
     renderer.setClearColor(BG, 1);
@@ -1314,6 +1315,69 @@
     var live = document.createElement('div'); live.setAttribute('aria-live', 'polite'); live.setAttribute('role', 'status'); live.style.cssText = SR_ONLY;
     holder.appendChild(instr); holder.appendChild(live);
     el.setAttribute('aria-describedby', instrId);
+
+    // ── WebXR: optional "Enter VR" (progressive enhancement, palace pattern) ──
+    // Appears ONLY when the browser reports immersive-vr support (headset +
+    // permission — e.g. the standalone deploy in a Quest browser); a no-op
+    // everywhere else, so the 2D orbit view is unchanged. In VR the whole
+    // graph becomes a ROOM-SCALE MODEL floating in front of the user — the
+    // group is scaled so its bounding radius reads ~1.3 m at chest height
+    // (comfortable, no locomotion, no motion sickness); the headset owns the
+    // camera; desktop orbit + bloom + gizmo are fully restored on exit.
+    var _xrPrev = null;
+    function _seatForVR() {
+      _xrPrev = { sx: group.scale.x, px: group.position.x, py: group.position.y, pz: group.position.z };
+      var s = 1.3 / Math.max(1, scene.bounds.radius);
+      group.scale.setScalar(s);
+      group.position.set(0, 1.4, -1.9);
+    }
+    function _unseatVR() {
+      if (!_xrPrev) return;
+      group.scale.setScalar(_xrPrev.sx);
+      group.position.set(_xrPrev.px, _xrPrev.py, _xrPrev.pz);
+      _xrPrev = null;
+    }
+    function enterVR(btn) {
+      if (!navigator.xr) return;
+      if (btn) btn.disabled = true;
+      navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] })
+        .then(function (session) {
+          _seatForVR();
+          if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
+          try { renderer.xr.setReferenceSpaceType('local-floor'); } catch (e) {}
+          Promise.resolve(renderer.xr.setSession(session)).then(function () { renderer.setAnimationLoop(tick); });
+          try { live.textContent = _tr(t, 'cg3d.vr_entered', 'Entered VR. Your world floats in front of you — look around it.'); } catch (e) {}
+          session.addEventListener('end', function () {
+            try { renderer.setAnimationLoop(null); } catch (e) {}
+            _unseatVR();
+            if (btn) btn.disabled = false;
+            try { live.textContent = _tr(t, 'cg3d.vr_exited', 'Back to the screen view.'); } catch (e) {}
+            if (!state.disposed) tick();             // resume the window-rAF loop
+          });
+        })
+        .catch(function () {
+          if (btn) btn.disabled = false;
+          try { live.textContent = _tr(t, 'cg3d.vr_failed', 'Could not start VR.'); } catch (e) {}
+        });
+    }
+    state.cleanup.push(function () {
+      try { var s = renderer.xr && renderer.xr.getSession && renderer.xr.getSession(); if (s) s.end(); } catch (e) {}
+      try { renderer.setAnimationLoop(null); } catch (e) {}
+    });
+    try {
+      if (navigator.xr && navigator.xr.isSessionSupported) {
+        navigator.xr.isSessionSupported('immersive-vr').then(function (ok) {
+          if (!ok || state.disposed) return;
+          var vb = document.createElement('button');
+          vb.textContent = '🥽 ' + _tr(t, 'cg3d.enter_vr', 'VR');
+          vb.setAttribute('aria-label', _tr(t, 'cg3d.enter_vr_title', 'Enter VR — see your world room-scale (needs a headset)'));
+          vb.title = _tr(t, 'cg3d.enter_vr_title', 'Enter VR — see your world room-scale (needs a headset)');
+          vb.style.cssText = 'position:absolute;right:12px;bottom:108px;z-index:6;border:none;background:#4f46e5;color:#fff;border-radius:999px;padding:8px 14px;min-height:44px;font-size:13px;font-weight:800;cursor:pointer;';   // above the nav gizmo's corner
+          vb.onclick = function () { enterVR(vb); };
+          holder.appendChild(vb);
+        }).catch(function () {});
+      }
+    } catch (e) {}
     var routeProgress = document.createElement('div');
     routeProgress.setAttribute('aria-hidden', 'true');
     routeProgress.style.cssText = 'position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(2,6,23,0.86);border:1px solid #475569;border-radius:999px;padding:8px 12px;color:#e2e8f0;font-size:12px;font-weight:800;pointer-events:none;';
@@ -1428,12 +1492,19 @@
 
     function tick() {
       if (state.disposed) return;
-      if (!dragging && !reduce && opts.autoRotate !== false) tTheta += 0.0016;
-      theta += (tTheta - theta) * 0.12;          // damping toward targets
-      phi += (tPhi - phi) * 0.12;
-      radius += (tRadius - radius) * 0.08;
-      target.lerp(tTarget, 0.1);                 // ease the focus point (click-to-focus)
-      applyCamera();
+      // While an XR session presents, the HEADSET owns the camera pose and
+      // renderer.setAnimationLoop drives this tick — skip the orbit math and
+      // never re-queue rAF (that would double-run the loop).
+      var presenting = false;
+      try { presenting = !!(renderer.xr && renderer.xr.isPresenting); } catch (e) {}
+      if (!presenting) {
+        if (!dragging && !reduce && opts.autoRotate !== false) tTheta += 0.0016;
+        theta += (tTheta - theta) * 0.12;          // damping toward targets
+        phi += (tPhi - phi) * 0.12;
+        radius += (tRadius - radius) * 0.08;
+        target.lerp(tTarget, 0.1);                 // ease the focus point (click-to-focus)
+        applyCamera();
+      }
       // constrained-edit glide: nodes ease toward their new semantic positions,
       // planes re-seat, and edges follow every frame (skipped under reduced motion —
       // applySceneUpdate snaps instantly there).
@@ -1482,8 +1553,11 @@
         if (stars) stars.rotation.y += 0.0003;
         if (focusRing && focusRing.visible) focusRing.material.rotation += 0.02;   // gentle reticle spin
       }
-      if (composer) composer.render(); else renderer.render(root, camera);
-      if (gizmoScene) {
+      // Bloom's EffectComposer renders to a plain target (not per-eye), so XR
+      // sessions bypass it; the gizmo scissor pass is desktop-only chrome.
+      if (presenting) renderer.render(root, camera);
+      else if (composer) composer.render(); else renderer.render(root, camera);
+      if (gizmoScene && !presenting) {
         try {
           var GS = 84, pad = 12;
           renderer.setScissorTest(true);
@@ -1497,11 +1571,14 @@
           renderer.setViewport(0, 0, cw, ch); renderer.setScissor(0, 0, cw, ch); renderer.setScissorTest(false);
         } catch (e) {}
       }
-      state.raf = (window.requestAnimationFrame || function () { return 0; })(tick);
+      if (!presenting) state.raf = (window.requestAnimationFrame || function () { return 0; })(tick);
     }
     tick();
 
     state.onResize = function () {
+      var presenting = false;
+      try { presenting = !!(renderer.xr && renderer.xr.isPresenting); } catch (e) {}
+      if (presenting) return;                      // XR owns the framebuffer size
       var W = holder.clientWidth || w, H = holder.clientHeight || hgt;
       cw = W; ch = H;
       camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H);

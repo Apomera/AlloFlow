@@ -83,7 +83,7 @@ describe('applyStructureLayout — Venn Diagram (clusters + shared lens)', () =>
 
 describe('applyStructureLayout — the general contract', () => {
   it('returns the graph UNCHANGED for unknown/absent structureTypes', () => {
-    const g = E.adaptGenerated(gen('Structured Outline', [{ title: 'A', items: ['x'] }]));
+    const g = E.adaptGenerated(gen('Memory Palace', [{ title: 'A', items: ['x'] }]));
     expect(E.applyStructureLayout(g)).toBe(g);
     const g2 = E.adaptGenerated(gen('3D Concept Space', [{ title: 'A', items: ['x'] }]));
     expect(E.applyStructureLayout(g2)).toBe(g2);
@@ -115,6 +115,7 @@ describe('applyStructureLayout — the general contract', () => {
 
   it('every registered type lays out its dispatcher-shaped sample', () => {
     const samples = {
+      'Structured Outline': [{ title: 'Intro', items: ['a'] }, { title: 'Body', items: ['b', 'c'] }, { title: 'Close', items: ['d'] }],
       'Venn Diagram': vennGen().branches,
       'T-Chart': [{ title: 'L', items: ['a', 'b', 'c'] }, { title: 'R', items: ['d', 'e'] }],
       'Fishbone': [{ title: 'People', items: ['a'] }, { title: 'Methods', items: ['b'] }, { title: 'Machines', items: ['c'] }, { title: 'Materials', items: ['d'] }],
@@ -213,7 +214,7 @@ describe('buildScene — zones replace strand planes in shaped layouts', () => {
   });
 
   it('classic graphs (no meta.layout) keep their lane planes and gain no zones', () => {
-    const g = E.ensureDefaultAxisValues(E.adaptGenerated(gen('Structured Outline', [
+    const g = E.ensureDefaultAxisValues(E.adaptGenerated(gen('3D Concept Space', [
       { title: 'A', items: ['x'] }, { title: 'B', items: ['y'] },
     ])));
     const scene = CG3D.buildScene(g, {});

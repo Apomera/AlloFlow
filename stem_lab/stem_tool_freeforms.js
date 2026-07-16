@@ -147,6 +147,7 @@ window.StemLab = window.StemLab || {
   // prompt so the AI judges against the same spatial meaning the student saw;
   // `starters` seed renamable group titles (student content, not UI strings).
   var FF_SCAFFOLDS = [
+    { type: 'Structured Outline', icon: '\u{1FA9C}', name: 'Outline Cascade', grammar: 'sections step down like a staircase in reading order, each carrying its details', starters: ['Section 1', 'Section 2', 'Section 3'] },
     { type: 'Venn Diagram', icon: '\u{1FAE7}', name: 'Venn', grammar: 'two overlapping sets — items true of both float in the shared lens between the clusters', starters: ['Set A', 'Set B', 'Shared'] },
     { type: 'T-Chart', icon: '\u{1F9F1}', name: 'T-Chart', grammar: 'two contrasting columns standing as walls that face each other across a gap', starters: ['Left', 'Right'] },
     { type: 'Fishbone', icon: '\u{1F41F}', name: 'Fishbone', grammar: 'cause categories as ribs angling into a spine that points at the central effect', starters: ['Category 1', 'Category 2', 'Category 3', 'Category 4'] },

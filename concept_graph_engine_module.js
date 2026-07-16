@@ -488,9 +488,35 @@
     };
   }
 
-  // structureType → builder. Types NOT here ('Structured Outline', '3D Concept
-  // Space', unknown/custom) keep the generic strand-plane layout on purpose.
+  // Structured Outline — a cascade: sections step down-and-across like the
+  // indentation of the written outline itself (reading order = the staircase),
+  // each section carrying its details in a small cluster, linked in sequence.
+  function _layoutCascade(ctx) {
+    var B = ctx.branches;
+    if (B.length < 2) return null;
+    var pos = {}, extraEdges = [], zones = [];
+    if (ctx.main) pos[ctx.main.id] = { x: 0.06, y: 0.05, z: 0.5 };
+    var K = B.length;
+    B.forEach(function (b, k) {
+      var tt = k / (K - 1);
+      var c = { x: 0.14 + 0.74 * tt, y: 0.18 + 0.5 * tt, z: 0.5 + (k % 2 ? 0.14 : -0.14) };
+      pos[b.node.id] = c;
+      b.items.forEach(function (it, i) { pos[it.id] = _scatter(c.x + 0.03, c.y + 0.17, c.z, i, b.items.length, 0.07, 0.11, 0.13); });
+      zones.push({ key: b.node.category, shape: 'sphere' });
+      if (k) extraEdges.push({ fromId: B[k - 1].node.id, toId: b.node.id, type: 'sequence' });
+    });
+    return {
+      pos: pos,
+      axes: { x: { label: 'reading order', kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      layout: { mode: 'cascade', planeGap: 1100, zones: zones },
+      extraEdges: extraEdges
+    };
+  }
+
+  // structureType → builder. Types NOT here ('3D Concept Space',
+  // unknown/custom) keep the generic strand-plane layout on purpose.
   var STRUCTURE_LAYOUTS = {
+    'Structured Outline': _layoutCascade,
     'Venn Diagram': _layoutVenn,
     'T-Chart': _layoutTChart,
     'Fishbone': _layoutFishbone,
