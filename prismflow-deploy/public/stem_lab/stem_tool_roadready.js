@@ -982,7 +982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       (previousY > lineY && currentY <= lineY);
   }
   function vehicleFootprint(type) {
-    if (type === 'schoolbus' || type === 'bus') return { length: 10.0, width: 2.5 };
+    if (type === 'schoolbus' || type === 'school_bus' || type === 'bus') return { length: 10.0, width: 2.5 };
     if (type === 'truck' || type === 'pickup') return { length: 5.5, width: 2.0 };
     if (type === 'van') return { length: 5.0, width: 2.0 };
     if (type === 'suv') return { length: 4.8, width: 1.9 };
@@ -1018,6 +1018,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }
     return true;
   }
+  function isStaticObstacleCell(cell) {
+    return cell === 1 || cell === 5 || cell === 6 || cell === 7;
+  }
+
+  function vehicleGridCollision(car, size, getCell) {
+    if (!car || !size || typeof getCell !== 'function') return { hit: false };
+    var radius = Math.ceil(Math.hypot(size.length, size.width) * 0.5) + 1;
+    var minX = Math.floor(car.x - radius), maxX = Math.floor(car.x + radius);
+    var minY = Math.floor(car.y - radius), maxY = Math.floor(car.y + radius);
+    var cellSize = { length: 1, width: 1 };
+    for (var y = minY; y <= maxY; y++) {
+      for (var x = minX; x <= maxX; x++) {
+        var cell = getCell(x, y);
+        if (!isStaticObstacleCell(cell)) continue;
+        var tile = { x: x + 0.5, y: y + 0.5, heading: 0 };
+        if (vehicleRectsOverlap(car, size, tile, cellSize)) return { hit: true, cell: cell, x: x, y: y };
+      }
+    }
+    return { hit: false };
+  }
   var AIR_DENSITY = 1.225; // kg/m³ at sea level
 
   // Scenarios use 'clear' internally; lab views expose the friendlier 'dry' to users.
@@ -1033,6 +1053,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return 0.72; // dry
   }
 
+  function hydroplaneThresholdMph(psi, tread32, waterDepthIn) {
+    var pressure = Math.max(20, Math.min(50, Number(psi) || 32));
+    var tread = Math.max(2, Math.min(10, Number(tread32) || 7));
+    var depth = Math.max(0, Math.min(0.6, Number(waterDepthIn) || 0));
+    var pressureThreshold = 10.35 * Math.sqrt(pressure);
+    var treadFactor = 0.72 + 0.28 * ((tread - 2) / 8);
+    var depthFactor = 1 - 0.28 * Math.max(0, (depth - 0.08) / 0.52);
+    return pressureThreshold * treadFactor * depthFactor;
+  }
+
+  function computeTireDynamics(weather, speedMph, brakeInput, steeringInput, tireState, overPuddle) {
+    tireState = tireState || {};
+    var tread32 = Math.max(2, Math.min(10, Number(tireState.tread32) || 7));
+    var psi = Math.max(20, Math.min(50, Number(tireState.psi) || 32));
+    var absEnabled = tireState.absEnabled !== false;
+    var baseMu = frictionCoef(weather);
+    var wetTreadFactor = weather === 'rain' ? (0.72 + 0.28 * ((tread32 - 2) / 8)) : 1;
+    var surfaceMu = baseMu * wetTreadFactor;
+    var thresholdMph = hydroplaneThresholdMph(psi, tread32, overPuddle ? 0.35 : 0);
+    var hydroplaneSeverity = overPuddle ? Math.max(0, Math.min(1, (Math.abs(speedMph) - thresholdMph) / 14)) : 0;
+    var effectiveMu = surfaceMu * (1 - hydroplaneSeverity) + 0.08 * hydroplaneSeverity;
+    var requestedBrakeMu = Math.max(0, Math.min(1, brakeInput || 0)) * 1.05;
+    var absActive = absEnabled && Math.abs(speedMph) > 5 && requestedBrakeMu > effectiveMu * 0.82;
+    var wheelLocked = !absEnabled && Math.abs(speedMph) > 5 && requestedBrakeMu > effectiveMu;
+    var brakingMu = Math.min(requestedBrakeMu, effectiveMu * (absActive ? 0.92 : wheelLocked ? 0.72 : 0.95));
+    var steeringFactor = 1 - hydroplaneSeverity * 0.88;
+    if (wheelLocked) steeringFactor *= 0.08;
+    else if (absActive) steeringFactor *= 0.72;
+    return {
+      mu: effectiveMu, surfaceMu: surfaceMu, brakingMu: brakingMu,
+      absActive: absActive, wheelLocked: wheelLocked,
+      hydroplaneSeverity: hydroplaneSeverity, hydroplaneThresholdMph: thresholdMph,
+      steeringFactor: Math.max(0.05, steeringFactor), tread32: tread32, psi: psi,
+      steeringDemand: Math.abs(steeringInput || 0)
+    };
+  }
+
+  function streamedPuddleAt(world, x, y) {
+    if (!world || typeof world.getChunk !== 'function') return false;
+    var chunkIndex = Math.floor(y / CHUNK_SIZE);
+    var chunk = world.getChunk(chunkIndex);
+    var hash = function(k) {
+      var value = (chunkIndex * 2654435761 + k * 1597334677) >>> 0;
+      return value / 0xffffffff;
+    };
+    for (var i = 0; i < 6; i++) {
+      var puddleY = chunkIndex * CHUNK_SIZE + hash(i * 3) * CHUNK_SIZE;
+      var side = (hash(i * 3 + 1) - 0.5) * 3.5 * 1.6;
+      var center = world.spline ? world.spline.centerAt(puddleY) : (chunk && chunk.roadCenter != null ? chunk.roadCenter : Math.floor(MAP_SIZE / 2));
+      if (Math.hypot(center + side - x, puddleY - y) < 1.2) return true;
+    }
+    return false;
+  }
   // Rolling resistance coefficient.
   function rollingCoef(weather, tirePressureOk) {
     var base = 0.012;
