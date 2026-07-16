@@ -282,10 +282,6 @@
       "file": "books/gutenberg-ebook-27279-southern-literature-from-1579-1895-a-comprehensive-review-with-c.json"
     },
     {
-      "slug": "gutenberg-ebook-45-anne-of-green-gables",
-      "file": "books/gutenberg-ebook-45-anne-of-green-gables.json"
-    },
-    {
       "slug": "gutenberg-ebook-26315-shakespeare-s-family",
       "file": "books/gutenberg-ebook-26315-shakespeare-s-family.json"
     },
@@ -4018,14 +4014,6 @@
       "file": "books/gutenberg-ebook-345-dracula.json"
     },
     {
-      "slug": "gutenberg-ebook-11-alice-s-adventures-in-wonderland",
-      "file": "books/gutenberg-ebook-11-alice-s-adventures-in-wonderland.json"
-    },
-    {
-      "slug": "gutenberg-ebook-55-the-wonderful-wizard-of-oz",
-      "file": "books/gutenberg-ebook-55-the-wonderful-wizard-of-oz.json"
-    },
-    {
       "slug": "gutenberg-ebook-1661-the-adventures-of-sherlock-holmes",
       "file": "books/gutenberg-ebook-1661-the-adventures-of-sherlock-holmes.json"
     },
@@ -4466,10 +4454,6 @@
       "file": "books/gutenberg-ebook-113-the-secret-garden.json"
     },
     {
-      "slug": "gutenberg-ebook-514-little-women",
-      "file": "books/gutenberg-ebook-514-little-women.json"
-    },
-    {
       "slug": "gutenberg-ebook-2591-grimms-fairy-tales",
       "file": "books/gutenberg-ebook-2591-grimms-fairy-tales.json"
     },
@@ -4480,10 +4464,6 @@
     {
       "slug": "gutenberg-ebook-43-the-strange-case-of-dr-jekyll-and-mr-hyde",
       "file": "books/gutenberg-ebook-43-the-strange-case-of-dr-jekyll-and-mr-hyde.json"
-    },
-    {
-      "slug": "gutenberg-ebook-289-the-wind-in-the-willows",
-      "file": "books/gutenberg-ebook-289-the-wind-in-the-willows.json"
     },
     {
       "slug": "gutenberg-ebook-902-the-happy-prince-and-other-tales",
@@ -4512,10 +4492,6 @@
     {
       "slug": "gutenberg-ebook-1322-leaves-of-grass",
       "file": "books/gutenberg-ebook-1322-leaves-of-grass.json"
-    },
-    {
-      "slug": "gutenberg-ebook-521-the-life-and-adventures-of-robinson-crusoe",
-      "file": "books/gutenberg-ebook-521-the-life-and-adventures-of-robinson-crusoe.json"
     },
     {
       "slug": "gutenberg-ebook-103-around-the-world-in-eighty-days",
@@ -4550,10 +4526,6 @@
       "file": "books/gutenberg-ebook-67098-winnie-the-pooh.json"
     },
     {
-      "slug": "gutenberg-ebook-16-peter-pan-peter-and-wendy",
-      "file": "books/gutenberg-ebook-16-peter-pan-peter-and-wendy.json"
-    },
-    {
       "slug": "gutenberg-ebook-5343-rainbow-valley",
       "file": "books/gutenberg-ebook-5343-rainbow-valley.json"
     },
@@ -4564,10 +4536,6 @@
     {
       "slug": "gutenberg-ebook-501-the-story-of-doctor-dolittle",
       "file": "books/gutenberg-ebook-501-the-story-of-doctor-dolittle.json"
-    },
-    {
-      "slug": "gutenberg-ebook-146-a-little-princess-being-the-whole-story-of-sara-crewe-now-told-f",
-      "file": "books/gutenberg-ebook-146-a-little-princess-being-the-whole-story-of-sara-crewe-now-told-f.json"
     },
     {
       "slug": "gutenberg-ebook-1874-the-railway-children",
@@ -4590,10 +4558,6 @@
       "file": "books/gutenberg-ebook-78017-the-swiss-family-robinson.json"
     },
     {
-      "slug": "gutenberg-ebook-2781-just-so-stories",
-      "file": "books/gutenberg-ebook-2781-just-so-stories.json"
-    },
-    {
       "slug": "gutenberg-ebook-503-the-blue-fairy-book",
       "file": "books/gutenberg-ebook-503-the-blue-fairy-book.json"
     },
@@ -4614,20 +4578,12 @@
       "file": "books/gutenberg-ebook-498-rebecca-of-sunnybrook-farm.json"
     },
     {
-      "slug": "gutenberg-ebook-764-hans-brinker-or-the-silver-skates",
-      "file": "books/gutenberg-ebook-764-hans-brinker-or-the-silver-skates.json"
-    },
-    {
       "slug": "gutenberg-ebook-10148-the-merry-adventures-of-robin-hood",
       "file": "books/gutenberg-ebook-10148-the-merry-adventures-of-robin-hood.json"
     },
     {
       "slug": "gutenberg-ebook-910-white-fang",
       "file": "books/gutenberg-ebook-910-white-fang.json"
-    },
-    {
-      "slug": "gutenberg-ebook-2226-kim",
-      "file": "books/gutenberg-ebook-2226-kim.json"
     },
     {
       "slug": "gutenberg-ebook-1268-the-mysterious-island",
@@ -4648,10 +4604,6 @@
     {
       "slug": "gutenberg-ebook-1399-anna-karenina",
       "file": "books/gutenberg-ebook-1399-anna-karenina.json"
-    },
-    {
-      "slug": "gutenberg-ebook-730-oliver-twist",
-      "file": "books/gutenberg-ebook-730-oliver-twist.json"
     },
     {
       "slug": "gutenberg-ebook-766-david-copperfield",
@@ -4742,14 +4694,6 @@
       "file": "books/gutenberg-ebook-7439-english-fairy-tales.json"
     },
     {
-      "slug": "gutenberg-ebook-1597-andersen-s-fairy-tales",
-      "file": "books/gutenberg-ebook-1597-andersen-s-fairy-tales.json"
-    },
-    {
-      "slug": "gutenberg-ebook-19-the-song-of-hiawatha",
-      "file": "books/gutenberg-ebook-19-the-song-of-hiawatha.json"
-    },
-    {
       "slug": "gutenberg-ebook-11666-the-conjure-woman",
       "file": "books/gutenberg-ebook-11666-the-conjure-woman.json"
     },
@@ -4782,20 +4726,8 @@
       "file": "books/gutenberg-ebook-13951-les-trois-mousquetaires.json"
     },
     {
-      "slug": "gutenberg-ebook-5097-vingt-mille-lieues-sous-les-mers-complete",
-      "file": "books/gutenberg-ebook-5097-vingt-mille-lieues-sous-les-mers-complete.json"
-    },
-    {
-      "slug": "gutenberg-ebook-800-le-tour-du-monde-en-quatre-vingts-jours",
-      "file": "books/gutenberg-ebook-800-le-tour-du-monde-en-quatre-vingts-jours.json"
-    },
-    {
       "slug": "gutenberg-ebook-56327-fables-de-la-fontaine",
       "file": "books/gutenberg-ebook-56327-fables-de-la-fontaine.json"
-    },
-    {
-      "slug": "gutenberg-ebook-4650-candide-ou-l-optimisme",
-      "file": "books/gutenberg-ebook-4650-candide-ou-l-optimisme.json"
     },
     {
       "slug": "gutenberg-ebook-55752-dom-casmurro",
@@ -6032,6 +5964,74 @@
     {
       "slug": "bloom-card-d6624351-untitled",
       "file": "books/bloom-card-d6624351-untitled.json"
+    },
+    {
+      "slug": "gutenberg-ebook-28885-alice-s-adventures-in-wonderland-illustrated-by-arthur-rackham-w",
+      "file": "books/gutenberg-ebook-28885-alice-s-adventures-in-wonderland-illustrated-by-arthur-rackham-w.json"
+    },
+    {
+      "slug": "gutenberg-ebook-26654-peter-and-wendy",
+      "file": "books/gutenberg-ebook-26654-peter-and-wendy.json"
+    },
+    {
+      "slug": "gutenberg-ebook-30795-the-song-of-hiawatha-an-epic-poem",
+      "file": "books/gutenberg-ebook-30795-the-song-of-hiawatha-an-epic-poem.json"
+    },
+    {
+      "slug": "gutenberg-ebook-64365-anne-of-green-gables",
+      "file": "books/gutenberg-ebook-64365-anne-of-green-gables.json"
+    },
+    {
+      "slug": "gutenberg-ebook-43936-the-wonderful-wizard-of-oz",
+      "file": "books/gutenberg-ebook-43936-the-wonderful-wizard-of-oz.json"
+    },
+    {
+      "slug": "gutenberg-ebook-37332-a-little-princess-being-the-whole-story-of-sara-crewe-now-told-f",
+      "file": "books/gutenberg-ebook-37332-a-little-princess-being-the-whole-story-of-sara-crewe-now-told-f.json"
+    },
+    {
+      "slug": "gutenberg-ebook-27805-the-wind-in-the-willows",
+      "file": "books/gutenberg-ebook-27805-the-wind-in-the-willows.json"
+    },
+    {
+      "slug": "gutenberg-ebook-37106-little-women-or-meg-jo-beth-and-amy",
+      "file": "books/gutenberg-ebook-37106-little-women-or-meg-jo-beth-and-amy.json"
+    },
+    {
+      "slug": "gutenberg-ebook-11239-the-life-and-adventures-of-robinson-crusoe-of-york-mariner-volum",
+      "file": "books/gutenberg-ebook-11239-the-life-and-adventures-of-robinson-crusoe-of-york-mariner-volum.json"
+    },
+    {
+      "slug": "gutenberg-ebook-46675-oliver-twist-or-the-parish-boy-s-progress-illustrated",
+      "file": "books/gutenberg-ebook-46675-oliver-twist-or-the-parish-boy-s-progress-illustrated.json"
+    },
+    {
+      "slug": "gutenberg-ebook-34378-hans-brinker-or-the-silver-skates",
+      "file": "books/gutenberg-ebook-34378-hans-brinker-or-the-silver-skates.json"
+    },
+    {
+      "slug": "gutenberg-ebook-66688-hans-andersen-s-fairy-tales",
+      "file": "books/gutenberg-ebook-66688-hans-andersen-s-fairy-tales.json"
+    },
+    {
+      "slug": "gutenberg-ebook-35555-kim",
+      "file": "books/gutenberg-ebook-35555-kim.json"
+    },
+    {
+      "slug": "gutenberg-ebook-32488-just-so-stories",
+      "file": "books/gutenberg-ebook-32488-just-so-stories.json"
+    },
+    {
+      "slug": "gutenberg-ebook-59859-candide-ou-l-optimisme",
+      "file": "books/gutenberg-ebook-59859-candide-ou-l-optimisme.json"
+    },
+    {
+      "slug": "gutenberg-ebook-54873-vingt-mille-lieues-sous-les-mers",
+      "file": "books/gutenberg-ebook-54873-vingt-mille-lieues-sous-les-mers.json"
+    },
+    {
+      "slug": "gutenberg-ebook-46541-le-tour-du-monde-en-quatre-vingts-jours",
+      "file": "books/gutenberg-ebook-46541-le-tour-du-monde-en-quatre-vingts-jours.json"
     }
   ]
 }

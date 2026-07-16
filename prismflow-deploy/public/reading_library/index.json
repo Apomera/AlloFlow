@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-16T16:36:16.948Z",
+ "generatedAt": "2026-07-16T16:56:55.524Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -54679,40 +54679,6 @@
    "file": "books/gutenberg-ebook-27279-southern-literature-from-1579-1895-a-comprehensive-review-with-c.json"
   },
   {
-   "slug": "gutenberg-ebook-45-anne-of-green-gables",
-   "title": "Anne of Green Gables",
-   "description": "A full in-app public-domain copy of Anne of Green Gables for middle-grade and older-student literature study.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "5",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Literature",
-    "Coming of age",
-    "Canadian literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/45",
-    "textUrl": "https://www.gutenberg.org/files/45/45-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/45/pg45.cover.medium.jpg",
-   "authors": [
-    "Montgomery, L. M. (Lucy Maud)"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 222,
-   "wordCount": 102540,
-   "file": "books/gutenberg-ebook-45-anne-of-green-gables.json"
-  },
-  {
    "slug": "gutenberg-ebook-26315-shakespeare-s-family",
    "title": "Shakespeare's family",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
@@ -85037,74 +85003,6 @@
    "file": "books/gutenberg-ebook-345-dracula.json"
   },
   {
-   "slug": "gutenberg-ebook-11-alice-s-adventures-in-wonderland",
-   "title": "Alice's Adventures in Wonderland",
-   "description": "A full in-app public-domain copy of Alice's Adventures in Wonderland for middle-grade and older-student literature study.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Literature",
-    "Fantasy",
-    "British literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/11",
-    "textUrl": "https://www.gutenberg.org/files/11/11-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/11/pg11.cover.medium.jpg",
-   "authors": [
-    "Carroll, Lewis"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 56,
-   "wordCount": 26563,
-   "file": "books/gutenberg-ebook-11-alice-s-adventures-in-wonderland.json"
-  },
-  {
-   "slug": "gutenberg-ebook-55-the-wonderful-wizard-of-oz",
-   "title": "The Wonderful Wizard of Oz",
-   "description": "A full in-app public-domain copy of The Wonderful Wizard of Oz for middle-grade and older-student literature study.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "5",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Literature",
-    "Fantasy",
-    "American literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/55",
-    "textUrl": "https://www.gutenberg.org/files/55/55-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/55/pg55.cover.medium.jpg",
-   "authors": [
-    "Baum, L. Frank (Lyman Frank)"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 83,
-   "wordCount": 39687,
-   "file": "books/gutenberg-ebook-55-the-wonderful-wizard-of-oz.json"
-  },
-  {
    "slug": "gutenberg-ebook-1661-the-adventures-of-sherlock-holmes",
    "title": "The Adventures of Sherlock Holmes",
    "description": "A full in-app public-domain copy of The Adventures of Sherlock Holmes for older-student mystery and literature study.",
@@ -88844,40 +88742,6 @@
    "file": "books/gutenberg-ebook-113-the-secret-garden.json"
   },
   {
-   "slug": "gutenberg-ebook-514-little-women",
-   "title": "Little Women",
-   "description": "A full in-app public-domain copy of Little Women for middle-grade reading.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Fiction",
-    "Family",
-    "American literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/514",
-    "textUrl": "https://www.gutenberg.org/files/514/514-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/514/pg514.cover.medium.jpg",
-   "authors": [
-    "Alcott, Louisa May"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 397,
-   "wordCount": 186151,
-   "file": "books/gutenberg-ebook-514-little-women.json"
-  },
-  {
    "slug": "gutenberg-ebook-2591-grimms-fairy-tales",
    "title": "Grimms' Fairy Tales",
    "description": "A full in-app public-domain copy of Grimms' Fairy Tales for younger and middle-grade reading.",
@@ -88979,40 +88843,6 @@
    "pageCount": 60,
    "wordCount": 25674,
    "file": "books/gutenberg-ebook-43-the-strange-case-of-dr-jekyll-and-mr-hyde.json"
-  },
-  {
-   "slug": "gutenberg-ebook-289-the-wind-in-the-willows",
-   "title": "The Wind in the Willows",
-   "description": "A full in-app public-domain copy of The Wind in the Willows for younger and middle-grade reading.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Fiction",
-    "Animals",
-    "Children's literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/289",
-    "textUrl": "https://www.gutenberg.org/files/289/289-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/289/pg289.cover.medium.jpg",
-   "authors": [
-    "Grahame, Kenneth"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 132,
-   "wordCount": 58464,
-   "file": "books/gutenberg-ebook-289-the-wind-in-the-willows.json"
   },
   {
    "slug": "gutenberg-ebook-902-the-happy-prince-and-other-tales",
@@ -89250,40 +89080,6 @@
    "pageCount": 261,
    "wordCount": 121751,
    "file": "books/gutenberg-ebook-1322-leaves-of-grass.json"
-  },
-  {
-   "slug": "gutenberg-ebook-521-the-life-and-adventures-of-robinson-crusoe",
-   "title": "The Life and Adventures of Robinson Crusoe",
-   "description": "A full in-app public-domain copy of Robinson Crusoe for older-student adventure reading.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Fiction",
-    "Adventure",
-    "Survival"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/521",
-    "textUrl": "https://www.gutenberg.org/files/521/521-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/521/pg521.cover.medium.jpg",
-   "authors": [
-    "Defoe, Daniel"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 292,
-   "wordCount": 120959,
-   "file": "books/gutenberg-ebook-521-the-life-and-adventures-of-robinson-crusoe.json"
   },
   {
    "slug": "gutenberg-ebook-103-around-the-world-in-eighty-days",
@@ -89558,40 +89354,6 @@
    "file": "books/gutenberg-ebook-67098-winnie-the-pooh.json"
   },
   {
-   "slug": "gutenberg-ebook-16-peter-pan-peter-and-wendy",
-   "title": "Peter Pan: [Peter and Wendy]",
-   "description": "A full in-app public-domain copy of Peter Pan for younger and middle-grade reading.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "5",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Fiction",
-    "Fantasy",
-    "Children's literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/16",
-    "textUrl": "https://www.gutenberg.org/files/16/16-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/16/pg16.cover.medium.jpg",
-   "authors": [
-    "Barrie, J. M. (James Matthew)"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 100,
-   "wordCount": 47307,
-   "file": "books/gutenberg-ebook-16-peter-pan-peter-and-wendy.json"
-  },
-  {
    "slug": "gutenberg-ebook-5343-rainbow-valley",
    "title": "Rainbow Valley",
    "description": "A full in-app public-domain copy of Rainbow Valley for middle-grade and older-student reading.",
@@ -89692,40 +89454,6 @@
    "pageCount": 57,
    "wordCount": 26435,
    "file": "books/gutenberg-ebook-501-the-story-of-doctor-dolittle.json"
-  },
-  {
-   "slug": "gutenberg-ebook-146-a-little-princess-being-the-whole-story-of-sara-crewe-now-told-f",
-   "title": "A Little Princess: Being the whole story of Sara Crewe now told for the first time",
-   "description": "A full in-app public-domain copy of A Little Princess for middle-grade reading.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "5",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Fiction",
-    "Coming of age",
-    "Children's literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/146",
-    "textUrl": "https://www.gutenberg.org/files/146/146-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/146/pg146.cover.medium.jpg",
-   "authors": [
-    "Burnett, Frances Hodgson"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 140,
-   "wordCount": 66399,
-   "file": "books/gutenberg-ebook-146-a-little-princess-being-the-whole-story-of-sara-crewe-now-told-f.json"
   },
   {
    "slug": "gutenberg-ebook-1874-the-railway-children",
@@ -89898,40 +89626,6 @@
    "file": "books/gutenberg-ebook-78017-the-swiss-family-robinson.json"
   },
   {
-   "slug": "gutenberg-ebook-2781-just-so-stories",
-   "title": "Just so stories",
-   "description": "A full in-app public-domain copy of Just So Stories for early and middle-grade reading.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "5",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Fiction",
-    "Folklore",
-    "Children's literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/2781",
-    "textUrl": "https://www.gutenberg.org/files/2781/2781-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/2781/pg2781.cover.medium.jpg",
-   "authors": [
-    "Kipling, Rudyard"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 61,
-   "wordCount": 28824,
-   "file": "books/gutenberg-ebook-2781-just-so-stories.json"
-  },
-  {
    "slug": "gutenberg-ebook-503-the-blue-fairy-book",
    "title": "The Blue Fairy Book",
    "description": "A full in-app public-domain copy of The Blue Fairy Book for younger readers.",
@@ -90006,7 +89700,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -90102,40 +89796,6 @@
    "file": "books/gutenberg-ebook-498-rebecca-of-sunnybrook-farm.json"
   },
   {
-   "slug": "gutenberg-ebook-764-hans-brinker-or-the-silver-skates",
-   "title": "Hans Brinker; Or, The Silver Skates",
-   "description": "A full in-app public-domain copy of Hans Brinker, or The Silver Skates for middle-grade reading.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Fiction",
-    "Family",
-    "Children's literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/764",
-    "textUrl": "https://www.gutenberg.org/files/764/764.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/764/pg764.cover.medium.jpg",
-   "authors": [
-    "Dodge, Mary Mapes"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 178,
-   "wordCount": 83655,
-   "file": "books/gutenberg-ebook-764-hans-brinker-or-the-silver-skates.json"
-  },
-  {
    "slug": "gutenberg-ebook-10148-the-merry-adventures-of-robin-hood",
    "title": "The Merry Adventures of Robin Hood",
    "description": "A full in-app public-domain copy of The Merry Adventures of Robin Hood for middle-grade adventure reading.",
@@ -90202,40 +89862,6 @@
    "pageCount": 157,
    "wordCount": 72217,
    "file": "books/gutenberg-ebook-910-white-fang.json"
-  },
-  {
-   "slug": "gutenberg-ebook-2226-kim",
-   "title": "Kim",
-   "description": "A full in-app public-domain copy of Kim for older-student literature and history study.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "5",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Fiction",
-    "Adventure",
-    "India"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/2226",
-    "textUrl": "https://www.gutenberg.org/files/2226/2226-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/2226/pg2226.cover.medium.jpg",
-   "authors": [
-    "Kipling, Rudyard"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 224,
-   "wordCount": 104607,
-   "file": "books/gutenberg-ebook-2226-kim.json"
   },
   {
    "slug": "gutenberg-ebook-1268-the-mysterious-island",
@@ -90406,40 +90032,6 @@
    "pageCount": 755,
    "wordCount": 349803,
    "file": "books/gutenberg-ebook-1399-anna-karenina.json"
-  },
-  {
-   "slug": "gutenberg-ebook-730-oliver-twist",
-   "title": "Oliver Twist",
-   "description": "A full in-app public-domain copy of Oliver Twist for older-student literature study.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Fiction",
-    "Social class",
-    "British literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/730",
-    "textUrl": "https://www.gutenberg.org/files/730/730-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/730/pg730.cover.medium.jpg",
-   "authors": [
-    "Dickens, Charles"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 329,
-   "wordCount": 158008,
-   "file": "books/gutenberg-ebook-730-oliver-twist.json"
   },
   {
    "slug": "gutenberg-ebook-766-david-copperfield",
@@ -91190,74 +90782,6 @@
    "file": "books/gutenberg-ebook-7439-english-fairy-tales.json"
   },
   {
-   "slug": "gutenberg-ebook-1597-andersen-s-fairy-tales",
-   "title": "Andersen's Fairy Tales",
-   "description": "A full in-app public-domain copy of Andersen's Fairy Tales for younger and middle-grade reading.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Fairy tales",
-    "Folklore",
-    "Children's literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/1597",
-    "textUrl": "https://www.gutenberg.org/files/1597/1597-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/1597/pg1597.cover.medium.jpg",
-   "authors": [
-    "Andersen, H. C. (Hans Christian)"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 120,
-   "wordCount": 55453,
-   "file": "books/gutenberg-ebook-1597-andersen-s-fairy-tales.json"
-  },
-  {
-   "slug": "gutenberg-ebook-19-the-song-of-hiawatha",
-   "title": "The Song of Hiawatha",
-   "description": "A full in-app public-domain copy of The Song of Hiawatha for older-student poetry study.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "Poetry",
-    "Native American culture",
-    "American literature"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/19",
-    "textUrl": "https://www.gutenberg.org/files/19/19-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/19/pg19.cover.medium.jpg",
-   "authors": [
-    "Longfellow, Henry Wadsworth"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 68,
-   "wordCount": 32174,
-   "file": "books/gutenberg-ebook-19-the-song-of-hiawatha.json"
-  },
-  {
    "slug": "gutenberg-ebook-11666-the-conjure-woman",
    "title": "The Conjure Woman",
    "description": "A full in-app public-domain copy of Charles Chesnutt's The Conjure Woman for older-student literature and history study.",
@@ -91531,74 +91055,6 @@
    "file": "books/gutenberg-ebook-13951-les-trois-mousquetaires.json"
   },
   {
-   "slug": "gutenberg-ebook-5097-vingt-mille-lieues-sous-les-mers-complete",
-   "title": "Vingt mille Lieues Sous Les Mers — Complete",
-   "description": "A full in-app public-domain copy of Vingt mille lieues sous les mers, in the original French, for heritage and world-language readers.",
-   "language": "French",
-   "langCode": "fr",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "French language",
-    "Science fiction",
-    "Ocean"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/5097",
-    "textUrl": "https://www.gutenberg.org/files/5097/5097-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/5097/pg5097.cover.medium.jpg",
-   "authors": [
-    "Verne, Jules"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 300,
-   "wordCount": 143347,
-   "file": "books/gutenberg-ebook-5097-vingt-mille-lieues-sous-les-mers-complete.json"
-  },
-  {
-   "slug": "gutenberg-ebook-800-le-tour-du-monde-en-quatre-vingts-jours",
-   "title": "Le tour du monde en quatre-vingts jours",
-   "description": "A full in-app public-domain copy of Le Tour du monde en quatre-vingts jours, in the original French, for heritage and world-language readers.",
-   "language": "French",
-   "langCode": "fr",
-   "isRtl": false,
-   "level": "5",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "French language",
-    "Fiction",
-    "Adventure"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/800",
-    "textUrl": "https://www.gutenberg.org/files/800/800-8.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/800/pg800.cover.medium.jpg",
-   "authors": [
-    "Verne, Jules"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 140,
-   "wordCount": 67451,
-   "file": "books/gutenberg-ebook-800-le-tour-du-monde-en-quatre-vingts-jours.json"
-  },
-  {
    "slug": "gutenberg-ebook-56327-fables-de-la-fontaine",
    "title": "Fables de La Fontaine",
    "description": "A full in-app public-domain copy of Fables de La Fontaine, in the original French, for heritage and world-language readers.",
@@ -91631,40 +91087,6 @@
    "pageCount": 573,
    "wordCount": 80334,
    "file": "books/gutenberg-ebook-56327-fables-de-la-fontaine.json"
-  },
-  {
-   "slug": "gutenberg-ebook-4650-candide-ou-l-optimisme",
-   "title": "Candide, ou l'optimisme",
-   "description": "A full in-app public-domain copy of Candide, ou l'optimisme, in the original French, for heritage and world-language readers.",
-   "language": "French",
-   "langCode": "fr",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-full-text",
-   "subjects": [
-    "French language",
-    "Satire",
-    "Philosophy"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/4650",
-    "textUrl": "https://www.gutenberg.org/files/4650/4650-0.txt"
-   },
-   "cover": "https://www.gutenberg.org/cache/epub/4650/pg4650.cover.medium.jpg",
-   "authors": [
-    "Voltaire"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 79,
-   "wordCount": 34119,
-   "file": "books/gutenberg-ebook-4650-candide-ou-l-optimisme.json"
   },
   {
    "slug": "gutenberg-ebook-55752-dom-casmurro",
@@ -100960,6 +100382,584 @@
    "pageCount": 3,
    "wordCount": 81,
    "file": "books/bloom-card-d6624351-untitled.json"
+  },
+  {
+   "slug": "gutenberg-ebook-28885-alice-s-adventures-in-wonderland-illustrated-by-arthur-rackham-w",
+   "title": "Alice's Adventures in Wonderland: Illustrated by Arthur Rackham. With a Proem by Austin Dobson",
+   "description": "A full in-app public-domain copy of Alice's Adventures in Wonderland for middle-grade and older-student literature study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Literature",
+    "Fantasy",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/28885",
+    "textUrl": "https://www.gutenberg.org/files/28885/28885-8.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/28885/pg28885.cover.medium.jpg",
+   "authors": [
+    "Carroll, Lewis"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 57,
+   "wordCount": 27156,
+   "file": "books/gutenberg-ebook-28885-alice-s-adventures-in-wonderland-illustrated-by-arthur-rackham-w.json"
+  },
+  {
+   "slug": "gutenberg-ebook-26654-peter-and-wendy",
+   "title": "Peter and Wendy",
+   "description": "A full in-app public-domain copy of Peter Pan for younger and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Fantasy",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/26654",
+    "textUrl": "https://www.gutenberg.org/files/26654/26654-8.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/26654/pg26654.cover.medium.jpg",
+   "authors": [
+    "Barrie, J. M. (James Matthew)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 100,
+   "wordCount": 47270,
+   "file": "books/gutenberg-ebook-26654-peter-and-wendy.json"
+  },
+  {
+   "slug": "gutenberg-ebook-30795-the-song-of-hiawatha-an-epic-poem",
+   "title": "The Song of Hiawatha: An Epic Poem",
+   "description": "A full in-app public-domain copy of The Song of Hiawatha for older-student poetry study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Poetry",
+    "Native American culture",
+    "American literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/30795",
+    "textUrl": "https://www.gutenberg.org/files/30795/30795-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/30795/pg30795.cover.medium.jpg",
+   "authors": [
+    "Longfellow, Henry Wadsworth"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 78,
+   "wordCount": 39913,
+   "file": "books/gutenberg-ebook-30795-the-song-of-hiawatha-an-epic-poem.json"
+  },
+  {
+   "slug": "gutenberg-ebook-64365-anne-of-green-gables",
+   "title": "Anne of Green Gables",
+   "description": "A full in-app public-domain copy of Anne of Green Gables for middle-grade and older-student literature study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Literature",
+    "Coming of age",
+    "Canadian literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/64365",
+    "textUrl": "https://www.gutenberg.org/files/64365/64365-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/64365/pg64365.cover.medium.jpg",
+   "authors": [
+    "Montgomery, L. M. (Lucy Maud)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 222,
+   "wordCount": 102755,
+   "file": "books/gutenberg-ebook-64365-anne-of-green-gables.json"
+  },
+  {
+   "slug": "gutenberg-ebook-43936-the-wonderful-wizard-of-oz",
+   "title": "The Wonderful Wizard of Oz",
+   "description": "A full in-app public-domain copy of The Wonderful Wizard of Oz for middle-grade and older-student literature study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Literature",
+    "Fantasy",
+    "American literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/43936",
+    "textUrl": "https://www.gutenberg.org/files/43936/43936.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/43936/pg43936.cover.medium.jpg",
+   "authors": [
+    "Baum, L. Frank (Lyman Frank)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 167,
+   "wordCount": 39722,
+   "file": "books/gutenberg-ebook-43936-the-wonderful-wizard-of-oz.json"
+  },
+  {
+   "slug": "gutenberg-ebook-37332-a-little-princess-being-the-whole-story-of-sara-crewe-now-told-f",
+   "title": "A Little Princess: Being the whole story of Sara Crewe now told for the first time",
+   "description": "A full in-app public-domain copy of A Little Princess for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Coming of age",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/37332",
+    "textUrl": "https://www.gutenberg.org/files/37332/37332-8.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/37332/pg37332.cover.medium.jpg",
+   "authors": [
+    "Burnett, Frances Hodgson"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 143,
+   "wordCount": 67455,
+   "file": "books/gutenberg-ebook-37332-a-little-princess-being-the-whole-story-of-sara-crewe-now-told-f.json"
+  },
+  {
+   "slug": "gutenberg-ebook-27805-the-wind-in-the-willows",
+   "title": "The Wind in the Willows",
+   "description": "A full in-app public-domain copy of The Wind in the Willows for younger and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Animals",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/27805",
+    "textUrl": "https://www.gutenberg.org/files/27805/27805-8.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/27805/pg27805.cover.medium.jpg",
+   "authors": [
+    "Grahame, Kenneth"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 131,
+   "wordCount": 58595,
+   "file": "books/gutenberg-ebook-27805-the-wind-in-the-willows.json"
+  },
+  {
+   "slug": "gutenberg-ebook-37106-little-women-or-meg-jo-beth-and-amy",
+   "title": "Little Women; Or, Meg, Jo, Beth, and Amy",
+   "description": "A full in-app public-domain copy of Little Women for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Family",
+    "American literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/37106",
+    "textUrl": "https://www.gutenberg.org/files/37106/37106-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/37106/pg37106.cover.medium.jpg",
+   "authors": [
+    "Alcott, Louisa May"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 407,
+   "wordCount": 191264,
+   "file": "books/gutenberg-ebook-37106-little-women-or-meg-jo-beth-and-amy.json"
+  },
+  {
+   "slug": "gutenberg-ebook-11239-the-life-and-adventures-of-robinson-crusoe-of-york-mariner-volum",
+   "title": "The Life and Adventures of Robinson Crusoe of York, Mariner, Volume 1: With an Account of His Travels Round Three Parts of the Globe,; Written By Himself, in Two Volumes",
+   "description": "A full in-app public-domain copy of Robinson Crusoe for older-student adventure reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Adventure",
+    "Survival"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/11239",
+    "textUrl": "https://www.gutenberg.org/files/11239/11239-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/11239/pg11239.cover.medium.jpg",
+   "authors": [
+    "Defoe, Daniel"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 300,
+   "wordCount": 124146,
+   "file": "books/gutenberg-ebook-11239-the-life-and-adventures-of-robinson-crusoe-of-york-mariner-volum.json"
+  },
+  {
+   "slug": "gutenberg-ebook-46675-oliver-twist-or-the-parish-boy-s-progress-illustrated",
+   "title": "Oliver Twist; or, The Parish Boy's Progress. Illustrated",
+   "description": "A full in-app public-domain copy of Oliver Twist for older-student literature study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Social class",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/46675",
+    "textUrl": "https://www.gutenberg.org/files/46675/46675-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/46675/pg46675.cover.medium.jpg",
+   "authors": [
+    "Dickens, Charles"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 329,
+   "wordCount": 158075,
+   "file": "books/gutenberg-ebook-46675-oliver-twist-or-the-parish-boy-s-progress-illustrated.json"
+  },
+  {
+   "slug": "gutenberg-ebook-34378-hans-brinker-or-the-silver-skates",
+   "title": "Hans Brinker; Or, The Silver Skates",
+   "description": "A full in-app public-domain copy of Hans Brinker, or The Silver Skates for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Family",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/34378",
+    "textUrl": "https://www.gutenberg.org/files/34378/34378-8.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/34378/pg34378.cover.medium.jpg",
+   "authors": [
+    "Dodge, Mary Mapes"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 177,
+   "wordCount": 83776,
+   "file": "books/gutenberg-ebook-34378-hans-brinker-or-the-silver-skates.json"
+  },
+  {
+   "slug": "gutenberg-ebook-66688-hans-andersen-s-fairy-tales",
+   "title": "Hans Andersen's Fairy Tales",
+   "description": "A full in-app public-domain copy of Andersen's Fairy Tales for younger and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fairy tales",
+    "Folklore",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/66688",
+    "textUrl": "https://www.gutenberg.org/files/66688/66688-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/66688/pg66688.cover.medium.jpg",
+   "authors": [
+    "Andersen, H. C. (Hans Christian)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 154,
+   "wordCount": 70869,
+   "file": "books/gutenberg-ebook-66688-hans-andersen-s-fairy-tales.json"
+  },
+  {
+   "slug": "gutenberg-ebook-35555-kim",
+   "title": "Kim",
+   "description": "A full in-app public-domain copy of Kim for older-student literature and history study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Adventure",
+    "India"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/35555",
+    "textUrl": "https://www.gutenberg.org/files/35555/35555-8.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/35555/pg35555.cover.medium.jpg",
+   "authors": [
+    "Kipling, Rudyard"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 226,
+   "wordCount": 105180,
+   "file": "books/gutenberg-ebook-35555-kim.json"
+  },
+  {
+   "slug": "gutenberg-ebook-32488-just-so-stories",
+   "title": "Just so stories",
+   "description": "A full in-app public-domain copy of Just So Stories for early and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Folklore",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/32488",
+    "textUrl": "https://www.gutenberg.org/files/32488/32488-8.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/32488/pg32488.cover.medium.jpg",
+   "authors": [
+    "Kipling, Rudyard"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 97,
+   "wordCount": 29926,
+   "file": "books/gutenberg-ebook-32488-just-so-stories.json"
+  },
+  {
+   "slug": "gutenberg-ebook-59859-candide-ou-l-optimisme",
+   "title": "Candide, ou l'optimisme",
+   "description": "A full in-app public-domain copy of Candide, ou l'optimisme, in the original French, for heritage and world-language readers.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "French language",
+    "Satire",
+    "Philosophy"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/59859",
+    "textUrl": "https://www.gutenberg.org/files/59859/59859-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/59859/pg59859.cover.medium.jpg",
+   "authors": [
+    "Voltaire"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 85,
+   "wordCount": 35283,
+   "file": "books/gutenberg-ebook-59859-candide-ou-l-optimisme.json"
+  },
+  {
+   "slug": "gutenberg-ebook-54873-vingt-mille-lieues-sous-les-mers",
+   "title": "Vingt mille lieues sous les mers",
+   "description": "A full in-app public-domain copy of Vingt mille lieues sous les mers, in the original French, for heritage and world-language readers.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "French language",
+    "Science fiction",
+    "Ocean"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/54873",
+    "textUrl": "https://www.gutenberg.org/files/54873/54873-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/54873/pg54873.cover.medium.jpg",
+   "authors": [
+    "Verne, Jules"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 291,
+   "wordCount": 139349,
+   "file": "books/gutenberg-ebook-54873-vingt-mille-lieues-sous-les-mers.json"
+  },
+  {
+   "slug": "gutenberg-ebook-46541-le-tour-du-monde-en-quatre-vingts-jours",
+   "title": "Le Tour du monde en quatre-vingts jours",
+   "description": "A full in-app public-domain copy of Le Tour du monde en quatre-vingts jours, in the original French, for heritage and world-language readers.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "French language",
+    "Fiction",
+    "Adventure"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/46541",
+    "textUrl": "https://www.gutenberg.org/files/46541/46541-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/46541/pg46541.cover.medium.jpg",
+   "authors": [
+    "Verne, Jules"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 141,
+   "wordCount": 67592,
+   "file": "books/gutenberg-ebook-46541-le-tour-du-monde-en-quatre-vingts-jours.json"
   }
  ]
 }
