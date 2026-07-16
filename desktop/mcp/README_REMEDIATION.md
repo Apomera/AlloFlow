@@ -63,6 +63,7 @@ claude mcp add alloflow-remediation \
 ```bash
 GEMINI_API_KEY=... node desktop/mcp/remediation_headless_driver.cjs audit path/to/doc.pdf
 GEMINI_API_KEY=... node desktop/mcp/remediation_headless_driver.cjs remediate path/to/doc.pdf [outDir]
+node desktop/mcp/remediation_headless_driver.cjs validate path/to/doc-tagged.pdf   # PDF/UA-1; no key needed
 ```
 
 ## Why a Gemini key? (billing model, in one minute)
@@ -88,7 +89,8 @@ The Canvas app never needs this — only this connector does.
 | Tool | What it does | Writes | Typical time |
 | --- | --- | --- | --- |
 | `remediation_capabilities` | Honest environment report (key present, Chromium available, modules found, models, limits). Call first. | nothing | instant |
-| `pdf_audit` | Accessibility audit: score, per-severity issues, scanned/searchable detection, language, page count. | nothing | 1–3 min |
+| `pdf_audit` | Accessibility audit: score, per-severity issues, scanned/searchable detection, language, page count. Accepts `.pdf`, `.docx`, `.pptx` (Office files audit deterministically from extracted text). | nothing | 1–3 min |
+| `pdf_validate_ua` | Independent **PDF/UA-1 (ISO 14289-1)** validation via veraPDF — a real JVM in headless Chromium, served from the repo's own `verapdf/` assets (a local loopback server provides the HTTP Range support CheerpJ requires; the CDN copy fails that at some edges). **Needs no Gemini key.** Runs outside the single-flight lane, so it works even while a remediation job is running. A lone `clause 5, test 1` failure = the pipeline deliberately withheld the PDF/UA claim, not a forgotten stamp. | nothing | ~1–2 min (JVM boot 40–90s cold) |
 | `pdf_remediate` | Full pipeline, **synchronous**: audit → accessible HTML rebuild → AI fix passes to `target_score` → honesty-gated verification → tagged-PDF export. Blocks until done — use the job tools if your client enforces tool timeouts. | `<stem>-accessible.html`, `<stem>-tagged.pdf`, `<stem>-remediation-report.json` (collision-safe names, never overwrites) | 5–30 min |
 | `pdf_remediate_start` | Same run as a **background job**; returns a `jobId` immediately. Jobs run one at a time in start order. | same as above | instant return |
 | `pdf_batch_remediate_start` | Background job remediating **every .pdf in a folder** (non-recursive, ≤60 files, skips `-tagged.pdf` outputs), continuing past per-file failures. | same, per file | instant return |
@@ -99,6 +101,14 @@ The Canvas app never needs this — only this connector does.
 Remediate options (same on all three remediate tools): `output_dir`, `target_score` (default
 95), `fix_passes` (default 2), `polish_passes` (default 0), `tagged_pdf` (default true),
 `ocr_language` (Tesseract code for scanned docs, e.g. `spa`; omit for auto-detect).
+
+**Office inputs:** the remediate/audit/batch tools also accept `.docx` and `.pptx` — the
+pipeline routes them through its deterministic Office branches (mammoth/pptx extraction, no
+Vision pass). Office inputs skip the tagged-PDF export; the accessible HTML is the deliverable.
+
+**Skill:** `agent_skills/alloflow-pdf-remediation/SKILL.md` teaches an agent the job-polling
+etiquette and how to relay the honesty fields without overstating them — install it alongside
+the connector for best results.
 
 **Recommended flow for a client like Claude:** `remediation_capabilities` → `pdf_remediate_start`
 → poll `remediation_job_status` every 30–60 s → `remediation_job_result`. Jobs are in-memory:
@@ -138,6 +148,7 @@ no retry grind); 429s are classified per-minute (throttle, retried/deferred) vs 
 | `ALLOFLOW_MCP_GEMINI_MODEL` | `gemini-3-flash-preview` | primary model |
 | `ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL` | `gemini-2.5-flash-lite` | one retry on a 404/config failure |
 | `ALLOFLOW_MCP_MAX_RUN_MINUTES` | `30` | hard wall clock per run |
+| `ALLOFLOW_MCP_VERAPDF_URL` | local loopback server | override validator page URL (host must support HTTP Range) |
 | `ALLOFLOW_MCP_VERBOSE` | off | forward ALL page console lines to stderr |
 | `ALLOFLOW_MCP_HEADFUL` | off | visible Chromium (debugging) |
 

@@ -71,17 +71,21 @@ function getDriver() {
 
 function invalidParams(message) { const e = new Error(message); e.rpcCode = -32602; return e; }
 
-function requirePdfPath(args) {
-  if (typeof args.file_path !== 'string' || !args.file_path.trim()) throw invalidParams('arguments.file_path is required (absolute path to a local PDF)');
+function _requireFileOfType(args, extRe, extLabel) {
+  if (typeof args.file_path !== 'string' || !args.file_path.trim()) throw invalidParams('arguments.file_path is required (absolute path to a local ' + extLabel + ' file)');
   const p = path.resolve(args.file_path);
-  if (!/\.pdf$/i.test(p)) throw invalidParams('arguments.file_path must point to a .pdf file');
+  if (!extRe.test(p)) throw invalidParams('arguments.file_path must point to a ' + extLabel + ' file');
   let st;
   try { st = fs.statSync(p); } catch (_) { throw invalidParams('arguments.file_path does not exist or is unreadable: ' + p); }
   if (!st.isFile()) throw invalidParams('arguments.file_path is not a file: ' + p);
-  if (st.size > MAX_PDF_BYTES) throw invalidParams('PDF exceeds the ' + Math.round(MAX_PDF_BYTES / 1024 / 1024) + 'MB limit (' + Math.round(st.size / 1024 / 1024) + 'MB)');
+  if (st.size > MAX_PDF_BYTES) throw invalidParams('File exceeds the ' + Math.round(MAX_PDF_BYTES / 1024 / 1024) + 'MB limit (' + Math.round(st.size / 1024 / 1024) + 'MB)');
   if (st.size < 5) throw invalidParams('File is empty: ' + p);
   return p;
 }
+function requirePdfPath(args) { return _requireFileOfType(args, /\.pdf$/i, '.pdf'); }
+// Remediation/audit also take Office inputs — the pipeline sniffs .docx/.pptx from the
+// fileName and routes them through its deterministic office branches (no Vision pass).
+function requireDocPath(args) { return _requireFileOfType(args, /\.(pdf|docx|pptx)$/i, '.pdf, .docx, or .pptx'); }
 
 function requireGeminiKey() {
   if (!process.env.GEMINI_API_KEY) {
@@ -241,7 +245,7 @@ function resolveOutputDir(args, filePath) {
 
 async function remediateOneFile(filePath, outDir, opts, onLog) {
   const out = await getDriver().remediate(Object.assign({ filePath, onLog }, opts));
-  const stem = path.basename(filePath).replace(/\.pdf$/i, '');
+  const stem = path.basename(filePath).replace(/\.(pdf|docx|pptx)$/i, '');
   const files = {};
   if (out.accessibleHtml) {
     files.accessibleHtml = claimOutputPath(outDir, stem + '-accessible.html');
@@ -287,17 +291,29 @@ const TOOLS = [
   {
     name: 'pdf_audit',
     title: 'Audit a PDF for accessibility',
-    description: 'Run the AlloFlow accessibility audit on a local PDF: overall score, per-severity issue list, scanned/searchable detection, page count, detected language. Sends document content to the Gemini API and fetches pdf.js/Tesseract from public CDNs. Writes no files. Typically 1-3 minutes.',
+    description: 'Run the AlloFlow accessibility audit on a local PDF, DOCX, or PPTX: overall score, per-severity issue list, scanned/searchable detection, page count, detected language. Sends document content to the Gemini API and fetches pdf.js/Tesseract from public CDNs. Writes no files. Office files are audited deterministically from extracted text (no Vision pass). Typically 1-3 minutes.',
     inputSchema: {
       type: 'object',
       required: ['file_path'],
       properties: {
-        file_path: { type: 'string', description: 'Absolute path to a local .pdf file (max 200MB)' },
+        file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, or .pptx file (max 200MB)' },
         ocr_language: { type: 'string', description: "Tesseract language code for scanned pages (e.g. 'spa'); omit for auto-detect", maxLength: 20 },
       },
       additionalProperties: false,
     },
     annotations: { title: 'Audit a PDF for accessibility', readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+  },
+  {
+    name: 'pdf_validate_ua',
+    title: 'Validate PDF/UA-1 conformance',
+    description: 'Independent ISO 14289-1 (PDF/UA-1) validation of a local PDF using veraPDF (a real JVM in headless Chromium via CheerpJ — the same validator the app uses). Run it on a -tagged.pdf produced by remediation to independently confirm the byte-level tagging, or on any PDF to check its current conformance. Needs NO Gemini key, sends the document only to the validator page loaded from AlloFlow\'s CDN (validation runs locally in the browser JVM), writes nothing. Typically 30-60s including JVM boot. This is a DIFFERENT artifact from the remediation score: the score judges the accessible-HTML content; this judges the exported PDF bytes.',
+    inputSchema: {
+      type: 'object',
+      required: ['file_path'],
+      properties: { file_path: { type: 'string', description: 'Absolute path to a local .pdf file (max 200MB)' } },
+      additionalProperties: false,
+    },
+    annotations: { title: 'Validate PDF/UA-1 conformance', readOnlyHint: true, destructiveHint: false, openWorldHint: true },
   },
   (() => {
     const REMEDIATE_OPTION_PROPS = {
@@ -309,7 +325,7 @@ const TOOLS = [
       ocr_language: { type: 'string', description: "Tesseract language code for scanned pages (e.g. 'spa'); omit for auto-detect", maxLength: 20 },
     };
     const JOB_ID_SCHEMA = { type: 'object', required: ['job_id'], properties: { job_id: { type: 'string', minLength: 1, maxLength: 200 } }, additionalProperties: false };
-    const RESULT_DOC = 'Writes <name>-accessible.html, <name>-tagged.pdf, and <name>-remediation-report.json next to the input (or to output_dir), never overwriting existing files. Returns the distribution verdict, before/after scores, and every fidelity/honesty disclosure. Sends document content to the Gemini API.';
+    const RESULT_DOC = 'Accepts .pdf, .docx, or .pptx. Writes <name>-accessible.html, <name>-tagged.pdf, and <name>-remediation-report.json next to the input (or to output_dir), never overwriting existing files (Office inputs skip the tagged-PDF export — the accessible HTML is the deliverable). Returns the distribution verdict, before/after scores, and every fidelity/honesty disclosure. Sends document content to the Gemini API.';
     return [
       {
         name: 'pdf_remediate',
@@ -317,7 +333,7 @@ const TOOLS = [
         description: 'Run the full AlloFlow remediation pipeline on a local PDF: audit, rebuild as accessible HTML, iterative AI fix passes to the target score, honesty-checked verification, and a tagged PDF export. ' + RESULT_DOC + ' SYNCHRONOUS: blocks 5-30 minutes — if your client enforces a tool timeout, use pdf_remediate_start + remediation_job_status instead.',
         inputSchema: {
           type: 'object', required: ['file_path'],
-          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
+          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, or .pptx file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
           additionalProperties: false,
         },
         annotations: { title: 'Remediate a PDF (synchronous)', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
@@ -328,7 +344,7 @@ const TOOLS = [
         description: 'Start the same remediation as pdf_remediate as a BACKGROUND JOB and return a job_id immediately. Jobs run one at a time in start order. Poll remediation_job_status (every 30-60s is plenty; runs take 5-30 minutes), then fetch remediation_job_result. ' + RESULT_DOC,
         inputSchema: {
           type: 'object', required: ['file_path'],
-          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
+          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, or .pptx file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
           additionalProperties: false,
         },
         annotations: { title: 'Start a remediation job', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
@@ -336,7 +352,7 @@ const TOOLS = [
       {
         name: 'pdf_batch_remediate_start',
         title: 'Start a folder batch job',
-        description: 'Start a BACKGROUND JOB that remediates every .pdf in a folder (non-recursive, up to 60 files), one at a time, continuing past per-file failures. Returns a job_id immediately; poll remediation_job_status for per-file progress and fetch remediation_job_result for the per-file summaries. Same outputs and options as pdf_remediate, applied to each file.',
+        description: 'Start a BACKGROUND JOB that remediates every .pdf/.docx/.pptx in a folder (non-recursive, up to 60 files), one at a time, continuing past per-file failures. Returns a job_id immediately; poll remediation_job_status for per-file progress and fetch remediation_job_result for the per-file summaries. Same outputs and options as pdf_remediate, applied to each file.',
         inputSchema: {
           type: 'object', required: ['dir_path'],
           properties: Object.assign({ dir_path: { type: 'string', description: 'Folder containing .pdf files (searched non-recursively)' } }, REMEDIATE_OPTION_PROPS),
@@ -397,7 +413,7 @@ const TOOL_HANDLERS = {
 
   async pdf_audit(args) {
     assertAllowedKeys(args, ['file_path', 'ocr_language'], 'arguments');
-    const filePath = requirePdfPath(args);
+    const filePath = requireDocPath(args);
     const ocrLanguage = optionalOcrLanguage(args);
     requireGeminiKey();
     return withSingleFlight('pdf_audit', async () => {
@@ -407,9 +423,26 @@ const TOOL_HANDLERS = {
     });
   },
 
+  async pdf_validate_ua(args) {
+    assertAllowedKeys(args, ['file_path'], 'arguments');
+    const filePath = requirePdfPath(args);
+    // No Gemini key, no pipeline globals, its own browser context — deliberately OUTSIDE the
+    // single-flight lane so a 30-minute remediation doesn't block a 60-second validation.
+    const result = await getDriver().validatePdfUa({ filePath });
+    return {
+      input: filePath,
+      standard: 'PDF/UA-1 (ISO 14289-1)',
+      validator: 'veraPDF greenfield (in-browser JVM)',
+      compliant: !!(result && result.compliant),
+      failedChecks: (result && result.failedChecks) || 0,
+      failedRules: ((result && result.failedRules) || []).slice(0, 100),
+      note: 'Byte-level ISO conformance of THIS file. A remediation score judges the accessible-HTML content instead — the two are complementary, never interchangeable.',
+    };
+  },
+
   async pdf_remediate(args) {
     assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'ocr_language'], 'arguments');
-    const filePath = requirePdfPath(args);
+    const filePath = requireDocPath(args);
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
     requireGeminiKey();
@@ -418,7 +451,7 @@ const TOOL_HANDLERS = {
 
   pdf_remediate_start(args) {
     assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'ocr_language'], 'arguments');
-    const filePath = requirePdfPath(args);
+    const filePath = requireDocPath(args);
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
     requireGeminiKey();
@@ -435,7 +468,7 @@ const TOOL_HANDLERS = {
     try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
     catch (_) { throw invalidParams('arguments.dir_path does not exist or is unreadable: ' + dir); }
     const pdfs = entries
-      .filter((e) => e.isFile() && /\.pdf$/i.test(e.name) && !/-tagged\.pdf$/i.test(e.name)) // don't re-remediate our own outputs
+      .filter((e) => e.isFile() && /\.(pdf|docx|pptx)$/i.test(e.name) && !/-tagged\.pdf$/i.test(e.name)) // don't re-remediate our own outputs
       .map((e) => path.join(dir, e.name))
       .sort();
     if (!pdfs.length) throw invalidParams('No .pdf files found in ' + dir);
@@ -452,7 +485,7 @@ const TOOL_HANDLERS = {
         jobLog(j, 'file ' + (i + 1) + '/' + pdfs.length + ': ' + path.basename(f));
         try {
           // Per-file validation (size/header) at run time — one bad file must not sink the batch.
-          requirePdfPath({ file_path: f });
+          requireDocPath({ file_path: f });
           const summary = await remediateOneFile(f, outDir, opts, (line) => jobLog(j, line));
           perFile.push({ file: f, ok: true, verdict: summary.verdict, afterScore: summary.afterScore, aiVerificationIncomplete: summary.aiVerificationIncomplete, files: summary.files });
         } catch (e) {

@@ -72,10 +72,11 @@ describe('remediation MCP: protocol + tool registry', () => {
     child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
   });
 
-  it('lists exactly the eight tools, underscore-named, each with title + annotations', async () => {
+  it('lists exactly the nine tools, underscore-named, each with title + annotations', async () => {
     const { tools } = (await request('tools/list', {})).result;
     expect(tools.map((t) => t.name).sort()).toEqual([
       'pdf_audit', 'pdf_batch_remediate_start', 'pdf_remediate', 'pdf_remediate_start',
+      'pdf_validate_ua',
       'remediation_capabilities', 'remediation_job_cancel', 'remediation_job_result', 'remediation_job_status',
     ]);
     for (const t of tools) {
@@ -137,6 +138,17 @@ describe('remediation MCP: validation fires BEFORE any browser/quota spend', () 
     expect(res.isError).toBe(true);
     expect(res.content[0].text).toContain('GEMINI_API_KEY');
     expect(Date.now() - t0).toBeLessThan(3000);
+  });
+
+  it('pdf_validate_ua validates its path like the others (missing file → -32602) and needs NO key', async () => {
+    const msg = await request('tools/call', { name: 'pdf_validate_ua', arguments: { file_path: join(tmp, 'ghost.pdf') } });
+    expect(msg.error.code).toBe(-32602);
+    expect(msg.error.message).toContain('does not exist');
+    // Registry honesty: read-only on disk, network egress for the validator page assets.
+    const { tools } = (await request('tools/list', {})).result;
+    const v = tools.find((t) => t.name === 'pdf_validate_ua');
+    expect(v.annotations.readOnlyHint).toBe(true);
+    expect(v.description).toContain('NO Gemini key');
   });
 
   it('ocr_language is validated as a short language code', async () => {

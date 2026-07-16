@@ -37,6 +37,14 @@ const MODULE_FILES = [
 ];
 const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
 
+// veraPDF validator transport. The page + its 16MB JAR live in the repo (verapdf/), and
+// CheerpJ (the in-browser JVM) REQUIRES HTTP Range (206) responses to load a JAR — the
+// hosted CDN copy fails that requirement at some edges ("HTTP server does not support the
+// 'Range' header. CheerpJ cannot run.", observed 2026-07-16), so the driver serves the repo
+// copy from a loopback HTTP server with real Range support. ALLOFLOW_MCP_VERAPDF_URL
+// overrides (it must point at a Range-capable host).
+const VERAPDF_URL_OVERRIDE = process.env.ALLOFLOW_MCP_VERAPDF_URL || '';
+
 const DEFAULT_MODEL = process.env.ALLOFLOW_MCP_GEMINI_MODEL || 'gemini-3-flash-preview';
 const FALLBACK_MODEL = process.env.ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite';
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
@@ -130,7 +138,13 @@ function createDriver(options) {
       try { const m = require(pkg); if (m && m.chromium) { chromium = m.chromium; break; } } catch (_) {}
     }
     if (!chromium) throw new Error('Playwright is not installed. From the AlloFlow repo run: npm install && npx playwright install chromium');
-    browser = await chromium.launch({ headless: process.env.ALLOFLOW_MCP_HEADFUL !== '1' });
+    browser = await chromium.launch({
+      headless: process.env.ALLOFLOW_MCP_HEADFUL !== '1',
+      // CheerpJ (the veraPDF JVM) boots via timer/rAF loops that Chromium throttles for
+      // backgrounded/occluded content — in headless that throttling stalled the boot
+      // indefinitely ("CheerpJ runtime ready", then silence). These flags disable it.
+      args: ['--disable-background-timer-throttling', '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding'],
+    });
     browser.on('disconnected', () => { browser = null; });
     return browser;
   }
@@ -217,6 +231,20 @@ function createDriver(options) {
     return bytes.toString('base64');
   }
 
+  // PDF, DOCX, or PPTX — the pipeline's audit + extraction phases sniff the kind from the
+  // fileName they already receive (office files get the deterministic mammoth/pptx route).
+  function readDocBase64(filePath) {
+    if (/\.pdf$/i.test(filePath)) return readPdfBase64(filePath);
+    const bytes = fs.readFileSync(filePath);
+    if (/\.(docx|pptx)$/i.test(filePath)) {
+      if (bytes.length < 4 || bytes.subarray(0, 2).toString('latin1') !== 'PK') {
+        throw new Error('Not a valid Office file (missing ZIP header): ' + filePath);
+      }
+      return bytes.toString('base64');
+    }
+    throw new Error('Unsupported file type (need .pdf, .docx, or .pptx): ' + filePath);
+  }
+
   async function withRunPage(runOpts, fn) {
     const maxMs = Math.max(60000, (Number(runOpts.maxRunMinutes) || Number(process.env.ALLOFLOW_MCP_MAX_RUN_MINUTES) || 30) * 60000);
     const { page, context } = await newPipelinePage(runOpts);
@@ -247,7 +275,7 @@ function createDriver(options) {
 
   async function audit(opts) {
     const fileName = path.basename(opts.filePath);
-    const b64 = readPdfBase64(opts.filePath);
+    const b64 = readDocBase64(opts.filePath);
     (opts.onLog || log)('audit: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB)');
     return withRunPage(Object.assign({ fileName }, opts), (page) =>
       page.evaluate(async ({ b64, fileName }) => {
@@ -276,7 +304,8 @@ function createDriver(options) {
 
   async function remediate(opts) {
     const fileName = path.basename(opts.filePath);
-    const b64 = readPdfBase64(opts.filePath);
+    const b64 = readDocBase64(opts.filePath);
+    const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
     return withRunPage(Object.assign({ fileName }, opts), (page) =>
       page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, pdfLibCdn }) => {
@@ -343,18 +372,130 @@ function createDriver(options) {
         targetScore: Number(opts.targetScore) || 95,
         fixPasses: Number.isFinite(Number(opts.fixPasses)) ? Number(opts.fixPasses) : 2,
         polishPasses: Number.isFinite(Number(opts.polishPasses)) ? Number(opts.polishPasses) : 0,
-        wantTaggedPdf: opts.taggedPdf !== false,
+        // Tagged-PDF export is a PDF-in → PDF-out artifact; for DOCX/PPTX inputs the
+        // accessible HTML is the deliverable (matches the app).
+        wantTaggedPdf: opts.taggedPdf !== false && _isPdfInput,
         pdfLibCdn: PDFLIB_CDN,
       })
     );
   }
 
+  // Loopback static server for verapdf/ with REAL Range (206) support — see VERAPDF_URL_OVERRIDE.
+  let verapdfServer = null;
+  function getVerapdfUrl() {
+    if (VERAPDF_URL_OVERRIDE) return Promise.resolve(VERAPDF_URL_OVERRIDE);
+    if (verapdfServer) return Promise.resolve('http://127.0.0.1:' + verapdfServer.address().port + '/verapdf/verapdf_validator.html');
+    const http = require('http');
+    const rootDir = path.join(REPO_ROOT, 'verapdf');
+    if (!fs.existsSync(path.join(rootDir, 'verapdf_validator.html'))) {
+      return Promise.reject(new Error('verapdf/verapdf_validator.html not found in the repo — cannot serve the validator locally.'));
+    }
+    return new Promise((resolve, reject) => {
+      const srv = http.createServer((req, res) => {
+        try {
+          const u = decodeURIComponent((req.url || '/').split('?')[0]);
+          const rel = u.replace(/^\/verapdf\//, '').replace(/[\\/]|\.\./g, ''); // flat dir; no traversal
+          const f = path.join(rootDir, rel);
+          if (!u.startsWith('/verapdf/') || !fs.existsSync(f) || !fs.statSync(f).isFile()) { res.writeHead(404); res.end(); return; }
+          const size = fs.statSync(f).size;
+          res.setHeader('Accept-Ranges', 'bytes');
+          res.setHeader('Content-Type', f.endsWith('.html') ? 'text/html; charset=utf-8' : (f.endsWith('.jar') ? 'application/java-archive' : 'application/octet-stream'));
+          const m = req.headers.range && /^bytes=(\d*)-(\d*)$/.exec(req.headers.range);
+          if (req.method === 'HEAD') { res.writeHead(200, { 'Content-Length': size }); res.end(); return; }
+          if (m && (m[1] || m[2])) {
+            const start = m[1] ? parseInt(m[1], 10) : Math.max(0, size - parseInt(m[2], 10));
+            const end = (m[1] && m[2]) ? Math.min(parseInt(m[2], 10), size - 1) : size - 1;
+            if (!(start >= 0 && start <= end && end < size)) { res.writeHead(416, { 'Content-Range': 'bytes */' + size }); res.end(); return; }
+            res.writeHead(206, { 'Content-Range': 'bytes ' + start + '-' + end + '/' + size, 'Content-Length': end - start + 1 });
+            fs.createReadStream(f, { start, end }).pipe(res);
+          } else {
+            res.writeHead(200, { 'Content-Length': size });
+            fs.createReadStream(f).pipe(res);
+          }
+        } catch (_) { try { res.writeHead(500); res.end(); } catch (_2) {} }
+      });
+      srv.on('error', reject);
+      srv.listen(0, '127.0.0.1', () => {
+        verapdfServer = srv;
+        resolve('http://127.0.0.1:' + srv.address().port + '/verapdf/verapdf_validator.html');
+      });
+    });
+  }
+
+  // Independent PDF/UA-1 (ISO 14289-1) validation via the SAME in-browser veraPDF the app
+  // uses: the validator page boots a real JVM (CheerpJ) and accepts postMessage
+  // {verapdf-validate, bytes} → replies {verapdf-result} to ev.source. We load it TOP-LEVEL
+  // and post to our own window (the reply comes straight back) — an about:blank host with a
+  // loopback IFRAME is silently blocked by Chromium's Private Network Access rules, and
+  // readiness is visible in the page's own #status line. Needs NO Gemini key and touches NO
+  // pipeline globals, so it runs in its own context OUTSIDE the single-flight lane and
+  // deliberately never occupies activeContext (a job cancel must not kill a validation).
+  async function validatePdfUa(opts) {
+    const rlog = typeof opts.onLog === 'function' ? opts.onLog : log;
+    const fileName = path.basename(opts.filePath);
+    const b64 = readPdfBase64(opts.filePath);
+    rlog('veraPDF: validating ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB; JVM boot typically 40-90s cold)');
+    const b = await getBrowser();
+    const validatorUrl = await getVerapdfUrl();
+    // CheerpJ's boot occasionally races itself ("Java code still running") — observed ~1 in 3
+    // cold boots headless. A fresh page reliably recovers, so one retry is part of the contract.
+    let lastErr = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      if (attempt > 1) rlog('veraPDF: boot hiccup (' + String(lastErr && lastErr.message).slice(0, 120) + ') — retrying on a fresh page');
+      try {
+        return await _validateOnFreshPage(b, validatorUrl, b64, rlog);
+      } catch (e) {
+        lastErr = e;
+        if (!/Java code still running|not ready within|Boot failed/i.test(String(e && e.message))) throw e;
+      }
+    }
+    throw lastErr;
+  }
+
+  async function _validateOnFreshPage(b, validatorUrl, b64, rlog) {
+    const context = await b.newContext();
+    const page = await context.newPage();
+    if (process.env.ALLOFLOW_MCP_VERBOSE === '1') page.on('console', (m) => rlog('verapdf console: ' + m.text().slice(0, 300)));
+    try {
+      await page.goto(validatorUrl, { waitUntil: 'domcontentloaded' });
+      const result = await page.evaluate(({ b64, bootMs, validateMs }) => new Promise((resolve, reject) => {
+        const t0 = Date.now();
+        window.addEventListener('message', (ev) => {
+          const d = ev.data || {};
+          if (d.type === 'verapdf-result') {
+            if (d.error) reject(new Error('veraPDF: ' + d.error));
+            else resolve(d.result);
+          }
+        });
+        (function waitReady() {
+          const s = ((document.getElementById('status') || {}).textContent) || '';
+          if (/✅/.test(s)) {
+            const bin = atob(b64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            setTimeout(() => reject(new Error('veraPDF validation timed out after ' + Math.round(validateMs / 1000) + 's')), validateMs);
+            window.postMessage({ type: 'verapdf-validate', bytes }, '*');
+            return;
+          }
+          if (/❌/.test(s)) { reject(new Error('veraPDF boot failed: ' + s.slice(0, 200))); return; }
+          if (Date.now() - t0 > bootMs) { reject(new Error('veraPDF validator not ready within ' + Math.round(bootMs / 1000) + 's — last status: ' + s.slice(0, 150))); return; }
+          setTimeout(waitReady, 1000);
+        })();
+      }), { b64, bootMs: 180000, validateMs: 240000 });
+      rlog('veraPDF: ' + (result && result.compliant ? 'COMPLIANT' : (result ? result.failedChecks + ' failed check(s) across ' + (result.failedRules || []).length + ' rule(s)' : 'no result')));
+      return result;
+    } finally {
+      try { await context.close(); } catch (_) {}
+    }
+  }
+
   async function close() {
     activeContext = null;
+    if (verapdfServer) { try { verapdfServer.close(); } catch (_) {} verapdfServer = null; }
     if (browser) { try { await browser.close(); } catch (_) {} browser = null; }
   }
 
-  return { audit, remediate, cancelActiveRun, close };
+  return { audit, remediate, validatePdfUa, cancelActiveRun, close };
 }
 
 module.exports = { createDriver, classifyHttpFailure, REPO_ROOT, MODULE_FILES };
@@ -365,13 +506,17 @@ module.exports = { createDriver, classifyHttpFailure, REPO_ROOT, MODULE_FILES };
 if (require.main === module) {
   (async () => {
     const [, , cmd, file, outDir] = process.argv;
-    if (!cmd || !file || ['audit', 'remediate'].indexOf(cmd) === -1) {
-      defaultLog('usage: node remediation_headless_driver.cjs <audit|remediate> <file.pdf> [outDir]');
+    if (!cmd || !file || ['audit', 'remediate', 'validate'].indexOf(cmd) === -1) {
+      defaultLog('usage: node remediation_headless_driver.cjs <audit|remediate|validate> <file.pdf> [outDir]');
+      defaultLog('  validate = PDF/UA-1 check via veraPDF; needs NO GEMINI_API_KEY');
       process.exit(2);
     }
     const driver = createDriver({});
     try {
-      if (cmd === 'audit') {
+      if (cmd === 'validate') {
+        const out = await driver.validatePdfUa({ filePath: path.resolve(file) });
+        process.stdout.write(JSON.stringify(out, null, 2) + '\n');
+      } else if (cmd === 'audit') {
         const out = await driver.audit({ filePath: path.resolve(file) });
         delete out._fullAudit;
         process.stdout.write(JSON.stringify(out, null, 2) + '\n');
