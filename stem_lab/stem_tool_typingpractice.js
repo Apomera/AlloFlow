@@ -247,6 +247,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // ─────────────────────────────────────────────────────────
   // Lives in ctx.toolData.typingPractice. Hub persists it across sessions.
 
+  // WCAG 2.2: use an app-controlled alert dialog for destructive and
+  // replacement decisions. Capture-phase keyboard handling prevents the typing
+  // and drill shortcut listeners from changing background state while it is open.
+  var typingPracticeConfirmSequence = 0;
+  function askTypingPracticeConfirmation(message, options) {
+    return new Promise(function(resolve) {
+      if (typeof document === 'undefined' || !document.body) { resolve(false); return; }
+      options = options || {};
+      typingPracticeConfirmSequence += 1;
+      var idBase = 'typing-practice-confirm-' + typingPracticeConfirmSequence;
+      var opener = document.activeElement;
+      var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+        return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+      });
+      var overlay = document.createElement('div');
+      overlay.setAttribute('role', 'presentation');
+      overlay.setAttribute('data-typing-practice-confirm', 'true');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,.78);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+      var dialog = document.createElement('div');
+      dialog.setAttribute('role', 'alertdialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', idBase + '-title');
+      dialog.setAttribute('aria-describedby', idBase + '-description');
+      dialog.style.cssText = 'box-sizing:border-box;width:min(34rem,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);font-family:system-ui,sans-serif;';
+      var title = document.createElement('h2');
+      title.id = idBase + '-title';
+      title.textContent = String(options.title || 'Please confirm');
+      title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#0f172a;';
+      var description = document.createElement('p');
+      description.id = idBase + '-description';
+      description.textContent = String(message || 'Continue with this action?');
+      description.style.cssText = 'margin:0;color:#334155;line-height:1.55;white-space:pre-line;';
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = String(options.cancelText || 'Cancel');
+      cancel.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;cursor:pointer;';
+      var confirmButton = document.createElement('button');
+      confirmButton.type = 'button';
+      confirmButton.textContent = String(options.confirmText || 'Continue');
+      confirmButton.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #b91c1c;border-radius:8px;background:#b91c1c;color:#fff;font-weight:700;cursor:pointer;';
+      actions.appendChild(cancel); actions.appendChild(confirmButton);
+      dialog.appendChild(title); dialog.appendChild(description); dialog.appendChild(actions);
+      overlay.appendChild(dialog); document.body.appendChild(overlay);
+      blocked.forEach(function(entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+      var settled = false;
+      function finish(accepted) {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener('keydown', onKeyDown, true);
+        try { overlay.remove(); } catch (e) {}
+        blocked.forEach(function(entry) {
+          if (!entry.hadInert) entry.el.removeAttribute('inert');
+          if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden');
+          else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+        });
+        try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+        resolve(accepted === true);
+      }
+      function onKeyDown(event) {
+        event.stopImmediatePropagation();
+        if (event.key === 'Escape') { event.preventDefault(); finish(false); return; }
+        if (event.key !== 'Tab') return;
+        if (!dialog.contains(document.activeElement)) { event.preventDefault(); cancel.focus(); return; }
+        if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); confirmButton.focus(); }
+        else if (!event.shiftKey && document.activeElement === confirmButton) { event.preventDefault(); cancel.focus(); }
+      }
+      cancel.addEventListener('click', function() { finish(false); });
+      confirmButton.addEventListener('click', function() { finish(true); });
+      overlay.addEventListener('click', function(event) { if (event.target === overlay) finish(false); });
+      window.addEventListener('keydown', onKeyDown, true);
+      cancel.focus();
+    });
+  }
+
+  // Print errors are informational, so announce them non-modally. The normal
+  // path uses the app toast; the fallback remains both visible and live-region announced.
+  function reportTypingPracticeIssue(message, notify) {
+    message = String(message || 'An action could not be completed.');
+    if (typeof notify === 'function') { notify(message, 'info'); return; }
+    if (typeof document === 'undefined' || !document.body) return;
+    var live = document.getElementById('allo-live-typingpractice');
+    if (live) { live.textContent = ''; setTimeout(function() { live.textContent = message; }, 0); }
+    var prior = document.getElementById('typing-practice-issue');
+    if (prior && prior.parentNode) prior.parentNode.removeChild(prior);
+    var notice = document.createElement('div');
+    notice.id = 'typing-practice-issue';
+    notice.setAttribute('role', 'alert');
+    notice.setAttribute('aria-atomic', 'true');
+    notice.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:10000;max-width:min(30rem,calc(100vw - 40px));display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#fff7ed;color:#7c2d12;border:2px solid #c2410c;border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,.25);font-family:system-ui,sans-serif;line-height:1.45;';
+    var text = document.createElement('span'); text.textContent = message;
+    var close = document.createElement('button');
+    close.type = 'button'; close.textContent = 'Dismiss'; close.setAttribute('aria-label', 'Dismiss print message');
+    close.style.cssText = 'min-width:44px;min-height:44px;padding:8px 10px;border:2px solid #9a3412;border-radius:7px;background:#fff;color:#7c2d12;font-weight:700;cursor:pointer;';
+    close.addEventListener('click', function() { if (notice.parentNode) notice.parentNode.removeChild(notice); });
+    notice.appendChild(text); notice.appendChild(close); document.body.appendChild(notice);
+    setTimeout(function() { if (notice.parentNode) notice.parentNode.removeChild(notice); }, 10000);
+  }
+
   var DEFAULT_STATE = {
     view: 'menu',              // 'menu' | 'drill' | 'summary' | 'progress' | 'settings' | 'passage-setup'
     currentDrill: null,        // drill id currently active (e.g. 'home-row')
@@ -5951,9 +6051,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '5px 10px' })
                     }, __alloT('stem.typingpractice.edit', 'Edit')),
                     h('button', {
-                      onClick: function() {
-                        if (typeof window !== 'undefined' && window.confirm &&
-                            !window.confirm('Remove "' + (entry.label || 'this custom drill') + '" from the library?')) return;
+                      onClick: async function() {
+                        if (!(await askTypingPracticeConfirmation('Remove "' + (entry.label || 'this custom drill') + '" from the library?', {
+                          title: 'Remove custom drill', confirmText: 'Remove drill'
+                        }))) return;
                         var filtered = library.filter(function(x) { return x.id !== entry.id; });
                         var updates = { customDrillLibrary: filtered };
                         if (state.activeCustomDrillId === entry.id) updates.activeCustomDrillId = null;
@@ -7220,9 +7321,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         style: Object.assign({}, primaryBtnStyle(palette), { fontSize: '11px', padding: '5px 10px' })
                       }, __alloT('stem.typingpractice.drill_2', 'Drill')),
                       h('button', {
-                        onClick: function() {
-                          if (typeof window !== 'undefined' && window.confirm &&
-                              !window.confirm('Remove this passage from the library?')) return;
+                        onClick: async function() {
+                          if (!(await askTypingPracticeConfirmation('Remove this passage from the library?', {
+                            title: 'Remove saved passage', confirmText: 'Remove passage'
+                          }))) return;
                           var filtered = (state.aiPassageLibrary || []).filter(function(x) { return x.id !== p.id; });
                           var updates = { aiPassageLibrary: filtered };
                           // If we're deleting the currently-active passage, clear it too
@@ -9231,8 +9333,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 // + personal-best if it was set by this session. Only visible
                 // for the most-recent session to keep the fix surgical.
                 (state.sessions && state.sessions.length > 0 && state.sessions[state.sessions.length - 1].date === s.date) ? h('button', {
-                  onClick: function() {
-                    if (typeof window !== 'undefined' && window.confirm && !window.confirm('Discard this session? WPM, accuracy, and any mastery advancement from this run will be removed.')) return;
+                  onClick: async function() {
+                    if (!(await askTypingPracticeConfirmation('WPM, accuracy, and any mastery advancement from this run will be removed.', {
+                      title: 'Discard this session?', confirmText: 'Discard session'
+                    }))) return;
                     var sessions = (state.sessions || []).slice(0, -1);
                     var lifetime = Object.assign({}, state.lifetime || {});
                     lifetime.totalSessions = Math.max(0, (lifetime.totalSessions || 1) - 1);
@@ -10153,15 +10257,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       var file = e.target.files && e.target.files[0];
                       if (!file) return;
                       var reader = new FileReader();
-                      reader.onload = function(ev) {
+                      reader.onload = async function(ev) {
                         try {
                           var parsed = JSON.parse(ev.target.result);
                           if (parsed && parsed._format !== 'alloflow-typing-practice-profile') {
                             addToast('⚠️ Not a Typing Practice profile file.');
                             return;
                           }
-                          if (typeof window !== 'undefined' && window.confirm &&
-                              !window.confirm('Apply imported profile? Current accommodations, IEP goal, and audio theme will be replaced. Session history will NOT be affected.')) return;
+                          if (!(await askTypingPracticeConfirmation('Current accommodations, IEP goal, and audio theme will be replaced. Session history will not be affected.', {
+                            title: 'Apply imported profile?', confirmText: 'Apply profile'
+                          }))) return;
                           var updates = {};
                           if (parsed.accommodations) updates.accommodations = Object.assign({}, DEFAULT_STATE.accommodations, parsed.accommodations);
                           if (parsed.audioTheme) updates.audioTheme = parsed.audioTheme;
@@ -10238,7 +10343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         var file = e.target.files && e.target.files[0];
                         if (!file) return;
                         var reader = new FileReader();
-                        reader.onload = function(ev) {
+                        reader.onload = async function(ev) {
                           try {
                             var parsed = JSON.parse(ev.target.result);
                             if (parsed && parsed._format !== 'alloflow-typing-practice-backup') {
@@ -10247,8 +10352,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                             }
                             if (!parsed.state) { addToast('⚠️ Backup is empty or corrupted.'); return; }
                             var n = (parsed.state.sessions || []).length;
-                            if (typeof window !== 'undefined' && window.confirm &&
-                                !window.confirm('Restore backup? This will REPLACE the current student\'s data with the backup (' + n + ' sessions). You cannot undo this.')) return;
+                            if (!(await askTypingPracticeConfirmation('This replaces the current student\'s data with the backup (' + n + ' sessions). You cannot undo this.', {
+                              title: 'Restore full backup?', confirmText: 'Replace current data'
+                            }))) return;
                             // Apply each key individually via updMulti so React state updates batch cleanly.
                             var safeKeys = Object.keys(DEFAULT_STATE);
                             var updates = {};
@@ -10273,11 +10379,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
                   // Clear all — last option, guarded.
                   h('button', {
-                    onClick: function() {
-                      if (typeof window !== 'undefined' && window.confirm) {
-                        if (!window.confirm('Clear ALL typing practice data for this student? This erases sessions, personal best, mastery, error heatmap, both libraries, IEP goal, and motivation — everything. This cannot be undone. Export a backup first if you may want the data back.')) return;
-                        if (!window.confirm('Are you absolutely sure? Last chance.')) return;
-                      }
+                    onClick: async function() {
+                      if (!(await askTypingPracticeConfirmation('This erases sessions, personal best, mastery, error heatmap, both libraries, IEP goal, and motivation — everything. This cannot be undone. Export a backup first if you may want the data back.', {
+                        title: 'Clear all typing practice data?', confirmText: 'Continue to final check'
+                      }))) return;
+                      if (!(await askTypingPracticeConfirmation('This is the last chance to keep this student\'s typing practice data.', {
+                        title: 'Are you absolutely sure?', confirmText: 'Permanently clear all data'
+                      }))) return;
                       var wiped = Object.assign({}, DEFAULT_STATE);
                       wiped.view = 'menu';
                       updMulti(wiped);
@@ -11763,7 +11871,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 h('button', {
                   onClick: function() {
                     var report = buildIEPReport(state, filterOpts);
-                    printIEPReport(report, state.studentName || '');
+                    printIEPReport(report, state.studentName || '', addToast);
                   },
                   style: Object.assign({}, secondaryBtnStyle(palette), {
                     fontSize: '11px',
@@ -14110,11 +14218,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Open a print-friendly window with the IEP report and invoke the browser
   // print dialog. Uses a minimal standalone HTML so page breaks, margins, and
   // font stay clinical-looking. The opened window closes after print.
-  function printIEPReport(reportText, studentName) {
+  function printIEPReport(reportText, studentName, notify) {
     try {
       var w = window.open('', '_blank', 'width=720,height=900');
       if (!w) {
-        alert('Please allow popups to print the report, or use Copy and paste into a document.');
+        reportTypingPracticeIssue('Please allow popups to print the report, or use Copy and paste into a document.', notify);
         return;
       }
       var title = 'Typing Practice — Progress Summary' + (studentName ? ' — ' + studentName : '');
@@ -14149,7 +14257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       w.document.close();
     } catch (e) {
       console.warn('[TypingPractice] print failed:', e);
-      alert('Print failed. Use Copy and paste into your preferred document.');
+      reportTypingPracticeIssue('Print failed. Use Copy and paste into your preferred document.', notify);
     }
   }
 
