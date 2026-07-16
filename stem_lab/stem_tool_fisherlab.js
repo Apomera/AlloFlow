@@ -618,6 +618,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return { correct: correct, classificationCorrect: classificationCorrect, evidenceCorrect: evidenceCorrect, legalToRetain: evidence.legalToRetain, expectedAction: expectedAction, expectedReason: evidence.expectedReason, expectedLabel: evidence.expectedLabel, ruleLabel: evidence.ruleLabel, explanation: explanation };
   }
 
+  function evaluateCoreCaliperReading(actualLength, reading, tolerance) {
+    var actual = Number(actualLength);
+    var measured = Number(reading);
+    var allowedError = typeof tolerance === 'number' ? Math.max(0, tolerance) : 0.08;
+    var error = Math.abs(measured - actual);
+    var accurate = isFinite(error) && error <= allowedError;
+    var direction = accurate ? 'aligned' : measured < actual ? 'too-narrow' : 'too-wide';
+    var message = accurate ? 'Measurement locked. Continue to the compliance decision.' : direction === 'too-narrow' ? 'The caliper jaws are too narrow. Open them and try again.' : 'The caliper jaws are too wide. Close them and try again.';
+    return { accurate: accurate, error: error, direction: direction, reading: measured, tolerance: allowedError, message: message };
+  }
+
   function getCoreFishHandlingGuidance(action, legalToRetain) {
     if (action !== 'retain' || !legalToRetain) {
       return { id: 'release', label: 'Release handling', text: 'Wet hands, support the fish horizontally, minimize air exposure, and let it recover facing into moving water.' };
@@ -669,6 +680,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     gradeCoreEncounter: gradeCoreEncounter,
     getCoreFishRuleEvidence: getCoreFishRuleEvidence,
     evaluateCoreFishDecision: evaluateCoreFishDecision,
+    evaluateCoreCaliperReading: evaluateCoreCaliperReading,
     getCoreFishHandlingGuidance: getCoreFishHandlingGuidance,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
@@ -10070,6 +10082,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var activeTraffic = activeTrafficHook[0], setActiveTraffic = activeTrafficHook[1];
     var caliperHook = useState(3.5);
     var caliperVal = caliperHook[0], setCaliperVal = caliperHook[1];
+    var caliperCheckHook = useState(null);
+    var caliperCheck = caliperCheckHook[0], setCaliperCheck = caliperCheckHook[1];
     var missionDrawerHook = useState(false);
     var missionDrawerOpen = missionDrawerHook[0], setMissionDrawerOpen = missionDrawerHook[1];
 
@@ -10221,7 +10235,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
       if (ev.type === 'lobster-haul') {
         setActiveLobster(ev);
-        setCaliperVal(3.5);
+        setCaliperVal(ev.specimenType === 'crab' ? 4.5 : ev.specimenType === 'crayfish' ? 2.5 : 3.5);
+        setCaliperCheck(null);
       }
       if (ev.type === 'fish-haul') {
         setFishEvidence(null);
@@ -11400,6 +11415,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               }
 
               return h('div', {
+                role: 'dialog',
+                'aria-modal': 'true',
+                'aria-labelledby': 'fl-shellfish-inspection-title',
                 style: {
                   position: 'absolute',
                   top: 0,
@@ -11413,11 +11431,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   padding: '16px',
                   borderRadius: '8px',
                   border: '2px dashed #0ea5e9',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.8)'
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
+                  overflowY: 'auto'
                 }
               },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(56,189,248,0.3)', paddingBottom: '10px', marginBottom: '14px' } },
-                  h('span', { style: { fontSize: '15px', fontWeight: '800', color: '#bae6fd', display: 'flex', alignItems: 'center', gap: '8px' } },
+                  h('span', { id: 'fl-shellfish-inspection-title', style: { fontSize: '15px', fontWeight: '800', color: '#bae6fd', display: 'flex', alignItems: 'center', gap: '8px' } },
                     (activeLobster.region === 'chesapeake' ? '🦀 MD-DNR BLUE CRAB GAUGE STATION' : 
                      activeLobster.region === 'pnw' ? '🦀 WDFW DUNGENESS CRAB GAUGE STATION' :
                      activeLobster.region === 'greatlakes' ? '🦞 GLFC CRAYFISH GAUGE STATION' :
@@ -11425,10 +11444,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   ),
                   h('span', { style: { fontSize: '11px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', padding: '2px 8px', borderRadius: '4px' } }, 'PAUSED')
                 ),
-                h('div', { style: { display: 'flex', flex: 1, gap: '16px', minHeight: 0 } },
+                h('div', { style: { display: 'flex', flex: 1, flexWrap: 'wrap', gap: '16px', minHeight: 0 } },
                   // Left Panel: Interactive Caliper Gauge board (SVG)
-                  h('div', { style: { flex: '1.4', background: '#070f1e', borderRadius: '8px', border: '1px solid rgba(56,189,248,0.15)', display: 'flex', flexDirection: 'column', padding: '10px', position: 'relative', overflow: 'hidden' } },
-                    h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '8px', fontWeight: 'bold' } }, 'MEASURE BOARD (DIAGRAM NOT TO SCALE)'),
+                  h('div', { style: { flex: '1.4 1 340px', minWidth: 'min(100%, 300px)', background: '#070f1e', borderRadius: '8px', border: '1px solid rgba(56,189,248,0.15)', display: 'flex', flexDirection: 'column', padding: '10px', position: 'relative', overflow: 'hidden' } },
+                    h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '8px', fontWeight: 'bold' } }, 'TRAINING GAUGE · ALIGN JAWS TO REFERENCE POINTS'),
                     
                     // SVG Schematic
                     h('svg', {
@@ -11436,7 +11455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       height: '100%',
                       viewBox: '0 0 540 280',
                       role: 'img',
-                      'aria-label': 'Measurement diagram for a ' + activeLobster.length.toFixed(2) + ' inch ' + activeLobster.specimenType + '.',
+                      'aria-label': 'Shellfish measurement diagram with fixed and adjustable caliper jaws. Use the range control to align the jaws with the marked reference points.',
                       style: { flex: 1, background: '#111827', borderRadius: '6px' }
                     },
                       // Ruler background markings
@@ -11627,14 +11646,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                         max: activeLobster.specimenType === 'crab' ? 8.00 : activeLobster.specimenType === 'crayfish' ? 5.00 : 6.00,
                         step: 0.05,
                         value: caliperVal,
-                        onChange: function(e) { setCaliperVal(parseFloat(e.target.value)); },
+                        ref: decisionFocusRef,
+                        'aria-describedby': 'fl-caliper-feedback',
+                        onChange: function(e) { setCaliperVal(parseFloat(e.target.value)); setCaliperCheck(null); },
                         style: { width: '100%', cursor: 'ew-resize', accentColor: '#f59e0b' }
-                      })
+                      }),
+                      h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 8 } },
+                        h('button', { type: 'button', className: 'fl-btn', onClick: function() { var checked = evaluateCoreCaliperReading(activeLobster.length, caliperVal); setCaliperCheck(checked); flAnnounce(checked.message); }, style: { padding: '8px 12px', border: '1px solid rgba(251,191,36,0.55)', borderRadius: 6, background: '#78350f', color: '#fef3c7', fontWeight: 900, cursor: 'pointer' } }, 'Lock reading'),
+                        h('span', { id: 'fl-caliper-feedback', role: 'status', 'aria-live': 'polite', style: { flex: '1 1 190px', color: caliperCheck && caliperCheck.accurate ? '#86efac' : caliperCheck ? '#fde68a' : '#cbd5e1', fontSize: 11, lineHeight: 1.4 } }, caliperCheck ? caliperCheck.accurate ? 'Measurement logged: ' + caliperVal.toFixed(2) + ' in. Continue to the compliance action.' : caliperCheck.message : 'Align the jaws, then lock the reading before classifying the catch.')
+                      )
                     )
                   ),
 
                   // Right Panel
-                  h('div', { style: { flex: '1', display: 'flex', flexDirection: 'column', gap: '12px' } },
+                  h('div', { style: { flex: '1 1 300px', minWidth: 'min(100%, 280px)', display: 'flex', flexDirection: 'column', gap: '12px' } },
                     h('div', { style: { background: 'rgba(15,23,42,0.6)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(56,189,248,0.1)' } },
                       h('div', { style: { fontWeight: 'bold', fontSize: '11px', color: '#38bdf8', marginBottom: '8px' } }, 'SPECIMEN REPORT'),
                       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' } },
@@ -11661,8 +11686,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' } }, 'Confirm your compliance action:'),
                       h('button', {
                         className: 'fl-btn',
-                        ref: decisionFocusRef,
+                        disabled: !caliperCheck || !caliperCheck.accurate,
                         onClick: function() {
+                          if (!caliperCheck || !caliperCheck.accurate) return;
                           var decisionCorrect = activeLobster.isKeeper;
                           var msg = '';
                           var violationText = '';
@@ -11717,12 +11743,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                           }
                           setActiveLobster(null);
                         },
-                        style: { padding: '10px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
+                        style: { padding: '10px', background: caliperCheck && caliperCheck.accurate ? '#10b981' : '#475569', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: caliperCheck && caliperCheck.accurate ? 'pointer' : 'not-allowed', fontSize: '12px' }
                       }, 'CLASSIFY: LEGAL TO RETAIN'),
 
                       h('button', {
                         className: 'fl-btn',
+                        disabled: !caliperCheck || !caliperCheck.accurate,
                         onClick: function() {
+                          if (!caliperCheck || !caliperCheck.accurate) return;
                           var decisionCorrect = !activeLobster.isKeeper;
                           var msg = '';
 
@@ -11741,7 +11769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                           }
                           setActiveLobster(null);
                         },
-                        style: { padding: '10px', background: '#64748b', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
+                        style: { padding: '10px', background: caliperCheck && caliperCheck.accurate ? '#64748b' : '#1e293b', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: caliperCheck && caliperCheck.accurate ? 'pointer' : 'not-allowed', fontSize: '12px' }
                       }, 'CLASSIFY: MUST RELEASE')
                     )
                   )

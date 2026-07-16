@@ -263,6 +263,24 @@ describe('Fisher Lab catch evidence', () => {
   });
 });
 
+describe('Fisher Lab shellfish caliper', () => {
+  it('requires an instrument reading within tolerance', () => {
+    const { evaluateCoreCaliperReading } = window.__FisherLabCore;
+
+    expect(evaluateCoreCaliperReading(3.27, 3.25)).toMatchObject({ accurate: true, direction: 'aligned', reading: 3.25 });
+    expect(evaluateCoreCaliperReading(3.50, 3.35)).toMatchObject({ accurate: false, direction: 'too-narrow' });
+    expect(evaluateCoreCaliperReading(3.50, 3.65)).toMatchObject({ accurate: false, direction: 'too-wide' });
+    expect(evaluateCoreCaliperReading(3.50, Number.NaN).accurate).toBe(false);
+  });
+
+  it('honors an explicit instrument tolerance', () => {
+    const { evaluateCoreCaliperReading } = window.__FisherLabCore;
+
+    expect(evaluateCoreCaliperReading(5, 5.09, 0.1).accurate).toBe(true);
+    expect(evaluateCoreCaliperReading(5, 5.11, 0.1).accurate).toBe(false);
+  });
+});
+
 describe('Fisher Lab simulator safeguards', () => {
   it('keeps keyboard control focused, fuel bounded, and catch decisions explicit', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
@@ -346,6 +364,12 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("}, 80);");
     expect(source).toContain("return function() { clearTimeout(focusTimer); };");
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true'");
+    expect(source).toContain("'aria-labelledby': 'fl-shellfish-inspection-title'");
+    expect(source).toContain('TRAINING GAUGE · ALIGN JAWS TO REFERENCE POINTS');
+    expect(source).not.toContain("'aria-label': 'Measurement diagram for a '");
+    expect(source).toContain("'aria-describedby': 'fl-caliper-feedback'");
+    expect(source).toContain("disabled: !caliperCheck || !caliperCheck.accurate");
+    expect(source).toContain("if (!caliperCheck || !caliperCheck.accurate) return;");
     expect(source).not.toContain('resumeSim');
     expect(source).not.toContain('hud.fuel || 100');
   });
