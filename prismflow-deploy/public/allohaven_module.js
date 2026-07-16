@@ -215,6 +215,76 @@
     }
   }
 
+  var alloHavenConfirmSequence = 0;
+  function askAlloHavenConfirmation(message, options) {
+    return new Promise(function(resolve) {
+      if (!document.body) { resolve(false); return; }
+      options = options || {};
+      alloHavenConfirmSequence += 1;
+      var idBase = 'allohaven-confirm-' + alloHavenConfirmSequence;
+      var opener = document.activeElement;
+      var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+        return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+      });
+      var overlay = document.createElement('div');
+      overlay.setAttribute('role', 'presentation');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:100002;background:rgba(15,23,42,.76);display:flex;align-items:center;justify-content:center;padding:20px;';
+      var dialog = document.createElement('div');
+      dialog.setAttribute('role', 'alertdialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', idBase + '-title');
+      dialog.setAttribute('aria-describedby', idBase + '-description');
+      dialog.style.cssText = 'box-sizing:border-box;width:min(30rem,100%);background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);font-family:system-ui,sans-serif;';
+      var title = document.createElement('h2');
+      title.id = idBase + '-title';
+      title.textContent = String(options.title || 'Please confirm');
+      title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#0f172a;';
+      var description = document.createElement('p');
+      description.id = idBase + '-description';
+      description.textContent = String(message || 'Continue with this action?');
+      description.style.cssText = 'margin:0;color:#334155;line-height:1.55;white-space:pre-line;';
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = String(options.cancelText || 'Cancel');
+      cancel.style.cssText = 'min-height:44px;padding:9px 16px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;cursor:pointer;';
+      var confirm = document.createElement('button');
+      confirm.type = 'button';
+      confirm.textContent = String(options.confirmText || 'Continue');
+      confirm.style.cssText = 'min-height:44px;padding:9px 16px;border:2px solid #b91c1c;border-radius:8px;background:#b91c1c;color:#fff;font-weight:700;cursor:pointer;';
+      actions.appendChild(cancel); actions.appendChild(confirm);
+      dialog.appendChild(title); dialog.appendChild(description); dialog.appendChild(actions);
+      overlay.appendChild(dialog); document.body.appendChild(overlay);
+      blocked.forEach(function(entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+      var settled = false;
+      function finish(accepted) {
+        if (settled) return;
+        settled = true;
+        document.removeEventListener('keydown', onKeyDown, true);
+        try { overlay.remove(); } catch (e) {}
+        blocked.forEach(function(entry) {
+          if (!entry.hadInert) entry.el.removeAttribute('inert');
+          if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden'); else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+        });
+        try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+        resolve(accepted === true);
+      }
+      function onKeyDown(event) {
+        if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); return; }
+        if (event.key !== 'Tab') return;
+        if (!dialog.contains(document.activeElement)) { event.preventDefault(); cancel.focus(); return; }
+        if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); confirm.focus(); }
+        else if (!event.shiftKey && document.activeElement === confirm) { event.preventDefault(); cancel.focus(); }
+      }
+      cancel.addEventListener('click', function() { finish(false); });
+      confirm.addEventListener('click', function() { finish(true); });
+      overlay.addEventListener('click', function(event) { if (event.target === overlay) finish(false); });
+      document.addEventListener('keydown', onKeyDown, true);
+      cancel.focus();
+    });
+  }
+
   if (!window.AlloHavenArcade) {
     window.AlloHavenArcade = {
       _registry: {},
@@ -7121,8 +7191,8 @@
         newCards.splice(toIdx, 0, moved);
         setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
       }
-      function clearAllCards() {
-        if (window.confirm && !window.confirm('Remove all ' + cards.length + ' cards from this deck? Mastery stats are lost.')) return;
+      async function clearAllCards() {
+        if (!await askAlloHavenConfirmation('Remove all ' + cards.length + ' cards from this deck? Mastery stats will be lost.', { title: 'Clear flashcard deck', confirmText: 'Remove all cards' })) return;
         setDraft(Object.assign({}, draft, { data: { cards: [
           { id: 'c-' + Date.now(), front: '', back: '', correctCount: 0, missCount: 0 }
         ] } }));
@@ -7144,9 +7214,9 @@
         setImportText('');
         setImportPanelOpen(false);
       }
-      function importReplace() {
+      async function importReplace() {
         if (!importParse || importParse.pairs.length === 0) return;
-        if (cards.length > 1 && window.confirm && !window.confirm('Replace all existing cards with the imported ones?')) return;
+        if (cards.length > 1 && !await askAlloHavenConfirmation('Replace all existing cards with the imported cards?', { title: 'Replace flashcard deck', confirmText: 'Replace cards' })) return;
         var newCards = importParse.pairs.map(function(p, i) {
           return {
             id: 'c-' + Date.now() + '-' + i + '-' + Math.floor(Math.random() * 1000),
@@ -8866,8 +8936,8 @@
                 style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
               }, '🎤 Replace'),
               h('button', {
-                onClick: function() {
-                  if (window.confirm && !window.confirm('Delete this voice note?')) return;
+                onClick: async function() {
+                  if (!await askAlloHavenConfirmation('Delete this voice note?', { title: 'Delete voice note', confirmText: 'Delete voice note' })) return;
                   if (typeof p.onClearVoiceNote === 'function') p.onClearVoiceNote();
                 },
                 style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
