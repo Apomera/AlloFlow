@@ -276,7 +276,7 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Memory aids');
     expect(host.textContent).toContain('Memory-aid library');
-    expect(host.textContent).toContain('Showing 24 of 24 released memory aids');
+    expect(host.textContent).toContain('Showing 40 of 40 released memory aids');
     await clickButton('Show aid');
     expect(findButton('Hide aid')).toBeTruthy();
     expect(host.textContent).toContain('Why this source is reputable:');

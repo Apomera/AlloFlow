@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T15:47:24.810Z",
+  "generatedAt": "2026-07-16T14:49:41.420Z",
   "libraryId": "eppp-learning-library",
   "reviewStandard": {
     "checks": [
@@ -29,8 +29,8 @@
     "retainedReviewedFlashcards": 336,
     "retiredRedundantFlashcards": 79,
     "qaPassedMemoryAids": 0,
-    "sourceReviewedMemoryAids": 24,
-    "releasedMemoryAids": 24,
+    "sourceReviewedMemoryAids": 40,
+    "releasedMemoryAids": 40,
     "releasedFlashcards": 336,
     "editorialReviewedSourcePendingMemoryAids": 2
   },
@@ -23528,7 +23528,7 @@
       "domain": "Biological Bases of Behavior",
       "title": "Brain Lobes & Functions",
       "type": "mnemonic",
-      "content": "**FTOP** — \"**F**rancis **T**alks **O**ver **P**eople\" • **F**rontal = Executive function, planning, personality • **T**emporal = Hearing, language comprehension, memory • **O**ccipital = Vision processing • **P**arietal = Sensory integration, spatial awareness",
+      "content": "**FTOP is a map cue, not four one-function boxes.** - **Frontal:** motor planning/control, executive-control networks, motivation, and, in the language-dominant hemisphere, important speech-production regions. - **Temporal:** auditory processing, memory systems, object/face recognition, and language networks. - **Occipital:** primary and association visual processing. - **Parietal:** somatosensory processing, attention, spatial representation, and multisensory integration. Complex behavior emerges from distributed cortical-subcortical networks; functions overlap, lateralization varies, and one symptom does not localize a lesion by mnemonic alone.",
       "tags": [
         "brain",
         "lobes",
@@ -23538,16 +23538,25 @@
         "occipital",
         "parietal"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/sites/books/NBK551718/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Physiology, Brain",
+          "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/sites/books/NBK551718/",
+          "whyReputable": "A clinically reviewed neurophysiology chapter hosted by the U.S. National Library of Medicine that describes lobe functions and limits of lesion inference."
+        }
+      ],
+      "reviewNote": "Replaced one-lobe/one-function localization with a network-aware retrieval map.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -23583,7 +23592,7 @@
       "domain": "Biological Bases of Behavior",
       "title": "Broca's vs. Wernicke's Aphasia",
       "type": "analogy",
-      "content": "**\"Broca's = Broken speech, Wernicke's = Wordy nonsense\"** 🔧 **Broca's** (left frontal): Speech is **broken** — telegraphic, effortful, but they understand you. Like a broken keyboard that can only type a few words. 💬 **Wernicke's** (left temporal): Speech is **wordy** but meaningless — fluent word salad. Like someone speaking confidently in a language they don't actually know. Remember: **B**roca's → **B**roken output → **B**ack of frontal lobe",
+      "content": "**Classical contrast: use \"effortful versus fluent,\" then assess the whole language profile.** **Broca aphasia:** typically nonfluent, effortful, agrammatic output with naming and repetition difficulty; comprehension is often relatively better, not necessarily intact. **Wernicke aphasia:** typically fluent but paraphasic or low-information speech with impaired comprehension, naming, and repetition; awareness varies. Reading and writing can also be affected. These are network syndromes in the language-dominant hemisphere, not perfect one-lesion/one-symptom boxes; individual patterns and recovery vary.",
       "tags": [
         "aphasia",
         "broca",
@@ -23591,16 +23600,32 @@
         "language",
         "speech"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12928379/",
+        "https://www.ncbi.nlm.nih.gov/books/NBK441951/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The neuroanatomy of Broca's aphasia",
+          "organization": "Brain Structure and Function / PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12928379/",
+          "whyReputable": "A recent peer-reviewed lesion and network analysis showing that persistent Broca aphasia is not reducible to one cortical spot."
+        },
+        {
+          "title": "Wernicke Aphasia",
+          "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK441951/",
+          "whyReputable": "A clinically reviewed NLM-hosted summary of fluent aphasia, comprehension, naming, repetition, reading, and writing findings."
+        }
+      ],
+      "reviewNote": "Removed stigmatizing language, intact-comprehension claims, and single-spot localization.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -23771,7 +23796,7 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "title": "Classical vs. Operant Conditioning",
       "type": "analogy",
-      "content": "**Classical** (Pavlov) = Learning by **association** 🔔 → The organism is PASSIVE (things happen TO it) → \"Before → After\" (bell + food → bell alone = salivation) **Operant** (Skinner) = Learning by **consequence** 🎰 → The organism is ACTIVE (it does things) → Reinforcement ↑ behavior, Punishment ↓ behavior **Memory trick:** \"**C**lassical = **C**oupling stimuli, **O**perant = **O**utcome-based\"",
+      "content": "**Both involve learned relations; \"passive versus active\" is misleading.** **Classical conditioning:** a cue comes to predict another event, changing an elicited response (stimulus-stimulus relation). Identify US, UR, CS, and CR and remember that organisms can learn timing, context, and predictive information. **Operant conditioning:** consequences contingent on a response change that response's future probability (response-consequence relation). Reinforcement increases behavior; punishment decreases it, defined by observed effects. Classical and operant processes can occur together in the same situation.",
       "tags": [
         "conditioning",
         "classical",
@@ -23781,16 +23806,32 @@
         "reinforcement",
         "punishment"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-2-classical-conditioning",
+        "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 6.2: Classical Conditioning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-2-classical-conditioning",
+          "whyReputable": "An expert-authored and peer-reviewed psychology textbook from nonprofit Rice University."
+        },
+        {
+          "title": "Psychology 2e, Section 6.3: Operant Conditioning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+          "whyReputable": "An expert-authored and peer-reviewed psychology textbook that defines contingencies and schedule patterns."
+        }
+      ],
+      "reviewNote": "Replaced the passive/active dichotomy with stimulus-stimulus versus response-consequence relations.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -23825,7 +23866,7 @@
       "domain": "Social & Cultural Bases of Behavior",
       "title": "Milgram, Asch, Zimbardo",
       "type": "mnemonic",
-      "content": "**\"MAZ\"** — Three classic social psych studies: ⚡ **M**ilgram = **M**ust obey authority (obedience — 65% shocked to max) 👥 **A**sch = **A**greeing with the group (conformity — line experiment) 🏛️ **Z**imbardo = **Z**ero freedom changes behavior (situational power — prison study) Key distinction: • Milgram = Obedience to AUTHORITY • Asch = Conformity to PEERS • Zimbardo = Power of ROLES/SITUATIONS",
+      "content": "**MAZ distinguishes three questions, not three timeless proofs.** **Milgram:** obedience to an authority; in the original baseline, 26 of 40 participants continued to the simulated generator's 450-V endpoint under those laboratory conditions. **Asch:** conformity to a unanimous peer majority on line judgments; many participants dissented on most trials, and unanimity and allies mattered. **Stanford prison study:** assigned prison roles in a highly managed simulation, stopped after six days; archival and methodological critiques mean it is not clean proof that role assignment automatically produces cruelty. Study procedures, demand, leadership, selection, culture, and ethics bound every inference.",
       "tags": [
         "milgram",
         "asch",
@@ -23834,16 +23875,39 @@
         "conformity",
         "social influence"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/12-4-conformity-compliance-and-obedience",
+        "https://doi.org/10.1037/h0040525",
+        "https://pubmed.ncbi.nlm.nih.gov/31380665/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 12.4: Conformity, Compliance, and Obedience",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/12-4-conformity-compliance-and-obedience",
+          "whyReputable": "An expert-reviewed synthesis that distinguishes conformity to a group from obedience to authority."
+        },
+        {
+          "title": "Behavioral Study of Obedience",
+          "organization": "Stanley Milgram, Journal of Abnormal and Social Psychology",
+          "url": "https://doi.org/10.1037/h0040525",
+          "whyReputable": "The peer-reviewed primary report for Milgram's baseline laboratory condition and its observed completion count."
+        },
+        {
+          "title": "Rethinking the nature of cruelty: The role of identity leadership in the Stanford Prison Experiment",
+          "organization": "American Psychologist / PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/31380665/",
+          "whyReputable": "A peer-reviewed archival reanalysis that evaluates instruction, leadership, and identification rather than assuming assigned roles automatically caused cruelty."
+        }
+      ],
+      "reviewNote": "Preserved the study distinctions while adding exact context and rejecting the automatic-role conclusion.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -23939,7 +24003,7 @@
       "domain": "Growth & Lifespan Development",
       "title": "Attachment Types",
       "type": "analogy",
-      "content": "Think of a child at a **playground** when mom leaves: 🟢 **Secure**: Cries → Mom returns → Quickly comforted → Back to playing → \"Safe base\" — like a rubber band that stretches but snaps back 🔵 **Avoidant**: Doesn't seem to care → Ignores mom's return → Like a cat that acts independent but secretly watches 🟡 **Resistant/Ambivalent**: Very upset → Clings AND pushes away at reunion → \"I'm mad you left but don't leave again!\" 🔴 **Disorganized**: Freezing, contradictory → approaches then backs away → When the safe person IS the scary person",
+      "content": "**Strange Situation reunion classifications describe an infant-caregiver relationship under a standardized procedure, not a fixed child personality.** **Secure:** seeks/accepts contact or comfort and returns to exploration. **Avoidant:** minimizes overt proximity/contact at reunion. **Resistant:** seeks contact yet resists or remains difficult to soothe. **Disorganized:** contradictory, apprehensive, freezing, disoriented, or otherwise lacking a coherent strategy. Code the full procedure with trained methods. A pattern does not by itself prove caregiver rejection, maltreatment, future disorder, or behavior in every relationship; culture, stress, context, and measurement conditions matter.",
       "tags": [
         "attachment",
         "bowlby",
@@ -23949,16 +24013,25 @@
         "ambivalent",
         "disorganized"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2724160/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Infant-parent attachment: Definition, types, antecedents, measurement and outcome",
+          "organization": "Paediatrics & Child Health / PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2724160/",
+          "whyReputable": "A peer-reviewed clinical review that describes Strange Situation classifications as observed relationship patterns."
+        }
+      ],
+      "reviewNote": "Removed caregiver-blaming analogies and reframed categories as relationship-specific observations.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -23967,7 +24040,7 @@
       "domain": "Growth & Lifespan Development",
       "title": "Kohlberg's Moral Development",
       "type": "mnemonic",
-      "content": "**3 levels × 2 stages = 6 stages total** Think: **\"Pre = Self, Con = Society, Post = Principles\"** 👶 **Pre**conventional (pre-teen): \"What's in it for ME?\" → Stage 1: Avoid punishment → Stage 2: \"You scratch my back...\" 👤 **Con**ventional (most adults): \"What does SOCIETY expect?\" → Stage 3: \"Good boy/nice girl\" approval → Stage 4: Law and order 🌟 **Post**conventional (few adults): \"What's PRINCIPLED?\" → Stage 5: Social contract → Stage 6: Universal ethical principles",
+      "content": "**Kohlberg organized moral-judgment reasoning into three levels and six proposed stages.** **Preconventional:** 1 punishment/obedience; 2 instrumental exchange. **Conventional:** 3 interpersonal expectations; 4 social-system/order reasoning. **Postconventional:** 5 social contract/rights; 6 universal ethical principles. The model concerns reasoning offered for a judgment, not whether behavior is moral. Stages are not rigid age bins, Stage 6 is theoretical and rarely scored, and people may use different reasoning across dilemmas. Sampling, cultural emphasis, gender, care-oriented reasoning, and the gap between judgment and action limit universal claims.",
       "tags": [
         "kohlberg",
         "moral",
@@ -23976,16 +24049,25 @@
         "conventional",
         "postconventional"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 9.2: Lifespan Theories",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+          "whyReputable": "An expert-reviewed lifespan-development text that presents Kohlberg's model and major limitations."
+        }
+      ],
+      "reviewNote": "Retained the six-stage cue while removing age stereotypes and universal-development claims.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -24089,7 +24171,7 @@
       "domain": "Assessment & Diagnosis",
       "title": "Standard Score Conversions",
       "type": "mnemonic",
-      "content": "**The 50-100-500 Rule:** | Score Type | Mean | SD | |---|---|---| | z-score | 0 | 1 | | T-score | **50** | 10 | | IQ (Wechsler) | **100** | 15 | | EPPP scaled | **500** | 100 | **Quick conversion:** T-score 70 = 2 SDs above mean = IQ 130 = 98th percentile Remember: \"Z is Zero, T is fifTy, IQ is One hundred\"",
+      "content": "**Linear-score cue: first verify the scale manual.** A **z score** has mean 0 and SD 1. A conventional **T score** is often 50/10. Many individually administered cognitive-test composites use 100/15, but not every score called \"standard\" or \"IQ\" does. Within the same reference distribution, convert with z = (X - mean)/SD, then transform to the target mean and SD. Thus z = +2 corresponds to T = 70 and to 130 on a 100/15 scale. A percentile near 98 requires an approximately normal reference distribution. EPPP scaled scores are produced by the exam program and must not be treated as a simple z/T/IQ conversion or assumed to have mean 500 and SD 100.",
       "tags": [
         "standard scores",
         "T-score",
@@ -24098,16 +24180,32 @@
         "percentile",
         "conversion"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://ncme.org/resources-publications/professional-learning/glossary",
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "NCME Glossary of Important Assessment and Measurement Terms",
+          "organization": "National Council on Measurement in Education",
+          "url": "https://ncme.org/resources-publications/professional-learning/glossary",
+          "whyReputable": "Field-standard measurement definitions from a leading professional assessment organization."
+        },
+        {
+          "title": "Standards for Educational and Psychological Testing (2014)",
+          "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+          "whyReputable": "The joint professional consensus framework for score interpretation, fairness, validity, precision, and responsible test use."
+        }
+      ],
+      "reviewNote": "Removed the false EPPP 500/100 scale and made every conversion conditional on the manual and reference distribution.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -24359,23 +24457,32 @@
       "domain": "Ethical, Legal & Professional Issues",
       "title": "Ethical Decision-Making Steps",
       "type": "mnemonic",
-      "content": "**\"IDEAL\"** framework for ethical dilemmas: **I** = **I**dentify the problem (What ethical principles are in conflict?) **D** = **D**evelop alternatives (What are ALL possible actions?) **E** = **E**valuate each option (Benefits, risks, ethical principles) **A** = **A**ct on the best choice (Document your reasoning) **L** = **L**earn from the outcome (Reflect and adjust) Always consult with colleagues, check state laws, and refer to APA Ethics Code!",
+      "content": "**No single mnemonic is an APA-mandated algorithm. Use a documented, revisable process.** 1. Clarify facts, roles, competence, urgency, stakeholders, and whose interests or rights are affected. 2. Identify relevant current Ethical Standards and Principles plus law, regulation, contracts, policy, and culture; locate conflicts rather than assuming one source automatically controls. 3. Consult qualified resources while disclosing only necessary information; consultation does not transfer accountability. 4. Generate feasible alternatives and consider benefits, harms, equity, autonomy, confidentiality, and foreseeable downstream effects. 5. Choose, communicate as appropriate, document the reasoning and uncertainties, monitor outcomes, and revise when facts or authority change.",
       "tags": [
         "ethics",
         "decision-making",
         "dilemma",
         "APA"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA's official primary text for ethical decision context, multiple relationships, avoiding harm, consultation, and sexual-boundary standards."
+        }
+      ],
+      "reviewNote": "Reframed IDEAL as a nonexclusive reasoning aid and added roles, authority conflicts, privacy, equity, monitoring, and accountability.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -24467,7 +24574,7 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "title": "Reinforcement Schedules",
       "type": "mnemonic",
-      "content": "**\"FR VR FI VI\"** — The 4 schedules of reinforcement: 📊 **Fixed-Ratio** (FR): Reinforce every Nth response → Fast responding, brief post-reinforcement pause → Ex: Piecework pay (paid per 10 widgets) 🎰 **Variable-Ratio** (VR): Reinforce after unpredictable # of responses → HIGHEST rate, MOST resistant to extinction → Ex: Slot machines, fishing ⏰ **Fixed-Interval** (FI): Reinforce first response after set time → Scalloped pattern (pause then burst) → Ex: Checking mail, studying for weekly quiz ❓ **Variable-Interval** (VI): Reinforce after unpredictable time → Slow, steady responding → Ex: Checking social media, pop quizzes **Ratio = Rate, Interval = Idle** (ratio → high rate; interval → more pausing)",
+      "content": "**Four intermittent schedules: fixed/variable x ratio/interval.** **FR:** reinforce after a set response count; often high responding with a post-reinforcement pause. **VR:** reinforce after varying response counts around a programmed distribution; often high, steady responding. **FI:** reinforce the first qualifying response after a set time; classic laboratory performance can show a post-reinforcement pause and accelerating \"scallop.\" **VI:** reinforce the first qualifying response after varying time intervals; often steadier, moderate responding. These are typical patterns, not guarantees: magnitude, deprivation, alternatives, instructions, history, and schedule details matter. Interval schedules still require a response after the interval.",
       "tags": [
         "reinforcement",
         "schedule",
@@ -24478,16 +24585,25 @@
         "operant",
         "extinction"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 6.3: Operant Conditioning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+          "whyReputable": "An expert-authored and peer-reviewed psychology textbook that defines contingencies and schedule patterns."
+        }
+      ],
+      "reviewNote": "Corrected interval delivery, removed universal highest/most-resistant claims, and bounded laboratory patterns.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -25312,7 +25428,7 @@
       "domain": "Research Methods & Statistics",
       "title": "Threats to Internal Validity",
       "type": "mnemonic",
-      "content": "**\"THIS DIME RR\"** — What can ruin your experiment: 📅 **T**esting — Improvement from taking the test twice 📜 **H**istory — External events between pre/post test 🧑 **I**nstrumentation — Measurement tools change 📊 **S**tatistical regression — Extreme scores move toward the mean 🚶 **D**ifferential attrition — Different dropout rates per group 🌱 **M**aturation — Natural changes over time 🔬 **E**xperimenter bias — Researcher influences results 🎲 **R**andom assignment issues (selection bias) 🔁 **R**eactive effects — Participants change because they know they're watched (Hawthorne) **Fix most threats:** Random assignment, control group, blinding",
+      "content": "**Internal validity asks: could a plausible alternative explain the observed effect?** Common threats include selection/confounding, history, maturation, testing, instrumentation, regression to the mean, differential attrition or missingness, deviations from assignment, contamination, and outcome-assessment bias. Random assignment helps balance confounders in expectation, but does not fix attrition, nonadherence, measurement change, contamination, selective reporting, or chance imbalance. Use design-matched protections: comparison groups, allocation concealment, blinding where feasible, standardized measurement, fidelity tracking, prespecified analyses, and principled missing-data/sensitivity analyses. \"Hawthorne effect\" is not a universal explanation.",
       "tags": [
         "internal validity",
         "threats",
@@ -25326,16 +25442,25 @@
         "experimenter bias",
         "hawthorne"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://ies.ed.gov/ncee/wwc/Handbooks"
+      ],
+      "sourceDetails": [
+        {
+          "title": "What Works Clearinghouse Procedures and Standards Handbook, Version 5.0",
+          "organization": "Institute of Education Sciences, U.S. Department of Education",
+          "url": "https://ies.ed.gov/ncee/wwc/Handbooks",
+          "whyReputable": "Official federal evidence standards detailing design features and risks to causal inference."
+        }
+      ],
+      "reviewNote": "Reorganized the mnemonic around causal alternatives and corrected the claim that randomization fixes most threats.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -25552,7 +25677,7 @@
       "domain": "Ethical, Legal & Professional Issues",
       "title": "Multiple Relationships (Dual)",
       "type": "mnemonic",
-      "content": "**When is a dual relationship OK?** → \"Not all dual = bad\" Dual relationship = therapist has ANOTHER role with client 🚫 **Always prohibited:** → Sexual with CURRENT clients (Standard 10.05) → Sexual with FORMER clients < 2 years post-termination → Even after 2 years: burden is on THE THERAPIST to prove no exploitation ⚠️ **Potentially harmful (avoid if possible):** → Business relationships with clients → Socializing with clients → Treating friends/family members ✅ **Sometimes unavoidable:** → Small/rural communities → Military settings **Key:** Not all dual relationships are unethical — only those that impair objectivity or risk exploitation",
+      "content": "**A multiple relationship is not automatically unethical, but \"not forbidden\" is not the end of the analysis.** APA Standard 3.05 includes another role with the same person, a relationship with someone closely associated with that person, or a promise of a future relationship. Avoid it when reasonably expected to impair objectivity, competence, or effectiveness, or risk exploitation or harm. If an unforeseen multiple relationship develops, take reasonable steps to resolve it with due regard for the affected person and Code compliance. Context matters in rural, military, disability, and community settings. Sexual relationships with current therapy clients are prohibited; former-client relationships have a two-year absolute minimum plus exceptional-circumstance safeguards, not automatic permission after two years.",
       "tags": [
         "multiple relationships",
         "dual relationship",
@@ -25563,16 +25688,25 @@
         "exploitation",
         "small community"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA's official primary text for ethical decision context, multiple relationships, avoiding harm, consultation, and sexual-boundary standards."
+        }
+      ],
+      "reviewNote": "Used the Code definition and impairment/exploitation test while correcting the after-two-years-is-allowed shortcut.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -25789,7 +25923,7 @@
       "domain": "Social & Cultural Bases of Behavior",
       "title": "Bystander Effect & Diffusion of Responsibility",
       "type": "mnemonic",
-      "content": "**\"More people = LESS help\"** — Counterintuitive! 🚨 **Bystander effect** (Darley & Latane): More bystanders → LOWER likelihood anyone helps **Why?** → **Diffusion of responsibility** — \"Someone else will help\" → **Pluralistic ignorance** — \"No one else seems worried, so it must be OK\" → **Evaluation apprehension** — Fear of being judged for acting **5 steps to helping:** 1. NOTICE the event 2. INTERPRET as emergency 3. ASSUME responsibility 4. KNOW how to help 5. ACT **Kitty Genovese** case = classic (though details debated)",
+      "content": "**Bystander effect = a probabilistic group-size effect, not \"more people always means less help.\"** Possible decision points include noticing, interpreting need, accepting responsibility, knowing an action, and acting. **Diffusion of responsibility, pluralistic ignorance, and evaluation concerns** can inhibit intervention. Meta-analysis found an overall bystander effect, but perceived danger, perpetrator presence, costs, competence, and relationships moderate it; dangerous emergencies can attenuate or reverse the pattern. In real safety situations, contact emergency services and give a specific bystander a concrete task rather than relying on a classroom slogan. The popular Kitty Genovese narrative omitted or distorted important facts.",
       "tags": [
         "bystander",
         "diffusion of responsibility",
@@ -25799,16 +25933,25 @@
         "prosocial",
         "pluralistic ignorance"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/21534650/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The bystander-effect: a meta-analytic review on bystander intervention in dangerous and non-dangerous emergencies",
+          "organization": "Psychological Bulletin / PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/21534650/",
+          "whyReputable": "A peer-reviewed meta-analysis that quantifies the overall effect and identifies important moderators, including perceived danger."
+        }
+      ],
+      "reviewNote": "Replaced an absolute rule with the meta-analytic effect, moderators, and a safe action cue.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -26655,7 +26798,7 @@
       "domain": "Treatment, Intervention & Prevention",
       "title": "Exposure & Response Prevention (ERP)",
       "type": "mnemonic",
-      "content": "**ERP = Gold standard for OCD:** 🔄 **Two parts:** 1. **Exposure** — Deliberately confront feared stimulus/thought → Touch a doorknob (contamination fear) → Imagine harm scenarios (harm fears) 2. **Response Prevention** — BLOCK the compulsion → DON'T wash hands after touching doorknob → DON'T check the stove → Anxiety rises... then HABITUATES (decreases on its own!) **Based on:** → Classical conditioning (fear is conditioned response) → Extinction (exposure without UCS weakens CR) → Habituation (repeated exposure → decreased response) **Hierarchy:** Start with moderate anxiety items, work up **Key difference from systematic desensitization:** No relaxation pairing needed!",
+      "content": "**ERP is collaborative exposure plus response prevention for OCD.** Build a shared formulation and hierarchy; approach external or internal triggers in a planned, safe, consent-based way; and refrain from or reduce the linked compulsion, ritual, avoidance, or reassurance/safety behavior long enough to learn something new. Distress may rise, fall, fluctuate, or remain present. Benefit is not limited to \"anxiety must habituate\"; inhibitory learning and expectancy violation emphasize learning that feared outcomes are less certain or more manageable than predicted. Tailor pacing, accessibility, risk assessment, developmental context, and support; response prevention is not coercive blocking.",
       "tags": [
         "ERP",
         "exposure",
@@ -26667,16 +26810,32 @@
         "anxiety",
         "compulsion"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nice.org.uk/guidance/cg31",
+        "https://doi.org/10.1016/j.brat.2014.04.006"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Obsessive-compulsive disorder and body dysmorphic disorder: treatment (CG31)",
+          "organization": "National Institute for Health and Care Excellence",
+          "url": "https://www.nice.org.uk/guidance/cg31",
+          "whyReputable": "A public clinical guideline developed through systematic evidence review and transparent recommendation methods."
+        },
+        {
+          "title": "Maximizing exposure therapy: An inhibitory learning approach",
+          "organization": "Behaviour Research and Therapy",
+          "url": "https://doi.org/10.1016/j.brat.2014.04.006",
+          "whyReputable": "A peer-reviewed clinical-science review explaining why exposure learning should not be reduced to within-session habituation."
+        }
+      ],
+      "reviewNote": "Replaced coercive blocking and mandatory habituation with collaborative, inhibitory-learning-aware ERP.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -26980,7 +27139,7 @@
       "domain": "Research Methods & Statistics",
       "title": "Statistical Power",
       "type": "mnemonic",
-      "content": "**Power = Probability of finding a REAL effect (avoiding Type II)** Power = 1 − β (where β = probability of Type II error) **\"SANE\" — 4 ways to INCREASE power:** 📊 **S**ample size ↑ — MORE subjects = more power (most practical) 🎯 **A**lpha level ↑ — Use .05 instead of .01 (but ↑ Type I risk!) 📏 **N**oise ↓ — Reduce variability (use homogeneous sample, reliable measures) 💥 **E**ffect size ↑ — Stronger experimental manipulation **Convention:** Power should be ≥ **.80** (Cohen, 1988) → = 80% chance of detecting a real effect **Power analysis:** Do BEFORE the study to determine needed sample size! → A priori (planned) > post hoc (after the fact) **Relationship:** As alpha ↓, power ↓ (trade-off between Type I and Type II)",
+      "content": "**Power is conditional: P(reject H0 | a specified alternative, design, and analysis).** It equals 1 - beta for that specified alternative. Power changes with sample size, effect magnitude, outcome variability/reliability, design efficiency, allocation, alpha, multiplicity, missing data, and the statistical model. Increasing alpha can increase power while increasing Type I error; it is not a free improvement. \".80\" is a planning convention, not a universal quality threshold or an 80% chance that a discovered effect is real. Plan with a smallest effect of interest and sensitivity analysis. Post hoc \"observed power\" calculated from the observed effect is largely redundant with the p value and does not rescue an inconclusive study.",
       "tags": [
         "power",
         "Type II",
@@ -26991,16 +27150,32 @@
         "statistics",
         "Cohen"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/0033-2909.112.1.155",
+        "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "A power primer",
+          "organization": "Jacob Cohen, Psychological Bulletin",
+          "url": "https://doi.org/10.1037/0033-2909.112.1.155",
+          "whyReputable": "A peer-reviewed methodological primer that explains power as conditional on effect size, alpha, sample size, and design assumptions."
+        },
+        {
+          "title": "The ASA Statement on p-Values: Context, Process, and Purpose",
+          "organization": "American Statistical Association",
+          "url": "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf",
+          "whyReputable": "An expert consensus statement warning against binary and post hoc interpretations of statistical evidence."
+        }
+      ],
+      "reviewNote": "Corrected the probability statement, bounded .80, and removed observed-power and real-effect interpretations.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -27527,7 +27702,7 @@
       "domain": "Treatment, Intervention & Prevention",
       "title": "Suicide Risk Assessment",
       "type": "mnemonic",
-      "content": "**\"SAD PERSONS\" — Risk factors for suicide:** 😢 **S**ex (male = higher completion, female = more attempts) 📅 **A**ge (elderly + adolescents highest risk) 😞 **D**epression (strongest psychiatric predictor) 🔫 **P**revious attempt (SINGLE STRONGEST predictor overall) 🍷 **E**thanol/substance abuse 🧠 **R**ational thinking loss (psychosis, hopelessness) 👤 **S**ocial supports lacking (isolated, unmarried) 📋 **O**rganized plan (specific plan + means = highest risk) ⛔ **N**o spouse/partner 🏥 **S**ickness (chronic illness, chronic pain) **Immediate risk indicators:** → Specific PLAN + available MEANS + stated INTENT = highest risk → Giving away possessions, sudden calmness after depression → History of prior attempts = strongest single predictor **Protective factors:** Social connection, children, religious beliefs, therapeutic alliance",
+      "content": "**Do not use SAD PERSONS or any demographic checklist as a prediction rule. Use a direct, dynamic safety assessment.** Ask about current and recent suicidal thoughts, frequency, plan, method, access to means, intent, past attempts/self-injury, symptoms and substance use, acute stressors, supports, and reasons for living. Past suicidal behavior is important, but no single factor determines disposition. Current suicidal thoughts, feasible plans/access, intent, inability to maintain safety, rapid change, and clinical context require timely escalation under setting and jurisdiction procedures. Collaboratively create a concrete safety plan and address lethal-means access; a \"no-suicide contract\" does not establish safety. If danger may be imminent, use emergency resources and do not leave the person unsupported.",
       "tags": [
         "suicide",
         "risk assessment",
@@ -27540,16 +27715,32 @@
         "risk factors",
         "safety"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nimh.nih.gov/research/research-conducted-at-nimh/asq-toolkit-materials/adult-outpatient/adult-outpatient-brief-suicide-safety-assessment-guide",
+        "https://www.cdc.gov/suicide/risk-factors/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Adult Outpatient Brief Suicide Safety Assessment Guide",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/research/research-conducted-at-nimh/asq-toolkit-materials/adult-outpatient/adult-outpatient-brief-suicide-safety-assessment-guide",
+          "whyReputable": "An official federal clinician guide covering current thoughts, plans, access, past behavior, symptoms, supports, safety planning, and disposition."
+        },
+        {
+          "title": "Risk and Protective Factors for Suicide",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/suicide/risk-factors/",
+          "whyReputable": "Official U.S. public-health guidance emphasizing interacting individual, relationship, community, and societal factors rather than one demographic score."
+        }
+      ],
+      "reviewNote": "Removed a poorly predictive, stereotype-prone score and replaced it with NIMH's direct multifactorial assessment structure.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -27842,7 +28033,7 @@
       "domain": "Assessment & Diagnosis",
       "title": "Test Bias & Fairness",
       "type": "mnemonic",
-      "content": "**\"Not all group differences = bias\" — Key testing concepts:** 📊 **Test Bias** (statistical definition): → A test is biased if it systematically over/underpredicts for a group → Bias = different VALIDITY, not different scores → Score differences alone ≠ bias! ⚖️ **Test Fairness** (broader, values-based): → Fair USE of tests, even if test itself is unbiased → Consider cultural/linguistic factors in interpretation → Provide accommodations when appropriate 🔍 **Key concepts:** → **Item bias** = Item functions differently across groups (DIF analysis) → **Predictive bias** = Different regression lines per group → **Content bias** = Items reflect one culture's knowledge → **Culture-fair tests** = Minimize cultural loading (Raven's Progressive Matrices) **Larry P. v. Riles** (1979): Banned IQ tests for Black students for EMR placement in CA **PASE v. Hannon** (1980): Opposite ruling in IL — IQ tests NOT biased",
+      "content": "**Group score differences, DIF, bias, and fairness are related but not interchangeable.** A mean difference alone does not establish measurement bias. **DIF** flags an item when matched examinees from groups have different response probabilities; it triggers content and construct review but is not automatically proof of bias. Fairness also includes access, standardized and accessible administration, appropriate accommodations, construct-relevant content, valid interpretation across intended groups, opportunity to demonstrate the construct, and responsible consequences/use. Differential prediction and validity require appropriate models and evidence. No instrument is culture-free, and one court ruling or \"culture-fair\" label does not settle a new use.",
       "tags": [
         "test bias",
         "fairness",
@@ -27854,16 +28045,32 @@
         "raven",
         "item bias"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "sourceDetails": [],
-      "reviewNote": "",
-      "reviewArtifact": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+        "https://nces.ed.gov/nationsreportcard/tdw/analysis/scaling_checks_dif.aspx"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Standards for Educational and Psychological Testing (2014)",
+          "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+          "whyReputable": "The joint professional consensus framework for score interpretation, fairness, validity, precision, and responsible test use."
+        },
+        {
+          "title": "NAEP Technical Documentation: Differential Item Functioning",
+          "organization": "National Center for Education Statistics",
+          "url": "https://nces.ed.gov/nationsreportcard/tdw/analysis/scaling_checks_dif.aspx",
+          "whyReputable": "Official federal technical documentation that explicitly distinguishes a statistical DIF flag from a determination of item bias."
+        }
+      ],
+      "reviewNote": "Separated DIF from bias, expanded fairness beyond prediction, and removed universal legal and culture-free claims.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_02.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
