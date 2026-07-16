@@ -10156,16 +10156,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // throttle-down (Ctrl/-), view (V), info (I), forces (F), help (?/),
         // autopilot (B), and quiz answers (1-4) because keysRef never saw them.
         var FLIGHT_KEYS = { 'arrowup': 1, 'arrowdown': 1, 'arrowleft': 1, 'arrowright': 1, 'w': 1, 'a': 1, 's': 1, 'd': 1, ' ': 1, 'spacebar': 1, 'q': 1, 'e': 1, 'shift': 1, 'control': 1, '-': 1, '=': 1, 'v': 1, 'i': 1, 'f': 1, 'b': 1, '?': 1, '/': 1, '1': 1, '2': 1, '3': 1, '4': 1, 'escape': 1 };
+        // Edge-triggered keys are consumed (set false) by the RAF loop, not by
+        // keyup: a quick tap can go down AND up between two frames — at 30 fps
+        // half of instant taps got erased before the loop ever saw them, so
+        // pause/view/quiz answers randomly "didn't respond". Q is excluded:
+        // it doubles as a HELD yaw pedal in helicopter/drone mode and must
+        // release on keyup. Digits 1-4 are discarded by a per-frame sweep in
+        // the loop so an unconsumed latch can't ghost-answer a later quiz.
+        var EDGE_KEYS = { ' ': 1, 'spacebar': 1, 'v': 1, 'i': 1, 'f': 1, 'b': 1, '?': 1, '/': 1, '1': 1, '2': 1, '3': 1, '4': 1, 'escape': 1 };
         var onKey = function(e) {
           // Let students type in chat/search fields without flying the plane
           var tgt = e.target;
           if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable)) return;
           var k = (e.key || '').toLowerCase();
           if (FLIGHT_KEYS[k]) {
-            // OS auto-repeat must not re-arm edge-triggered keys (Space pause,
-            // quiz answers) that the loop clears after consuming.
-            if (!(e.type === 'keydown' && e.repeat)) keysRef.current[k] = e.type === 'keydown';
-            if (e.type === 'keydown') e.preventDefault();
+            if (e.type === 'keydown') {
+              // OS auto-repeat must not re-arm edge-triggered keys the loop
+              // already cleared after consuming.
+              if (!e.repeat) keysRef.current[k] = true;
+              e.preventDefault();
+            } else if (!EDGE_KEYS[k]) {
+              keysRef.current[k] = false;
+            }
           }
         };
         // Alt-Tab / focus loss eats keyup events — clear held keys so the
@@ -17777,6 +17789,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               if (keys[k]) { keys[k] = false; answerSprint(idx); }
             });
           }
+          // Digit taps are latched on keydown (see EDGE_KEYS): anything the
+          // quiz/sprint blocks above didn't consume this frame is discarded so
+          // it can't sit armed and instantly answer a quiz that pops later.
+          ['1','2','3','4'].forEach(function(k) { keys[k] = false; });
 
           // Apply weather effects to controls
           applyWeather(ctrl, flightRef.current, dt);
