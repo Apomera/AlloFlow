@@ -2425,6 +2425,7 @@ const WordSoundsReviewPanel = ({
     const [playingWordIndex, setPlayingWordIndex] = React.useState(null);
     const [regeneratingOptions, setRegeneratingOptions] = React.useState({});
     const [playingAudioKey, setPlayingAudioKey] = React.useState(null);
+    const [reviewError, setReviewError] = React.useState(null);
     const [showProbeEndConfirm, setShowProbeEndConfirm] = React.useState(false);
     const reviewDialogRef = React.useRef(null);
     const reviewBackRef = React.useRef(null);
@@ -2696,6 +2697,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
         <div role="presentation" className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none">
             <div ref={reviewDialogRef} role="dialog" aria-modal="true" aria-labelledby="word-sounds-review-title" aria-describedby="word-sounds-review-description" tabIndex={-1} onKeyDown={(event) => { const nested = event.target?.closest?.('[role="alertdialog"]'); if (nested) return; trapReviewFocus(event, reviewDialogRef.current, requestBackToSetup); }} className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{phonemeReorderStatus}</div>
+                {reviewError && <p id="word-sounds-setup-review-error" role="alert" className="m-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">{reviewError.message}</p>}
                 <div className="p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0">
                     <h2 id="word-sounds-review-title" className="text-2xl font-black flex items-center gap-2">📋 Pre-Activity Review
                         <span className="relative group ml-2">
@@ -2769,13 +2771,15 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     debugLog("🔄 FORCE CLICK regen idx:", idx);
                                                     if (typeof onRegenerateWord === 'function') {
                                                         debugLog("✅ Calling onRegenerateWord for idx:", idx);
+                                                        setReviewError(null);
                                                         onRegenerateWord(idx);
                                                     } else {
                                                         warnLog("❌ onRegenerateWord is not a function:", typeof onRegenerateWord);
-                                                        if (window.AlloFlowUX) window.AlloFlowUX.toast("Error: Regenerate function missing or invalid", 'error'); else alert("Error: Regenerate function missing or invalid");
+                                                        setReviewError({ index: idx, message: t('word_sounds.regenerate_unavailable') || 'Regeneration is unavailable right now. Please close this review and try again.' });
                                                     }
                                                 }}
                                                 disabled={regeneratingIndex === idx}
+                                                aria-describedby={reviewError?.index === idx ? 'word-sounds-setup-review-error' : undefined}
                                                 className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors text-base font-bold border-2
                                                     ${regeneratingIndex === idx
                                                         ? 'bg-orange-200 border-orange-400 animate-spin motion-reduce:animate-none text-orange-300'
