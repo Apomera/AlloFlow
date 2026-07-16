@@ -72,6 +72,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     _llPoliteTimer = setTimeout(function() { lr.textContent = String(text || ''); _llPoliteTimer = null; }, 25);
   }
 
+  // WCAG 2.2: reusable app-controlled confirmation for Learning Lab tools.
+  // Later toolkit sections route destructive choices through this same service.
+  var learningLabConfirmSequence = 0;
+  function askLearningLabConfirmation(message, options) {
+    return new Promise(function(resolve) {
+      if (typeof document === 'undefined' || !document.body) { resolve(false); return; }
+      options = options || {};
+      learningLabConfirmSequence += 1;
+      var idBase = 'learning-lab-confirm-' + learningLabConfirmSequence;
+      var opener = document.activeElement;
+      var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+        return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+      });
+      var overlay = document.createElement('div');
+      overlay.setAttribute('role', 'presentation');
+      overlay.setAttribute('data-learning-lab-confirm', 'true');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:10010;background:rgba(15,23,42,.80);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+      var dialog = document.createElement('div');
+      dialog.setAttribute('role', 'alertdialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', idBase + '-title');
+      dialog.setAttribute('aria-describedby', idBase + '-description');
+      dialog.style.cssText = 'box-sizing:border-box;width:min(34rem,100%);max-height:calc(100vh - 40px);overflow:auto;background:#0f172a;color:#f8fafc;border:2px solid #fbbf24;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.55);font-family:system-ui,sans-serif;';
+      var title = document.createElement('h2');
+      title.id = idBase + '-title'; title.textContent = String(options.title || 'Please confirm');
+      title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#fef3c7;';
+      var description = document.createElement('p');
+      description.id = idBase + '-description'; description.textContent = String(message || 'Continue with this action?');
+      description.style.cssText = 'margin:0;color:#e2e8f0;line-height:1.55;white-space:pre-line;';
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button'; cancel.textContent = String(options.cancelText || 'Cancel');
+      cancel.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #cbd5e1;border-radius:8px;background:#0f172a;color:#f8fafc;font-weight:700;cursor:pointer;';
+      var confirmButton = document.createElement('button');
+      confirmButton.type = 'button'; confirmButton.textContent = String(options.confirmText || 'Delete');
+      confirmButton.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #f87171;border-radius:8px;background:#b91c1c;color:#fff;font-weight:700;cursor:pointer;';
+      actions.appendChild(cancel); actions.appendChild(confirmButton);
+      dialog.appendChild(title); dialog.appendChild(description); dialog.appendChild(actions);
+      overlay.appendChild(dialog); document.body.appendChild(overlay);
+      blocked.forEach(function(entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+      var settled = false;
+      function finish(accepted) {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener('keydown', onKeyDown, true);
+        try { overlay.remove(); } catch (e) {}
+        blocked.forEach(function(entry) {
+          if (!entry.hadInert) entry.el.removeAttribute('inert');
+          if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden');
+          else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+        });
+        try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+        resolve(accepted === true);
+      }
+      function onKeyDown(event) {
+        event.stopImmediatePropagation();
+        if (event.key === 'Escape') { event.preventDefault(); finish(false); return; }
+        if (event.key !== 'Tab') return;
+        if (!dialog.contains(document.activeElement)) { event.preventDefault(); cancel.focus(); return; }
+        if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); confirmButton.focus(); }
+        else if (!event.shiftKey && document.activeElement === confirmButton) { event.preventDefault(); cancel.focus(); }
+      }
+      cancel.addEventListener('click', function() { finish(false); });
+      confirmButton.addEventListener('click', function() { finish(true); });
+      overlay.addEventListener('click', function(event) { if (event.target === overlay) finish(false); });
+      window.addEventListener('keydown', onKeyDown, true);
+      cancel.focus();
+    });
+  }
+
   // ─────────────────────────────────────────────────────────
   // SECTION 1: BLOOM'S TAXONOMY (revised 2001, Anderson + Krathwohl)
   // 6 cognitive levels from low to high demand. Verb lists per level
@@ -4589,7 +4660,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             g.status === 'active' ? tkBtn('✏️ Edit', function() { startEdit(g); }, 'secondary') : null,
             g.status === 'done' ? tkBtn('↻ Reactivate', function() { setStatus(g, 'active'); }, 'secondary') : null,
             g.status === 'active' ? tkBtn('📦 Archive', function() { setStatus(g, 'archived'); }, 'ghost') : null,
-            tkBtn('🗑 Delete', function() { if (confirm('Delete this goal permanently?')) { remove(g.id); setView('list'); setDetailId(null); } }, 'bad')
+            tkBtn('🗑 Delete', async function() {
+              if (!(await askLearningLabConfirmation('This permanently deletes the goal and its check-in history.', {
+                title: 'Delete this goal?', confirmText: 'Delete goal'
+              }))) return;
+              remove(g.id); setView('list'); setDetailId(null);
+            }, 'bad')
           )
         )
       );
@@ -4795,8 +4871,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function reset() { setPhase('idle'); setSecondsLeft(0); setTask(''); }
     function setWork(n) { setData(Object.assign({}, data, { workMin: n })); }
     function setBreak(n) { setData(Object.assign({}, data, { breakMin: n })); }
-    function clearTodayHistory() {
-      if (!confirm('Clear today\'s focus session history?')) return;
+    async function clearTodayHistory() {
+      if (!(await askLearningLabConfirmation('Clear today\'s focus session history? This removes all sessions logged today.', {
+        title: 'Clear today\'s focus history?', confirmText: 'Clear today'
+      }))) return;
       setData(Object.assign({}, data, { sessions: sessions.filter(function(s) { return s.date !== today; }) }));
     }
 
@@ -4950,8 +5028,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function remove(id) {
       setData({ items: (data.items || []).filter(function(it) { return it.id !== id; }) });
     }
-    function clearAll() {
-      if (!confirm('Clear ALL brain dump items? (You can\'t undo this.)')) return;
+    async function clearAll() {
+      if (!(await askLearningLabConfirmation('Clear all brain dump items? This cannot be undone.', {
+        title: 'Clear the entire brain dump?', confirmText: 'Clear all items'
+      }))) return;
       setData({ items: [] });
     }
     function clearDone() {
