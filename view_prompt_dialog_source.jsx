@@ -25,6 +25,8 @@
  *
  * Icons read from window globals: Edit3, X
  */
+const _promptUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function () {};
+
 function PromptDialog({ promptDialog, setPromptDialog, t }) {
   const Edit3 = window.Edit3 || (() => null);
   const X     = window.X     || (() => null);
@@ -32,13 +34,7 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
   const [value, setValue] = React.useState(promptDialog.defaultValue != null ? String(promptDialog.defaultValue) : '');
   const [error, setError] = React.useState(null);
   const inputRef = React.useRef(null);
-
-  React.useEffect(() => {
-    try {
-      inputRef.current && inputRef.current.focus();
-      if (inputRef.current && inputRef.current.select) inputRef.current.select();
-    } catch (_) {}
-  }, []);
+  const dialogRef = React.useRef(null);
 
   const handleCancel = React.useCallback(() => {
     if (typeof promptDialog.onCancel === 'function') { try { promptDialog.onCancel(); } catch (_) {} }
@@ -54,15 +50,19 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
     setPromptDialog(null);
   }, [promptDialog, setPromptDialog, value]);
 
+  _promptUseFocusTrap(dialogRef, true, handleCancel);
+
   React.useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape') { e.preventDefault(); handleCancel(); }
-      else if (e.key === 'Enter' && !promptDialog.multiline) { e.preventDefault(); handleSubmit(); }
-      else if (e.key === 'Enter' && promptDialog.multiline && (e.ctrlKey || e.metaKey)) { e.preventDefault(); handleSubmit(); }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [handleCancel, handleSubmit, promptDialog.multiline]);
+    try {
+      inputRef.current && inputRef.current.focus();
+      if (inputRef.current && inputRef.current.select) inputRef.current.select();
+    } catch (_) {}
+  }, []);
+
+  const handleDialogKeyDown = React.useCallback((e) => {
+    if (e.key === 'Enter' && !promptDialog.multiline) { e.preventDefault(); handleSubmit(); }
+    else if (e.key === 'Enter' && promptDialog.multiline && (e.ctrlKey || e.metaKey)) { e.preventDefault(); handleSubmit(); }
+  }, [handleSubmit, promptDialog.multiline]);
 
   // role="alert" on the error element only triggers SR announcement when the
   // element is INSERTED into the DOM. If the dialog is already open when the
@@ -91,18 +91,21 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none"
       onClick={(e) => { if (e.target === e.currentTarget) handleCancel(); }}
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="alloflow-prompt-title"
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 border-2 border-slate-200"
+        aria-describedby="alloflow-prompt-description"
+        onKeyDown={handleDialogKeyDown}
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-6 animate-in zoom-in-95 duration-200 motion-reduce:animate-none border-2 border-slate-200"
       >
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-            <Edit3 size={20} className="text-indigo-600" />
+            <Edit3 size={20} className="text-indigo-600" aria-hidden="true" />
           </div>
           <h3 id="alloflow-prompt-title" className="text-lg font-bold text-slate-800 flex-1 truncate">
             {promptDialog.title || t('common.enter_value') || 'Enter Value'}
@@ -111,12 +114,12 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
             type="button"
             aria-label={t('common.close') || 'Close'}
             onClick={handleCancel}
-            className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors"
+            className="w-11 h-11 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300"
           >
-            <X size={16} />
+            <X size={16} aria-hidden="true" />
           </button>
         </div>
-        <p className="text-sm text-slate-700 leading-relaxed mb-4 whitespace-pre-wrap">{promptDialog.message}</p>
+        <p id="alloflow-prompt-description" className="text-sm text-slate-700 leading-relaxed mb-4 whitespace-pre-wrap">{promptDialog.message}</p>
         {promptDialog.multiline
           ? <textarea {...inputCommonProps} rows={4} />
           : <input {...inputCommonProps} type={promptDialog.inputType || 'text'} />
@@ -128,14 +131,14 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
           <button
             type="button"
             onClick={handleCancel}
-            className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-300"
+            className="min-h-11 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-300"
           >
             {promptDialog.cancelText || t('common.cancel') || 'Cancel'}
           </button>
           <button
             type="button"
             onClick={handleSubmit}
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-indigo-500/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-300"
+            className="min-h-11 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-indigo-500/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-300"
           >
             {promptDialog.confirmText || t('common.ok') || 'OK'}
           </button>

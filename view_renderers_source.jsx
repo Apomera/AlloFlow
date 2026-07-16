@@ -1324,8 +1324,17 @@ const renderOutlineContent = (deps) => {
                 if (typeof handleGenerateFrayerImage === 'function') await handleGenerateFrayerImage('');
             };
             const onRefineFrayerVisual = async () => {
-                const instruction = (typeof window !== 'undefined' && typeof window.prompt === 'function')
-                    ? window.prompt('How should the image change? (e.g., "make it more colorful", "show a microscope view")')
+                const instruction = (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.prompt === 'function')
+                    ? await window.AlloFlowUX.prompt(
+                        'How should the image change? (e.g., "make it more colorful", "show a microscope view")',
+                        '',
+                        {
+                            title: 'Refine Frayer model image',
+                            confirmText: 'Refine image',
+                            cancelText: 'Cancel',
+                            maxLength: 500,
+                        }
+                    )
                     : '';
                 if (instruction && typeof handleGenerateFrayerImage === 'function') {
                     await handleGenerateFrayerImage(instruction);
