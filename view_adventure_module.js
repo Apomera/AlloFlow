@@ -1051,43 +1051,57 @@ function AdventureView(props) {
         }, formatInteractiveText(cleanText), " ");
       }));
     });
-  })())))), adventureState.isGameOver && /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col items-center justify-center py-8 gap-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    "aria-hidden": "true"
-  }, /*#__PURE__*/React.createElement(ConfettiExplosion, null)), /*#__PURE__*/React.createElement("div", {
-    className: "bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border border-green-200 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500 motion-reduce:animate-none",
-    role: "status",
-    "aria-live": "polite",
-    "aria-atomic": "true"
-  }, /*#__PURE__*/React.createElement(Trophy, {
-    size: 18,
-    "aria-hidden": "true"
-  }), " ", t('adventure.game_over')), /*#__PURE__*/React.createElement("div", {
-    className: "text-sm text-slate-600 font-bold"
-  }, t('adventure.final_level'), ": ", adventureState.level), adventureState.xp >= studentProjectSettings.adventureMinXP ? /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: handleSetShowStorybookExportModalToTrue,
-    disabled: isProcessing,
-    "aria-busy": isProcessing,
-    className: "min-h-11 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all animate-in slide-in-from-bottom-4 motion-reduce:animate-none motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed",
-    title: t('adventure.storybook'),
-    "aria-label": t('adventure.storybook')
-  }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 20,
-    className: "animate-spin motion-reduce:animate-none",
-    "aria-hidden": "true"
-  }) : /*#__PURE__*/React.createElement(BookOpen, {
-    size: 20,
-    "aria-hidden": "true"
-  }), isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')) : /*#__PURE__*/React.createElement("div", {
-    className: "min-h-11 flex items-center gap-2 bg-slate-100 text-slate-700 px-6 py-3 rounded-xl font-bold border-2 border-slate-300 shadow-inner animate-in slide-in-from-bottom-4 motion-reduce:animate-none"
-  }, /*#__PURE__*/React.createElement(Lock, {
-    size: 18,
-    "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("span", null, t('adventure.storybook_locked', {
-    needed: studentProjectSettings.adventureMinXP - adventureState.xp
-  }))))) : /*#__PURE__*/React.createElement("div", {
+  })())))), adventureState.isGameOver && (() => {
+    // Defeat vs completion (2026-07-16): energy-death used to get the SAME
+    // confetti + trophy as a victory — a failure celebrated. Defeat now gets
+    // an honest (still kind) treatment; completions keep the party.
+    const _isDefeat = (Number(adventureState.energy) || 0) <= 0 && !adventureState.canStartSequel;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-col items-center justify-center py-8 gap-4"
+    }, !_isDefeat && /*#__PURE__*/React.createElement("div", {
+      "aria-hidden": "true"
+    }, /*#__PURE__*/React.createElement(ConfettiExplosion, null)), _isDefeat ? /*#__PURE__*/React.createElement("div", {
+      className: "bg-amber-100 text-amber-900 px-6 py-3 rounded-full font-bold border border-amber-300 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500 motion-reduce:animate-none",
+      role: "status",
+      "aria-live": "polite",
+      "aria-atomic": "true"
+    }, /*#__PURE__*/React.createElement(Zap, {
+      size: 18,
+      "aria-hidden": "true"
+    }), " ", t('adventure.game_over_defeat') || 'Out of energy — the journey ends here. Every attempt teaches something!') : /*#__PURE__*/React.createElement("div", {
+      className: "bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border border-green-200 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500 motion-reduce:animate-none",
+      role: "status",
+      "aria-live": "polite",
+      "aria-atomic": "true"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      size: 18,
+      "aria-hidden": "true"
+    }), " ", t('adventure.game_over')), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-slate-600 font-bold"
+    }, t('adventure.final_level'), ": ", adventureState.level), adventureState.xp >= studentProjectSettings.adventureMinXP ? /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: handleSetShowStorybookExportModalToTrue,
+      disabled: isProcessing,
+      "aria-busy": isProcessing,
+      className: "min-h-11 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all animate-in slide-in-from-bottom-4 motion-reduce:animate-none motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed",
+      title: t('adventure.storybook'),
+      "aria-label": t('adventure.storybook')
+    }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
+      size: 20,
+      className: "animate-spin motion-reduce:animate-none",
+      "aria-hidden": "true"
+    }) : /*#__PURE__*/React.createElement(BookOpen, {
+      size: 20,
+      "aria-hidden": "true"
+    }), isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')) : /*#__PURE__*/React.createElement("div", {
+      className: "min-h-11 flex items-center gap-2 bg-slate-100 text-slate-700 px-6 py-3 rounded-xl font-bold border-2 border-slate-300 shadow-inner animate-in slide-in-from-bottom-4 motion-reduce:animate-none"
+    }, /*#__PURE__*/React.createElement(Lock, {
+      size: 18,
+      "aria-hidden": "true"
+    }), /*#__PURE__*/React.createElement("span", null, t('adventure.storybook_locked', {
+      needed: studentProjectSettings.adventureMinXP - adventureState.xp
+    }))));
+  })()) : /*#__PURE__*/React.createElement("div", {
     className: "relative w-full h-full bg-black rounded-xl overflow-hidden shadow-2xl group select-none relative"
   }, adventureState.sceneImage ? /*#__PURE__*/React.createElement("img", {
     loading: "lazy",

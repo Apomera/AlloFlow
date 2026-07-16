@@ -96,3 +96,48 @@ describe('D. free-response nudge costs half the turn XP gain', () => {
     expect(ANTI).toMatch(/prewarmAdventureAudio, handleAdventureHint,/);
   });
 });
+
+// ── Climax + game-based assessment hardening (2026-07-16, same wave) ─────────
+describe('E. climax score integrity', () => {
+  for (const [name, s] of [['source', SESSION_SRC], ['module', SESSION_MOD]]) {
+    it(`session ${name}: AI masteryScore is coerced, jump-capped to ±25, and clamped 0-100`, () => {
+      expect(s).toMatch(/Math\.max\(-25, Math\.min\(25, _candidate - _prevSafe\)\)/);
+      expect(s).toMatch(/aiMasteryScore = Math\.min\(100, Math\.max\(0, _candidate\)\)/);
+    });
+    it(`session ${name}: climax resolves from the CLAMPED score only — the model cannot declare early victory`, () => {
+      // the old direct assignment must be gone
+      expect(s).not.toMatch(/finalResult = data\.climaxResult/);
+      expect(s).toMatch(/if \(finalMasteryScore >= 100\) finalResult = 'victory';/);
+    });
+    it(`session ${name}: victory/failure ledger input no longer double-counts the final scene+choice`, () => {
+      // the duplicated reconstruction pattern must be gone
+      expect(s).not.toMatch(/\.\.\.prev\.history,\s*\n\s*\{ type: 'scene', text: prev\.currentScene\?\.text/);
+    });
+  }
+});
+
+describe('F. deterministic-mode score↔outcomeType consistency guard', () => {
+  for (const [name, s] of [['source', SESSION_SRC], ['module', SESSION_MOD]]) {
+    it(`session ${name}: a misconception can never grade as a success and vice versa (deterministic only)`, () => {
+      expect(s).toMatch(/!adventureChanceMode && data\.rollDetails/);
+      expect(s).toMatch(/_tag === 'misconception' && _s >= 12/);
+      expect(s).toMatch(/_tag === 'strategic_success' && _s < 12/);
+    });
+  }
+});
+
+describe('G. defeat is not celebrated', () => {
+  for (const [name, s] of [['source', VIEW_SRC], ['module', VIEW_MOD]]) {
+    it(`view ${name}: energy-death game-over suppresses confetti/trophy and shows the defeat treatment`, () => {
+      expect(s).toMatch(/_isDefeat/);
+      expect(s).toMatch(/!_isDefeat && /); // confetti gated
+      expect(s).toMatch(/game_over_defeat|Out of energy — the journey ends here/);
+    });
+  }
+  for (const [name, s] of [['source', SESSION_SRC], ['module', SESSION_MOD]]) {
+    it(`session ${name}: energy-death announces itself (toast + failure sound)`, () => {
+      expect(s).toMatch(/newEnergy <= 0 && !prev\.isGameOver/);
+      expect(s).toMatch(/energy_depleted/);
+    });
+  }
+});

@@ -20,6 +20,22 @@ const handleDiceRollComplete = (deps) => {
       }
       data.scene.text = String(data.scene.text || (t('adventure.status_messages.continue') || 'The adventure continues.'));
       if (!Array.isArray(data.scene.options)) data.scene.options = [];
+      // ── Deterministic-mode score↔tag consistency guard (2026-07-16) ─────────
+      // In deterministic mode the model self-reports BOTH a 1-20 performance score
+      // and a pedagogical outcomeType as independent fields; when they disagree
+      // (e.g. "misconception" + score 19) the student got +100 XP, a success
+      // fanfare, AND stats.failures++ for the same turn. The tag is the
+      // pedagogical signal, so the score is reconciled to it. Chance mode is left
+      // alone — there the d20 is real dice and the score legitimately diverges.
+      if (!adventureChanceMode && data.rollDetails) {
+          const _tag = data.outcomeType || data.rollDetails.outcomeType || '';
+          let _s = Number(data.rollDetails.total || data.rollDetails.d20 || 10);
+          if (!Number.isFinite(_s)) _s = 10;
+          _s = Math.max(1, Math.min(20, _s));
+          if (_tag === 'misconception' && _s >= 12) _s = 11;            // never grade a misconception as a success
+          else if (_tag === 'strategic_success' && _s < 12) _s = 12;    // never fail a tagged strategic success
+          data.rollDetails = { ...data.rollDetails, total: _s };
+      }
       playAdventureEventSound('transition');
       setAdventureState(prev => {
           const currentStats = prev.stats || { successes: 0, failures: 0, decisions: 0, conceptsFound: [] };
@@ -231,12 +247,28 @@ const handleDiceRollComplete = (deps) => {
           let feedbackText = `${data.feedback || data.evaluation}`;
           let aiMasteryScore = data.masteryScore;
           const currentClimaxState = prev.climax || { masteryScore: 0, isActive: false, archetype: 'Auto', attempts: 0 };
-          if (aiMasteryScore === undefined && currentClimaxState.isActive) {
-              const outcomeType = data.outcomeType || data.rollDetails?.outcomeType || 'neutral';
-              let delta = -2; // Default slight penalty to maintain pressure
-              if (outcomeType === 'strategic_success') delta = 8;
-              else if (outcomeType === 'misconception') delta = -8;
-              aiMasteryScore = Math.min(100, Math.max(0, (currentClimaxState.masteryScore || 50) + delta));
+          if (currentClimaxState.isActive) {
+              // ── Climax score integrity (2026-07-16) ─────────────────────────
+              // The model returns the NEW masteryScore directly; previously it was
+              // trusted verbatim — a hallucinated 100 (or 9999, or a string) resolved
+              // the whole climax in one turn. Now: coerce to number, cap the per-turn
+              // shift to the documented ±25 (the largest legal swing, "critical
+              // failure"), clamp to 0-100, and fall back to the outcomeType delta
+              // when the model returned nothing usable.
+              const _prevMastery = Number(currentClimaxState.masteryScore);
+              const _prevSafe = Number.isFinite(_prevMastery) ? Math.min(100, Math.max(0, _prevMastery)) : 50;
+              let _candidate = Number(aiMasteryScore);
+              if (!Number.isFinite(_candidate)) {
+                  const outcomeType = data.outcomeType || data.rollDetails?.outcomeType || 'neutral';
+                  let delta = -2; // Default slight penalty to maintain pressure
+                  if (outcomeType === 'strategic_success') delta = 8;
+                  else if (outcomeType === 'misconception') delta = -8;
+                  _candidate = _prevSafe + delta;
+              } else {
+                  const _shift = Math.max(-25, Math.min(25, _candidate - _prevSafe));
+                  _candidate = _prevSafe + _shift;
+              }
+              aiMasteryScore = Math.min(100, Math.max(0, _candidate));
           }
           let hiddenMastery = currentClimaxState.masteryScore || 0;
           if (!currentClimaxState.isActive) {
@@ -257,9 +289,13 @@ const handleDiceRollComplete = (deps) => {
           const finalMasteryScore = shouldTriggerClimax ? 50 : (currentClimaxState.isActive ? aiMasteryScore : hiddenMastery);
           let finalResult = null;
           if (currentClimaxState.isActive) {
-              finalResult = data.climaxResult;
+              // Resolution is derived from the CLAMPED score only (2026-07-16): the
+              // model's own climaxResult declaration used to be able to end the climax
+              // early (victory below 100 / failure above 0). Now the boss fight
+              // resolves exactly when the earned score crosses the line — which also
+              // makes the Mission Report's forced 100/0 honest.
               if (finalMasteryScore >= 100) finalResult = 'victory';
-              if (finalMasteryScore <= 0) finalResult = 'failure';
+              else if (finalMasteryScore <= 0) finalResult = 'failure';
           }
           const updatedClimax = {
               ...currentClimaxState,
@@ -304,10 +340,11 @@ const handleDiceRollComplete = (deps) => {
           feedbackText += ` (${extraInfo.join(', ')})`;
           const resolvedChoice = prev.pendingChoice || data.pendingChoice || '';
           if (finalResult === 'victory') {
+              // prev.history already contains the final scene+choice (appended at
+              // choice time) — re-adding them here double-counted the climactic
+              // exchange in the ledger input (fixed 2026-07-16).
               const victoryHistory = [
                   ...prev.history,
-                  { type: 'scene', text: prev.currentScene?.text || '' },
-                  { type: 'choice', text: resolvedChoice, source: data.choiceSource || 'option' },
                   { type: 'feedback', text: data.feedback || data.evaluation || '' }
               ];
               generateNarrativeLedger(victoryHistory, deps);
@@ -329,10 +366,10 @@ const handleDiceRollComplete = (deps) => {
                   stats: newStats
               };
           } else if (finalResult === 'failure') {
+              // Same dedup as the victory path (2026-07-16): scene+choice are already
+              // in prev.history from choice time.
               const failureHistory = [
                   ...prev.history,
-                  { type: 'scene', text: prev.currentScene?.text || '' },
-                  { type: 'choice', text: resolvedChoice, source: data.choiceSource || 'option' },
                   { type: 'feedback', text: data.feedback || data.evaluation || '' }
               ];
               generateNarrativeLedger(failureHistory, deps);
@@ -431,6 +468,13 @@ const handleDiceRollComplete = (deps) => {
                   && (adventureFreeResponseEnabled || data.scene.options.length !== 0);
               if (shouldContinue) {
                   generateAdventureImage(data.scene.text, nextTurn, deps);
+              }
+              // Energy-death feedback (2026-07-16): running out of energy ends the
+              // adventure, but it used to end SILENTLY (and the game-over UI even
+              // celebrated). Tell the student what happened, with the failure sound.
+              if (newEnergy <= 0 && !prev.isGameOver) {
+                  playAdventureEventSound('failure');
+                  addToast(t('adventure.energy_depleted') || '⚡ Out of energy — the adventure ends here. Rest up and try again!', 'error');
               }
               if (nextTurn % 5 === 0) {
                   const updatedHistory = [...prev.history, { type: 'feedback', text: feedbackText }];

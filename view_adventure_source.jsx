@@ -866,12 +866,23 @@ function AdventureView(props) {
                                     </div>
                                 </div>
                             )}
-                            {adventureState.isGameOver && (
+                            {adventureState.isGameOver && (() => {
+                                // Defeat vs completion (2026-07-16): energy-death used to get the SAME
+                                // confetti + trophy as a victory — a failure celebrated. Defeat now gets
+                                // an honest (still kind) treatment; completions keep the party.
+                                const _isDefeat = (Number(adventureState.energy) || 0) <= 0 && !adventureState.canStartSequel;
+                                return (
                                 <div className="flex flex-col items-center justify-center py-8 gap-4">
-                                    <div aria-hidden="true"><ConfettiExplosion /></div>
-                                    <div className="bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border border-green-200 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500 motion-reduce:animate-none" role="status" aria-live="polite" aria-atomic="true">
-                                        <Trophy size={18} aria-hidden="true"/> {t('adventure.game_over')}
-                                    </div>
+                                    {!_isDefeat && <div aria-hidden="true"><ConfettiExplosion /></div>}
+                                    {_isDefeat ? (
+                                        <div className="bg-amber-100 text-amber-900 px-6 py-3 rounded-full font-bold border border-amber-300 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500 motion-reduce:animate-none" role="status" aria-live="polite" aria-atomic="true">
+                                            <Zap size={18} aria-hidden="true"/> {t('adventure.game_over_defeat') || 'Out of energy — the journey ends here. Every attempt teaches something!'}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border border-green-200 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500 motion-reduce:animate-none" role="status" aria-live="polite" aria-atomic="true">
+                                            <Trophy size={18} aria-hidden="true"/> {t('adventure.game_over')}
+                                        </div>
+                                    )}
                                     <div className="text-sm text-slate-600 font-bold">{t('adventure.final_level')}: {adventureState.level}</div>
                                     {adventureState.xp >= studentProjectSettings.adventureMinXP ? (
                                         <button type="button"
@@ -891,7 +902,8 @@ function AdventureView(props) {
                                         </div>
                                     )}
                                 </div>
-                            )}
+                                );
+                            })()}
                         </div>
                         ) : (
                             <div className="relative w-full h-full bg-black rounded-xl overflow-hidden shadow-2xl group select-none relative">
