@@ -30,7 +30,7 @@ function makeGate(opts) {
     '\nreturn {' +
     '  acquire: _acquireGeminiSlot, release: _releaseGeminiSlot, gate: _geminiGate,' +
     '  pump: _geminiPump, applyPacing: _applyGeminiPacing, reset: _resetGeminiBreaker,' +
-    '  noteSuccess: _geminiNoteSuccess,' +
+    '  noteSuccess: _geminiNoteSuccess, noteFail: _geminiNoteTransientFail, info: _geminiThrottleInfo,' +
     '  state: function(){ return { cap: _geminiCap, inFlight: _geminiInFlight, waiters: _geminiWaiters.length, effMax: _geminiEffectiveMax, stagger: _geminiStaggerMs }; }' +
     '};'
   );
@@ -165,6 +165,53 @@ describe('heavy/scanned pacing: lower ceiling + stagger the starts, but DROP NOT
     expect(g.api.state().cap).toBe(1);
     g.api.applyPacing(false);             // the calm branch used to restore the global max of 3
     expect(g.api.state().effMax).toBe(1);
+  });
+});
+
+describe('success-gated recovery (2026-07-15 rework): elapsed time NEVER raises the cap — behavioral', () => {
+  it('3 consecutive transient failures trip the breaker to cap 1 with a live cooldown', () => {
+    const g = makeGate();
+    for (let i = 0; i < 3; i++) g.api.noteFail();
+    expect(g.api.state().cap).toBe(1);
+    expect(g.api.info().storming).toBe(true);
+    expect(g.api.info().cooldownRemainingMs).toBeGreaterThan(0);
+  });
+
+  it('calls queued during the cooldown drain SERIALLY once it elapses — the elapsed cooldown buys back no concurrency', () => {
+    const g = makeGate();
+    for (let i = 0; i < 3; i++) g.api.noteFail();
+    for (let i = 0; i < 3; i++) g.api.acquire();
+    expect(g.api.state().inFlight).toBe(0);   // cooldown holds every start
+    expect(g.pendingTimers()).toBe(1);        // ...but a re-pump is scheduled, nothing is dropped
+    g.advance(30000);                         // well past the 12s cooldown
+    g.fireTimers();
+    const s = g.api.state();
+    expect(s.inFlight).toBe(1);               // the queue moves again —
+    expect(s.cap).toBe(1);                    // — but still serialized (the old time-decay would read 2 here)
+    expect(s.waiters).toBe(2);
+  });
+
+  it('exactly 4 consecutive successes restore the run ceiling and clear the cooldown', () => {
+    const g = makeGate();
+    for (let i = 0; i < 3; i++) g.api.noteFail();
+    g.advance(30000);
+    for (let i = 0; i < 3; i++) g.api.noteSuccess();
+    expect(g.api.state().cap).toBe(1);        // 3 is not enough
+    g.api.noteSuccess();                      // the 4th clean success
+    expect(g.api.state().cap).toBe(3);
+    expect(g.api.info().storming).toBe(false);
+    expect(g.api.info().cooldownRemainingMs).toBe(0);
+  });
+
+  it('an intermittent failure trickle resets the streak — the run stays serialized until 4 CLEAN successes (deliberate: a trickle IS the throttle still easing)', () => {
+    const g = makeGate();
+    for (let i = 0; i < 3; i++) g.api.noteFail();
+    g.advance(30000);
+    for (let round = 0; round < 3; round++) {
+      for (let i = 0; i < 3; i++) g.api.noteSuccess();
+      g.api.noteFail();                       // one blip resets the ok-streak (streak 1 — arms no new cooldown)
+    }
+    expect(g.api.state().cap).toBe(1);        // never recovered — progress continues serially, never re-fans
   });
 });
 

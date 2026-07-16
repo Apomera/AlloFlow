@@ -56,6 +56,17 @@ describe('CB-1: the Gemini breaker is reset at the start of each run', () => {
     expect(pipe.slice(telemetry, pacing)).toContain('_resetGeminiBreaker();');
     expect(pipe).toContain('if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {');
   });
+  it('the OPENING-AUDIT reset honors the same busy-gate skip (M3 parity, 2026-07-16)', () => {
+    // The opening audit's proactive reset+pacing (added 2026-07-15) initially reset the breaker
+    // UNCONDITIONALLY — in a batch, file B's opening audit zeroed file A's live storm state and
+    // fanned both runs into the active throttle. It must skip the reset while the gate is busy.
+    const auditIdx = pipe.indexOf("label: 'the opening PDF audit'");
+    expect(auditIdx).toBeGreaterThan(0);
+    const before = pipe.slice(Math.max(0, auditIdx - 900), auditIdx);
+    expect(before).toContain('if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {');
+    expect(before).toContain('_resetGeminiBreaker();');
+    expect(before).toContain('Opening-audit breaker reset SKIPPED');
+  });
 });
 
 describe('CB-2: recovery clears the stale cooldown', () => {

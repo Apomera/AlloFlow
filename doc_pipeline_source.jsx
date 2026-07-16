@@ -12014,7 +12014,15 @@ Return ONLY valid JSON:
       // before remediation learned that a document was heavy/scanned. Pace it proactively;
       // this adds only a few seconds but avoids spending the run's quota in its first instant.
       try {
-        _resetGeminiBreaker();
+        // M3 parity: a busy gate keeps its earned storm state. The opening audit races an
+        // overlapping run in exactly the batch case (file B opened while file A drains); zeroing
+        // the cooldown/streaks under it would fan BOTH runs into the live throttle. Pacing is
+        // still applied either way — it only tightens, never loosens.
+        if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {
+          warnLog('[GeminiGate] Opening-audit breaker reset SKIPPED — ' + _geminiInFlight + ' call(s) in flight + ' + _geminiWaiters.length + ' queued from an overlapping run; keeping the live gate state.');
+        } else {
+          _resetGeminiBreaker();
+        }
         _applyGeminiPacing(true, { maxConcurrent: 2, staggerMs: 1500, label: 'the opening PDF audit' });
       } catch (_) {}
       let _chunkFirst = false;

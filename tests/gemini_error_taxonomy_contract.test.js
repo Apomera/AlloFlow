@@ -35,7 +35,8 @@ const { _isBurstQuotaErr, _isThrottleErr } = new Function(dp.slice(btStart, btEn
 // Anchor inside _geminiCall: the file also carries a DEAD legacy copy of this expression in the
 // zero-call-site _withRetry fossil (verified 2026-07-09 — grep its name: definition only), which
 // lacks the H2 burst-quota routing. Slicing THAT would test dead code.
-const gcStart = dp.indexOf('var _geminiCall = function(fn, initialMs, retryMs, label) {');
+const gcStart = dp.indexOf('var _geminiCall = function(fn, initialMs, retryMs, label, onTransportStart) {');
+if (gcStart < 0) throw new Error('anchor missed _geminiCall — an indexOf(-1) fallthrough would slice the dead _withRetry fossil below');
 const pmStart = dp.indexOf('var isPermanent = err && (err.isAuth', gcStart);
 const pmEnd = dp.indexOf('if (isPermanent) {', pmStart);
 const decide = new Function('err', '_isBurstQuotaErr',
