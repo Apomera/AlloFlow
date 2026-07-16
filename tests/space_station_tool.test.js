@@ -1,10 +1,63 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
+import { loadTool, resetStemLab, React } from './helpers/stem_widgets_smoke_harness.js';
+
+const require = createRequire(import.meta.url);
+const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
+const { act } = require(resolve(MODULES_DIR, 'react-dom/test-utils'));
 
 const TOOL_PATHS = [
   'stem_lab/stem_tool_spacestation.js',
   'prismflow-deploy/public/stem_lab/stem_tool_spacestation.js',
 ];
+
+// jsdom shims: no canvas 2D context, no rAF (animation loops must never advance)
+const ctxStub = new Proxy({}, { get: () => () => ctxStub });
+HTMLCanvasElement.prototype.getContext = function () { return ctxStub; };
+if (!global.requestAnimationFrame) global.requestAnimationFrame = () => 0;
+if (!global.cancelAnimationFrame) global.cancelAnimationFrame = () => {};
+
+const noop = () => {};
+function mountCtx(toolData, setToolData) {
+  const Icons = new Proxy({}, { get: () => () => React.createElement('span', { 'aria-hidden': 'true' }) });
+  return {
+    React, toolData, setToolData, update: noop, updateMulti: noop,
+    setStemLabTool: noop, addToast: noop, announceToSR: noop, awardXP: noop,
+    callGemini: null, aiHintsEnabled: false, gradeLevel: '7th Grade',
+    icons: Icons, t: (k, f) => (f != null ? f : k),
+  };
+}
+
+// Stateful mount (mirrors stem_lab_module.js StemPluginBridge): the tool seeds
+// its bucket via setToolData on first render, then re-renders its real body.
+// `seed` lets each case pre-position the tool on a given tab/state.
+function mountWithSeed(seed) {
+  const cfg = window.StemLab._registry.spaceStation;
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root = ReactDOMClient.createRoot(host);
+  function Harness() {
+    const [toolData, setToolData] = React.useState(seed ? { spaceStation: seed } : {});
+    return cfg.render(mountCtx(toolData, setToolData));
+  }
+  try {
+    act(() => { root.render(React.createElement(Harness)); });
+    return host.innerHTML;
+  } finally {
+    try { act(() => root.unmount()); } catch (_) {}
+    host.remove();
+  }
+}
+
+const BASE = {
+  tab: 'map', selModule: 'zarya', dayIdx: 0, sysIdx: 0,
+  orbitAlt: 420, quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false,
+  seenModules: {}, seenHours: {}, orbitTouched: false, quizBest: 0,
+  askInput: '', askAnswer: '', askLoading: false,
+};
 
 describe('space station tool', () => {
   it('registers the plugin with quest hooks and all six tabs', () => {
@@ -85,6 +138,73 @@ describe('space station tool', () => {
       // New quest hooks
       expect(source).toContain("id: 'iss_dock'");
       expect(source).toContain("id: 'iss_eva'");
+    });
+  });
+
+  describe('mount smoke — every tab really renders', () => {
+    beforeEach(() => {
+      resetStemLab();
+      loadTool('stem_lab/stem_tool_spacestation.js', 'spaceStation');
+    });
+
+    it('seeds its state bucket from empty and reaches the 3-D map', () => {
+      const html = mountWithSeed(null);
+      expect(html).toContain('Space Station');
+      expect(html).toContain('Zarya');
+      expect(html).toContain('Fast facts');
+    });
+
+    it('renders the Cupola interior and sleep-cabin interior when those modules are selected', () => {
+      const cupola = mountWithSeed({ ...BASE, selModule: 'cupola' });
+      expect(cupola).toContain('Inside the Cupola');
+      expect(cupola).toContain('debris shutters');
+      const cabin = mountWithSeed({ ...BASE, selModule: 'harmony' });
+      expect(cabin).toContain('Inside a crew sleep cabin');
+      expect(cabin).toContain('Sleeping bag');
+    });
+
+    it('renders A Day Aboard with the exercise WHY', () => {
+      const html = mountWithSeed({ ...BASE, tab: 'day', dayIdx: 4 });
+      expect(html).toContain('Exercise 1 of 2');
+      expect(html).toContain('1-1.5%');
+    });
+
+    it('renders Systems with the air loop and design challenge', () => {
+      const html = mountWithSeed({ ...BASE, tab: 'systems', sysIdx: 1 });
+      expect(html).toContain('Air loop');
+      expect(html).toContain('Sabatier');
+      expect(html).toContain('Design challenge');
+    });
+
+    it('computes real orbital mechanics in the Orbit Lab', () => {
+      const html = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250 });
+      // v = sqrt(398600.4418 / 6621) = 7.76 km/s
+      expect(html).toContain('7.76 km/s');
+      expect(html).toContain('Severe drag');
+      const high = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 1500 });
+      expect(high).toContain('radiation');
+    });
+
+    it('renders both missions, including a started EVA and a docking report', () => {
+      const html = mountWithSeed({
+        ...BASE, tab: 'missions',
+        dockResult: 'bonk', dockMsg: 'Contact too fast.', dockRuns: 2, dockWins: 1,
+        eva: { pos: 6, tetherA: 6, tetherB: 6, freeTether: 'A', o2: 61, bolts: 4, done: true, failMsg: '', started: true, log: ['done'] },
+      });
+      expect(html).toContain('Dock the cargo capsule');
+      expect(html).toContain('Mission report');
+      expect(html).toContain('Pump worksite');
+      expect(html).toContain('Pump secured');
+      expect(html).toContain('Torque bolt');
+    });
+
+    it('renders History and a completed quiz debrief', () => {
+      const history = mountWithSeed({ ...BASE, tab: 'history' });
+      expect(history).toContain('Assembly to retirement');
+      expect(history).toContain('Spot the Station');
+      const quiz = mountWithSeed({ ...BASE, tab: 'quiz', quizDone: true, quizScore: 8, quizBest: 8 });
+      expect(quiz).toContain('8 / 10');
+      expect(quiz).toContain('Flight-controller material');
     });
   });
 
