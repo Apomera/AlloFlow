@@ -32116,8 +32116,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-note-popover-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 12px; font-weight: 800; color: #334155; }
           .alloflow-note-popover-body { padding: 12px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
           .alloflow-note-popover-meta { padding: 0 12px 12px; font-size: 11px; color: #64748b; }
-          .alloflow-note-popover-close { border: 0; background: transparent; color: #64748b; border-radius: 6px; padding: 3px 6px; cursor: pointer; font-weight: 800; }
-          .alloflow-note-popover-close:hover, .alloflow-note-popover-close:focus-visible { color: #dc2626; background: #ffffff; outline: 2px solid #6366f1; outline-offset: 1px; }
+          .alloflow-note-popover-close { border: 0; background: transparent; color: #64748b; border-radius: 6px; padding: 4px; cursor: pointer; font-weight: 800; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+          .alloflow-note-popover-close:hover { color: #dc2626; background: #ffffff; }
+          .alloflow-note-popover-close:focus-visible, .alloflow-anno-note:focus-visible { outline: 3px solid #4338ca !important; outline-offset: 3px; }
           .alloflow-anno-confirm-backdrop { position: fixed; inset: 0; z-index: 100002; background: rgba(15,23,42,0.72); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
           .alloflow-anno-confirm { box-sizing: border-box; width: min(100%, 480px); max-height: calc(100vh - 32px); overflow: auto; background: #ffffff; color: #0f172a; border: 2px solid #f59e0b; border-radius: 16px; padding: 24px; box-shadow: 0 24px 70px rgba(0,0,0,0.45); font-family: system-ui,-apple-system,sans-serif; }
           .alloflow-anno-confirm h2 { margin: 0 0 10px; font-size: 20px; line-height: 1.3; color: #0f172a; }
@@ -33065,31 +33066,42 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               return parts.join(' • ');
             }
             var notePopoverEl = null;
-            function closeNotePopover() {
+            var notePopoverOpener = null;
+            function closeNotePopover(restoreFocus) {
               if (!notePopoverEl) return;
+              var opener = notePopoverOpener;
               try { notePopoverEl.remove(); } catch (e) {}
               notePopoverEl = null;
+              notePopoverOpener = null;
+              if (opener && opener.setAttribute) opener.setAttribute('aria-expanded', 'false');
+              if (restoreFocus && opener && opener.isConnected && opener.focus) {
+                try { opener.focus(); } catch (e) {}
+              }
             }
             function showNotePopover(a, anchor) {
-              closeNotePopover();
+              closeNotePopover(false);
               var pop = document.createElement('div');
               pop.className = 'alloflow-note-popover';
+              pop.id = 'alloflow-annotation-note-popover';
               pop.setAttribute('role', 'dialog');
-              pop.setAttribute('aria-label', 'Annotation note');
+              pop.setAttribute('aria-labelledby', 'alloflow-annotation-note-title');
+              pop.setAttribute('aria-describedby', 'alloflow-annotation-note-body');
               var header = document.createElement('div');
               header.className = 'alloflow-note-popover-header';
               var label = document.createElement('span');
+              label.id = 'alloflow-annotation-note-title';
               label.textContent = a && a.author === 'teacher' ? 'Teacher note' : 'Your note';
               var close = document.createElement('button');
               close.type = 'button';
               close.className = 'alloflow-note-popover-close';
               close.setAttribute('aria-label', 'Close note');
               close.textContent = '×';
-              close.addEventListener('click', function (ev) { ev.stopPropagation(); closeNotePopover(); try { anchor && anchor.focus && anchor.focus(); } catch (e) {} });
+              close.addEventListener('click', function (ev) { ev.stopPropagation(); closeNotePopover(true); });
               header.appendChild(label);
               header.appendChild(close);
               var body = document.createElement('div');
               body.className = 'alloflow-note-popover-body';
+              body.id = 'alloflow-annotation-note-body';
               body.textContent = (a && a.content) ? a.content : '(empty note)';
               var meta = document.createElement('div');
               meta.className = 'alloflow-note-popover-meta';
@@ -33099,6 +33111,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (meta.textContent) pop.appendChild(meta);
               document.body.appendChild(pop);
               notePopoverEl = pop;
+              notePopoverOpener = anchor || null;
+              if (anchor && anchor.setAttribute) anchor.setAttribute('aria-expanded', 'true');
               try {
                 var r = anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : { left: 16, top: 16, bottom: 44 };
                 var top = Math.min(window.innerHeight - pop.offsetHeight - 12, Math.max(12, r.bottom + 8));
@@ -33109,13 +33123,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               } catch (e) {}
             }
             document.addEventListener('keydown', function (e) {
-              if (e.key === 'Escape') closeNotePopover();
+              if (e.key === 'Escape' && notePopoverEl) {
+                e.preventDefault();
+                closeNotePopover(true);
+              }
             });
             document.addEventListener('click', function (e) {
               if (!notePopoverEl) return;
               if (notePopoverEl.contains(e.target)) return;
               if (e.target && e.target.closest && e.target.closest('.alloflow-anno-note')) return;
-              closeNotePopover();
+              closeNotePopover(false);
             });
 
             // Attach a drag handler to a DOM element representing an
@@ -33198,14 +33215,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 // Pending notes: editor is open, skip the bubble.
                 if (a.pending) return null;
                 var palette = NOTE_COLORS[a.color] || NOTE_COLORS.yellow;
-                var note = document.createElement('div');
+                var note = document.createElement('button');
+                note.type = 'button';
                 note.className = 'alloflow-anno alloflow-anno-note';
-                note.style.cssText = 'position:absolute;top:' + (a.y - 14) + 'px;left:' + (a.x - 14) + 'px;width:28px;height:28px;background:' + palette.fill + ';border:2px solid ' + palette.border + ';color:' + palette.text + ';border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;z-index:50;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.15);';
+                note.style.cssText = 'appearance:none;position:absolute;top:' + (a.y - 22) + 'px;left:' + (a.x - 22) + 'px;width:44px;height:44px;padding:0;background:' + palette.fill + ';border:2px solid ' + palette.border + ';color:' + palette.text + ';border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;z-index:50;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.15);touch-action:none;';
                 note.textContent = '📝';
                 note.title = (a.content ? '"' + a.content + '" — ' : '') + buildTitle(a);
-                note.setAttribute('role', 'button');
-                note.setAttribute('tabindex', '0');
                 note.setAttribute('aria-label', 'Sticky note: ' + (a.content || '(empty)') + ' from ' + buildTitle(a));
+                note.setAttribute('aria-haspopup', 'dialog');
+                note.setAttribute('aria-expanded', 'false');
+                note.setAttribute('aria-controls', 'alloflow-annotation-note-popover');
                 note.addEventListener('click', function (e) {
                   e.stopPropagation();
                   showNotePopover(a, note);
