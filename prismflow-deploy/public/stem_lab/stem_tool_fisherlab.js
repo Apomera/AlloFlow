@@ -415,12 +415,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       stewardship: 'Highly prolific but subject to localized population pressures. Managed to balance sport catch and forage base.',
       cite: 'GLFC' },
     { id: 'crayfish', name: 'Crayfish (Northern)', sci: 'Faxonius virilis', emoji: '🦞', group: 'shellfish',
-      minSize: 3, slot: '3"+ body length', dailyBag: 50, season: 'Open year-round',
+      minSize: null, slot: null, dailyBag: null, season: 'Check local jurisdiction',
       idMarks: 'Lobster-like appearance, dark brownish-green body, segmented tail.',
       gear: ['crayfish traps', 'dip nets'], depth: '0.5-3 m',
       habitat: 'Rocky lake margins, stream beds',
-      stewardship: 'Important detritivore and prey species. Do not transport live crayfish between watersheds to prevent spreading invasive species (like Rusty Crayfish).',
-      cite: 'GLFC' }
+      stewardship: 'Important detritivore and prey species. Identify the species and follow state or provincial rules; never move live crayfish between watersheds.',
+      cite: 'State or provincial wildlife authority' }
   ];
 
   function getSpeciesForRegion(reg) {
@@ -629,6 +629,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return { accurate: accurate, error: error, direction: direction, reading: measured, tolerance: allowedError, message: message };
   }
 
+  function getCoreShellfishReleaseReason(specimen) {
+    if (!specimen) return 'the specimen does not meet the scenario profile';
+    if (specimen.region === 'chesapeake') return specimen.length < 5 ? 'its width is below the 5-inch Chesapeake training minimum' : specimen.hasSponge ? 'it is an egg-bearing female blue crab' : 'it does not meet the Chesapeake training profile';
+    if (specimen.region === 'pnw') return specimen.length < 6.25 ? 'its width is below the 6.25-inch commercial coastal training minimum' : specimen.isFemale ? 'the commercial coastal scenario uses male-only harvest' : 'it does not meet the Washington commercial coastal training profile';
+    if (specimen.region === 'greatlakes') return 'a local species or jurisdiction rule requires release';
+    return specimen.length < 3.25 ? 'its carapace is below the 3.25-inch Maine training minimum' : specimen.length > 5 ? 'its carapace is above the 5-inch Maine training maximum' : specimen.isVNotched ? 'it is a protected V-notched female breeder' : 'it does not meet the Maine training profile';
+  }
+
   function getCoreFishHandlingGuidance(action, legalToRetain) {
     if (action !== 'retain' || !legalToRetain) {
       return { id: 'release', label: 'Release handling', text: 'Wet hands, support the fish horizontally, minimize air exposure, and let it recover facing into moving water.' };
@@ -681,6 +689,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreFishRuleEvidence: getCoreFishRuleEvidence,
     evaluateCoreFishDecision: evaluateCoreFishDecision,
     evaluateCoreCaliperReading: evaluateCoreCaliperReading,
+    getCoreShellfishReleaseReason: getCoreShellfishReleaseReason,
     getCoreFishHandlingGuidance: getCoreFishHandlingGuidance,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
@@ -9554,9 +9563,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             keeper = (length >= 6.25) && !isFemale; // male-only keep rule!
           } 
           else if (activeRegion === 'greatlakes') {
-            length = 2.0 + Math.random() * 2.5; // 2.0" to 4.5" length
+            length = 2.0 + Math.random() * 2.5; // field measurement practice only
             isFemale = Math.random() < 0.5;
-            keeper = (length >= 3.0);
+            keeper = true; // No Great Lakes-wide size threshold is implied by this scenario.
           } 
           else {
             // Maine (Lobster)
@@ -10119,9 +10128,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           isKeeper = (length >= 6.25) && !isFemale; // male-only
           ruleText = 'Training profile: minimum carapace width 6.25" and male-only harvest. Confirm the active jurisdiction and season before harvesting.';
         } else if (region === 'greatlakes') {
-          length = 2.0 + Math.random() * 2.5; // 2" to 4.5"
-          isKeeper = (length >= 3.0);
-          ruleText = 'Great Lakes crayfish rules vary by jurisdiction, waterbody, species, and season; this specimen is not used for size-limit scoring.';
+          length = 2.0 + Math.random() * 2.5; // field measurement practice only
+          isKeeper = true;
+          ruleText = 'No Great Lakes-wide size limit is scored. Identify the species and verify current state or provincial rules before harvest or transport.';
         } else { // maine
           length = 3.0 + Math.random() * 2.8; // 3" to 5.8"
           isVNotched = isFemale && (Math.random() < 0.3);
@@ -11374,43 +11383,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   keeperMax = 8.0;
                 }
               } else if (activeLobster.specimenType === 'crayfish') {
-                keeperMin = 3.0;
-                keeperMax = 6.0;
+                keeperMin = 1.5;
+                keeperMax = 5.0;
               }
               var keeperWidth = keeperMax - keeperMin;
 
               var lawsCardContent;
+              var trainingCardStyle = { background: 'rgba(30,41,59,0.4)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #fbbf24', fontSize: '10.5px', color: '#cbd5e1', lineHeight: '1.4' };
+              var trainingNoteStyle = { color: '#fde68a', marginTop: '6px', fontWeight: 'bold' };
               if (activeLobster.region === 'chesapeake') {
-                lawsCardContent = h('div', { style: { background: 'rgba(30,41,59,0.4)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #ef4444', fontSize: '10.5px', color: '#cbd5e1', lineHeight: '1.4' } },
-                  h('div', { style: { fontWeight: 'bold', color: '#f87171', marginBottom: '4px', fontSize: '11px' } }, 'MARYLAND DEPT OF NATURAL RESOURCES (MD-DNR) LAWS:'),
-                  h('div', null, '1. ', h('strong', null, 'Min Carapace Width: '), '5.0 inches (5.0"). Measure spike-to-spike. Throw back if smaller.'),
-                  h('div', null, '2. ', h('strong', null, 'Egg-Bearing Female (Sponge) Rule: '), 'Sponge crabs (females with an orange egg mass on the abdomen) must be released immediately.'),
-                  h('div', null, '3. ', h('strong', null, 'Daily Limit: '), '24 crabs per person per day.'),
-                  h('div', { style: { color: '#e2e8f0', marginTop: '6px', fontWeight: 'bold' } }, 'Violation penalty: $150 - $300 fine.')
+                lawsCardContent = h('div', { style: trainingCardStyle },
+                  h('div', { style: { fontWeight: 'bold', color: '#fde68a', marginBottom: '4px', fontSize: '11px' } }, 'CHESAPEAKE TRAINING PROFILE · VERIFY MD-DNR'),
+                  h('div', null, '1. ', h('strong', null, 'Scenario gauge: '), '5.0-inch hard-crab width, measured point to point.'),
+                  h('div', null, '2. ', h('strong', null, 'Protection cue: '), 'Release a female carrying a visible external egg mass.'),
+                  h('div', null, '3. ', h('strong', null, 'Live rules: '), 'Size, season, method, and possession limits depend on current Maryland rules and notices.'),
+                  h('div', { style: trainingNoteStyle }, 'Practice profile only — check current MD-DNR and COMAR rules before crabbing.')
                 );
               } else if (activeLobster.region === 'pnw') {
-                lawsCardContent = h('div', { style: { background: 'rgba(30,41,59,0.4)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #ef4444', fontSize: '10.5px', color: '#cbd5e1', lineHeight: '1.4' } },
-                  h('div', { style: { fontWeight: 'bold', color: '#f87171', marginBottom: '4px', fontSize: '11px' } }, 'WASHINGTON DEPT OF FISH & WILDLIFE (WDFW) LAWS:'),
-                  h('div', null, '1. ', h('strong', null, 'Min Carapace Width: '), '6-1/4 inches (6.25"). Measure spike-to-spike. Throw back if smaller.'),
-                  h('div', null, '2. ', h('strong', null, 'Male-Only Harvest: '), 'Only male Dungeness crabs may be harvested. Female crabs must be released immediately to protect reproduction.'),
-                  h('div', null, '3. ', h('strong', null, 'Apron ID: '), 'Males have a narrow, pointed abdomen (apron). Females have a wide, rounded abdomen.'),
-                  h('div', { style: { color: '#e2e8f0', marginTop: '6px', fontWeight: 'bold' } }, 'Violation penalty: $200 - $400 fine.')
+                lawsCardContent = h('div', { style: trainingCardStyle },
+                  h('div', { style: { fontWeight: 'bold', color: '#fde68a', marginBottom: '4px', fontSize: '11px' } }, 'WASHINGTON COMMERCIAL COASTAL TRAINING PROFILE'),
+                  h('div', null, '1. ', h('strong', null, 'Scenario gauge: '), '6.25-inch Dungeness width for the commercial coastal profile.'),
+                  h('div', null, '2. ', h('strong', null, 'Protection cue: '), 'Male-only harvest; identify the narrow male apron and release females.'),
+                  h('div', null, '3. ', h('strong', null, 'Live rules: '), 'Recreational minimums and openings vary by marine area and fishery.'),
+                  h('div', { style: trainingNoteStyle }, 'Practice profile only — check the current WDFW area page before crabbing.')
                 );
               } else if (activeLobster.region === 'greatlakes') {
-                lawsCardContent = h('div', { style: { background: 'rgba(30,41,59,0.4)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #ef4444', fontSize: '10.5px', color: '#cbd5e1', lineHeight: '1.4' } },
-                  h('div', { style: { fontWeight: 'bold', color: '#f87171', marginBottom: '4px', fontSize: '11px' } }, 'GREAT LAKES FISHERY COMMISSION (GLFC) CRAYFISH LAWS:'),
-                  h('div', null, '1. ', h('strong', null, 'Min Body Length: '), '3.0 inches. Measure rostrum tip to end of tail. Throw back if smaller.'),
-                  h('div', null, '2. ', h('strong', null, 'Invasive Prevention: '), 'Never transport live crayfish between bodies of water. Use only locally-harvested bait to prevent Rusty Crayfish spread.'),
-                  h('div', null, '3. ', h('strong', null, 'Season: '), 'Open year-round.'),
-                  h('div', { style: { color: '#e2e8f0', marginTop: '6px', fontWeight: 'bold' } }, 'Violation penalty: $75 fine.')
+                lawsCardContent = h('div', { style: trainingCardStyle },
+                  h('div', { style: { fontWeight: 'bold', color: '#fde68a', marginBottom: '4px', fontSize: '11px' } }, 'GREAT LAKES CRAYFISH FIELD PROFILE'),
+                  h('div', null, '1. ', h('strong', null, 'Measurement task: '), 'Record rostrum-to-tail length as field data; no Great Lakes-wide size threshold is scored.'),
+                  h('div', null, '2. ', h('strong', null, 'Authority: '), 'State and provincial agencies set species, harvest, bait, and transport rules.'),
+                  h('div', null, '3. ', h('strong', null, 'Biosecurity: '), 'Identify the species and never release or move live crayfish between watersheds.'),
+                  h('div', { style: trainingNoteStyle }, 'Check the current local fishing guide; rules vary across the Great Lakes basin.')
                 );
               } else {
-                lawsCardContent = h('div', { style: { background: 'rgba(30,41,59,0.4)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #ef4444', fontSize: '10.5px', color: '#cbd5e1', lineHeight: '1.4' } },
-                  h('div', { style: { fontWeight: 'bold', color: '#f87171', marginBottom: '4px', fontSize: '11px' } }, 'MAINE DIVISION OF MARINE RESOURCES (DMR) LAWS:'),
-                  h('div', null, '1. ', h('strong', null, 'Min Carapace Length: '), '3-1/4 inches (3.25"). Throw back if smaller.'),
-                  h('div', null, '2. ', h('strong', null, 'Max Carapace Length: '), '5 inches (5.0"). Throw back if larger (preserves breeders).'),
-                  h('div', null, '3. ', h('strong', null, 'V-Notch Female rule: '), 'Any female with a V-notch on the right-middle tail flipper must be released. It designates a known fertile breeder.'),
-                  h('div', { style: { color: '#e2e8f0', marginTop: '6px', fontWeight: 'bold' } }, 'Violation penalty: $250 - $750 fine.')
+                lawsCardContent = h('div', { style: trainingCardStyle },
+                  h('div', { style: { fontWeight: 'bold', color: '#fde68a', marginBottom: '4px', fontSize: '11px' } }, 'MAINE COMMERCIAL LOBSTER TRAINING PROFILE'),
+                  h('div', null, '1. ', h('strong', null, 'Scenario gauge: '), '3.25-inch minimum and 5-inch maximum carapace length.'),
+                  h('div', null, '2. ', h('strong', null, 'Protection cue: '), 'Release V-notched and egg-bearing females.'),
+                  h('div', null, '3. ', h('strong', null, 'Live rules: '), 'License and federal-area combinations can require the most restrictive applicable gauge.'),
+                  h('div', { style: trainingNoteStyle }, 'Practice profile only — check current Maine DMR and applicable federal rules before hauling.')
                 );
               }
 
@@ -11439,7 +11450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   h('span', { id: 'fl-shellfish-inspection-title', style: { fontSize: '15px', fontWeight: '800', color: '#bae6fd', display: 'flex', alignItems: 'center', gap: '8px' } },
                     (activeLobster.region === 'chesapeake' ? '🦀 MD-DNR BLUE CRAB GAUGE STATION' : 
                      activeLobster.region === 'pnw' ? '🦀 WDFW DUNGENESS CRAB GAUGE STATION' :
-                     activeLobster.region === 'greatlakes' ? '🦞 GLFC CRAYFISH GAUGE STATION' :
+                     activeLobster.region === 'greatlakes' ? '🦞 GREAT LAKES CRAYFISH FIELD STATION' :
                      '🦞 DMR LOBSTER INSPECTION GAUGE STATION')
                   ),
                   h('span', { style: { fontSize: '11px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', padding: '2px 8px', borderRadius: '4px' } }, 'PAUSED')
@@ -11698,42 +11709,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                             flAnnounce(msg);
                             pushStatus({ type: 'lobster', length: activeLobster.length, isKeeper: true, text: msg });
                           } else {
-                            var fine = 250;
-                            var reason = 'Undersized specimen';
-                            
-                            if (activeLobster.region === 'chesapeake') {
-                              if (activeLobster.length < 5.0) {
-                                fine = 150;
-                                reason = 'Undersized blue crab (< 5.0")';
-                              } else if (activeLobster.hasSponge) {
-                                fine = 300;
-                                reason = 'Sponge crab (female blue crab carrying eggs)';
-                              }
-                            } else if (activeLobster.region === 'pnw') {
-                              if (activeLobster.length < 6.25) {
-                                fine = 200;
-                                reason = 'Undersized Dungeness crab (< 6.25")';
-                              } else if (activeLobster.isFemale) {
-                                fine = 400;
-                                reason = 'Female Dungeness crab (male-only harvest)';
-                              }
-                            } else if (activeLobster.region === 'greatlakes') {
-                              fine = 75;
-                              reason = 'Undersized crayfish (< 3.0")';
-                            } else {
-                              if (activeLobster.length < 3.25) {
-                                fine = 250;
-                                reason = 'Undersized lobster (< 3.25")';
-                              } else if (activeLobster.length > 5.0) {
-                                fine = 500;
-                                reason = 'Oversized lobster (> 5.0")';
-                              } else if (activeLobster.isVNotched) {
-                                fine = 750;
-                                reason = 'V-notched female breeder lobster';
-                              }
-                            }
-                            
-                            violationText = 'CITATION: Possession of ' + reason + ' (' + activeLobster.length.toFixed(2) + '"). Fine: $' + fine + '.';
+                            var reason = getCoreShellfishReleaseReason(activeLobster);
+                            violationText = 'Compliance review: release required because ' + reason + '. No fine is simulated; penalties depend on current jurisdiction and fishery.';
                             flAnnounce(violationText);
                             pushStatus({ type: 'violation', text: violationText });
                           }
@@ -11755,7 +11732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                           var msg = '';
 
                           if (decisionCorrect) {
-                            msg = '✓ Released illegal ' + (activeLobster.specimenType === 'crab' ? 'crab' : activeLobster.specimenType === 'crayfish' ? 'crayfish' : 'lobster') + ' overboard (' + activeLobster.length.toFixed(2) + '"). Compliance check passed.';
+                            msg = '✓ Released a specimen requiring release under the training profile (' + activeLobster.length.toFixed(2) + '"). Compliance check passed.';
                             flAnnounce(msg);
                             pushStatus({ type: 'complete', text: msg });
                           } else {

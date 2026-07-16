@@ -279,6 +279,15 @@ describe('Fisher Lab shellfish caliper', () => {
     expect(evaluateCoreCaliperReading(5, 5.09, 0.1).accurate).toBe(true);
     expect(evaluateCoreCaliperReading(5, 5.11, 0.1).accurate).toBe(false);
   });
+
+  it('explains profile-specific release evidence without inventing penalties', () => {
+    const { getCoreShellfishReleaseReason } = window.__FisherLabCore;
+
+    expect(getCoreShellfishReleaseReason({ region: 'maine', length: 5.2, isVNotched: false })).toContain('above the 5-inch');
+    expect(getCoreShellfishReleaseReason({ region: 'chesapeake', length: 5.5, hasSponge: true })).toContain('egg-bearing');
+    expect(getCoreShellfishReleaseReason({ region: 'pnw', length: 6.5, isFemale: true })).toContain('male-only');
+    expect(getCoreShellfishReleaseReason({ region: 'greatlakes', length: 2 })).toContain('local species or jurisdiction');
+  });
 });
 
 describe('Fisher Lab simulator safeguards', () => {
@@ -370,6 +379,14 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("'aria-describedby': 'fl-caliper-feedback'");
     expect(source).toContain("disabled: !caliperCheck || !caliperCheck.accurate");
     expect(source).toContain("if (!caliperCheck || !caliperCheck.accurate) return;");
+    expect(source).toContain('Practice profile only — check current MD-DNR');
+    expect(source).toContain('WASHINGTON COMMERCIAL COASTAL TRAINING PROFILE');
+    expect(source).toContain('no Great Lakes-wide size threshold is scored');
+    expect(source).toContain('No fine is simulated; penalties depend on current jurisdiction and fishery.');
+    expect(source).not.toContain('GLFC CRAYFISH LAWS');
+    expect(source).not.toContain('minSize: 3, slot:');
+    expect(source).not.toContain('CITATION: Possession of');
+    expect(source).not.toContain('Violation penalty: $');
     expect(source).not.toContain('resumeSim');
     expect(source).not.toContain('hud.fuel || 100');
   });
