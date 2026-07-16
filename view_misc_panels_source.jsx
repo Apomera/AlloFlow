@@ -374,7 +374,17 @@ function PdfDiffViewer(props) {
           const effVal = (c) => (c.type === 'add' ? (c.rejected ? '' : c.value) : c.type === 'del' ? (c.rejected ? c.value : '') : c.value);
           const selText = (_chunks || []).filter(c => c.id >= diffSelection.firstId && c.id <= diffSelection.lastId).map(effVal).join('').trim();
           if (!selText) { addToast(t('diff_view.refine_empty') || 'Nothing to refine in that selection.', 'info'); setDiffSelection(null); return; }
-          const instruction = (typeof window !== 'undefined' && window.prompt) ? window.prompt((t('diff_view.refine_prompt') || 'Refine the selected passage with AI — describe the change (e.g. "simplify to a grade-5 reading level", "fix the awkward phrasing"):'), '') : null;
+          const refinePrompt = t('diff_view.refine_prompt') || 'Refine the selected passage with AI — describe the change (e.g. "simplify to a grade-5 reading level", "fix the awkward phrasing"):';
+          const instruction = (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.prompt === 'function')
+            ? await window.AlloFlowUX.prompt(refinePrompt, '', {
+              title: t('diff_view.refine_title') || 'Refine selected passage',
+              confirmText: t('diff_view.refine_action') || 'Refine passage',
+              cancelText: t('common.cancel') || 'Cancel',
+              placeholder: t('diff_view.refine_placeholder') || 'Describe the change you want…',
+              multiline: true,
+              maxLength: 1000,
+            })
+            : null;
           if (!instruction || !instruction.trim()) return;
           setApplyingRemarkup(true);
           try {

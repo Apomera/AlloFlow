@@ -444,7 +444,15 @@ ${_effectiveText}`;
         setDiffSelection(null);
         return;
       }
-      const instruction = typeof window !== "undefined" && window.prompt ? window.prompt(t("diff_view.refine_prompt") || 'Refine the selected passage with AI \u2014 describe the change (e.g. "simplify to a grade-5 reading level", "fix the awkward phrasing"):', "") : null;
+      const refinePrompt = t("diff_view.refine_prompt") || 'Refine the selected passage with AI \u2014 describe the change (e.g. "simplify to a grade-5 reading level", "fix the awkward phrasing"):';
+      const instruction = typeof window !== "undefined" && window.AlloFlowUX && typeof window.AlloFlowUX.prompt === "function" ? await window.AlloFlowUX.prompt(refinePrompt, "", {
+        title: t("diff_view.refine_title") || "Refine selected passage",
+        confirmText: t("diff_view.refine_action") || "Refine passage",
+        cancelText: t("common.cancel") || "Cancel",
+        placeholder: t("diff_view.refine_placeholder") || "Describe the change you want\u2026",
+        multiline: true,
+        maxLength: 1e3
+      }) : null;
       if (!instruction || !instruction.trim()) return;
       setApplyingRemarkup(true);
       try {
