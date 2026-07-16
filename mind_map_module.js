@@ -46,6 +46,77 @@
   var useEffect = React.useEffect;
   var useRef = React.useRef;
   var useCallback = React.useCallback;
+  var throughlineConfirmSequence = 0;
+  function askThroughlineConfirmation(message, options) {
+    return new Promise(function(resolve) {
+      if (!document.body) { resolve(false); return; }
+      options = options || {};
+      throughlineConfirmSequence += 1;
+      var idBase = 'throughline-confirm-' + throughlineConfirmSequence;
+      var opener = document.activeElement;
+      var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+        return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+      });
+      var overlay = document.createElement('div');
+      overlay.setAttribute('role', 'presentation');
+      overlay.setAttribute('data-throughline-confirm', 'true');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(15,23,42,.78);display:flex;align-items:center;justify-content:center;padding:20px;';
+      var dialog = document.createElement('div');
+      dialog.setAttribute('role', 'alertdialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', idBase + '-title');
+      dialog.setAttribute('aria-describedby', idBase + '-description');
+      dialog.style.cssText = 'box-sizing:border-box;width:min(32rem,100%);background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);font-family:system-ui,sans-serif;';
+      var title = document.createElement('h2');
+      title.id = idBase + '-title';
+      title.textContent = String(options.title || 'Please confirm');
+      title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#0f172a;';
+      var description = document.createElement('p');
+      description.id = idBase + '-description';
+      description.textContent = String(message || 'Continue with this action?');
+      description.style.cssText = 'margin:0;color:#334155;line-height:1.55;white-space:pre-line;';
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = String(options.cancelText || 'Cancel');
+      cancel.style.cssText = 'min-height:44px;padding:9px 16px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;cursor:pointer;';
+      var confirm = document.createElement('button');
+      confirm.type = 'button';
+      confirm.textContent = String(options.confirmText || 'Continue');
+      confirm.style.cssText = 'min-height:44px;padding:9px 16px;border:2px solid #1d4ed8;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer;';
+      actions.appendChild(cancel); actions.appendChild(confirm);
+      dialog.appendChild(title); dialog.appendChild(description); dialog.appendChild(actions);
+      overlay.appendChild(dialog); document.body.appendChild(overlay);
+      blocked.forEach(function(entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+      var settled = false;
+      function finish(accepted) {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener('keydown', onKeyDown, true);
+        try { overlay.remove(); } catch (e) {}
+        blocked.forEach(function(entry) {
+          if (!entry.hadInert) entry.el.removeAttribute('inert');
+          if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden'); else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+        });
+        try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+        resolve(accepted === true);
+      }
+      function onKeyDown(event) {
+        if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); return; }
+        if (event.key !== 'Tab') return;
+        if (!dialog.contains(document.activeElement)) { event.preventDefault(); cancel.focus(); return; }
+        if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); confirm.focus(); }
+        else if (!event.shiftKey && document.activeElement === confirm) { event.preventDefault(); cancel.focus(); }
+      }
+      cancel.addEventListener('click', function() { finish(false); });
+      confirm.addEventListener('click', function() { finish(true); });
+      overlay.addEventListener('click', function(event) { if (event.target === overlay) finish(false); });
+      window.addEventListener('keydown', onKeyDown, true);
+      cancel.focus();
+    });
+  }
+
   var useMemo = React.useMemo;
 
   // ── Constants ───────────────────────────────────────────────────────
@@ -561,18 +632,22 @@
     useEffect(function () {
       if (!seedUnitId || seedConsumedRef.current === seedUnitId) return;
       seedConsumedRef.current = seedUnitId;
+      var cancelled = false;
       if (unit.nodes.length === 0) {
         if (seedFromUnit(seedUnitId)) {
           addToast((t('throughline.opened_unit') || 'Opened unit') + ': ' + unitName(seedUnitId), 'success');
         }
       } else {
-        var ok = window.confirm((t('throughline.confirm_seed_replace') || 'Replace your current canvas with the unit') + ' "' + unitName(seedUnitId) + '"?');
-        if (ok) seedFromUnit(seedUnitId);
+        var message = (t('throughline.confirm_seed_replace') || 'Replace your current canvas with the unit') + ' "' + unitName(seedUnitId) + '"?';
+        askThroughlineConfirmation(message, { title: 'Replace current canvas', confirmText: 'Replace canvas' }).then(function(ok) {
+          if (!cancelled && ok) seedFromUnit(seedUnitId);
+        });
       }
+      return function () { cancelled = true; };
     }, [seedUnitId]); // eslint-disable-line
 
     // ── Open a node's lesson (hardened) ───────────────────────────
-    function openNodeLesson(node) {
+    async function openNodeLesson(node) {
       var item = resolveLesson(node.lessonId);
       if (!item) {
         addToast(t('throughline.lesson_missing') || 'This lesson is not present in the unit file.', 'info');
@@ -583,8 +658,8 @@
         return;
       }
       if (inLiveSession) {
-        var ok = window.confirm(t('throughline.live_open_confirm') ||
-          'You are in a live class session. Opening this lesson will show it to connected students. Continue?');
+        var ok = await askThroughlineConfirmation(t('throughline.live_open_confirm') ||
+          'You are in a live class session. Opening this lesson will show it to connected students. Continue?', { title: 'Open lesson in live session', confirmText: 'Open lesson' });
         if (!ok) return;
       }
       onOpenLesson(item);
@@ -644,7 +719,7 @@
     function importFile(file) {
       if (!file) return;
       var reader = new FileReader();
-      reader.onload = function (ev) {
+      reader.onload = async function (ev) {
         try {
           var parsed = JSON.parse(ev.target.result);
           var packHistory = Array.isArray(parsed && parsed.history) ? parsed.history : [];
@@ -655,7 +730,7 @@
           if (parsed && parsed.unitLayout) {
             var nu = normalizeUnit(parsed.unitLayout);
             if (unit.nodes.length > 0) {
-              var ok = window.confirm(t('throughline.confirm_replace') || 'Replace your current unit with the imported one? This cannot be undone.');
+              var ok = await askThroughlineConfirmation(t('throughline.confirm_replace') || 'Replace your current unit with the imported one? This cannot be undone.', { title: 'Replace current unit', confirmText: 'Replace unit' });
               if (!ok) return;
             }
             setImportedLessons(function (m) { return Object.assign({}, m, imp); });
@@ -669,7 +744,7 @@
             throw new Error(t('throughline.no_history') || 'No lessons found in this file');
           }
           if (unit.nodes.length > 0) {
-            var ok2 = window.confirm(t('throughline.confirm_replace') || 'Replace your current unit with the imported one? This cannot be undone.');
+            var ok2 = await askThroughlineConfirmation(t('throughline.confirm_replace') || 'Replace your current unit with the imported one? This cannot be undone.', { title: 'Replace current unit', confirmText: 'Replace unit' });
             if (!ok2) return;
           }
           // sort: group by unitId (tagged units cluster), preserve order within
@@ -699,8 +774,8 @@
       reader.readAsText(file);
     }
 
-    function clearUnit() {
-      var ok = window.confirm(t('throughline.confirm_clear') || 'Clear the entire unit? This cannot be undone.');
+    async function clearUnit() {
+      var ok = await askThroughlineConfirmation(t('throughline.confirm_clear') || 'Clear the entire unit? This cannot be undone.', { title: 'Clear entire unit', confirmText: 'Clear unit' });
       if (!ok) return;
       setImportedLessons({});
       setUnit(emptyUnit());
@@ -860,12 +935,12 @@
           .filter(function (n) { return !n.disabled && n.offsetParent !== null; });
       }
       try { var f0 = focusables(); var t0 = f0[0] || genDialogRef.current; if (t0 && t0.focus) t0.focus(); } catch (e) {}
-      function onKey(ev) {
+      async function onKey(ev) {
         var el = genDialogRef.current; if (!el) return;
         if (ev.key === 'Escape') {
           ev.preventDefault();
           var g = genRef.current;
-          if (g && g.phase === 'generating') { if (!window.confirm(t('throughline.gen_stop_confirm') || 'Stop generating this unit? Lessons already built will stay in your canvas.')) return; stopGeneration(); }
+          if (g && g.phase === 'generating') { if (!await askThroughlineConfirmation(t('throughline.gen_stop_confirm') || 'Stop generating this unit? Lessons already built will stay in your canvas.', { title: 'Stop unit generation', confirmText: 'Stop generation' })) return; stopGeneration(); }
           closeGenerate(); return;
         }
         if (ev.key === 'Tab') {
@@ -1815,9 +1890,9 @@
         body = null; footer = null; headline = ''; sub = '';
       }
 
-      function onOverlayClose() {
+      async function onOverlayClose() {
         if (phase === 'generating') {
-          var ok = window.confirm(t('throughline.gen_stop_confirm') || 'Stop generating this unit? Lessons already built will stay in your canvas.');
+          var ok = await askThroughlineConfirmation(t('throughline.gen_stop_confirm') || 'Stop generating this unit? Lessons already built will stay in your canvas.', { title: 'Stop unit generation', confirmText: 'Stop generation' });
           if (!ok) return;
           stopGeneration();
         }
