@@ -6020,6 +6020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var vs = R.useState('list');                          var view = vs[0];   var setView = vs[1];
     var fs = R.useState({ name: '', date: '', units: 5, dailyMin: 30 });
     var form = fs[0];                                     var setForm = fs[1];
+    var ves = R.useState('');                             var formError = ves[0]; var setFormError = ves[1];
 
     function addExam(e) {
       var exam = Object.assign({ id: tkId(), createdAt: todayISO(), completedDays: [] }, e);
@@ -6078,37 +6079,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkSectionHeader('+', 'New exam prep plan', 'Backwards-plan from the exam date.', '#fbbf24'),
         tkCard('#fbbf24',
           hh('div', null,
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Exam name'),
-            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'e.g., "Biology midterm — Unit 3-5"', { marginBottom: 12 }),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Exam date'),
-            hh('input', { type: 'date', value: form.date,
-              onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); },
-              style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 12 }
+            hh('label', { htmlFor: 'learning-lab-exam-name', style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Exam name (required)'),
+            hh('input', { id: 'learning-lab-exam-name', type: 'text', value: form.name, required: true, 'aria-invalid': formError && !form.name.trim() ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-exam-error' : undefined, onChange: function(e) { setForm(Object.assign({}, form, { name: e.target.value })); setFormError(''); }, placeholder: 'e.g., "Biology midterm — Unit 3-5"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 12, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } }),
+            hh('label', { htmlFor: 'learning-lab-exam-date', style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Exam date (required)'),
+            hh('input', { id: 'learning-lab-exam-date', type: 'date', value: form.date, required: true, min: todayISO(), 'aria-invalid': formError && !form.date ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-exam-error' : undefined,
+              onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); setFormError(''); },
+              style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 12 }
             }),
             hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '# units / chapters'),
-                hh('input', { type: 'number', min: 1, max: 50, value: form.units,
+                hh('label', { htmlFor: 'learning-lab-exam-units', style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '# units / chapters'),
+                hh('input', { id: 'learning-lab-exam-units', type: 'number', min: 1, max: 50, value: form.units,
                   onChange: function(e) { setForm(Object.assign({}, form, { units: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
+                  style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
                 })
               ),
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Minutes/day'),
-                hh('input', { type: 'number', min: 15, max: 240, step: 15, value: form.dailyMin,
+                hh('label', { htmlFor: 'learning-lab-exam-minutes', style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Minutes/day'),
+                hh('input', { id: 'learning-lab-exam-minutes', type: 'number', min: 15, max: 240, step: 15, value: form.dailyMin,
                   onChange: function(e) { setForm(Object.assign({}, form, { dailyMin: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
+                  style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
                 })
               )
-            )
+            ),
+            formError ? hh('div', { id: 'learning-lab-exam-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: 10 } }, formError) : null
           )
         ),
         hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
+          tkBtn('← Cancel', function() { setView('list'); setFormError(''); }, 'ghost'),
           tkBtn('🎓 Generate plan', function() {
-            if (!form.name.trim() || !form.date) { alert('Need name + date.'); return; }
+            if (!form.name.trim() || !form.date) {
+              var missing = !form.name.trim() && !form.date ? 'Exam name and date are required.' : (!form.name.trim() ? 'Exam name is required.' : 'Exam date is required.');
+              setFormError(missing);
+              setTimeout(function() { var target = document.getElementById(!form.name.trim() ? 'learning-lab-exam-name' : 'learning-lab-exam-date'); if (target) target.focus(); }, 0);
+              return;
+            }
             addExam(form);
             setForm({ name: '', date: '', units: 5, dailyMin: 30 });
+            setFormError('');
             setView('list');
           }, 'primary')
         )
@@ -6140,7 +6148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 ),
                 hh('div', { style: { textAlign: 'right' } },
                   hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: days <= 3 ? 'rgba(239,68,68,0.20)' : days <= 7 ? 'rgba(251,146,60,0.20)' : 'rgba(251,191,36,0.20)', color: days <= 3 ? '#ef4444' : days <= 7 ? '#fb923c' : '#fbbf24', fontSize: 16, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, days + 'd'),
-                  hh('button', { onClick: function() { removeExam(exam.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer', marginTop: 4 } }, '✕ delete')
+                  hh('button', { type: 'button', 'aria-label': 'Delete exam plan: ' + exam.name, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the exam plan for "' + exam.name + '".', { title: 'Delete this exam plan?', confirmText: 'Delete plan' })) removeExam(exam.id); }, style: { minHeight: 44, padding: '8px 10px', background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, cursor: 'pointer', marginTop: 4 } }, '✕ delete')
                 )
               ),
               // Plan display
@@ -6150,9 +6158,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   plan.slice(0, 14).map(function(day, i) {
                     var done = (exam.completedDays || []).indexOf(day.day) >= 0;
                     var phaseColor = day.intensity === 'review-all' ? '#ef4444' : day.intensity === 'practice-test' ? '#fbbf24' : '#10b981';
-                    return hh('button', { key: 'pl-' + i,
+                    return hh('button', { key: 'pl-' + i, type: 'button', 'aria-pressed': done,
                       onClick: function() { markDay(exam.id, day.day); },
-                      style: { padding: 8, borderRadius: 6, background: done ? phaseColor + '30' : 'rgba(15,23,42,0.5)', border: '1px solid ' + phaseColor + '40', textAlign: 'left', cursor: 'pointer', opacity: done ? 0.7 : 1 }
+                      style: { minHeight: 44, padding: 8, borderRadius: 6, background: done ? phaseColor + '30' : 'rgba(15,23,42,0.5)', border: '1px solid ' + phaseColor + '40', textAlign: 'left', cursor: 'pointer', opacity: done ? 0.7 : 1 }
                     },
                       hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'D-' + day.daysFromExam),
                       hh('div', { style: { fontSize: 10, color: phaseColor, fontWeight: 700, marginTop: 2 } }, day.intensity === 'review-all' ? '🔥 Review all' : day.intensity === 'practice-test' ? '🎯 Practice test' : '📖 Learn new'),
