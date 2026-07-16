@@ -457,6 +457,12 @@
         setLabToolData,
         gradeLevel,
         sourceTopic,
+        inputText,
+        storageDB,
+        ai,
+        sourceProvenance,
+        sourceLocator,
+        sourceType,
         callGemini,
         callTTS,
         callImagen,
@@ -1722,7 +1728,7 @@
         try {
           var _toSave = {};
           // @tool waterCycle
-          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', '_tutorialSeen'].forEach(function (k) {
+          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', '_tutorialSeen'].forEach(function (k) {
             if (labToolData[k]) _toSave[k] = labToolData[k];
           });
           // flightSim progression (badges, visited airports, flight time,
@@ -3577,6 +3583,11 @@
                 color: 'cyan', ready: true
               },
               {
+                id: 'weatherSystems', icon: '\uD83C\uDF26\uFE0F', label: 'Weather Systems & Forecasting',
+                desc: 'Explore fronts, pressure, humidity, wind, radar, station models, severe-weather hazards, and evidence-based forecasting.',
+                color: 'sky', ready: true
+              },
+              {
                 id: 'rockCycle', icon: '\uD83E\uDEA8', label: t('stem.tools_menu.rock_cycle'),
                 desc: 'Trace the transformation of igneous, sedimentary, and metamorphic rocks.',
                 color: 'stone', ready: true
@@ -3930,7 +3941,7 @@
               { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
               { id: 'geometryWorld', icon: '\uD83E\uDDF1', label: 'Geometry World', desc: 'Explore a 3D world where geometry questions unlock new areas. Talk to NPCs and solve shape puzzles!', color: 'purple', ready: true },
               { id: 'logicLab', icon: '\uD83E\uDDE9', label: 'Logic Lab', desc: 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true },
-              { id: 'cellularLab', icon: '\uD83E\uDDEB', label: 'Cellular Automaton Lab', desc: "Watch complexity emerge from simple rules: Conway's Game of Life plus elementary 1-D Wolfram rules 0-255, with a pattern gallery (gliders, pulsars, Gosper gun) and space-time diagrams.", color: 'emerald', ready: true },
+              { id: 'cellularLab', icon: '\uD83E\uDDEB', label: 'Cellular Automaton Lab', desc: "Explore polished 2-D Life-like worlds with custom B/S rules, scientific lenses, design challenges, 17 classic patterns, dynamic grids, population evidence, PNG export, and all 256 elementary Wolfram rules.", color: 'emerald', ready: true },
 
               { id: '_cat_SoundSpeech', icon: '', label: '\uD83C\uDFA4 Sound, Speech & Music', desc: '', color: 'slate', category: true },
               { id: 'echolocation', icon: '\uD83E\uDD87', label: 'Echolocation Lab', desc: 'See the world through sound! Sonar vision, wave physics, Doppler effect, bat biology, and acoustic ecology with interactive canvas simulations.', color: 'indigo', ready: true },
@@ -5360,7 +5371,7 @@
             dataPlot: true, dinoLab: true, dissection: true, dnaLab: true, ecosystem: true,
             epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,
             rocks: true, rockCycle: true, geologyExplorer: true, science: true, solarSystem: true,
-            titrationLab: true, universe: true, unitConvert: true, waterCycle: true,
+            titrationLab: true, universe: true, unitConvert: true, waterCycle: true, weatherSystems: true,
             // Engineering & CS
             archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
             cyberDefense: true, semiconductor: true,
@@ -5566,6 +5577,11 @@
             // _deferSafe wrap: stemCelebrate sets parent confetti/celebration state.
             celebrate: typeof stemCelebrate === 'function' ? _deferSafe(stemCelebrate) : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
+            ai: ai || null,
+            generateText: (ai && typeof ai.generateText === 'function')
+              ? function(prompt, options) { return ai.generateText(prompt, options || {}); }
+              : (typeof callGemini === 'function' ? function(prompt, options) { return callGemini(prompt, !!(options && options.jsonMode)); } : null),
+            storageDB: storageDB || null,
             // Guarded AI-hint entry point + its enabled flag. getHint self-gates
             // (off → zero traffic), enforces try-again/cap/reveal-check, and shows
             // a labeled hint. aiHintsEnabled lets a tool show/hide its hint button.
@@ -5585,7 +5601,12 @@
             sourceText: typeof inputText === 'string' ? inputText : (typeof sourceText === 'string' ? sourceText : ''),
             inputText: typeof inputText === 'string' ? inputText : '',
             sourceTopic: typeof sourceTopic === 'string' ? sourceTopic : '',
+            sourceProvenance: sourceProvenance && typeof sourceProvenance === 'object' ? sourceProvenance : null,
+            sourceLocator: typeof sourceLocator === 'string' ? sourceLocator : '',
+            sourceType: typeof sourceType === 'string' ? sourceType : '',
             gradeLevel: typeof gradeLevel === 'string' ? gradeLevel : '',
+            studentNickname: typeof studentNickname === 'string' ? studentNickname : '',
+            isTeacherMode: isTeacherMode !== false,
             // Coarse-grained grade banding for tools that target tiers rather than
             // single grades (firstresponse, swimlab, etc. expect 'k2'|'g35'|'g68'|'g912').
             gradeBand: (function() {

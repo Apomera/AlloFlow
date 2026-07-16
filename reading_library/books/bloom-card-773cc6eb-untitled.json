@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-773cc6eb-untitled",
+  "title": "အပ္လိုည်း",
+  "description": "လော်င် ဆီမ်းအပ္လိုည်း။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RBTT & NTC",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/FdqVF5Mjef"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f773cc6eb-4fbc-468d-b138-bdf25aba5ca3%2f%e1%80%a1%e1%80%95%e1%80%b9%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%2f01Turtle+Dove.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"အပ္လိုည်း\" (Burmese). လော်င် ဆီမ်းအပ္လိုည်း။"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

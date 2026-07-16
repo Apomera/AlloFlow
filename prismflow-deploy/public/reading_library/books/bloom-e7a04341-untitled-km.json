@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e7a04341-untitled-km",
+  "title": "រឿង ទន្សាយមានបញ្ហា",
+  "description": "A story of the rabbit encountering troubles (Level 1 Easy Reader)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ra7sHRaEhT"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage2.png",
+      "text": "ទន្សាយដេកនៅគុម្ពស្បូវ។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage3.png",
+      "text": "ទន្សាយផឹកទឹកសន្សើម។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage4.png",
+      "text": "ទន្សាយស៊ីស្មៅនៅវាល។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage5.png",
+      "text": "ទន្សាយស៊ីស្រូវនៅចំការ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage6.png",
+      "text": "មីងឡកទៅរកទន្សាយនៅឯវាល។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage7.png",
+      "text": "មីងឡកបត់ជើងធំនៅគុម្ពស្បូវត្រូវចំមាត់ទន្សាយ។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage8.png",
+      "text": "ទន្សាយរត់ជាប់អាចម៌នៅមាត់។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage9.png",
+      "text": "ឆ្កែស៊ីអាចម៌មីងឡកនៅគុម្ពស្បូវ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage10.png",
+      "text": "ទន្សាយពួននឹងឆ្កែនៅគុម្ពស្បូវ។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage11.png",
+      "text": "ទន្សាយមើលឆ្កែនោម។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage12.png",
+      "text": "ទន្សាយលឺសម្លេងឆ្កែព្រុះ។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe7a04341-ed6a-436e-b619-93b5b45c1a10%2f%e1%9f%a0%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e1%9e%87%e1%9f%81%e1%9e%9a%2fimage13.png",
+      "text": "ទន្សាយឆ្កែខាំ៕"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 12
+  }
+}

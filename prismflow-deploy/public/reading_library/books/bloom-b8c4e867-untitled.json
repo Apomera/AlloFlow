@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-b8c4e867-untitled",
+  "title": "دریا",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/aKONaCGWRC"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fb8c4e867-539c-4b09-9130-d745bc41c96f%2f%d8%af%d8%b1%db%8c%d8%a7%2f012.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fb8c4e867-539c-4b09-9130-d745bc41c96f%2f%d8%af%d8%b1%db%8c%d8%a7%2f-1.jpg",
+      "text": "دریای خروشانم\nبرهر طرف روانم\nدر روزِ آفتابی\nهمرنگ آسمانم"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "من دوست درختانم\nدر میوه نمایانم\nدر سرخی سیب و ناک\nدر هر گلِ بوستانم\nهرجا که رسم آنجا\nسرسبز و گلستانم\nهرجا که تشنه گانند\nسود می برند ز جانم"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fb8c4e867-539c-4b09-9130-d745bc41c96f%2f%d8%af%d8%b1%db%8c%d8%a7%2f02.jpg",
+      "text": "سیراب کنم باغ را\nمن همدم باغبانم\nدر کفم هزار کشتی\nمن دوست کشتی بانم"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "دریای خروشانم\nبرهر طرف روانم\nدر روزِ آفتابی\nهمرنگ آسمانم\nسرسبز کنم دشت را\nقطره قطره بارانم\nنعمت خداوندم\nبرهمه فیض رسانم"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fb8c4e867-539c-4b09-9130-d745bc41c96f%2f%d8%af%d8%b1%db%8c%d8%a7%2f03.jpg",
+      "text": "دشت را کنم گلزار\nمن همدم باغبانم\nگل را کنم خوشبو\nمن دوست گلستانم"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "کار من بود بخشش\nبهر هر زنده جانم\nدر کوه و دشت و صحرا\nروانم و دوانم\nمن دوست هوای پاک\nهمدم هر انسانم\nتازه گی ببخشم من\nکوه و دشت و دامانم"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fb8c4e867-539c-4b09-9130-d745bc41c96f%2f%d8%af%d8%b1%db%8c%d8%a7%2f04.jpg",
+      "text": "با خنده من روانم\nزیب هر گلستانم\nبر هر سو من دوانم\nشادابم و شادانم"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "بر هرگل و گیاهی\nبارانم و بارانم\nزنده می کنم جان را\nهمدم هر انسانم\nدریای خروشانم\nبرهر طرف روانم\nدر روزِ آفتابی\nهمرنگ آسمانم"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 165
+  }
+}

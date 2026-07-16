@@ -113,9 +113,11 @@ describe('pictionary moderation + presence polish (2026-07-02)', () => {
   });
 
   it('guest countdowns anchor to the HOST clock (device skew immune)', () => {
-    expect(pic.split('hostNow: Date.now()').length - 1).toBe(2); // fresh round + reconnect replay
+    expect(pic.split('hostNow: Date.now()').length - 1).toBeGreaterThanOrEqual(3); // fresh round + reconnect replay + timing updates
     expect(pic).toContain('const clockOffsetMs = (round && typeof round.hostNow === ');
-    expect(pic).toContain('const elapsed = (now - clockOffsetMs) - startedAt;');
+    expect(pic).toContain('const hostNow = now - clockOffsetMs;');
+    expect(pic).toContain('const effectiveNow = isPaused && pausedAt ? pausedAt : hostNow;');
+    expect(pic).toContain('const elapsed = effectiveNow - startedAt - pausedTotalMs;');
     expect(pic).toContain('clockOffsetMs={activeRound.clockOffsetMs || 0}');
   });
 });

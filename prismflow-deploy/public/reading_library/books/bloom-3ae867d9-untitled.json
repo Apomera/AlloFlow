@@ -1,0 +1,65 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3ae867d9-untitled",
+  "title": "दाउरे र बटुवा",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YPmDNurZMC"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f3ae867d9-5f7f-48c5-89e1-c28d66186217%2f%e0%a4%a6%e0%a4%be%e0%a4%89%e0%a4%b0%e0%a5%87+%e0%a4%b0+%e0%a4%ac%e0%a4%9f%e0%a5%81%e0%a4%b5%e0%a4%be%2fimage111111.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f3ae867d9-5f7f-48c5-89e1-c28d66186217%2f%e0%a4%a6%e0%a4%be%e0%a4%89%e0%a4%b0%e0%a5%87+%e0%a4%b0+%e0%a4%ac%e0%a4%9f%e0%a5%81%e0%a4%b5%e0%a4%be%2fimage11.png",
+      "text": "एकादेशमा एकजना दाउरे थियो।\nदाउरे रूख काट्दै थियो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f3ae867d9-5f7f-48c5-89e1-c28d66186217%2f%e0%a4%a6%e0%a4%be%e0%a4%89%e0%a4%b0%e0%a5%87+%e0%a4%b0+%e0%a4%ac%e0%a4%9f%e0%a5%81%e0%a4%b5%e0%a4%be%2fimage1.png",
+      "text": "रूख काट्दा काट्दै ढल्यो।\nएउटा हाँगोले दाउरेलाई लाग्यो।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f3ae867d9-5f7f-48c5-89e1-c28d66186217%2f%e0%a4%a6%e0%a4%be%e0%a4%89%e0%a4%b0%e0%a5%87+%e0%a4%b0+%e0%a4%ac%e0%a4%9f%e0%a5%81%e0%a4%b5%e0%a4%be%2fcrying.jpg",
+      "text": "दाउरे धेरै रोयो करायो।\nतर कसैले सुनेनन्।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f3ae867d9-5f7f-48c5-89e1-c28d66186217%2f%e0%a4%a6%e0%a4%be%e0%a4%89%e0%a4%b0%e0%a5%87+%e0%a4%b0+%e0%a4%ac%e0%a4%9f%e0%a5%81%e0%a4%b5%e0%a4%be%2fAOR_pmt009.png",
+      "text": "एकैछिनमा एउटा बटुवा आइपुग्यो।\nउसले मानिस चिच्याएको सुन्यो।\nबटुवाले दाउरेलाई बचायो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f3ae867d9-5f7f-48c5-89e1-c28d66186217%2f%e0%a4%a6%e0%a4%be%e0%a4%89%e0%a4%b0%e0%a5%87+%e0%a4%b0+%e0%a4%ac%e0%a4%9f%e0%a5%81%e0%a4%b5%e0%a4%be%2fimage.png",
+      "text": "दाउरे धेरै खुसी भयो।\nउसले बटुवालाई धन्यवाद दियो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f3ae867d9-5f7f-48c5-89e1-c28d66186217%2f%e0%a4%a6%e0%a4%be%e0%a4%89%e0%a4%b0%e0%a5%87+%e0%a4%b0+%e0%a4%ac%e0%a4%9f%e0%a5%81%e0%a4%b5%e0%a4%be%2fGod1.png",
+      "text": "दाउरेले मन मनै सोच्यो।\nबटुवाले मलाई बचायो। बटुवा देवतानै रहेछ।"
+    }
+  ],
+  "stats": {
+    "pages": 6,
+    "words": 52
+  }
+}

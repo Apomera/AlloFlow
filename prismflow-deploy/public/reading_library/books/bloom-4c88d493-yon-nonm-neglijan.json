@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4c88d493-yon-nonm-neglijan",
+  "title": "Yon nonm neglijan",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Candiru Enzikuru Mary"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Candiru Enzikuru Mary",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/xdYmZ6F7c0"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4c88d493-a3e0-437a-8ee5-7599be7a2b3c%2fYon+nonm+neglijan%2fA_careless_man_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4c88d493-a3e0-437a-8ee5-7599be7a2b3c%2fYon+nonm+neglijan%2fASP_80_a_careless_man_Page_02_Image_0001.png",
+      "text": "Yon fwa sou yon tan, ta p' viv yon nonm yo te rele Joèl nan yon bouk ki te rele Aya."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4c88d493-a3e0-437a-8ee5-7599be7a2b3c%2fYon+nonm+neglijan%2fA_careless_man_Page_03_Image_0001.png",
+      "text": "Li pa t' gen lide pou l' estoke manje pou l' itilize a lavni, men selman gaspiye yo."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4c88d493-a3e0-437a-8ee5-7599be7a2b3c%2fYon+nonm+neglijan%2fASP_80_a_careless_man_Page_04_Image_0001.jpg",
+      "text": "Pa gen anyen rete nan galata a."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4c88d493-a3e0-437a-8ee5-7599be7a2b3c%2fYon+nonm+neglijan%2fASP_80_a_careless_man_Page_05_Image_0001.jpg",
+      "text": "Plant mayi yo fennen jiskaske yo chèch."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4c88d493-a3e0-437a-8ee5-7599be7a2b3c%2fYon+nonm+neglijan%2fASP_80_a_careless_man_Page_06_Image_0001.jpg",
+      "text": "Yon van fò kònen sou tèt galata a."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4c88d493-a3e0-437a-8ee5-7599be7a2b3c%2fYon+nonm+neglijan%2fASP_80_a_careless_man_Page_07_Image_0001.png",
+      "text": "Timoun yo te goumen pou ti manje ki rete nan mamit la."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4c88d493-a3e0-437a-8ee5-7599be7a2b3c%2fYon+nonm+neglijan%2fASP_80_a_careless_man_Page_08_Image_0001.jpg",
+      "text": "Manman te mete plat la sou tab la, e li t'ap rele byen fò sou sa pou l' bay timoun yo pwochen fwa."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4c88d493-a3e0-437a-8ee5-7599be7a2b3c%2fYon+nonm+neglijan%2fASP_80_a_careless_man_Page_09_Image_0001.jpg",
+      "text": "Papa chita anba galri a la ap panse sou lavni."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 106
+  }
+}

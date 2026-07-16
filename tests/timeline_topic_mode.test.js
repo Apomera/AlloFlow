@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
@@ -143,6 +144,36 @@ describe('coerceTimeline enrichment passthrough', () => {
   });
 });
 
+// ── Live UI orchestration contract ──────────────────────────────────────────
+describe('TimelineStudio generation lifecycle', () => {
+  const source = () => readFileSync(resolve(process.cwd(), 'timeline_studio_module.js'), 'utf8');
+
+  it.each(['generate', 'generateTopic'])('opens the popup during the %s button gesture, before awaiting AI', (name) => {
+    const text = source();
+    const start = text.indexOf('    function ' + name + '()');
+    const end = text.indexOf('\n    function ', start + 10);
+    const body = text.slice(start, end);
+    expect(start).toBeGreaterThan(-1);
+    expect(body.indexOf('dataRef.current = null;')).toBeGreaterThan(-1);
+    expect(body.indexOf('var w = openPopup();')).toBeGreaterThan(-1);
+    expect(body.indexOf('var w = openPopup();')).toBeLessThan(body.indexOf('Promise.resolve()'));
+    expect(body.match(/var w = openPopup\(\);/g)).toHaveLength(1);
+  });
+
+  it('does not expose the modal backdrop as a nested interactive button', () => {
+    const text = source();
+    const modal = text.slice(text.indexOf("return h('div', {"), text.indexOf("h('div', { className: 'bg-slate-50"));
+    expect(modal).not.toContain("role: 'button'");
+    expect(modal).not.toContain('tabIndex: 0');
+    expect(modal).toContain("role: 'dialog'");
+    expect(modal).toContain('ref: dialogRef');
+    expect(modal).toContain('onKeyDown: handleDialogKeyDown');
+    expect(modal).toContain('ref: closeButtonRef');
+    expect(modal).toContain("'aria-live': 'polite'");
+    expect(text).toContain("if (e.key !== 'Tab' || !dialogRef.current) return;");
+    expect(text).toContain('priorFocus.focus()');
+  });
+});
 // ── Topic prompt contract ───────────────────────────────────────────────────
 describe('buildTopicResearchPrompt', () => {
   it('carries topic, period, must-include, grade, and the grounding rules', () => {

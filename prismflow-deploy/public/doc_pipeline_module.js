@@ -31,111 +31,53 @@ var PIPELINE_DEFAULTS = { targetScore: 95 };
 // PAGES_PER_CHUNK is sized to output tokens per PAGE, not chars.)
 var GEMINI_CHUNK_CHARS = 16000;
 
+// Canonical delivery verdict for generated tagged PDFs. "Verified" is an
+// affirmative state, never the absence of a known failure: both the core
+// round-trip reparse and the byte-level validator must complete successfully.
+// Callers may still offer an explicitly marked UNVERIFIED download, but batch
+// and automatic paths must not silently treat null/missing/error as a pass.
+function _alloTaggedPdfDeliveryVerdict(result) {
+  var roundTrip = result && result.roundTrip;
+  if (!roundTrip) return { ok: false, code: 'roundtrip-unavailable', reason: 'post-save structure verification was unavailable' };
+  if (roundTrip.ok !== true) {
+    var rtFails = (roundTrip.checks || []).filter(function (c) { return c && c.status === 'fail'; }).map(function (c) { return c.rule; });
+    var rtWarnings = (roundTrip.warnings || []).filter(Boolean);
+    return { ok: false, code: roundTrip.ok === false ? 'roundtrip-failed' : 'roundtrip-unavailable', reason: rtFails.join('; ') || rtWarnings.join('; ') || 'post-save structure verification did not complete successfully' };
+  }
+  var validator = result && result.postExportValidator;
+  if (!validator) return { ok: false, code: 'validator-unavailable', reason: 'byte-level exported-PDF validation was unavailable' };
+  if (validator.error) return { ok: false, code: 'validator-error', reason: 'byte-level exported-PDF validation failed to run: ' + validator.error };
+  var summary = validator.summary;
+  if (!summary || summary.overall !== 'PASS') {
+    var byteFails = (validator.checks || []).filter(function (c) { return c && c.status === 'fail'; }).map(function (c) { return c.rule || c.label; }).filter(Boolean);
+    return { ok: false, code: 'validator-failed', reason: byteFails.join('; ') || 'byte-level exported-PDF validation did not pass' };
+  }
+  return { ok: true, code: 'verified', reason: '' };
+}
+
+function _alloExecutableActiveContentFindings(result) {
+  var findings = result && result.activeContent && Array.isArray(result.activeContent.findings) ? result.activeContent.findings : [];
+  var executable = { 'open-action': 1, javascript: 1, launch: 1, 'additional-actions': 1 };
+  return findings.filter(function (finding) { return finding && executable[finding.type]; });
+}
+
 // Canonical WCAG verification-state policy. Every remediation surface (single-file,
 // batch, exports, and secondary lanes) should derive its claims from this pure helper
 // instead of independently interpreting score presence as conformance evidence.
 // PDF/UA is intentionally reported as a separate export-byte check and never blocks
 // the WCAG state merely because it has not run yet.
 function _alloDeriveVerificationState(input) {
-  input = input || {};
-  var ai = input.ai || input.verificationAudit || null;
-  var axe = input.axe || input.axeAudit || null;
-  var ea = input.equalAccess || input.secondEngineAudit || null;
-  var reasons = [];
-  var _finite = function (v) { return typeof v === 'number' && Number.isFinite(v); };
-  var _count = function (v) { return _finite(v) ? Math.max(0, Math.floor(v)) : null; };
-
-  var aiStatus = 'unavailable';
-  if (!_finite(ai && ai.score)) {
-    reasons.push('ai-unavailable');
-  } else {
-    var _aiPartial = !!(input.aiIncomplete || input.aiVerificationIncomplete || ai._partialAudit || ai.partial || ai._scoreDegraded || ai.scoreDegraded || ai.synthesized);
-    if (_aiPartial) {
-      aiStatus = 'partial';
-      if (input.aiIncomplete || input.aiVerificationIncomplete) reasons.push('ai-verification-incomplete');
-      if (ai._partialAudit || ai.partial) reasons.push('ai-partial-audit');
-      if (ai._scoreDegraded || ai.scoreDegraded) reasons.push('ai-score-degraded');
-      if (ai.synthesized) reasons.push('ai-synthesized');
-    } else {
-      aiStatus = 'complete';
-    }
+  var modules = typeof window !== 'undefined' && window.AlloModules;
+  var policy = modules && modules.VerificationPolicy;
+  if (policy && typeof policy.deriveVerificationState === 'function') {
+    return policy.deriveVerificationState(input || {});
   }
-
-  var axeStatus = 'unavailable';
-  var axeReviewCount = 0;
-  if (!_finite(axe && axe.score)) {
-    reasons.push('axe-unavailable');
-  } else {
-    var _axeIncomplete = _count(axe.totalIncomplete);
-    if (_axeIncomplete === null) {
-      axeStatus = 'partial';
-      reasons.push('axe-review-count-unknown');
-    } else if (_axeIncomplete > 0) {
-      axeStatus = 'complete-with-review';
-      axeReviewCount = _axeIncomplete;
-      reasons.push('axe-incomplete:' + _axeIncomplete);
-    } else {
-      axeStatus = 'complete';
-    }
-  }
-
-  var eaStatus = 'unavailable';
-  var eaReviewCount = 0;
-  if (!_finite(ea && ea.score)) {
-    reasons.push('equal-access-unavailable');
-  } else {
-    var _eaPotential = _count(ea.potentialViolations);
-    var _eaManual = _count(ea.manualViolations);
-    var _eaAggregate = _count(ea.reviewFindingCount);
-    if ((_eaPotential === null || _eaManual === null) && _eaAggregate === null) {
-      eaStatus = 'partial';
-      reasons.push('equal-access-review-count-unknown');
-    } else {
-      eaReviewCount = _eaAggregate !== null ? Math.max(_eaAggregate, (_eaPotential || 0) + (_eaManual || 0)) : ((_eaPotential || 0) + (_eaManual || 0));
-      if (eaReviewCount > 0) {
-        eaStatus = 'complete-with-review';
-        if ((_eaPotential || 0) > 0) reasons.push('equal-access-potential:' + _eaPotential);
-        if ((_eaManual || 0) > 0) reasons.push('equal-access-manual:' + _eaManual);
-        if ((_eaPotential === null || _eaManual === null) && _eaAggregate > 0) reasons.push('equal-access-review-findings:' + _eaAggregate);
-      } else {
-        eaStatus = 'complete';
-      }
-    }
-  }
-
-  var extraReasons = Array.isArray(input.extraReasons)
-    ? input.extraReasons
-    : (input.extraReasons == null || input.extraReasons === '' ? [] : [input.extraReasons]);
-  extraReasons.forEach(function (reason) {
-    var text = String(reason == null ? '' : reason).trim();
-    if (text) reasons.push(text);
-  });
-  if (input.languageReviewRequired) reasons.push(String(input.languageReviewReason || 'document-language-needs-review'));
-
-  var reviewCount = axeReviewCount + eaReviewCount + extraReasons.filter(function (r) { return String(r == null ? '' : r).trim(); }).length + (input.languageReviewRequired ? 1 : 0);
-  var allComplete = aiStatus === 'complete' && axeStatus === 'complete' && eaStatus === 'complete';
-  var allUnavailable = aiStatus === 'unavailable' && axeStatus === 'unavailable' && eaStatus === 'unavailable';
-  var hasReviewEvidence = reviewCount > 0 || aiStatus === 'complete-with-review' || axeStatus === 'complete-with-review' || eaStatus === 'complete-with-review';
-  var verificationState = allUnavailable ? 'unavailable' : (hasReviewEvidence ? 'review-required' : (allComplete ? 'complete' : 'partial'));
-  var coverage = {
-    standard: 'WCAG 2.2 AA',
-    ai: aiStatus,
-    axe: axeStatus,
-    equalAccess: eaStatus,
-    pdfUaSelfCheck: input.pdfUaSelfCheck || 'not-run'
+  var coverage = { standard: 'WCAG 2.2 AA', ai: 'unavailable', axe: 'unavailable', equalAccess: 'unavailable', pdfUaSelfCheck: 'not-run' };
+  return {
+    verificationCoverage: coverage, coverage: coverage, verificationState: 'unavailable',
+    afterScoreVerified: false, requiresManualReview: true, reviewCount: 1,
+    reasons: ['verification-policy-module-unavailable']
   };
-  // Build the result in a var (rather than a two-space `return {`) because the
-  // pipeline-integrity checker locates the factory export through that token.
-  var result = {
-    verificationCoverage: coverage,
-    coverage: coverage,
-    verificationState: verificationState,
-    afterScoreVerified: verificationState === 'complete',
-    requiresManualReview: verificationState !== 'complete',
-    reviewCount: reviewCount,
-    reasons: reasons
-  };
-  return result;
 }
 // Bind verification evidence to the exact remediated HTML bytes it audited. The
 // digest is safe to persist; the full snapshot is deliberately runtime-only so
@@ -210,6 +152,12 @@ function _alloStripVerificationHtmlSnapshot(result) {
   try { delete clean._verificationHtmlBindingDigest; } catch (_) {}
   return clean;
 }
+// C1 perf memo (2026-07-13): batch-end summary/ZIP/CSV/telemetry each re-derive
+// the binding check, and each check UTF-8-encoded the FULL document (~9 encodes
+// × N files × MBs on the main thread at ZIP time). The byteLength of a given
+// (result, exact-html) pair is immutable — memo it on result identity. A result
+// whose html changed misses (string value compare) and re-encodes.
+var _alloUtf8LenMemo = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
 function _alloIsLiveVerificationHtmlBound(result, html) {
   if (!result || typeof result !== 'object' || !_alloIsVerificationHtmlBindingShape(result.verificationHtmlBinding)) return false;
   var liveHtml = arguments.length > 1 ? html : result.accessibleHtml;
@@ -225,8 +173,17 @@ function _alloIsLiveVerificationHtmlBound(result, html) {
   if (!descriptor || descriptor.enumerable !== false || descriptor.value !== liveHtml
       || !digestDescriptor || digestDescriptor.enumerable !== false
       || digestDescriptor.value !== result.verificationHtmlBinding.digest) return false;
-  var bytes = _alloUtf8Bytes(liveHtml);
-  return !!(bytes && bytes.byteLength === result.verificationHtmlBinding.utf8ByteLength);
+  var memo = _alloUtf8LenMemo ? _alloUtf8LenMemo.get(result) : null;
+  var byteLen;
+  if (memo && memo.html === liveHtml) {
+    byteLen = memo.len;
+  } else {
+    var bytes = _alloUtf8Bytes(liveHtml);
+    if (!bytes) return false;
+    byteLen = bytes.byteLength;
+    try { if (_alloUtf8LenMemo) _alloUtf8LenMemo.set(result, { html: liveHtml, len: byteLen }); } catch (_) {}
+  }
+  return byteLen === result.verificationHtmlBinding.utf8ByteLength;
 }
 function _alloApplyVerificationHtmlBinding(verification, isBound, reason) {
   verification = verification || _alloDeriveVerificationState({});
@@ -302,7 +259,18 @@ function _alloNormalizeStoredVerification(stored, derived) {
   }
   var derivedReasons = Array.isArray(derived.reasons) ? derived.reasons : [];
   var storedReasons = Array.isArray(stored.verificationReasons) ? stored.verificationReasons : [];
-  var reasons = Array.from(new Set(derivedReasons.concat(storedReasons).filter(Boolean)));
+  // C7 (2026-07-13): counted reasons drifted into contradictory pairs — a stored
+  // 'axe-incomplete:3' and a fresh 'axe-incomplete:5' BOTH survived the Set and
+  // rendered side by side in "Why this status?". For any 'prefix:N' reason the
+  // DERIVED (fresh) count wins; stored copies of an already-derived prefix drop.
+  var _countedReasonRe = /^([a-z][a-z0-9-]*):(\d+)$/;
+  var _derivedCountedPrefixes = Object.create(null);
+  derivedReasons.forEach(function (r) { var m = _countedReasonRe.exec(String(r == null ? '' : r)); if (m) _derivedCountedPrefixes[m[1]] = true; });
+  var _keptStoredReasons = storedReasons.filter(function (r) {
+    var m = _countedReasonRe.exec(String(r == null ? '' : r));
+    return !(m && _derivedCountedPrefixes[m[1]]);
+  });
+  var reasons = Array.from(new Set(derivedReasons.concat(_keptStoredReasons).filter(Boolean)));
   if (effectiveState !== derivedState && reasons.length === 0) reasons.push('stored-verification-state:' + effectiveState);
   var derivedCount = Number.isFinite(derived.reviewCount) ? Math.max(0, derived.reviewCount) : 0;
   var storedCount = Number.isFinite(stored.verificationReviewCount) ? Math.max(0, stored.verificationReviewCount) : 0;
@@ -1798,6 +1766,60 @@ function checkReadingOrderPreserved(beforeHtml, afterHtml) {
   return _r;
 }
 
+// Walk the ACTUAL PDF structure tree in /K order and return only the tracked
+// StructElem references. This is deliberately independent of pdf.js text
+// extraction: assistive technology follows StructTreeRoot -> K depth-first, so
+// preserving this exact reference sequence is the serialization-level reading-
+// order invariant. The helper is duck-typed for pdf-lib and kept pure so its
+// array/dict/ref behavior can be pinned without constructing a full PDF.
+function collectTaggedTreeReferenceOrder(pdfContext, rootValue, PDFNameCtor, trackedReferenceIds) {
+  if (!pdfContext || typeof pdfContext.lookup !== 'function'
+      || !PDFNameCtor || typeof PDFNameCtor.of !== 'function') return [];
+  var tracked = trackedReferenceIds instanceof Set
+    ? trackedReferenceIds
+    : new Set(Array.isArray(trackedReferenceIds) ? trackedReferenceIds : []);
+  var out = [];
+  var activeRefs = Object.create(null);
+  var typeName = PDFNameCtor.of('Type');
+  var kidsName = PDFNameCtor.of('K');
+  var refKey = function (value) {
+    if (!value) return null;
+    var text = '';
+    try { text = String(value).trim(); } catch (_) { return null; }
+    return /^\d+\s+\d+\s+R$/.test(text) ? text : null;
+  };
+  var walk = function (raw, depth) {
+    if (!raw || depth > 10000) return;
+    var key = refKey(raw);
+    if (key && activeRefs[key]) return; // malformed cyclic K tree: stop that branch
+    if (key) activeRefs[key] = true;
+    var obj = raw;
+    if (key) {
+      try { obj = pdfContext.lookup(raw) || raw; } catch (_) { obj = raw; }
+    }
+    try {
+      // PDFArray has numeric get(index) + size(); handle it before PDFDict.
+      if (obj && typeof obj.size === 'function' && typeof obj.get === 'function') {
+        var size = Number(obj.size()) || 0;
+        for (var i = 0; i < size; i++) walk(obj.get(i), depth + 1);
+      } else if (obj && typeof obj.get === 'function') {
+        var type = '';
+        try { type = String(obj.get(typeName) || ''); } catch (_) {}
+        if (type === '/StructTreeRoot' || type === '/StructElem') {
+          if (type === '/StructElem' && key && tracked.has(key)) out.push(key);
+          var kids = null;
+          try { kids = obj.get(kidsName); } catch (_) {}
+          walk(kids, depth + 1);
+        }
+      }
+    } finally {
+      if (key) delete activeRefs[key];
+    }
+  };
+  walk(rootValue, 0);
+  return out;
+}
+
 // Order-SENSITIVE round-trip signal (H-5, audit 2026-06-23). The shipped tagged-PDF round-trip check compares
 // token SETS (membership) — order-insensitive by construction — so a tagged PDF whose tag-tree reading order
 // is SCRAMBLED (multi-column content streams drawing the right column before the left) passes at ~100%
@@ -1960,6 +1982,66 @@ function _alloOrderTextItems(items, opts) {
   return _multi;
 }
 
+// ── Column-aware OCR ground truth (H-5's scanned half, 2026-07-13) ──────────
+// _alloOrderTextItems repairs multi-column reading order on the pdf.js TEXT-LAYER
+// path only; scanned documents relied on Tesseract's internal layout analysis,
+// which interleaves columns on plenty of real worksheets/newsletters. This runs a
+// Tesseract-won page's word boxes (origin top-left, so y is NEGATED into the
+// pdf.js "greater = higher" convention) through the same column detector and
+// rebuilds the page text column-aware. DOUBLY conservative:
+//   1. adopts a rebuild only when the word MULTISET is identical (this is a pure
+//      REORDER — it can never add or drop a word), and
+//   2. only when the order MATERIALLY differs (<90% of words in the same slot) —
+//      when Tesseract already read the columns correctly, its own line assembly
+//      is better than ours, so those pages keep the engine text byte-for-byte.
+// Returns { text, columns } or null (keep the engine text).
+function _alloColumnReorderOcrText(words, text) {
+  try {
+    if (!Array.isArray(words) || words.length < 30 || !text) return null;
+    var items = [];
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i];
+      if (!w || !String(w.t || '').trim()) continue;
+      var wid = Math.max(0.5, (Number(w.x1) || 0) - (Number(w.x0) || 0));
+      items.push({ str: String(w.t), width: wid, transform: [wid / Math.max(1, String(w.t).length), 0, 0, 1, Number(w.x0) || 0, -(Number(w.y0) || 0)] });
+    }
+    if (items.length < 30) return null;
+    var ord = _alloOrderTextItems(items, {});
+    if (!ord || !ord.applied || ord.columns < 2) return null;
+    // Rebuild lines from the ordered stream: a new line starts when the vertical
+    // gap exceeds ~60% of the median word height.
+    var hs = [];
+    for (var h = 0; h < words.length; h++) { var ww = words[h]; if (ww && Number(ww.y1) > Number(ww.y0)) hs.push(Number(ww.y1) - Number(ww.y0)); }
+    hs.sort(function (a, b) { return a - b; });
+    var lineTol = Math.max(3, (hs.length ? hs[Math.floor(hs.length / 2)] : 10) * 0.6);
+    var lines = [];
+    var cur = [];
+    var curY = null;
+    for (var j = 0; j < ord.items.length; j++) {
+      var it = ord.items[j];
+      if (!it || !String(it.str || '').trim()) continue;
+      var y = -it.transform[5];
+      if (curY !== null && Math.abs(y - curY) > lineTol) { lines.push(cur.join(' ')); cur = []; }
+      cur.push(it.str);
+      curY = y;
+    }
+    if (cur.length) lines.push(cur.join(' '));
+    var rebuilt = lines.join('\n');
+    var tok = function (s) { return String(s || '').split(/\s+/).filter(Boolean); };
+    var a = tok(text);
+    var b = tok(rebuilt);
+    if (!a.length || a.length !== b.length) return null; // tokenization mismatch → unverifiable → keep engine text
+    var bag = Object.create(null);
+    for (var k = 0; k < a.length; k++) bag[a[k]] = (bag[a[k]] || 0) + 1;
+    for (var k2 = 0; k2 < b.length; k2++) { if (!bag[b[k2]]) return null; bag[b[k2]]--; }
+    var same = 0;
+    for (var k3 = 0; k3 < a.length; k3++) { if (a[k3] === b[k3]) same++; }
+    if (same / a.length >= 0.9) return null;
+    var _res = { text: rebuilt, columns: ord.columns };
+    return _res;
+  } catch (_) { return null; }
+}
+
 // Cheap, deterministic document fingerprint (review F1/F5, 2026-07-01). Used to stamp the
 // window.__lastGroundTruth* OCR globals with the document they describe, so the legacy
 // fallback readers can REFUSE another document's pages/method instead of silently
@@ -1990,6 +2072,190 @@ function _alloDocFingerprint(input) {
   } catch (_) { return null; }
 }
 
+// Imported remediation projects are untrusted input. Sanitize them before any
+// same-origin preview receives their HTML. DOMParser parses inertly; if it is
+// unavailable, fail closed by rendering the source as text.
+var _ALLO_MAX_IMPORTED_HTML_CHARS = 128 * 1024 * 1024;
+function _alloDecodeImportedCss(css) {
+  // Comments are NOT stripped here (2026-07-13): the old string-blind
+  // /\*…\*/ regex merged across quoted strings ('content:"a/*"' ate the next
+  // rule wholesale). _alloStripCssCommentsQuoteAware handles them inside the
+  // sanitize loop with real string tracking; escapes that DECODE into '/'+'*'
+  // still form comments there, so the bypass coverage is unchanged.
+  var out = String(css || '');
+  for (var pass = 0; pass < 3; pass++) {
+    var before = out;
+    out = out
+      .replace(/\\(?:\r\n|[\n\r\f])/g, '')
+      .replace(/\\([0-9a-f]{1,6})(?:\r\n|[ \t\r\n\f])?/gi, function(_, hex) {
+        var code = parseInt(hex, 16);
+        if (!code || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) return '\ufffd';
+        try { return String.fromCodePoint(code); } catch (_) { return '\ufffd'; }
+      })
+      .replace(/\\([^\r\n\f0-9a-f])/gi, '$1');
+    if (out === before) break;
+  }
+  return out.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
+}
+// ── Quote-aware CSS helpers (2026-07-13) ─────────────────────────────────────
+// After _alloDecodeImportedCss every escape is decoded, so a real quote char IS
+// a string delimiter: this sanitizer and the browser that parses the OUTPUT
+// tokenize identically (the invariant that keeps string-awareness safe). Text
+// inside string tokens is inert in the output — url()/image() only fetch as
+// function tokens OUTSIDE strings — so prose like content:"see image (fig 2)"
+// must survive while the same token outside a string is still stripped.
+// Returns [start,end) spans of string tokens, or null (fail closed) when a
+// string is unterminated / broken by a newline (CSS bad-string).
+function _alloCssStringSpans(text) {
+  var spans = [];
+  var i = 0, n = text.length;
+  while (i < n) {
+    var ch = text[i];
+    if (ch === '"' || ch === "'") {
+      var start = i; i++;
+      while (i < n && text[i] !== ch && text[i] !== '\n' && text[i] !== '\r' && text[i] !== '\f') i++;
+      if (i >= n || text[i] !== ch) return null;
+      i++;
+      spans.push([start, i]);
+    } else { i++; }
+  }
+  return spans;
+}
+// Removes /*…*/ comments with real string tracking (a "/*" inside a quoted
+// string is content, not a comment opener). Removing a comment can join '/'
+// and '*' into a NEW opener, so loop to a fixpoint; an unterminated comment
+// eats to end-of-block exactly like the browser. Returns null to fail closed
+// (unterminated string, pathological nesting depth).
+function _alloStripCssCommentsQuoteAware(text) {
+  for (var pass = 0; pass < 4; pass++) {
+    var out = '';
+    var i = 0, n = text.length, changed = false;
+    while (i < n) {
+      var ch = text[i];
+      if (ch === '"' || ch === "'") {
+        var q = ch; out += ch; i++;
+        while (i < n && text[i] !== q && text[i] !== '\n' && text[i] !== '\r' && text[i] !== '\f') { out += text[i]; i++; }
+        if (i >= n || text[i] !== q) return null;
+        out += q; i++;
+      } else if (ch === '/' && text[i + 1] === '*') {
+        var end = text.indexOf('*/', i + 2);
+        changed = true;
+        i = end < 0 ? n : end + 2;
+      } else { out += ch; i++; }
+    }
+    if (!changed) return out;
+    text = out;
+  }
+  return null;
+}
+function _alloCssReplaceOutsideStrings(text, regex, replacement) {
+  var spans = _alloCssStringSpans(text);
+  if (spans === null) return null;
+  var inString = function(idx) {
+    for (var k = 0; k < spans.length; k++) { if (idx >= spans[k][0] && idx < spans[k][1]) return true; }
+    return false;
+  };
+  return text.replace(regex, function(match) {
+    var offset = arguments[arguments.length - 2];
+    return inString(offset) ? match : replacement;
+  });
+}
+var _ALLO_CSS_BARE_IMAGE_SRC_RE = /\b(?:image|src)\s*\((?:[^()]|\([^()]*\))*\)/gi;
+function _alloSanitizeImportedCss(css) {
+  var clean = _alloDecodeImportedCss(css);
+  for (var pass = 0; pass < 3; pass++) {
+    var before = clean;
+    clean = _alloStripCssCommentsQuoteAware(clean);
+    if (clean === null) return '';
+    clean = clean
+      .replace(/@import\b[^;{}]*(?:;|$)/gi, '')
+      .replace(/@font-face\b[^{}]*\{[\s\S]*?\}/gi, '')
+      .replace(/url\s*\(\s*(?:"[^"]*"|'[^']*'|[^)]*)\)/gi, 'none')
+      .replace(/(?:-webkit-)?image-set\s*\((?:[^()]|\([^()]*\))*\)/gi, 'none')
+      .replace(/expression\s*\((?:[^()]|\([^()]*\))*\)/gi, '');
+    // Bare image()/src() are fetch primitives ONLY as function tokens outside
+    // strings; the same characters inside a string are teacher prose
+    // ('content:"see image (figure 2)"') and must not become "see none".
+    clean = _alloCssReplaceOutsideStrings(clean, _ALLO_CSS_BARE_IMAGE_SRC_RE, 'none');
+    if (clean === null) return '';
+    clean = clean.replace(/(?:-moz-binding|behavior)\s*:[^;}]*(?:;|(?=\}))/gi, '');
+    if (clean === before) break;
+  }
+  // Unknown escapes or any residual fetch/execution primitive fail closed for this style block.
+  if (/\\|@(?:import|font-face)\b|\b(?:url|expression|(?:-webkit-)?image-set)\s*\(|(?:-moz-binding|behavior)\s*:/i.test(clean)) return '';
+  var residualBare = _alloCssReplaceOutsideStrings(clean, _ALLO_CSS_BARE_IMAGE_SRC_RE, '\0');
+  if (residualBare === null || residualBare !== clean) return '';
+  // A bare "image(/src(" LEFT OF a string is caught above; one INSIDE a string is inert output.
+  return clean;
+}
+function _alloSanitizeRemediationHtml(rawHtml) {
+  var source = String(rawHtml == null ? '' : rawHtml);
+  if (!source) return '';
+  if (source.length > _ALLO_MAX_IMPORTED_HTML_CHARS) throw new Error('Imported remediation HTML exceeds the 128 MB safety limit.');
+  if (typeof DOMParser === 'undefined') {
+    var escaped = source.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Imported document</title></head><body><pre>' + escaped + '</pre></body></html>';
+  }
+  var doc = new DOMParser().parseFromString(source, 'text/html');
+  Array.prototype.slice.call(doc.querySelectorAll('script,iframe,frame,object,embed,base,link,meta,svg,math,template')).forEach(function(node) { try { node.remove(); } catch (_) {} });
+  Array.prototype.slice.call(doc.querySelectorAll('style')).forEach(function(node) { node.textContent = _alloSanitizeImportedCss(node.textContent || ''); });
+  Array.prototype.slice.call(doc.querySelectorAll('*')).forEach(function(el) {
+    Array.prototype.slice.call(el.attributes || []).forEach(function(attr) {
+      var name = String(attr.name || '').toLowerCase();
+      var value = String(attr.value || '').trim();
+      if (/^on/i.test(name) || name === 'srcdoc' || name === 'srcset' || name === 'background'
+          || name === 'action' || name === 'formaction' || name === 'autofocus' || name === 'nonce'
+          || name === 'ping' || name === 'manifest') {
+        el.removeAttribute(attr.name); return;
+      }
+      if (name === 'style') {
+        var cleanStyle = _alloSanitizeImportedCss(value);
+        if (cleanStyle) el.setAttribute(attr.name, cleanStyle); else el.removeAttribute(attr.name);
+        return;
+      }
+      if (name === 'src' || name === 'poster') {
+        if (!/^data:image\/(?:png|jpe?g|gif|webp);base64,/i.test(value)) el.removeAttribute(attr.name);
+        return;
+      }
+      if ((name === 'href' || name === 'xlink:href') && !/^(?:#|https?:|mailto:|tel:|\/)/i.test(value)) el.removeAttribute(attr.name);
+    });
+    if (String(el.tagName || '').toLowerCase() === 'a' && el.hasAttribute('target')) el.setAttribute('rel', 'noopener noreferrer');
+  });
+  return '<!DOCTYPE html>\n' + (doc.documentElement ? doc.documentElement.outerHTML : '');
+}
+function _alloSanitizeRemediationProject(project) {
+  if (!project || typeof project !== 'object' || Array.isArray(project)) throw new Error('Invalid remediation project.');
+  var changed = false;
+  var sanitize = function(value) {
+    if (typeof value !== 'string') return value;
+    var clean = _alloSanitizeRemediationHtml(value);
+    if (clean !== value) changed = true;
+    return clean;
+  };
+  var out = Object.assign({}, project);
+  if (typeof out.accessibleHtml === 'string') out.accessibleHtml = sanitize(out.accessibleHtml);
+  if (out._translation && typeof out._translation === 'object') {
+    out._translation = Object.assign({}, out._translation, { html: sanitize(out._translation.html) });
+  }
+  if (out._plainLanguage && typeof out._plainLanguage === 'object') {
+    out._plainLanguage = Object.assign({}, out._plainLanguage, { html: sanitize(out._plainLanguage.html) });
+  }
+  if (out.multiSession && typeof out.multiSession === 'object') {
+    out.multiSession = Object.assign({}, out.multiSession);
+    if (Array.isArray(out.multiSession.ranges)) {
+      out.multiSession.ranges = out.multiSession.ranges.map(function(range) {
+        if (!range || typeof range !== 'object') return range;
+        var cleanRange = Object.assign({}, range);
+        if (typeof cleanRange.html === 'string') cleanRange.html = sanitize(cleanRange.html);
+        if (cleanRange.result && typeof cleanRange.result === 'object' && typeof cleanRange.result.accessibleHtml === 'string') {
+          cleanRange.result = Object.assign({}, cleanRange.result, { accessibleHtml: sanitize(cleanRange.result.accessibleHtml) });
+        }
+        return cleanRange;
+      });
+    }
+  }
+  return { project: out, changed: changed };
+}
 // S3 block-restyle (2026-06-23; hardened after adversarial review). A CURATED, content-preserving
 // structure-transform library. The AI's role (a later slice) is only to SELECT one of these — it never
 // authors freeform HTML, which is exactly what breaks tagged-PDF structure + reading order. Every transform
@@ -2577,6 +2843,26 @@ function _computeStructuralFidelityNotes(srcText, outHtml) {
   return notes;
 }
 
+// Remediation success and verification completeness answer different questions.
+// Keep them separate so reliability telemetry never changes meaning when a new
+// verification engine is added or temporarily unavailable.
+function _alloRemediationOutcome(r, opts) {
+  r = r || {};
+  var target = (opts && typeof opts.targetScore === 'number') ? opts.targetScore : 90;
+  var score = typeof r.afterScore === 'number' && Number.isFinite(r.afterScore) ? r.afterScore : null;
+  var residual = r.axeAudit && typeof r.axeAudit.totalViolations === 'number' && Number.isFinite(r.axeAudit.totalViolations)
+    ? Math.max(0, r.axeAudit.totalViolations) : null;
+  var aiCompleted = !r._aiVerificationIncomplete;
+  var reachedTarget = score !== null && score >= target;
+  var state = reachedTarget && residual === 0 && aiCompleted ? 'success' : 'incomplete';
+  return {
+    state: state,
+    reachedTarget: reachedTarget,
+    knownResidualViolations: residual,
+    aiCompleted: aiCompleted,
+    targetScore: target
+  };
+}
 // ── R1 "Can I hand this out?" verdict (2026-07-10) ──────────────────────────
 // The ONE question a teacher actually has about a remediated document, answered from the honesty
 // signals the result already carries — score vs target, verifier completeness, coverage, fidelity
@@ -2601,7 +2887,17 @@ function _alloDistributionVerdict(r, opts) {
   var eaFails = (r.secondEngineAudit && typeof r.secondEngineAudit.failViolations === 'number') ? r.secondEngineAudit.failViolations : null;
   // review tier — content trust is in question
   if (r.verificationState && r.verificationState !== 'complete') review.push('WCAG verification is ' + r.verificationState + '; review the engine coverage and unresolved evidence before distribution');
-  if (r.needsExpertReview) review.push(String(r.expertReviewReason || 'this run was flagged for expert review'));
+  if (r.needsExpertReview) {
+    // A2 residual (2026-07-13): expertReviewReason is a machine token
+    // ('accessibility' | 'content-fidelity' | 'both') — render it as a sentence,
+    // not a raw token, in the teacher-facing verdict bullet.
+    var _reasonText = {
+      'accessibility': 'confirmed accessibility barriers need an expert pass',
+      'content-fidelity': 'content fidelity needs a human check (possible loss or changed values)',
+      'both': 'accessibility barriers and content fidelity both need human review'
+    }[r.expertReviewReason];
+    review.push(_reasonText || String(r.expertReviewReason || 'this run was flagged for expert review'));
+  }
   if (cov != null && cov < 90) review.push('only ' + cov + '% of the source text is preserved in reading order — check the Diff for missing content');
   if (kinds.numeric) review.push('numbers may have changed between source and output — verify scores, dates, and percentages before anyone reads this');
   if (kinds.refusal) review.push('AI meta/refusal text leaked into the output — it should not ship; re-run the remediation');
@@ -2617,6 +2913,7 @@ function _alloDistributionVerdict(r, opts) {
   if (kinds.folioLeak) cautions.push('a stray page number may appear inline in the text — search and delete it');
   if (kinds.lowOcrAccuracy || kinds.lowOcrConfidence) cautions.push('this is a scan and parts of the OCR read are low-confidence — skim the output against the original');
   if (kinds.ocrDupeCollapse) cautions.push('repeated-word OCR echoes were auto-collapsed — verify the affected sentences');
+  if (kinds.ocrColumnOrder) cautions.push('multi-column reading order was rebuilt from the scan\'s word positions — skim that the text flows in the intended order');
   if (kinds.pageEdge) cautions.push('repeated page-edge lines (running heads/footers) were removed — restore any real heading from the Diff');
   if (kinds.altQuality) cautions.push('some image descriptions are low-quality — review the alt text in the image panel');
   if (cov != null && cov >= 90 && r.integrityWarning && /missing/i.test(r.integrityWarning)) cautions.push('content coverage is ' + cov + '% — worth a quick Diff check');
@@ -3366,6 +3663,94 @@ function _tableContentPreserved(beforeHtml, afterHtml, index, op) {
   return _r;
 }
 
+// ── Table cell-POSITION gate (phase-2 of the numeric multiset gate, 2026-07-13) ──
+// The value-fidelity gates are bag-of-values: two SWAPPED WISC subtest scores pass
+// them clean (the known blind spot the multiset gate's own comment schedules as
+// "phase-2: table cells"). This helper detects pure transposition: for each table
+// whose cell-text MULTISET is unchanged (value loss/creation is the other gates'
+// job), it tracks every UNIQUE non-trivial cell value and reports any whose
+// (row,col) moved. No legitimate remediation transform swaps cell CONTENTS between
+// positions, so callers may treat any hit as blocking. High precision by design:
+// duplicate values are untrackable and skipped; different multisets, different
+// table counts, and tiny tables (<4 cells) are skipped. Returns
+// { checked, moved: [{table, value, from:[r,c], to:[r,c]}] } or null (uncheckable).
+function _alloTableCellDrift(beforeHtml, afterHtml) {
+  try {
+    if (typeof DOMParser === 'undefined') return null;
+    var norm = function (s) { return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase(); };
+    var tablesOf = function (html) {
+      var doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+      return Array.prototype.slice.call(doc.querySelectorAll('table'));
+    };
+    var gridOf = function (tableEl) {
+      var grid = [];
+      var rows = Array.prototype.slice.call(tableEl.querySelectorAll('tr'));
+      for (var r = 0; r < rows.length; r++) {
+        // Rows of NESTED tables belong to their own table's grid.
+        var owner = rows[r].parentElement;
+        while (owner && String(owner.tagName || '').toLowerCase() !== 'table') owner = owner.parentElement;
+        if (owner !== tableEl) continue;
+        var rowArr = [];
+        var kids = rows[r].children || [];
+        for (var c = 0; c < kids.length; c++) {
+          var tag = String(kids[c].tagName || '').toLowerCase();
+          if (tag === 'td' || tag === 'th') rowArr.push(norm(kids[c].textContent));
+        }
+        grid.push(rowArr);
+      }
+      return grid;
+    };
+    var flat = function (grid) { return [].concat.apply([], grid).filter(Boolean); };
+    var beforeTables = tablesOf(beforeHtml);
+    var afterTables = tablesOf(afterHtml);
+    if (!beforeTables.length || beforeTables.length !== afterTables.length) {
+      var _skip = { checked: 0, moved: [] };
+      return _skip;
+    }
+    var moved = [];
+    var checked = 0;
+    for (var t = 0; t < beforeTables.length && moved.length < 12; t++) {
+      var bg = gridOf(beforeTables[t]);
+      var ag = gridOf(afterTables[t]);
+      var bCells = flat(bg);
+      var aCells = flat(ag);
+      if (bCells.length < 4 || bCells.length !== aCells.length) continue;
+      var bSorted = bCells.slice().sort();
+      var aSorted = aCells.slice().sort();
+      var sameMultiset = true;
+      for (var i = 0; i < bSorted.length; i++) { if (bSorted[i] !== aSorted[i]) { sameMultiset = false; break; } }
+      if (!sameMultiset) continue;
+      checked++;
+      var posOf = function (grid) {
+        var map = Object.create(null);
+        var dup = Object.create(null);
+        for (var r2 = 0; r2 < grid.length; r2++) {
+          for (var c2 = 0; c2 < grid[r2].length; c2++) {
+            var v = grid[r2][c2];
+            if (!v || v.length < 2) continue;
+            if (map[v]) dup[v] = 1; else map[v] = { r: r2, c: c2 };
+          }
+        }
+        for (var k in dup) delete map[k];
+        return map;
+      };
+      var bPos = posOf(bg);
+      var aPos = posOf(ag);
+      for (var key in bPos) {
+        var bp = bPos[key];
+        var ap = aPos[key];
+        if (!ap) continue;
+        if (bp.r !== ap.r || bp.c !== ap.c) {
+          moved.push({ table: t, value: key.slice(0, 60), from: [bp.r, bp.c], to: [ap.r, ap.c] });
+          if (moved.length >= 12) break;
+        }
+      }
+    }
+    var _out = { checked: checked, moved: moved };
+    return _out;
+  } catch (_) { return null; }
+}
+
 // ── Issue-resolution diff (shared, 2026-06-19) ───────────────────────────────
 // Diffs the pre-fix audit's issues against a verification audit → {resolved, persisted, introduced,
 // summary, baseline}. Extracted so a FOLLOW-UP pass (auto-continue, Fix-Remaining, Additional-Sweep)
@@ -3478,6 +3863,56 @@ var createDocPipeline = function(deps) {
   // so a failure can be attributed ("Stage 2: generate accessible HTML") in the
   // run-history + the download toast instead of a bare error message.
   var _PIPE_STEP_LABELS = { 1: 'extract text', 2: 'generate accessible HTML', 3: 'audit (axe + AI)', 4: 'auto-fix loop' };
+  // Run-scoped, UI-facing progress. The legacy string callback remains the source of
+  // backwards compatibility; this event adds honest numeric/sub-step telemetry without
+  // making callers parse human copy. A runId guard prevents a late zombie run from
+  // overwriting the trace for a newer remediation.
+  var _activeRemediationProgress = null;
+  var _PROGRESS_BANDS = { 1: [5, 30], 2: [30, 62], 3: [62, 78], 4: [78, 98] };
+  var _deriveProgress = function(step, detail) {
+    var band = _PROGRESS_BANDS[step] || [2, 98];
+    var text = String(detail || '');
+    var match = text.match(/(?:page|section|chunk|batch|pass|round|image)\s+(\d+)\s*(?:\/|of)\s*(\d+)/i)
+      || text.match(/(\d+)\s*\/\s*(\d+)\s*(?:pages?|sections?|chunks?|batches?|passes?|rounds?|images?)/i);
+    var subprogress = null;
+    var percent = band[0] + 2;
+    if (match) {
+      var current = Math.max(0, Number(match[1]) || 0);
+      var total = Math.max(1, Number(match[2]) || 1);
+      var ratio = Math.min(1, current / total);
+      percent = band[0] + Math.round((band[1] - band[0]) * 0.9 * ratio);
+      subprogress = { current: current, total: total };
+    }
+    if (_activeRemediationProgress && _activeRemediationProgress.step === step) {
+      percent = Math.max(percent, _activeRemediationProgress.overallPercent || band[0]);
+    }
+    return { overallPercent: Math.min(band[1], percent), subprogress: subprogress };
+  };
+  var _emitRemediationProgress = function(runId, patch) {
+    try {
+      if (_activeRemediationProgress && runId && _activeRemediationProgress.runId !== runId) return;
+      var stats = {
+        apiCalls: _pipelineStats.apiCalls || 0,
+        visionCalls: _pipelineStats.visionCalls || 0,
+        transportRetries: _pipelineStats.transportRetries || 0,
+        recoveredRetries: _pipelineStats.recoveredRetries || 0,
+        terminalFailures: _pipelineStats.terminalFailures || 0,
+        authThrottles: _pipelineStats.authThrottles || 0,
+        totalApiMs: Math.round(_pipelineStats.totalApiMs || 0),
+      };
+      var next = Object.assign({}, _activeRemediationProgress || {}, patch || {}, {
+        version: 1,
+        runId: runId || (_activeRemediationProgress && _activeRemediationProgress.runId) || null,
+        elapsedMs: _pipelineStats.startTime ? Math.round(performance.now() - _pipelineStats.startTime) : 0,
+        stats: stats,
+        timestamp: Date.now(),
+      });
+      _activeRemediationProgress = next;
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('alloflow:remediation-progress', { detail: next }));
+      }
+    } catch (_) { /* visibility is best-effort and must never block remediation */ }
+  };
   // The current run's alt-text-edit listener, kept module-side so each run can
   // remove the PRIOR run's listener before installing its own (was a leak: every
   // run added a handler that kept firing on that run's stale extractedImages).
@@ -3500,7 +3935,7 @@ var createDocPipeline = function(deps) {
     // Canvas-visible emission.
     try {
       if (typeof window !== 'undefined') {
-        var entry = { ts: Date.now(), elapsed: elapsed, tag: tag, msg: msg, data: data || null };
+        var entry = { ts: Date.now(), elapsed: elapsed, tag: tag, msg: msg, data: data || null, runId: _pipelineStats.runId || null };
         if (window._alloflowPipelineWarnings) {
           window._alloflowPipelineWarnings.push(entry);
           // Cap the buffer so long sessions don't leak memory.
@@ -3508,6 +3943,12 @@ var createDocPipeline = function(deps) {
         }
         if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
           window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn', { detail: entry }));
+        }
+        if (_activeRemediationProgress && _activeRemediationProgress.runId === entry.runId) {
+          _emitRemediationProgress(entry.runId, {
+            status: tag === 'Throttle' ? 'throttled' : (_activeRemediationProgress.status === 'throttled' ? 'running' : _activeRemediationProgress.status),
+            activity: { tag: tag, message: String(msg || '').slice(0, 500), timestamp: entry.ts },
+          });
         }
       }
     } catch(e) { /* canvas sink is best-effort; never block the pipeline */ }
@@ -3970,7 +4411,14 @@ var createDocPipeline = function(deps) {
   // "8 min of silence" and CLEARED a slow-but-progressing run (looked like a premature bail). Emit a
   // heartbeat on each retry so the watchdog fires only on TRUE inactivity. (2026-06-21, fix A)
   var _pulsePipelineWatchdog = function () {
-    try { if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn', { detail: { ts: (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0, tag: 'Throttle', msg: 'retry/cooldown — pipeline alive' } })); } catch (_) {}
+    try {
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn', { detail: { ts: Date.now(), tag: 'Throttle', msg: 'retry/cooldown — pipeline alive' } }));
+      var ts = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
+      var runId = _pipelineStats.runId || null;
+      if (_activeRemediationProgress && _activeRemediationProgress.runId === runId) {
+        _emitRemediationProgress(runId, { status: 'throttled', activity: { tag: 'Throttle', message: 'Rate-limit cooldown in progress — the pipeline is still active.', timestamp: ts } });
+      }
+    } catch (_) {}
   };
   // Quota-class errors reach the pipeline REWRITTEN by gemini_api's _throwClassified: the message
   // becomes the 'API_QUOTA_EXHAUSTED' sentinel (raw body text survives only in err.originalMessage,
@@ -4230,11 +4678,10 @@ var createDocPipeline = function(deps) {
     });
   };
 
-  var _chunkSessionId = function(filename, fileSize, pageCount) {
-    var raw = (filename || 'doc') + '|' + (fileSize || 0) + '|' + (pageCount || 0);
-    var hash = 0;
-    for (var i = 0; i < raw.length; i++) { hash = ((hash << 5) - hash) + raw.charCodeAt(i); hash |= 0; }
-    return 'chunk_' + Math.abs(hash).toString(36);
+  var _chunkSessionId = function(filename, fileSize, pageCount, documentDigest) {
+    var digest = String(documentDigest || '').toLowerCase();
+    if (!/^sha256:[a-f0-9]{64}$/.test(digest)) return null;
+    return 'chunk_v2_' + digest.slice(7) + '_' + Math.max(0, Number(pageCount) || 0);
   };
 
   // Per-session WRITE CHAIN (ChatGPT review 2026-07-10, finding 11): the per-chunk checkpoint
@@ -4297,24 +4744,21 @@ var createDocPipeline = function(deps) {
   // (vs. chunk-progress's 24 hours) because multi-day workflows are the point.
   // Originally added in d0af1f2; lost in 1ce8054 (Deploy: JSON schema fix regression); restored.
   var _MULTI_SESSION_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-  var _MULTI_SESSION_SCHEMA = 1;
+  var _MULTI_SESSION_SCHEMA = 2;
 
   // Hash a filename + size + total page count into a stable session key that
   // identifies the same PDF across uploads.
-  var _multiSessionId = function(filename, fileSize, pageCount) {
-    var raw = (filename || 'doc') + '|' + (fileSize || 0) + '|' + (pageCount || 0);
-    var hash = 0;
-    for (var i = 0; i < raw.length; i++) {
-      hash = ((hash << 5) - hash) + raw.charCodeAt(i);
-      hash |= 0;
-    }
-    return 'msdoc_' + Math.abs(hash).toString(36);
+  var _multiSessionId = function(filename, fileSize, pageCount, documentDigest) {
+    var digest = String(documentDigest || '').toLowerCase();
+    if (!/^sha256:[a-f0-9]{64}$/.test(digest)) return null;
+    return 'msdoc_v2_' + digest.slice(7);
   };
 
   // Load the multi-session record for a given session ID. Returns null when there's
   // no record, or when the record is older than the expiry window (in which case
   // it's also cleared so it doesn't sit around).
-  var loadMultiSession = function(sessionId) {
+  var loadMultiSession = function(sessionId, expectedDocumentDigest) {
+    if (!sessionId || !/^sha256:[a-f0-9]{64}$/i.test(String(expectedDocumentDigest || ''))) return Promise.resolve(null);
     return _openChunkDB().then(function(db) {
       return new Promise(function(resolve, reject) {
         var tx = db.transaction(_CHUNK_STORE, 'readonly');
@@ -4327,6 +4771,10 @@ var createDocPipeline = function(deps) {
       if (record.schemaVersion !== _MULTI_SESSION_SCHEMA) {
         warnLog('[MultiSession] Record schema version mismatch — discarding.');
         return clearMultiSession(sessionId).then(function() { return null; });
+      }
+      if (record.documentDigest !== expectedDocumentDigest) {
+        warnLog('[MultiSession] Record document digest mismatch ? refusing cross-document resume.');
+        return null;
       }
       var age = Date.now() - (record.lastUpdatedAt || record.createdAt || 0);
       if (age > _MULTI_SESSION_EXPIRY_MS) {
@@ -4341,10 +4789,14 @@ var createDocPipeline = function(deps) {
   // Creates the record on first call. Does not merge HTML — that's the caller's
   // job via mergeRangesToFullHtml.
   var saveMultiSessionRange = function(sessionId, meta, rangeData) {
+    if (!sessionId || !meta || !/^sha256:[a-f0-9]{64}$/i.test(String(meta.documentDigest || ''))
+        || !rangeData || rangeData.documentDigest !== meta.documentDigest) {
+      return Promise.reject(new Error('Multi-session progress requires an exact SHA-256 document identity.'));
+    }
     // Finding 11: read-modify-write on the shared store — serialized per session id so two
     // concurrent range saves can't lose one range (and can't interleave with a clear).
     return _chainChunkWrite(sessionId, function () {
-    return loadMultiSession(sessionId).then(function(existing) {
+    return loadMultiSession(sessionId, meta.documentDigest).then(function(existing) {
       var record = existing || {
         schemaVersion: _MULTI_SESSION_SCHEMA,
         sessionId: sessionId,
@@ -4352,6 +4804,7 @@ var createDocPipeline = function(deps) {
         fileSize: meta.fileSize,
         pageCount: meta.pageCount,
         createdAt: Date.now(),
+        documentDigest: meta.documentDigest,
         ranges: [],
       };
       // Detect overlap with existing ranges. The prior behavior only deduped
@@ -4648,6 +5101,19 @@ var createDocPipeline = function(deps) {
     if (!(fixed.includes('<!DOCTYPE') || fixed.includes('<html') || fixed.includes('<main') || fixed.includes('<body'))) {
       return { accepted: false, reason: 'no-doc-markers' };
     }
+    // Table cell-POSITION gate (phase-2, 2026-07-13) — BLOCKING, unlike the
+    // reading-order WARN below: an equal cell multiset with MOVED unique values is
+    // transposition, and no remediation transform legitimately swaps cell contents
+    // between positions. A silently transposed score table is this tool's worst-case
+    // failure (psych-report subtest tables), so the chunk ships as ORIGINAL instead.
+    if (/<table\b/i.test(original) && /<table\b/i.test(fixed)) {
+      try {
+        var _cellDrift = _alloTableCellDrift(original, fixed);
+        if (_cellDrift && _cellDrift.moved && _cellDrift.moved.length > 0) {
+          return { accepted: false, reason: 'table-cell-transposition', cellDrift: _cellDrift };
+        }
+      } catch (_) {}
+    }
     // Reading-order WARN (H-4, audit 2026-06-23): the size/text magnitude checks above CANNOT see a block
     // REORDER — they pass as long as char/word totals hold. Attach a non-blocking `readingOrderWarn` (mirrors
     // the fabrication WARN pattern below) so a reorder is SURFACED, not silently shipped with a high score.
@@ -4678,6 +5144,13 @@ var createDocPipeline = function(deps) {
     }
     if (r && r.accepted && r.readingOrderWarn) { // H-4: reading order changed but content magnitude held — surface it (was silent)
       try { warnLog('[acceptFixedHtml] reading-order WARN — a block may have moved or dropped (token "' + (r.readingOrderWarn.droppedToken || '') + '"; ' + r.readingOrderWarn.beforeCount + '->' + r.readingOrderWarn.afterCount + '). Char/word checks passed but ORDER was not preserved — review before distributing.'); } catch (_) {}
+    }
+    if (r && !r.accepted && r.reason === 'table-cell-transposition') {
+      // Phase-2 gate: name the moved values so the log is actionable, not just "rejected".
+      try {
+        var _mv = (r.cellDrift && r.cellDrift.moved || []).slice(0, 3).map(function (m) { return '"' + m.value + '" [' + m.from + ']->[' + m.to + ']'; }).join(', ');
+        warnLog('[acceptFixedHtml] REJECTED: table cell values changed POSITIONS (transposition risk): ' + _mv + (r.cellDrift && r.cellDrift.moved.length > 3 ? ' +' + (r.cellDrift.moved.length - 3) + ' more' : '') + '. The original content ships for this pass.');
+      } catch (_) {}
     }
     return r.accepted;
   };
@@ -9471,6 +9944,7 @@ var createDocPipeline = function(deps) {
     const disagreements = [];
     const lowConfidence = []; // B5 (2026-06-20): pages whose WINNING OCR is low-confidence — surfaced as a banner
     const _dupeCollapses = []; // #G (2026-07-05): line-wrap word echoes collapsed from a winning page, per page
+    const _columnReorders = []; // H-5 scanned half (2026-07-13): pages whose ground truth was rebuilt column-aware
     for (const _pn of _nums) {
       const _pair = _byNum.get(_pn);
       const tPage = _pair.t || null, vPage = _pair.v || null;
@@ -9535,6 +10009,24 @@ var createDocPipeline = function(deps) {
           _dupeCollapses.push({ pageNum: _pn, words: _dd.collapsed });
           warnLog('[OCR Reconcile] page ' + _pn + ': collapsed ' + _dd.collapsed.length + ' adjacent duplicate token(s) (' + _dd.collapsed.slice(0, 5).join(', ') + ') — the echo is absent from the other engine\'s read');
         }
+      }
+      // H-5's scanned half (2026-07-13): the text-layer path repairs multi-column
+      // reading order at extraction; the OCR path relied on Tesseract's internal
+      // layout analysis, which interleaves columns on real worksheets/newsletters.
+      // When TESSERACT won (its boxes describe the winning text), run the boxes
+      // through the same column detector; the helper is doubly conservative
+      // (identical word multiset + materially-different order required), so
+      // single-column, table, and already-correct pages keep the engine text
+      // byte-for-byte. Disclosed via columnReorders — never silent.
+      if (_winner === 'tesseract' && tPage && Array.isArray(tPage.words) && tPage.words.length) {
+        try {
+          const _cr = _alloColumnReorderOcrText(tPage.words, chosen.text);
+          if (_cr) {
+            chosen.text = _cr.text;
+            _columnReorders.push({ pageNum: _pn, columns: _cr.columns });
+            warnLog('[OCR Reconcile] page ' + _pn + ': rebuilt reading order column-aware (' + _cr.columns + ' columns detected; Tesseract had interleaved them)');
+          }
+        } catch (_) {}
       }
       // Carry the Tesseract word boxes + page dims through reconciliation (Vision has
       // none). These are text+position PAIRS from Tesseract, used to draw a positioned
@@ -9609,7 +10101,7 @@ var createDocPipeline = function(deps) {
     } else {
       _fullText = _edge.texts.filter(Boolean).join('\n\n');
     }
-    return { pages: merged, disagreements, lowConfidence, fullText: _fullText, detectedFolios: _edge.folios, strippedEdgeLines: _edge.strippedLines || [], dupeCollapses: _dupeCollapses };
+    return { pages: merged, disagreements, lowConfidence, fullText: _fullText, detectedFolios: _edge.folios, strippedEdgeLines: _edge.strippedLines || [], dupeCollapses: _dupeCollapses, columnReorders: _columnReorders };
   };
 
   // Lazy-load mammoth.js for DOCX text extraction
@@ -10222,6 +10714,133 @@ var createDocPipeline = function(deps) {
       return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
     } catch (_) { return null; }
   };
+  const _documentDigest = async (input) => {
+    const normalized = String(input || '').replace(/^data:[^,]*,/, '').replace(/\s+/g, '');
+    const hash = normalized ? await _sha256Hex(normalized) : null;
+    return hash ? ('sha256:' + hash) : null;
+  };
+  // Session-local OCR evidence cache (2026-07-15): a hands-off retry that is throttled AFTER
+  // dual OCR used to repeat the most quota-heavy part of the run (language ID + every Vision
+  // extraction chunk) even though Step 1 had already completed successfully. Bank only complete,
+  // reconciled scanned-PDF evidence and restore it for the exact same bytes/settings. This is
+  // deliberately NOT persistent: page word boxes can be large and may contain sensitive text.
+  // A fresh app session, changed document/range/language/backend/model/version, incomplete page
+  // coverage, or an explicit Re-scan with OCR all force a fresh extraction.
+  const _OCR_EVIDENCE_VERSION = '20260715-1';
+  const _OCR_EVIDENCE_MAX_ENTRIES = 4;
+  const _OCR_EVIDENCE_MAX_BYTES = 32 * 1024 * 1024;
+  const _OCR_EVIDENCE_MAX_ENTRY_BYTES = 16 * 1024 * 1024;
+  const _ocrEvidenceCache = new Map();
+  let _ocrEvidenceCacheBytes = 0;
+  const _ocrEvidenceRangeKey = (pageRange) => {
+    if (!Array.isArray(pageRange) || !pageRange.length) return 'all';
+    const start = Math.max(1, Number(pageRange[0]) || 1);
+    const end = Math.max(start, Number(pageRange[1]) || start);
+    return start + '-' + end;
+  };
+  const _ocrEvidenceIdentity = (opts) => {
+    const o = opts || {};
+    return {
+      version: _OCR_EVIDENCE_VERSION,
+      documentDigest: o.documentDigest || null,
+      pageRangeKey: _ocrEvidenceRangeKey(o.pageRange),
+      ocrLanguage: String(o.ocrLanguage || 'auto').trim().toLowerCase() || 'auto',
+      backendId: String(o.backendId || 'unknown'),
+      effectivePageCount: Math.max(0, Number(o.effectivePageCount) || 0),
+    };
+  };
+  const _ocrEvidenceKey = (identity) => {
+    const i = identity || {};
+    if (!i.documentDigest || !i.effectivePageCount) return null;
+    return [i.version, i.documentDigest, i.pageRangeKey, i.ocrLanguage, i.backendId, i.effectivePageCount].join('|');
+  };
+  const _ocrEvidenceExpectedPages = (identity) => {
+    const i = identity || {};
+    const count = Math.max(0, Number(i.effectivePageCount) || 0);
+    let start = 1;
+    if (i.pageRangeKey && i.pageRangeKey !== 'all') start = Math.max(1, Number(String(i.pageRangeKey).split('-')[0]) || 1);
+    return Array.from({ length: count }, (_, idx) => start + idx);
+  };
+  const _ocrEvidenceCompatible = (record, identity) => {
+    if (!record || !identity) return false;
+    for (const field of ['version', 'documentDigest', 'pageRangeKey', 'ocrLanguage', 'backendId', 'effectivePageCount']) {
+      if (record[field] !== identity[field]) return false;
+    }
+    if (typeof record.extractedText !== 'string' || record.extractedText.trim().length <= 100) return false;
+    if (!record.ocrMethod || !/(?:tesseract|vision)/i.test(String(record.ocrMethod))) return false;
+    // Do not replay an extraction that already knew a page failed. A retry may recover it.
+    if (Array.isArray(record.ocrPageErrors) && record.ocrPageErrors.length) return false;
+    if (!Array.isArray(record.groundTruthPages) || !record.groundTruthPages.length) return false;
+    const present = new Set(record.groundTruthPages
+      .map(p => p && Number(p.pageNum))
+      .filter(n => Number.isFinite(n) && n > 0));
+    return _ocrEvidenceExpectedPages(identity).every(pageNum => present.has(pageNum));
+  };
+  const _readOcrEvidence = (identity) => {
+    const key = _ocrEvidenceKey(identity);
+    if (!key || !_ocrEvidenceCache.has(key)) return null;
+    const stored = _ocrEvidenceCache.get(key);
+    try {
+      const record = JSON.parse(stored.serialized);
+      if (!_ocrEvidenceCompatible(record, identity)) {
+        _ocrEvidenceCache.delete(key);
+        _ocrEvidenceCacheBytes = Math.max(0, _ocrEvidenceCacheBytes - stored.bytes);
+        return null;
+      }
+      // LRU touch. JSON.parse also provides a defensive clone: downstream PDF generation may
+      // annotate page/word objects without mutating the banked evidence.
+      _ocrEvidenceCache.delete(key);
+      _ocrEvidenceCache.set(key, stored);
+      return record;
+    } catch (_) {
+      _ocrEvidenceCache.delete(key);
+      _ocrEvidenceCacheBytes = Math.max(0, _ocrEvidenceCacheBytes - (stored && stored.bytes || 0));
+      return null;
+    }
+  };
+  const _writeOcrEvidence = (identity, evidence) => {
+    const key = _ocrEvidenceKey(identity);
+    if (!key) return false;
+    const record = Object.assign({}, identity, evidence || {}, { savedAt: Date.now() });
+    if (!_ocrEvidenceCompatible(record, identity)) return false;
+    try {
+      const serialized = JSON.stringify(record);
+      const bytes = serialized.length * 2;
+      if (bytes > _OCR_EVIDENCE_MAX_ENTRY_BYTES) return false;
+      const prior = _ocrEvidenceCache.get(key);
+      if (prior) {
+        _ocrEvidenceCache.delete(key);
+        _ocrEvidenceCacheBytes = Math.max(0, _ocrEvidenceCacheBytes - prior.bytes);
+      }
+      _ocrEvidenceCache.set(key, { serialized, bytes });
+      _ocrEvidenceCacheBytes += bytes;
+      while (_ocrEvidenceCache.size > _OCR_EVIDENCE_MAX_ENTRIES || _ocrEvidenceCacheBytes > _OCR_EVIDENCE_MAX_BYTES) {
+        const oldestKey = _ocrEvidenceCache.keys().next().value;
+        if (oldestKey == null) break;
+        const oldest = _ocrEvidenceCache.get(oldestKey);
+        _ocrEvidenceCache.delete(oldestKey);
+        _ocrEvidenceCacheBytes = Math.max(0, _ocrEvidenceCacheBytes - (oldest && oldest.bytes || 0));
+      }
+      return _ocrEvidenceCache.has(key);
+    } catch (_) { return false; }
+  };
+  const _restoreOcrEvidenceGlobals = (record) => {
+    if (!record || typeof window === 'undefined') return;
+    window.__lastGroundTruthCharCount = record.groundTruthCharCount || record.extractedText.length;
+    window.__lastGroundTruthPageMap = record.groundTruthPages || null;
+    window.__lastGroundTruthMethod = record.groundTruthMethod || 'vision-ocr';
+    window.__lastOcrTesseractText = record.ocrTesseractText || '';
+    window.__lastOcrVisionText = record.ocrVisionText || '';
+    window.__lastOcrDisagreements = record.ocrDisagreements || [];
+    window.__lastOcrMethod = record.ocrMethod || null;
+    window.__lastOcrPageErrors = record.ocrPageErrors || [];
+    window.__lastOcrLowConfidencePages = record.ocrLowConfidencePages || [];
+    window.__alloDetectedFolios = record.detectedFolios || [];
+    window.__alloOcrDupeCollapses = record.ocrDupeCollapses || [];
+    window.__alloOcrColumnReorders = record.ocrColumnReorders || [];
+    window.__alloStrippedEdgeLines = record.strippedEdgeLines || [];
+    window.__lastVisionStripTrail = record.visionStripTrail || [];
+  };
   const _auditCacheKey = async (base64Data, numAuditors, outLang) => {
     // H10 (deep dive 2026-07-02): hash the FULL content — the old head-4KB+length+tail-4KB
     // sample collided for same-length template PDFs differing only in interior pages
@@ -10359,74 +10978,433 @@ var createDocPipeline = function(deps) {
   };
 
   // ── Tier 4: Mid-batch resume persistence ──
-  // Split into two IDB stores:
+  // Legacy layout (the shared status key below is now read only for migration):
   //   _ACTIVE_BATCH_FILES_KEY  → heavy payload (base64) + settings, written once at batch start
   //   _ACTIVE_BATCH_STATUS_KEY → light per-file status/result, rewritten after each completion
+  // v4 writes current status through _ACTIVE_BATCH_STATUS_PREFIX and bounded
+  // result blobs through _ACTIVE_BATCH_RESULT_PREFIX, both scoped to one batch.
   // This keeps per-completion writes small (a 50-file batch with 5MB/file no
   // longer rewrites 250MB on every file finish). Load merges the two stores.
   // Stale entries (>7 days or prompt-version mismatch) auto-invalidate.
   const _ACTIVE_BATCH_FILES_KEY = 'pdf_active_batch_files_v1';
-  const _ACTIVE_BATCH_STATUS_KEY = 'pdf_active_batch_status_v1';
+  const _ACTIVE_BATCH_STATUS_KEY = 'pdf_active_batch_status_v1'; // legacy v2/v3 shared status record
+  const _ACTIVE_BATCH_STATUS_PREFIX = 'pdf_active_batch_status_v4_';
+  const _ACTIVE_BATCH_ROOT_LOCK = 'alloflow-pdf-active-batch-root-v1';
   const _ACTIVE_BATCH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
   // Strip the heavy base64 + result payloads so the status delta stays tiny.
+  const _ACTIVE_BATCH_LEGACY_RESULT_PREFIX = 'pdf_active_batch_result_v2_';
+  const _ACTIVE_BATCH_RESULT_PREFIX = 'pdf_active_batch_result_v3_';
+  const _ACTIVE_BATCH_RESULT_MAX_BYTES = 32 * 1024 * 1024;
+  const _ACTIVE_BATCH_RESULTS_MAX_BYTES = 128 * 1024 * 1024;
+  let _batchCheckpointWarningShown = false;
+  // True when THIS batch's ability to resume after a tab close is compromised
+  // (root write failed, status writes failing, or another tab took the slot).
+  // The quota-stop messaging reads it so we never promise a Resume that
+  // cannot happen. Reset at batch entry.
+  let _batchCheckpointDegraded = false;
+  let _batchTakeoverWarned = false;
+  const _warnBatchCheckpointOnce = (message) => {
+    if (_batchCheckpointWarningShown) return;
+    _batchCheckpointWarningShown = true;
+    warnLog('[Batch Resume] ' + message);
+    try { if (typeof addToast === 'function') addToast(message, 'warning'); } catch (_) {}
+  };
+  // Ownership takeover is higher-stakes than a single skipped result write, so it
+  // gets its own once-flag: the generic warning firing first must not mask it.
+  const _warnBatchTakeoverOnce = () => {
+    _batchCheckpointDegraded = true;
+    if (_batchTakeoverWarned) return;
+    _batchTakeoverWarned = true;
+    const message = 'Another tab started a newer batch, so this batch\'s resume checkpoint was retired. This run continues; if you close this tab, unfinished files here will need to be re-added.';
+    warnLog('[Batch Resume] ' + message);
+    try { if (typeof addToast === 'function') addToast(message, 'warning'); } catch (_) {}
+  };
+  const _normalizeBatchCheckpointId = (value) => {
+    const id = String(value || '').trim();
+    return /^[a-z0-9_-]{8,160}$/i.test(id) ? id : null;
+  };
+  const _newBatchCheckpointId = () => {
+    try {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return 'batch_' + crypto.randomUUID().replace(/-/g, '');
+      }
+      if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+        const bytes = new Uint8Array(16);
+        crypto.getRandomValues(bytes);
+        return 'batch_' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+      }
+    } catch (_) {}
+    return 'batch_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 14);
+  };
+  const _batchResultPrefixFor = (batchId) => {
+    return _ACTIVE_BATCH_RESULT_PREFIX + encodeURIComponent(_normalizeBatchCheckpointId(batchId) || 'invalid') + '_';
+  };
+  const _batchResultKeyFor = (batchId, f) => {
+    return _batchResultPrefixFor(batchId) + encodeURIComponent(String(f && f.id != null ? f.id : (f && f.fileName) || 'file'));
+  };
+  const _batchStatusKeyFor = (batchId) => {
+    return _ACTIVE_BATCH_STATUS_PREFIX + encodeURIComponent(_normalizeBatchCheckpointId(batchId) || 'invalid');
+  };
+  const _withBatchCheckpointRootLock = (fn, mode) => {
+    const locks = typeof navigator !== 'undefined' && navigator && navigator.locks;
+    if (locks && typeof locks.request === 'function') {
+      const lockMode = mode === 'shared' ? 'shared' : 'exclusive';
+      // An unavailable lock manager (opaque-origin sandboxed iframe, not-fully-active
+      // document) REJECTS the returned promise per spec rather than throwing sync.
+      // Distinguish "lock never granted" (fall back to the unlocked path, same as the
+      // no-API case) from "fn itself failed" (propagate) — re-running a partially
+      // executed fn could double-apply mutations.
+      let _lockBodyStarted = false;
+      const _lockBody = (...args) => { _lockBodyStarted = true; return fn(...args); };
+      try {
+        const req = locks.request(_ACTIVE_BATCH_ROOT_LOCK, { mode: lockMode }, _lockBody);
+        if (req && typeof req.catch === 'function') {
+          return req.catch((err) => {
+            if (_lockBodyStarted) throw err;
+            return Promise.resolve().then(fn);
+          });
+        }
+        return req;
+      } catch (_) {}
+    }
+    return Promise.resolve().then(fn);
+  };
+  const _deleteBatchStorageKey = async (key) => {
+    if (!key) return;
+    try {
+      if (typeof window !== 'undefined' && window.idbKeyval && typeof window.idbKeyval.del === 'function') {
+        await window.idbKeyval.del(key);
+      } else {
+        await storageDB.set(key, null);
+      }
+    } catch (_) {}
+  };
+  const _sameBatchFilesRecord = (current, expected) => {
+    if (!current || !expected) return false;
+    const expectedId = _normalizeBatchCheckpointId(expected.batchId);
+    if (_normalizeBatchCheckpointId(current.batchId) !== expectedId) return false;
+    if (current.rootWriteId || expected.rootWriteId) {
+      return !!expected.rootWriteId && current.rootWriteId === expected.rootWriteId;
+    }
+    if (current.savedAt !== expected.savedAt) return false;
+    return !!expectedId || current.startedAt === expected.startedAt;
+  };
+  const _statusRecordMatchesBatch = (record, batchId) => {
+    if (!record) return false;
+    return batchId
+      ? _normalizeBatchCheckpointId(record.batchId) === batchId
+      : !record.batchId;
+  };
+  const _sameBatchStatusRecord = (current, expected, batchId) => {
+    if (!current || !expected
+        || !_statusRecordMatchesBatch(current, batchId)
+        || !_statusRecordMatchesBatch(expected, batchId)) return false;
+    if (current.writeId || expected.writeId) {
+      return !!expected.writeId && current.writeId === expected.writeId;
+    }
+    return current.lastUpdatedAt === expected.lastUpdatedAt;
+  };
+  const _readBatchStatusForFiles = async (filesRec) => {
+    const batchId = _normalizeBatchCheckpointId(filesRec && filesRec.batchId);
+    if (batchId) {
+      const scopedKey = _batchStatusKeyFor(batchId);
+      const scoped = await storageDB.get(scopedKey);
+      if (_statusRecordMatchesBatch(scoped, batchId)) return { key: scopedKey, record: scoped, legacy: false };
+      const legacy = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+      if (_statusRecordMatchesBatch(legacy, batchId)) return { key: _ACTIVE_BATCH_STATUS_KEY, record: legacy, legacy: true };
+      return { key: scopedKey, record: null, legacy: false };
+    }
+    const legacy = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+    return {
+      key: _ACTIVE_BATCH_STATUS_KEY,
+      record: _statusRecordMatchesBatch(legacy, null) ? legacy : null,
+      legacy: true,
+    };
+  };
+  const _deleteLegacyBatchCheckpointData = async (filesRec) => {
+    if (!filesRec) return;
+    const batchId = _normalizeBatchCheckpointId(filesRec.batchId);
+    const statusInfo = await _readBatchStatusForFiles(filesRec);
+    if (!statusInfo.legacy || !statusInfo.record) return;
+    const legacyResultKeys = new Set((statusInfo.record.statuses || [])
+      .map(s => s && s.resultKey)
+      .filter(key => typeof key === 'string' && key.startsWith(_ACTIVE_BATCH_LEGACY_RESULT_PREFIX)));
+    for (const key of legacyResultKeys) await _deleteBatchStorageKey(key);
+    const currentStatus = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+    if (_sameBatchStatusRecord(currentStatus, statusInfo.record, batchId)) {
+      await _deleteBatchStorageKey(_ACTIVE_BATCH_STATUS_KEY);
+    }
+  };
+  const _sweepInactiveBatchCheckpointData = async (activeBatchId) => {
+    const cleanBatchId = _normalizeBatchCheckpointId(activeBatchId);
+    if (!cleanBatchId || typeof window === 'undefined' || !window.idbKeyval
+        || typeof window.idbKeyval.keys !== 'function') return;
+    try {
+      const keys = await window.idbKeyval.keys();
+      const activeResultPrefix = _batchResultPrefixFor(cleanBatchId);
+      const activeStatusKey = _batchStatusKeyFor(cleanBatchId);
+      for (const key of (keys || [])) {
+        if (typeof key !== 'string') continue;
+        const legacyResult = key.startsWith(_ACTIVE_BATCH_LEGACY_RESULT_PREFIX);
+        const inactiveResult = key.startsWith(_ACTIVE_BATCH_RESULT_PREFIX) && !key.startsWith(activeResultPrefix);
+        const inactiveStatus = key.startsWith(_ACTIVE_BATCH_STATUS_PREFIX) && key !== activeStatusKey;
+        if (legacyResult || inactiveResult || inactiveStatus) await _deleteBatchStorageKey(key);
+      }
+      // Once a v4 root is installed, the shared v2/v3 status record is no longer
+      // authoritative. The in-memory resume queue already contains any restored data.
+      await _deleteBatchStorageKey(_ACTIVE_BATCH_STATUS_KEY);
+    } catch (_) {}
+  };
+  const _deleteNewlyStoredBatchResults = async (files, keys) => {
+    const ownedKeys = new Set(keys || []);
+    for (const key of ownedKeys) await _deleteBatchStorageKey(key);
+    for (const file of (files || [])) {
+      if (ownedKeys.has(file && file._checkpointResultKey)) {
+        file._checkpointResultKey = null;
+        file._checkpointResultBytes = 0;
+      }
+    }
+  };
+  const _batchResultSummary = (result) => {
+    if (!result) return null;
+    return {
+      beforeScore: Number.isFinite(result.beforeScore) ? result.beforeScore : null,
+      afterScore: Number.isFinite(result.afterScore) ? result.afterScore : null,
+      verificationState: result.verificationState || null,
+    };
+  };
   const _toStatusEntry = (f) => ({
     id: f.id,
     fileName: f.fileName,
     status: f.status,
     error: f.error || null,
     retried: f.retried || false,
-    // Keep result so cache hits can be replayed on resume without re-running.
-    // The result is order-of-KB (HTML + scores), not order-of-MB like base64.
-    result: f.result ? _alloStripVerificationHtmlSnapshot(f.result) : null,
+    resultKey: f._checkpointResultKey || null,
+    resultBytes: f._checkpointResultBytes || 0,
+    resultStored: !!f._checkpointResultKey,
+    resultSummary: _batchResultSummary(f.result),
   });
-  const _saveBatchFiles = async (files, settings, startedAt) => {
-    if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return;
+  const _saveBatchFiles = async (files, settings, startedAt, batchId) => {
+    if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return false;
+    const cleanBatchId = _normalizeBatchCheckpointId(batchId);
+    if (!cleanBatchId) return false;
     try {
-      // Heavy payload: base64 per file + settings. Written once at batch start.
-      await storageDB.set(_ACTIVE_BATCH_FILES_KEY, {
+      let previousFilesRec = null;
+      const nextFilesRec = {
+        schemaVersion: 4,
+        batchId: cleanBatchId,
+        rootWriteId: _newBatchCheckpointId(),
+        statusKey: _batchStatusKeyFor(cleanBatchId),
         files: files.map(f => ({ id: f.id, fileName: f.fileName, fileSize: f.fileSize, base64: f.base64 })),
         settings,
         startedAt,
         promptVersion: _PIPELINE_PROMPT_VERSION,
         savedAt: Date.now(),
+      };
+      // Serialize the shared active-root mutation across tabs. Status and results are
+      // batch-scoped, but the root swap and inactive sweep form one transaction.
+      await _withBatchCheckpointRootLock(async () => {
+        previousFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+        // storageDB.set historically swallowed failures (quota!) and resolved
+        // undefined; it now reports success as a boolean. Honor the report when
+        // present — a silently-lost root means every later status write would
+        // fail its ownership gate with no disclosure at all.
+        const _rootOk = await storageDB.set(_ACTIVE_BATCH_FILES_KEY, nextFilesRec);
+        if (_rootOk === false) throw new Error('checkpoint root write failed (storage full or unavailable)');
+        // Keeping the sweep under the same lock prevents two simultaneous starts
+        // from deleting the namespace belonging to the later root writer.
+        await _sweepInactiveBatchCheckpointData(cleanBatchId);
       });
-    } catch (e) { warnLog('[Batch Resume] saveFiles failed:', e?.message || e); }
+      const previousId = _normalizeBatchCheckpointId(previousFilesRec && previousFilesRec.batchId);
+      if (previousFilesRec && previousId !== cleanBatchId) {
+        await _deleteLegacyBatchCheckpointData(previousFilesRec);
+      }
+      return true;
+    } catch (e) {
+      warnLog('[Batch Resume] saveFiles failed:', e?.message || e);
+      _batchCheckpointDegraded = true;
+      _warnBatchCheckpointOnce('This batch could not be checkpointed for resume. It runs normally, but closing the tab before it finishes will lose the remaining files.');
+      return false;
+    }
   };
-  const _saveBatchStatus = async (files) => {
-    if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return;
+  const _saveBatchStatusNow = async (files, batchId) => {
+    if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return false;
+    const cleanBatchId = _normalizeBatchCheckpointId(batchId);
+    if (!cleanBatchId) return false;
+    return _withBatchCheckpointRootLock(async () => {
+    const newlyStoredKeys = [];
+    let writtenStatusKey = null;
+    let writtenStatusRecord = null;
     try {
-      // Light delta — status + result only. Written after each completion.
-      await storageDB.set(_ACTIVE_BATCH_STATUS_KEY, {
-        statuses: files.map(_toStatusEntry),
-        lastUpdatedAt: Date.now(),
-      });
-    } catch (e) { warnLog('[Batch Resume] saveStatus failed:', e?.message || e); }
+      const initialFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!initialFilesRec || _normalizeBatchCheckpointId(initialFilesRec.batchId) !== cleanBatchId) {
+        // A FOREIGN root means another tab took the checkpoint slot — disclose it
+        // (the run continues; only tab-close resume is lost). A MISSING root is the
+        // benign end-of-batch/cleared case and stays silent.
+        if (initialFilesRec) _warnBatchTakeoverOnce();
+        return false;
+      }
+      // Legacy/global keys and cross-file keys are not valid ownership proofs for
+      // this file. Re-serialize the in-memory result into its exact v3 namespace.
+      for (const f of files) {
+        const expectedKey = _batchResultKeyFor(cleanBatchId, f);
+        if (f && f._checkpointResultKey && f._checkpointResultKey !== expectedKey) {
+          f._checkpointResultKey = null;
+          f._checkpointResultBytes = 0;
+        }
+      }
+      let storedBytes = files.reduce((sum, f) => sum + (Number(f._checkpointResultBytes) || 0), 0);
+      for (const f of files) {
+        if (!f.result || f._checkpointResultKey || f._checkpointResultOmitted) continue;
+        let serialized = null;
+        try { serialized = JSON.stringify(_alloStripVerificationHtmlSnapshot(f.result)); }
+        catch (_) {
+          f._checkpointResultOmitted = true;
+          _warnBatchCheckpointOnce('A batch result could not be checkpointed. That file will be safely re-run if you resume.');
+          continue;
+        }
+        const bytes = typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(serialized).byteLength : serialized.length * 2;
+        if (bytes > _ACTIVE_BATCH_RESULT_MAX_BYTES || storedBytes + bytes > _ACTIVE_BATCH_RESULTS_MAX_BYTES) {
+          f._checkpointResultOmitted = true;
+          _warnBatchCheckpointOnce('Some large batch results exceed the safe checkpoint budget. Those files will be safely re-run if you resume.');
+          continue;
+        }
+        const resultKey = _batchResultKeyFor(cleanBatchId, f);
+        try {
+          // storageDB.set reports failure as `false` (it never throws) — treat a
+          // reported failure exactly like a thrown one so the omission is disclosed.
+          const _resOk = await storageDB.set(resultKey, { serialized, bytes, batchId: cleanBatchId, savedAt: Date.now(), promptVersion: _PIPELINE_PROMPT_VERSION });
+          if (_resOk === false) throw new Error('result write failed');
+        } catch (_) {
+          f._checkpointResultOmitted = true;
+          _warnBatchCheckpointOnce('Browser storage could not save a batch result. That file will be safely re-run if you resume.');
+          continue;
+        }
+        newlyStoredKeys.push(resultKey);
+        f._checkpointResultKey = resultKey;
+        f._checkpointResultBytes = bytes;
+        storedBytes += bytes;
+      }
+      const activeFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!_sameBatchFilesRecord(activeFilesRec, initialFilesRec)) {
+        if (activeFilesRec) _warnBatchTakeoverOnce();
+        await _deleteNewlyStoredBatchResults(files, newlyStoredKeys);
+        return false;
+      }
+      const statusKey = _batchStatusKeyFor(cleanBatchId);
+      const statusRecord = {
+        schemaVersion: 4, batchId: cleanBatchId, writeId: _newBatchCheckpointId(),
+        statuses: files.map(_toStatusEntry), lastUpdatedAt: Date.now(),
+      };
+      writtenStatusKey = statusKey;
+      writtenStatusRecord = statusRecord;
+      const _statusOk = await storageDB.set(statusKey, statusRecord);
+      if (_statusOk === false) throw new Error('status write failed (storage full or unavailable)');
+      // A tab can lose ownership after its initial check. Its scoped write cannot
+      // clobber the new batch, but remove it immediately so large blobs do not orphan.
+      const activeAfterWrite = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!_sameBatchFilesRecord(activeAfterWrite, initialFilesRec)) {
+        if (activeAfterWrite) _warnBatchTakeoverOnce();
+        const currentStatus = await storageDB.get(statusKey);
+        if (_sameBatchStatusRecord(currentStatus, statusRecord, cleanBatchId)) await _deleteBatchStorageKey(statusKey);
+        await _deleteNewlyStoredBatchResults(files, newlyStoredKeys);
+        return false;
+      }
+      // Successful v4 persistence completes an in-place migration from the deployed
+      // v3 shared status record without discarding already-restored result blobs.
+      const legacyStatus = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+      if (_statusRecordMatchesBatch(legacyStatus, cleanBatchId)) await _deleteBatchStorageKey(_ACTIVE_BATCH_STATUS_KEY);
+      return true;
+    } catch (e) {
+      warnLog('[Batch Resume] saveStatus failed:', e?.message || e);
+      if (writtenStatusKey && writtenStatusRecord) {
+        let currentStatus = null;
+        try { currentStatus = await storageDB.get(writtenStatusKey); } catch (_) {}
+        if (_sameBatchStatusRecord(currentStatus, writtenStatusRecord, cleanBatchId)) {
+          await _deleteBatchStorageKey(writtenStatusKey);
+        }
+      }
+      await _deleteNewlyStoredBatchResults(files, newlyStoredKeys);
+      _batchCheckpointDegraded = true;
+      _warnBatchCheckpointOnce('Browser storage could not update the batch checkpoint. Keep this tab open until the batch finishes.');
+      return false;
+    }
+    }, 'shared');
+  };
+  let _batchStatusWriteTail = Promise.resolve();
+  const _saveBatchStatus = (files, batchId) => {
+    const next = _batchStatusWriteTail.then(() => _saveBatchStatusNow(files, batchId), () => _saveBatchStatusNow(files, batchId));
+    _batchStatusWriteTail = next.catch(() => {});
+    return next;
   };
   const _loadActiveBatch = async () => {
     if (typeof window === 'undefined' || !window.idbKeyval) return null;
     try {
       const filesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
       if (!filesRec || !filesRec.files || !filesRec.savedAt) return null;
-      if (Date.now() - filesRec.savedAt > _ACTIVE_BATCH_TTL_MS) return null;
-      if (filesRec.promptVersion && filesRec.promptVersion !== _PIPELINE_PROMPT_VERSION) return null;
-      const statusRec = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+      const batchId = _normalizeBatchCheckpointId(filesRec.batchId);
+      if (filesRec.batchId && !batchId) {
+        await _clearActiveBatch();
+        return null;
+      }
+      if (Date.now() - filesRec.savedAt > _ACTIVE_BATCH_TTL_MS) {
+        await _clearActiveBatch(batchId);
+        return null;
+      }
+      if (filesRec.promptVersion && filesRec.promptVersion !== _PIPELINE_PROMPT_VERSION) {
+        // B8 disclosure (2026-07-13): a pipeline-version bump invalidates saved
+        // checkpoints. The quota-pause toast promised "use Resume", so the cleanup
+        // must say why the banner never appeared instead of staying silent.
+        await _clearActiveBatch(batchId);
+        try { if (typeof addToast === 'function') addToast('A saved batch checkpoint from an earlier AlloFlow version was cleared (the remediation pipeline was updated since it was saved). Files from that batch need to be re-added.', 'info'); } catch (_) {}
+        return null;
+      }
+      const statusInfo = await _readBatchStatusForFiles(filesRec);
+      const statusRec = statusInfo.record;
+      const statusMatches = _statusRecordMatchesBatch(statusRec, batchId);
       const byId = {};
-      (statusRec && statusRec.statuses || []).forEach(s => { byId[s.id] = s; });
-      // Merge: heavy payload from files-store, status/result overlay from status-store.
+      (statusMatches && statusRec.statuses || []).forEach(s => { byId[s.id] = s; });
+      // Merge the heavy input payload with lightweight status and separately bounded results.
       const merged = await Promise.all(filesRec.files.map(async f => {
         const s = byId[f.id] || {};
-        const restoredResult = s.result ? await _alloRehydrateVerificationHtmlBinding(s.result) : null;
+        let restoredResult = null;
+        const expectedResultKey = batchId ? _batchResultKeyFor(batchId, f) : null;
+        const resultKeyMatches = typeof s.resultKey === 'string' && (batchId
+          ? s.resultKey === expectedResultKey
+          : s.resultKey.startsWith(_ACTIVE_BATCH_LEGACY_RESULT_PREFIX));
+        if (resultKeyMatches) {
+          try {
+            const rec = await storageDB.get(s.resultKey);
+            const valid = rec && typeof rec.serialized === 'string' && rec.savedAt
+              && Date.now() - rec.savedAt <= _ACTIVE_BATCH_TTL_MS
+              && (!rec.promptVersion || rec.promptVersion === _PIPELINE_PROMPT_VERSION)
+              && (batchId ? (!rec.batchId || _normalizeBatchCheckpointId(rec.batchId) === batchId)
+                : !rec.batchId)
+              && rec.bytes <= _ACTIVE_BATCH_RESULT_MAX_BYTES;
+            if (valid) {
+              restoredResult = await _alloRehydrateVerificationHtmlBinding(JSON.parse(rec.serialized));
+            }
+          } catch (_) { restoredResult = null; }
+        }
+        // A completed status without its exact result is not replayable. Mark it pending
+        // so resume safely re-runs that file instead of presenting a phantom completion.
+        const recoveredStatus = s.status === 'done'
+          ? (restoredResult ? 'done' : 'pending')
+          : (s.status || 'pending');
         return {
           ...f,
-          status: s.status || 'pending',
+          status: recoveredStatus,
           result: restoredResult,
-          error: s.error || null,
+          error: recoveredStatus === 'pending' ? null : (s.error || null),
           retried: s.retried || false,
+          _checkpointResultKey: restoredResult ? s.resultKey : null,
+          _checkpointResultBytes: restoredResult ? (Number(s.resultBytes) || 0) : 0,
         };
       }));
       const incomplete = merged.filter(f => f.status !== 'done' && f.status !== 'failed').length;
       const done = merged.filter(f => f.status === 'done').length;
       return {
+        batchId,
         files: merged,
         settings: filesRec.settings,
         startedAt: filesRec.startedAt,
@@ -10435,12 +11413,70 @@ var createDocPipeline = function(deps) {
       };
     } catch (_) { return null; }
   };
-  const _clearActiveBatch = async () => {
-    if (typeof window === 'undefined' || !window.idbKeyval) return;
+  const _clearActiveBatch = async (batchId) => {
+    if (typeof window === 'undefined' || !window.idbKeyval) return false;
     try {
-      await storageDB.set(_ACTIVE_BATCH_FILES_KEY, null);
-      await storageDB.set(_ACTIVE_BATCH_STATUS_KEY, null);
-    } catch (_) {}
+      await _batchStatusWriteTail.catch(() => {});
+      return !!(await _withBatchCheckpointRootLock(async () => {
+      const requestedRaw = batchId == null ? '' : String(batchId).trim();
+      const requestedId = _normalizeBatchCheckpointId(requestedRaw);
+      if (requestedRaw && !requestedId) return false;
+      const filesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!filesRec || !filesRec.files || !filesRec.savedAt) return false;
+      const activeId = _normalizeBatchCheckpointId(filesRec.batchId);
+      if (requestedId && activeId !== requestedId) return false;
+
+      const statusInfo = await _readBatchStatusForFiles(filesRec);
+      const legacyResultKeys = new Set((statusInfo.legacy && statusInfo.record && statusInfo.record.statuses || [])
+        .map(s => s && s.resultKey)
+        .filter(key => typeof key === 'string' && key.startsWith(_ACTIVE_BATCH_LEGACY_RESULT_PREFIX)));
+      const ownedResultKeys = new Set();
+      if (typeof window.idbKeyval.keys === 'function') {
+        const keys = await window.idbKeyval.keys();
+        const scopedPrefix = activeId ? _batchResultPrefixFor(activeId) : null;
+        for (const key of (keys || [])) {
+          const owned = typeof key === 'string' && (scopedPrefix
+            ? key.startsWith(scopedPrefix)
+            : legacyResultKeys.has(key));
+          if (owned) ownedResultKeys.add(key);
+        }
+      }
+
+      // The active root is the authoritative commit record. Tombstone it BEFORE
+      // deleting status/results so a quota/storage failure cannot leave a live
+      // resume banner pointing at a half-deleted checkpoint. The exclusive root
+      // lock serializes normal writers; the compare-and-set re-read protects the
+      // lockless fallback from clearing a replacement root.
+      const currentFiles = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!_sameBatchFilesRecord(currentFiles, filesRec)) return false;
+      const rootClearOk = await storageDB.set(_ACTIVE_BATCH_FILES_KEY, null);
+      if (rootClearOk === false) return false;
+      const rootAfterClear = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (_sameBatchFilesRecord(rootAfterClear, filesRec)) return false;
+
+      // Once the root is gone, secondary cleanup is best-effort and restart-safe:
+      // orphaned scoped artifacts are inert and the next batch sweep removes them.
+      for (const key of ownedResultKeys) await _deleteBatchStorageKey(key);
+      if (statusInfo.record) {
+        if (statusInfo.legacy) {
+          const currentStatus = await storageDB.get(statusInfo.key);
+          if (_sameBatchStatusRecord(currentStatus, statusInfo.record, activeId)) {
+            await _deleteBatchStorageKey(statusInfo.key);
+          }
+        } else {
+          await _deleteBatchStorageKey(statusInfo.key);
+        }
+      }
+      // A partially migrated v3 record can coexist with its new scoped status.
+      // Remove the old shared copy only when it belongs to this exact batch.
+      if (activeId) {
+        const legacyStatus = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+        if (_statusRecordMatchesBatch(legacyStatus, activeId)) await _deleteBatchStorageKey(_ACTIVE_BATCH_STATUS_KEY);
+      }
+
+      return true;
+      }));
+    } catch (_) { return false; }
   };
 
   // ── PDF Accessibility Audit ──
@@ -10575,6 +11611,24 @@ var createDocPipeline = function(deps) {
     // In either mode, the final audit result object is returned.
     const _skipUi = !!(options && options.skipUiUpdates);
     const _skipCache = !!(options && options.skipCache);
+    const _auditHost = _s();
+    const _auditRunToken = (!_skipUi && typeof _auditHost.beginPdfAuditRun === 'function')
+      ? _auditHost.beginPdfAuditRun()
+      : null;
+    const _auditUiCurrent = () => !_skipUi && (!_auditRunToken
+      || typeof _auditHost.isPdfAuditRunCurrent !== 'function'
+      || _auditHost.isPdfAuditRunCurrent(_auditRunToken));
+    const _publishAuditUi = (fn) => {
+      if (!_auditUiCurrent()) return false;
+      try { fn(); return true; } catch (_) { return false; }
+    };
+    const _auditToast = (message, kind) => _publishAuditUi(() => { if (addToast) addToast(message, kind); });
+    const _finishAuditUi = () => {
+      if (!_publishAuditUi(() => setPdfAuditLoading(false))) return false;
+      if (_auditRunToken && typeof _auditHost.finishPdfAuditRun === 'function') _auditHost.finishPdfAuditRun(_auditRunToken);
+      return true;
+    };
+    const _auditCancelled = () => !_skipUi && !_auditUiCurrent();
     // S1 step 3: run-entry snapshot. Explicit options win (batch/experiment callers pass
     // their own settings so a whole batch runs on ONE configuration); otherwise the ctx
     // captured HERE governs every later read — a concurrent call's rebind can't swap the
@@ -10584,7 +11638,7 @@ var createDocPipeline = function(deps) {
     const _outputLanguage = (options && options.outputLanguage) || _run.outputLanguage;
     const _runFile = _run.file;
     const _runBase64 = _run.base64;
-    if (!_skipUi) setPdfAuditLoading(true);
+    _publishAuditUi(() => setPdfAuditLoading(true));
     // Estimate audit time based on data size (rough proxy for page count before we know it)
     const dataSizeKB = base64Data ? Math.round(base64Data.length * 0.75 / 1024) : 0;
     const estTime = dataSizeKB < 200 ? '15-30 seconds' : dataSizeKB < 1000 ? '30-90 seconds' : dataSizeKB < 5000 ? '2-5 minutes' : '5-10 minutes';
@@ -10595,12 +11649,12 @@ var createDocPipeline = function(deps) {
       const cached = await _readAuditCache(_cacheKey);
       if (cached) {
         warnLog(`[PDF Audit] Cache hit for ${_cacheKey.slice(0, 24)}... — skipping ${_auditorCount} audit calls`);
-        if (!_skipUi) {
+        if (_auditUiCurrent()) {
           addToast && addToast('♿ Audit loaded from cache (identical document seen recently)', 'info');
           setPdfAuditResult(cached);
           setPdfAuditLoading(false);
         }
-        return cached;
+        return _auditCancelled() ? null : cached;
       }
     }
 
@@ -10662,13 +11716,13 @@ var createDocPipeline = function(deps) {
         // recording re-ran the whole branch.
         result._auditFinalized = true; // finding 1 (2026-07-10): the read guard rejects unmarked entries
         if (_cacheKey) { try { _writeAuditCache(_cacheKey, result); } catch (_) {} }
-        if (!_skipUi) { setPdfAuditResult((prev) => ({ ...(prev || {}), ...result })); setPdfAuditLoading(false); }
-        return result;
+        _publishAuditUi(() => setPdfAuditResult((prev) => ({ ...(prev || {}), ...result }))); _finishAuditUi();
+        return _auditCancelled() ? null : result;
       } catch (trErr) {
         warnLog('[PDF Audit] Transcript audit failed:', trErr);
         const sparse = { score: -1, summary: 'Transcript could not be audited: ' + (trErr && trErr.message), critical: [], serious: [], moderate: [], minor: [], passes: [], _transcriptInput: true };
-        if (!_skipUi) { setPdfAuditResult(sparse); setPdfAuditLoading(false); }
-        return sparse;
+        _publishAuditUi(() => setPdfAuditResult(sparse)); _finishAuditUi();
+        return _auditCancelled() ? null : sparse;
       }
     }
     const _optFileName = (options && options.fileName) || (_runFile && _runFile.name) || '';
@@ -10703,8 +11757,8 @@ var createDocPipeline = function(deps) {
         const _txt = (det && det.fullText) || '';
         if (_txt.replace(/\s+/g, '').length <= 50) {
           const sparse = { score: -1, summary: `This ${_officeKind.toUpperCase()} contains almost no extractable text (images-of-text, or empty). Export it to PDF first — scanned PDFs get the full OCR + tagging treatment.`, critical: [], serious: [], moderate: [], minor: [], passes: [], _officeInput: _officeKind };
-          if (!_skipUi) { setPdfAuditResult(sparse); setPdfAuditLoading(false); }
-          return sparse;
+          _publishAuditUi(() => setPdfAuditResult(sparse)); _finishAuditUi();
+          return _auditCancelled() ? null : sparse;
         }
         // Embedded images (2026-06-11): PPTX figures inject right after their
         // own slide's paragraph block (attribution is exact); DOCX figures go
@@ -10765,16 +11819,16 @@ var createDocPipeline = function(deps) {
         };
         result._auditFinalized = true; // finding 1 (2026-07-10): the read guard rejects unmarked entries
         if (_cacheKey) { try { _writeAuditCache(_cacheKey, result); } catch (_) {} }
-        if (!_skipUi) {
+        if (_auditUiCurrent()) {
           setPdfAuditResult(result);
           setPdfAuditLoading(false);
           addToast && addToast(`📝 ${_officeKind.toUpperCase()} audited deterministically (axe-core on extracted text)${_mediaAll.length ? ` — ${_mediaAll.filter(m => !m.skipped).length} embedded image(s) preserved${_mediaAll.some(m => m.skipped) ? ` (${_mediaAll.filter(m => m.skipped).length} kept as descriptions only)` : ''}` : ''} — full AI verification runs during Fix & Verify.`, 'info');
         }
-        return result;
+        return _auditCancelled() ? null : result;
       } catch (officeErr) {
         const failureResult = { score: -1, summary: `Office audit failed: ${officeErr?.message || 'Unknown error'}. You can still proceed to Fix & Verify.`, critical: [], serious: [], moderate: [], minor: [], passes: [], _officeInput: _officeKind };
-        if (!_skipUi) { setPdfAuditResult(failureResult); setPdfAuditLoading(false); }
-        return failureResult;
+        _publishAuditUi(() => setPdfAuditResult(failureResult)); _finishAuditUi();
+        return _auditCancelled() ? null : failureResult;
       }
     }
 
@@ -10787,13 +11841,17 @@ var createDocPipeline = function(deps) {
       const _head = atob(String(base64Data || '').slice(0, 2048)); // ~1.5KB of decoded bytes (slice is a multiple of 4)
       if (_head && _head.indexOf('%PDF') === -1 && _head.indexOf('ALLOTRANSCRIPT:') === -1) {
         const _notPdf = { score: -1, summary: 'This file isn’t a valid PDF — its contents don’t start with %PDF (it may be a renamed image, or a corrupted/incomplete file). Re-export it as a PDF and try again.', critical: [], serious: [], moderate: [], minor: [], passes: [], _notPdf: true };
-        if (!_skipUi) { setPdfAuditResult(_notPdf); setPdfAuditLoading(false); }
+        _publishAuditUi(() => setPdfAuditResult(_notPdf)); _finishAuditUi();
+        if (_auditUiCurrent()) {
         if (addToast) addToast('⚠ This file isn’t a valid PDF (no %PDF header found) — re-export it as a PDF and try again.', 'error');
-        return _notPdf;
+        }
+        return _auditCancelled() ? null : _notPdf;
       }
     } catch (_magicErr) { /* base64 decode hiccup — fail OPEN; the normal path will surface any real error */ }
 
+    if (_auditUiCurrent()) {
     if (!_skipUi) addToast && addToast(`♿ Auditing document (${dataSizeKB > 1024 ? (dataSizeKB / 1024).toFixed(1) + 'MB' : dataSizeKB + 'KB'}) — typically ${estTime}`, 'info');
+    }
     try {
       // ── Tier 8: pre-extract PDF tag structure (cheap; null when untagged) ──
       // When the source PDF ships a logical structure tree we surface it to
@@ -10925,7 +11983,9 @@ Return ONLY valid JSON:
       }
       if (_chunkFirst) {
         warnLog(`[PDF Audit] Large document (~${dataSizeKB}KB) — auditing in page slices from the start (a whole-document pass would exceed the Vision model).`);
+        if (_auditUiCurrent()) {
         if (!_skipUi) addToast && addToast('📄 Large PDF — auditing in page slices…', 'info');
+        }
         const _slicedFirst = await _auditPdfInSlices(base64Data, auditPrompt).catch((e) => { warnLog('[PDF Audit] Sliced audit failed: ' + (e && e.message)); return null; });
         if (_slicedFirst) { parsedAudits = [_slicedFirst]; _auditedViaSlices = true; }
       }
@@ -10940,7 +12000,9 @@ Return ONLY valid JSON:
         retryRound++;
         const shortfall = numAuditors - parsedAudits.length;
         warnLog(`[PDF Audit] Round ${retryRound}: ${parsedAudits.length}/${numAuditors} completed. Retrying ${shortfall}...`);
+        if (_auditUiCurrent()) {
         addToast && addToast(`Audit pass ${parsedAudits.length}/${numAuditors} — retrying ${shortfall} (round ${retryRound})...`, 'info');
+        }
         // Delay between retry rounds to avoid rate limiting
         if (retryRound > 1) await new Promise(r => setTimeout(r, 1000 * retryRound));
         // Build retry prompts from unused variants + fresh temperature variations
@@ -10960,7 +12022,9 @@ Return ONLY valid JSON:
         if (parsedAudits.length >= numAuditors) break;
       }
       if (parsedAudits.length < numAuditors && parsedAudits.length > 0) {
+        if (_auditUiCurrent()) {
         addToast(`⚠️ ${parsedAudits.length}/${numAuditors} audit passes completed after ${MAX_RETRY_ROUNDS} retry rounds`, 'info');
+        }
       }
       } // ── end whole-document audit path ──
 
@@ -10969,7 +12033,9 @@ Return ONLY valid JSON:
       // (transient truncation / mid-size truncation). No-op if we already sliced.
       if (parsedAudits.length === 0 && !_auditedViaSlices && _sliceCapable) {
         warnLog('[PDF Audit] Whole-document audit returned nothing — falling back to a page-slice audit.');
+        if (_auditUiCurrent()) {
         if (!_skipUi) addToast && addToast('📄 Switching to a page-slice audit…', 'info');
+        }
         const _slicedFallback = await _auditPdfInSlices(base64Data, auditPrompt).catch(() => null);
         if (_slicedFallback) { parsedAudits = [_slicedFallback]; _auditedViaSlices = true; }
       }
@@ -11009,7 +12075,9 @@ Return ONLY valid JSON:
         // bounded by the variant pool — the 3-auditor start only sticks for well-behaved docs.
         const additionalCount = Math.min(Math.max(2, _auditorCap - parsedAudits.length), allVariants.length - parsedAudits.length);
         warnLog(`[PDF Audit] Adaptive: adding ${additionalCount} auditor(s) due to ${reason}`);
+        if (_auditUiCurrent()) {
         addToast && addToast(`Adding ${additionalCount} extra audit(s) — ${reason}`, 'info');
+        }
         const extraVariants = allVariants.slice(parsedAudits.length, parsedAudits.length + additionalCount);
         const extraResults = await Promise.all(extraVariants.map(p => callGeminiVision(p, base64Data, 'application/pdf').catch(() => null)));
         const extraParsed = extraResults.filter(Boolean).map(r => { try { return parseAudit(r); } catch { return null; } }).filter(Boolean);
@@ -11246,7 +12314,7 @@ Return ONLY valid JSON:
         _sliceCount: (_auditedViaSlices && parsedAudits[0]) ? parsedAudits[0]._sliceCount : undefined,
         timestamp: new Date().toISOString(),
       };
-      if (!_skipUi) setPdfAuditResult(triangulated);
+      _publishAuditUi(() => setPdfAuditResult(triangulated));
       // Cache write MOVED below (ChatGPT review 2026-07-10, finding 1): it used to fire HERE —
       // before the deterministic axe/EA baseline attaches the weakest-layer score, the
       // _baselineAxeAudit/_baselineSecondEngineAudit evidence, and the _baselineAxeFailed
@@ -11319,7 +12387,7 @@ Return ONLY valid JSON:
           triangulated._baselineAxeAudit = baselineAxe;
           triangulated._baselineSecondEngineAudit = baselineEa || null;
           triangulated._scoreIsBlended = true;
-          if (!_skipUi) {
+          if (_auditUiCurrent()) {
             setPdfAuditResult(prev => ({
               ...prev,
               score: governingInitial,
@@ -11335,7 +12403,7 @@ Return ONLY valid JSON:
         warnLog('[PDF Audit] Baseline axe-core failed (non-blocking):', axeErr);
         // Dual-engine guarantee broken at baseline — flag so Fix & Verify can warn.
         triangulated._baselineAxeFailed = true;
-        if (!_skipUi) {
+        if (_auditUiCurrent()) {
           setPdfAuditResult(prev => ({ ...prev, _baselineAxeFailed: true }));
         }
       }
@@ -11346,15 +12414,15 @@ Return ONLY valid JSON:
       // un-throttled run should be free to earn the better whole-document score).
       triangulated._auditFinalized = true;
       if (_cacheKey && !_auditedViaSlices) { try { _writeAuditCache(_cacheKey, triangulated); } catch (_) {} }
-      if (!_skipUi) setPdfAuditLoading(false);
-      return triangulated;
+      _finishAuditUi();
+      return _auditCancelled() ? null : triangulated;
     } catch (err) {
       warnLog('[PDF Audit] Failed:', err?.message || err);
       console.error('[PDF Audit] Full error:', err);
       const failureResult = { score: -1, summary: `Audit failed: ${err?.message || 'Unknown error'}. You can retry or proceed to Fix & Verify.`, critical: [], serious: [], moderate: [], minor: [], passes: [] };
-      if (!_skipUi) setPdfAuditResult(failureResult);
-      if (!_skipUi) setPdfAuditLoading(false);
-      return failureResult;
+      _publishAuditUi(() => setPdfAuditResult(failureResult));
+      _finishAuditUi();
+      return _auditCancelled() ? null : failureResult;
     }
   };
 
@@ -11376,19 +12444,36 @@ Return ONLY valid JSON:
     // races with React's commit cycle after a setPdfBatchQueue from the
     // Resume banner. Falls back to the proxy queue for the normal flow.
     const _resumeQueue = opts && Array.isArray(opts.resumeQueue) ? opts.resumeQueue : null;
+    const _resumeBatchId = _resumeQueue
+      ? _normalizeBatchCheckpointId(opts && opts.resumeBatchId) : null;
     // S1 step 6: run-entry snapshot — queue and settings lock here for the whole batch.
     const _run = _makeRunCtx();
     const _sourceQueue = _resumeQueue || _run.batchQueue;
     if (!_sourceQueue || _sourceQueue.length === 0) return;
+    // Ignore sparse/null slots from malformed or stale resume records.
+    const queue = _sourceQueue.filter(Boolean);
+    if (queue.length === 0) return;
     // If caller passed a resumeQueue, sync it into React state so the UI
     // reflects what the loop is actually processing.
     if (_resumeQueue) {
-      setPdfBatchQueue(_resumeQueue);
+      setPdfBatchQueue(queue);
     }
     setPdfBatchProcessing(true);
     setPdfBatchSummary(null);
-    const queue = [..._sourceQueue];
     const startTime = Date.now();
+    const _batchId = _resumeBatchId || _newBatchCheckpointId();
+    // Fresh batch, fresh checkpoint-health slate (the flags are factory-scoped).
+    _batchCheckpointDegraded = false;
+    _batchTakeoverWarned = false;
+    _batchCheckpointWarningShown = false;
+    for (const item of queue) {
+      if (!item) continue; // key derivation dereferences the item — guard BEFORE computing
+      const _ownedResultKey = _batchResultKeyFor(_batchId, item);
+      if (item._checkpointResultKey && item._checkpointResultKey !== _ownedResultKey) {
+        item._checkpointResultKey = null;
+        item._checkpointResultBytes = 0;
+      }
+    }
 
     // ── Tier 4: persist batch state so a closed tab can be resumed ──
     // Two-store split: heavy payload (base64) written once at start;
@@ -11421,12 +12506,12 @@ Return ONLY valid JSON:
     };
     if (_saved) { try { warnLog('[Batch] Resuming with the batch\'s ORIGINAL settings (auditors ' + _batchSettings.pdfAuditorCount + ', target ' + _batchSettings.pdfTargetScore + ', passes ' + _batchSettings.pdfAutoFixPasses + ') — current slider values apply to NEW batches.'); } catch (_) {}
     }
+    // Complete the heavy owner record before any lightweight status write.
+    const _batchStartWrite = _saveBatchFiles(queue, _batchSettings, startTime, _batchId);
     const _persistBatchStatus = () => {
       // Fire-and-forget — never block the loop on storage writes.
-      _saveBatchStatus(queue).catch(() => {});
+      _batchStartWrite.then(() => _saveBatchStatus(queue, _batchId)).catch(() => {});
     };
-    // One-time heavy write at start
-    _saveBatchFiles(queue, _batchSettings, startTime).catch(() => {});
     _persistBatchStatus();
 
     // Batch AbortController — separate global from auto-continue so the Stop
@@ -11436,6 +12521,10 @@ Return ONLY valid JSON:
     // immediately (instead of finishing a mid-flight request and only breaking
     // the loop on the next iteration check).
     const _batchAbortCtrl = new AbortController();
+    // M11 (2026-07-13): save/restore the shared slot (same idiom as the per-file
+    // controller and the auto-continue loop) — a batch starting over an in-flight
+    // single-run signal must hand it back when the batch ends, not null it.
+    const _prevBatchAbortSlot = (typeof window !== 'undefined') ? window.__alloPdfAbortSignal : null;
     if (typeof window !== 'undefined') {
       window.__alloPdfBatchAbortCtrl = _batchAbortCtrl;
       window.__alloPdfBatchAbortSignal = _batchAbortCtrl.signal;
@@ -11578,7 +12667,7 @@ Return ONLY valid JSON:
         const _burstQuotaFail = !_dailyQuota && ((err && err.isQuota) || (_gqFresh && !_gq.perDay));
         if (_dailyQuota) {
           _quotaStopped = true;
-          setPdfBatchStep('Daily AI quota reached — stopped at ' + (i + 1) + '/' + queue.length + '. Remaining files stay queued; resume after the quota resets.');
+          setPdfBatchStep('Daily AI quota reached — stopped at ' + (i + 1) + '/' + queue.length + '. ' + (_batchCheckpointDegraded ? 'Remaining files stay queued in this tab only (checkpoint unavailable).' : 'Remaining files stay queued; resume after the quota resets.'));
           warnLog('[Batch] Daily quota reached — early-stop at ' + (i + 1) + '/' + queue.length + '; ' + (queue.length - i - 1) + ' file(s) left for resume.');
           break;
         }
@@ -11686,7 +12775,7 @@ Return ONLY valid JSON:
     // quota resets", so clearing here (pre-2026-07-01 behavior) destroyed the
     // very resume it advertised.
     if (!_batchAbortCtrl.signal.aborted && !_quotaStopped) {
-      _clearActiveBatch().catch(() => {});
+      _clearActiveBatch(_batchId).catch(() => {});
     } else {
       // Keep the state, but persist the latest queue (so any in-progress
       // items show as still pending on resume rather than locked at
@@ -11702,7 +12791,7 @@ Return ONLY valid JSON:
         window.__alloPdfBatchAbortSignal = null;
       }
       if (window.__alloPdfAbortSignal === _batchAbortCtrl.signal) {
-        window.__alloPdfAbortSignal = null;
+        window.__alloPdfAbortSignal = _prevBatchAbortSlot || null; // M11: hand the slot back to the overlapping origin
       }
     }
     // Name up to 3 failed files in the toast; the rest stays in the summary.
@@ -11712,10 +12801,16 @@ Return ONLY valid JSON:
     // A quota stop is a PAUSE and a user cancel is an ABORT \u2014 neither is a completion. Saying "Batch
     // complete" (+ the triumphant chord) while files are still queued misreports the run. (M6 2026-07-03)
     const _aborted = !!(_batchAbortCtrl && _batchAbortCtrl.signal && _batchAbortCtrl.signal.aborted);
+    // Honest resume promise: when checkpointing failed or another tab took the
+    // slot, "use Resume" would advertise a resume that cannot happen (or that
+    // silently re-runs everything). Say what is actually true instead.
+    const _queuedTail = _batchCheckpointDegraded
+      ? 'Remaining files stay queued in THIS TAB only; the resume checkpoint could not be kept, so closing the tab loses them.'
+      : null;
     if (_quotaStopped) {
-      addToast(`\u23f8 Batch paused at the AI quota: ${done.length}/${queue.length} PDFs remediated${_failList}. Remaining files stay queued \u2014 use Resume after the quota resets.`, 'warning');
+      addToast(`\u23f8 Batch paused at the AI quota: ${done.length}/${queue.length} PDFs remediated${_failList}. ${_queuedTail || 'Remaining files stay queued \u2014 use Resume after the quota resets.'}`, 'warning');
     } else if (_aborted) {
-      addToast(`\u23f9 Batch stopped: ${done.length}/${queue.length} processed${_failList}. Remaining files stay queued.`, 'warning');
+      addToast(`\u23f9 Batch stopped: ${done.length}/${queue.length} processed${_failList}. ${_queuedTail || 'Remaining files stay queued.'}`, 'warning');
     } else {
       const _verifiedDone = done.filter(q => _batchVerificationFor(q.result).verificationState === 'complete').length;
       const _reviewDone = done.length - _verifiedDone;
@@ -11830,9 +12925,9 @@ Return ONLY valid JSON:
             try { setPdfBatchStep('Typesetting ' + f.fileName + '…'); } catch (_) {}
             const _ts = await createTypesetTaggedPdf(f.result, { title: f.fileName.replace(/\.(md|markdown|csv|tsv|xlsx|xls|xlsb|ods|txt)$/i, ''), lang: 'en', subject: 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
             const _tsBytes = _ts && _ts.bytes ? _ts.bytes : _ts;
-            const _tsRt = _ts && _ts.roundTrip;
             if (!_tsBytes) { _taggedNotes.set(f.id, 'typeset failed (no bytes returned)'); continue; }
-            if (_tsRt && _tsRt.ok === false) { _taggedNotes.set(f.id, 'EXCLUDED (typeset failed post-save verification)'); continue; }
+            const _tsVerdict = _alloTaggedPdfDeliveryVerdict(_ts);
+            if (!_tsVerdict.ok) { _taggedNotes.set(f.id, 'EXCLUDED (typeset verification unavailable/failed: ' + _tsVerdict.reason + ')'); continue; }
             zip.file(`${safeName}_typeset_tagged.pdf`, _tsBytes);
             _taggedCount++;
             const _tsS = _ts && _ts.summary;
@@ -11844,15 +12939,34 @@ Return ONLY valid JSON:
           _taggedNotes.set(f.id, 'n/a (Office input — no tagged PDF; use the accessible HTML artifact in the ZIP)'); // M10: only <name>_accessible.html is written per Office file — no Word artifact exists
           continue;
         }
+        // Executable source actions are never carried into an unattended ZIP.
+        // Rebuild from the remediated HTML instead; attachments-only findings
+        // remain disclosed but do not force the visual-fidelity tradeoff.
+        const _execFindings = _alloExecutableActiveContentFindings(f.result);
+        if (_execFindings.length > 0) {
+          try { setPdfBatchStep('Rebuilding a clean tagged PDF for ' + f.fileName + '...'); } catch (_) {}
+          const _safe = await createTypesetTaggedPdf(f.result, { title: f.fileName.replace(/\.pdf$/i, ''), lang: 'en', subject: 'Clean rebuilt and tagged for accessibility by AlloFlow (executable source actions removed)' });
+          const _safeBytes = _safe && _safe.bytes ? _safe.bytes : _safe;
+          if (!_safeBytes) { _taggedNotes.set(f.id, 'EXCLUDED (clean rebuild returned no bytes)'); continue; }
+          const _safeVerdict = _alloTaggedPdfDeliveryVerdict(_safe);
+          if (!_safeVerdict.ok) { _taggedNotes.set(f.id, 'EXCLUDED (clean rebuild verification unavailable/failed: ' + _safeVerdict.reason + ')'); continue; }
+          zip.file(`${safeName}_typeset_tagged.pdf`, _safeBytes);
+          _taggedCount++;
+          const _safeNote = 'yes (clean rebuild; executable source actions removed)';
+          _taggedNotes.set(f.id, _safeNote);
+          _batchTaggedCachePut(f.id, { stamp: _tagStamp, bytes: _safeBytes, note: _safeNote, entryName: `${safeName}_typeset_tagged.pdf` });
+          continue;
+        }
+
         try { setPdfBatchStep('Tagging ' + f.fileName + '…'); } catch (_) {}
         const binStr = atob(f.base64);
         const bytes = new Uint8Array(binStr.length);
         for (let bi = 0; bi < binStr.length; bi++) bytes[bi] = binStr.charCodeAt(bi);
         const tagged = await createTaggedPdf(bytes, f.result, { title: f.fileName.replace(/\.pdf$/i, ''), lang: 'en', subject: 'Remediated for accessibility by AlloFlow (batch)' });
         const tBytes = tagged && tagged.bytes ? tagged.bytes : tagged;
-        const rt = tagged && tagged.roundTrip;
         if (!tBytes) { _taggedNotes.set(f.id, 'failed (no bytes returned)'); continue; }
-        if (rt && rt.ok === false) { _taggedNotes.set(f.id, 'EXCLUDED (failed post-save structure verification)'); continue; }
+        const _taggedVerdict = _alloTaggedPdfDeliveryVerdict(tagged);
+        if (!_taggedVerdict.ok) { _taggedNotes.set(f.id, 'EXCLUDED (verification unavailable/failed: ' + _taggedVerdict.reason + ')'); continue; }
         zip.file(`${safeName}_tagged.pdf`, tBytes);
         _taggedCount++;
         const s = tagged && tagged.summary;
@@ -12728,7 +13842,7 @@ HTML section ${chunkNum}/${chunks.length}:
       return {
         engine: 'axe-core',
         version: results.testEngine?.version || '4.12.1',
-        standard: 'WCAG 2.2 A/AA',
+        standard: 'WCAG 2.2 AA', // normalized across engines (C7): view sniffs and chips compare this string
         totalViolations: results.violations.length,
         totalPasses: results.passes.length,
         totalIncomplete: (results.incomplete || []).length,
@@ -13160,7 +14274,12 @@ HTML section ${chunkNum}/${chunks.length}:
     if (typeof window !== 'undefined' && window.temml && window.temml.renderToString) return Promise.resolve();
     if (_temmlPromise) return _temmlPromise;
     _temmlPromise = new Promise((resolve, reject) => {
-      const urls = ['https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js', 'https://unpkg.com/temml@0.10.34/dist/temml.min.js'];
+      // Self-hosted copy FIRST (2026-07-13): school firewalls that block third-party
+      // CDNs silently degraded math to spoken-alt-only. alloflow-cdn serves the repo
+      // (temml/temml.min.js, pinned 0.10.34) and is already required for the app's own
+      // modules, so if it is reachable at all, MathML enrichment now works. The
+      // third-party mirrors stay as fallbacks.
+      const urls = ['https://alloflow-cdn.pages.dev/temml/temml.min.js', 'https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js', 'https://unpkg.com/temml@0.10.34/dist/temml.min.js'];
       const tryAt = (i) => {
         if (i >= urls.length) { _temmlPromise = null; reject(new Error('temml load failed')); return; }
         const s = document.createElement('script');
@@ -13412,16 +14531,22 @@ HTML section ${chunkNum}/${chunks.length}:
     'https://unpkg.com/accessibility-checker-engine@3.1.83/ace.js',
   ];
   var _acePromise = null;
+  // A3 (2026-07-13): consecutive full-mirror load failures. In Canvas the CSP
+  // blocks BOTH CDN mirrors every time — after two exhausted attempts the engine
+  // is environmentally unavailable, and callers (auto-continue verification
+  // refresh) can skip work that can never reach 'complete' without it.
+  var _eaEngineLoadFailStreak = 0;
+  const _equalAccessUnavailable = () => _eaEngineLoadFailStreak >= 2;
   const _ensureAce = () => {
     if (window.ace && window.ace.Checker) return Promise.resolve();
     if (_acePromise) return _acePromise;
     _acePromise = new Promise((resolve, reject) => {
       const tryAt = (i) => {
-        if (i >= _ACE_CDN_URLS.length) { _acePromise = null; reject(new Error('Failed to load IBM Equal Access from ' + _ACE_CDN_URLS.length + ' CDN mirrors')); return; }
+        if (i >= _ACE_CDN_URLS.length) { _acePromise = null; _eaEngineLoadFailStreak++; reject(new Error('Failed to load IBM Equal Access from ' + _ACE_CDN_URLS.length + ' CDN mirrors')); return; }
         const s = document.createElement('script');
         s.src = _ACE_CDN_URLS[i];
         s.setAttribute('data-ibm-ace', 'true');
-        s.onload = () => { if (window.ace && window.ace.Checker) resolve(); else { _acePromise = null; reject(new Error('ace.js loaded but window.ace.Checker missing')); } };
+        s.onload = () => { if (window.ace && window.ace.Checker) { _eaEngineLoadFailStreak = 0; resolve(); } else { _acePromise = null; _eaEngineLoadFailStreak++; reject(new Error('ace.js loaded but window.ace.Checker missing')); } };
         s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
         document.head.appendChild(s);
       };
@@ -13479,7 +14604,7 @@ HTML section ${chunkNum}/${chunks.length}:
       return {
         engine: 'IBM Equal Access',
         version: (window.ace && (window.ace.version || (window.ace.Checker && window.ace.Checker.version))) || '3.x',
-        standard: 'WCAG 2.2',
+        standard: 'WCAG 2.2 AA', // normalized across engines (C7)
         failViolations: fails.length,
         potentialViolations: potentials.length,
         manualViolations: manuals.length,
@@ -14800,7 +15925,9 @@ HTML section ${chunkNum}/${chunks.length}:
     // relies on _chunkState persisting across autoFixAxeViolations calls, but if the calling
     // document has changed we must not reuse the old state — it would splice chunks from
     // document A into document B.
-    const _currentDocKey = _docFingerprint(htmlContent);
+    const _currentDocHash = await _sha256Hex(String(htmlContent || ''));
+    const _currentDocKey = _currentDocHash ? ('sha256:' + _currentDocHash) : null;
+    if (!_currentDocKey) _chunkState = null;
     if (_chunkState && _chunkState.docKey && _chunkState.docKey !== _currentDocKey) {
       _pipeLog('AutoFix', 'Clearing _chunkState from a different document (' + _chunkState.docKey.slice(0, 30) + '... → ' + _currentDocKey.slice(0, 30) + '...)');
       _chunkState = null;
@@ -15090,6 +16217,9 @@ Return ONLY the complete fixed HTML.`, true);
             if (_singlePassDecision.reason === 'text-shrink' && typeof addToast === 'function') {
               addToast(`Remediation rejected: ${_pct}% text loss detected. Falling back to chunked fix.`, 'warning');
             }
+            if (_singlePassDecision.reason === 'table-cell-transposition' && typeof addToast === 'function') {
+              addToast('Remediation pass rejected: table cell values would have moved positions (transposition risk). The original table layout was kept.', 'warning');
+            }
           }
           // Emit single-pass completion so Live UI updates
           // Honest per-pass flags: integrityPassed mirrors the faithful-mode acceptance
@@ -15206,20 +16336,39 @@ Return ONLY the complete fixed HTML.`, true);
             }
           } catch(e) { /* non-blocking */ }
 
+          // Metadata-only lifecycle stream for the optional Live Agent Trace. It
+          // intentionally never includes unaccepted model HTML: partial HTML may be
+          // malformed or unsafe to render, and it has not passed preservation gates.
+          const emitChunkProgress = (index, phase, label, extra) => {
+            try {
+              if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+                window.dispatchEvent(new CustomEvent('alloflow:chunk-progress', {
+                  detail: Object.assign({ index, total: bodyChunks.length, phase, label, timestamp: Date.now() }, extra || {})
+                }));
+              }
+            } catch (_) { /* observer only */ }
+          };
+
           // Per-chunk SOURCE fingerprint — lets resume verify a saved fixed-chunk actually
           // corresponds to the current document's chunk at the same index (audit #6).
-          const _chunkFp = (s) => { const _n = String(s || '').replace(/\s+/g, ' ').trim(); return _n.length + ':' + _n.slice(0, 80) + ':' + _n.slice(-80); };
+          const _chunkSourceDigests = await Promise.all(bodyChunks.map(async (chunk) => {
+            const normalized = String(chunk || '').replace(/\s+/g, ' ').trim();
+            const digest = await _sha256Hex(normalized);
+            return digest ? ('sha256:' + digest) : null;
+          }));
           // ── Resume detection: check IndexedDB for saved progress from a prior session ──
           const _sessionId = _chunkSessionId(
             _sessMeta.fileName || 'document',
             _sessMeta.fileSize || currentHtml.length,
-            bodyChunks.length
+            bodyChunks.length,
+            _currentDocKey
           );
           let _resumedResults = null;
           let _resumeStartIndex = 0;
           try {
-            const saved = await loadChunkProgress(_sessionId);
+            const saved = _sessionId ? await loadChunkProgress(_sessionId) : null;
             if (saved && saved.chunkResults && saved.chunkResults.length > 0
+                && saved.documentDigest === _currentDocKey
                 && saved.totalChunks === bodyChunks.length && (Date.now() - saved.timestamp) < 24 * 60 * 60 * 1000) {
               // Emit resume-available event for UI to show prompt
               const resumePromise = new Promise(function(resolve) {
@@ -15249,7 +16398,8 @@ Return ONLY the complete fixed HTML.`, true);
                 // than silently corrupt the document.
                 let _resumeValid = true;
                 for (var _vi = 0; _vi < saved.chunkResults.length; _vi++) {
-                  if (!saved.chunkResults[_vi] || saved.chunkResults[_vi].srcFp !== _chunkFp(bodyChunks[_vi])) { _resumeValid = false; break; }
+                  if (!saved.chunkResults[_vi] || !_chunkSourceDigests[_vi]
+                      || saved.chunkResults[_vi].srcDigest !== _chunkSourceDigests[_vi]) { _resumeValid = false; break; }
                 }
                 if (!_resumeValid) {
                   await clearChunkProgress(_sessionId);
@@ -15291,6 +16441,8 @@ Return ONLY the complete fixed HTML.`, true);
             } catch(e) { /* non-blocking */ }
 
             // ══════════════════════════════════════════════════════════════
+            emitChunkProgress(chi, 'rules', 'Applying safe rule-based fixes');
+
             // PRE-AI PASS: Deterministic fixes + surgical micro-tools
             // These are free, instant, and reliable — run BEFORE Gemini
             // ══════════════════════════════════════════════════════════════
@@ -15329,6 +16481,7 @@ Return ONLY the complete fixed HTML.`, true);
 
             // Step 0d: Surgical AI-diagnosed micro-tools (1 Gemini call → deterministic execution)
             let surgicalFixCount = 0;
+            emitChunkProgress(chi, 'diagnosing', 'Finding targeted accessibility repairs', { deterministicFixCount });
             try {
               // Build a concise violation summary for this chunk
               const chunkTextPreview = preFixedChunk.substring(0, 5000);
@@ -15381,6 +16534,7 @@ Return ONLY the complete fixed HTML.`, true);
             for (let attempt = 0; attempt < 2; attempt++) {
               const isRetry = attempt === 1;
               if (isRetry) wasRetried = true;
+              emitChunkProgress(chi, isRetry ? 'retrying' : 'proposing', isRetry ? 'Retrying a rejected proposal' : 'Building an accessible HTML proposal', { attempt: attempt + 1, deterministicFixCount, surgicalFixCount });
               setPdfFixStep(`${isRetry ? 'Retrying' : 'AI fixing'} section ${chi + 1}/${bodyChunks.length} (${Math.round(chunk.length / 1000)}KB)...`);
 
               try {
@@ -15451,6 +16605,7 @@ Return the fixed section content only — raw HTML, no JSON wrapping.`;
                 } catch(postDetErr) { /* non-blocking */ }
 
                 // ── Step A: Local integrity check (fast, no API) ──
+                emitChunkProgress(chi, 'integrity', 'Checking structure and content overlap', { attempt: attempt + 1 });
                 const integrity = verifyChunkIntegrity(originalChunk, cleaned);
 
                 if (!integrity.passed) {
@@ -15466,6 +16621,7 @@ Return the fixed section content only — raw HTML, no JSON wrapping.`;
                 // refuses to over-claim verification. Confidence threshold lowered to 40
                 // so lower-confidence content-loss reports still block.
                 setPdfFixStep(`Verifying section ${chi + 1}/${bodyChunks.length} content integrity...`);
+                emitChunkProgress(chi, 'verifying', 'Verifying that readable content was preserved', { attempt: attempt + 1, integrityPassed: true });
                 let aiVerified = true;
                 let aiVerifierRan = true; // honest-disclosure (2026-06-20): did the verifier produce a USABLE verdict? false on parse-fail-twice / throw — we still proceed (local check passed) but must NOT record the chunk as AI-verified.
                 let aiVerifyDetail = '';
@@ -15524,6 +16680,7 @@ Respond with ONLY a JSON object (no markdown, no explanation):
 
                 // ── Step C: AI accessibility audit (Gemini call #3 — scores the fixed chunk) ──
                 setPdfFixStep(`Scoring section ${chi + 1}/${bodyChunks.length} accessibility...`);
+                emitChunkProgress(chi, 'scoring', 'Auditing the accepted candidate for WCAG issues', { attempt: attempt + 1, integrityPassed: true, aiVerified: aiVerified && aiVerifierRan });
                 let aiScore = scoreChunkLocally(cleaned); // Start with local score as baseline
                 try {
                   const auditResult = await callGemini(`You are a WCAG 2.2 AA accessibility auditor. Score this HTML section for accessibility compliance.
@@ -15571,6 +16728,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             }
 
             chunkResults.push(accepted);
+            emitChunkProgress(chi, accepted.usedOriginal ? 'fallback' : 'accepted', accepted.usedOriginal ? 'AI proposal rejected — keeping rule-based repairs' : 'Proposal accepted after validation', {
+              integrityPassed: !!(accepted.integrityCheck && accepted.integrityCheck.passed),
+              aiVerified: !!accepted.aiVerified,
+              usedOriginal: !!accepted.usedOriginal,
+              score: accepted.score,
+              deterministicFixCount: accepted.deterministicFixCount || 0,
+              surgicalFixCount: accepted.surgicalFixCount || 0,
+            });
 
             // ── Audio cue: per-chunk completion tick (debounced internally to 150ms) ──
             try {
@@ -15610,11 +16775,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
             // ── Save progress to IndexedDB after each chunk (survives crashes) ──
             try {
-              saveChunkProgress(_sessionId, {
+              if (_sessionId && _currentDocKey && _chunkSourceDigests.every(Boolean)) saveChunkProgress(_sessionId, {
                 chunkResults: chunkResults.map(function(cr, i) {
-                  return { index: i, html: cr.html, score: cr.score, integrityCheck: cr.integrityCheck, aiVerified: cr.aiVerified, wasRetried: cr.wasRetried, usedOriginal: cr.usedOriginal, deterministicFixCount: cr.deterministicFixCount || 0, surgicalFixCount: cr.surgicalFixCount || 0, sizeKB: Math.round(cr.html.length / 1000), srcFp: _chunkFp(bodyChunks[i]) };
+                  return { index: i, html: cr.html, score: cr.score, integrityCheck: cr.integrityCheck, aiVerified: cr.aiVerified, wasRetried: cr.wasRetried, usedOriginal: cr.usedOriginal, deterministicFixCount: cr.deterministicFixCount || 0, surgicalFixCount: cr.surgicalFixCount || 0, sizeKB: Math.round(cr.html.length / 1000), srcDigest: _chunkSourceDigests[i] };
                 }),
                 totalChunks: bodyChunks.length,
+                documentDigest: _currentDocKey,
                 violationInstructions: violationInstructions,
                 headSection: headSection,
                 timestamp: Date.now(),
@@ -15824,6 +16990,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     if (!_chunkState && options.currentHtml) {
       try {
         const cur = String(options.currentHtml);
+        const curDocHash = await _sha256Hex(cur);
         const pre = (cur.match(/^[\s\S]*?<body[^>]*>/i) || ['<!DOCTYPE html><html lang="en"><head></head><body>'])[0];
         const bodyM = cur.match(/<body[^>]*>([\s\S]*)<\/body>/i);
         const body = bodyM ? bodyM[1] : cur;
@@ -15840,7 +17007,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const _normChunk = (s) => String(s || '').replace(/\s+/g, ' ').trim();
           const _carryOk = (i) => { if (!carry) return false; const pf = (ps && Array.isArray(ps.fixedChunks)) ? ps.fixedChunks[i] : (carry[i] && carry[i].html); return pf != null && _normChunk(pf) === _normChunk(chunks[i]); };
           _chunkState = {
-            docKey: _docFingerprint(cur),
+            docKey: curDocHash ? ('sha256:' + curDocHash) : null,
             preamble: pre,
             postamble: '</body></html>',
             originalChunks: chunks.slice(),
@@ -17049,6 +18216,77 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     return { extractedText, effectivePageCount, forceFullOcr: _forceFullOcr, garbledFallbackText: _garbledFallbackText, officeMediaImages: _officeMediaImages };
   };
 
+  // ── Vision alt-vs-image spot check (2026-07-13) ───────────────────────────
+  // The alt-quality heuristics catch information-FREE alts (boilerplate,
+  // filenames) but are blind to plausible-but-WRONG ones: the text auditor
+  // scores alt text from HTML where image bytes are stripped, so "Bar chart of
+  // rainfall by month" passes even when the image is a photo of a cat. This
+  // samples a few images (plausible/unflagged first, then figures, then document
+  // order) and asks Vision ONE question per image: does this alt match what the
+  // image shows? Disagreements surface through the existing altQuality fidelity
+  // note (panel + verdict + expert-review plumbing). Fail-soft by design: any
+  // error/throttle/abort yields null and the run proceeds exactly as before.
+  // Each call rides the same _geminiCall breaker/pacing as every Vision call.
+  const _visionAltSpotCheck = async (html, opts) => {
+    try {
+      if (!callGeminiVision || typeof DOMParser === 'undefined') return null;
+      const deferredImages = (opts && opts.deferredImages && typeof opts.deferredImages === 'object') ? opts.deferredImages : null;
+      const sample = Math.max(1, (opts && opts.sample) || 2);
+      const maxImageBytes = (opts && opts.maxImageBytes) || (1.5 * 1024 * 1024);
+      const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+      const imgs = Array.prototype.slice.call(doc.querySelectorAll('img[src]'));
+      if (!imgs.length) return null;
+      const candidates = [];
+      for (let i = 0; i < imgs.length; i++) {
+        const el = imgs[i];
+        const alt = String(el.getAttribute('alt') || '').trim();
+        if (!alt) continue; // empty alt = decorative or the heuristics' failure class, not ours
+        let src = String(el.getAttribute('src') || '');
+        if (deferredImages && !/^data:image\//i.test(src)) {
+          const compactToken = src.replace(/\s+/g, '').toUpperCase();
+          const tokenMatch = compactToken.match(/^__ALLOFLOW_DATAURL_FINAL_(\d+)__$/);
+          if (tokenMatch) src = deferredImages['__ALLOFLOW_DATAURL_FINAL_' + tokenMatch[1] + '__'] || src;
+        }
+        const m = src.match(/^data:(image\/(?:png|jpe?g|webp|gif));base64,([\s\S]+)$/i);
+        if (!m) continue;
+        if (m[2].length * 0.75 > maxImageBytes) continue;
+        let flagged = false;
+        try { const q = _alloAltQuality(alt, {}); flagged = !!(q && q.issues && q.issues.length); } catch (_) {}
+        const inFigure = !!(el.closest && el.closest('figure'));
+        candidates.push({ index: i, alt, mime: m[1], b64: m[2], flagged, inFigure });
+      }
+      if (!candidates.length) return null;
+      candidates.sort((a, b) => ((a.flagged ? 1 : 0) - (b.flagged ? 1 : 0)) || ((b.inFigure ? 1 : 0) - (a.inFigure ? 1 : 0)) || (a.index - b.index));
+      const picked = candidates.slice(0, sample);
+      const out = { checked: 0, sampled: picked.length, total: candidates.length, disagreements: [] };
+      for (const c of picked) {
+        if (typeof window !== 'undefined' && window.__alloPdfAbortSignal && window.__alloPdfAbortSignal.aborted) break;
+        let verdict = null;
+        try {
+          const resp = await callGeminiVision(
+            'You are checking IMAGE ALT TEXT accuracy for a screen-reader user. The document gives this image the alt text: "' + c.alt.slice(0, 300) + '". Look at the image. Does that alt text accurately describe what the image actually shows? Wrong subject, wrong data, wrong chart type, or misleading emphasis means NO. Minor wording differences mean YES. Respond ONLY JSON: {"match": true, "reason": "one short sentence"} or {"match": false, "reason": "one short sentence", "betterAlt": "a faithful alt under 20 words"}',
+            c.b64, c.mime
+          );
+          const s = String(resp || '');
+          const a = s.indexOf('{');
+          const b = s.lastIndexOf('}');
+          if (a >= 0 && b > a) verdict = JSON.parse(s.slice(a, b + 1));
+        } catch (_) { verdict = null; }
+        if (!verdict || typeof verdict.match !== 'boolean') continue; // throttled/garbage is NOT evidence either way
+        out.checked++;
+        if (verdict.match === false) {
+          out.disagreements.push({
+            index: c.index,
+            alt: c.alt.slice(0, 120),
+            reason: String(verdict.reason || '').slice(0, 200),
+            suggestion: String(verdict.betterAlt || '').slice(0, 200),
+          });
+        }
+      }
+      return out.checked ? out : null;
+    } catch (_) { return null; }
+  };
+
   const fixAndVerifyPdf = async (batchOverrides = null) => {
     // ── Unified pipeline: supports both single-file UI and batch mode ──
     // S1 step 5: run-entry snapshot. batchOverrides win (the batch runner pins a whole batch
@@ -17056,9 +18294,23 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // of this multi-minute run — a concurrent wrapped call's rebind can no longer swap the
     // document, settings, or file identity mid-remediation.
     const _run = _makeRunCtx();
-    const _isBatch = !!batchOverrides;
+    const _onProgress = batchOverrides?.onProgress || null;
+    const _silentMode = !!_onProgress;
+    // Passing an options object does not make a single-file UI run a batch. The old
+    // `!!batchOverrides` test mislabeled every Make Accessible run and reduced its
+    // image-alt spot-check sample. Batch callers are explicitly progress-managed.
+    const _isBatch = _silentMode || !!(batchOverrides && batchOverrides.batchMode === true);
     const _base64 = batchOverrides?.base64 || _run.base64;
     const _fileName = batchOverrides?.fileName || (_run.file && _run.file.name) || 'document.pdf';
+    const _auditResult = batchOverrides?.auditResult || _run.auditResult;
+    if (!_base64) { addToast(t('toasts.cannot_fix_pdf_data_found'), 'error'); return null; }
+    if (!_silentMode && !_auditResult) { addToast(t('toasts.cannot_fix_audit_results_found'), 'error'); return null; }
+    // Claim the generation before the digest await. The exported duplicate guard records this
+    // generation synchronously, closing the window where two calls could hash the same PDF in
+    // parallel before either one became visible as the active remediation.
+    let _myRunGen = 0;
+    if (!_silentMode && typeof window !== 'undefined') { _myRunGen = (window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1); }
+    const _documentKey = await _documentDigest(_base64);
     const _runFileSize = batchOverrides?.fileSize || (_run.file && _run.file.size) || null;
     const _polishPasses = (batchOverrides && batchOverrides.polishPasses != null) ? batchOverrides.polishPasses : _run.polishPasses;
     const _runTargetScore = (batchOverrides && batchOverrides.targetScore != null) ? batchOverrides.targetScore : _run.targetScore;
@@ -17069,8 +18321,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // through the `_mimeType === 'application/pdf'` OCR gate: Tesseract fed a zip to
     // pdf.js and Vision got DOCX bytes labeled application/pdf.
     const _mimeType = /\.docx$/i.test(_fileName) ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : /\.pptx$/i.test(_fileName) ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation' : 'application/pdf';
-    const _auditResult = batchOverrides?.auditResult || _run.auditResult;
-    const _onProgress = batchOverrides?.onProgress || null;
+
     // Multi-session: when the UI passes pageRange [start, end], we limit extraction to those
     // pages and auto-save the remediated HTML to the multi-session store keyed by doc fingerprint.
     // Lets teachers tackle long PDFs across days without re-remediating earlier pages each session.
@@ -17096,6 +18347,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     _pipelineStats.runId = _runId;
     _pipelineStats.startTime = performance.now(); _pipelineStats.stepTimes = {};
     _pipelineStats.lastOpenStep = null; _pipelineStats.lastOpenStepLabel = '';
+    _activeRemediationProgress = {
+      version: 1, runId: _runId, status: 'running', step: 0, totalSteps: 4,
+      stepName: 'Preparing remediation', detail: 'Preparing document and accessibility settings...',
+      message: 'Preparing document and accessibility settings...', overallPercent: 2,
+      subprogress: null, startedAt: _startTime,
+    };
+    _emitRemediationProgress(_runId, _activeRemediationProgress);
     // CB-1 (2026-06-21): clear the Gemini circuit-breaker so a storm from a PREVIOUS document in this
     // session (the pipeline is a singleton) doesn't start THIS run already throttled to 1 concurrent with
     // a stale cooldown + stale "rate-limiting" message. The current run earns its own storm signal.
@@ -17124,22 +18382,19 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     _pipeLog('Init', 'Pipeline starting', { file: _fileName, batch: _isBatch, hasAudit: !!_auditResult, pageCount: _auditResult?.pageCount, base64KB: _base64 ? Math.round(_base64.length * 0.75 / 1024) : 0 });
     warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _fileName);
 
-    if (!_base64) { addToast(t('toasts.cannot_fix_pdf_data_found'), 'error'); return null; }
     // "Silent mode" = caller is doing its own UI via an onProgress callback
     // (multi-file batch). Partial single-file audits (pageRange only, no
     // onProgress) still need the single-file UI state — otherwise the teacher
     // never sees loading, never sees the result, and multi-session auto-save
     // at the bottom never fires. Previously this gate was `_isBatch` (== any
     // batchOverrides), which over-suppressed the UI whenever pageRange was set.
-    const _silentMode = !!_onProgress;
-    if (!_silentMode && !_auditResult) { addToast(t('toasts.cannot_fix_audit_results_found'), 'error'); return null; }
+
     if (!_silentMode) { setPdfFixLoading(true); setPdfFixResult(null); }
     // Zombie-run guard (2026-06-20): bump a generation token at run start. If the dead-man watchdog
     // later gives up on THIS run (it bumps the token too) and the teacher starts another document, our
     // late-resolving promise must NOT stomp the newer state — the completion write below checks the
     // token still matches before calling setPdfFixResult.
-    let _myRunGen = 0;
-    if (!_silentMode && typeof window !== 'undefined') { _myRunGen = (window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1); }
+
     // M8 (deep dive 2026-07-09): run-scope staleness probe — true once the watchdog (or a newer run)
     // bumped the generation. Threaded into the fix loop so an invalidated run stops GRINDING (up to
     // maxFixPasses chunked AI passes ≈ an hour under a storm, competing with the fresh run for the
@@ -17246,6 +18501,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         ? ` (${pageCount} of ${fullPageCount} pages)`
         : (pageCount > 1 ? ` (${pageCount} pages)` : '');
       const msg = `Step ${step}/${totalSteps} ${label.emoji} ${label.name}${pageNote} — ${detail}  (typically ${label.est})`;
+      const derived = _deriveProgress(step, detail);
+      _emitRemediationProgress(_runId, {
+        status: 'running', step, totalSteps, stepName: label.name, detail,
+        message: msg, overallPercent: derived.overallPercent, subprogress: derived.subprogress,
+      });
       if (_silentMode) { _onProgress(step, msg); } else { setPdfFixStep(msg); }
     };
 
@@ -17395,6 +18655,36 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       _forceFullOcr = _extOut.forceFullOcr;                  // garbled-layer detector can force the OCR path
       _garbledFallbackText = _extOut.garbledFallbackText;    // discarded layer kept as the junk-ratio fallback
       const _officeMediaImages = _extOut.officeMediaImages;  // H1: spliced into accessibleHtml post-transform
+      // Exact-byte OCR evidence reuse: deterministic parsing above remains authoritative for text
+      // PDFs. Only a scanned/empty PDF may reuse a complete prior dual-OCR result, and manual
+      // full/per-page re-OCR always bypasses this read. The language setting is deliberately read
+      // fresh here because it is the pipeline's documented Stage-1 exception to run snapshots.
+      const _requestedOcrLanguage = (() => {
+        try {
+          return (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || 'auto';
+        } catch (_) { return 'auto'; }
+      })();
+      const _runOcrEvidenceIdentity = _ocrEvidenceIdentity({
+        documentDigest: _documentKey,
+        pageRange: _pageRange,
+        ocrLanguage: _requestedOcrLanguage,
+        backendId: _cacheBackendId(),
+        effectivePageCount,
+      });
+      let _ocrEvidenceCacheHit = false;
+      if ((!extractedText || extractedText.length <= 100)
+          && _mimeType === 'application/pdf'
+          && !_forceFullOcr
+          && !(_forceOcrPages && _forceOcrPages.length)) {
+        const _bankedOcr = _readOcrEvidence(_runOcrEvidenceIdentity);
+        if (_bankedOcr) {
+          extractedText = _bankedOcr.extractedText;
+          _restoreOcrEvidenceGlobals(_bankedOcr);
+          _ocrEvidenceCacheHit = true;
+          updateProgress(1, 'Reusing complete OCR evidence for ' + effectivePageCount + ' page' + (effectivePageCount === 1 ? '' : 's') + ' - skipped Tesseract + Vision');
+          warnLog('[OCR cache] Exact-byte hit - reused ' + extractedText.length + ' chars / ' + effectivePageCount + ' pages; skipped language detection, Tesseract, and Vision extraction calls');
+        }
+      }
 
       const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
       const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
@@ -17423,13 +18713,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             // previous document's banked text as this document's remediation (scanned docs have
             // empty deterministic text, so the seed always won). Legacy saves without a docKey
             // keep the old filename-only behavior.
-            const _seedKeyMismatch = (() => {
-              try {
-                if (!_seed.docKey) return false;
-                const _curKey = _alloDocFingerprint(_base64);
-                return !!(_curKey && _curKey !== _seed.docKey);
-              } catch (_) { return false; }
-            })();
+            const _seedKeyMismatch = !_seed.docKey || !_documentKey || _documentKey !== _seed.docKey;
             if (_seedKeyMismatch) {
               warnLog('[Resume] Banked text REFUSED — the re-uploaded file shares the saved session\'s name but has DIFFERENT content (fingerprint mismatch); running fresh extraction/OCR.');
               if (typeof addToast === 'function') addToast(t('toasts.resume_file_mismatch') || 'The uploaded file has the same name as your saved session but different content — running a fresh scan instead of reusing the saved text.', 'warning');
@@ -17455,7 +18739,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
       // If deterministic extraction succeeded, skip OCR entirely
       if (extractedText && extractedText.length > 100) {
-        warnLog(`[Det] Using deterministic extraction (${extractedText.length} chars), skipping OCR`);
+        if (!_ocrEvidenceCacheHit) warnLog('[Det] Using deterministic extraction (' + extractedText.length + ' chars), skipping OCR');
         // Fall through to Step 1b (image extraction) with extractedText already populated
       } else if (_base64 && _mimeType === 'application/pdf') {
         // Scanned-PDF path: run Tesseract and Vision in parallel, then reconcile.
@@ -17693,6 +18977,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // #G (2026-07-05): remember reconcile-time echo collapses for the fidelity panel — a removal,
         // however safe, is never silent. Overwritten every reconcile, so it can't go stale within a run.
         try { window.__alloOcrDupeCollapses = (rec && rec.dupeCollapses) || []; } catch (_) {}
+        try { window.__alloOcrColumnReorders = (rec && rec.columnReorders) || []; } catch (_) {}
         // H4 (2026-07-09): the edge strip deletes whole LINES (running heads) — disclose their text in
         // the fidelity panel, not just their digits. Overwritten every reconcile, read _heavyScanned-gated.
         try { window.__alloStrippedEdgeLines = (rec && rec.strippedEdgeLines) || []; } catch (_) {}
@@ -17855,6 +19140,47 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
 
       // ── Step 1b (S2-extracted → _extractPdfImages) ──
+      // Bank complete scanned-PDF evidence BEFORE image descriptions, styling, transformation, and
+      // verification make further AI calls. If one of those later stages throttles, the hands-off
+      // retry can restart without repeating OCR. Incomplete page coverage/failures and oversized
+      // evidence are rejected by _writeOcrEvidence; a backend/language change during OCR also skips
+      // the write rather than labeling evidence with stale settings.
+      if (!_ocrEvidenceCacheHit && _mimeType === 'application/pdf' && _documentKey && window.__lastOcrMethod) {
+        const _writeOcrEvidenceIdentity = _ocrEvidenceIdentity({
+          documentDigest: _documentKey,
+          pageRange: _pageRange,
+          ocrLanguage: (() => {
+            try { return (window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || 'auto'; }
+            catch (_) { return 'auto'; }
+          })(),
+          backendId: _cacheBackendId(),
+          effectivePageCount,
+        });
+        if (_ocrEvidenceKey(_writeOcrEvidenceIdentity) === _ocrEvidenceKey(_runOcrEvidenceIdentity)) {
+          const _banked = _writeOcrEvidence(_writeOcrEvidenceIdentity, {
+            extractedText,
+            groundTruthCharCount: window.__lastGroundTruthCharCount || extractedText.length,
+            groundTruthPages: Array.isArray(window.__lastGroundTruthPageMap) ? window.__lastGroundTruthPageMap : null,
+            groundTruthMethod: window.__lastGroundTruthMethod || 'vision-ocr',
+            ocrTesseractText: window.__lastOcrTesseractText || '',
+            ocrVisionText: window.__lastOcrVisionText || '',
+            ocrDisagreements: window.__lastOcrDisagreements || [],
+            ocrMethod: window.__lastOcrMethod,
+            ocrPageErrors: window.__lastOcrPageErrors || [],
+            ocrLowConfidencePages: window.__lastOcrLowConfidencePages || [],
+            detectedFolios: window.__alloDetectedFolios || [],
+            ocrDupeCollapses: window.__alloOcrDupeCollapses || [],
+            ocrColumnReorders: window.__alloOcrColumnReorders || [],
+            strippedEdgeLines: window.__alloStrippedEdgeLines || [],
+            visionStripTrail: window.__lastVisionStripTrail || [],
+          });
+          if (_banked) warnLog('[OCR cache] Banked complete reconciled evidence (' + extractedText.length + ' chars / ' + effectivePageCount + ' pages) before downstream AI calls');
+          else warnLog('[OCR cache] Evidence not banked - incomplete page coverage, recorded page failure, or memory cap');
+        } else {
+          warnLog('[OCR cache] Evidence not banked - OCR language or AI backend/model changed during extraction');
+        }
+      }
+
       const _imgOut = await _extractPdfImages({ base64: _base64, mimeType: _mimeType, silentMode: _silentMode, updateProgress });
       let extractedImages = _imgOut.extractedImages; // consumed by the placeholder splice, image report, and return payload
 
@@ -18039,351 +19365,21 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       } catch (_dsClampErr) { warnLog('[PDF Fix] docStyle contrast clamp failed (keeping palette): ' + (_dsClampErr && _dsClampErr.message)); }
 
       // ── Deterministic HTML renderer from JSON content blocks ──
-      const renderJsonToHtml = (blocks) => {
-        if (!Array.isArray(blocks)) return '';
-        return blocks.map((block, blockIdx) => {
-          // Guard: skip invalid blocks
-          if (!block || typeof block !== 'object') return '';
-          // Operate on a shallow CLONE so this renderer is idempotent: the chunked-generation path
-          // re-invokes renderJsonToHtml on the SAME blocks array on retry, and the normalizations below
-          // mutate fields in place — double-cleaning a second time corrupted the output. Clone touches
-          // only primitive fields + reassigns block.items to a new array, so a shallow copy is safe.
-          block = { ...block };
-          // ── Normalize alternate schemas ──
-          // Gemini sometimes returns {"tag":"p","class":"ds6","content":"..."} or
-          // {"element":"p","text":"..."} instead of {"type":"p","text":"..."}.
-          // Map all known variants to the canonical {type, text} schema.
-          if (!block.type && block.tag) block.type = block.tag;
-          if (!block.type && block.element) block.type = block.element;
-          if (!block.text && block.content) block.text = block.content;
-          if (!block.text && block.value) block.text = block.value;
-          if (!block.text && block.body) block.text = block.body;
-          // "fixed_html" or "output_html" as raw HTML content
-          if (!block.html && block.fixed_html) block.html = block.fixed_html;
-          if (!block.html && block.output_html) block.html = block.output_html;
-          if (!block.html && block.accessible_html) block.html = block.accessible_html;
-          if (!block.type && !block.text && !block.html && !block.title && !block.items) return '';
-          if (!block.type && block.text) block.type = 'p';
-          if (!block.type && block.title) block.type = 'banner';
-          if (!block.type && block.items) block.type = 'ul';
-          if (!block.type && block.headers) block.type = 'table';
-          if (!block.type && block.html) block.type = 'rawhtml';
-          if (!block.type && block.description) block.type = 'image';
-          const sanitizeField = (val) => { if (typeof val !== 'string') return String(val || ''); return val.replace(/\\\\n/g, ' ').replace(/\\0/g, '').trim(); };
-          // XSS guard: AI-produced block text is interpolated into the HTML templates
-          // below. A prompt-injected / compromised model could emit <img onerror=…>,
-          // <script>, or event handlers. Escape ALL markup, then re-allow ONLY
-          // attribute-less safe inline tags so intended emphasis survives while every
-          // scripting vector is neutralized (no attributes can pass the allow-list).
-          const escapeTextField = (val) => {
-            const s = String(val == null ? '' : val)
-              .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-            return s
-              .replace(/&lt;(\/?(?:strong|em|b|i|u|sub|sup|mark|code|s|small))&gt;/gi, '<$1>')
-              .replace(/&lt;br\s*\/?&gt;/gi, '<br>');
-          };
-          // Only allow safe URL schemes in link hrefs (block javascript:, data:, etc.).
-          const safeHref = (u) => { const v = String(u || '').trim(); return /^(https?:|mailto:|tel:|#|\/|\.)/i.test(v) ? v.replace(/"/g, '&quot;') : '#'; };
-          try {
-          // Clean block text: strip JSON field names, id tags, literal \n, and type labels
-          if (block.text) {
-            block.text = block.text
-              .replace(/\\n/g, ' ')
-              .replace(/\n?id:\s*[a-z0-9-]+\n?/gi, '')
-              .replace(/^(description|alt|title|subtitle|caption|type|text|items|headers|rows):\s*/gim, '') // strip leaked JSON field names
-              .replace(/^(banner|blockquote|image|hr|ul|ol|p|h[1-6])\s*$/gim, '') // strip bare type names on own line
-              .replace(/\n{2,}/g, '\n').trim();
-          }
-          // Clean title/subtitle on banner blocks
-          if (block.title) block.title = block.title.replace(/^title:\s*/i, '').replace(/\\n/g, ' ').trim();
-          if (block.subtitle) block.subtitle = block.subtitle.replace(/^subtitle:\s*/i, '').replace(/\\n/g, ' ').trim();
-          if (block.description) block.description = block.description.replace(/^description:\s*/i, '').replace(/\\n/g, ' ').trim();
-          if (block.alt) block.alt = block.alt.replace(/^alt:\s*/i, '').replace(/\\n/g, ' ').trim();
-          if (block.caption) block.caption = block.caption.replace(/^caption:\s*/i, '').replace(/\\n/g, ' ').trim();
-          // Also clean items arrays (lists)
-          if (block.items) {
-            block.items = block.items.map(item => (item || '').replace(/\\n/g, ' ').replace(/^(items|text):\s*/i, '').trim());
-          }
-          // Extract id from text if not in id field (AI sometimes puts "id: slug" in text)
-          if (!block.id && block.text) {
-            const idMatch = block.text.match(/^id:\s*([a-z0-9-]+)/i);
-            if (idMatch) { block.id = idMatch[1]; block.text = block.text.replace(idMatch[0], '').trim(); }
-          }
-          // XSS: block.id from AI JSON is interpolated into an id="…" attribute; constrain it to an
-          // id-safe charset (matches the [a-z0-9-] filter on the text-extraction path above) so a value
-          // like '"><img src=x onerror=…>' can't break out of the attribute.
-          const _safeId = block.id ? String(block.id).replace(/[^a-zA-Z0-9_-]/g, '') : '';
-          const id = _safeId ? ` id="${_safeId}"` : '';
-          switch (block.type) {
-            case 'h1': return `<h1${id} style="color:${docStyle.headingColor};font-size:1.75rem;font-weight:bold;border-bottom:3px solid ${docStyle.accentColor};padding-bottom:0.5rem;margin:1.5em 0 0.5em">${escapeTextField(block.text)}</h1>`;
-            case 'h2': return `<h2${id} style="color:${docStyle.headingColor};font-size:1.35rem;font-weight:bold;margin:1.5em 0 0.5em;${docStyle.hasSidebarAccents ? 'border-left:4px solid ' + docStyle.accentColor + ';padding-left:12px;' : ''}">${escapeTextField(block.text)}</h2>`;
-            case 'h3': return `<h3${id} style="color:${docStyle.headingColor};font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em">${escapeTextField(block.text)}</h3>`;
-            // h4/h5/h6 (2026-06-19): the Vision pass legitimately emits deep headings (a single run logged
-            // 11 "unknown block type: h4 — salvaged"), which previously fell to the salvage path and were
-            // FLATTENED to plain text — destroying the heading hierarchy the doc actually has. Render them
-            // as real headings so the structure survives (the deterministic heading-skip pass still guards
-            // against illegal level jumps).
-            case 'h4': return `<h4${id} style="color:${docStyle.headingColor};font-size:1rem;font-weight:bold;margin:1em 0 0.3em">${escapeTextField(block.text)}</h4>`;
-            case 'h5': return `<h5${id} style="color:${docStyle.headingColor};font-size:0.95rem;font-weight:bold;margin:1em 0 0.3em">${escapeTextField(block.text)}</h5>`;
-            case 'h6': return `<h6${id} style="color:${docStyle.headingColor};font-size:0.9rem;font-weight:bold;margin:1em 0 0.3em">${escapeTextField(block.text)}</h6>`;
-            case 'p': return `<p style="margin:0.6em 0;line-height:1.7">${escapeTextField(block.text)}</p>`;
-            case 'ul': return `<ul style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ul>`;
-            case 'ol': return `<ol style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ol>`;
-            case 'table': {
-              // Reconstructed-from-image tables carry a data-allo-reconstructed attribute so the
-              // results-panel review gate can list them for human verify/reject (the original image
-              // is kept as a sibling). The inline "AI-reconstructed" caption note was removed
-              // 2026-06-16 — it leaked into the exported/saved document and read as unpolished.
-              const _recon = !!block._reconstructed;
-              // Rich grid path (2026-06-14): when the vision pass filled a neutral
-              // grid (per-cell colspan/rowspan/isHeader/scope), validate span
-              // consistency and emit accessibility-grade HTML. On ANY validation
-              // failure, fall through to the flat headers/rows path below — a broken
-              // span grid must never ship as malformed table markup (accept-or-revert).
-              if (block.grid && Array.isArray(block.grid.rows)) {
-                const _gv = _validateTableGrid(block.grid);
-                if (_gv.ok) {
-                  // Sampled-from-original header colour (when the vision pass estimated one): keep the
-                  // original's look but force the header TEXT to AA contrast on that fill (cosmetic only;
-                  // falls back to the doc palette when no/invalid colour).
-                  const _hdr = _accessibleHeaderColors(block.headerBg);
-                  // XSS: _emitAccessibleTableHtml's `esc` is whatever opts.sanitize is, applied to cell +
-                  // caption ELEMENT CONTENT. Passing the bare sanitizeField (which only strips \n/\0)
-                  // DISABLED escaping on this rich/grid reconstructed-table path — untrusted vision text
-                  // then reached the recon dangerouslySetInnerHTML sink raw. Escape like the flat path.
-                  return _emitAccessibleTableHtml(block.grid, {
-                    // #G: cell strings carrying list-ish markup / "• " lines become REAL nested lists;
-                    // plain cells escape exactly as before (every text run still goes through the escaper).
-                    sanitize: (v) => _alloCellRichText(v, (t) => escapeTextField(sanitizeField(t))),
-                    tableBorder: docStyle.tableBorder,
-                    tableBg: _hdr ? _hdr.bg : docStyle.tableBg,
-                    headColor: docStyle.headingColor,
-                    thColor: _hdr ? _hdr.fg : undefined,
-                    reconAttr: _recon,
-                  });
-                }
-                warnLog('[Table] grid failed span-consistency (' + _gv.reason + ') — flattening grid cells to a flat table (degraded, non-empty)');
-                // Render-time recovery: a grid that fails RE-validation here has no
-                // image to revert to (the original image is a separate sibling block
-                // already emitted), and this block carries NO headers/rows. Falling
-                // straight through would emit an EMPTY <table> (latent bug). Flatten the
-                // verbatim grid text into the flat headers/rows shape the path below
-                // consumes — degraded (scope/spans dropped) but readable and non-empty.
-                // Only synthesize when the flat shape is absent (preserve the documented
-                // grid+headers/rows backward-compat). (tbl-empty-table-latent)
-                if (!Array.isArray(block.headers) && !Array.isArray(block.rows)) {
-                  const _gr = block.grid.rows;
-                  const _cellTxt = (cells) => (Array.isArray(cells) ? cells : []).map(c => (c && c.text) || '');
-                  const _firstAllHeader = _gr[0] && Array.isArray(_gr[0].cells) && _gr[0].cells.length > 0 && _gr[0].cells.every(c => c && c.isHeader);
-                  if (_firstAllHeader) {
-                    block.headers = _cellTxt(_gr[0].cells);
-                    block.rows = _gr.slice(1).map(r => _cellTxt(r && r.cells));
-                  } else {
-                    block.rows = _gr.map(r => _cellTxt(r && r.cells));
-                  }
-                }
-              }
-              // XSS: cell/header/caption text on a reconstructed-from-image table is vision output from
-              // an untrusted PDF; it is interpolated into element content here and later re-rendered via
-              // dangerouslySetInnerHTML (the recon-table mini-preview). sanitizeField only strips \n/\0 —
-              // it does NOT escape markup. Escape like the headings/lists above (attribute-less safe inline
-              // tags survive; every scripting vector is neutralized). The grid path is escaped too — it now
-              // passes an escaping sanitize closure to _emitAccessibleTableHtml (see the grid branch above).
-              const cap = block.caption ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+escapeTextField(sanitizeField(block.caption))+`</caption>` : '';
-              const hdrs = Array.isArray(block.headers) ? block.headers : [];
-              const hdr = hdrs.length > 0 ? `<thead><tr>`+hdrs.map(h => `<th scope="col" style="background:${docStyle.tableBg};border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+escapeTextField(sanitizeField(h))+`</th>`).join('')+`</tr></thead>` : '';
-              const rowsArr = Array.isArray(block.rows) ? block.rows : [];
-              // #G: same in-cell list net as the grid path — the model has no JSON shape for a bulleted
-              // list inside a cell, so literal "<ul><li>" (or "• " lines) in a cell string is rebuilt as a
-              // real nested list instead of shipping escaped tags as visible text.
-              const _cellEsc = (v) => _alloCellRichText(v, (t) => escapeTextField(sanitizeField(t)));
-              const rows = rowsArr.map(row => {
-                if (!Array.isArray(row)) return `<tr><td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(row)+`</td></tr>`;
-                return `<tr>`+row.map(cell => `<td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(cell)+`</td>`).join('')+`</tr>`;
-              }).join('');
-              return `<table${_recon ? ' data-allo-reconstructed="image"' : ''} style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
-            }
-            case 'definition_list': {
-              // Semantic match for legends/keys: each entry pairs a marker description
-              // (color/symbol) with its label. SR users navigate <dl> as "term/definition"
-              // pairs which is what a legend semantically IS — better than a flat table.
-              // Sections (with optional <h4> heading) preserve any visible subgroupings.
-              const _legCap = block.caption ? `<figcaption style="font-weight:bold;color:${docStyle.headingColor};margin-bottom:0.5rem;font-size:1em">`+escapeTextField(sanitizeField(block.caption))+`</figcaption>` : '';
-              const _legIntro = block.intro ? `<p style="margin:0 0 0.75rem;color:${docStyle.bodyColor};font-size:0.95em;line-height:1.6">`+escapeTextField(sanitizeField(block.intro))+`</p>` : '';
-              const _legSections = (Array.isArray(block.sections) ? block.sections : []).map(sec => {
-                const _heading = sec && sec.title ? `<h4 style="margin:1em 0 0.4em;color:${docStyle.headingColor};font-size:1em;font-weight:bold">`+escapeTextField(sanitizeField(sec.title))+`</h4>` : '';
-                const _entries = (Array.isArray(sec && sec.entries) ? sec.entries : []).map(e => {
-                  const _marker = e && e.marker ? escapeTextField(sanitizeField(e.marker)) : '';
-                  const _label = e && e.label ? escapeTextField(sanitizeField(e.label)) : '';
-                  return `<dt style="font-weight:600;color:${docStyle.bodyColor};margin-top:0.4em">`+_marker+`</dt>`
-                       + `<dd style="margin:0 0 0.4em 1.5em;color:${docStyle.bodyColor};line-height:1.5">`+_label+`</dd>`;
-                }).join('');
-                return _heading + (_entries ? `<dl style="margin:0">`+_entries+`</dl>` : '');
-              }).join('');
-              return `<figure role="group" aria-label="${(block.caption ? sanitizeField(block.caption).replace(/"/g,'&quot;') : 'Figure legend')}" style="margin:1em 0;padding:1em 1.25em;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px">`
-                + _legCap + _legIntro + _legSections + `</figure>`;
-            }
-            case 'image': {
-              // Uploadable placeholder: even when extractedImages is empty (no extraction happened),
-              // users can still upload their own image in the preview. The deferred-image block
-              // downstream upgrades the src when a real extracted image is available.
-              // Colors chosen for WCAG AA on the #f1f5f9 placeholder bg: #475569 caption (5.35:1),
-              // #64748b border (3.92:1 — passes 1.4.11 non-text contrast).
-              // Raw description; escaped with escapeTextField at the element-content sink below (its only
-              // consumer). Vision-derived text is untrusted — see the table-path XSS note above.
-              const _imgDesc = (block.description || block.alt || 'Image');
-              const _imgAltSafe = (block.description || block.alt || 'Image').replace(/\\/g, '').replace(/"/g, '').replace(/'/g, ''); // strip backslash too (a trailing \ escapes the JS-string delimiter)
-              const _imgId = 'pdf-img-ph-' + (block.id ? String(block.id).replace(/[^a-z0-9]/gi, '') : Math.random().toString(36).slice(2, 8));
-              const _captionText = block.description || block.alt || '';
-              // Drag-and-drop + pick-extracted support: handlers pull a dataURL from
-              // either the drop dataTransfer, a local file picker, or the shared
-              // window.__alloflowExtractedImages list populated by the main app on iframe load.
-              // FIX: remove any open thumbnail picker FIRST, and scope the <img> lookup
-              // to direct children only. Without this, `c.querySelector('img')` finds
-              // a thumbnail *inside* the picker (not a real target), and the subsequent
-              // child-wipe removes the picker — taking the newly-aliased target with it,
-              // so the inserted image appears for one frame then vanishes.
-              const _insertFn = `function(c, dataUrl, altText){`
-                + `var pk=c.querySelector('[data-alloflow-picker]');if(pk)pk.remove();`
-                + `var target=null;var kids=c.children;for(var ii=0;ii<kids.length;ii++){if(kids[ii].tagName==='IMG'){target=kids[ii];break;}}`
-                + `if(target){target.src=dataUrl;if(altText)target.alt=altText;}`
-                + `else{target=document.createElement('img');target.src=dataUrl;target.alt=altText||'Image';target.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.appendChild(target);}`
-                + `c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';`
-                + `Array.from(c.children).forEach(function(ch){if(ch!==target)ch.remove();});`
-                + `c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');target.style.width='100%';target.style.height='auto';target.setAttribute('width','600');var _bar=document.createElement('div');_bar.className='allo-img-controls';_bar.setAttribute('contenteditable','false');_bar.style.cssText='display:flex;gap:6px;align-items:center;justify-content:center;margin-top:4px;font-size:11px;color:#475569';var _cur=100;var _lab=document.createElement('span');var _apply=function(){target.style.width=_cur+'%';target.setAttribute('width',String(Math.round(_cur*6)));_lab.textContent='size '+_cur+'%';try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}};var _mk=function(l,f){var b=document.createElement('button');b.type='button';b.textContent=l;b.title='Resize image (persists in every export)';b.style.cssText='padding:2px 9px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700';b.onclick=function(ev){ev.preventDefault();f();};return b;};_bar.appendChild(_mk('\u2212',function(){_cur=Math.max(25,_cur-25);_apply();}));_bar.appendChild(_lab);_bar.appendChild(_mk('+',function(){_cur=Math.min(100,_cur+25);_apply();}));_apply();if(target.parentNode===c)c.appendChild(_bar);else if(target.parentNode)target.parentNode.insertBefore(_bar,target.nextSibling);`
-                // Notify the parent app that the iframe DOM was mutated so it can
-                // sync the new outerHTML into pdfFixResult.accessibleHtml. Without
-                // this, image swaps live only in the iframe and get wiped by any
-                // updatePdfPreview() call (theme/font/a11y/auto-fix/etc.).
-                + `try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}}`;
-              const _dragOver = `event.preventDefault();this.style.borderColor='#4f46e5';this.style.background='#eef2ff';`;
-              const _dragLeave = `this.style.borderColor='#64748b';this.style.background='#f1f5f9';`;
-              const _dropHandler = `(function(c,ev){ev.preventDefault();c.style.borderColor='#64748b';c.style.background='#f1f5f9';try{var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src){(${_insertFn})(c,d.src,d.alt||'${_imgAltSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){var r=new FileReader();r.onload=function(e){(${_insertFn})(c,e.target.result,'${_imgAltSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
-              const _uploadHandler = `(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('${_imgId}-container');(${_insertFn})(c,e.target.result,'${_imgAltSafe}');};r.readAsDataURL(f);})(this)`;
-              // IMPORTANT: the handler string ends up inside onclick="..." so literal double
-              // quotes inside msg.textContent would prematurely terminate the HTML attribute
-              // and silently break the button. Use curly quotes (\u201C \u201D) around the
-              // referenced button label — visually identical to the user, safe for HTML attrs.
-              const _pickHandler = `(function(btn){var c=document.getElementById('${_imgId}-container');if(!c)return;var _lL=(typeof window!=='undefined'&&window.__alloflowExtractedImages)||null;var _pL=(function(){try{return window.parent&&window.parent.__alloflowExtractedImages;}catch(_){return null;}})();var list=(_pL&&_pL.length)?_pL:((_lL&&_lL.length)?_lL:(_pL||_lL||[]));var prevMsg=c.querySelector('[data-alloflow-nomsg]');if(prevMsg)prevMsg.remove();if(!list.length){var msg=document.createElement('div');msg.setAttribute('data-alloflow-nomsg','true');msg.style.cssText='margin-top:0.5rem;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;max-width:90%';msg.textContent='No extracted images yet. Upload a PDF that contains images, or click the \\u201CUpload image\\u201D button to pick a local file.';c.appendChild(msg);setTimeout(function(){msg.remove();},5000);return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src)return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn})(c,img.src,img.description||'${_imgAltSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
-              // One-click removal (2026-06-11, user report: deleting a
-              // placeholder required manual selection — not intuitive).
-              return `<figure id="${_imgId}-figure" data-img-placeholder="true" style="position:relative;margin:1em 0">`
-                + `<button type="button" contenteditable="false" onclick="(function(){var f=document.getElementById('${_imgId}-figure');if(f)f.remove();try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}})()" aria-label="Remove this image placeholder" title="Remove this image placeholder" style="position:absolute;top:6px;right:6px;z-index:2;width:24px;height:24px;border-radius:50%;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-weight:700;font-size:14px;line-height:1;cursor:pointer">×</button>`
-                + `<div id="${_imgId}-container" style="background:#f1f5f9;border:2px dashed #64748b;border-radius:8px;padding:1rem;text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem" ondragover="${_dragOver}" ondragleave="${_dragLeave}" ondrop="${_dropHandler}">`
-                + `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`
-                + `<span style="font-size:13px;color:#334155;font-weight:600">Image placeholder</span>`
-                + `<span style="font-size:12px;color:#475569;max-width:90%">${escapeTextField(_imgDesc.substring(0, 140))}${_imgDesc.length > 140 ? '…' : ''}</span>`
-                + `<span style="font-size:11px;color:#64748b;font-style:italic">Drag an extracted image here, or:</span>`
-                + `<div style="display:flex;gap:6px;margin-top:0.25rem;flex-wrap:wrap;justify-content:center">`
-                + `<label style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#1d4ed8;color:#ffffff !important;border:1px solid #1e3a8a;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="color:#ffffff !important">Upload image</span><input type="file" accept="image/*" style="display:none" onchange="${_uploadHandler}"></label>`
-                + `<button type="button" onclick="${_pickHandler}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Pick from extracted images"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="color:#ffffff !important">Pick extracted</span></button>`
-                + `</div>`
-                + `</div>`
-                + (_captionText ? `<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5rem">${escapeTextField(_captionText)}</figcaption>` : '')
-                + `</figure>`;
-            }
-            case 'link': return `<a href="${safeHref(block.url)}" style="color:${docStyle.accentColor}">${escapeTextField(block.text)}</a>`;
-            case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic">${escapeTextField(block.text)}</blockquote>`;
-            case 'hr': return `<hr style="border:none;border-top:2px solid ${docStyle.sectionBorderColor};margin:2em 0">`;
-            case 'wordart': {
-              // Decorative stylized text. Renders via the shared WORD_ART_PRESETS so the in-app
-              // Document Builder preview and the exported PDF/HTML match exactly.
-              return renderWordArtHtml(block.text || block.title || '', block.preset || block.style || 'goldFoil', block.size || 'L', block.align || 'center');
-            }
-            case 'banner': {
-              // Compute an AA-safe text color from the LIGHTEST stop of the header
-              // background (solid or gradient). axe-core samples one representative bg
-              // color and will fail white-on-yellow even when text-shadow makes it
-              // visually readable — so we pick a text color that meets 4.5:1 against
-              // the worst-case stop. Dark backgrounds still resolve to white (unchanged).
-              const _bTitle = block.title || '';
-              const _bSubtitle = block.subtitle || '';
-              const _bEyebrow = block.eyebrow || '';
-              const _accent = docStyle.accentColor || '#fbbf24';
-              const _computeBannerText = (bg) => {
-                try {
-                  const s = String(bg || '');
-                  const stops = [];
-                  const hexRe = /#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/g;
-                  let m;
-                  while ((m = hexRe.exec(s)) !== null) {
-                    let h = m[1];
-                    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-                    stops.push([parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)]);
-                  }
-                  const rgbRe = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/g;
-                  while ((m = rgbRe.exec(s)) !== null) stops.push([+m[1], +m[2], +m[3]]);
-                  if (!stops.length) return '#ffffff'; // unknown → preserve prior visual
-                  const srgb = (c) => c <= 0.03928 ? c/12.92 : Math.pow((c + 0.055)/1.055, 2.4);
-                  const lumOf = ([r,g,b]) => 0.2126*srgb(r/255) + 0.7152*srgb(g/255) + 0.0722*srgb(b/255);
-                  const cr = (a, b) => { const l1 = lumOf(a), l2 = lumOf(b); return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05); };
-                  // Worst case for text is whichever stop has MAX luminance (brightest bg).
-                  let lightest = stops[0];
-                  for (let i = 1; i < stops.length; i++) if (lumOf(stops[i]) > lumOf(lightest)) lightest = stops[i];
-                  // If even the lightest stop is dark → safe to keep white.
-                  if (lumOf(lightest) < 0.35) return '#ffffff';
-                  // Otherwise drive near-black darker until >=4.5:1 against the lightest stop.
-                  let r = 31, g = 41, b = 55; // #1f2937
-                  for (let i = 0; i < 25 && cr([r,g,b], lightest) < 4.5; i++) {
-                    r = Math.max(0, Math.round(r * 0.82));
-                    g = Math.max(0, Math.round(g * 0.82));
-                    b = Math.max(0, Math.round(b * 0.82));
-                  }
-                  return '#' + [r,g,b].map(c => c.toString(16).padStart(2,'0')).join('');
-                } catch (_) { return '#ffffff'; }
-              };
-              const _bText = _computeBannerText(docStyle.headerBg);
-              // Text-shadow direction is still a nice-to-have even when color already passes;
-              // we keep it but flip to a light shadow when text is dark (preserves legibility
-              // if the lightest stop is also where the text sits).
-              const _isDarkText = _bText !== '#ffffff';
-              const _shadow = _isDarkText
-                ? '0 1px 2px rgba(255,255,255,0.35)'
-                : '0 2px 4px rgba(0,0,0,0.35)';
-              const _shadowSm = _isDarkText
-                ? '0 1px 1px rgba(255,255,255,0.3)'
-                : '0 1px 2px rgba(0,0,0,0.3)';
-              // #G (2026-07-05): the title is the ONE block the pipeline itself knows is the document
-              // title, yet it shipped as a styled <div> — the source of both Equal Access findings on the
-              // 7/5 scanned-book run ("missing h1", "no <header> landmark") and the PDF self-check's
-              // "first heading is H2" warning. Emit a real <h1> (same visual styles, margins zeroed) and
-              // mark the card data-allo-banner so runDeterministicWcagFixes lifts it into the top-level
-              // <header> BEFORE <main> (a header nested inside <main> is not a banner landmark). A
-              // chunk-merged doc can render several banner cards: _alloEnsureSingleH1 demotes the extra
-              // h1s, and only a card that OPENS the body is lifted, so mid-body cards stay plain divs.
-              return `<div data-allo-banner="true" style="position:relative;background:${docStyle.headerBg};color:${_bText} !important;padding:36px 40px;border-radius:14px;margin-bottom:28px;overflow:hidden;border-left:6px solid ${_accent};box-shadow:0 6px 20px rgba(15,23,42,0.18)">`
-                + (_bEyebrow ? '<p style="color:' + _bText + ' !important;font-size:0.75em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.95;margin:0 0 10px;text-shadow:' + _shadowSm + '">' + escapeTextField(_bEyebrow) + '</p>' : '')
-                + (_bTitle ? '<h1 style="color:' + _bText + ' !important;font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;margin:0;text-shadow:' + _shadow + '">' + escapeTextField(_bTitle) + '</h1>' : '')
-                + (_bSubtitle ? '<p style="color:' + _bText + ' !important;font-size:1.1em;font-weight:500;margin:10px 0 0;text-shadow:' + _shadowSm + '">' + escapeTextField(_bSubtitle) + '</p>' : '')
-                + `</div>`;
-            }
-            case 'rawhtml': {
-              // Sanitize model-supplied / imported HTML before trusting it. Prefer DOMPurify
-              // (a real HTML parser — catches mutation-XSS, entity-encoded schemes, and nested
-              // polyglots) when it's loaded; otherwise fall through to the regex baseline, which
-              // strips scripts/styles, active-content tags (iframe/object/embed/svg/math/link/
-              // meta/base), event handlers, and dangerous URL schemes. See _sanitizeRawHtmlBlock.
-              return _sanitizeRawHtmlBlock(block.html);
-            }
-            default: {
-              // Unknown block type — salvage any content field we recognize instead of silently dropping it,
-              // and log the type so we can extend the switch if Gemini starts emitting new shapes.
-              const _salvage = block.text || block.title || block.description || block.caption
-                || block.latex || block.value // L5: math/footnote blocks carry their content here, not in .text
-                || (Array.isArray(block.items) ? block.items.join(', ') : '');
-              if (block.type) _pipeLog('renderJsonToHtml', 'unknown block type: ' + block.type + ' — salvaged ' + _salvage.length + ' chars');
-              return `<div style="margin:0.6em 0">${escapeTextField(_salvage)}</div>`;
-            }
-          }
-          } catch (blockRenderErr) {
-            console.warn('[PDF Fix] Block ' + blockIdx + ' render error (type=' + (block.type||'?') + '):', blockRenderErr);
-            const salvageText = block.text || block.title || block.description || (Array.isArray(block.items) ? block.items.join(', ') : '');
-            if (salvageText) return '<p style="margin:0.6em 0;line-height:1.7">' + escapeTextField(sanitizeField(salvageText)) + '</p>';
-            return '';
-          }
-        }).filter(html => html.length > 0).join('\n');
-      };
+      const _rendererModule = window.AlloModules && window.AlloModules.DocBuilderRenderer;
+      if (!_rendererModule || typeof _rendererModule.createRenderer !== 'function') {
+        throw new Error('Document renderer module unavailable \u2014 reload after the application modules finish loading.');
+      }
+      const renderJsonToHtml = _rendererModule.createRenderer({
+        docStyle,
+        _accessibleHeaderColors,
+        _alloCellRichText,
+        _emitAccessibleTableHtml,
+        _pipeLog,
+        _sanitizeRawHtmlBlock,
+        _validateTableGrid,
+        renderWordArtHtml,
+        warnLog,
+      });
 
       // ── Step 2b: Extract structured content as JSON ──
       // Tier 8 deep wire: when the source PDF ships H1/H2/H3 tags, surface
@@ -20534,6 +21530,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           _structuralFidelityNotes.push({ kind: 'ocrDupeCollapse', msg: _ddN + ' repeated-word OCR echo(es) collapsed during page reconciliation (' + _ddWords.join(', ') + (_ddN > _ddWords.length ? ', …' : '') + ') — each token appeared twice in a row in one engine\'s read but once in the other\'s. Verify the affected sentence(s) against the original.' });
         }
       } catch (_) {}
+      // H-5 scanned half (2026-07-13): disclose column-aware reading-order rebuilds. Same
+      // _heavyScanned staleness gate as the echo-collapse note above.
+      try {
+        const _cro = (_heavyScanned && typeof window !== 'undefined' && Array.isArray(window.__alloOcrColumnReorders)) ? window.__alloOcrColumnReorders : [];
+        if (_cro.length) {
+          const _croPages = _cro.slice(0, 6).map((e) => e.pageNum).join(', ');
+          _structuralFidelityNotes.push({ kind: 'ocrColumnOrder', msg: 'The reading order on page' + (_cro.length === 1 ? '' : 's') + ' ' + _croPages + (_cro.length > 6 ? ', …' : '') + ' was rebuilt column-aware from the scan\'s word positions (the OCR engine had interleaved the columns line-by-line). No words were added or removed. Skim ' + (_cro.length === 1 ? 'that page' : 'those pages') + ' to confirm the text flows in the intended order.' });
+        }
+      } catch (_) {}
       // H4 (2026-07-09): disclose the page-edge lines the running-head strip DELETED from the OCR
       // ground truth — the text itself was previously undisclosed (only its digits rode out via
       // detectedFolios). Same _heavyScanned staleness gate as the echo-collapse note above.
@@ -20616,6 +21621,25 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       } catch (_aqErr) { altQualityReport = null; }
 
+      // Vision alt-vs-image spot check (2026-07-13): sampled ground-truth read.
+      // The heuristics above catch information-free alts; this catches
+      // plausible-but-WRONG ones. Fail-soft (throttle/abort → null); 1 sample in
+      // batch mode, 2 single-file; disagreements ride the SAME altQuality note
+      // plumbing so the panel/verdict/expert-review wiring needs no new reader.
+      try {
+        const _altSpot = await _visionAltSpotCheck(accessibleHtml, {
+          sample: _isBatch ? 1 : 2,
+          deferredImages: _deferredImageMap,
+        });
+        if (_altSpot && _altSpot.disagreements.length > 0) {
+          const _top = _altSpot.disagreements.slice(0, 2).map(d => '"' + d.alt.slice(0, 40) + '" (' + (d.reason || 'does not match the image') + (d.suggestion ? '; suggestion: "' + d.suggestion + '"' : '') + ')').join('; ');
+          warnLog('[AltSpotCheck] ' + _altSpot.disagreements.length + '/' + _altSpot.checked + ' sampled image description(s) do NOT match their image: ' + _top);
+          _structuralFidelityNotes.push({ kind: 'altQuality', msg: 'A Vision spot-check compared ' + _altSpot.checked + ' image description(s) against the actual image bytes and ' + _altSpot.disagreements.length + ' did not match — e.g. ' + _top + '. A wrong description is worse than a missing one for a screen-reader user; fix them in the image review panel before distributing.' });
+        } else if (_altSpot) {
+          warnLog('[AltSpotCheck] ' + _altSpot.checked + '/' + _altSpot.sampled + ' sampled image description(s) match their image (of ' + _altSpot.total + ' candidates).');
+        }
+      } catch (_) {}
+
       // ── Document Safety disclosure (dive-1 A1, 2026-07-02) ── the audit's active-content
       // scan travels on _auditResult; surface it through the same fidelity plumbing so the
       // teacher makes an INFORMED choice: standard tagged export preserves original bytes
@@ -20638,11 +21662,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // Severity-gated (2026-06-12): score<70 alone no longer triggers the
       // expert/vendor referral — a 65 with zero CRITICAL violations is a
       // decent document with moderate polish left, not an expert case. The
-      // card now means it: criticals present, axe couldn't verify at all, or
-      // the score is genuinely rough (<50).
-      const _deterministicManualReview = !!(axeResults && axeResults.totalIncomplete > 0) || _alloEqualAccessReviewCount(eaResults) > 0;
-      const _accessibilityConcern = axeFailed || _deterministicManualReview || // checker failed or returned rules needing human determination
-        (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 50) || axeCritical > 0));
+      // card now means it: confirmed critical/rule failures or a genuinely
+      // rough score (<50). Missing/indeterminate evidence stays in the review checklist.
+      const _eaConfirmedFailures = eaResults && Number.isFinite(eaResults.failViolations) ? Math.max(0, eaResults.failViolations) : 0;
+      const _accessibilityConcern = axeCritical > 0 || _eaConfirmedFailures > 0 ||
+        (autoFixPasses > 0 && finalAfterScore !== null && finalAfterScore < 50);
       const _contentFidelityConcern = !!integrityWarning || _structuralFidelityNotes.length > 0;
       let needsExpertReview = _accessibilityConcern || _contentFidelityConcern;       // let: reassigned by the post-recovery re-audit (recov-score-order)
       let expertReviewReason = (_accessibilityConcern && _contentFidelityConcern) ? 'both'
@@ -20805,8 +21829,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           axeViolations = _reAxeOk && axeResults ? axeResults.totalViolations : 0;
           axeCritical = _reAxeOk && axeResults ? axeResults.critical.length : 0;
           axeFailed = !_reAxeOk;
-          const _reDeterministicManualReview = !!(axeResults && axeResults.totalIncomplete > 0) || _alloEqualAccessReviewCount(eaResults) > 0;
-          const _reAccessibilityConcern = axeFailed || _reDeterministicManualReview || (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 50) || axeCritical > 0));
+          const _reEaConfirmedFailures = eaResults && Number.isFinite(eaResults.failViolations) ? Math.max(0, eaResults.failViolations) : 0;
+          const _reAccessibilityConcern = axeCritical > 0 || _reEaConfirmedFailures > 0 || (autoFixPasses > 0 && finalAfterScore !== null && finalAfterScore < 50);
           needsExpertReview = _reAccessibilityConcern || _contentFidelityConcern;
           expertReviewReason = (_reAccessibilityConcern && _contentFidelityConcern) ? 'both' : _reAccessibilityConcern ? 'accessibility' : _contentFidelityConcern ? 'content-fidelity' : null;
         } catch (_reErr) { warnLog('[PDF Fix] re-audit after recovery non-fatal:', _reErr && _reErr.message); }
@@ -20846,15 +21870,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         !!_verificationHtmlBinding,
         _ALLO_VERIFICATION_HTML_BINDING_REASON
       );
-      if (_verificationState.requiresManualReview) {
-        needsExpertReview = true;
-        expertReviewReason = _contentFidelityConcern ? 'both' : 'accessibility';
-      }
+      const _remediationOutcome = _alloRemediationOutcome({
+        afterScore: finalAfterScore,
+        axeAudit: axeResults,
+        _aiVerificationIncomplete: _aiVerificationIncomplete,
+      }, { targetScore: _runTargetScore });
       // sourceText + finalText feed the "Diff view" button in the remediation UI so
       // the user can audit verbatim-fidelity word-by-word. They cost some memory
       // (~2x doc size) but the UX value is high: the integrity % is only actionable
       // if the user can see WHAT drifted.
       const _result = {
+        documentDigest: _documentKey,
         accessibleHtml,
         integrityCoverage,
         // (integrityWarning is set once, below, with the M5 `|| null` default —
@@ -20959,7 +21985,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // 'success' only when the AI verification ran to full coverage AND the axe checker
           // returned a result; anything less is 'incomplete'. (Score-vs-target policy stays with
           // the host — this field feeds the run-history reliability rate defended to UMaine.)
-          outcome: _verificationState.verificationState === 'complete' ? 'success' : 'incomplete',
+          outcome: _remediationOutcome.state,
+          remediationOutcome: _remediationOutcome,
           verificationState: _verificationState.verificationState,
           verificationReviewCount: _verificationState.reviewCount,
           apiCalls: _pipelineStats.apiCalls,
@@ -20988,6 +22015,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         afterScore: verification ? verification.score : null,
         axeViolations: axeResults ? axeResults.totalViolations : null,
         htmlSize: Math.round(accessibleHtml.length / 1000) + 'KB',
+      });
+      _emitRemediationProgress(_runId, {
+        status: 'complete', step: 4, totalSteps: 4, stepName: 'Complete',
+        detail: 'Remediation complete', message: 'Remediation complete', overallPercent: 100, subprogress: null,
       });
 
       // Silent mode (multi-file batch with onProgress): return without
@@ -21021,10 +22052,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             fileName: _fileName,
             fileSize: _runFileSize || 0, // S1: run-entry snapshot — the bound var could be another upload by now
             pageCount: fullPageCount,
+            documentDigest: _documentKey,
           };
-          const _msSessionId = _multiSessionId(_msMeta.fileName, _msMeta.fileSize, _msMeta.pageCount);
+          const _msSessionId = _multiSessionId(_msMeta.fileName, _msMeta.fileSize, _msMeta.pageCount, _documentKey);
           saveMultiSessionRange(_msSessionId, _msMeta, {
             pages: [_pageRange[0], _pageRange[1]],
+            documentDigest: _documentKey,
             html: _result.accessibleHtml,
             beforeScore: beforeScore,
             afterScore: finalAfterScore,
@@ -21138,6 +22171,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       } catch(logErr) { /* non-blocking */ }
     } catch (err) {
       warnLog('[PDF Fix] Error:', err);
+      _emitRemediationProgress(_runId, {
+        status: 'failed', stepName: 'Remediation stopped',
+        detail: (err && err.message) ? String(err.message).slice(0, 240) : 'Unknown error',
+        message: 'Remediation stopped before completion',
+      });
       // Resumable incomplete project (2026-06-20): if extraction already produced
       // usable text before the failure, bank it so the host can save a .alloflow.json
       // the teacher can "Continue a previous session" from — instead of scrapping the
@@ -21157,6 +22195,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             extractedText: extractedText,
             base64: _base64 || null,
             fileName: _fileName || 'document.pdf',
+            docKey: _documentKey,
             auditResult: _auditResult || null,
             failureReason: _reason,
             failStage: _st.lastOpenStepLabel || null,
@@ -21218,6 +22257,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
     const _verificationCoverage = opts && opts.verificationCoverage;
     const _verificationState = (opts && opts.verificationState) || null;
     const _requiresVerificationReview = !!(opts && opts.requiresManualReview);
+    const _verificationReasons = opts && Array.isArray(opts.verificationReasons) ? opts.verificationReasons.filter(Boolean) : [];
     const _eaAuditForReport = opts && opts.secondEngineAudit;
     const _eaPotentialCount = _eaAuditForReport && Number.isFinite(_eaAuditForReport.potentialViolations) ? _eaAuditForReport.potentialViolations : 0;
     const _eaManualCount = _eaAuditForReport && Number.isFinite(_eaAuditForReport.manualViolations) ? _eaAuditForReport.manualViolations : 0;
@@ -21242,7 +22282,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _axeCopy = _axeIncompleteCount > 0 && !(opts && opts.automatedNA)
         ? '<p style="margin:6px 0 0"><strong>axe-core incomplete findings:</strong> ' + _axeIncompleteCount + ' rule' + (_axeIncompleteCount === 1 ? '' : 's') + ' could not be determined automatically. Review those rules before making a conformance decision.</p>'
         : '';
-      h += `<div style="margin:8px 0 12px;padding:10px 12px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;color:#78350f;font-size:12px"><strong>&#9888; WCAG verification status: ${_escVerify(_verificationState || 'review-required')}.</strong><ul style="margin:6px 0 0;padding-left:20px">${_engineRows}</ul>${_unavailableCopy}${_axeCopy}${_eaCopy}<p style="margin:6px 0 0">Automated and AI checks cover only their tested scope; unresolved or unavailable checks require human review and must not be presented as conformance.</p></div>`;
+      const _reasonCopy = _verificationReasons.length
+        ? '<p style="margin:6px 0 0"><strong>Status reasons:</strong></p><ul style="margin:4px 0 0;padding-left:20px">' + _verificationReasons.map((reason) => '<li>' + _escVerify(reason) + '</li>').join('') + '</ul>'
+        : '';
+      h += `<div style="margin:8px 0 12px;padding:10px 12px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;color:#78350f;font-size:12px"><strong>&#9888; WCAG verification status: ${_escVerify(_verificationState || 'review-required')}.</strong><ul style="margin:6px 0 0;padding-left:20px">${_engineRows}</ul>${_unavailableCopy}${_axeCopy}${_eaCopy}${_reasonCopy}<p style="margin:6px 0 0">Automated and AI checks cover only their tested scope; unresolved or unavailable checks require human review and must not be presented as conformance.</p></div>`;
     }
     if (_axeIncompleteCount > 0 && !(opts && opts.automatedNA) && !_verificationCoverage) {
       h += `<div style="margin:8px 0 12px;padding:10px 12px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;color:#78350f;font-size:12px"><strong>&#9888; Automated review is incomplete.</strong> axe-core returned ${_axeIncompleteCount} rule${_axeIncompleteCount === 1 ? '' : 's'} that could not be determined automatically. The structural score counts confirmed failures only; review the incomplete rules before making a conformance decision.</div>`;
@@ -21407,7 +22450,7 @@ tr { page-break-inside: avoid; }
 <a href="#audit-content" class="sr-only" style="position:absolute;left:-9999px">Skip to audit results</a>
 <main id="audit-content" role="main">
 <h1>Accessibility Audit Report</h1>
-<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Checked against: WCAG 2.2 Level AA criteria (the accessibility standard referenced by ADA Title II, Section 508, and EN 301 549)<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) + IBM Equal Access automated verification when available; per-engine coverage and unresolved review findings are disclosed below<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
+<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Checked against: WCAG 2.2 Level AA criteria (the accessibility standard referenced by ADA Title II, Section 508, and EN 301 549)<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) + IBM Equal Access automated verification when available; per-engine coverage and unresolved review findings are disclosed below. Scope note: the automated engines evaluate WCAG 2.2 rules; the AI content review scores against a WCAG 2.1 AA-era item set (the WCAG 2.2 additions are largely interaction-focused and are covered by the engines where they apply to documents).<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
 
     // Score
     const score = isBeforeAfter ? (d.after?.score ?? d.afterScore ?? '?') : (d.score ?? '?');
@@ -21467,7 +22510,7 @@ tr { page-break-inside: avoid; }
     // Image-only scan (audit-only report): the engines saw an empty reconstruction — render
     // n/a tiles + explanation instead of by-construction numbers (mirrors the on-screen n/a).
     const _noTextRpt = !isBeforeAfter && d.hasSearchableText === false;
-    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt, integrityWarning: d.integrityWarning, fidelityNotes: d.fidelityNotes, axeIncomplete: ((_axeAuditForReport || {}).totalIncomplete || 0), verificationCoverage: _reportCoverage, verificationState: _reportState, requiresManualReview: _reportRequiresReview, secondEngineAudit: _eaAuditForReport });
+    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt, integrityWarning: d.integrityWarning, fidelityNotes: d.fidelityNotes, axeIncomplete: ((_axeAuditForReport || {}).totalIncomplete || 0), verificationCoverage: _reportCoverage, verificationState: _reportState, verificationReasons: _reportVerification.reasons, requiresManualReview: _reportRequiresReview, secondEngineAudit: _eaAuditForReport });
 
     // Reliability metrics
     const audit = isBeforeAfter ? (d.before?.audit || d) : d;
@@ -21937,7 +22980,7 @@ tr { page-break-inside: avoid; }
     fr.integrityCoverage,
     opts.postExportValidator && opts.postExportValidator.summary,
     (fr.secondEngineAudit && typeof fr.secondEngineAudit.score === 'number' ? fr.secondEngineAudit.score : undefined),
-    { integrityWarning: fr.integrityWarning, fidelityNotes: fr.fidelityNotes, axeIncomplete: ((fr.axeAudit || {}).totalIncomplete || 0), verificationCoverage: _accessibilityVerificationCoverage, verificationState: _accessibilityVerificationState, requiresManualReview: _accessibilityRequiresReview, secondEngineAudit: fr.secondEngineAudit }
+    { integrityWarning: fr.integrityWarning, fidelityNotes: fr.fidelityNotes, axeIncomplete: ((fr.axeAudit || {}).totalIncomplete || 0), verificationCoverage: _accessibilityVerificationCoverage, verificationState: _accessibilityVerificationState, verificationReasons: _accessibilityVerification.reasons, requiresManualReview: _accessibilityRequiresReview, secondEngineAudit: fr.secondEngineAudit }
   )}
 
   ${_veraBlock}
@@ -25151,6 +26194,29 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // ── Return tagged bytes + summary + PDF/UA-1 self-check ──
     // useObjectStreams=false produces slightly larger PDFs but more
     // compatible with older readers and validators.
+    // Capture the intended semantic-leaf order from the HTML-derived ledger,
+    // filtered to leaves actually reachable through the in-memory StructTreeRoot.
+    // Object reference numbers survive pdf-lib serialization and therefore form
+    // an exact, text-independent fingerprint for the shipped /K traversal.
+    let _tagTreeExpectedLeafOrder = [];
+    let _tagTreeBuildOrderOk = null;
+    try {
+      const _ledgerOrder = [];
+      const _ledgerSeen = new Set();
+      for (const _lf of (_unifiableLeafRefs || [])) {
+        const _id = _lf && _lf.ref ? String(_lf.ref) : '';
+        if (_id && !_ledgerSeen.has(_id)) { _ledgerSeen.add(_id); _ledgerOrder.push(_id); }
+      }
+      const _builtOrder = collectTaggedTreeReferenceOrder(context, structRootRef, PDFName, new Set(_ledgerOrder));
+      const _reachable = new Set(_builtOrder);
+      _tagTreeExpectedLeafOrder = _ledgerOrder.filter((_id) => _reachable.has(_id));
+      if (_tagTreeExpectedLeafOrder.length > 0) {
+        _tagTreeBuildOrderOk = _builtOrder.length === _tagTreeExpectedLeafOrder.length;
+        for (let _i = 0; _tagTreeBuildOrderOk && _i < _builtOrder.length; _i++) {
+          if (_builtOrder[_i] !== _tagTreeExpectedLeafOrder[_i]) _tagTreeBuildOrderOk = false;
+        }
+      }
+    } catch (_) {}
     const _bytes = await doc.save({ useObjectStreams: false, addDefaultPage: false });
     // ── Round-trip self-check (Tier A) ──
     // _pdfUa1Checks above walk the IN-MEMORY structures (before save). This RE-PARSES
@@ -25159,6 +26225,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // registered fine but vanished at save, the Approach-1 failure mode that a
     // before-save check can't see). Advisory: it reports, never blocks the download.
     let _roundTrip = { ok: null, checks: [], warnings: [] };
+    let _tagTreeOrderReport = null;
     try {
       const _rt = await PDFDocument.load(_bytes, { updateMetadata: false });
       const _rtCat = _rt.catalog;
@@ -25180,6 +26247,33 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       } catch (_) {}
       _rtChecks.push({ rule: 'StructTreeRoot survived save', status: _rtHasStruct ? 'pass' : 'fail' });
       _rtChecks.push({ rule: 'Structure tree has content', status: _rtKLen > 0 ? 'pass' : 'fail', detail: _rtKLen + ' top-level element(s)' });
+      // Exact saved-tree reading-order check. Unlike the pdf.js sequence signal
+      // below, this walks the serialized StructTreeRoot /K hierarchy that AT uses.
+      try {
+        const _savedRootRef = _rtCat.get(PDFName.of('StructTreeRoot'));
+        const _trackedOrder = new Set(_tagTreeExpectedLeafOrder);
+        const _savedOrder = collectTaggedTreeReferenceOrder(_rt.context, _savedRootRef, PDFName, _trackedOrder);
+        let _orderExact = _tagTreeExpectedLeafOrder.length > 0
+          && _tagTreeBuildOrderOk === true
+          && _savedOrder.length === _tagTreeExpectedLeafOrder.length;
+        let _mismatchIndex = -1;
+        const _compareLen = Math.min(_savedOrder.length, _tagTreeExpectedLeafOrder.length);
+        for (let _oi = 0; _oi < _compareLen; _oi++) {
+          if (_savedOrder[_oi] !== _tagTreeExpectedLeafOrder[_oi]) {
+            _orderExact = false;
+            _mismatchIndex = _oi;
+            break;
+          }
+        }
+        if (_mismatchIndex < 0 && _savedOrder.length !== _tagTreeExpectedLeafOrder.length) _mismatchIndex = _compareLen;
+        const _orderStatus = _tagTreeExpectedLeafOrder.length === 0 ? 'warn' : (_orderExact ? 'pass' : 'fail');
+        _tagTreeOrderReport = { exact: _orderExact, expectedLeafCount: _tagTreeExpectedLeafOrder.length, savedLeafCount: _savedOrder.length, mismatchIndex: _mismatchIndex, buildOrderExact: _tagTreeBuildOrderOk };
+        _rtChecks.push({ rule: 'Logical reading order follows saved StructTreeRoot /K', status: _orderStatus, detail: _tagTreeExpectedLeafOrder.length === 0 ? 'No semantic leaves were available for an order fingerprint' : (_savedOrder.length + '/' + _tagTreeExpectedLeafOrder.length + ' semantic leaves in exact HTML-derived order') });
+        if (_orderStatus === 'fail') _rtWarn.push('The saved structure tree does not preserve the HTML-derived semantic leaf order (first mismatch at leaf ' + (_mismatchIndex + 1) + '). Verified delivery is withheld because assistive technology follows StructTreeRoot /K, not content-stream extraction order.');
+      } catch (_treeOrderErr) {
+        _tagTreeOrderReport = { exact: null, error: (_treeOrderErr && _treeOrderErr.message) || 'tree walk failed' };
+        _rtChecks.push({ rule: 'Logical reading order follows saved StructTreeRoot /K', status: 'warn', detail: 'Could not walk the saved structure tree' });
+      }
       let _rtMarked = false;
       try { const _mi = _rtCat.lookup(PDFName.of('MarkInfo')); const _mk = _mi && _mi.lookup ? _mi.lookup(PDFName.of('Marked')) : null; _rtMarked = !!_mk && String(_mk) === 'true'; } catch (_) {}
       _rtChecks.push({ rule: 'MarkInfo/Marked survived', status: _rtMarked ? 'pass' : 'fail' });
@@ -25346,7 +26440,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         }
       } catch (_) {}
       const _rtFailed = _rtChecks.some(c => c.status === 'fail') || _divergences.length > 0;
-      _roundTrip = { ok: !_rtFailed, validatedAgainst: 'reparsed-bytes', checks: _rtChecks, warnings: _rtWarn, divergences: _divergences, structElemsSaved: _rtStructCount, structElemsBuilt: _builtCount };
+      _roundTrip = { ok: !_rtFailed, validatedAgainst: 'reparsed-bytes', checks: _rtChecks, warnings: _rtWarn, divergences: _divergences, structElemsSaved: _rtStructCount, structElemsBuilt: _builtCount, tagTreeOrder: _tagTreeOrderReport };
       if (_rtFailed) { try { warnLog('[createTaggedPdf] post-save verification FAILED: ' + JSON.stringify({ fails: _rtChecks.filter(c => c.status === 'fail'), divergences: _divergences })); } catch (_) {} }
     } catch (_rtErr) {
       _roundTrip = { ok: null, checks: [], warnings: ['Round-trip re-parse threw: ' + (_rtErr && _rtErr.message)] };
@@ -25464,13 +26558,19 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
             }, {}),
           };
           // H-5: reading-order check — fires INDEPENDENTLY of coverage (a scrambled tag tree keeps ~100%
-          // coverage). WARN-first: surfaced as a check + warning, never 'fail' and never flips _roundTrip.ok
-          // (so an uncalibrated heuristic can't false-fail a legit doc). Once the threshold is calibrated on
-          // real multi-column PDFs + veraPDF, raise to 'fail' and withhold pdfuaid at stamp time (follow-up).
+          // coverage). ENFORCEMENT TIER (2026-07-13, the follow-up the note below scheduled): a ratio
+          // below 0.50 is a CATASTROPHIC scramble — a full column interleave scores far below it while
+          // legitimate light reflow stays well above 0.90 (single-column corpus fixtures sit at ~1.0) —
+          // so that tier now FAILS the check and folds into roundTrip.ok, which every existing delivery
+          // gate honors (typeset/tagged download withhold, batch EXCLUDE, decision panel). A scrambled
+          // tag tree no longer ships under an unqualified PDF/UA-1 claim. The 0.50–0.90 band stays
+          // warn/info pending real multi-column Canvas calibration; tightening = raising one constant.
           if (_orderRatio < 0.90) {
-            const _roStatus = _orderRatio < 0.80 ? 'warn' : 'info';
-            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Reading order preserved in the tagged tree (sequence match)', status: _roStatus, detail: Math.round(_orderRatio * 100) + '% of text is in source order — a low value suggests the tagged-PDF reading order was scrambled (common with multi-column layouts). The PDF/UA-1 claim is NOT order-verified; confirm with a PDF/UA validator.' });
-            (_roundTrip.warnings = _roundTrip.warnings || []).push('Reading-order signal: ' + Math.round(_orderRatio * 100) + '% of the text is in the same order as the source. A low value can mean the tagged-PDF reading order is scrambled (multi-column streams) — verify with a PDF/UA validator before relying on the PDF/UA-1 declaration.');
+            const _roStatus = _orderRatio < 0.50 ? 'fail' : (_orderRatio < 0.80 ? 'warn' : 'info');
+
+            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Extracted text sequence remains in source order (content-stream signal)', status: _roStatus, detail: Math.round(_orderRatio * 100) + '% of re-extracted text is in source order; a low value suggests content streams were scrambled (common with multi-column layouts). ' + (_roStatus === 'fail' ? 'This is far below any legitimate reflow; the export is withheld from the verified-delivery gates.' : 'The independent StructTreeRoot /K check reports the actual assistive-technology order.') });
+            (_roundTrip.warnings = _roundTrip.warnings || []).push('Content-stream order signal: ' + Math.round(_orderRatio * 100) + '% of re-extracted text is in the same order as the source. This supplements, but does not replace, the saved StructTreeRoot /K order check.');
+            if (_roStatus === 'fail') _roundTrip.ok = false;
           }
           if (_coverage < 0.99) {
             const _msg = 'Text-level verification: ' + _missing.length + ' tokens missing total (' + Math.round(_coverage * 100) + '% coverage). Of those, ' + _normEquivCount + ' differ only in hyphenation/whitespace/case (likely cosmetic) and ' + _residualCount + ' are residual (review). The [Re-run with restoration] action gates on residual count.';
@@ -33428,6 +34528,45 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   // Wrap each function to bind fresh state before execution
   var _wrap = function(fn) { return function() { _bindState(); return fn.apply(this, arguments); }; };
   var _wrapAsync = function(fn) { return async function() { _bindState(); return fn.apply(this, arguments); }; };
+  // Authoritative single-file re-entry guard. UI disabling is necessary feedback, but it cannot
+  // protect programmatic callers or a rapid second event before React renders. A watchdog/new-file
+  // invalidation changes the generation token, which deliberately releases a stale lock so recovery
+  // remains possible. Managed batch files retain their existing sequential/onProgress ownership.
+  var _activeSingleFixPromise = null;
+  var _activeSingleFixGeneration = 0;
+  var _wrapFixAndVerify = function(fn) { return function() {
+    _bindState();
+    var self = this;
+    var args = arguments;
+    var options = args[0] || null;
+    var managedBatch = !!(options && (options.onProgress || options.batchMode === true));
+    if (managedBatch) return fn.apply(self, args);
+    var liveGeneration = (typeof window !== 'undefined') ? (window.__alloPdfRunGen || 0) : 0;
+    if (_activeSingleFixPromise && liveGeneration !== _activeSingleFixGeneration) {
+      warnLog('[fixAndVerifyPdf] Releasing stale single-file run lock after generation invalidation.');
+      _activeSingleFixPromise = null;
+      _activeSingleFixGeneration = 0;
+    }
+    if (_activeSingleFixPromise) {
+      var duplicateError = new Error('A remediation run is already in progress.');
+      duplicateError.name = 'RemediationAlreadyRunningError';
+      duplicateError.isAlreadyRunning = true;
+      warnLog('[fixAndVerifyPdf] Duplicate single-file start ignored; the active remediation still owns this document.');
+      try { if (addToast) addToast('Remediation is already running. The duplicate start was ignored.', 'info'); } catch (_) {}
+      return Promise.reject(duplicateError);
+    }
+    var runPromise;
+    try { runPromise = Promise.resolve(fn.apply(self, args)); }
+    catch (error) { runPromise = Promise.reject(error); }
+    _activeSingleFixGeneration = (typeof window !== 'undefined') ? (window.__alloPdfRunGen || 0) : 0;
+    _activeSingleFixPromise = runPromise;
+    return runPromise.finally(function() {
+      if (_activeSingleFixPromise === runPromise) {
+        _activeSingleFixPromise = null;
+        _activeSingleFixGeneration = 0;
+      }
+    });
+  }; };
   return {
     deriveVerificationState: _alloDeriveVerificationState,
     createVerificationHtmlBinding: _alloCreateVerificationHtmlBinding,
@@ -33449,6 +34588,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     proposeRestyles: proposeRestyles,
     palettePresets: PALETTE_PRESETS,
     checkReadingOrderPreserved: checkReadingOrderPreserved,
+    collectTaggedTreeReferenceOrder: collectTaggedTreeReferenceOrder,
     readingOrderSequenceRatio: readingOrderSequenceRatio,
     // aiFixChunked is already exported below via _wrapAsync (state-binding) — Item C
     // mistakenly added a raw duplicate here (last-wins made it harmless, but esbuild
@@ -33468,6 +34608,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
     runEqualAccessAudit: _wrapAsync(runEqualAccessAudit),
+    equalAccessUnavailable: _equalAccessUnavailable,
+    visionAltSpotCheck: _visionAltSpotCheck, // sampled alt-vs-image ground truth (fail-soft; 2026-07-13)
     describeAndClassifyImages: _wrapAsync(describeAndClassifyImages),
     _applyImageIntel,
     createTypesetTaggedPdf: _wrapAsync(createTypesetTaggedPdf),
@@ -33479,6 +34621,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     fixContrastViolations: _wrap(fixContrastViolations),
     fixAxeContrastViolationsTargeted: _wrap(fixAxeContrastViolationsTargeted),
     sanitizeStyleForWCAG: _wrap(sanitizeStyleForWCAG),
+    sanitizeRemediationHtml: _alloSanitizeRemediationHtml,
+    sanitizeRemediationProject: _alloSanitizeRemediationProject,
     autoFixAxeViolations: _wrapAsync(autoFixAxeViolations),
     aiFixChunked: _wrapAsync(aiFixChunked),
     translateAccessibleHtml: _wrapAsync(translateAccessibleHtml),
@@ -33489,7 +34633,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     applyFormBlanks: _wrap(applyFormBlanks),
     refixChunk: _wrapAsync(refixChunk),
     getChunkState: _wrap(getChunkState),
-    fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
+    fixAndVerifyPdf: _wrapFixAndVerify(fixAndVerifyPdf),
     // Recompute the Resolved/Persisted/Newly-Introduced lists against a fresh audit after a follow-up
     // pass, so they reflect the CURRENT doc instead of going stale (recompute-on-incremental-commit).
     recomputeIssueResolution: _recomputeIssueResolution,
@@ -33499,6 +34643,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     recomputableFidelityKinds: _RECOMPUTABLE_FIDELITY_KINDS, // which note kinds the recompute replaces; the host carries the rest forward
     // R1: the one-line "Can I hand this out?" answer — pure fn over the result's honesty signals.
     distributionVerdict: _alloDistributionVerdict,
+    remediationOutcome: _alloRemediationOutcome,
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
     // Redaction infra (true removal + safety verify). Pure module-scope helpers; the UI flow
     // (select → confirm → redactDocument → block-if-not-clean) is wired separately. (redaction)
@@ -33528,7 +34673,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // Multi-session + Tier 2/2.5/3 — restored after 1ce8054 regression (see comment on
     // _MULTI_SESSION_EXPIRY_MS). UI at AlloFlowANTI.txt references all of these.
     multiSessionId: _multiSessionId,
-    loadMultiSession: function(sid) { return loadMultiSession(sid); },
+    documentDigest: _wrapAsync(_documentDigest),
+    loadMultiSession: function(sid, digest) { return loadMultiSession(sid, digest); },
     clearMultiSession: function(sid) { return clearMultiSession(sid); },
     mergeRangesToFullHtml: _wrap(mergeRangesToFullHtml),
     runTier2SurgicalFixes: _wrapAsync(runTier2SurgicalFixes),
@@ -33546,6 +34692,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     computeHeadline: _alloComputeHeadline, // single source of truth for the weakest-layer headline (the view reaches it via this instance prop)
     ocrBlockLayout: _alloOcrBlockLayout, // exposed for tests: the scanned-OCR block-fallback line distribution
     structuralFoundations: _alloStructuralFoundations, // the view's foundations scorecard calls this (single source for the regex set)
+    tableCellDrift: _alloTableCellDrift, // phase-2 cell-position gate (pure; blocking in acceptFixedHtmlDetailed)
     weightedDeductions: _alloWeightedDeductions, // #5: single source for the output-audit deduction (single-chunk + chunked-merge)
     contrastFixPair: _alloContrastFixPair, // deterministic which-colour-to-move contrast fixer (auto | preserve fg/bg/both)
     applyStyleSeedToHtml: _wrap(applyStyleSeedToHtml),
@@ -33572,6 +34719,8 @@ window.AlloModules.createDocPipeline.isLiveVerificationHtmlBound = _alloIsLiveVe
 window.AlloModules.createDocPipeline.applyVerificationHtmlBinding = _alloApplyVerificationHtmlBinding;
 window.AlloModules.createDocPipeline.enforceVerificationHtmlBinding = _alloEnforceVerificationHtmlBinding;
 window.AlloModules.createDocPipeline.rehydrateVerificationHtmlBinding = _alloRehydrateVerificationHtmlBinding;
+window.AlloModules.createDocPipeline.sanitizeRemediationHtml = _alloSanitizeRemediationHtml;
+window.AlloModules.createDocPipeline.sanitizeRemediationProject = _alloSanitizeRemediationProject;
 window.AlloModules.createDocPipeline.interactiveObjectProfileFor = _alloInteractiveObjectProfileFor;
 window.AlloModules.createDocPipeline.interactiveObjectManifestItem = _alloInteractiveObjectManifestItem;
 window.AlloModules.createDocPipeline.interactiveObjectProfileSummary = _alloInteractiveObjectProfileSummary;
@@ -33579,6 +34728,7 @@ window.AlloModules.createDocPipeline.INTERACTIVE_OBJECT_PROFILE_VERSION = ALLO_I
 window.AlloModules.createDocPipeline.computeHeadline = _alloComputeHeadline; // static: the AlloFlowANTI monolith delegates blendAiAxe here so its copy can never re-drift to a mean
 window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // static: exposed for tests (scanned-OCR block-fallback layout)
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
+window.AlloModules.createDocPipeline.tableCellDrift = _alloTableCellDrift; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
 window.AlloModules.createDocPipeline.docFingerprint = _alloDocFingerprint; // static: H2 (2026-07-02) — the ANTI host stamps v2 resume projects with it so resume can refuse a different file wearing the same name

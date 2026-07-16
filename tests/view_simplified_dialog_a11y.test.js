@@ -27,6 +27,27 @@ describe('Simplified View layered accessibility', () => {
     expect(source).not.toContain('{phonicsData && <div role="button" tabIndex={0}');
   });
 
+  it('focus-manages definition and revision dialogs without fake keyboard backdrops', () => {
+    expect(source).toContain('ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-definition-title"');
+    expect(source).toContain('containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition)');
+    expect(source).toContain('ref={definitionCloseRef} type="button"');
+    expect(source).toContain('if (definitionCloseRef.current) definitionCloseRef.current.focus()');
+    expect(source).toContain('ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-revision-title"');
+    expect(source).toContain('containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)');
+    expect(source).toContain('ref={revisionCloseRef} type="button"');
+    expect(source).toContain('if (revisionCloseRef.current) revisionCloseRef.current.focus()');
+    expect(source).toContain('{definitionData && <div aria-hidden="true"');
+    expect(source).toContain('{revisionData && <div aria-hidden="true"');
+    expect(source).not.toContain('{definitionData && <div role="button" tabIndex={0}');
+    expect(source).not.toContain('{revisionData && <div role="button" tabIndex={0}');
+  });
+
+  it('provides large focus-visible Definition and Revision actions', () => {
+    expect(source.match(/min-h-11 min-w-11/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(source).toContain("type=\"button\" aria-label={t('common.apply_text_revision')}");
+    expect(source).toContain('min-h-11 w-full bg-indigo-600');
+    expect(source).toContain('motion-reduce:animate-none motion-reduce:transition-none');
+  });
   it('announces cloze completion without moving focus', () => {
     expect(source).toContain('role="status" aria-live="polite" aria-atomic="true"><ConfettiExplosion');
     expect(source).toContain('Activity Complete!');

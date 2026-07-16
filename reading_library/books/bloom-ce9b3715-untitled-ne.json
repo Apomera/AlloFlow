@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-ce9b3715-untitled-ne",
+  "title": "भ्यागुतोको भोज",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Jtfz0fqx30"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fce9b3715-7190-4b07-8ed7-d5877dca2704%2f%e0%a4%ad%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%97%e0%a5%81%e0%a4%a4%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fAOR_Frog1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fce9b3715-7190-4b07-8ed7-d5877dca2704%2f%e0%a4%ad%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%97%e0%a5%81%e0%a4%a4%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fAOR_Ca-1-245.png",
+      "text": "स्कुलमा दौड प्रतियोगिता चलेको थियो। छरिते भ्यागुतो\nप्रथम भयो। ऊ काम गर्न अघि\nअघि सर्थ्यो। छरिते मायाले बोलाउने नाम हो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fce9b3715-7190-4b07-8ed7-d5877dca2704%2f%e0%a4%ad%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%97%e0%a5%81%e0%a4%a4%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fimage1.jpg",
+      "text": "छरिते पुरस्कार बोकी घर गयो। दङ्गपर्दै आमा भ्यागुतोलाई देखायो। खुसीले “ट्वार ट्वार” कराउन थाल्यो। आमाई अंगालो पनि हाल्यो।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fce9b3715-7190-4b07-8ed7-d5877dca2704%2f%e0%a4%ad%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%97%e0%a5%81%e0%a4%a4%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fimage2.jpg",
+      "text": "छरितेले खुसियालिमा भोज आयोजना गर्नेभयो। आमाको अनुमति पाएर ऊ उफ्रियो। साथीहरूलाई निम्तो दिन हिँड्यो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fce9b3715-7190-4b07-8ed7-d5877dca2704%2f%e0%a4%ad%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%97%e0%a5%81%e0%a4%a4%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fimage1.png",
+      "text": "घोर्ले, जिरे र अरू साथी थिए। सबैलाई भोजको निम्तो दियो। उनीहरूले निम्तो स्विकार गरे । काममा सहयोगको लागि अनुरोध गर्यो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fce9b3715-7190-4b07-8ed7-d5877dca2704%2f%e0%a4%ad%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%97%e0%a5%81%e0%a4%a4%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fimage2.png",
+      "text": "भोलिपल्ट छरितेको घरमा सबै जम्मा भए। उसले पकाइने खानेकुराकोबारे सबै साथीलाई बतायो। साथीहरूले गर्न सक्ने काम जिम्मा दियो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fce9b3715-7190-4b07-8ed7-d5877dca2704%2f%e0%a4%ad%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%97%e0%a5%81%e0%a4%a4%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fimage3.png",
+      "text": "सबैजनाले आफ्नो काम गर्न सुरू गरे। कसैले तरकारी काटे। कसैले पानी ओसारे। कसैले गेडागुडी केलाए। सबैजना मिलिजुली पकाउन थाले।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fce9b3715-7190-4b07-8ed7-d5877dca2704%2f%e0%a4%ad%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%97%e0%a5%81%e0%a4%a4%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fimage11.png",
+      "text": "सबै खानेकुरा पाक्न थाल्यो। खानाको मिठो बास्‍ना आउन थाल्यो। सबैजना मिलेर ठाउँ सफा गर्न थाले। खाना पस्किन तयार गरियो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fce9b3715-7190-4b07-8ed7-d5877dca2704%2f%e0%a4%ad%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%97%e0%a5%81%e0%a4%a4%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fimage13.png",
+      "text": "पाकेको सबै खाना अगाडि राखियो। आमाबुबा भ्यागुतोलाई पनि निम्ता गरियो। सबैले मिलिजुली खाना खाए।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fce9b3715-7190-4b07-8ed7-d5877dca2704%2f%e0%a4%ad%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%97%e0%a5%81%e0%a4%a4%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fimage3.jpg",
+      "text": "भोज खाइसकेपछि सबैजना मिलेर रमाइलो गरे। गीत गाउन र नाच्न थाले। रमाइलो साथ उत्सव मनाए।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fce9b3715-7190-4b07-8ed7-d5877dca2704%2f%e0%a4%ad%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%97%e0%a5%81%e0%a4%a4%e0%a5%8b%e0%a4%95%e0%a5%8b+%e0%a4%ad%e0%a5%8b%e0%a4%9c%2fAOR_Frog4.png",
+      "text": "भोज खाइसकेपछि सबैले छरितेलाई धन्यवाद दिए। सबै आ आफ्नो घर फर्के। आमाबुबा पनि खुसी हुनुभयो। छरितेलाई स्यावासी दिए।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 175
+  }
+}

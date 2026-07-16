@@ -31,6 +31,7 @@ function PausableImage(props) {
   const imgRef = React.useRef(null);
   const captureRef = React.useRef(false);
   const paused = isAnimated && (globalPaused || localPaused);
+  const hiddenWhilePaused = paused && !frozenFrame;
 
   // On image load, capture first frame to a canvas so we can pause later.
   // Wrapped in try/catch — canvas drawImage on cross-origin images without
@@ -69,14 +70,24 @@ function PausableImage(props) {
         alt={alt}
         onLoad={handleLoad}
         crossOrigin={src && src.startsWith('data:') ? undefined : 'anonymous'}
-        style={imgInlineStyle}
+        style={Object.assign({}, imgInlineStyle, { visibility: hiddenWhilePaused ? 'hidden' : 'visible' })}
       />
-      {frozenFrame && (
+      {hiddenWhilePaused && (
+        <span
+          role="img"
+          aria-label={`Paused animation: ${alt || 'image'}`}
+          style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', color: '#475569', fontSize: 20 }}
+        >⏸</span>
+      )}
+      {isAnimated && (
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); setLocalPaused(p => !p); }}
-          aria-label={paused ? `Play animation: ${alt || 'image'}` : `Pause animation: ${alt || 'image'}`}
-          title={paused ? 'Resume animation' : 'Pause animation'}
+          disabled={!!globalPaused}
+          aria-pressed={paused}
+          aria-label={globalPaused ? `Animation paused by the global setting: ${alt || 'image'}` : (paused ? `Play animation: ${alt || 'image'}` : `Pause animation: ${alt || 'image'}`)}
+          title={globalPaused ? 'Animation paused by the global setting' : (paused ? 'Resume animation' : 'Pause animation')}
+          className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-70"
           style={{
             position: 'absolute', top: 2, right: 2,
             width: 24, height: 24, padding: 0,
@@ -192,34 +203,34 @@ function VisualSupportsModal(props) {
                     onClick={() => setPauseAnim(p => !p)}
                     aria-pressed={pauseAnim}
                     title={pauseAnim ? 'Resume all animated images' : 'Pause all animated images'}
-                    className="text-white/90 hover:text-white text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 flex items-center gap-1"
+                    className="min-h-11 text-white/90 hover:text-white text-[11px] font-semibold px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 flex items-center gap-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   >
                     <span aria-hidden="true">{pauseAnim ? '▶' : '⏸'}</span>
                     <span>{pauseAnim ? 'Resume' : 'Pause'} animations</span>
                   </button>
-                  <button onClick={() => setShowVisualSupports(false)} aria-label="Close Visual Supports" className="text-white/70 hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center">×</button>
+                  <button type="button" onClick={() => setShowVisualSupports(false)} aria-label="Close Visual Supports" className="min-h-11 min-w-11 text-white/80 hover:text-white text-2xl font-bold flex items-center justify-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">×</button>
                 </div>
               </div>
               <div className="flex border-b border-slate-200 bg-slate-50 flex-shrink-0" role="tablist" aria-label="Visual support type">
-                <button id="visual-supports-tab-boards" role="tab" aria-selected={vsTab === 'boards'} aria-controls="visual-supports-panel-boards" tabIndex={vsTab === 'boards' ? 0 : -1} onKeyDown={handleTabKeyDown} onClick={() => setVsTab('boards')} className={`flex-1 py-3 text-sm font-semibold transition-colors ${vsTab === 'boards' ? 'text-purple-700 border-b-2 border-purple-600 bg-white' : 'text-slate-600 hover:text-slate-700'}`}>
+                <button type="button" id="visual-supports-tab-boards" role="tab" aria-selected={vsTab === 'boards'} aria-controls="visual-supports-panel-boards" tabIndex={vsTab === 'boards' ? 0 : -1} onKeyDown={handleTabKeyDown} onClick={() => setVsTab('boards')} className={`flex-1 py-3 text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-purple-700 ${vsTab === 'boards' ? 'text-purple-700 border-b-2 border-purple-600 bg-white' : 'text-slate-600 hover:text-slate-700'}`}>
                   📋 Boards ({vsBoards.length})
                 </button>
-                <button id="visual-supports-tab-schedules" role="tab" aria-selected={vsTab === 'schedules'} aria-controls="visual-supports-panel-schedules" tabIndex={vsTab === 'schedules' ? 0 : -1} onKeyDown={handleTabKeyDown} onClick={() => setVsTab('schedules')} className={`flex-1 py-3 text-sm font-semibold transition-colors ${vsTab === 'schedules' ? 'text-purple-700 border-b-2 border-purple-600 bg-white' : 'text-slate-600 hover:text-slate-700'}`}>
+                <button type="button" id="visual-supports-tab-schedules" role="tab" aria-selected={vsTab === 'schedules'} aria-controls="visual-supports-panel-schedules" tabIndex={vsTab === 'schedules' ? 0 : -1} onKeyDown={handleTabKeyDown} onClick={() => setVsTab('schedules')} className={`flex-1 py-3 text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-purple-700 ${vsTab === 'schedules' ? 'text-purple-700 border-b-2 border-purple-600 bg-white' : 'text-slate-600 hover:text-slate-700'}`}>
                   📅 Schedules ({vsSchedules.length})
                 </button>
               </div>
-              <div id={`visual-supports-panel-${vsTab}`} role="tabpanel" aria-labelledby={`visual-supports-tab-${vsTab}`} className="flex-1 overflow-y-auto p-4 space-y-6">
+              <div id={`visual-supports-panel-${vsTab}`} role="tabpanel" aria-labelledby={`visual-supports-tab-${vsTab}`} tabIndex={0} className="flex-1 overflow-y-auto p-4 space-y-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-purple-700">
                 {vsTab === 'boards' && (vsBoards.length === 0
-                  ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3">📋</div><p className="font-semibold">No saved boards yet</p><p className="text-sm mt-1">Save boards in Symbol Studio to see them here</p></div>
+                  ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3" aria-hidden="true">📋</div><p className="font-semibold">No saved boards yet</p><p className="text-sm mt-1">Save boards in Symbol Studio to see them here</p></div>
                   : vsBoards.map(board => (
                     <div key={board.id} className="border border-slate-400 rounded-xl overflow-hidden">
-                      <div className="bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200">{board.title || 'Untitled Board'}</div>
-                      <div className="p-3" style={{display:'grid', gridTemplateColumns:`repeat(${Math.min(board.cols||4,6)},1fr)`, gap:6}}>
+                      <h3 className="bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200">{board.title || 'Untitled Board'}</h3>
+                      <div className="p-3" role="list" aria-label={(board.title || 'Untitled Board') + ' symbols'} style={{display:'grid', gridTemplateColumns:`repeat(${Math.min(board.cols||4,6)},1fr)`, gap:6}}>
                         {(board.words||[]).map((word,i) => (
-                          <div key={i} style={{background: CAT_BG[word.category]||'#f3f4f6', borderRadius:8, padding:6, display:'flex', flexDirection:'column', alignItems:'center', gap:4}}>
+                          <div key={i} role="listitem" style={{background: CAT_BG[word.category]||'#f3f4f6', borderRadius:8, padding:6, display:'flex', flexDirection:'column', alignItems:'center', gap:4}}>
                             {word.image
-                              ? <PausableImage src={word.image} alt={word.label} globalPaused={pauseAnim} style={{width:56,height:56}}/>
-                              : <div style={{width:56,height:56,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,color:'#d1d5db'}}>?</div>}
+                              ? <PausableImage src={word.image} alt={word.label || 'Board symbol'} globalPaused={pauseAnim} style={{width:56,height:56}}/>
+                              : <div aria-hidden="true" style={{width:56,height:56,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,color:'#d1d5db'}}>?</div>}
                             <span style={{fontSize:11,fontWeight:600,textAlign:'center',color:'#1f2937',lineHeight:1.2}}>{word.label}</span>
                           </div>
                         ))}
@@ -228,18 +239,18 @@ function VisualSupportsModal(props) {
                   ))
                 )}
                 {vsTab === 'schedules' && (vsSchedules.length === 0
-                  ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3">📅</div><p className="font-semibold">No saved schedules yet</p><p className="text-sm mt-1">Save schedules in Symbol Studio to see them here</p></div>
+                  ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3" aria-hidden="true">📅</div><p className="font-semibold">No saved schedules yet</p><p className="text-sm mt-1">Save schedules in Symbol Studio to see them here</p></div>
                   : vsSchedules.map(sched => (
                     <div key={sched.id} className="border border-slate-400 rounded-xl overflow-hidden">
-                      <div className="bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200">{sched.title || 'Untitled Schedule'}</div>
-                      <div className="p-3 overflow-x-auto">
-                        <div style={{display:'flex',gap:8,minWidth:'max-content'}}>
+                      <h3 className="bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200">{sched.title || 'Untitled Schedule'}</h3>
+                      <div className="p-3 overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700" tabIndex={0} aria-label={(sched.title || 'Untitled Schedule') + ' horizontally scrollable items'}>
+                        <div role="list" aria-label={(sched.title || 'Untitled Schedule') + ' steps'} style={{display:'flex',gap:8,minWidth:'max-content'}}>
                           {(sched.items||[]).map((item,i) => (
-                            <div key={item.id||i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,width:72}}>
+                            <div key={item.id||i} role="listitem" style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,width:72}}>
                               <div style={{width:72,height:72,border:'2px solid #e5e7eb',borderRadius:10,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:'#fafafa'}}>
                                 {item.image
-                                  ? <PausableImage src={item.image} alt={item.label} globalPaused={pauseAnim} style={{width:'100%',height:'100%'}}/>
-                                  : <span style={{fontSize:28,color:'#d1d5db'}}>?</span>}
+                                  ? <PausableImage src={item.image} alt={item.label || 'Schedule step'} globalPaused={pauseAnim} style={{width:'100%',height:'100%'}}/>
+                                  : <span aria-hidden="true" style={{fontSize:28,color:'#d1d5db'}}>?</span>}
                               </div>
                               <span style={{fontSize:10,fontWeight:600,textAlign:'center',color:'#374151',lineHeight:1.2}}>{item.label}</span>
                             </div>

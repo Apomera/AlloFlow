@@ -25,6 +25,19 @@
   // (no Model UN session active) or the active simulator UI.
   // ═══════════════════════════════════════════
 
+  function requestModelUNConfirmation(message, options) {
+    var ux = typeof window !== 'undefined' ? window.AlloFlowUX : null;
+    if (!ux || typeof ux.confirm !== 'function') {
+      if (typeof console !== 'undefined') {
+        console.warn('[arcade_mode_modelun] Accessible confirmation service is unavailable; action cancelled.');
+      }
+      return Promise.resolve(false);
+    }
+    return ux.confirm(message, options || {}).then(function (result) {
+      return result === true;
+    });
+  }
+
   function waitForRegistry(cb) {
     if (window.AlloHavenArcade && typeof window.AlloHavenArcade.registerMode === 'function') {
       cb(); return;
@@ -3261,8 +3274,12 @@
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, 'Advance to Resolution Drafting →'),
         isHost && !allSpoken && h('button', {
-          onClick: function() {
-            if (typeof confirm === 'function' && !confirm('Skip to Resolution Drafting? Some delegates have not spoken yet.')) return;
+          onClick: async function() {
+            var approved = await requestModelUNConfirmation(
+              'Some delegates have not spoken yet. Skip to Resolution Drafting anyway?',
+              { title: 'Skip remaining speeches?', confirmText: 'Skip to drafting', cancelText: 'Keep debating', tone: 'warning' }
+            );
+            if (!approved) return;
             updateMUN({ phase: PHASES.DRAFT });
           },
           style: { padding: '6px 10px', fontSize: 11, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
@@ -3679,10 +3696,14 @@
       delete next[clauseId];
       updateMUN({ clauses: next });
     }
-    function advanceToVote() {
+    async function advanceToVote() {
       var adopted = orderedClauses.filter(function(c) { return c.status === 'adopted'; });
       if (adopted.length === 0) {
-        if (typeof confirm === 'function' && !confirm('No clauses adopted yet. Proceed to vote on the full draft anyway?')) return;
+        var approved = await requestModelUNConfirmation(
+          'No clauses have been adopted. Proceed to a vote on the full draft anyway?',
+          { title: 'Proceed without adopted clauses?', confirmText: 'Proceed to vote', cancelText: 'Return to drafting', tone: 'warning' }
+        );
+        if (!approved) return;
       }
       updateMUN({ phase: PHASES.VOTE, finalVotes: {} });
     }
@@ -3915,8 +3936,13 @@
                     onAdopt: function() { setClauseStatus(c.id, c.status === 'adopted' ? 'open' : 'adopted'); },
                     onReject: function() { setClauseStatus(c.id, c.status === 'rejected' ? 'open' : 'rejected'); },
                     onOpenAmendments: function() { setAmOpenId(c.id); },
-                    onRemove: function() {
-                      if (typeof confirm !== 'function' || confirm('Remove this clause?')) removeClause(c.id);
+                    onRemove: async function() {
+                      var approved = await requestModelUNConfirmation(
+                        'Remove this clause from the resolution draft? This cannot be undone.',
+                        { title: 'Remove clause?', confirmText: 'Remove clause', cancelText: 'Keep clause', tone: 'danger' }
+                      );
+                      if (!approved) return;
+                      removeClause(c.id);
                     }
                   });
                 })
@@ -7134,8 +7160,12 @@
         h('div', { style: { display: 'flex', alignItems: 'center', marginTop: 6, fontSize: 10, color: '#94a3b8' } },
           h('span', null, notes.length + ' / 4000'),
           h('button', {
-            onClick: function() {
-              if (typeof confirm === 'function' && !confirm('Clear all notes for this session?')) return;
+            onClick: async function() {
+              var approved = await requestModelUNConfirmation(
+                'Clear all notes for this Model UN session? This cannot be undone.',
+                { title: 'Clear session notes?', confirmText: 'Clear notes', cancelText: 'Keep notes', tone: 'danger' }
+              );
+              if (!approved) return;
               setNotes('');
             },
             style: { marginLeft: 'auto', padding: '4px 8px', fontSize: 10, fontWeight: 700, background: 'rgba(220,38,38,0.18)', color: '#fca5a5', border: '1px solid #dc2626', borderRadius: 6, cursor: 'pointer' }

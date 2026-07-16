@@ -41,8 +41,25 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
-      - name: verify:gate (render-refs + lang-json + module contracts)
+      - name: verify:gate (generated modules + render refs + module contracts)
         run: npm run verify:gate
+
+  adventure-journey:
+    name: Adventure journey (choice + free response + debate)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm install --no-audit --no-fund
+      - name: Install React 18 for the Adventure browser harness
+        run: npm install --no-audit --no-fund --no-save --prefix prismflow-deploy react@^18.2.0 react-dom@^18.2.0
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+      - name: Run deterministic Adventure journeys
+        run: npx playwright test tests/e2e/adventure-journey.spec.ts
 
   unit:
     name: Unit + golden-master tests (vitest)
@@ -155,7 +172,7 @@ jobs:
     # WHY THIS EXISTS: the tag-tree job above validates the exported PDFs against AlloFlow's
     # OWN exported_pdf_validator (a self-check). A reliability reviewer (Garry / Paul at UMaine)
     # would run the INDEPENDENT, ISO-grade veraPDF CLI instead. This job does exactly that: it
-    # installs real veraPDF, regenerates the source→tagged artifact pairs the tag-tree golden
+    # installs real veraPDF, regenerates the source→tagged artifact pairs the browser goldens
     # produces, and runs dev-tools/verapdf_diff.cjs --gate — which FAILS on any ISO 14289-1 rule
     # that tagging INTRODUCED (the regression class), while excluding the by-design clause-5
     # declaration withholding. Until now the only veraPDF check auto-SKIPPED when the binary was
@@ -185,6 +202,7 @@ jobs:
       - name: Install veraPDF (official greenfield CLI, headless auto-install)
         run: |
           set -euo pipefail
+          python3 -c "from pathlib import Path; import re, xml.etree.ElementTree as ET; p=Path('dev-tools/verapdf_ci_autoinstall.xml'); s=p.read_text(encoding='utf-8'); assert not any('--' in body for body in re.findall(r'<!--(.*?)-->', s, re.S)), 'XML comments may not contain --'; ET.parse(p)"
           curl -fsSL -o "$RUNNER_TEMP/verapdf-installer.zip" https://software.verapdf.org/releases/verapdf-installer.zip
           unzip -q "$RUNNER_TEMP/verapdf-installer.zip" -d "$RUNNER_TEMP/verapdf-installer"
           INSTALLER_JAR="$(find "$RUNNER_TEMP/verapdf-installer" -name 'verapdf-izpack-installer-*.jar' | head -1)"
@@ -194,13 +212,15 @@ jobs:
           test -x "$HOME/verapdf/verapdf" || { echo '::error::veraPDF launcher not installed (pack layout changed?)'; ls -la "$HOME/verapdf" 2>/dev/null || true; exit 1; }
           "$HOME/verapdf/verapdf" --version
           echo "VERAPDF_PATH=$HOME/verapdf/verapdf" >> "$GITHUB_ENV"
-      - name: Generate source→tagged PDF artifact pairs (tag-tree golden)
-        run: npx playwright test tests/e2e/pdf_tag_tree_golden.spec.ts
+      - name: Generate source-to-tagged PDF artifact pairs (tag-tree + full remediation)
+        run: npx playwright test tests/e2e/pdf_tag_tree_golden.spec.ts tests/e2e/remediation_corpus_golden.spec.ts
       - name: Assert artifact pairs exist (gate must not be vacuous)
         run: |
           set -euo pipefail
           PAIRS="$(ls tests/e2e/artifacts/*.tagged.pdf 2>/dev/null | wc -l)"
           echo "tagged artifacts produced: $PAIRS"
+          test -f tests/e2e/artifacts/remediation-e2e.source.pdf || { echo '::error::full-remediation source artifact is missing'; exit 1; }
+          test -f tests/e2e/artifacts/remediation-e2e.tagged.pdf || { echo '::error::full-remediation tagged artifact is missing'; exit 1; }
           test "$PAIRS" -gt 0 || { echo '::error::tag-tree golden produced no .tagged.pdf artifacts — the veraPDF gate would be vacuous'; exit 1; }
       - name: veraPDF gate — tagging must not INTRODUCE an ISO 14289-1 failure
         run: node dev-tools/verapdf_diff.cjs --gate

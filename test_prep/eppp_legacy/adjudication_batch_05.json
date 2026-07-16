@@ -1,0 +1,471 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T00:01:37.927Z",
+  "currentSourceReviewDate": "2026-07-14",
+  "status": "editorial-adjudication-complete-still-quarantined",
+  "purpose": "Adjudicate ten EPPP legacy candidates selected for ambiguous numerical claims, duplicate definitions, oversimplified medication risk, incomplete diagnostic thresholds, and jurisdiction-sensitive licensure without treating editorial revision as expert approval.",
+  "reviewMethod": [
+    "Verify every key and inference boundary against authoritative, official, primary, or peer-reviewed sources.",
+    "Name the denominator and reference population for percentages, prevalence, heritability, and prediction claims.",
+    "Treat duplicate stems and claims whose core framing is misleading as full reauthoring tasks.",
+    "Require four plausible, conceptually distinct options and a substantive explanation for every option.",
+    "Keep every revised item quarantined pending independent qualified review in the relevant specialty."
+  ],
+  "summary": {
+    "adjudicatedCandidates": 10,
+    "minorRevision": 4,
+    "majorRewrite": 6,
+    "promotedToNativeBank": 0,
+    "independentExpertValidated": 0,
+    "domainDistribution": {
+      "biological": 1,
+      "cognitive-affective": 1,
+      "social-cultural": 1,
+      "lifespan": 1,
+      "assessment": 2,
+      "intervention": 2,
+      "research": 1,
+      "professional": 1
+    }
+  },
+  "items": [
+    {
+      "adjudicationPosition": 1,
+      "legacyId": "legacy-91f59208eac05a59",
+      "domainId": "biological",
+      "originalPrompt": "Heritability estimates for intelligence are approximately:",
+      "originalAnswerIndex": 1,
+      "decision": "major-rewrite",
+      "sourceVerification": "adult-estimates-contextualized-universal-percentage-rejected",
+      "findings": [
+        "Adult intelligence differences are substantially heritable in many studied samples, and estimates often increase across development.",
+        "A heritability estimate describes variation in a particular population and environment; it is not a fixed percentage of an individual's intelligence, proof of immutability, or a universal cross-population constant."
+      ],
+      "workflowStage": "editorial-adjudicated-quarantine",
+      "learnerVisibleInNativeBank": false,
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "revisedItem": {
+        "prompt": "Which interpretation of a heritability estimate for intelligence is scientifically appropriate?",
+        "choices": [
+          "It estimates how much score variation in a specified population and environment is statistically associated with genetic variation.",
+          "It states the percentage of one person's intelligence that was caused by genes and cannot be changed.",
+          "It proves that average differences between any two social groups must be genetic in origin.",
+          "It is a universal biological constant that remains identical across ages, populations, and environments."
+        ],
+        "answerIndex": 0,
+        "rationale": "Heritability is a population statistic about variation, not a genetic percentage assigned to an individual. Intelligence differences are substantially heritable in many studied samples, and estimates often rise with age, but the value depends on the population, environment, measures, design, and historical context. High heritability also does not mean a trait is immutable.",
+        "choiceRationales": [
+          "This correctly identifies both the unit of inference—variation among people—and the population and environmental conditions to which the estimate applies.",
+          "Heritability does not partition one person's trait into genetic and environmental percentages, and it provides no warrant for claiming that change is impossible.",
+          "Within-population heritability does not identify the causes of average differences between populations, which may differ in genetic and environmental conditions.",
+          "Published estimates vary across development, samples, environments, measures, and analytic assumptions, so no single percentage is a context-free biological constant."
+        ],
+        "sourceDetails": [
+          {
+            "title": "What is heritability?",
+            "organization": "MedlinePlus Genetics, U.S. National Library of Medicine",
+            "url": "https://medlineplus.gov/genetics/understanding/inheritance/heritability/",
+            "credibility": "MedlinePlus Genetics is an expert-reviewed federal health resource. It defines heritability as population variation associated with genetic variation and stresses that estimates depend on the studied population, environment, and time."
+          },
+          {
+            "title": "Genetics and intelligence differences: five special findings",
+            "organization": "Robert Plomin and Ian J. Deary, Molecular Psychiatry, 20, 98-108 (2015)",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4270739/",
+            "credibility": "This peer-reviewed review synthesizes twin and genomic evidence on intelligence differences, including the finding that estimated heritability changes across development rather than having one universal adult percentage."
+          }
+        ]
+      }
+    },
+    {
+      "adjudicationPosition": 2,
+      "legacyId": "legacy-b2a545cb137aefb0",
+      "domainId": "cognitive-affective",
+      "originalPrompt": "Flashbulb memories are:",
+      "originalAnswerIndex": 1,
+      "decision": "major-rewrite",
+      "sourceVerification": "vivid-confidence-supported-accuracy-equivalence-rejected",
+      "findings": [
+        "Flashbulb memories concern the circumstances in which a person learned of a surprising and consequential event and often remain vivid and confidently held.",
+        "Prospective evidence shows that their consistency can decline like ordinary autobiographical memories even when vividness and confidence remain unusually high; the docket also contains repeated versions of this definition."
+      ],
+      "workflowStage": "editorial-adjudicated-quarantine",
+      "learnerVisibleInNativeBank": false,
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "revisedItem": {
+        "prompt": "Months after a shocking public event, a person remains highly confident and vividly recalls where they first heard the news. What does flashbulb-memory research most strongly caution?",
+        "choices": [
+          "Vividness and confidence can remain high even when the remembered details are not especially consistent or accurate.",
+          "Emotion preserves a literal recording, so confidently recalled details should be treated as error-free evidence.",
+          "Only pleasant events can produce enduring memories for the circumstances in which news was received.",
+          "Any inconsistency proves that the person never formed an autobiographical memory of the event."
+        ],
+        "answerIndex": 0,
+        "rationale": "Flashbulb memories can feel vivid, detailed, and subjectively certain because they concern surprising, consequential events and the circumstances of learning about them. In prospective research, however, their consistency declined over time much like everyday memories while confidence and vividness stayed comparatively high. Confidence therefore should not be equated with accuracy.",
+        "choiceRationales": [
+          "This captures the central empirical dissociation: the subjective qualities that make a memory feel special do not guarantee superior objective consistency.",
+          "Human autobiographical memory is reconstructive, and strong emotion or confidence does not turn it into a complete, permanent recording of the original experience.",
+          "The construct was developed around surprising and consequential events; it is not restricted to pleasant emotional valence.",
+          "Later inconsistency is compatible with an originally formed autobiographical memory that changed through ordinary reconstructive memory processes."
+        ],
+        "sourceDetails": [
+          {
+            "title": "Confidence, not consistency, characterizes flashbulb memories",
+            "organization": "Jennifer M. Talarico and David C. Rubin, Psychological Science, 14(5), 455-461 (2003)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/12930476/",
+            "credibility": "This peer-reviewed prospective study recorded memories immediately after September 11 and at later intervals, separating objective consistency from vividness, recollection, and confidence in accuracy."
+          }
+        ]
+      }
+    },
+    {
+      "adjudicationPosition": 3,
+      "legacyId": "legacy-1811ab46aad97c1f",
+      "domainId": "social-cultural",
+      "originalPrompt": "In Asch's conformity studies, approximately what percentage of participants conformed at least once?",
+      "originalAnswerIndex": 3,
+      "decision": "major-rewrite",
+      "sourceVerification": "participant-rate-supported-trial-rate-distinguished",
+      "findings": [
+        "In Asch's classic line-judgment condition, roughly three quarters of participants yielded to the unanimous incorrect majority at least once.",
+        "The approximately 36.8% figure refers to responses across critical trials, not the percentage of participants who conformed at least once; the original item needs the denominator made explicit."
+      ],
+      "workflowStage": "editorial-adjudicated-quarantine",
+      "learnerVisibleInNativeBank": false,
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "revisedItem": {
+        "prompt": "Which pairing accurately distinguishes two often-confused results from Asch's classic conformity experiments?",
+        "choices": [
+          "About 75% of participants conformed at least once; about 37% of responses across critical trials followed the incorrect majority.",
+          "About 37% of participants conformed at least once; about 75% of all control-trial responses were incorrect.",
+          "Every participant conformed on every critical trial; the line judgments therefore had no individual variation.",
+          "About 75% of participants stayed independent throughout; about 37% refused to answer any line judgment."
+        ],
+        "answerIndex": 0,
+        "rationale": "The two percentages use different denominators. Roughly three quarters of participants yielded at least once across the critical trials, whereas approximately 36.8% of the responses on those trials conformed to the incorrect unanimous majority. Reporting a percentage without identifying whether it describes people or trial responses creates a misleading result.",
+        "choiceRationales": [
+          "This option correctly labels the participant-level “at least once” rate and the trial-response rate instead of treating them as interchangeable.",
+          "The figures are reversed, and control trials were designed to show that the perceptual task itself produced very few errors without majority pressure.",
+          "Participants varied considerably: some remained independent throughout, while others yielded on some but not all critical trials.",
+          "The 75% figure describes participants who yielded at least once, not consistent independence, and the 37% figure concerns critical-trial responses rather than refusal."
+        ],
+        "sourceDetails": [
+          {
+            "title": "Studies of independence and conformity: I. A minority of one against a unanimous majority",
+            "organization": "Solomon E. Asch, Psychological Monographs: General and Applied, 70(9), 1-70 (1956)",
+            "url": "https://doi.org/10.1037/h0093718",
+            "credibility": "This is Asch's primary report of the line-judgment experiments. It permits the participant-level result of roughly three quarters conforming at least once to be distinguished from the trial-level error rate of about one third."
+          }
+        ]
+      }
+    },
+    {
+      "adjudicationPosition": 4,
+      "legacyId": "legacy-114ded377d814ae4",
+      "domainId": "lifespan",
+      "originalPrompt": "The rooting reflex in newborns:",
+      "originalAnswerIndex": 1,
+      "decision": "minor-revision",
+      "sourceVerification": "key-supported-eliciting-stimulus-and-response-specified",
+      "findings": [
+        "Touch or stroking near a newborn's cheek or mouth elicits turning toward the stimulus with mouth opening and tongue movement.",
+        "The response facilitates locating the nipple and latching, but it should be distinguished from the separate sucking and swallowing reflexes."
+      ],
+      "workflowStage": "editorial-adjudicated-quarantine",
+      "learnerVisibleInNativeBank": false,
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "revisedItem": {
+        "prompt": "When the corner of a newborn's mouth is gently stroked, the infant turns toward the touch and opens the mouth. Which primitive reflex is being assessed?",
+        "choices": [
+          "Rooting reflex",
+          "Moro reflex",
+          "Palmar grasp reflex",
+          "Babinski response"
+        ],
+        "answerIndex": 0,
+        "rationale": "The rooting reflex is a brainstem-mediated feeding reflex elicited by touch near the cheek, lip, or corner of the mouth. The infant turns toward the stimulus and opens the mouth, often with forward tongue movement, which helps locate and latch onto a nipple. It is related to feeding but is distinct from the sucking and swallowing reflexes.",
+        "choiceRationales": [
+          "The described perioral stimulus and orienting mouth-opening response are the defining elicitation and behavior of the rooting reflex.",
+          "The Moro reflex is a startle-like abduction and extension response to sudden loss of support or another abrupt stimulus, not cheek stroking.",
+          "The palmar grasp reflex produces finger flexion around an object placed in the palm and does not orient the head or mouth toward touch.",
+          "The Babinski response is extension of the great toe with fanning after lateral sole stimulation, not a neonatal feeding-orientation response."
+        ],
+        "sourceDetails": [
+          {
+            "title": "Rooting Reflex",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK557636/",
+            "credibility": "This current clinician-authored NCBI Bookshelf review defines the eliciting perioral touch and coordinated head-turning, mouth-opening, and tongue response, and explains its role in latching and early feeding."
+          }
+        ]
+      }
+    },
+    {
+      "adjudicationPosition": 5,
+      "legacyId": "legacy-8ae3d4bb2ceaf484",
+      "domainId": "assessment",
+      "originalPrompt": "Autism Spectrum Disorder in DSM-5 requires deficits in:",
+      "originalAnswerIndex": 2,
+      "decision": "minor-revision",
+      "sourceVerification": "two-domain-structure-supported-full-thresholds-added",
+      "findings": [
+        "DSM-5 diagnostic criteria require persistent deficits in all three social-communication and interaction areas plus at least two of four restricted or repetitive behavior types.",
+        "The two broad domains alone are necessary but not sufficient; developmental timing, clinically significant impairment, and exclusionary considerations also must be evaluated by a qualified clinician."
+      ],
+      "workflowStage": "editorial-adjudicated-quarantine",
+      "learnerVisibleInNativeBank": false,
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "revisedItem": {
+        "prompt": "Which statement correctly summarizes the DSM-5 diagnostic structure for autism spectrum disorder?",
+        "choices": [
+          "Evidence must include all three social-communication areas and at least two restricted or repetitive behavior types, along with the remaining developmental, impairment, and exclusion criteria.",
+          "Either one social-communication difficulty or one repetitive behavior is sufficient by itself for a diagnosis.",
+          "Restricted or repetitive behavior is optional whenever a person reports social anxiety or prefers solitary activities.",
+          "A single questionnaire score establishes the diagnosis without developmental history, observation, impairment, or differential assessment."
+        ],
+        "answerIndex": 0,
+        "rationale": "DSM-5 organizes core ASD criteria into persistent social-communication and interaction deficits and restricted or repetitive behavior, interest, or activity patterns. The threshold is all three social-communication areas plus at least two of four restricted or repetitive types. Symptoms must also fit developmental, functional-impairment, and exclusion criteria; diagnosis requires comprehensive professional assessment.",
+        "choiceRationales": [
+          "This includes the correct domain thresholds and recognizes that the other diagnostic criteria still must be satisfied rather than inferred automatically.",
+          "The DSM-5 thresholds require a broader persistent pattern than a single isolated difficulty or behavior and include additional diagnostic conditions.",
+          "Restricted or repetitive patterns are a required core domain; social anxiety or a preference alone cannot substitute for that evidence.",
+          "Screening measures can inform evaluation but cannot replace history, observation, functional assessment, and appropriate differential diagnosis."
+        ],
+        "sourceDetails": [
+          {
+            "title": "Clinical Testing and Diagnosis for Autism Spectrum Disorder",
+            "organization": "Centers for Disease Control and Prevention",
+            "url": "https://www.cdc.gov/autism/hcp/diagnosis/index.html",
+            "credibility": "The CDC is the U.S. national public-health agency. Its clinician page reproduces the DSM-5 diagnostic structure: all three social-communication areas, at least two of four restricted or repetitive behavior types, and additional criteria."
+          }
+        ]
+      }
+    },
+    {
+      "adjudicationPosition": 6,
+      "legacyId": "legacy-c12a1feae0ef831f",
+      "domainId": "assessment",
+      "originalPrompt": "Base rate in assessment refers to:",
+      "originalAnswerIndex": 1,
+      "decision": "minor-revision",
+      "sourceVerification": "population-frequency-supported-reference-group-and-bayesian-role-added",
+      "findings": [
+        "A base rate is the frequency or prevalence of a characteristic in a defined reference population.",
+        "In assessment, the relevant pretest probability affects positive and negative predictive values, so the population and context must be specified rather than treating a base rate as one universal number."
+      ],
+      "workflowStage": "editorial-adjudicated-quarantine",
+      "learnerVisibleInNativeBank": false,
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "revisedItem": {
+        "prompt": "In interpreting a diagnostic test, what does the relevant base rate contribute?",
+        "choices": [
+          "It supplies the condition's prevalence or pretest probability in the applicable reference population, which affects predictive interpretation.",
+          "It guarantees that every positive result is a true positive whenever test sensitivity is high.",
+          "It is the percentage of test questions answered correctly by the assessment standardization sample.",
+          "It replaces the need to consider sensitivity, specificity, likelihood ratios, and case-specific evidence."
+        ],
+        "answerIndex": 0,
+        "rationale": "The relevant base rate is the frequency of the condition in an appropriate population or, more broadly, the pretest probability before incorporating the new test result. Predictive values depend on that prior likelihood as well as test performance. A base rate must therefore be tied to a defined reference group and integrated with—not substituted for—other assessment evidence.",
+        "choiceRationales": [
+          "This correctly connects the population frequency or prior probability to Bayesian interpretation and acknowledges that the selected reference population matters.",
+          "Even a sensitive test can generate many false positives when specificity and prevalence are not considered, so a positive result is not automatically true.",
+          "Item difficulty or percent correct is a property of test performance; it is not the population occurrence rate meant by base-rate information.",
+          "Sound interpretation combines prior probability with test characteristics and case evidence rather than allowing any one quantity to replace the others."
+        ],
+        "sourceDetails": [
+          {
+            "title": "Base-rate fallacy",
+            "organization": "APA Dictionary of Psychology, American Psychological Association",
+            "url": "https://dictionary.apa.org/base-rate-fallacy",
+            "credibility": "The American Psychological Association's professional dictionary defines base-rate information as the occurrence rate of a trait in a population and explains the error of ignoring it when evaluating case information."
+          },
+          {
+            "title": "Use of the Laboratory: Operating Characteristics of Diagnostic Tests",
+            "organization": "Clinical Methods, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK372/",
+            "credibility": "This clinical assessment chapter explains that pretest probability or prevalence is the relevant prior information and that predictive values change when the assessed population has a different prior likelihood."
+          }
+        ]
+      }
+    },
+    {
+      "adjudicationPosition": 7,
+      "legacyId": "legacy-bd88474d8bea4dae",
+      "domainId": "intervention",
+      "originalPrompt": "Tardive dyskinesia is most commonly associated with:",
+      "originalAnswerIndex": 2,
+      "decision": "major-rewrite",
+      "sourceVerification": "dopamine-blockade-supported-typical-only-implication-rejected",
+      "findings": [
+        "Tardive dyskinesia is associated with chronic exposure to dopamine-receptor-blocking medications, most often antipsychotics but also some antiemetic and gastrokinetic drugs.",
+        "Many first-generation antipsychotics carry higher risk than second-generation agents, but lower risk is not zero risk and the adverse effect is not exclusive to typical antipsychotics."
+      ],
+      "workflowStage": "editorial-adjudicated-quarantine",
+      "learnerVisibleInNativeBank": false,
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "revisedItem": {
+        "prompt": "Which medication history is most relevant when assessing possible tardive dyskinesia?",
+        "choices": [
+          "Cumulative exposure to dopamine-receptor-blocking drugs, including antipsychotics and certain antiemetics, while recognizing that risk varies by agent and patient.",
+          "Only exposure to first-generation antipsychotics, because second-generation drugs and antiemetics cannot produce tardive syndromes.",
+          "A single dose of an antibiotic, because tardive dyskinesia is primarily an infectious adverse effect.",
+          "Use of stimulant medication alone, because dopamine enhancement is the defining cause of every involuntary movement."
+        ],
+        "answerIndex": 0,
+        "rationale": "Tardive dyskinesia is a potentially persistent hyperkinetic movement disorder associated with cumulative dopamine-receptor-blocking exposure. It is most often linked to antipsychotics, with higher historical risk for many first-generation agents, but it also occurs with second-generation agents and other dopamine blockers such as some antiemetics. Risk depends on drug, duration, dose, age, sex, and clinical factors.",
+        "choiceRationales": [
+          "This captures the shared pharmacologic exposure and avoids treating a risk difference among agents as an absolute inclusion or exclusion rule.",
+          "Second-generation antipsychotics generally lower but do not eliminate risk, and non-antipsychotic dopamine blockers can also cause tardive syndromes.",
+          "Tardive dyskinesia is related to sustained dopamine-receptor blockade, not infection or ordinary short-course antibiotic exposure.",
+          "Stimulants are not the defining exposure in tardive dyskinesia, and involuntary movements have many possible causes requiring differential assessment."
+        ],
+        "sourceDetails": [
+          {
+            "title": "Tardive Dyskinesia",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK448207/",
+            "credibility": "This current clinician-authored NCBI Bookshelf review describes tardive dyskinesia after chronic dopamine-receptor-blocking exposure, including antipsychotics and other agents, with higher historical risk for many first-generation drugs."
+          }
+        ]
+      }
+    },
+    {
+      "adjudicationPosition": 8,
+      "legacyId": "legacy-21cf3c9af24c7ff4",
+      "domainId": "intervention",
+      "originalPrompt": "Relapse prevention (Marlatt) identifies:",
+      "originalAnswerIndex": 1,
+      "decision": "major-rewrite",
+      "sourceVerification": "model-supported-duplicate-reauthored-lapse-not-destiny",
+      "findings": [
+        "Marlatt's cognitive-behavioral model emphasizes identifying high-risk situations, strengthening coping and self-efficacy, and responding constructively to lapses.",
+        "The abstinence-violation effect can increase progression from lapse to relapse, but neither the model nor treatment promises that every lapse will be prevented; the docket contains repeated versions of this definition."
+      ],
+      "workflowStage": "editorial-adjudicated-quarantine",
+      "learnerVisibleInNativeBank": false,
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "revisedItem": {
+        "prompt": "A client in alcohol recovery has one drink after an interpersonal conflict and says, “I ruined everything, so there is no point stopping now.” Which relapse-prevention response best fits Marlatt's model?",
+        "choices": [
+          "Treat the event as a lapse, examine the high-risk situation, challenge all-or-nothing reactions, and strengthen a coping plan for the next risk episode.",
+          "Label the lapse as proof of inevitable full relapse and end treatment because further coping efforts cannot help.",
+          "Ignore the conflict and the client's interpretation because only physiological withdrawal is relevant to relapse.",
+          "Require the client to avoid discussing the lapse so that attention to it does not reinforce substance use."
+        ],
+        "answerIndex": 0,
+        "rationale": "Marlatt's relapse-prevention model treats high-risk situations, coping responses, self-efficacy, outcome expectations, and reactions to a lapse as modifiable parts of a process. Catastrophic self-blame after a lapse can contribute to the abstinence-violation effect and increase relapse risk. The clinician helps the client learn from the episode and plan effective coping rather than treating relapse as inevitable.",
+        "choiceRationales": [
+          "This response distinguishes lapse from full relapse and addresses both the immediate trigger and the meaning that could amplify further use.",
+          "Equating one lapse with inevitable relapse reinforces the all-or-nothing response the model seeks to interrupt and abandons modifiable coping processes.",
+          "Interpersonal conflict is a recognized high-risk situation, and cognitive and behavioral responses are central rather than irrelevant to the model.",
+          "Open, nonpunitive analysis of a lapse can support learning and planning; suppressing discussion prevents assessment of triggers, coping, and consequences."
+        ],
+        "sourceDetails": [
+          {
+            "title": "Relapse Prevention: An Overview of Marlatt's Cognitive-Behavioral Model",
+            "organization": "Mary E. Larimer, Rebekka S. Palmer, and G. Alan Marlatt, Alcohol Research & Health, 23(2), 151-160 (1999)",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6760427/",
+            "credibility": "This peer-reviewed overview by researchers closely associated with the model describes high-risk situations, coping, self-efficacy, lapse management, and the abstinence-violation effect without treating a lapse as inevitable relapse."
+          }
+        ]
+      }
+    },
+    {
+      "adjudicationPosition": 9,
+      "legacyId": "legacy-fb6bdf4e261c6e69",
+      "domainId": "research",
+      "originalPrompt": "The 'expressed emotion' (EE) research in schizophrenia found that:",
+      "originalAnswerIndex": 1,
+      "decision": "minor-revision",
+      "sourceVerification": "predictive-association-supported-causal-blame-qualified",
+      "findings": [
+        "High expressed emotion, commonly indexed by criticism, hostility, and emotional overinvolvement, predicts elevated relapse risk in schizophrenia.",
+        "Prediction is not proof that relatives caused the disorder or a particular relapse; the construct should inform collaborative support and intervention without assigning blame."
+      ],
+      "workflowStage": "editorial-adjudicated-quarantine",
+      "learnerVisibleInNativeBank": false,
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "revisedItem": {
+        "prompt": "What conclusion is best supported by research on family expressed emotion and schizophrenia?",
+        "choices": [
+          "High criticism, hostility, or emotional overinvolvement in the family environment is associated with greater relapse risk, but the association does not establish blame or simple causation.",
+          "A relative's criticism is sufficient by itself to cause schizophrenia in anyone exposed to it.",
+          "Emotional overinvolvement reliably prevents relapse and should be increased regardless of family or patient needs.",
+          "Expressed emotion is a biological laboratory test that directly measures antipsychotic blood concentration."
+        ],
+        "answerIndex": 0,
+        "rationale": "Expressed emotion is a psychosocial family-environment construct commonly assessed through criticism, hostility, and emotional overinvolvement. Meta-analytic evidence supports it as a predictor of relapse, particularly in schizophrenia. That predictive association does not show that a family caused the disorder or any specific relapse; clinically, the finding supports collaborative psychoeducation and lower-stress communication rather than blame.",
+        "choiceRationales": [
+          "This states the replicated predictive association while preserving the boundary between a risk marker and a sufficient causal explanation.",
+          "Schizophrenia is multifactorial, and an association with relapse among diagnosed patients does not show that criticism alone creates the disorder.",
+          "Emotional overinvolvement is one component of high expressed emotion and may be associated with risk rather than serving as a universally protective intervention.",
+          "Expressed emotion is assessed from family communication and attitudes; it is neither a drug level nor any other biological laboratory measurement."
+        ],
+        "sourceDetails": [
+          {
+            "title": "Expressed emotion and psychiatric relapse: a meta-analysis",
+            "organization": "Robert L. Butzlaff and Jill M. Hooley, Archives of General Psychiatry, 55(6), 547-552 (1998)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/9633674/",
+            "credibility": "This peer-reviewed meta-analysis evaluates the association between family expressed emotion and psychiatric relapse and identifies expressed emotion as a psychosocial predictor, especially in schizophrenia."
+          }
+        ]
+      }
+    },
+    {
+      "adjudicationPosition": 10,
+      "legacyId": "legacy-6e7af3c7afe10e96",
+      "domainId": "professional",
+      "originalPrompt": "A psychologist moves to a new state. In order to practice, they must:",
+      "originalAnswerIndex": 1,
+      "decision": "major-rewrite",
+      "sourceVerification": "jurisdictional-authority-required-mobility-exceptions-added",
+      "findings": [
+        "Psychology licensure requirements are jurisdiction-specific, so a psychologist planning permanent practice after a move must confirm and obtain the legal authority required by the new jurisdiction.",
+        "PSYPACT and other mobility pathways can facilitate specified telepsychology or temporary in-person practice when their eligibility, authorization, location, and jurisdiction rules are met; they are not a universal transfer of a license."
+      ],
+      "workflowStage": "editorial-adjudicated-quarantine",
+      "learnerVisibleInNativeBank": false,
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "revisedItem": {
+        "prompt": "A licensed psychologist moves permanently to another U.S. state and plans to establish an ongoing local practice there. What is the safest general licensing step?",
+        "choices": [
+          "Contact the new state's psychology board and obtain or confirm the required authority before practicing, while separately evaluating any applicable compact or mobility pathway.",
+          "Begin practicing automatically because a psychology license issued by one state is valid for permanent practice in every other state.",
+          "Use a PSYPACT authorization as a universal substitute for local licensure for any service, location, duration, and state.",
+          "Rely on the prior employer's approval because private organizational permission overrides state psychology practice law."
+        ],
+        "answerIndex": 0,
+        "rationale": "Psychology practice authority is jurisdiction-specific. A permanent move and ongoing local practice generally require the psychologist to confirm and satisfy the new board's licensure rules before providing services. Mobility mechanisms can help in defined circumstances: for example, PSYPACT creates specific telepsychology and temporary in-person authorizations among participating states. It does not make every license universally portable.",
+        "choiceRationales": [
+          "This directs the psychologist to the controlling regulator and keeps compact or endorsement options in their proper role as conditional legal pathways.",
+          "State licensure is not automatically interchangeable nationwide, and practicing without required local authority can violate the new jurisdiction's law.",
+          "PSYPACT authorizations have eligibility, home-state, receiving-state, service-mode, and duration rules and do not authorize every form of permanent local practice.",
+          "Employers may impose additional requirements, but their approval cannot replace practice authority granted under the controlling jurisdiction's law."
+        ],
+        "sourceDetails": [
+          {
+            "title": "Psychology Licensure",
+            "organization": "Association of State and Provincial Psychology Boards",
+            "url": "https://asppb.net/licensure/",
+            "credibility": "ASPPB represents psychology regulatory boards across U.S. and Canadian jurisdictions. Its official licensure resource directs psychologists to research and confirm the requirements of the intended practice jurisdiction."
+          },
+          {
+            "title": "PSYPACT Practice Frequently Asked Questions",
+            "organization": "Psychology Interjurisdictional Compact Commission",
+            "url": "https://psypact.gov/page/Practice_Related_FAQs",
+            "credibility": "The PSYPACT Commission is the compact's governing body. Its current official guidance explains the separate authorizations for interjurisdictional telepsychology and temporary in-person practice across participating states."
+          }
+        ]
+      }
+    }
+  ]
+}

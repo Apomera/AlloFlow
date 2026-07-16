@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-3ac6828d-untitled",
+  "title": "ກົບຢູ່ແຄມນໍ້າ",
+  "description": "A Lao picture book, readable free at Bloom Library.",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "USAID"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "USAID",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/PYCR6cf2zw"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/PYCR6cf2zw%2f1752228437078%2f%e0%ba%81%e0%ba%bb%e0%ba%9a%e0%ba%a2%e0%ba%b9%e0%bb%88%e0%bb%81%e0%ba%84%e0%ba%a1%e0%ba%99%e0%bb%8d%e0%bb%89%e0%ba%b2%2fIMG_20210719_214707.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ກົບຢູ່ແຄມນໍ້າ\" (Lao)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 56
+  }
+}

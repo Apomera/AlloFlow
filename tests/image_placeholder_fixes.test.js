@@ -10,7 +10,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8')
+  + '\n' + readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
 
 describe('#7 image resize — pixel-anchored, symmetric grow/shrink', () => {
   it('apply() sets a pixel width and defeats the max-width cap (no percent, no clamp-to-100)', () => {

@@ -1,0 +1,62 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-b748ea93-scovia-na-shangazi-kichimbakazi",
+  "title": "Scovia na Shangazi Kichimbakazi",
+  "description": "Scovia can't go to school because she is menstruating.  A fairy auntie teaches her how to make re-useable menstrual pads (RUMPs) so that she can go to school.",
+  "language": "Kiswahili",
+  "langCode": "sw",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Health"
+  ],
+  "authors": [
+    "Elyse Painter"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Elyse Painter",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/nLINw2HF51"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fb748ea93-ddd3-4469-ab55-a60988baa246%2fScovia+and+Fairy+Auntie+-+Copy%2fimage8.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fb748ea93-ddd3-4469-ab55-a60988baa246%2fScovia+and+Fairy+Auntie+-+Copy%2fimage3.jpg",
+      "text": "Hapo zamani, msichana aliyeitwa Scovia alianza siku zake za hedhi alipokuwa shuleni. Sketi yake ilichafuka. Wanafunzi walicheka. Alikimbilia nyumbani akiwa ameaibika."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fb748ea93-ddd3-4469-ab55-a60988baa246%2fScovia+and+Fairy+Auntie+-+Copy%2fimage4.jpg",
+      "text": "Alipokuwa akifua sketi yake, alitamani angekuwa na pedi. Shangazi kichimbakazi akatokea akisema, \"Nipo hapa kukusaidia urudi shuleni.\""
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fb748ea93-ddd3-4469-ab55-a60988baa246%2fScovia+and+Fairy+Auntie+-+Copy%2fimage5.jpg",
+      "text": "\"Siwezi kwenda shule sasa!\" alisema Scovia. Shangazi kichimbakazi akasema angemfundisha jinsi ya kutengeneza pedi zinazoweza kutumika zaidi ya mara moja."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fb748ea93-ddd3-4469-ab55-a60988baa246%2fScovia+and+Fairy+Auntie+-+Copy%2fimage6.jpg",
+      "text": "Shangazi kichimbakazi akamwambia Scovia kumwomba jirani yake fundi cherehani vipande vya vitambaa kwa pesa kidogo. Halafu akampa Scovia pedi aliyoshona."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fb748ea93-ddd3-4469-ab55-a60988baa246%2fScovia+and+Fairy+Auntie+-+Copy%2fimage7.jpg",
+      "text": "\"Unaweza kutumia pedi mara nyingi. Badilisha pedi kila baada ya saa 3 mpaka 4. Ukishatumia loweka kwenye maji, fua kwa sabuni halafu anika juani. Inabidi sasa niende kuwasaidia wasichana wengine,\" alisema shangazi kichimbakazi."
+    }
+  ],
+  "stats": {
+    "pages": 5,
+    "words": 111
+  }
+}

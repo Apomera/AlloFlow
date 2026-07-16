@@ -30,15 +30,28 @@ function HintsModal({
   const Sparkles = window.Sparkles || (() => null);
   const X = window.X || (() => null);
   const dialogRef = React.useRef(null);
+  const hintStatus = isGeneratingExtension ? t("hints.synthesizing") : `${t("hints.title")}: ${hintHistory.length}`;
   React.useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
     const previousFocus = document.activeElement;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const getFocusable = () => Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+    )).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
+      return !style || style.display !== "none" && style.visibility !== "hidden";
+    });
     (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
+      if (!isTopTrap()) return;
       if (event.key === "Escape") {
         event.preventDefault();
+        event.stopPropagation();
         handleSetShowHintsModalToFalse();
         return;
       }
@@ -51,7 +64,10 @@ function HintsModal({
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (!dialog.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -59,44 +75,49 @@ function HintsModal({
         first.focus();
       }
     };
-    dialog.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown);
     return () => {
-      dialog.removeEventListener("keydown", onKeyDown);
-      if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+      document.removeEventListener("keydown", onKeyDown);
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, [handleSetShowHintsModalToFalse]);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowHintsModalToFalse, role: "presentation" }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] overflow-hidden relative focus:outline-none", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": "hints-modal-title" }, /* @__PURE__ */ React.createElement("div", { className: "bg-yellow-50 p-4 border-b border-yellow-100 flex justify-between items-center shrink-0" }, /* @__PURE__ */ React.createElement("h3", { id: "hints-modal-title", className: "font-bold text-lg text-yellow-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 20, className: "fill-yellow-500 text-yellow-600" }), " ", t("hints.title")), /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowHintsModalToFalse, className: "p-2 rounded-full hover:bg-yellow-100 text-yellow-700 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 custom-scrollbar space-y-4" }, hintHistory.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("hints.empty_state")) : hintHistory.map((hint) => /* @__PURE__ */ React.createElement("div", { key: hint.id, className: `p-4 rounded-xl border-l-4 shadow-sm ${hint.isExtension ? "bg-purple-50 border-purple-400" : "bg-white border-yellow-400"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2" }, /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-bold uppercase tracking-wider ${hint.isExtension ? "text-purple-600" : "text-yellow-600"}` }, hint.tool), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, new Date(hint.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-line mb-3" }, renderFormattedText(hint.text, false)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2" }, hint.isExtension ? /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none", onClick: handleSetShowHintsModalToFalse, role: "presentation" }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] overflow-hidden relative", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": "hints-modal-title" }, /* @__PURE__ */ React.createElement("div", { className: "bg-yellow-50 p-4 border-b border-yellow-100 flex justify-between items-center shrink-0" }, /* @__PURE__ */ React.createElement("h3", { id: "hints-modal-title", className: "font-bold text-lg text-yellow-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 20, className: "fill-yellow-500 text-yellow-600", "aria-hidden": "true" }), " ", t("hints.title")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowHintsModalToFalse, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full hover:bg-yellow-100 text-yellow-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-600", "aria-label": t?.("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 custom-scrollbar", role: "region", "aria-label": t?.("hints.title") || "Hints", tabIndex: hintHistory.length > 0 ? 0 : void 0 }, hintHistory.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("hints.empty_state")) : /* @__PURE__ */ React.createElement("ul", { className: "space-y-4" }, hintHistory.map((hint) => /* @__PURE__ */ React.createElement("li", { key: hint.id, className: `p-4 rounded-xl border-l-4 shadow-sm ${hint.isExtension ? "bg-purple-50 border-purple-400" : "bg-white border-yellow-400"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2" }, /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-bold uppercase tracking-wider ${hint.isExtension ? "text-purple-700" : "text-yellow-800"}` }, hint.tool), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, new Date(hint.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-line mb-3" }, renderFormattedText(hint.text, false)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2" }, hint.isExtension ? /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.save"),
+      type: "button",
       onClick: () => handleSaveExtensionToHistory(hint),
-      className: "text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-purple-700 transition-colors flex items-center gap-1 shadow-sm"
+      className: "min-h-11 text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-purple-600 transition-colors flex items-center gap-1 shadow-sm"
     },
-    /* @__PURE__ */ React.createElement(Save, { size: 12 }),
+    /* @__PURE__ */ React.createElement(Save, { size: 12, "aria-hidden": "true" }),
     " ",
     t("hints.save_to_history")
   ) : /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => handleApplyHint(hint),
-      className: "text-xs bg-yellow-100 text-yellow-800 px-3 py-1.5 rounded-lg font-bold hover:bg-yellow-200 transition-colors flex items-center gap-1",
+      className: "min-h-11 text-xs bg-yellow-100 text-yellow-800 px-3 py-1.5 rounded-lg font-bold hover:bg-yellow-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-600 transition-colors flex items-center gap-1",
       title: t("hints.apply_brainstorm_tooltip")
     },
-    /* @__PURE__ */ React.createElement(Lightbulb, { size: 12 }),
+    /* @__PURE__ */ React.createElement(Lightbulb, { size: 12, "aria-hidden": "true" }),
     " ",
     t("hints.apply_brainstorm")
-  ))))), /* @__PURE__ */ React.createElement("div", { className: "p-4 border-t border-slate-100 bg-slate-50 shrink-0" }, /* @__PURE__ */ React.createElement(
+  )))))), /* @__PURE__ */ React.createElement("div", { className: "p-4 border-t border-slate-100 bg-slate-50 shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.on_ideas"),
+      type: "button",
       onClick: handleGenerateLessonIdeas,
       disabled: isGeneratingExtension || history.length === 0,
-      className: "w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center justify-center gap-2",
+      "aria-busy": isGeneratingExtension,
+      className: "w-full min-h-11 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center justify-center gap-2",
       "data-help-key": "hints_generate_extension"
     },
-    isGeneratingExtension ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 16, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Sparkles, { size: 16, className: "text-yellow-400 fill-current" }),
+    isGeneratingExtension ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 16, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Sparkles, { size: 16, className: "text-yellow-400 fill-current", "aria-hidden": "true" }),
     isGeneratingExtension ? t("hints.synthesizing") : t("hints.generate_extensions")
-  ))));
+  )), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, hintStatus)));
 }
 
   window.AlloModules = window.AlloModules || {};

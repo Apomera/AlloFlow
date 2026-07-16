@@ -1,0 +1,62 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-2b02ab3b-ang-tsinelas-ni-pepe",
+  "title": "Ang Tsinelas ni Pepe",
+  "description": "This story is inspired  from a famous  anecdote.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Marites D. Antonio"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Marites D. Antonio",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tBzzehLxEG"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f2b02ab3b-ff27-4d53-9a2d-26278e18ccca%2fAng+Tsinelas+ni+Pepe%2faor_ELK-135.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f2b02ab3b-ff27-4d53-9a2d-26278e18ccca%2fAng+Tsinelas+ni+Pepe%2faor_CMB83.png",
+      "text": "Ito ang tsinelas ni Pepe."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f2b02ab3b-ff27-4d53-9a2d-26278e18ccca%2fAng+Tsinelas+ni+Pepe%2faor_6W-R.png",
+      "text": "Isang araw, si Pepe ay sumama.\nSakay ng bangka sa laot ng Laguna."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f2b02ab3b-ff27-4d53-9a2d-26278e18ccca%2fAng+Tsinelas+ni+Pepe%2faor_D-1-127.png",
+      "text": "Maya-maya ay may biglang napasigaw. Hala!\nIsang paa ng tsinelas nahulog sa laot!\nTinangay ng along rumaragasa."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f2b02ab3b-ff27-4d53-9a2d-26278e18ccca%2fAng+Tsinelas+ni+Pepe%2faor_Nig237.png",
+      "text": "\"Ano ang gagawin sa isa pang natira?\nNgayong iisa na lang sapin sa paa?\"\nSumagot si Pepe at salita ay tinuran."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f2b02ab3b-ff27-4d53-9a2d-26278e18ccca%2fAng+Tsinelas+ni+Pepe%2faor_P-47.png",
+      "text": "\"Isang paa ng tsinelas\nKapag inanod na nga\nIpaanod na rin ang isa pa\nIsiping kung ito ay dalawa\nPakikinabangan pa ng iba.\""
+    }
+  ],
+  "stats": {
+    "pages": 5,
+    "words": 79
+  }
+}

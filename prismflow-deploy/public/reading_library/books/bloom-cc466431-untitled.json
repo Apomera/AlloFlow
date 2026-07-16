@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-cc466431-untitled",
+  "title": "लोभी कुकुर",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/vZH2Nk716P"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcc466431-2816-45fb-91a4-19c42cc46e4f%2f%e0%a4%b2%e0%a5%8b%e0%a4%ad%e0%a5%80+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_AN14.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcc466431-2816-45fb-91a4-19c42cc46e4f%2f%e0%a4%b2%e0%a5%8b%e0%a4%ad%e0%a5%80+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_AN12.png",
+      "text": "गाउँमा एउटा कुकुर थियो। गाउँलेहरूले उसलाई खाना दिन्थे। तैपनि ऊ चोरेर खान्थ्यो। किनभने ऊ लोभी थियो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcc466431-2816-45fb-91a4-19c42cc46e4f%2f%e0%a4%b2%e0%a5%8b%e0%a4%ad%e0%a5%80+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_adb013m.png",
+      "text": "गाउँलेले उसको बानी थाहा पाए। उसलाई खाना दिन छाडे। खाना दिन्छनकी भनेर धेरै कुर्‍यो। तर उसले खाना पाउँदै पाएन।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcc466431-2816-45fb-91a4-19c42cc46e4f%2f%e0%a4%b2%e0%a5%8b%e0%a4%ad%e0%a5%80+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_adb0231.png",
+      "text": "ऊ खाना खोज्न टाढा नस्कियो। धेरै घुम्यो, तर खाना पाउँदै पाएन। ऊ धेरै भोकाएको थियो। भोकले ऊ निकै गलेको थियो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcc466431-2816-45fb-91a4-19c42cc46e4f%2f%e0%a4%b2%e0%a5%8b%e0%a4%ad%e0%a5%80+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_eag00082.png",
+      "text": "उसले बल्‍ल एउटा हड्डी भेट्टायो। ऊ दङ्ग पर्‍यो। उसले मुखमा हड्डी च्याप्यो। अनि दौडँदै त्यहाँबाट फर्कियो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcc466431-2816-45fb-91a4-19c42cc46e4f%2f%e0%a4%b2%e0%a5%8b%e0%a4%ad%e0%a5%80+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_adb012.png",
+      "text": "उसले बाटोमा अर्को कुकुर देख्यो। त्यसको मुखमा पनि हड्डी थियो। अर्को हड्डी देखेर उसलाई लोभ जाग्यो। त्यो हड्डी पनि खोस्ने विचार गर्यो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcc466431-2816-45fb-91a4-19c42cc46e4f%2f%e0%a4%b2%e0%a5%8b%e0%a4%ad%e0%a5%80+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fimage.png",
+      "text": "झगडा गरेर हड्डी खोसी छाड्यो। अब उसँग दुईवटा हड्डी भयो। लोभि कुकुर निकै खुसी भयो। दुईवटै हड्डी च्यापेर ऊ त्यहाँबाट हिँड्यो।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcc466431-2816-45fb-91a4-19c42cc46e4f%2f%e0%a4%b2%e0%a5%8b%e0%a4%ad%e0%a5%80+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fdog.png",
+      "text": "फर्कँदा खोला तर्नु पर्थ्यो। खोलामा उसले अर्को कुकुर देख्यो। कुकुरको मुखमा हड्डी पनि देख्यो। उसमा फेरि लोभ जाग्यो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcc466431-2816-45fb-91a4-19c42cc46e4f%2f%e0%a4%b2%e0%a5%8b%e0%a4%ad%e0%a5%80+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fimage6.png",
+      "text": "उसले फेरि हड्डी खोस्ने विचार गर्यो। किनकी ऊ धेरै लोभी थियो। उसले कुकुरलाई झम्टने विचार गर्‍यो। अनि त्यस कुकुरलाई पनि झम्ट्‌यो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcc466431-2816-45fb-91a4-19c42cc46e4f%2f%e0%a4%b2%e0%a5%8b%e0%a4%ad%e0%a5%80+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fdropping+bone.png",
+      "text": "झम्टिँदा मुख खोल्यो। उसको दुवै हड्डी मुखबाट खस्यो। खसेको हड्डी खोलामा पर्‍यो। आखिर दुवै हड्डी खोलाले बगाएर लग्यो।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcc466431-2816-45fb-91a4-19c42cc46e4f%2f%e0%a4%b2%e0%a5%8b%e0%a4%ad%e0%a5%80+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_adb004.png",
+      "text": "उसले बल्‍ल कुरा बुझ्यो। त्यो छायाँ त उसको आफ्नै थियो। ऊ फेरि भोकै भयो। अनि लोभी भएकोले पछुतायो। लोभी हुनु हुँदैन भनेर थाहा पायो।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 195
+  }
+}

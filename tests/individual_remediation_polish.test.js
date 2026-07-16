@@ -26,6 +26,33 @@ const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const _vs = dp.indexOf('function _alloDistributionVerdict(r, opts) {');
 const _ve = dp.indexOf('\n}', dp.indexOf('headline: level ===', _vs)) + 2;
 const verdict = new Function(dp.slice(_vs, _ve) + '\nreturn _alloDistributionVerdict;')();
+const _os = dp.indexOf('function _alloRemediationOutcome(r, opts) {');
+const _oe = dp.indexOf('function _alloDistributionVerdict(r, opts) {', _os);
+const remediationOutcome = new Function(dp.slice(_os, _oe) + '\nreturn _alloRemediationOutcome;')();
+
+describe('remediation outcome is separate from verification completeness', () => {
+  it('calls a target-reaching, axe-clean, AI-complete run successful even when verification needs review', () => {
+    expect(remediationOutcome({
+      afterScore: 96,
+      axeAudit: { totalViolations: 0 },
+      _aiVerificationIncomplete: false,
+      verificationState: 'review-required',
+    }, { targetScore: 95 }).state).toBe('success');
+  });
+
+  it('keeps unknown residuals, a missed target, and incomplete AI out of the success numerator', () => {
+    expect(remediationOutcome({ afterScore: 96 }, { targetScore: 95 }).state).toBe('incomplete');
+    expect(remediationOutcome({ afterScore: 94, axeAudit: { totalViolations: 0 } }, { targetScore: 95 }).state).toBe('incomplete');
+    expect(remediationOutcome({ afterScore: 96, axeAudit: { totalViolations: 0 }, _aiVerificationIncomplete: true }, { targetScore: 95 }).state).toBe('incomplete');
+  });
+
+  it('exports one shared classifier for host and pipeline telemetry', () => {
+    expect(dp).toContain('remediationOutcome: _alloRemediationOutcome,');
+    expect(anti).toContain("_docPipeline.remediationOutcome(cur, { targetScore: pdfTargetScore })");
+    expect(anti).toContain("verificationState: cur.verificationState || 'unavailable'");
+  });
+});
+
 
 describe('R1 — distribution verdict (BEHAVIORAL, the real fn)', () => {
   it('clean at-target run → ready', () => {

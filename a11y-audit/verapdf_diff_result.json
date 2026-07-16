@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-07-09T22:22:52.922Z",
+  "ranAt": "2026-07-14T15:00:40.642Z",
   "veraPdf": "1.30.2 (greenfield)",
   "flavour": "ua1 (ISO 14289-1)",
   "pairs": [
@@ -61,6 +61,23 @@
       "introducedByUs": [],
       "inheritedRemaining": 0,
       "withheldDeclaration": 0
+    },
+    {
+      "stem": "remediation-e2e",
+      "sourceFailedRules": 7,
+      "taggedFailedRules": 1,
+      "fixedByUs": [
+        "7.1",
+        "7.1",
+        "7.2",
+        "7.1",
+        "7.1",
+        "6.2",
+        "7.21.4.1"
+      ],
+      "introducedByUs": [],
+      "inheritedRemaining": 0,
+      "withheldDeclaration": 1
     }
   ],
   "regressions": 0,

@@ -54,7 +54,8 @@ describe('host: result survives close and is re-openable in-session', () => {
   });
 
   it('starting a NEW audit drops the stash (no stale re-entry for a cleared result)', () => {
-    expect(host).toMatch(/startNewPdfAudit = \(\) => \{\s*lastPdfAuditResultRef\.current = null;/);
+    expect(host).toMatch(/startNewPdfAudit = \(\) => \{\s*invalidatePdfAuditRun\(\);\s*lastPdfAuditResultRef\.current = null;/);
+    expect(host.indexOf('invalidatePdfAuditRun();', host.indexOf('const startNewPdfAudit'))).toBeLessThan(host.indexOf('lastPdfAuditResultRef.current = null', host.indexOf('const startNewPdfAudit')));
   });
 });
 
@@ -66,9 +67,10 @@ describe('view: the two racy results-panel buttons are disabled while a run is a
     // (no mid-run teardown), better UX.
     expect(viewSrc).toContain('{pdfAutoContinueRunning ? (');
     const idx = viewSrc.indexOf('{pdfAutoContinueRunning ? (');
-    const branch = viewSrc.slice(idx, idx + 1400);
+    const branch = viewSrc.slice(idx, idx + 2400);
     expect(branch).toContain('pdfAutoContinueAbortRef.current = true'); // running branch = Stop
     expect(branch).toContain('startNewPdfAudit()');                     // idle branch = reset
+    expect(branch).toContain('await askPdfConfirmation');               // safe-default destructive confirmation
     expect(branch).toContain('disabled={pdfFixLoading}');               // reset still blocked during the initial fix
     expect(viewSrc).toContain("t('pdf_audit.start_new_running_title')"); // idle-branch loading title retained
   });

@@ -5,7 +5,7 @@ if (typeof ADVENTURE_SHOP_ITEMS === 'undefined') {
   var ADVENTURE_SHOP_ITEMS = window.ADVENTURE_SHOP_ITEMS || [
     { id: 'ration', name: 'Emergency Ration', cost: 50, description: 'Restores 20 Energy.', effectType: 'energy', effectValue: 20, icon: '🍎' },
     { id: 'feast', name: 'Field Feast', cost: 120, description: 'Fully restores energy.', effectType: 'energy', effectValue: 100, icon: '🍱' },
-    { id: 'hint', name: 'Oracle Whisper', cost: 75, description: 'Reveals a hint.', effectType: 'hint', effectValue: 1, icon: '🔮' },
+    { id: 'hint', name: 'Oracle Whisper', cost: 75, description: 'Rewinds your previous turn.', effectType: 'hint', effectValue: 1, icon: '🔮' },
     { id: 'charm', name: 'Luck Charm', cost: 100, description: '+5 to next roll.', effectType: 'modifier', effectValue: 5, icon: '🍀' },
     { id: 'journal', name: "Scholar's Journal", cost: 100, description: 'Double XP next turn.', effectType: 'xp_boost', effectValue: 2, icon: '📔' },
     { id: 'detector', name: 'Metal Detector', cost: 50, description: 'More gold for 3 scenes.', effectType: 'gold_boost', effectValue: 3, icon: '💰' },
@@ -15,25 +15,27 @@ if (typeof ADVENTURE_SHOP_ITEMS === 'undefined') {
 // ═══ MissionReportCard (lines 8564-8670) ═══
 const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onExport, onContinue, onNewGame, isProcessing }) => {
   const { t } = useContext(LanguageContext);
+  const reportRef = useRef(null);
+  useFocusTrap(reportRef, true, onClose);
   const { stats, climax, xp, level } = adventureState;
   const safeStats = stats || { successes: 0, failures: 0, decisions: 0, conceptsFound: [] };
   const totalDecisions = Math.max(1, safeStats.decisions);
   const efficiency = Math.round((safeStats.successes / totalDecisions) * 100);
-  const proficiency = climax?.masteryScore || 0;
+  const proficiency = Math.max(0, Math.min(100, Number(climax?.masteryScore) || 0));
   let ratingLabel = t('adventure.mission_report.rating_novice');
   if (proficiency >= 90) ratingLabel = t('adventure.mission_report.rating_mastery');
   else if (proficiency >= 70) ratingLabel = t('adventure.mission_report.rating_proficient');
   else if (proficiency >= 50) ratingLabel = t('adventure.mission_report.rating_developing');
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 p-4">
+    <div ref={reportRef} role="dialog" aria-modal="true" aria-labelledby="adventure-mission-report-title" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 p-4">
       <div className="bg-slate-900 w-full max-w-md rounded-3xl border-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] overflow-hidden relative transform scale-100 animate-in zoom-in-95 duration-500 flex flex-col max-h-[90vh]">
         <div className="bg-yellow-500 p-4 text-center shrink-0">
-            <h2 className="text-3xl font-black text-slate-900 uppercase tracking-widest drop-shadow-sm flex items-center justify-center gap-2">
-                <Trophy size={32} /> {t('adventure.mission_report.title')}
+            <h2 id="adventure-mission-report-title" className="text-3xl font-black text-slate-900 uppercase tracking-widest drop-shadow-sm flex items-center justify-center gap-2">
+                <Trophy size={32} aria-hidden="true" /> {t('adventure.mission_report.title')}
             </h2>
             <div className="flex items-center justify-center gap-2 text-slate-900 font-bold text-sm opacity-80 mt-1">
                 <span>{t('adventure.mission_report.status_success')}</span>
-                <span>•</span>
+                <span aria-hidden="true">•</span>
                 <span>{new Date().toLocaleDateString()}</span>
             </div>
         </div>
@@ -51,7 +53,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
                     <span className="text-cyan-400 uppercase">{t('adventure.mission_report.proficiency_rating')}</span>
                     <span className="text-white">{proficiency}/100 ({ratingLabel})</span>
                 </div>
-                <div className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative">
+                <div role="progressbar" aria-label={t('adventure.mission_report.proficiency_rating')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={proficiency} className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative">
                     <div
                         className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-1000 ease-out"
                         style={{ width: `${proficiency}%` }}
@@ -61,20 +63,20 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             <div className="grid grid-cols-2 gap-4 relative z-20">
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2 mb-2 text-yellow-400">
-                        <Zap size={16} /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.efficiency')}</span>
+                        <Zap size={16} aria-hidden="true" /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.efficiency')}</span>
                     </div>
                     <div className="text-3xl font-black">{efficiency}%</div>
                 </div>
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2 mb-2 text-green-400">
-                        <Key size={16} /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.concepts')}</span>
+                        <Key size={16} aria-hidden="true" /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.concepts')}</span>
                     </div>
                     <div className="text-3xl font-black">{safeStats.conceptsFound.length}</div>
                 </div>
             </div>
             {safeStats.conceptsFound.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-slate-700/50 relative z-20">
-                    <div className="text-[11px] text-slate-600 font-bold uppercase mb-2">{t('adventure.mission_report.concepts_secured')}</div>
+                    <div className="text-[11px] text-slate-300 font-bold uppercase mb-2">{t('adventure.mission_report.concepts_secured')}</div>
                     <div className="flex flex-wrap gap-2">
                         {safeStats.conceptsFound.map((c, i) => (
                             <span key={i} className="px-2 py-1 rounded-md bg-cyan-900/30 text-cyan-200 text-xs border border-cyan-800/50">
@@ -89,29 +91,29 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
              <button aria-label={t('common.create_storybook')}
                 onClick={onExport}
                 disabled={isProcessing}
-                className="w-full py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-lg flex items-center justify-center gap-2"
+                className="w-full min-h-11 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
              >
-                 {isProcessing ? <RefreshCw size={18} className="animate-spin"/> : <BookOpen size={18}/>}
+                 {isProcessing ? <RefreshCw size={18} className="animate-spin" aria-hidden="true"/> : <BookOpen size={18} aria-hidden="true"/>}
                  {isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}
              </button>
              <div className="grid grid-cols-2 gap-3">
                  <button
                     onClick={() => { onClose(); if(onContinue) onContinue(); }}
-                    className="w-full py-3 rounded-xl font-bold bg-green-600 text-white hover:bg-green-500 transition-colors shadow-lg flex items-center justify-center gap-2"
+                    className="w-full min-h-11 py-3 rounded-xl font-bold bg-green-700 text-white hover:bg-green-600 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                  >
-                     <MapIcon size={18} /> {t('adventure.start_sequel') || "Continue"}
+                     <MapIcon size={18} aria-hidden="true" /> {t('adventure.start_sequel') || "Continue"}
                  </button>
-                 <button aria-label={t('common.on_close')}
+                 <button aria-label={t('adventure.new_game') || "New Game"}
                     onClick={() => { onClose(); if(onNewGame) onNewGame(); }}
-                    className="w-full py-3 rounded-xl font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white transition-colors border border-slate-600 flex items-center justify-center gap-2"
+                    className="w-full min-h-11 py-3 rounded-xl font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 hover:text-white transition-colors border border-slate-500 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                  >
-                     <RefreshCw size={18} /> {t('adventure.new_game') || "New Game"}
+                     <RefreshCw size={18} aria-hidden="true" /> {t('adventure.new_game') || "New Game"}
                  </button>
              </div>
              <button
                  aria-label={t('common.close')}
                 onClick={onClose}
-                className="w-full py-2 text-xs font-bold text-slate-300 hover:text-white transition-colors"
+                className="w-full min-h-11 py-2 text-sm font-bold text-slate-200 hover:text-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
              >
                  {t('adventure.mission_report.confirm_exit')}
              </button>
@@ -367,66 +369,67 @@ const ClimaxProgressBar = React.memo(({ climaxState }) => {
   const { masteryScore, archetype } = climaxState;
   let typeKey = (archetype || 'default').toLowerCase();
   if (typeKey === 'auto') typeKey = 'default';
-  const label = t(`adventure.climax_archetypes.${typeKey}.label`) || t('adventure.climax_archetypes.default.label');
-  const leftLabel = t(`adventure.climax_archetypes.${typeKey}.left`) || t('adventure.climax_archetypes.default.left');
-  const rightLabel = t(`adventure.climax_archetypes.${typeKey}.right`) || t('adventure.climax_archetypes.default.right');
-  let icon = "⚔️";
+  const label = t('adventure.climax_archetypes.' + typeKey + '.label') || t('adventure.climax_archetypes.default.label');
+  const leftLabel = t('adventure.climax_archetypes.' + typeKey + '.left') || t('adventure.climax_archetypes.default.left');
+  const rightLabel = t('adventure.climax_archetypes.' + typeKey + '.right') || t('adventure.climax_archetypes.default.right');
+  const normalizedScore = Math.max(0, Math.min(100, Number(masteryScore) || 0));
+  let icon = "\u2694\uFE0F";
   switch (archetype) {
-    case 'Antagonist':
-      icon = "⚔️";
-      break;
-    case 'Catastrophe':
-      icon = "⚠️";
-      break;
-    case 'Masterpiece':
-      icon = "🎨";
-      break;
-    case 'Discovery':
-      icon = "🗺️";
-      break;
+    case 'Antagonist': icon = "\u2694\uFE0F"; break;
+    case 'Catastrophe': icon = "\u26A0\uFE0F"; break;
+    case 'Masterpiece': icon = "\uD83C\uDFA8"; break;
+    case 'Discovery': icon = "\uD83D\uDDFA\uFE0F"; break;
   }
   let barColor = "bg-yellow-500";
   let textColor = "text-yellow-400";
   let borderColor = "border-yellow-600";
-  if (masteryScore >= 80) {
+  if (normalizedScore >= 80) {
       barColor = "bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)]";
       textColor = "text-green-400";
       borderColor = "border-green-600";
-  } else if (masteryScore <= 30) {
+  } else if (normalizedScore <= 30) {
       barColor = "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.6)]";
       textColor = "text-red-400";
       borderColor = "border-red-600";
   }
   return (
-    <div className={`w-full bg-slate-900/95 backdrop-blur-md border-y-4 ${borderColor} p-4 shadow-2xl animate-in slide-in-from-top-4 relative z-40 mb-2 transition-colors duration-500`}>
+    <div className={'w-full bg-slate-900/95 backdrop-blur-md border-y-4 ' + borderColor + ' p-4 shadow-2xl animate-in slide-in-from-top-4 motion-reduce:animate-none relative z-40 mb-2 transition-colors duration-500 motion-reduce:transition-none'}>
       <div className="flex justify-between items-end mb-2 px-1">
         <div className="flex items-center gap-2">
-            <span className="text-xl animate-pulse">{icon}</span>
+            <span className="text-xl animate-pulse motion-reduce:animate-none" aria-hidden="true">{icon}</span>
             <span className="text-xs font-black text-indigo-200 uppercase tracking-widest">{label}</span>
         </div>
-        <span className={`text-2xl font-black ${textColor} drop-shadow-sm font-mono transition-colors duration-500`}>
-          {Math.round(masteryScore)}%
+        <span className={'text-2xl font-black ' + textColor + ' drop-shadow-sm font-mono transition-colors duration-500 motion-reduce:transition-none'}>
+          {Math.round(normalizedScore)}%
         </span>
       </div>
-      <div className="relative h-6 w-full bg-slate-800 rounded-full border-2 border-slate-600 overflow-hidden shadow-inner">
+      <div
+        className="relative h-6 w-full bg-slate-800 rounded-full border-2 border-slate-600 overflow-hidden shadow-inner"
+        role="progressbar"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(normalizedScore)}
+        aria-valuetext={Math.round(normalizedScore) + '%; ' + leftLabel + ' to ' + rightLabel}
+      >
         <div
-          className={`h-full ${barColor} transition-all duration-1000 ease-out relative`}
-          style={{ width: `${Math.max(5, Math.min(100, masteryScore))}%` }}
+          className={'h-full ' + barColor + ' transition-all duration-1000 ease-out motion-reduce:transition-none relative'}
+          style={{ width: normalizedScore + '%' }}
+          aria-hidden="true"
         >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite] motion-reduce:animate-none"></div>
         </div>
-        <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 z-10 border-l border-black/20"></div>
-        <div className="absolute top-0 bottom-0 left-[25%] w-px bg-white/10 z-0"></div>
-        <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0"></div>
+        <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 z-10 border-l border-black/20" aria-hidden="true"></div>
+        <div className="absolute top-0 bottom-0 left-[25%] w-px bg-white/10 z-0" aria-hidden="true"></div>
+        <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0" aria-hidden="true"></div>
       </div>
-      <div className="flex justify-between text-[11px] font-bold text-slate-600 uppercase mt-1.5 px-1">
-        <span className="text-red-400">{leftLabel} (0%)</span>
+      <div className="flex justify-between text-[11px] font-bold uppercase mt-1.5 px-1">
+        <span className="text-red-300">{leftLabel} (0%)</span>
         <span className="text-green-400">{rightLabel} (100%)</span>
       </div>
     </div>
   );
 });
-
 // ═══ AdventureAmbience (lines 9565-9642) ═══
 const AdventureAmbience = React.memo(({ sceneText, soundParams, active, volume = 0.3 }) => {
     const ctxRef = useRef(null);
@@ -563,44 +566,57 @@ const getD20Rotation = (result, spins = 5) => {
 
 // ═══ InventoryGrid (lines 10813-10867) ═══
 const InventoryGrid = React.memo(({ inventory, onSelect }) => {
+  const [dismissedTooltip, setDismissedTooltip] = useState(null);
   if (!inventory || inventory.length === 0) return null;
   return (
-    <div className="flex items-center gap-2 bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-600/50">
-      <Backpack size={16} className="text-yellow-700" />
-      <div className="flex -space-x-2">
+    <div className="flex items-center gap-2 bg-indigo-800/50 px-3 py-1.5 rounded-2xl border border-indigo-500">
+      <Backpack size={18} className="text-yellow-300 shrink-0" aria-hidden="true" />
+      <ul className="flex flex-wrap gap-2">
         {inventory.map((item, idx) => (
-          <div
-            key={item.id || idx}
-            data-help-key="inventory_item" onClick={() => onSelect(item)}
-            className="group relative transition-transform hover:z-20 hover:scale-110 cursor-pointer"
-          >
-            <div className="w-8 h-8 rounded-lg bg-indigo-950 border-2 border-indigo-400 flex items-center justify-center overflow-hidden shadow-sm relative">
+          <li key={item.id || idx} className="group relative hover:z-20 focus-within:z-20">
+            <button
+              type="button"
+              data-help-key="inventory_item"
+              onClick={() => onSelect(item)}
+              onMouseEnter={() => setDismissedTooltip(null)}
+              onFocus={() => setDismissedTooltip(null)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  event.stopPropagation();
+                  setDismissedTooltip(idx);
+                }
+              }}
+              className="w-11 h-11 rounded-lg bg-indigo-950 border-2 border-indigo-300 flex items-center justify-center overflow-hidden shadow-sm relative transition-transform hover:scale-105 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900"
+              aria-label={item.name}
+              aria-describedby={item.effectType && item.description ? 'inventory-item-description-' + idx : undefined}
+              aria-busy={item.isLoading || undefined}
+            >
               {item.image ? (
                 <img loading="lazy"
                   src={item.image}
-                  alt={item.name}
+                  alt=""
                   className="w-full h-full object-contain pixelated"
                   style={STYLE_IMAGE_PIXELATED}
                   decoding="async"
                 />
               ) : item.icon ? (
-                <span className="text-lg">{item.icon}</span>
+                <span className="text-lg" aria-hidden="true">{item.icon}</span>
               ) : item.isLoading ? (
-                <RefreshCw size={10} className="text-indigo-600 animate-spin"/>
+                <RefreshCw size={16} className="text-indigo-200 animate-spin motion-reduce:animate-none" aria-hidden="true"/>
               ) : (
-                <span className="text-[11px] font-bold text-indigo-300">{item.name.charAt(0)}</span>
+                <span className="text-sm font-bold text-indigo-200" aria-hidden="true">{item.name.charAt(0)}</span>
               )}
-            </div>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:flex flex-col items-center z-50 w-32">
-              <div className="w-2 h-2 bg-black/90 rotate-45 -mb-1 border-t border-l border-white/20"></div>
-              <div className="bg-black/90 text-white text-[11px] px-2 py-1 rounded shadow-lg font-bold border border-white/20 text-center">
+            </button>
+            <div className={dismissedTooltip === idx ? 'hidden' : 'absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:flex group-focus-within:flex flex-col items-center z-50 w-36'} role="tooltip">
+              <div className="w-2 h-2 bg-black/95 rotate-45 -mb-1 border-t border-l border-white/30" aria-hidden="true"></div>
+              <div className="bg-black/95 text-white text-xs px-2 py-1.5 rounded shadow-lg font-bold border border-white/30 text-center">
                 {item.name}
-                {item.effectType && <div className="font-normal opacity-80 text-[11px] mt-0.5 border-t border-white/10 pt-0.5">{item.description}</div>}
+                {item.effectType && item.description && <div id={'inventory-item-description-' + idx} className="font-normal text-slate-100 text-xs mt-1 border-t border-white/20 pt-1">{item.description}</div>}
               </div>
             </div>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }, (prevProps, nextProps) => {
@@ -613,14 +629,24 @@ const InventoryGrid = React.memo(({ inventory, onSelect }) => {
       if (!prev || !next) return false;
       if (prev.id !== next.id) return false;
       if (prev.image !== next.image) return false;
+      if (prev.icon !== next.icon) return false;
+      if (prev.name !== next.name) return false;
+      if (prev.description !== next.description) return false;
+      if (prev.effectType !== next.effectType) return false;
       if (prev.isLoading !== next.isLoading) return false;
   }
   return true;
 });
-
 // ═══ DiceOverlay (lines 10868-10922) ═══
 const DiceOverlay = React.memo(({ result, onComplete }) => {
   const { t } = useContext(LanguageContext);
+  const diceRef = useRef(null);
+  const reduceMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  useFocusTrap(diceRef, true, onComplete);
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
   const [currentRotation, setCurrentRotation] = useState(() => {
       const rX = Math.floor(Math.random() * 360);
       const rY = Math.floor(Math.random() * 360);
@@ -632,27 +658,35 @@ const DiceOverlay = React.memo(({ result, onComplete }) => {
     const targetRotation = getD20Rotation(result, spinCount);
     const rollTimer = setTimeout(() => {
         setCurrentRotation(targetRotation);
-    }, 50);
-    const endTimer = setTimeout(() => onComplete(), 3500);
+    }, reduceMotion ? 0 : 50);
+    const endTimer = setTimeout(() => onCompleteRef.current(), reduceMotion ? 1000 : 3500);
     return () => {
       clearTimeout(rollTimer);
       clearTimeout(endTimer);
     };
-  }, [onComplete, result]);
+  }, [reduceMotion, result]);
   return (
     <div
+      ref={diceRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="adventure-dice-result"
       className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex items-center justify-center"
       onClick={onComplete}
     >
+      <p id="adventure-dice-result" className="sr-only" role="status" aria-live="assertive">
+        {t('adventure.dice_roll_result', { result })}
+      </p>
       <button
         onClick={(e) => { e.stopPropagation(); onComplete(); }}
-        className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-[202]"
+        className="absolute top-6 right-6 min-w-11 min-h-11 text-white hover:text-white bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors z-[202] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         title={t('common.skip_animation')}
         aria-label={t('common.skip_animation')}
+        data-alloflow-close-on-escape="true"
       >
-        <X size={32} />
+        <X size={32} aria-hidden="true" />
       </button>
-      <div role="button" tabIndex={0} className="dice-container" onClick={(e) => e.stopPropagation()}>
+      <div className="dice-container" aria-hidden="true" onClick={(e) => e.stopPropagation()}>
         <div
           className="dice"
           style={{ transform: currentRotation }}
@@ -689,39 +723,39 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
         className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
         onClick={onClose}
     >
-      <div role="button" tabIndex={0} className="bg-slate-900 border-4 border-indigo-500 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden relative flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+      <div className="bg-slate-900 border-4 border-indigo-500 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden relative flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
         <div className="bg-indigo-600 p-3 sm:p-6 text-white flex justify-between items-center shrink-0 shadow-lg relative z-10">
             <div>
                 <h2 className="text-2xl font-black uppercase tracking-widest flex items-center gap-3">
                     <div className="bg-yellow-400 text-indigo-900 p-2 rounded-lg shadow-inner border-2 border-indigo-800">
-                        <ShoppingBag size={24} />
+                        <ShoppingBag size={24} aria-hidden="true" />
                     </div>
                     {t('adventure.shop')}
                 </h2>
-                <p className="text-indigo-200 text-sm font-bold mt-1 ml-1">{t('adventure.shop_desc')}</p>
+                <p className="text-white text-sm font-bold mt-1 ml-1">{t('adventure.shop_desc')}</p>
             </div>
-            <button onClick={onClose} className="bg-indigo-800 hover:bg-indigo-700 text-white p-2 rounded-full transition-colors border-2 border-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" autoFocus aria-label={t('adventure.close_shop_aria')}>
-                <X size={24}/>
+            <button onClick={onClose} className="min-w-11 min-h-11 bg-indigo-800 hover:bg-indigo-700 text-white p-2 rounded-full transition-colors border-2 border-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white" autoFocus aria-label={t('adventure.close_shop_aria')}>
+                <X size={24} aria-hidden="true"/>
             </button>
         </div>
         <div className="bg-slate-800 p-2 sm:p-4 flex justify-between items-center border-b border-slate-700 shrink-0 gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
             <div className="flex gap-6">
                 <div className="flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600">
-                    <span className="text-2xl">💰</span>
+                    <span className="text-2xl" aria-hidden="true">💰</span>
                     <div>
-                        <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider">{t('adventure.gold')}</div>
+                        <div className="text-[11px] text-slate-200 font-bold uppercase tracking-wider">{t('adventure.gold')}</div>
                         <div className="text-xl font-black text-yellow-400 leading-none">{gold}</div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600">
-                    <span className="text-2xl">🏆</span>
+                    <span className="text-2xl" aria-hidden="true">🏆</span>
                     <div>
-                        <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider">{t('adventure.global_xp')}</div>
+                        <div className="text-[11px] text-slate-200 font-bold uppercase tracking-wider">{t('adventure.global_xp')}</div>
                         <div className="text-xl font-black text-green-400 leading-none">{globalXP}</div>
                     </div>
                 </div>
             </div>
-            <div className="text-xs text-slate-600 italic text-right ml-auto">
+            <div className="text-xs text-slate-300 italic text-right ml-auto">
                 {t('adventure.xp_earn_tip')}
             </div>
         </div>
@@ -729,7 +763,7 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
             {ADVENTURE_SHOP_ITEMS.map((item) => (
                 <div key={item.id} className="bg-slate-800 border-2 border-slate-700 rounded-2xl p-3 sm:p-4 flex flex-col hover:border-indigo-500 transition-colors group relative overflow-hidden">
                     <div className="flex justify-between items-start mb-2 relative z-10">
-                        <div className="text-2xl sm:text-4xl bg-slate-700 w-10 h-10 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center shadow-inner border border-slate-600">
+                        <div className="text-2xl sm:text-4xl bg-slate-700 w-10 h-10 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center shadow-inner border border-slate-600" aria-hidden="true">
                             {item.icon}
                         </div>
                         <div className="text-right">
@@ -749,7 +783,7 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                         <button
                             onClick={() => onPurchase(item)}
                             disabled={gold < item.cost}
-                            className={`w-full py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 min-h-[40px] ${
+                            className={`w-full py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 ${
                                 gold >= item.cost
                                 ? 'bg-yellow-500 hover:bg-yellow-400 text-indigo-900 shadow-lg shadow-yellow-500/30 border-2 border-yellow-300 ring-1 ring-yellow-400/50'
                                 : 'bg-slate-700 text-slate-300 cursor-not-allowed'
@@ -777,17 +811,38 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
     const [newAppearance, setNewAppearance] = useState('');
     const [editingField, setEditingField] = useState(null); // { idx, field }
     const [editFieldValue, setEditFieldValue] = useState('');
+    const [portraitUploadError, setPortraitUploadError] = useState(null);
     const hasTriggeredAutoGen = useRef(false);
     const portraitFileRefs = useRef({});
+    const castRef = useRef(null);
+    const castTitleRef = useRef(null);
+    useFocusTrap(castRef, true);
+    useEffect(() => {
+        const frame = requestAnimationFrame(() => castTitleRef.current?.focus());
+        return () => cancelAnimationFrame(frame);
+    }, []);
     const handlePortraitFileChange = (charIdx, e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (!file.type.startsWith('image/')) return;
-        if (file.size > 5 * 1024 * 1024) { alert('Image too large (max 5MB). Please use a smaller image.'); return; }
+        const input = e.target;
+        const rejectUpload = (message) => {
+            setPortraitUploadError({ charIdx, message });
+            input.value = '';
+        };
+        if (!file.type.startsWith('image/')) {
+            rejectUpload('Only image files can be used for character portraits.');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            rejectUpload('Image too large (max 5MB). Please use a smaller image.');
+            return;
+        }
+        setPortraitUploadError(null);
         const reader = new FileReader();
         reader.onload = (ev) => { if (onUploadPortrait) onUploadPortrait(charIdx, ev.target.result); };
+        reader.onerror = () => rejectUpload('This image could not be read. Please choose a different image.');
         reader.readAsDataURL(file);
-        e.target.value = '';
+        input.value = '';
     };
     useEffect(() => {
         if (!hasTriggeredAutoGen.current && characters?.length > 0) {
@@ -811,72 +866,72 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
         setEditFieldValue('');
     };
     return (
-        <div className="fixed inset-0 z-[250] bg-gradient-to-br from-violet-950/95 to-indigo-950/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-500">
-            <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-8">
+        <div ref={castRef} role="dialog" aria-modal="true" aria-labelledby="adventure-cast-lobby-title" className="fixed inset-0 z-[250] bg-gradient-to-br from-violet-950/95 to-indigo-950/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-500">
+            <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-8">
                 <div className="text-center mb-6">
-                    <span className="text-4xl mb-2 block">🎭</span>
-                    <h2 className="text-2xl font-bold text-slate-800">{t('adventure.cast_lobby') || 'Meet Your Cast'}</h2>
+                    <span className="text-4xl mb-2 block" aria-hidden="true">🎭</span>
+                    <h2 ref={castTitleRef} id="adventure-cast-lobby-title" tabIndex={-1} className="text-2xl font-bold text-slate-800 focus:outline-none">{t('adventure.cast_lobby') || 'Meet Your Cast'}</h2>
                     <p className="text-sm text-slate-600 mt-1">{t('adventure.cast_lobby_desc') || 'Select any name, role, or description to edit. Portraits generate automatically.'}</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     {characters.map((char, i) => (
                         <div key={i} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card">
-                            <button onClick={() => onRemoveCharacter(i)} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-600 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
+                            <button type="button" onClick={() => { setPortraitUploadError(null); onRemoveCharacter(i); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
                             <div className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner" aria-busy={!!char.isGenerating} aria-label={char.isGenerating ? (t('adventure.generating_portrait_aria') || ('Generating portrait for ' + (char.name || 'character'))) : undefined}>
                                 {char.isGenerating ? (
-                                    <div className="animate-spin w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full" role="status" aria-label={t('common.loading') || 'Loading'}></div>
+                                    <div className="animate-spin w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full" aria-hidden="true"></div>
                                 ) : char.portrait ? (
                                     <img src={char.portrait} alt={char.name} className="w-full h-full object-cover rounded-full"/>
                                 ) : (
-                                    <span className="text-3xl">🎭</span>
+                                    <span className="text-3xl" aria-hidden="true">🎭</span>
                                 )}
                             </div>
                             {editingField?.idx === i && editingField?.field === 'name' ? (
                                 <input type="text" aria-label={t('adventure.edit_name') || 'Edit character name'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus className="font-bold text-slate-800 text-sm text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white"/>
                             ) : (
-                                <h3><button type="button" onClick={() => startFieldEdit(i, 'name')} className="font-bold text-slate-800 text-sm cursor-pointer hover:text-violet-600 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-violet-500" title={t('adventure.edit_name')} aria-label={(t('adventure.edit_name') || 'Edit character name') + ': ' + char.name}>{char.name}</button></h3>
+                                <h3><button type="button" onClick={() => startFieldEdit(i, 'name')} className="min-w-11 min-h-11 px-2 font-bold text-slate-800 text-sm cursor-pointer hover:text-violet-700 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_name')} aria-label={(t('adventure.edit_name') || 'Edit character name') + ': ' + char.name}>{char.name}</button></h3>
                             )}
                             {editingField?.idx === i && editingField?.field === 'role' ? (
                                 <input type="text" aria-label={t('adventure.edit_role') || 'Edit character role'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus className="text-xs text-violet-600 font-medium text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white mt-0.5"/>
                             ) : (
-                                <button type="button" onClick={() => startFieldEdit(i, 'role')} className="text-xs text-violet-600 font-medium cursor-pointer hover:text-violet-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-violet-500" title={t('adventure.edit_role')} aria-label={(t('adventure.edit_role') || 'Edit character role') + ': ' + char.role}>{char.role}</button>
+                                <button type="button" onClick={() => startFieldEdit(i, 'role')} className="min-w-11 min-h-11 px-2 text-xs text-violet-700 font-medium cursor-pointer hover:text-violet-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_role')} aria-label={(t('adventure.edit_role') || 'Edit character role') + ': ' + char.role}>{char.role}</button>
                             )}
                             {editingField?.idx === i && editingField?.field === 'appearance' ? (
                                 <textarea aria-label={t('adventure.edit_appearance') || 'Edit character appearance'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveFieldEdit(); } if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus rows={3} className="text-[11px] text-slate-600 mt-1 leading-relaxed w-full px-2 py-1 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white resize-none"/>
                             ) : (
-                                <button type="button" onClick={() => startFieldEdit(i, 'appearance')} className="text-[11px] text-slate-600 mt-1 leading-relaxed cursor-pointer hover:text-slate-700 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-violet-500" title={t('adventure.edit_appearance')} aria-label={(t('adventure.edit_appearance') || 'Edit character appearance') + ': ' + char.appearance}>{char.appearance}</button>
+                                <button type="button" onClick={() => startFieldEdit(i, 'appearance')} className="min-w-11 min-h-11 px-2 text-[11px] text-slate-700 mt-1 leading-relaxed cursor-pointer hover:text-slate-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_appearance')} aria-label={(t('adventure.edit_appearance') || 'Edit character appearance') + ': ' + char.appearance}>{char.appearance}</button>
                             )}
                             {char.portrait && !char.isGenerating && (
                                 <div className="mt-2 flex flex-wrap gap-1.5 justify-center">
                                     {char.isUserUploaded && (
-                                        <span className="text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-200 font-medium">📷 User Photo</span>
+                                        <span className="text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-600 font-medium">📷 User Photo</span>
                                     )}
-                                    <button onClick={() => onGeneratePortrait(i)} className="text-xs px-3 py-1 bg-violet-600 text-white rounded-full hover:bg-violet-700 transition-all font-bold" title={t('adventure.regen_portrait')}>
+                                    <button type="button" onClick={() => onGeneratePortrait(i)} className="min-h-11 px-3 py-2 bg-violet-700 text-white rounded-full hover:bg-violet-800 transition-all font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.regen_portrait')}>
                                         🔄 {char.isUserUploaded ? 'AI Generate' : 'Regenerate'}
                                     </button>
-                                    <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} accept="image/*" ref={el => portraitFileRefs.current[i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
-                                    <button onClick={() => portraitFileRefs.current[i]?.click()} className="text-xs px-3 py-1 bg-sky-50 text-sky-600 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-200" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
+                                    <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} accept="image/*" ref={el => portraitFileRefs.current[i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
+                                    <button type="button" aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} onClick={() => { setPortraitUploadError(null); portraitFileRefs.current[i]?.click(); }} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
                                         📷 Upload
                                     </button>
                                     {editIdx === i ? (
                                         <div className="w-full flex gap-1 mt-1">
-                                            <input type="text" aria-label={t('adventure.portrait_refine_aria') || 'Describe how to refine portrait'} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} placeholder={t('adventure.portrait_refine_placeholder') || 'e.g. Add green glasses'} className="flex-1 text-xs px-2 py-1 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none" onKeyDown={(e) => { if (e.key === 'Enter' && editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}}/>
-                                            <button onClick={() => { if (editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}} className="text-xs px-2 py-1 bg-violet-500 text-white rounded-lg font-bold hover:bg-violet-600">✓</button>
-                                            <button onClick={() => { setEditIdx(null); setEditPrompt(''); }} className="text-xs px-2 py-1 bg-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-300">✗</button>
+                                            <input type="text" aria-label={t('adventure.portrait_refine_aria') || 'Describe how to refine portrait'} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} placeholder={t('adventure.portrait_refine_placeholder') || 'e.g. Add green glasses'} className="flex-1 text-xs px-2 py-1 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none" onKeyDown={(e) => { if (e.key === 'Enter' && editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}}/>
+                                            <button type="button" aria-label={t('common.confirm') || 'Apply portrait refinement'} onClick={() => { if (editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}} className="min-w-11 min-h-11 px-2 py-2 bg-violet-700 text-white rounded-lg font-bold hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">✓</button>
+                                            <button type="button" aria-label={t('common.cancel') || 'Cancel portrait refinement'} onClick={() => { setEditIdx(null); setEditPrompt(''); }} className="min-w-11 min-h-11 px-2 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2">✗</button>
                                         </div>
                                     ) : (
                                         <>
-                                            <button onClick={() => setEditIdx(i)} className="text-xs px-3 py-1 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 transition-all font-medium border border-slate-400" title={t('adventure.edit_nanobanana')}>
+                                            <button type="button" aria-label={(t('adventure.edit_nanobanana') || 'Refine portrait') + ': ' + char.name} onClick={() => setEditIdx(i)} className="min-h-11 px-3 py-2 bg-slate-100 text-slate-700 rounded-full hover:bg-slate-200 transition-all font-medium border border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2" title={t('adventure.edit_nanobanana')}>
                                                 ✏️ Refine
                                             </button>
-                                            <button onClick={() => {
+                                            <button type="button" onClick={() => {
                                                 const link = document.createElement('a');
                                                 link.href = char.portrait;
                                                 link.download = `${(char.name || 'character').replace(/\s+/g, '_')}_portrait.png`;
                                                 document.body.appendChild(link);
                                                 link.click();
                                                 document.body.removeChild(link);
-                                            }} className="text-xs px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full hover:bg-emerald-100 transition-all font-medium border border-emerald-200">
+                                            }} className="min-h-11 px-3 py-2 bg-emerald-50 text-emerald-700 rounded-full hover:bg-emerald-100 transition-all font-medium border border-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
                                                 💾 Save
                                             </button>
                                         </>
@@ -885,45 +940,50 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                             )}
                             {!char.portrait && !char.isGenerating && (
                                 <div className="mt-2 flex flex-wrap gap-1.5 justify-center">
-                                    <button onClick={() => onGeneratePortrait(i)} className="text-xs px-3 py-1 bg-violet-600 text-white rounded-full hover:bg-violet-700 transition-all font-bold">
+                                    <button type="button" onClick={() => onGeneratePortrait(i)} className="min-h-11 px-3 py-2 bg-violet-700 text-white rounded-full hover:bg-violet-800 transition-all font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
                                         🎨 Generate Portrait
                                     </button>
-                                    <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} accept="image/*" ref={el => portraitFileRefs.current['new-' + i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
-                                    <button onClick={() => portraitFileRefs.current['new-' + i]?.click()} className="text-xs px-3 py-1 bg-sky-50 text-sky-600 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-200" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
+                                    <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} accept="image/*" ref={el => portraitFileRefs.current['new-' + i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
+                                    <button type="button" aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} onClick={() => { setPortraitUploadError(null); portraitFileRefs.current['new-' + i]?.click(); }} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
                                         📷 Upload Photo
                                     </button>
                                 </div>
                             )}
+                            {portraitUploadError?.charIdx === i && (
+                                <p id={`adventure-portrait-upload-error-${i}`} role="alert" aria-atomic="true" className="w-full mt-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800">
+                                    {portraitUploadError.message}
+                                </p>
+                            )}
                             {char.isGenerating && (
-                                <p className="mt-2 text-[11px] text-violet-700 animate-pulse font-medium">Generating...</p>
+                                <p className="mt-2 text-[11px] text-violet-700 animate-pulse font-medium" role="status" aria-live="polite">{t('common.loading') || 'Loading'}</p>
                             )}
                         </div>
                     ))}
                     {isAdding ? (
                         <div className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl border-2 border-dashed border-violet-300 p-4 flex flex-col items-center text-center">
-                            <span className="text-2xl mb-2">✨</span>
-                            <input type="text" aria-label={t('adventure.char_name_placeholder') || 'Character name'} value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={t('adventure.char_name_placeholder')} className="w-full text-sm px-3 py-1.5 mb-2 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center font-bold"/>
-                            <input type="text" aria-label={t('adventure.role_placeholder') || 'Character role'} value={newRole} onChange={(e) => setNewRole(e.target.value)} placeholder={t('adventure.role_placeholder')} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center"/>
-                            <input type="text" aria-label={t('adventure.appearance_placeholder') || 'Character appearance'} value={newAppearance} onChange={(e) => setNewAppearance(e.target.value)} placeholder={t('adventure.appearance_placeholder') || 'Appearance (e.g. tall, silver hair, blue robe)'} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center" onKeyDown={(e) => { if (e.key === 'Enter' && newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}}/>
+                            <span className="text-2xl mb-2" aria-hidden="true">✨</span>
+                            <input type="text" aria-label={t('adventure.char_name_placeholder') || 'Character name'} value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={t('adventure.char_name_placeholder')} className="w-full text-sm px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center font-bold"/>
+                            <input type="text" aria-label={t('adventure.role_placeholder') || 'Character role'} value={newRole} onChange={(e) => setNewRole(e.target.value)} placeholder={t('adventure.role_placeholder')} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center"/>
+                            <input type="text" aria-label={t('adventure.appearance_placeholder') || 'Character appearance'} value={newAppearance} onChange={(e) => setNewAppearance(e.target.value)} placeholder={t('adventure.appearance_placeholder') || 'Appearance (e.g. tall, silver hair, blue robe)'} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center" onKeyDown={(e) => { if (e.key === 'Enter' && newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}}/>
                             <div className="flex gap-1.5 mt-1">
-                                <button onClick={() => { if (newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}} className="text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg font-bold hover:bg-violet-700">Add</button>
-                                <button onClick={() => { setIsAdding(false); setNewName(''); setNewRole(''); setNewAppearance(''); }} className="text-xs px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-300">Cancel</button>
+                                <button type="button" onClick={() => { if (newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}} className="min-h-11 px-3 py-2 bg-violet-700 text-white rounded-lg font-bold hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">Add</button>
+                                <button type="button" onClick={() => { setIsAdding(false); setNewName(''); setNewRole(''); setNewAppearance(''); }} className="min-h-11 px-3 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2">Cancel</button>
                             </div>
                         </div>
                     ) : (
-                        <button onClick={() => setIsAdding(true)} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border-2 border-dashed border-violet-200 p-4 flex flex-col items-center justify-center text-center transition-all hover:shadow-lg hover:border-violet-400 hover:from-violet-50 hover:to-indigo-50 min-h-[180px] cursor-pointer group">
-                            <span className="text-4xl mb-2 group-hover:scale-110 transition-transform">➕</span>
+                        <button type="button" onClick={() => setIsAdding(true)} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border-2 border-dashed border-violet-600 p-4 flex flex-col items-center justify-center text-center transition-all hover:shadow-lg hover:border-violet-700 hover:from-violet-50 hover:to-indigo-50 min-h-[180px] cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
+                            <span className="text-4xl mb-2 group-hover:scale-110 transition-transform" aria-hidden="true">➕</span>
                             <span className="font-bold text-sm text-violet-600">{t('adventure.add_character')}</span>
                             <span className="text-[11px] text-slate-600 mt-0.5">{t('adventure.create_cast_member')}</span>
                         </button>
                     )}
                 </div>
-                <div className="flex justify-center gap-3">
-                    <button onClick={() => { characters.forEach((_, i) => { if (!characters[i].portrait && !characters[i].isGenerating && !characters[i].isUserUploaded) { onGeneratePortrait(i); }}); }} className="px-5 py-2.5 bg-violet-100 text-violet-700 font-bold rounded-xl hover:bg-violet-200 transition-all text-sm border border-violet-200">
-                        🎨 {t('adventure.generate_all') || 'Generate All Portraits'}
+                <div className="flex flex-wrap justify-center gap-3">
+                    <button type="button" onClick={() => { characters.forEach((_, i) => { if (!characters[i].portrait && !characters[i].isGenerating && !characters[i].isUserUploaded) { onGeneratePortrait(i); }}); }} className="min-h-11 px-5 py-2.5 bg-violet-100 text-violet-700 font-bold rounded-xl hover:bg-violet-200 transition-all text-sm border border-violet-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
+                        <span aria-hidden="true">🎨</span> {t('adventure.generate_all') || 'Generate All Portraits'}
                     </button>
-                    <button onClick={onConfirm} className="px-6 py-2.5 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105">
-                        ⚔️ {t('adventure.begin_adventure') || 'Begin Adventure'}
+                    <button type="button" onClick={onConfirm} className="min-h-11 px-6 py-2.5 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-800 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
+                        <span aria-hidden="true">⚔️</span> {t('adventure.begin_adventure') || 'Begin Adventure'}
                     </button>
                 </div>
             </div>

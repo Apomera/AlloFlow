@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-047f0442-untitled",
+  "title": "सन्तु",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4KVX3bAuBV"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f047f0442-a90b-4196-a270-c61fea42cbcd%2f%e0%a4%b8%e0%a4%a8%e0%a5%8d%e0%a4%a4%e0%a5%81%2fAOR_CMB0322.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f047f0442-a90b-4196-a270-c61fea42cbcd%2f%e0%a4%b8%e0%a4%a8%e0%a5%8d%e0%a4%a4%e0%a5%81%2fAOR_CMB0676.png",
+      "text": "सन्तु दुई कक्षामा पढ्छ। उनको विद्यालय घरदेखि नजिक छ। उनी पढ्नमा त्यति चलाख छैनन्।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f047f0442-a90b-4196-a270-c61fea42cbcd%2f%e0%a4%b8%e0%a4%a8%e0%a5%8d%e0%a4%a4%e0%a5%81%2fclassroom_teacher_and_students1.png",
+      "text": "साथीहरूको भन्दा उनको अक्षर नराम्रो छ। उनी किताब पनि अड्की अड्की पढ्छन्। साथीहरूले उनलाई नजान्ने भनेर हेप्छन्।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f047f0442-a90b-4196-a270-c61fea42cbcd%2f%e0%a4%b8%e0%a4%a8%e0%a5%8d%e0%a4%a4%e0%a5%81%2fAOR_PMF039.png",
+      "text": "साथीहरूका व्यवहारले सन्तु दिक्‍क भए। उनलाई विद्यालय जान मन लागेन। घरबाट हिँड्थे तर विद्यालय पुग्दैनथे।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f047f0442-a90b-4196-a270-c61fea42cbcd%2f%e0%a4%b8%e0%a4%a8%e0%a5%8d%e0%a4%a4%e0%a5%81%2fAOR_NEGRIT10.png",
+      "text": "ऊ खोलातिर जान थाले।\nजङ्गलतिर जान थाले। ऊ पौडी खेल्थे। माछा मार्थे, घुमफिर गर्थे। यसरीनै आफ्नो दिन बाहिरै बिताउँथे।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f047f0442-a90b-4196-a270-c61fea42cbcd%2f%e0%a4%b8%e0%a4%a8%e0%a5%8d%e0%a4%a4%e0%a5%81%2fAOR_EAG00585.png",
+      "text": "एक दिन ऊ जङ्गलमा घुम्दै थिए। जङ्गलमा राता कमिलाको गोलो देखे। कमिलाहरूले माटोको गोलो बनाएका थिए।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f047f0442-a90b-4196-a270-c61fea42cbcd%2f%e0%a4%b8%e0%a4%a8%e0%a5%8d%e0%a4%a4%e0%a5%81%2fAOR_spmz017m.png",
+      "text": "उनले राम्ररी हेरे। कमिलाहरू माटो बोकेर गोलो बनाउँदै थिए। राता कमिलाहरू धमाधम माटो ओसार्दै थिए।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f047f0442-a90b-4196-a270-c61fea42cbcd%2f%e0%a4%b8%e0%a4%a8%e0%a5%8d%e0%a4%a4%e0%a5%81%2fAOR_4-4t.png",
+      "text": "सन्तुले कमिलाहरूको काम हेरिरहे । उनले विचार गरे। कमिलाहरू कति साना साना छन्। तर यिनीहरूले ठुला काम गर्न सकेका ।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f047f0442-a90b-4196-a270-c61fea42cbcd%2f%e0%a4%b8%e0%a4%a8%e0%a5%8d%e0%a4%a4%e0%a5%81%2fAOR_CA-1-194.png",
+      "text": "मिहेनत गर्दा सफल भइने रहेछ। कठिन काम पनि गर्न सकिने रहेछ। साना कमिलाबाट सन्तुले यस्तो पाठ सिके।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f047f0442-a90b-4196-a270-c61fea42cbcd%2f%e0%a4%b8%e0%a4%a8%e0%a5%8d%e0%a4%a4%e0%a5%81%2fAOR_LIT04.png",
+      "text": "सन्तुले पनि मेहेनत गर्ने कसम खाए। अनि सोचे, राम्रो अक्षर लेख्छु। नअड्की पुस्तक पढ्छु। साथीहरू जस्तै चलाख हुन्छु।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f047f0442-a90b-4196-a270-c61fea42cbcd%2f%e0%a4%b8%e0%a4%a8%e0%a5%8d%e0%a4%a4%e0%a5%81%2fAOR_EAG00095.png",
+      "text": "भोलिपल्टदेखि सन्तु विद्यालय जान थाले। मिहेनत गरे। राम्रोसँग पढे। उनी सफल हुँदै गए। उनलाई साथीहरूले हेपेनन्। सबैले माया गरे।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 170
+  }
+}

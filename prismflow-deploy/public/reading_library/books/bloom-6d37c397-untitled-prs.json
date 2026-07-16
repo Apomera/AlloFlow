@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-6d37c397-untitled-prs",
+  "title": "کتاب ِ داستان",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/LeGCE2c32M"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f6d37c397-ab3e-408b-a520-4583be5c4f4d%2f%da%a9%d8%aa%d8%a7%d8%a8+%d9%90+%d8%af%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f6d37c397-ab3e-408b-a520-4583be5c4f4d%2f%da%a9%d8%aa%d8%a7%d8%a8+%d9%90+%d8%af%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%2f2.jpg",
+      "text": "کارخانه گی غزال تمام شد.\nکتاب داستان را از بکسش کشید."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "مادر گفت:\nدخترم! کتاب را از کجا آورده ای؟\nغزال به مادر گفت:\nمادر! کتاب را ازحفیظه گرفتم.\nمادر گفت:\nپس کتاب امانت است.\nغزال کتاب را خواند."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f6d37c397-ab3e-408b-a520-4583be5c4f4d%2f%da%a9%d8%aa%d8%a7%d8%a8+%d9%90+%d8%af%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%2f3.jpg",
+      "text": "یادش رفت کتاب را به بکسش بگذارد.\nروزی حفیظه کتابش را خواست."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "غزال به خانه رفت.\nهرچند گشت، کتاب حفیظه را ندید.\nغزال ازمادر پرسید:\nمادر! کتاب حفیظه را ندیده ای؟\nمادر گفت:\nکتاب را دیدم، بین لوازم بازی ها بود."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f6d37c397-ab3e-408b-a520-4583be5c4f4d%2f%da%a9%d8%aa%d8%a7%d8%a8+%d9%90+%d8%af%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%2f4.jpg",
+      "text": "غزال خوشحال شد.\nاما مادرغزال ناراحت بود."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "مادر به غزال گفت:\nدخترم! ازکتاب حفیظه خوب نگهداری نکردی.\nامانت دار خوبی نیستی."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f6d37c397-ab3e-408b-a520-4583be5c4f4d%2f%da%a9%d8%aa%d8%a7%d8%a8+%d9%90+%d8%af%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%2f5.jpg",
+      "text": "غزال به مادرش قول داد که\nازامانت خوب نگهداری کند."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "مادر گفت :\nدخترم! خداوند امانت دار را دوست دارد."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 121
+  }
+}

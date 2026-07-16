@@ -22,7 +22,109 @@
  * NOT yet browser-smoke-tested. If liblouis fails to initialise the export
  * silently keeps working via the Grade-1 fallback.
  */
-(function () {
+
+// ── Grade-1 (uncontracted) Braille-ASCII — the offline, no-WASM converter ────
+// shared by BOTH .brf export lanes (the PDF remediation view + the Document
+// Builder export menu) so they can't drift. Fixes over the old inline copies:
+//   - a letter sign (dots 5-6 = ';') after a number so "1a" reads as "1" then
+//     "a", not "11" (the digits 1-0 share the a-j cells);
+//   - smart-punctuation normalization + NFD accent folding (curly quotes, em/en
+//     dashes, e-acute -> e) so accented / typographic text transliterates
+//     instead of being silently dropped;
+//   - word-aware 40-cell wrapping (no mid-word breaks); and
+//   - a dropped-character count (opts.withMeta) so a caller can warn honestly
+//     when a script has no Grade-1 English braille equivalent (CJK, Arabic...).
+var _G1_DIGIT = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
+// Supported UEB symbols expressed as North-American Braille ASCII. Anything
+// outside this explicit set is counted and omitted instead of passing raw ASCII
+// through as an unrelated braille cell.
+var _G1_PUNCT = {
+  ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8',
+  '(': '"<', ')': '">', "'": "'", '-': '-', '/': '_/',
+  '*': '"9', '&': '@&', '+': '"6', '=': '"7', '<': '@<', '>': '@>'
+};
+var _G1_SMART = { '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*' };
+var _G1_OPEN_QUOTE = '\ue000';
+var _G1_CLOSE_QUOTE = '\ue001';
+var _G1_PREFIX = /[#,;@_^".]$/;
+function _g1HardSplit(word, into, cells) {
+  // Numeric continuation indicator (dot 5 = ") keeps a divided numeric item
+  // in numeric mode on the next braille line.
+  if (/^#[A-J14]+$/.test(word)) {
+    while (word.length > cells) { into.push(word.slice(0, cells - 1) + '"'); word = word.slice(cells - 1); }
+    if (word) into.push(word);
+    return;
+  }
+  while (word.length > cells) {
+    var cut = cells;
+    while (cut > 1 && _G1_PREFIX.test(word.slice(0, cut))) cut--;
+    into.push(word.slice(0, cut));
+    word = word.slice(cut);
+  }
+  if (word) into.push(word);
+}
+function _g1Wrap(line, into, cells) {
+  if (line.length <= cells) { into.push(line); return; }
+  var words = line.split(' '), cur = '';
+  for (var i = 0; i < words.length; i++) {
+    var w = words[i];
+    if (w.length > cells) { if (cur) { into.push(cur); cur = ''; } _g1HardSplit(w, into, cells); continue; }
+    if (!cur) cur = w;
+    else if (cur.length + 1 + w.length <= cells) cur += ' ' + w;
+    else { into.push(cur); cur = w; }
+  }
+  if (cur) into.push(cur);
+}
+function toGrade1BRF(text, opts) {
+  var src = String(text == null ? '' : text);
+  var cells = (opts && opts.cellsPerLine) || 40;
+  src = src.replace(/[\u201c\u00ab]/g, _G1_OPEN_QUOTE).replace(/[\u201d\u00bb]/g, _G1_CLOSE_QUOTE);
+  src = src.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, function (c) { return _G1_SMART[c] || ''; });
+  try { src = src.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
+  var lines = src.replace(/\r\n?/g, '\n').split('\n');
+  var out = [], dropped = 0;
+  for (var li = 0; li < lines.length; li++) {
+    var chars = Array.from(lines[li]), bl = '', numMode = false;
+    for (var i = 0; i < chars.length; i++) {
+      var ch = chars[i];
+      if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _G1_DIGIT[ch]; continue; }
+      if (numMode && (ch === ',' || ch === '.')) { bl += _G1_PUNCT[ch]; continue; }
+      if (numMode && ch >= 'a' && ch <= 'j') bl += ';';
+      numMode = false;
+      if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
+      if (ch >= 'A' && ch <= 'Z') {
+        var end = i;
+        while (end < chars.length && chars[end] >= 'A' && chars[end] <= 'Z') end++;
+        var prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
+        var nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
+        if (!prevIsLetter && !nextIsLetter && end - i >= 2) { bl += ',,' + chars.slice(i, end).join(''); i = end - 1; }
+        else bl += ',' + ch;
+        continue;
+      }
+      if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
+      if (ch === _G1_OPEN_QUOTE) { bl += '8'; continue; }
+      if (ch === _G1_CLOSE_QUOTE) { bl += '0'; continue; }
+      if (ch === '"') {
+        var prev = i > 0 ? chars[i - 1] : '';
+        bl += (!prev || /\s|[([{]/.test(prev)) ? '8' : '0';
+        continue;
+      }
+      if (_G1_PUNCT[ch] !== undefined) { bl += _G1_PUNCT[ch]; continue; }
+      dropped++;
+    }
+    _g1Wrap(bl, out, cells);
+  }
+  var brf = out.join('\r\n');
+  return (opts && opts.withMeta) ? { brf: brf, dropped: dropped } : brf;
+}
+if (typeof window !== 'undefined') {
+  window.AlloBraille = window.AlloBraille || {};
+  if (typeof window.AlloBraille.toGrade1BRF !== 'function') window.AlloBraille.toGrade1BRF = toGrade1BRF;
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = { toGrade1BRF: toGrade1BRF };
+
+// ── UEB Grade 2 (contracted) via liblouis — browser only, lazy ──────────────
+if (typeof window !== 'undefined') (function () {
   'use strict';
   if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') return;
 
@@ -129,7 +231,7 @@
     if (cur) into.push(cur);
   }
 
-  window.AlloBraille = {
+  window.AlloBraille = Object.assign(window.AlloBraille || {}, {
     /**
      * Translate plain text to UEB Grade 2 Braille-ASCII (BRF-ready). Resolves
      * to a string, or NULL if liblouis is unavailable / anything goes wrong.
@@ -153,7 +255,7 @@
       }).catch(function () { return null; });
     },
     _tableList: TABLE_LIST
-  };
+  });
 
-  console.log('[AlloBraille] liblouis_braille_loader.js ready — window.AlloBraille.toUEB(text) (lazy UEB Grade 2)');
+  console.log('[AlloBraille] liblouis_braille_loader.js ready — window.AlloBraille.toUEB(text) (lazy UEB Grade 2) + toGrade1BRF(text) (Grade 1)');
 })();

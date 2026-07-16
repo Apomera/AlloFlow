@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e42812f0-nzoto",
+  "title": "Nzoto",
+  "description": "Do you know all the parts of the body?",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ourzqcYc4y"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+11+feet.jpg",
+      "text": "Matampe"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+12+legs.jpg",
+      "text": "Makolo"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+13+knees.jpg",
+      "text": "Mabolongo"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+14+waist.jpg",
+      "text": "Molayi"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+15+stomach.jpg",
+      "text": "Libumu"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+16+chest.jpg",
+      "text": "Ntolo"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+17+hands.jpg",
+      "text": "Maboko"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+18+elbows.jpg",
+      "text": "Maboko"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+19+head.jpg",
+      "text": "Mutu"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+20+arms.jpg",
+      "text": "Nzoto"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 10
+  }
+}

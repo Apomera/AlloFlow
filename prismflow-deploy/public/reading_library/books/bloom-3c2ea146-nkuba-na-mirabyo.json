@@ -1,0 +1,102 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3c2ea146-nkuba-na-mirabyo",
+  "title": "Nkuba na Mirabyo",
+  "description": "Nkuba n'umuhungu we Mirabyo babanaga n'abantu ku isi. Bitewe n'uko Mirabyo yarangwaga n'imyitwarire mibi yo kwangiza, umwami yarabaciye ngo bajye gutura mu kirere kure y'abantu.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Traditional Story"
+  ],
+  "authors": [
+    "Ogot Owino"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/AIFCBMstnU"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fimage1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage1.jpg",
+      "text": "Nkuba na Mirabyo\nKera Nkuba na Mirabyo babanaga n'abantu ku isi."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage16.jpg",
+      "text": "Nkuba yari nyina wa Mirabyo."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage14.jpg",
+      "text": "Mirabyo yagiraga umujinya bityo agakunda gutongana."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage4.jpg",
+      "text": "Iyo Mirabyo yarakaraga, yazengurukaga ahantu hose atwika inzu ari nako agusha ibiti. Yagiraga urusaku ruteye ubwoba ati: \"Pya-la-la-la, pya-lalala!\" Yangizaga imyaka mu mirima ndetse rimwe na rimwe akica n'abantu."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage5.jpg",
+      "text": "Igihe cyose Mirabyo agize iyo myitwarire, nyina yamuhamagaraga mu ijwi ryasa cyane agira ati: \"Bumrambo- la-la-la, labum!\" Yabaga ari kumubuza gukomeza kwangiza."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage6.jpg",
+      "text": "Nyamara Mirabyo we ntiyabaga yitaye ku byo nyina amubwira. Ahubwo yakomezaga guteza abantu ibibazo igihe cyose yabaga afite umujinya."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage7.jpg",
+      "text": "Byageze aho abantu bajya kumuregera umwami."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage8.jpg",
+      "text": "Umwami ngo abyumve, ategeka ko Nkuba n'umuhungu we Mirabyo birukanwa mu mudugudu bari batuyemo. Umwami yarabaciye abategeka kujya gutura kure y'ingo z'abantu."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage9.jpg",
+      "text": "Ibyo ntacyo byamaze cyane. N'ubundi iyo Mirabyo yarakaraga ntibyamubuzaga gutwika amashyamba ati: \"Pya-lala-la, pya-la-la-la!\" Ndetse hari n'ubwo ibibatsi by'umuriro byakwirakwiraga mu mirima y'abantu bikayitwika."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage10.jpg",
+      "text": "Bidateye kabiri, abantu basubira kuregera umwami."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage11.jpg",
+      "text": "Noneho, umwami ategeka Mirabyo na Nkuba kutazongera kuba ku isi ukundi. Abohereza mu kirere aho batagira ibyo bangiza."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fpage12.jpg",
+      "text": "Guhera ubwo, n'ubundi iyo Mirabyo arakaye ntibimubuza gutwika no gusenya, akubita ngo: \"Pya la-la-la, pya-la-la-la!\" Kandi turacyumva na nyina Nkuba amwiyama ati: \"Bumrambo-la-la-la, la-bum!\""
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fimage4.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 13,
+    "words": 192
+  }
+}

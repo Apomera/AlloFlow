@@ -30,6 +30,11 @@ describe('Companion Planting refinements', () => {
     expect(source).toContain('data-companion-workspace-stage');
     expect(source).toContain('prefers-reduced-motion: reduce');
     expect(source).toContain('Ambient ecosystem visitors respond');
+    expect(source).toContain('grid grid-cols-2 gap-2 sm:grid-cols-4');
+    expect(source).toContain('sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5');
+    expect(source).toContain('sm:grid-cols-2 xl:grid-cols-4');
+    expect(source).toContain('min-h-[48px]');
+    expect(source).toContain('min-h-[96px]');
   });
 
   it('renders the default Three Sisters workspace without list-key warnings', () => {
@@ -64,6 +69,30 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('aria-label="Filter plant catalog"');
     expect(html).toContain('Food crops');
     expect(html).toContain('Garden helpers');
+    expect(html).toContain('data-community-visual-key="true"');
+    expect(html).toContain('How to read the garden map');
+    expect(html).toContain('Color + label for every status');
+    expect(html).toContain('Ready to harvest');
+    expect(html).toContain('Needs care or conflict');
+    expect(html).toContain('data-community-garden-passport="true"');
+    expect(html).toContain('Garden Passport');
+    expect(html).toContain('aria-label="Garden passport progress"');
+    expect(html).toContain('Show all 12');
+    expect(html).toContain('Next passport stamp');
+    expect(html).toContain('data-achievement-status="locked"');
+    expect(html).toContain('data-community-stewardship-dashboard="true"');
+    expect(html).toContain('Stewardship Dashboard');
+    expect(html).toContain('Balance soil, spending, and living pest control as one connected system.');
+    expect(html).toContain('aria-label="Nitrogen level"');
+    expect(html).toContain('aria-label="Phosphorus level"');
+    expect(html).toContain('aria-label="Potassium level"');
+    expect(html).toContain('aria-label="Pest pressure level"');
+    expect(html).toContain('aria-label="Beneficial insect level"');
+    expect(html).toContain('data-community-plan-readiness="true"');
+    expect(html).toContain('Garden Blueprint Check');
+    expect(html).toContain('Use these signals as guidance, not requirements.');
+    expect(html).toContain('aria-label="Garden blueprint readiness"');
+    expect(html).toContain('Best next move');
     expect(html).toContain('data-community-plot-navigator="true"');
     expect(html).toContain('Garden plot navigator');
     expect(html).toContain('data-community-starter-plans="true"');
@@ -77,6 +106,34 @@ describe('Companion Planting refinements', () => {
     expect(html).not.toContain('data-companion-command="true"');
   });
 
+  it('renders a searchable Seed Shelf with clear plant selection feedback', () => {
+    const html = renderCompanionPlanting({
+      companionPlanting: { gardenMode: 'community', communityGarden: { selectedPlant: 'tomato' } },
+    });
+
+    expect(html).toContain('data-community-seed-shelf="true"');
+    expect(html).toContain('Seed Shelf');
+    expect(html).toContain('aria-label="Search plant catalog"');
+    expect(html).toContain('Search plants, families, or traits');
+    expect(html).toContain('data-community-selected-plant="true"');
+    expect(html).toContain('Ready to place');
+    expect(html).toContain('Choose any open plot below to plant it.');
+    expect(html).toContain('aria-label="Cancel selected plant"');
+    expect(html).toContain('Tomato (selected)');
+  });
+
+  it('celebrates earned Garden Passport stamps without hiding locked goals', () => {
+    const html = renderCompanionPlanting({
+      companionPlanting: { gardenMode: 'community', communityGarden: { totalHarvested: 1 } },
+    });
+
+    expect(html).toContain('1/12');
+    expect(html).toContain('data-achievement-status="earned"');
+    expect(html).toContain('data-achievement-status="locked"');
+    expect(html).toContain('First Harvest');
+    expect(html).toContain('Earned');
+  });
+
   it('renders state-aware Community Garden care controls without the stale multi-day shortcut', () => {
     const grid = Array.from({ length: 16 }, (_, index) => index === 0
       ? { plantId: 'radish', growthDay: 25, health: 100, watered: false, pests: 0 }
@@ -84,10 +141,31 @@ describe('Companion Planting refinements', () => {
         ? { plantId: 'sunflower', growthDay: 10, health: 100, watered: false, pests: 0 }
         : { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 });
     const html = renderCompanionPlanting({
-      companionPlanting: { gardenMode: 'community', communityGarden: { phase: 'grow', grid, moisture: 92, showWildlifeGuide: true, eventLog: [{ icon: 'W', title: 'Watered garden', detail: 'Moisture increased.', day: 3, ts: 1 }] } },
+      companionPlanting: { gardenMode: 'community', communityGarden: { phase: 'grow', grid, moisture: 92, showWildlifeGuide: true, eventLog: [{ icon: 'W', title: 'Watered garden', detail: 'Moisture increased.', day: 3, ts: 1 }], lastDayReport: { day: 4, season: 'Spring', growthDelta: 1.2, healthDelta: 0.3, moistureDelta: -1.5, nitrogenDelta: -0.6, pestDelta: 0.2, readyDelta: 1, insight: 'Helpful companion links supported growth.', eventLabel: null }, dayPrediction: { id: 'growth', label: 'Growth will accelerate' }, predictionResult: { id: 'growth', label: 'Growth will accelerate', matched: true, observed: 'The strongest signal was steady crop growth.', day: 4 } } },
     });
 
     expect(html).toContain('data-community-actions="true"');
+    expect(html).toContain('data-community-season-deck="true"');
+    expect(html).toContain('Garden conditions');
+    expect(html).toContain('aria-label="Spring day progress"');
+    expect(html).toContain('aria-label="Moisture level"');
+    expect(html).toContain('Care control deck');
+    expect(html).toContain('Choose the garden&#x27;s next move');
+    expect(html).toContain('Simulate change');
+    expect(html).toContain('data-community-day-report="true"');
+    expect(html).toContain('Day 4 garden report');
+    expect(html).toContain('Cause and effect');
+    expect(html).toContain('Why it changed');
+    expect(html).toContain('1 new harvest ready');
+    expect(html).toContain('Helpful companion links supported growth.');
+    expect(html).toContain('data-community-prediction="true"');
+    expect(html).toContain('Think like a scientist');
+    expect(html).toContain('What do you predict will happen next?');
+    expect(html).toContain('Growth will accelerate');
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain('data-community-prediction-result="true"');
+    expect(html).toContain('Prediction supported');
+    expect(html).toContain('Evidence: The strongest signal was steady crop growth.');
     expect(html).toContain('data-community-forecast="true"');
     expect(html).toContain('Tomorrow in the Garden');
     expect(html).toContain('Decision preview');
@@ -114,7 +192,9 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('Provide a bee hotel.');
     expect(html).toContain('Garden Pulse');
     expect(html).toContain('Soil is saturated');
-    expect(html).toContain('1 harvest ready');
+    expect(html).toContain('1 ready to harvest');
+    expect(html).toContain('aria-label="Radish growth"');
+    expect(html).toContain('aria-valuenow="100"');
     expect(html).toContain('Harvest 1');
     expect(html).toContain('Soil is already saturated');
     expect(html).not.toContain('+5 Days');
@@ -133,5 +213,19 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('data-community-feedback="true"');
     expect(html).toContain('Garden watered');
     expect(html).toContain('aria-live="polite"');
+  });
+
+  it('connects garden choices to responsive community voices', () => {
+    const grid = Array.from({ length: 16 }, (_, index) => ({ plantId: index === 0 ? 'tomato' : null, growthDay: 0, health: 100, watered: false, pests: 0 }));
+    const html = renderCompanionPlanting({ companionPlanting: { gardenMode: 'community', communityGarden: { grid } } });
+
+    expect(html).toContain('data-community-neighbors="true"');
+    expect(html).toContain('Community voices');
+    expect(html).toContain('Community impact');
+    expect(html).toContain('Maya, garden cook');
+    expect(html).toContain('Dev, habitat steward');
+    expect(html).toContain('Rowan, soil caretaker');
+    expect(html).toContain('Garden choices create food, habitat, and healthier soil.');
+    expect(html).toContain('aria-label="Community garden impact"');
   });
 });

@@ -2242,8 +2242,8 @@ window.SelHub = window.SelHub || {
                 ) : null
               ),
               h('div', { style: { display: 'flex', gap: 6 } },
-                h('input', { type: 'text', value: aiInput, onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) askAI(); }, placeholder: band === 'elementary' ? 'Ask me about your strengths...' : 'Ask about your strengths, growth areas, or how to apply them...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: _strFg('#e2e8f0'), fontSize: 12 } }),
-                h('button', { onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
+                h('input', { type: 'text', 'aria-label': 'Ask the strengths coach', value: aiInput, onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) askAI(); }, placeholder: band === 'elementary' ? 'Ask me about your strengths...' : 'Ask about your strengths, growth areas, or how to apply them...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: _strFg('#e2e8f0'), fontSize: 12 } }),
+                h('button', { 'aria-label': aiLoading ? 'Strengths coach is responding' : 'Send question to strengths coach', onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
               ),
               // Quick questions
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 } },
@@ -2290,7 +2290,7 @@ window.SelHub = window.SelHub || {
                     var polygonPoints = points.map(function(p) { return p.x + ',' + p.y; }).join(' ');
                     var gridLevels = [0.25, 0.5, 0.75, 1];
                     return h('div', { style: { textAlign: 'center', marginBottom: 20 } },
-                      h('svg', { width: 240, height: 230, viewBox: '0 0 240 230', style: { maxWidth: '100%' } },
+                      h('svg', { width: 240, height: 230, viewBox: '0 0 240 230', role: 'img', 'aria-label': 'Strengths radar chart. ' + catCounts.map(function(c) { return c.label + ': ' + c.count; }).join(', '), style: { maxWidth: '100%' } },
                         // Grid rings
                         gridLevels.map(function(lvl, li) {
                           var gridPts = [];

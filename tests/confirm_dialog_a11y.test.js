@@ -7,7 +7,8 @@ describe('Shared confirmation dialog accessibility', () => {
   it('uses a named and described alert dialog', () => {
     expect(source).toContain('role="alertdialog"');
     expect(source).toContain('aria-labelledby="alloflow-confirm-title"');
-    expect(source).toContain('aria-describedby="alloflow-confirm-message"');
+    expect(source).toContain("aria-describedby={confirmDialog.detail ? 'alloflow-confirm-message alloflow-confirm-detail' : 'alloflow-confirm-message'}");
+    expect(source).toContain('id="alloflow-confirm-detail"');
     expect(source).toContain('aria-hidden="true"');
   });
 
@@ -23,6 +24,15 @@ describe('Shared confirmation dialog accessibility', () => {
     expect(source).toContain("if (event.key !== 'Tab') return");
     expect(source).not.toContain("else if (e.key === 'Enter')");
     expect(source).not.toContain("window.addEventListener('keydown'");
+  });
+
+  it('supports reduced motion, reflow, and high-contrast focus indicators', () => {
+    expect(source).toContain('motion-reduce:animate-none');
+    expect(source).toContain('max-h-[calc(100vh-2rem)] overflow-y-auto');
+    expect(source).toContain('flex flex-col sm:flex-row');
+    expect(source).toContain('focus-visible:ring-slate-600');
+    expect(source).toContain('focus-visible:ring-indigo-700');
+    expect(source).not.toContain('focus:outline-none');
   });
 
   it('synchronizes the deployable module', () => {

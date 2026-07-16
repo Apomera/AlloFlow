@@ -21,6 +21,8 @@
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
 
+const VERIFICATION_POLICY_PATH = path.resolve(__dirname, '../../verification_policy_module.js');
+const RENDERER_MODULE_PATH = path.resolve(__dirname, '../../doc_builder_renderer_module.js');
 const MODULE_PATH = path.resolve(__dirname, '../../doc_pipeline_module.js');
 const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
 
@@ -53,8 +55,10 @@ test.describe('remediation fault injection — scheduled model failures, honest 
 
     page = await browser.newPage();
     await page.goto('about:blank');
+    await page.addScriptTag({ path: VERIFICATION_POLICY_PATH });
+    await page.addScriptTag({ path: RENDERER_MODULE_PATH });
     await page.addScriptTag({ path: MODULE_PATH });
-    await page.waitForFunction(() => !!(window as any).AlloModules?.createDocPipeline, null, { timeout: 20000 });
+    await page.waitForFunction(() => !!(window as any).AlloModules?.VerificationPolicy && !!(window as any).AlloModules?.DocBuilderRenderer && !!(window as any).AlloModules?.createDocPipeline, null, { timeout: 20000 });
 
     // Scenario runner: builds a FRESH pipeline with a scheduled dispatcher, runs audit + fix,
     // returns the result's honesty-relevant fields + call/elapsed accounting.

@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-35e6940a-untitled",
+  "title": "मोवाइल र घडी",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/gCMmbTzwqh"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f35e6940a-9ab3-4a29-85a3-7437bd3d0d05%2f%e0%a4%ae%e0%a5%8b%e0%a4%b5%e0%a4%be%e0%a4%87%e0%a4%b2+%e0%a4%b0+%e0%a4%98%e0%a4%a1%e0%a5%80%2fAOR_9JJ.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f35e6940a-9ab3-4a29-85a3-7437bd3d0d05%2f%e0%a4%ae%e0%a5%8b%e0%a4%b5%e0%a4%be%e0%a4%87%e0%a4%b2+%e0%a4%b0+%e0%a4%98%e0%a4%a1%e0%a5%80%2ftable+watch.png",
+      "text": "कोठाको माझमा काठको टेबुल थियो। टेबुलमा घडी बसिरहेको थियो। घडीनेर मोबाइल बस्न अायो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f35e6940a-9ab3-4a29-85a3-7437bd3d0d05%2f%e0%a4%ae%e0%a5%8b%e0%a4%b5%e0%a4%be%e0%a4%87%e0%a4%b2+%e0%a4%b0+%e0%a4%98%e0%a4%a1%e0%a5%80%2ftable+watch1.png",
+      "text": "“तिमी को हौ? मलाई बताउन सक्छौ?” मोबाइलले घडीलाई सोध्यो।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f35e6940a-9ab3-4a29-85a3-7437bd3d0d05%2f%e0%a4%ae%e0%a5%8b%e0%a4%b5%e0%a4%be%e0%a4%87%e0%a4%b2+%e0%a4%b0+%e0%a4%98%e0%a4%a1%e0%a5%80%2ftable+watch11.png",
+      "text": "“टिक टिक म घडी हुँ। यो मेरो घर हो। तिमी को हौ नि?” घडीले मोवाइललाई सोध्यो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f35e6940a-9ab3-4a29-85a3-7437bd3d0d05%2f%e0%a4%ae%e0%a5%8b%e0%a4%b5%e0%a4%be%e0%a4%87%e0%a4%b2+%e0%a4%b0+%e0%a4%98%e0%a4%a1%e0%a5%80%2fmobile+clock.jpg",
+      "text": "“म मोवाइल हुँ। मेरो घर कहिले खल्ती हो। कहिले खाट हो। कहिले टेबुल हो। अँ तिमी के काम गर्छौ नि?” मोबाइलले घडीलाई सोध्यो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f35e6940a-9ab3-4a29-85a3-7437bd3d0d05%2f%e0%a4%ae%e0%a5%8b%e0%a4%b5%e0%a4%be%e0%a4%87%e0%a4%b2+%e0%a4%b0+%e0%a4%98%e0%a4%a1%e0%a5%80%2fimage.jpg",
+      "text": "“म त समय बताउँछु। तिमी नि?” “बिहान घण्टी बजाएर बिद्यार्थीलाई सबेरै उठाउँछु।” घडीले मोवाइललाई भन्यो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f35e6940a-9ab3-4a29-85a3-7437bd3d0d05%2f%e0%a4%ae%e0%a5%8b%e0%a4%b5%e0%a4%be%e0%a4%87%e0%a4%b2+%e0%a4%b0+%e0%a4%98%e0%a4%a1%e0%a5%80%2fimage1.jpg",
+      "text": "“म कानमा बसेर समाचार सुनाउँछु। समय पनि बताउँछु। फोटो पनि खिच्छु। गीत पनि गाउँछु। मसँग खेल पनि छ। फेसबुक पनि छ।”"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f35e6940a-9ab3-4a29-85a3-7437bd3d0d05%2f%e0%a4%ae%e0%a5%8b%e0%a4%b5%e0%a4%be%e0%a4%87%e0%a4%b2+%e0%a4%b0+%e0%a4%98%e0%a4%a1%e0%a5%80%2fimage2.jpg",
+      "text": "“ओहो! तिमी त धेरै कामका रहेछौ। तिमी कुन आकारमा छौ नि?” घडीले सोध्यो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f35e6940a-9ab3-4a29-85a3-7437bd3d0d05%2f%e0%a4%ae%e0%a5%8b%e0%a4%b5%e0%a4%be%e0%a4%87%e0%a4%b2+%e0%a4%b0+%e0%a4%98%e0%a4%a1%e0%a5%80%2fimage3.jpg",
+      "text": "“म त चार कुने मात्र हुन्छु। तिमी नि?” मोवाइलले भन्यो। “म त चारकुने पनि हुन्छु। गोलो पनि हुन्छु। तर मलाई चारकुने साथी मन पर्छ।” घडीले भन्यो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f35e6940a-9ab3-4a29-85a3-7437bd3d0d05%2f%e0%a4%ae%e0%a5%8b%e0%a4%b5%e0%a4%be%e0%a4%87%e0%a4%b2+%e0%a4%b0+%e0%a4%98%e0%a4%a1%e0%a5%80%2fimage5.jpg",
+      "text": "“मलाई पनि बाटुलो साथी मन पर्छ।” मोबाइलले भन्यो। “त्यसो भए हामी साथीसाथी भयौं।” घडीले भन्यो।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f35e6940a-9ab3-4a29-85a3-7437bd3d0d05%2f%e0%a4%ae%e0%a5%8b%e0%a4%b5%e0%a4%be%e0%a4%87%e0%a4%b2+%e0%a4%b0+%e0%a4%98%e0%a4%a1%e0%a5%80%2fclock+and+mobile.png",
+      "text": "घडी र मोबाइलले एकआपसमा हात मिलाए। दुवै मुसुक्‍क हाँसे। अनि मिलेर एउटै टेबुलमा बसे।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 165
+  }
+}

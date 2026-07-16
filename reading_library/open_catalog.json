@@ -4812,6 +4812,1226 @@
     {
       "slug": "gutenberg-ebook-7500-heidis-lehr-und-wanderjahre",
       "file": "books/gutenberg-ebook-7500-heidis-lehr-und-wanderjahre.json"
+    },
+    {
+      "slug": "bloom-7207291a-waxtarka-xoolaha",
+      "file": "books/bloom-7207291a-waxtarka-xoolaha.json"
+    },
+    {
+      "slug": "bloom-09bb4857-beer-muus-iyo-liin-ah",
+      "file": "books/bloom-09bb4857-beer-muus-iyo-liin-ah.json"
+    },
+    {
+      "slug": "bloom-card-91d6d28d-hal-il-le-lix-lugood-nimco",
+      "file": "books/bloom-card-91d6d28d-hal-il-le-lix-lugood-nimco.json"
+    },
+    {
+      "slug": "bloom-card-32965667-04-bisad-iyo-eyga-iyo-koofiyadihii",
+      "file": "books/bloom-card-32965667-04-bisad-iyo-eyga-iyo-koofiyadihii.json"
+    },
+    {
+      "slug": "bloom-card-e63e8f4b-a-aadana-adam",
+      "file": "books/bloom-card-e63e8f4b-a-aadana-adam.json"
+    },
+    {
+      "slug": "bloom-fc107a82-moko-mibale-misatu",
+      "file": "books/bloom-fc107a82-moko-mibale-misatu.json"
+    },
+    {
+      "slug": "bloom-4c3ddfc5-batu-nioso-baza-lolenge-moko-te",
+      "file": "books/bloom-4c3ddfc5-batu-nioso-baza-lolenge-moko-te.json"
+    },
+    {
+      "slug": "bloom-e42812f0-nzoto",
+      "file": "books/bloom-e42812f0-nzoto.json"
+    },
+    {
+      "slug": "bloom-2cf4db1c-elongi",
+      "file": "books/bloom-2cf4db1c-elongi.json"
+    },
+    {
+      "slug": "bloom-2042d454-baniama-ndaku",
+      "file": "books/bloom-2042d454-baniama-ndaku.json"
+    },
+    {
+      "slug": "bloom-card-5aa6731c-21-mbua-na-mbwa-na-minzoto",
+      "file": "books/bloom-card-5aa6731c-21-mbua-na-mbwa-na-minzoto.json"
+    },
+    {
+      "slug": "bloom-705de33b-umuserebanyi-n-imfyisi",
+      "file": "books/bloom-705de33b-umuserebanyi-n-imfyisi.json"
+    },
+    {
+      "slug": "bloom-d4c391f7-ico-udashaka-ko-bagukorera-ntugikorere-uwundi",
+      "file": "books/bloom-d4c391f7-ico-udashaka-ko-bagukorera-ntugikorere-uwundi.json"
+    },
+    {
+      "slug": "bloom-5a8f7349-untitled",
+      "file": "books/bloom-5a8f7349-untitled.json"
+    },
+    {
+      "slug": "bloom-card-027ed695-1-1-1-1-1-2-1-3-1-4-1-5-1-6",
+      "file": "books/bloom-card-027ed695-1-1-1-1-1-2-1-3-1-4-1-5-1-6.json"
+    },
+    {
+      "slug": "bloom-card-eae77629-1-2-2-1-2-2-2-3-2-4-2-5-2-6",
+      "file": "books/bloom-card-eae77629-1-2-2-1-2-2-2-3-2-4-2-5-2-6.json"
+    },
+    {
+      "slug": "bloom-5d5ec6d5-bibin",
+      "file": "books/bloom-5d5ec6d5-bibin.json"
+    },
+    {
+      "slug": "bloom-4c88d493-yon-nonm-neglijan",
+      "file": "books/bloom-4c88d493-yon-nonm-neglijan.json"
+    },
+    {
+      "slug": "bloom-03a68c61-yon-mouch",
+      "file": "books/bloom-03a68c61-yon-mouch.json"
+    },
+    {
+      "slug": "bloom-751e8bdf-yon-batay",
+      "file": "books/bloom-751e8bdf-yon-batay.json"
+    },
+    {
+      "slug": "bloom-c5ba08ff-yon-chyen",
+      "file": "books/bloom-c5ba08ff-yon-chyen.json"
+    },
+    {
+      "slug": "bloom-6fc6c913-yon-b-f-se-zanmi-m",
+      "file": "books/bloom-6fc6c913-yon-b-f-se-zanmi-m.json"
+    },
+    {
+      "slug": "bloom-96bc95ec-b-t-yo-janty",
+      "file": "books/bloom-96bc95ec-b-t-yo-janty.json"
+    },
+    {
+      "slug": "bloom-6aeee620-b-t-b-t",
+      "file": "books/bloom-6aeee620-b-t-b-t.json"
+    },
+    {
+      "slug": "bloom-60d273ac-azizi-poupe-a",
+      "file": "books/bloom-60d273ac-azizi-poupe-a.json"
+    },
+    {
+      "slug": "bloom-3e711b32-yon-makak-ki-rele-manki",
+      "file": "books/bloom-3e711b32-yon-makak-ki-rele-manki.json"
+    },
+    {
+      "slug": "bloom-70b922fa-yon-leson-m-aprann-de-yon-zwazo-ki-gen-g-y",
+      "file": "books/bloom-70b922fa-yon-leson-m-aprann-de-yon-zwazo-ki-gen-g-y.json"
+    },
+    {
+      "slug": "bloom-0139105d-yon-leson",
+      "file": "books/bloom-0139105d-yon-leson.json"
+    },
+    {
+      "slug": "bloom-955263a8-yon-k-bo-saj",
+      "file": "books/bloom-955263a8-yon-k-bo-saj.json"
+    },
+    {
+      "slug": "bloom-621519cd-ti-bebe-matant-jui-a",
+      "file": "books/bloom-621519cd-ti-bebe-matant-jui-a.json"
+    },
+    {
+      "slug": "bloom-8a5eef86-ot-nn-nan-l-a",
+      "file": "books/bloom-8a5eef86-ot-nn-nan-l-a.json"
+    },
+    {
+      "slug": "bloom-645659cb-leson-dous-pou-akash-bwose",
+      "file": "books/bloom-645659cb-leson-dous-pou-akash-bwose.json"
+    },
+    {
+      "slug": "bloom-4f5efdcd-b-t-fouye-twou-byen",
+      "file": "books/bloom-4f5efdcd-b-t-fouye-twou-byen.json"
+    },
+    {
+      "slug": "bloom-217c1eaa-andiswa-foutb-l",
+      "file": "books/bloom-217c1eaa-andiswa-foutb-l.json"
+    },
+    {
+      "slug": "bloom-d9c6cc03-umukobwa-wakundwaga-cyane",
+      "file": "books/bloom-d9c6cc03-umukobwa-wakundwaga-cyane.json"
+    },
+    {
+      "slug": "bloom-b6e359b0-umukecuru-na-bakame",
+      "file": "books/bloom-b6e359b0-umukecuru-na-bakame.json"
+    },
+    {
+      "slug": "bloom-08eec07d-nyiramaterefone",
+      "file": "books/bloom-08eec07d-nyiramaterefone.json"
+    },
+    {
+      "slug": "bloom-3c2ea146-nkuba-na-mirabyo",
+      "file": "books/bloom-3c2ea146-nkuba-na-mirabyo.json"
+    },
+    {
+      "slug": "bloom-59fa85e6-mukiza-yatabaye-se",
+      "file": "books/bloom-59fa85e6-mukiza-yatabaye-se.json"
+    },
+    {
+      "slug": "bloom-5c3e35c3-mpyisi-na-bakame",
+      "file": "books/bloom-5c3e35c3-mpyisi-na-bakame.json"
+    },
+    {
+      "slug": "bloom-50d697be-maguru-atanga-amaguru",
+      "file": "books/bloom-50d697be-maguru-atanga-amaguru.json"
+    },
+    {
+      "slug": "bloom-8499d6bd-injangwe-za-sano",
+      "file": "books/bloom-8499d6bd-injangwe-za-sano.json"
+    },
+    {
+      "slug": "bloom-829b151c-twirinde-koronavirusi",
+      "file": "books/bloom-829b151c-twirinde-koronavirusi.json"
+    },
+    {
+      "slug": "bloom-adeb1b4e-kariza-akunda-kubaza",
+      "file": "books/bloom-adeb1b4e-kariza-akunda-kubaza.json"
+    },
+    {
+      "slug": "bloom-5851665e-isi-n-izuba",
+      "file": "books/bloom-5851665e-isi-n-izuba.json"
+    },
+    {
+      "slug": "bloom-2ab86764-isaha-ya-mpeta",
+      "file": "books/bloom-2ab86764-isaha-ya-mpeta.json"
+    },
+    {
+      "slug": "bloom-b1824286-isabukuru-ya-cyusa",
+      "file": "books/bloom-b1824286-isabukuru-ya-cyusa.json"
+    },
+    {
+      "slug": "bloom-f9003a7d-inzuki-n-indabyo",
+      "file": "books/bloom-f9003a7d-inzuki-n-indabyo.json"
+    },
+    {
+      "slug": "bloom-e754f933-inkima-ziririmba",
+      "file": "books/bloom-e754f933-inkima-ziririmba.json"
+    },
+    {
+      "slug": "bloom-85a93192-imvura-iva-he",
+      "file": "books/bloom-85a93192-imvura-iva-he.json"
+    },
+    {
+      "slug": "bloom-c3b21783-igiti-cyanjye",
+      "file": "books/bloom-c3b21783-igiti-cyanjye.json"
+    },
+    {
+      "slug": "bloom-1271ccda-igipupe-cya-mimi",
+      "file": "books/bloom-1271ccda-igipupe-cya-mimi.json"
+    },
+    {
+      "slug": "bloom-99f0e3bd-icyari-cya-ntashya-4-urutare",
+      "file": "books/bloom-99f0e3bd-icyari-cya-ntashya-4-urutare.json"
+    },
+    {
+      "slug": "bloom-934c7348-icyari-cya-ntashya-3-utwondo",
+      "file": "books/bloom-934c7348-icyari-cya-ntashya-3-utwondo.json"
+    },
+    {
+      "slug": "bloom-card-fc1178bc-17",
+      "file": "books/bloom-card-fc1178bc-17.json"
+    },
+    {
+      "slug": "bloom-c557aa62-untitled",
+      "file": "books/bloom-c557aa62-untitled.json"
+    },
+    {
+      "slug": "bloom-77460a4d-untitled",
+      "file": "books/bloom-77460a4d-untitled.json"
+    },
+    {
+      "slug": "bloom-card-af7c1947-untitled",
+      "file": "books/bloom-card-af7c1947-untitled.json"
+    },
+    {
+      "slug": "bloom-card-9e64776c-aturraata-ka-kuta-isho-hukuukka",
+      "file": "books/bloom-card-9e64776c-aturraata-ka-kuta-isho-hukuukka.json"
+    },
+    {
+      "slug": "bloom-card-a62365b9-untitled",
+      "file": "books/bloom-card-a62365b9-untitled.json"
+    },
+    {
+      "slug": "bloom-card-9d7427ae-untitled",
+      "file": "books/bloom-card-9d7427ae-untitled.json"
+    },
+    {
+      "slug": "bloom-card-f1abbece-untitled",
+      "file": "books/bloom-card-f1abbece-untitled.json"
+    },
+    {
+      "slug": "bloom-card-023cdb61-untitled",
+      "file": "books/bloom-card-023cdb61-untitled.json"
+    },
+    {
+      "slug": "bloom-card-79c1d880-untitled",
+      "file": "books/bloom-card-79c1d880-untitled.json"
+    },
+    {
+      "slug": "bloom-card-9b6bd17f-untitled",
+      "file": "books/bloom-card-9b6bd17f-untitled.json"
+    },
+    {
+      "slug": "bloom-card-eed7a735-untitled",
+      "file": "books/bloom-card-eed7a735-untitled.json"
+    },
+    {
+      "slug": "bloom-card-1d702ba1-untitled",
+      "file": "books/bloom-card-1d702ba1-untitled.json"
+    },
+    {
+      "slug": "bloom-card-a9ee8a16-untitled",
+      "file": "books/bloom-card-a9ee8a16-untitled.json"
+    },
+    {
+      "slug": "bloom-card-77e2f9a7-untitled",
+      "file": "books/bloom-card-77e2f9a7-untitled.json"
+    },
+    {
+      "slug": "bloom-card-5a36f91f-untitled",
+      "file": "books/bloom-card-5a36f91f-untitled.json"
+    },
+    {
+      "slug": "bloom-card-1dd28f5b-untitled",
+      "file": "books/bloom-card-1dd28f5b-untitled.json"
+    },
+    {
+      "slug": "bloom-card-ea81a470-untitled",
+      "file": "books/bloom-card-ea81a470-untitled.json"
+    },
+    {
+      "slug": "bloom-card-75eaaebd-untitled",
+      "file": "books/bloom-card-75eaaebd-untitled.json"
+    },
+    {
+      "slug": "bloom-card-ce4e5c60-untitled",
+      "file": "books/bloom-card-ce4e5c60-untitled.json"
+    },
+    {
+      "slug": "bloom-card-6f7f9c66-untitled",
+      "file": "books/bloom-card-6f7f9c66-untitled.json"
+    },
+    {
+      "slug": "bloom-32d1239c-untitled",
+      "file": "books/bloom-32d1239c-untitled.json"
+    },
+    {
+      "slug": "bloom-d4b1a5c2-untitled",
+      "file": "books/bloom-d4b1a5c2-untitled.json"
+    },
+    {
+      "slug": "bloom-1dccb9b6-untitled",
+      "file": "books/bloom-1dccb9b6-untitled.json"
+    },
+    {
+      "slug": "bloom-4f70cf10-untitled",
+      "file": "books/bloom-4f70cf10-untitled.json"
+    },
+    {
+      "slug": "bloom-89fe8eeb-untitled",
+      "file": "books/bloom-89fe8eeb-untitled.json"
+    },
+    {
+      "slug": "bloom-76ada786-untitled",
+      "file": "books/bloom-76ada786-untitled.json"
+    },
+    {
+      "slug": "bloom-526615cd-untitled",
+      "file": "books/bloom-526615cd-untitled.json"
+    },
+    {
+      "slug": "bloom-9f6aed85-untitled",
+      "file": "books/bloom-9f6aed85-untitled.json"
+    },
+    {
+      "slug": "bloom-a2dee195-untitled",
+      "file": "books/bloom-a2dee195-untitled.json"
+    },
+    {
+      "slug": "bloom-9d347aad-untitled",
+      "file": "books/bloom-9d347aad-untitled.json"
+    },
+    {
+      "slug": "bloom-02d5376d-untitled",
+      "file": "books/bloom-02d5376d-untitled.json"
+    },
+    {
+      "slug": "bloom-fe30620a-untitled",
+      "file": "books/bloom-fe30620a-untitled.json"
+    },
+    {
+      "slug": "bloom-7b04b36d-untitled",
+      "file": "books/bloom-7b04b36d-untitled.json"
+    },
+    {
+      "slug": "bloom-17eadc35-untitled",
+      "file": "books/bloom-17eadc35-untitled.json"
+    },
+    {
+      "slug": "bloom-ecde6589-untitled",
+      "file": "books/bloom-ecde6589-untitled.json"
+    },
+    {
+      "slug": "bloom-171d18c1-untitled",
+      "file": "books/bloom-171d18c1-untitled.json"
+    },
+    {
+      "slug": "bloom-5ed5e855-untitled",
+      "file": "books/bloom-5ed5e855-untitled.json"
+    },
+    {
+      "slug": "bloom-1e2f5b11-untitled",
+      "file": "books/bloom-1e2f5b11-untitled.json"
+    },
+    {
+      "slug": "bloom-764eb9c1-untitled",
+      "file": "books/bloom-764eb9c1-untitled.json"
+    },
+    {
+      "slug": "bloom-b8c4e867-untitled",
+      "file": "books/bloom-b8c4e867-untitled.json"
+    },
+    {
+      "slug": "bloom-a55a8c6c-untitled",
+      "file": "books/bloom-a55a8c6c-untitled.json"
+    },
+    {
+      "slug": "bloom-bc95c260-untitled",
+      "file": "books/bloom-bc95c260-untitled.json"
+    },
+    {
+      "slug": "bloom-d0e7849f-untitled",
+      "file": "books/bloom-d0e7849f-untitled.json"
+    },
+    {
+      "slug": "bloom-d9b20300-untitled",
+      "file": "books/bloom-d9b20300-untitled.json"
+    },
+    {
+      "slug": "bloom-2513a281-untitled",
+      "file": "books/bloom-2513a281-untitled.json"
+    },
+    {
+      "slug": "bloom-d2328d90-untitled",
+      "file": "books/bloom-d2328d90-untitled.json"
+    },
+    {
+      "slug": "bloom-7e136c37-untitled",
+      "file": "books/bloom-7e136c37-untitled.json"
+    },
+    {
+      "slug": "bloom-236a6a9b-untitled",
+      "file": "books/bloom-236a6a9b-untitled.json"
+    },
+    {
+      "slug": "bloom-0328e0f7-untitled",
+      "file": "books/bloom-0328e0f7-untitled.json"
+    },
+    {
+      "slug": "bloom-bc8ce736-untitled",
+      "file": "books/bloom-bc8ce736-untitled.json"
+    },
+    {
+      "slug": "bloom-6966c2bb-untitled",
+      "file": "books/bloom-6966c2bb-untitled.json"
+    },
+    {
+      "slug": "bloom-a8179e49-untitled",
+      "file": "books/bloom-a8179e49-untitled.json"
+    },
+    {
+      "slug": "bloom-0cc8e478-untitled",
+      "file": "books/bloom-0cc8e478-untitled.json"
+    },
+    {
+      "slug": "bloom-0515db28-untitled",
+      "file": "books/bloom-0515db28-untitled.json"
+    },
+    {
+      "slug": "bloom-f070a06f-untitled",
+      "file": "books/bloom-f070a06f-untitled.json"
+    },
+    {
+      "slug": "bloom-5e07de2c-untitled",
+      "file": "books/bloom-5e07de2c-untitled.json"
+    },
+    {
+      "slug": "bloom-dd306d26-untitled",
+      "file": "books/bloom-dd306d26-untitled.json"
+    },
+    {
+      "slug": "bloom-1c3c9555-untitled",
+      "file": "books/bloom-1c3c9555-untitled.json"
+    },
+    {
+      "slug": "bloom-f988b455-untitled",
+      "file": "books/bloom-f988b455-untitled.json"
+    },
+    {
+      "slug": "bloom-6aace01a-untitled",
+      "file": "books/bloom-6aace01a-untitled.json"
+    },
+    {
+      "slug": "bloom-88dfdcc0-untitled",
+      "file": "books/bloom-88dfdcc0-untitled.json"
+    },
+    {
+      "slug": "bloom-0ef6a889-untitled",
+      "file": "books/bloom-0ef6a889-untitled.json"
+    },
+    {
+      "slug": "bloom-ec328b7c-untitled",
+      "file": "books/bloom-ec328b7c-untitled.json"
+    },
+    {
+      "slug": "bloom-0f09ace8-untitled",
+      "file": "books/bloom-0f09ace8-untitled.json"
+    },
+    {
+      "slug": "bloom-9a27377d-untitled",
+      "file": "books/bloom-9a27377d-untitled.json"
+    },
+    {
+      "slug": "bloom-51164d95-untitled",
+      "file": "books/bloom-51164d95-untitled.json"
+    },
+    {
+      "slug": "bloom-38837f70-untitled",
+      "file": "books/bloom-38837f70-untitled.json"
+    },
+    {
+      "slug": "bloom-d50ff292-untitled",
+      "file": "books/bloom-d50ff292-untitled.json"
+    },
+    {
+      "slug": "bloom-294f99f8-untitled",
+      "file": "books/bloom-294f99f8-untitled.json"
+    },
+    {
+      "slug": "bloom-36781529-untitled",
+      "file": "books/bloom-36781529-untitled.json"
+    },
+    {
+      "slug": "bloom-2a75f2f6-untitled",
+      "file": "books/bloom-2a75f2f6-untitled.json"
+    },
+    {
+      "slug": "bloom-7790ba95-untitled",
+      "file": "books/bloom-7790ba95-untitled.json"
+    },
+    {
+      "slug": "bloom-166be51a-untitled",
+      "file": "books/bloom-166be51a-untitled.json"
+    },
+    {
+      "slug": "bloom-2ba6502f-untitled",
+      "file": "books/bloom-2ba6502f-untitled.json"
+    },
+    {
+      "slug": "bloom-9b66843b-untitled",
+      "file": "books/bloom-9b66843b-untitled.json"
+    },
+    {
+      "slug": "bloom-ea5979b2-untitled",
+      "file": "books/bloom-ea5979b2-untitled.json"
+    },
+    {
+      "slug": "bloom-6549abd7-untitled",
+      "file": "books/bloom-6549abd7-untitled.json"
+    },
+    {
+      "slug": "bloom-334fbae7-untitled",
+      "file": "books/bloom-334fbae7-untitled.json"
+    },
+    {
+      "slug": "bloom-9986e41f-untitled",
+      "file": "books/bloom-9986e41f-untitled.json"
+    },
+    {
+      "slug": "bloom-624bc5a4-untitled",
+      "file": "books/bloom-624bc5a4-untitled.json"
+    },
+    {
+      "slug": "bloom-294cfb38-untitled",
+      "file": "books/bloom-294cfb38-untitled.json"
+    },
+    {
+      "slug": "bloom-f0f29156-untitled",
+      "file": "books/bloom-f0f29156-untitled.json"
+    },
+    {
+      "slug": "bloom-a89ac957-untitled",
+      "file": "books/bloom-a89ac957-untitled.json"
+    },
+    {
+      "slug": "bloom-5bb8566a-untitled",
+      "file": "books/bloom-5bb8566a-untitled.json"
+    },
+    {
+      "slug": "bloom-b9c961e3-untitled",
+      "file": "books/bloom-b9c961e3-untitled.json"
+    },
+    {
+      "slug": "bloom-3ae867d9-untitled",
+      "file": "books/bloom-3ae867d9-untitled.json"
+    },
+    {
+      "slug": "bloom-4a7d975a-untitled",
+      "file": "books/bloom-4a7d975a-untitled.json"
+    },
+    {
+      "slug": "bloom-411564a4-untitled",
+      "file": "books/bloom-411564a4-untitled.json"
+    },
+    {
+      "slug": "bloom-a678ae78-untitled",
+      "file": "books/bloom-a678ae78-untitled.json"
+    },
+    {
+      "slug": "bloom-047f0442-untitled",
+      "file": "books/bloom-047f0442-untitled.json"
+    },
+    {
+      "slug": "bloom-85c88c14-untitled",
+      "file": "books/bloom-85c88c14-untitled.json"
+    },
+    {
+      "slug": "bloom-cc466431-untitled",
+      "file": "books/bloom-cc466431-untitled.json"
+    },
+    {
+      "slug": "bloom-35e6940a-untitled",
+      "file": "books/bloom-35e6940a-untitled.json"
+    },
+    {
+      "slug": "bloom-2fa30e3f-untitled",
+      "file": "books/bloom-2fa30e3f-untitled.json"
+    },
+    {
+      "slug": "bloom-01183e82-untitled",
+      "file": "books/bloom-01183e82-untitled.json"
+    },
+    {
+      "slug": "bloom-539688d6-untitled",
+      "file": "books/bloom-539688d6-untitled.json"
+    },
+    {
+      "slug": "bloom-68473502-untitled",
+      "file": "books/bloom-68473502-untitled.json"
+    },
+    {
+      "slug": "bloom-d222700d-untitled",
+      "file": "books/bloom-d222700d-untitled.json"
+    },
+    {
+      "slug": "bloom-8345a8d4-untitled",
+      "file": "books/bloom-8345a8d4-untitled.json"
+    },
+    {
+      "slug": "bloom-33fd2148-untitled",
+      "file": "books/bloom-33fd2148-untitled.json"
+    },
+    {
+      "slug": "bloom-0dadad44-untitled",
+      "file": "books/bloom-0dadad44-untitled.json"
+    },
+    {
+      "slug": "bloom-8db0e4fa-untitled",
+      "file": "books/bloom-8db0e4fa-untitled.json"
+    },
+    {
+      "slug": "bloom-1bfa32e9-untitled",
+      "file": "books/bloom-1bfa32e9-untitled.json"
+    },
+    {
+      "slug": "bloom-a98cbd4b-untitled",
+      "file": "books/bloom-a98cbd4b-untitled.json"
+    },
+    {
+      "slug": "bloom-78515759-untitled",
+      "file": "books/bloom-78515759-untitled.json"
+    },
+    {
+      "slug": "bloom-4273390f-untitled",
+      "file": "books/bloom-4273390f-untitled.json"
+    },
+    {
+      "slug": "bloom-67eca7c7-untitled",
+      "file": "books/bloom-67eca7c7-untitled.json"
+    },
+    {
+      "slug": "bloom-card-8b738498-untitled",
+      "file": "books/bloom-card-8b738498-untitled.json"
+    },
+    {
+      "slug": "bloom-card-9f1f06e9-untitled",
+      "file": "books/bloom-card-9f1f06e9-untitled.json"
+    },
+    {
+      "slug": "bloom-card-3b51e0ad-untitled",
+      "file": "books/bloom-card-3b51e0ad-untitled.json"
+    },
+    {
+      "slug": "bloom-card-46281bb7-untitled",
+      "file": "books/bloom-card-46281bb7-untitled.json"
+    },
+    {
+      "slug": "bloom-card-7718e9a5-untitled",
+      "file": "books/bloom-card-7718e9a5-untitled.json"
+    },
+    {
+      "slug": "bloom-ed3b0618-sringeri-srinivas-h-c-c-i",
+      "file": "books/bloom-ed3b0618-sringeri-srinivas-h-c-c-i.json"
+    },
+    {
+      "slug": "bloom-e3cbe776-chi-n-u-v-i-vi-r-t",
+      "file": "books/bloom-e3cbe776-chi-n-u-v-i-vi-r-t.json"
+    },
+    {
+      "slug": "bloom-card-f44911da-con-ng-k-di-u",
+      "file": "books/bloom-card-f44911da-con-ng-k-di-u.json"
+    },
+    {
+      "slug": "bloom-card-619c6bf0-21-miv-thiab-dev-thiab-cov-hnub-qub",
+      "file": "books/bloom-card-619c6bf0-21-miv-thiab-dev-thiab-cov-hnub-qub.json"
+    },
+    {
+      "slug": "bloom-9c44bcde-familia-yajifunza-chanjo",
+      "file": "books/bloom-9c44bcde-familia-yajifunza-chanjo.json"
+    },
+    {
+      "slug": "bloom-d2a7efeb-umoja-ni-nguvu",
+      "file": "books/bloom-d2a7efeb-umoja-ni-nguvu.json"
+    },
+    {
+      "slug": "bloom-c21c5a0c-maisha-kijijini-kwangu",
+      "file": "books/bloom-c21c5a0c-maisha-kijijini-kwangu.json"
+    },
+    {
+      "slug": "bloom-da2ff06c-genge-la-mama-yangu",
+      "file": "books/bloom-da2ff06c-genge-la-mama-yangu.json"
+    },
+    {
+      "slug": "bloom-257bf4f5-wanaume-au-wanawake",
+      "file": "books/bloom-257bf4f5-wanaume-au-wanawake.json"
+    },
+    {
+      "slug": "bloom-9c6cd8f0-ulemavu-si-ugonjwa",
+      "file": "books/bloom-9c6cd8f0-ulemavu-si-ugonjwa.json"
+    },
+    {
+      "slug": "bloom-cbbe3c1c-mussa-na-shamba-bora",
+      "file": "books/bloom-cbbe3c1c-mussa-na-shamba-bora.json"
+    },
+    {
+      "slug": "bloom-b748ea93-scovia-na-shangazi-kichimbakazi",
+      "file": "books/bloom-b748ea93-scovia-na-shangazi-kichimbakazi.json"
+    },
+    {
+      "slug": "bloom-d4b617f8-sabuni-na-maji-kwa-kuondoa-vijidudu",
+      "file": "books/bloom-d4b617f8-sabuni-na-maji-kwa-kuondoa-vijidudu.json"
+    },
+    {
+      "slug": "bloom-card-7ab9b21a-ninaweza",
+      "file": "books/bloom-card-7ab9b21a-ninaweza.json"
+    },
+    {
+      "slug": "bloom-card-adf86a02-alfabeti",
+      "file": "books/bloom-card-adf86a02-alfabeti.json"
+    },
+    {
+      "slug": "bloom-card-1cf76366-mapishi",
+      "file": "books/bloom-card-1cf76366-mapishi.json"
+    },
+    {
+      "slug": "bloom-card-5723926d-msichana-hukua",
+      "file": "books/bloom-card-5723926d-msichana-hukua.json"
+    },
+    {
+      "slug": "bloom-card-767db26e-feelings",
+      "file": "books/bloom-card-767db26e-feelings.json"
+    },
+    {
+      "slug": "bloom-card-226a2cf2-mvuvi-sasam",
+      "file": "books/bloom-card-226a2cf2-mvuvi-sasam.json"
+    },
+    {
+      "slug": "bloom-e407b9ef-untitled",
+      "file": "books/bloom-e407b9ef-untitled.json"
+    },
+    {
+      "slug": "bloom-b9228f79-untitled",
+      "file": "books/bloom-b9228f79-untitled.json"
+    },
+    {
+      "slug": "bloom-card-183bbd9b-untitled",
+      "file": "books/bloom-card-183bbd9b-untitled.json"
+    },
+    {
+      "slug": "bloom-card-d4b7de83-untitled",
+      "file": "books/bloom-card-d4b7de83-untitled.json"
+    },
+    {
+      "slug": "bloom-4c0598b5-ang-makatang-kaibigan",
+      "file": "books/bloom-4c0598b5-ang-makatang-kaibigan.json"
+    },
+    {
+      "slug": "bloom-00e77daa-si-itong-ang-bibong-talangka",
+      "file": "books/bloom-00e77daa-si-itong-ang-bibong-talangka.json"
+    },
+    {
+      "slug": "bloom-06543a4c-nang-matutunan-ng-pamilya-ang-bakuna",
+      "file": "books/bloom-06543a4c-nang-matutunan-ng-pamilya-ang-bakuna.json"
+    },
+    {
+      "slug": "bloom-2b02ab3b-ang-tsinelas-ni-pepe",
+      "file": "books/bloom-2b02ab3b-ang-tsinelas-ni-pepe.json"
+    },
+    {
+      "slug": "bloom-c3d4ffb2-ang-buwan-at-ang-aking-sumbrero",
+      "file": "books/bloom-c3d4ffb2-ang-buwan-at-ang-aking-sumbrero.json"
+    },
+    {
+      "slug": "bloom-f777cf5b-si-melay-at-ang-gulayan",
+      "file": "books/bloom-f777cf5b-si-melay-at-ang-gulayan.json"
+    },
+    {
+      "slug": "bloom-4ff115e9-ang-mga-kaibigan-ni-papa",
+      "file": "books/bloom-4ff115e9-ang-mga-kaibigan-ni-papa.json"
+    },
+    {
+      "slug": "bloom-3f97de3a-kristmas-kard",
+      "file": "books/bloom-3f97de3a-kristmas-kard.json"
+    },
+    {
+      "slug": "bloom-92b8ec72-umulan-sa-bukid",
+      "file": "books/bloom-92b8ec72-umulan-sa-bukid.json"
+    },
+    {
+      "slug": "bloom-6645fa6e-sumbreroni-justin",
+      "file": "books/bloom-6645fa6e-sumbreroni-justin.json"
+    },
+    {
+      "slug": "bloom-1eceef51-plaas-daw-iya-na-mga-arey",
+      "file": "books/bloom-1eceef51-plaas-daw-iya-na-mga-arey.json"
+    },
+    {
+      "slug": "bloom-4a2049ca-untitled",
+      "file": "books/bloom-4a2049ca-untitled.json"
+    },
+    {
+      "slug": "bloom-card-da2e79f4-untitled",
+      "file": "books/bloom-card-da2e79f4-untitled.json"
+    },
+    {
+      "slug": "bloom-73d41bd1-untitled",
+      "file": "books/bloom-73d41bd1-untitled.json"
+    },
+    {
+      "slug": "bloom-card-a015da31-abc-bax-heywanan",
+      "file": "books/bloom-card-a015da31-abc-bax-heywanan.json"
+    },
+    {
+      "slug": "bloom-5a8f7349-untitled-ar",
+      "file": "books/bloom-5a8f7349-untitled-ar.json"
+    },
+    {
+      "slug": "bloom-9b66843b-untitled-my",
+      "file": "books/bloom-9b66843b-untitled-my.json"
+    },
+    {
+      "slug": "bloom-36781529-untitled-my",
+      "file": "books/bloom-36781529-untitled-my.json"
+    },
+    {
+      "slug": "bloom-ea5979b2-untitled-my",
+      "file": "books/bloom-ea5979b2-untitled-my.json"
+    },
+    {
+      "slug": "bloom-ec328b7c-untitled-my",
+      "file": "books/bloom-ec328b7c-untitled-my.json"
+    },
+    {
+      "slug": "bloom-a0e6be38-untitled-my",
+      "file": "books/bloom-a0e6be38-untitled-my.json"
+    },
+    {
+      "slug": "bloom-88dfdcc0-untitled-my",
+      "file": "books/bloom-88dfdcc0-untitled-my.json"
+    },
+    {
+      "slug": "bloom-3cfc0883-untitled-my",
+      "file": "books/bloom-3cfc0883-untitled-my.json"
+    },
+    {
+      "slug": "bloom-513b5795-untitled-my",
+      "file": "books/bloom-513b5795-untitled-my.json"
+    },
+    {
+      "slug": "bloom-7790ba95-untitled-my",
+      "file": "books/bloom-7790ba95-untitled-my.json"
+    },
+    {
+      "slug": "bloom-334fbae7-untitled-my",
+      "file": "books/bloom-334fbae7-untitled-my.json"
+    },
+    {
+      "slug": "bloom-4c7bed50-untitled-my",
+      "file": "books/bloom-4c7bed50-untitled-my.json"
+    },
+    {
+      "slug": "bloom-09f39e83-untitled-my",
+      "file": "books/bloom-09f39e83-untitled-my.json"
+    },
+    {
+      "slug": "bloom-5d0cd6bf-untitled-my",
+      "file": "books/bloom-5d0cd6bf-untitled-my.json"
+    },
+    {
+      "slug": "bloom-card-12b6457b-untitled",
+      "file": "books/bloom-card-12b6457b-untitled.json"
+    },
+    {
+      "slug": "bloom-card-773cc6eb-untitled",
+      "file": "books/bloom-card-773cc6eb-untitled.json"
+    },
+    {
+      "slug": "bloom-card-9b0f774a-untitled",
+      "file": "books/bloom-card-9b0f774a-untitled.json"
+    },
+    {
+      "slug": "bloom-card-079b08bf-untitled",
+      "file": "books/bloom-card-079b08bf-untitled.json"
+    },
+    {
+      "slug": "bloom-card-cf4f00dc-untitled",
+      "file": "books/bloom-card-cf4f00dc-untitled.json"
+    },
+    {
+      "slug": "bloom-card-ffc82523-untitled",
+      "file": "books/bloom-card-ffc82523-untitled.json"
+    },
+    {
+      "slug": "bloom-card-691cbfe0-untitled",
+      "file": "books/bloom-card-691cbfe0-untitled.json"
+    },
+    {
+      "slug": "bloom-card-9164883b-untitled",
+      "file": "books/bloom-card-9164883b-untitled.json"
+    },
+    {
+      "slug": "bloom-card-f450cc29-untitled",
+      "file": "books/bloom-card-f450cc29-untitled.json"
+    },
+    {
+      "slug": "bloom-card-8d696fac-untitled",
+      "file": "books/bloom-card-8d696fac-untitled.json"
+    },
+    {
+      "slug": "bloom-card-2c60e14e-untitled",
+      "file": "books/bloom-card-2c60e14e-untitled.json"
+    },
+    {
+      "slug": "bloom-card-6377b671-untitled",
+      "file": "books/bloom-card-6377b671-untitled.json"
+    },
+    {
+      "slug": "bloom-card-3ac6828d-untitled",
+      "file": "books/bloom-card-3ac6828d-untitled.json"
+    },
+    {
+      "slug": "bloom-card-89d6246d-untitled",
+      "file": "books/bloom-card-89d6246d-untitled.json"
+    },
+    {
+      "slug": "bloom-card-e60d1346-untitled",
+      "file": "books/bloom-card-e60d1346-untitled.json"
+    },
+    {
+      "slug": "bloom-card-e91e9a24-untitled",
+      "file": "books/bloom-card-e91e9a24-untitled.json"
+    },
+    {
+      "slug": "bloom-card-6573f9e1-untitled",
+      "file": "books/bloom-card-6573f9e1-untitled.json"
+    },
+    {
+      "slug": "bloom-card-29da4ac8-untitled",
+      "file": "books/bloom-card-29da4ac8-untitled.json"
+    },
+    {
+      "slug": "bloom-card-c4a4193d-untitled",
+      "file": "books/bloom-card-c4a4193d-untitled.json"
+    },
+    {
+      "slug": "bloom-card-729938ee-untitled",
+      "file": "books/bloom-card-729938ee-untitled.json"
+    },
+    {
+      "slug": "bloom-51d67549-si-chisay",
+      "file": "books/bloom-51d67549-si-chisay.json"
+    },
+    {
+      "slug": "bloom-4a752b4a-anansi-ak-votou-an",
+      "file": "books/bloom-4a752b4a-anansi-ak-votou-an.json"
+    },
+    {
+      "slug": "bloom-cd355e92-anansi-ak-t-ti-an",
+      "file": "books/bloom-cd355e92-anansi-ak-t-ti-an.json"
+    },
+    {
+      "slug": "bloom-card-d2075902-untitled",
+      "file": "books/bloom-card-d2075902-untitled.json"
+    },
+    {
+      "slug": "bloom-card-c36edea1-untitled",
+      "file": "books/bloom-card-c36edea1-untitled.json"
+    },
+    {
+      "slug": "bloom-04e247bc-untitled-prs",
+      "file": "books/bloom-04e247bc-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-76cbf1e2-untitled-prs",
+      "file": "books/bloom-76cbf1e2-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-236804fa-untitled-prs",
+      "file": "books/bloom-236804fa-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-97ef6876-untitled-prs",
+      "file": "books/bloom-97ef6876-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-bf4b6a0d-untitled-prs",
+      "file": "books/bloom-bf4b6a0d-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-30696c76-untitled-prs",
+      "file": "books/bloom-30696c76-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-39e91886-untitled-prs",
+      "file": "books/bloom-39e91886-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-e75b3d89-untitled-prs",
+      "file": "books/bloom-e75b3d89-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-e4f66d40-untitled-prs",
+      "file": "books/bloom-e4f66d40-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-01b496d4-untitled-prs",
+      "file": "books/bloom-01b496d4-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-7fd996e5-untitled-prs",
+      "file": "books/bloom-7fd996e5-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-1c21c941-untitled-prs",
+      "file": "books/bloom-1c21c941-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-6d37c397-untitled-prs",
+      "file": "books/bloom-6d37c397-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-4bc2bd2a-untitled-prs",
+      "file": "books/bloom-4bc2bd2a-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-a81a67ab-untitled-prs",
+      "file": "books/bloom-a81a67ab-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-d88c24fe-untitled-prs",
+      "file": "books/bloom-d88c24fe-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-0e62e0cf-untitled-prs",
+      "file": "books/bloom-0e62e0cf-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-aa9fc108-untitled-prs",
+      "file": "books/bloom-aa9fc108-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-698e20a6-untitled-prs",
+      "file": "books/bloom-698e20a6-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-acb3abad-untitled-prs",
+      "file": "books/bloom-acb3abad-untitled-prs.json"
+    },
+    {
+      "slug": "bloom-49e6d091-untitled-km",
+      "file": "books/bloom-49e6d091-untitled-km.json"
+    },
+    {
+      "slug": "bloom-e81f58b7-untitled-km",
+      "file": "books/bloom-e81f58b7-untitled-km.json"
+    },
+    {
+      "slug": "bloom-30f25c83-untitled-km",
+      "file": "books/bloom-30f25c83-untitled-km.json"
+    },
+    {
+      "slug": "bloom-7f9d34c5-untitled-km",
+      "file": "books/bloom-7f9d34c5-untitled-km.json"
+    },
+    {
+      "slug": "bloom-c01c3746-untitled-km",
+      "file": "books/bloom-c01c3746-untitled-km.json"
+    },
+    {
+      "slug": "bloom-1996bcca-untitled-km",
+      "file": "books/bloom-1996bcca-untitled-km.json"
+    },
+    {
+      "slug": "bloom-77f55328-untitled-km",
+      "file": "books/bloom-77f55328-untitled-km.json"
+    },
+    {
+      "slug": "bloom-00944521-untitled-km",
+      "file": "books/bloom-00944521-untitled-km.json"
+    },
+    {
+      "slug": "bloom-0f8fcbe0-untitled-km",
+      "file": "books/bloom-0f8fcbe0-untitled-km.json"
+    },
+    {
+      "slug": "bloom-78b980eb-untitled-km",
+      "file": "books/bloom-78b980eb-untitled-km.json"
+    },
+    {
+      "slug": "bloom-e1ad5d48-untitled-km",
+      "file": "books/bloom-e1ad5d48-untitled-km.json"
+    },
+    {
+      "slug": "bloom-d66162f1-untitled-km",
+      "file": "books/bloom-d66162f1-untitled-km.json"
+    },
+    {
+      "slug": "bloom-cfbb896c-untitled-km",
+      "file": "books/bloom-cfbb896c-untitled-km.json"
+    },
+    {
+      "slug": "bloom-58109405-untitled-km",
+      "file": "books/bloom-58109405-untitled-km.json"
+    },
+    {
+      "slug": "bloom-8360b75e-untitled-km",
+      "file": "books/bloom-8360b75e-untitled-km.json"
+    },
+    {
+      "slug": "bloom-1d6c5252-untitled-km",
+      "file": "books/bloom-1d6c5252-untitled-km.json"
+    },
+    {
+      "slug": "bloom-e7a04341-untitled-km",
+      "file": "books/bloom-e7a04341-untitled-km.json"
+    },
+    {
+      "slug": "bloom-e5c581ee-untitled-km",
+      "file": "books/bloom-e5c581ee-untitled-km.json"
+    },
+    {
+      "slug": "bloom-691d08d6-untitled-km",
+      "file": "books/bloom-691d08d6-untitled-km.json"
+    },
+    {
+      "slug": "bloom-312c71ff-untitled-km",
+      "file": "books/bloom-312c71ff-untitled-km.json"
+    },
+    {
+      "slug": "bloom-3df987b6-untitled-ne",
+      "file": "books/bloom-3df987b6-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-ce9b3715-untitled-ne",
+      "file": "books/bloom-ce9b3715-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-aed4febd-untitled-ne",
+      "file": "books/bloom-aed4febd-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-96c691b5-untitled-ne",
+      "file": "books/bloom-96c691b5-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-9b3c00e4-untitled-ne",
+      "file": "books/bloom-9b3c00e4-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-f74fcdd5-untitled-ne",
+      "file": "books/bloom-f74fcdd5-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-80472738-untitled-ne",
+      "file": "books/bloom-80472738-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-b2f2694b-untitled-ne",
+      "file": "books/bloom-b2f2694b-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-833863ee-untitled-ne",
+      "file": "books/bloom-833863ee-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-99b68c21-untitled-ne",
+      "file": "books/bloom-99b68c21-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-4cc52ec9-untitled-ne",
+      "file": "books/bloom-4cc52ec9-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-dc7c7dd9-untitled-ne",
+      "file": "books/bloom-dc7c7dd9-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-04424a83-untitled-ne",
+      "file": "books/bloom-04424a83-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-e5a512b0-untitled-ne",
+      "file": "books/bloom-e5a512b0-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-95f695ad-untitled-ne",
+      "file": "books/bloom-95f695ad-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-ab95c77c-untitled-ne",
+      "file": "books/bloom-ab95c77c-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-1209a890-untitled-ne",
+      "file": "books/bloom-1209a890-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-cfe35ab2-untitled-ne",
+      "file": "books/bloom-cfe35ab2-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-9b3c2d08-untitled-ne",
+      "file": "books/bloom-9b3c2d08-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-6875f791-untitled-ne",
+      "file": "books/bloom-6875f791-untitled-ne.json"
+    },
+    {
+      "slug": "bloom-card-d6624351-untitled",
+      "file": "books/bloom-card-d6624351-untitled.json"
     }
   ]
 }

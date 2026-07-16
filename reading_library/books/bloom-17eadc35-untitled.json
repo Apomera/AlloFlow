@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-17eadc35-untitled",
+  "title": "من هرات باستانم",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/qbfZICALBQ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f17eadc35-4f9a-437e-9cf9-ab5a484c766c%2f%d9%85%d9%86+%d9%87%d8%b1%d8%a7%d8%aa+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%d9%85%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f17eadc35-4f9a-437e-9cf9-ab5a484c766c%2f%d9%85%d9%86+%d9%87%d8%b1%d8%a7%d8%aa+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%d9%85%2f%db%b2.jpg",
+      "text": "مـنم هرات باستان\nانـگور دارم فراوان\nتاک های سبز و تازه\nتـازه اند بـی انداره\nهوای خوب و پاکش\nباشد به ما چه دلکش"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "مــیـوه هــایـم لــذیـذ اسـت\nخوش طعم و هم عزیز است\nآب و هوایم زیبا\nبرای تان با صفا\nشهر علم و فرهنگم\nدور از کینه و جنگم\nشهر خوب و رویایی\nپر از نقش و زیبایی"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f17eadc35-4f9a-437e-9cf9-ab5a484c766c%2f%d9%85%d9%86+%d9%87%d8%b1%d8%a7%d8%aa+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%d9%85%2f%db%b3.jpg",
+      "text": "منم هرات باستان\nمیوه دارم فراوان\nبــناهای تــاریـخی\nدر من باشد عزیزان"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "مسجد جامع و ارگ\nدارند صفای خوبی\nبرای ما شاگردان\nجای خوب و محبوبی\nارگ هرات باستان\nقلعۀ پر شکوه است\nمحکم و با صلابت\nمقاوم مثل کوه است"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f17eadc35-4f9a-437e-9cf9-ab5a484c766c%2f%d9%85%d9%86+%d9%87%d8%b1%d8%a7%d8%aa+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%d9%85%2f%db%b41.jpg",
+      "text": "شهر علم و فرهنگم\nدور از کینه و جنگم\nبنای تاریخی اش\nباشد به ما چه دلکش\nمناره های زیبا\nآثار باستانی ست\nگــنبد گوهرشادش\nنزد همه جهانی ست"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "عبدالله انصاری\nپیر بزرگ هرات\nدر همه جا معروف است\nآثــــار او رســـالات\nیک فیلسوف دیگر\nعبدالرحمن جامی\nاو عالم و دانشمند\nمشهور هر انجمن\nشهر خوب و رویایی\nپر از نقش و زیبایی"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f17eadc35-4f9a-437e-9cf9-ab5a484c766c%2f%d9%85%d9%86+%d9%87%d8%b1%d8%a7%d8%aa+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%d9%85%2f%db%b5.jpg",
+      "text": "حوض خوب چهارسوق\nپر از نقش و نگار است\nبرای مردم ما\nنیاکان را یادگار است"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "منم هرات باستان\nمسجد جامع من\nبرای مردم ما\nسرشار نور و گلشن خواجه غلتـان ولی\nدر خیابان من است\nاو شخصیت عالی\nدر روح و جان من است\nمن نگین خراسان\nشاعر دارم فراوان\nمنم هرات باستان\nخداحافظ عزیزان"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 220
+  }
+}

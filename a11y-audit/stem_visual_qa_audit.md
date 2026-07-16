@@ -1,10 +1,10 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-12T22:27:25.424Z
+Generated: 2026-07-13T03:28:42.524Z
 
 ## Scope
 
-- Registered STEM tools: 121
+- Registered STEM tools: 122
 - STEM tool files: 119
 - Monitored student-facing visual markers: 74
 
@@ -12,13 +12,13 @@ Generated: 2026-07-12T22:27:25.424Z
 
 | Metric | Count |
 | --- | ---: |
-| Load errors | 1 |
-| Marker passes | 73 |
-| Marker failures | 1 |
+| Load errors | 0 |
+| Marker passes | 74 |
+| Marker failures | 0 |
 | Monitored first-screen findings | 16 |
 | High-confidence monitored errors | 0 |
-| Source/public drift | 2 |
-| Any source/public/build drift | 5 |
+| Source/public drift | 0 |
+| Any source/public/build drift | 3 |
 | Monitored file drift | 2 |
 
 ## Visual Marker Coverage
@@ -35,7 +35,7 @@ Generated: 2026-07-12T22:27:25.424Z
 | pass | `nutritionLab` | `data-nutrition-practice-path` | Rendered |
 | pass | `bakingScience` | `data-baking-kitchen-bench` | Rendered |
 | pass | `cellularLab` | `data-cellularlab-focus-panel` | Rendered |
-| fail | `companionPlanting` | `data-companion-workspace-stage` | Review |
+| pass | `companionPlanting` | `data-companion-workspace-stage` | Rendered |
 | pass | `dnaLab` | `data-dna-mission` | Rendered |
 | pass | `alphaFoldExplorer` | `data-alphafold-mission` | Rendered |
 | pass | `swimLab` | `data-swimlab-readiness` | Rendered |
@@ -113,11 +113,9 @@ Generated: 2026-07-12T22:27:25.424Z
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
-| build-drift | `stem_tool_circuit.js` | yes | source `C71A16911AAC`, public `C71A16911AAC`, build `4A474AAC85A8` |
-| source-public-drift | `stem_tool_companionplanting.js` | yes | source `7D3F03451492`, public `2E8FF8053DD3`, build `682FAEB000EA` |
-| build-drift | `stem_tool_economicslab.js` | no | source `F5B7DD4BAD48`, public `F5B7DD4BAD48`, build `8BD285AA61CC` |
-| source-public-drift | `stem_tool_particlelab3d.js` | no | source `D53BE9D40D0D`, public `7E5ED7C03E6C`, build `A284849D1A8B` |
-| build-drift | `stem_tool_roadready.js` | no | source `3DA8BB08AF9F`, public `3DA8BB08AF9F`, build `4250E357A8BD` |
+| build-drift | `stem_tool_optics.js` | yes | source `834C495D8445`, public `834C495D8445`, build `494E67C4A75D` |
+| build-drift | `stem_tool_particlelab3d.js` | no | source `946E2E78A5F5`, public `946E2E78A5F5`, build `F1FB6EE0170C` |
+| build-drift | `stem_tool_platetectonics.js` | yes | source `A928406DD1A6`, public `A928406DD1A6`, build `6D522DB866EE` |
 
 ## Gate Policy
 

@@ -312,13 +312,13 @@ const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t }) => {
   if (!feedback) return null;
   return (
     <div className="max-w-3xl mx-auto px-4 pb-6">
-      <div className="bg-gradient-to-br from-emerald-50 to-amber-50 border-2 border-emerald-300 rounded-xl p-5 shadow-md animate-in slide-in-from-bottom-2 duration-300">
+      <div className="bg-gradient-to-br from-emerald-50 to-amber-50 border-2 border-emerald-300 rounded-xl p-5 shadow-md animate-in motion-reduce:animate-none slide-in-from-bottom-2 duration-300">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="text-2xl" aria-hidden="true">💬</span>
             <h3 className="font-black text-base text-emerald-800">{t('notes_feedback.title') || 'Feedback on your notes'}</h3>
           </div>
-          <button
+          <button type="button"
             onClick={onDismiss}
             className="text-slate-600 hover:text-slate-600 text-lg leading-none"
             aria-label={t('notes_feedback.dismiss_aria') || 'Dismiss feedback'}
@@ -460,7 +460,7 @@ const _ConnectionsSection = ({ value, onChange, hint, t }) => {
         value={value || ''}
         onChange={onChange}
         placeholder={tt('notes_connections.placeholder') || 'e.g. This is like… / It connects to… / A way to remember this is…'}
-        className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 outline-none focus:ring-2 focus:ring-violet-300 resize-y min-h-[70px]"
+        className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 focus:ring-2 focus:ring-violet-300 resize-y min-h-[70px]"
         rows={3}
         aria-label={tt('a11y.notes_connections') || 'Connections and memory hooks'}
         data-help-key="notes_connections_field"
@@ -480,10 +480,10 @@ const _GetFeedbackButton = ({ onClick, isLoading, t, colorClass = 'emerald' }) =
   })[colorClass] || 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700';
   return (
     <div className="flex justify-center pt-2">
-      <button
+      <button type="button"
         onClick={onClick}
         disabled={isLoading}
-        className={`px-5 py-2 text-sm font-bold rounded-full border shadow-sm transition-all ${palette} disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2`}
+        className={`px-5 py-2 text-sm font-bold rounded-full border shadow-sm transition-all motion-reduce:transition-none ${palette} disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2`}
         aria-busy={isLoading}
         data-help-key="notes_feedback_button"
       >
@@ -543,7 +543,7 @@ const CornellNotesView = React.memo((props) => {
           value={title}
           onChange={handleTitleChange}
           placeholder="Today's lesson title"
-          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-indigo-500 outline-none py-1"
+          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-indigo-500 py-1"
           aria-label={t("a11y.cornell_title")}
           data-help-key="cornell_notes_title_field"
         />
@@ -566,7 +566,7 @@ const CornellNotesView = React.memo((props) => {
                   value={cueText}
                   onChange={(e) => handleCueChange(idx, e.target.value)}
                   placeholder={idx === 0 ? 'Key term, question, cue...' : ''}
-                  className="w-full text-sm text-slate-700 bg-transparent resize-none outline-none focus:ring-2 focus:ring-indigo-300 rounded p-1 min-h-[60px]"
+                  className="w-full text-sm text-slate-700 bg-transparent resize-none focus:ring-2 focus:ring-indigo-300 rounded p-1 min-h-[60px]"
                   rows={2}
                   aria-label={`Cue ${idx + 1}`}
                 />
@@ -576,13 +576,13 @@ const CornellNotesView = React.memo((props) => {
                   value={noteText}
                   onChange={(e) => handleNoteChange(idx, e.target.value)}
                   placeholder={idx === 0 ? 'Notes, details, examples...' : ''}
-                  className="w-full text-sm text-slate-700 bg-transparent resize-none outline-none focus:ring-2 focus:ring-indigo-300 rounded p-1 min-h-[60px]"
+                  className="w-full text-sm text-slate-700 bg-transparent resize-none focus:ring-2 focus:ring-indigo-300 rounded p-1 min-h-[60px]"
                   rows={2}
                   aria-label={`Notes for row ${idx + 1}`}
                 />
-                <button
+                <button type="button"
                   onClick={() => handleRemoveRow(idx)}
-                  className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1"
+                  className="absolute right-1 top-1 opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs px-1"
                   aria-label={`Remove row ${idx + 1}`}
                   title="Remove row"
                 >✕</button>
@@ -592,7 +592,7 @@ const CornellNotesView = React.memo((props) => {
         })}
       </div>
       <div className="flex justify-center">
-        <button
+        <button type="button"
           onClick={handleAddRow}
           className="px-4 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-300 rounded-full hover:bg-indigo-100"
           aria-label={t("a11y.cornell_add_row")}
@@ -604,7 +604,7 @@ const CornellNotesView = React.memo((props) => {
           value={summary}
           onChange={handleSummaryChange}
           placeholder={t("placeholders.type_summary_after")}
-          className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 outline-none focus:ring-2 focus:ring-emerald-300 resize-y min-h-[100px]"
+          className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 focus:ring-2 focus:ring-emerald-300 resize-y min-h-[100px]"
           rows={4}
           aria-label={t("a11y.cornell_summary")}
           data-help-key="cornell_notes_summary_section"
@@ -659,7 +659,7 @@ const LabReportView = React.memo((props) => {
           value={title}
           onChange={(e) => handleNoteUpdate('title', e.target.value)}
           placeholder={t("placeholders.experiment_title")}
-          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-sky-500 outline-none py-1"
+          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-sky-500 py-1"
           aria-label={t("a11y.lab_report_title")}
           data-help-key="lab_report_title_field"
         />
@@ -672,7 +672,7 @@ const LabReportView = React.memo((props) => {
           value={question}
           onChange={(e) => handleNoteUpdate('question', e.target.value)}
           placeholder={t("placeholders.research_question_q")}
-          className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-sky-300 resize-y min-h-[60px]"
+          className="w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-sky-300 resize-y min-h-[60px]"
           rows={2}
           aria-label={t("a11y.research_question")}
         />
@@ -682,7 +682,7 @@ const LabReportView = React.memo((props) => {
           value={hypothesis}
           onChange={(e) => handleNoteUpdate('hypothesis', e.target.value)}
           placeholder={t("placeholders.hypothesis_predict")}
-          className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-y min-h-[60px]"
+          className="w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-violet-300 resize-y min-h-[60px]"
           rows={2}
           aria-label={t("a11y.hypothesis")}
           data-help-key="lab_report_hypothesis_field"
@@ -699,14 +699,14 @@ const LabReportView = React.memo((props) => {
                 type="text"
                 value={m.text || ''}
                 onChange={(e) => updateMaterialAt(idx, e.target.value)}
-                className="flex-1 text-sm bg-white border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-300"
+                className="flex-1 text-sm bg-white border border-slate-200 rounded px-2 py-1 focus:ring-2 focus:ring-amber-300"
                 aria-label={`Material ${idx + 1}`}
               />
-              <button onClick={() => removeMaterialAt(idx)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs" aria-label={t("a11y.remove_material")}>✕</button>
+              <button type="button" onClick={() => removeMaterialAt(idx)} className="opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs" aria-label={t("a11y.remove_material")}>✕</button>
             </li>
           ))}
         </ul>
-        <button onClick={addMaterial} className="mt-2 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200">+ Add material</button>
+        <button type="button" onClick={addMaterial} className="mt-2 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200">+ Add material</button>
       </_CardSection>
       <_CardSection title="Procedure" hint="Number each step. Another student should be able to follow your procedure and reproduce your experiment." color="emerald">
         <ol className="space-y-1">
@@ -718,22 +718,22 @@ const LabReportView = React.memo((props) => {
               <textarea
                 value={s.text || ''}
                 onChange={(e) => updateProcedureAt(idx, e.target.value)}
-                className="flex-1 text-sm bg-white border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-300 resize-y min-h-[40px]"
+                className="flex-1 text-sm bg-white border border-slate-200 rounded px-2 py-1 focus:ring-2 focus:ring-emerald-300 resize-y min-h-[40px]"
                 rows={1}
                 aria-label={`Procedure step ${idx + 1}`}
               />
-              <button onClick={() => removeProcedureStepAt(idx)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2" aria-label={t("a11y.remove_step")}>✕</button>
+              <button type="button" onClick={() => removeProcedureStepAt(idx)} className="opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs mt-2" aria-label={t("a11y.remove_step")}>✕</button>
             </li>
           ))}
         </ol>
-        <button onClick={addProcedureStep} className="mt-2 px-3 py-1 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded hover:bg-emerald-200" data-help-key="lab_report_add_step_button">+ Add step</button>
+        <button type="button" onClick={addProcedureStep} className="mt-2 px-3 py-1 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded hover:bg-emerald-200" data-help-key="lab_report_add_step_button">+ Add step</button>
       </_CardSection>
       <_CardSection title="Data / Observations" hint="Record what you see, measure, or count. Use specific numbers and units when possible." color="indigo">
         <textarea
           value={dataObservations}
           onChange={(e) => handleNoteUpdate('data', e.target.value)}
           placeholder={t("placeholders.record_observations")}
-          className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-indigo-300 resize-y min-h-[100px] font-mono"
+          className="w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-indigo-300 resize-y min-h-[100px] font-mono"
           rows={5}
           aria-label={t("a11y.data_observations")}
           data-help-key="lab_report_data_observations_field"
@@ -744,7 +744,7 @@ const LabReportView = React.memo((props) => {
           value={analysis}
           onChange={(e) => handleNoteUpdate('analysis', e.target.value)}
           placeholder="Claim: ...\nEvidence: ...\nReasoning: ..."
-          className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-rose-300 resize-y min-h-[100px]"
+          className="w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-rose-300 resize-y min-h-[100px]"
           rows={5}
           aria-label="Analysis (Claim, Evidence, Reasoning)"
           data-help-key="lab_report_cer_section"
@@ -755,7 +755,7 @@ const LabReportView = React.memo((props) => {
           value={conclusion}
           onChange={(e) => handleNoteUpdate('conclusion', e.target.value)}
           placeholder="Restate your hypothesis, summarize the results, reflect on what you learned..."
-          className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-slate-400 resize-y min-h-[80px]"
+          className="w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-slate-400 resize-y min-h-[80px]"
           rows={4}
           aria-label="Conclusion"
           data-help-key="lab_report_conclusion_field"
@@ -801,7 +801,7 @@ const ReadingResponseView = React.memo((props) => {
           value={title}
           onChange={(e) => handleNoteUpdate('title', e.target.value)}
           placeholder="Title of what you read"
-          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-violet-500 outline-none py-1"
+          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-violet-500 py-1"
           aria-label="Reading title"
           data-help-key="reading_response_title_field"
         />
@@ -811,7 +811,7 @@ const ReadingResponseView = React.memo((props) => {
             value={author}
             onChange={(e) => handleNoteUpdate('author', e.target.value)}
             placeholder="Author"
-            className="flex-1 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-violet-300 outline-none py-1"
+            className="flex-1 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-violet-300 py-1"
             aria-label="Author"
           />
           <input
@@ -819,7 +819,7 @@ const ReadingResponseView = React.memo((props) => {
             value={pageRange}
             onChange={(e) => handleNoteUpdate('pageRange', e.target.value)}
             placeholder="Pages or chapter"
-            className="sm:w-40 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-violet-300 outline-none py-1"
+            className="sm:w-40 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-violet-300 py-1"
             aria-label="Pages or chapter"
           />
         </div>
@@ -832,7 +832,7 @@ const ReadingResponseView = React.memo((props) => {
           value={favoriteLine}
           onChange={(e) => handleNoteUpdate('favoriteLine', e.target.value)}
           placeholder='"Quote here..." (p. ___)'
-          className="w-full text-sm italic bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-amber-300 resize-y min-h-[60px]"
+          className="w-full text-sm italic bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-amber-300 resize-y min-h-[60px]"
           rows={2}
           aria-label="Favorite line or passage"
           data-help-key="reading_response_evidence_field"
@@ -843,7 +843,7 @@ const ReadingResponseView = React.memo((props) => {
           value={thinkings}
           onChange={(e) => handleNoteUpdate('thinkings', e.target.value)}
           placeholder="Reflect on what came up for you while reading..."
-          className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-y min-h-[100px]"
+          className="w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-violet-300 resize-y min-h-[100px]"
           rows={5}
           aria-label="What this made me think about"
         />
@@ -851,7 +851,7 @@ const ReadingResponseView = React.memo((props) => {
       <_CardSection title="Connection" hint={activeConnType.hint} color="sky">
         <div className="flex flex-wrap gap-2 mb-3" data-help-key="reading_response_connection_type_toggle">
           {connTypes.map((ct) => (
-            <button
+            <button type="button"
               key={ct.id}
               onClick={() => setConnectionType(ct.id)}
               className={`px-3 py-1 text-xs font-bold rounded-full border ${connection.type === ct.id ? 'bg-sky-600 text-white border-sky-700' : 'bg-white text-sky-700 border-sky-300 hover:bg-sky-50'}`}
@@ -865,7 +865,7 @@ const ReadingResponseView = React.memo((props) => {
           value={connection.text || ''}
           onChange={(e) => setConnectionText(e.target.value)}
           placeholder={`Describe the ${activeConnType.label.toLowerCase()} connection...`}
-          className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-sky-300 resize-y min-h-[80px]"
+          className="w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-sky-300 resize-y min-h-[80px]"
           rows={4}
           aria-label="Connection text"
           data-help-key="reading_response_connection_field"
@@ -876,7 +876,7 @@ const ReadingResponseView = React.memo((props) => {
           value={question}
           onChange={(e) => handleNoteUpdate('question', e.target.value)}
           placeholder="What's one question you still have after this reading?"
-          className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-emerald-300 resize-y min-h-[60px]"
+          className="w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-emerald-300 resize-y min-h-[60px]"
           rows={2}
           aria-label="Question"
           data-help-key="reading_response_open_question_field"
@@ -924,13 +924,13 @@ const DoubleEntryView = React.memo((props) => {
           value={title}
           onChange={(e) => handleNoteUpdate('title', e.target.value)}
           placeholder="Title of what you read"
-          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-rose-500 outline-none py-1"
+          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-rose-500 py-1"
           aria-label="Reading title"
           data-help-key="double_entry_title_field"
         />
         <div className="flex flex-col sm:flex-row gap-2 mt-2">
-          <input type="text" value={author} onChange={(e) => handleNoteUpdate('author', e.target.value)} placeholder="Author" className="flex-1 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 outline-none py-1" aria-label="Author" />
-          <input type="text" value={pageRange} onChange={(e) => handleNoteUpdate('pageRange', e.target.value)} placeholder="Pages or chapter" className="sm:w-40 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 outline-none py-1" aria-label="Pages or chapter" />
+          <input type="text" value={author} onChange={(e) => handleNoteUpdate('author', e.target.value)} placeholder="Author" className="flex-1 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 py-1" aria-label="Author" />
+          <input type="text" value={pageRange} onChange={(e) => handleNoteUpdate('pageRange', e.target.value)} placeholder="Pages or chapter" className="sm:w-40 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 py-1" aria-label="Pages or chapter" />
         </div>
         {lessonRef.generatedAt ? (
           <div className="text-[11px] text-slate-500 mt-1">Started: {new Date(lessonRef.generatedAt).toLocaleString()}</div>
@@ -950,7 +950,7 @@ const DoubleEntryView = React.memo((props) => {
                   value={en.quote || ''}
                   onChange={(e) => updateEntry(idx, 'quote', e.target.value)}
                   placeholder={idx === 0 ? '"Copy a line or passage that struck you..." (p. ___)' : ''}
-                  className="w-full text-sm italic text-slate-700 bg-transparent resize-none outline-none focus:ring-2 focus:ring-rose-300 rounded p-1 min-h-[70px]"
+                  className="w-full text-sm italic text-slate-700 bg-transparent resize-none focus:ring-2 focus:ring-rose-300 rounded p-1 min-h-[70px]"
                   rows={3}
                   aria-label={`Quote ${idx + 1}`}
                 />
@@ -960,13 +960,13 @@ const DoubleEntryView = React.memo((props) => {
                   value={en.response || ''}
                   onChange={(e) => updateEntry(idx, 'response', e.target.value)}
                   placeholder={idx === 0 ? 'React, question, interpret. Why did this strike you? What does it make you think?' : ''}
-                  className="w-full text-sm text-slate-700 bg-transparent resize-none outline-none focus:ring-2 focus:ring-rose-300 rounded p-1 min-h-[70px]"
+                  className="w-full text-sm text-slate-700 bg-transparent resize-none focus:ring-2 focus:ring-rose-300 rounded p-1 min-h-[70px]"
                   rows={3}
                   aria-label={`Response ${idx + 1}`}
                 />
-                <button
+                <button type="button"
                   onClick={() => removeRow(idx)}
-                  className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1"
+                  className="absolute right-1 top-1 opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs px-1"
                   aria-label={`Remove row ${idx + 1}`}
                   title="Remove row"
                 >✕</button>
@@ -976,7 +976,7 @@ const DoubleEntryView = React.memo((props) => {
         })}
       </div>
       <div className="flex justify-center">
-        <button
+        <button type="button"
           onClick={addRow}
           className="px-4 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full hover:bg-rose-100"
           aria-label="Add a new quote and response row"
@@ -1024,7 +1024,7 @@ const GuidedNotesView = React.memo((props) => {
           value={title}
           onChange={(e) => handleNoteUpdate('title', e.target.value)}
           placeholder="Today's lesson title"
-          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-emerald-500 outline-none py-1"
+          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 py-1"
           aria-label="Lesson title"
           data-help-key="guided_notes_title_field"
         />
@@ -1053,7 +1053,7 @@ const GuidedNotesView = React.memo((props) => {
                     value={studentAnswer}
                     onChange={(e) => updateBlank(idx, e.target.value)}
                     placeholder="________"
-                    className={`inline-block mx-1 px-2 py-0.5 text-sm font-semibold text-slate-800 bg-white border-b-2 rounded-sm outline-none align-baseline ${inputBorder}`}
+                    className={`inline-block mx-1 px-2 py-0.5 text-sm font-semibold text-slate-800 bg-white border-b-2 rounded-sm focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 align-baseline ${inputBorder}`}
                     aria-label={`Blank ${idx + 1}`}
                     style={{ width: Math.max(110, ((b.answer || '').length + 4) * 9) + 'px' }}
                   />
@@ -1073,7 +1073,7 @@ const GuidedNotesView = React.memo((props) => {
         )}
         {blanks.length > 0 ? (
           <div className="flex items-center gap-3 mt-4">
-            <button
+            <button type="button"
               onClick={() => setRevealed(r => !r)}
               className="px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded-full hover:bg-emerald-200"
               aria-pressed={revealed}
@@ -1090,7 +1090,7 @@ const GuidedNotesView = React.memo((props) => {
           value={notesExtra}
           onChange={(e) => handleNoteUpdate('notesExtra', e.target.value)}
           placeholder="Your own notes, questions, examples..."
-          className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 outline-none focus:ring-2 focus:ring-indigo-300 resize-y min-h-[80px]"
+          className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 focus:ring-2 focus:ring-indigo-300 resize-y min-h-[80px]"
           rows={3}
           aria-label="My own notes"
           data-help-key="guided_notes_own_notes_field"
@@ -1137,7 +1137,7 @@ const QAndAView = React.memo((props) => {
         <div className="flex items-center justify-between gap-2">
           <div className="text-xs font-bold text-cyan-700 uppercase tracking-wider mb-1">Q&amp;A Study Notes</div>
           {hasStudyable ? (
-            <button
+            <button type="button"
               onClick={() => setQuizMode(q => !q)}
               className="px-3 py-1 text-xs font-bold rounded-full border border-cyan-300 text-cyan-800 bg-cyan-50 hover:bg-cyan-100"
               aria-pressed={quizMode}
@@ -1150,7 +1150,7 @@ const QAndAView = React.memo((props) => {
           value={title}
           onChange={(e) => handleNoteUpdate('title', e.target.value)}
           placeholder="Study set title"
-          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-cyan-500 outline-none py-1"
+          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-cyan-500 py-1"
           aria-label="Study set title"
           data-help-key="qanda_title_field"
         />
@@ -1170,10 +1170,10 @@ const QAndAView = React.memo((props) => {
                     <div className="text-sm text-slate-700 bg-cyan-50 border-l-4 border-cyan-400 rounded-r p-2">
                       {(p.answer || '').trim() ? p.answer : <span className="italic text-slate-600">No answer written yet.</span>}
                     </div>
-                    <button onClick={() => toggleShown(key)} className="mt-2 text-[11px] text-slate-500 hover:text-slate-700 underline">Hide answer</button>
+                    <button type="button" onClick={() => toggleShown(key)} className="mt-2 text-[11px] text-slate-500 hover:text-slate-700 underline">Hide answer</button>
                   </>
                 ) : (
-                  <button onClick={() => toggleShown(key)} className="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full px-3 py-1 hover:bg-cyan-100">Show answer</button>
+                  <button type="button" onClick={() => toggleShown(key)} className="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full px-3 py-1 hover:bg-cyan-100">Show answer</button>
                 )}
               </div>
             );
@@ -1192,7 +1192,7 @@ const QAndAView = React.memo((props) => {
                       value={p.question || ''}
                       onChange={(e) => updatePair(idx, 'question', e.target.value)}
                       placeholder={idx === 0 ? 'Write a study question (try a "why" or "how", not just "what")...' : 'Question...'}
-                      className="w-full text-sm font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-cyan-300 resize-y min-h-[48px]"
+                      className="w-full text-sm font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded p-2 focus:ring-2 focus:ring-cyan-300 resize-y min-h-[48px]"
                       rows={1}
                       aria-label={`Question ${idx + 1}`}
                     />
@@ -1200,18 +1200,18 @@ const QAndAView = React.memo((props) => {
                       value={p.answer || ''}
                       onChange={(e) => updatePair(idx, 'answer', e.target.value)}
                       placeholder="Answer — explain, don't just name."
-                      className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-cyan-300 resize-y min-h-[48px]"
+                      className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-cyan-300 resize-y min-h-[48px]"
                       rows={2}
                       aria-label={`Answer ${idx + 1}`}
                     />
                   </div>
-                  <button onClick={() => removePair(idx)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2" aria-label={`Remove pair ${idx + 1}`} title="Remove">✕</button>
+                  <button type="button" onClick={() => removePair(idx)} className="opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs mt-2" aria-label={`Remove pair ${idx + 1}`} title="Remove">✕</button>
                 </div>
               </div>
             );
           })}
           <div className="flex justify-center">
-            <button
+            <button type="button"
               onClick={addPair}
               className="px-4 py-1.5 text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full hover:bg-cyan-100"
               aria-label="Add a question and answer pair"
@@ -1421,7 +1421,8 @@ function _useNoteDialogFocus(isOpen, dialogRef, onClose) {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+      .filter((element) => element && !element.hidden && element.getAttribute('aria-hidden') !== 'true' && !element.closest('[inert]') && element.getClientRects().length > 0);
     (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
       if (event.key === 'Escape') { event.preventDefault(); closeRef.current(); return; }
@@ -1429,7 +1430,8 @@ function _useNoteDialogFocus(isOpen, dialogRef, onClose) {
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
       const first = focusable[0], last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
     dialog.addEventListener('keydown', onKeyDown);
@@ -1447,19 +1449,19 @@ const _NoteInsightsModal = ({ isOpen, onClose, insights, isLoading, t }) => {
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" role="presentation">
       <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <div ref={dialogRef} tabIndex={-1} className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="note-insights-modal-title" aria-describedby="note-insights-modal-subtitle">
+      <div ref={dialogRef} tabIndex={-1} className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:ring-4 focus:ring-inset focus:ring-indigo-500" role="dialog" aria-modal="true" aria-labelledby="note-insights-modal-title" aria-describedby="note-insights-modal-subtitle">
         <div className="flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-violet-50">
           <div>
             <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Note-Taking Insights</div>
             <h2 id="note-insights-modal-title" className="text-2xl font-black text-slate-800 mt-0.5"><span aria-hidden="true">📊</span> {t('note_insights.title') || 'Your note-taking patterns'}</h2>
             <p id="note-insights-modal-subtitle" className="text-xs text-slate-600 mt-1 leading-snug">{t('note_insights.subtitle') || 'Growth-focused observations across your saved entries. Not a grade — a mirror.'}</p>
           </div>
-          <button onClick={onClose} className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100" aria-label={t('note_insights.close_aria') || 'Close insights'}>✕</button>
+          <button type="button" onClick={onClose} className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100" aria-label={t('note_insights.close_aria') || 'Close insights'}>✕</button>
         </div>
         <div className="flex-1 overflow-y-auto p-5 bg-slate-50 space-y-3">
           {isLoading ? (
             <div className="text-center py-12" role="status" aria-live="polite" aria-atomic="true">
-              <div className="text-5xl mb-3 animate-pulse" aria-hidden="true">📓</div>
+              <div className="text-5xl mb-3 animate-pulse motion-reduce:animate-none" aria-hidden="true">📓</div>
               <p className="text-slate-600 font-bold">{t('note_insights.loading') || 'Looking across your notebook...'}</p>
               <p className="text-xs text-slate-500 mt-1">{t('note_insights.loading_hint') || 'This takes a few seconds — patterns need a careful read.'}</p>
             </div>
@@ -1592,14 +1594,14 @@ const NotebookOverlay = React.memo((props) => {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div ref={notebookDialogRef} tabIndex={-1} className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="notebook-dialog-title" aria-describedby="notebook-dialog-description" inert={insightsOpen ? true : undefined} aria-hidden={insightsOpen ? 'true' : undefined}>
+      <div ref={notebookDialogRef} tabIndex={-1} className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:ring-4 focus:ring-inset focus:ring-indigo-500" role="dialog" aria-modal="true" aria-labelledby="notebook-dialog-title" aria-describedby="notebook-dialog-description" inert={insightsOpen ? true : undefined} aria-hidden={insightsOpen ? 'true' : undefined}>
         <div className="flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50">
           <div>
             <div className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">My Notebook</div>
             <h2 id="notebook-dialog-title" className="text-2xl font-black text-slate-800 mt-0.5"><span aria-hidden="true">📓</span> Notebook</h2>
             <p id="notebook-dialog-description" className="text-xs text-slate-600 mt-1 leading-snug">Everything you've saved across sessions — Cornell Notes, Lab Reports, Reading Responses, Double-Entry Journals, Guided Notes, Q&amp;A sets, and Anchor Charts.</p>
           </div>
-          <button
+          <button type="button"
             onClick={onClose}
             className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100"
             aria-label="Close notebook"
@@ -1611,10 +1613,10 @@ const NotebookOverlay = React.memo((props) => {
             const isActive = activeFilter === f.id;
             const count = counts[f.id] || 0;
             return (
-              <button
+              <button type="button"
                 key={f.id}
                 onClick={() => setActiveFilter(f.id)}
-                className={`px-3 py-1.5 text-xs font-bold rounded-full border transition-colors ${isActive ? _accentClasses(f.accent, 'chip') : _accentClasses(f.accent, 'chipOff')}`}
+                className={`px-3 py-1.5 text-xs font-bold rounded-full border transition-colors motion-reduce:transition-none ${isActive ? _accentClasses(f.accent, 'chip') : _accentClasses(f.accent, 'chipOff')}`}
                 aria-pressed={isActive}
               >
                 {f.label} <span className="opacity-75 ml-1">({count})</span>
@@ -1622,7 +1624,7 @@ const NotebookOverlay = React.memo((props) => {
             );
           })}
           <div className="ml-auto flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={handleGenerateInsights}
               disabled={insightsLoading || noteEntries.length < 2}
               className="px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
@@ -1632,7 +1634,7 @@ const NotebookOverlay = React.memo((props) => {
             >
               {insightsLoading ? '⏳' : '📊'} {t('note_insights.button') || 'Insights'}
             </button>
-            <button
+            <button type="button"
               onClick={handlePrintAll}
               className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 border border-slate-300 rounded-full hover:bg-slate-200"
               aria-label="Print or export notebook as PDF"
@@ -1669,9 +1671,9 @@ const NotebookOverlay = React.memo((props) => {
                 try { when = new Date(ts).toLocaleString(); } catch (_) { when = ''; }
                 return (
                   <li key={entry.id}>
-                    <button
+                    <button type="button"
                       onClick={() => onSelectEntry(entry)}
-                      className="w-full text-left bg-white border border-slate-200 rounded-lg p-3 hover:border-indigo-400 hover:shadow-md transition-all group focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="w-full text-left bg-white border border-slate-200 rounded-lg p-3 hover:border-indigo-400 hover:shadow-md transition-all motion-reduce:transition-none group focus:ring-2 focus:ring-indigo-400"
                       aria-label={`Open ${meta.label}: ${title}`}
                     >
                       <div className="flex items-start gap-3">

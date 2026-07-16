@@ -3,7 +3,8 @@
 // stacked every wrapped line into a ~1pt sliver at the page top. _alloOcrBlockLayout now distributes the
 // lines DOWN the page. This pins the distribution math (the part that was actually broken) directly, plus
 // the live built module's exposed helper, plus the anti-drift wiring in createTaggedPdf.
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+vi.setConfig({ testTimeout: 30000 }); // 33MB live-module import exceeds the 5s default under parallel-suite load
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 

@@ -18,10 +18,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for anato
   "buttons": 66,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 165,
+  "lengthBucket": 171,
   "paths": 0,
   "selects": 0,
-  "sha": "f63df9d3966987d5",
+  "sha": "5590dc9aca8905f8",
   "svgs": 0,
 }
 `;
@@ -41,13 +41,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for archS
 
 exports[`science-sim + studio render goldens > renders + pins a digest for artStudio [ssr] 1`] = `
 {
-  "buttons": 24,
+  "buttons": 23,
   "canvases": 1,
   "inputs": 3,
-  "lengthBucket": 40,
+  "lengthBucket": 39,
   "paths": 0,
   "selects": 0,
-  "sha": "36dfab07e66d0b6d",
+  "sha": "efff3cd20841defd",
   "svgs": 0,
 }
 `;
@@ -57,10 +57,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for astro
   "buttons": 18,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 68,
+  "lengthBucket": 76,
   "paths": 0,
   "selects": 0,
-  "sha": "88bf46852aaacadb",
+  "sha": "070fd4fd0b77fe5a",
   "svgs": 0,
 }
 `;
@@ -93,13 +93,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for bridg
 
 exports[`science-sim + studio render goldens > renders + pins a digest for cell [ssr] 1`] = `
 {
-  "buttons": 39,
+  "buttons": 40,
   "canvases": 1,
   "inputs": 3,
-  "lengthBucket": 108,
+  "lengthBucket": 111,
   "paths": 0,
   "selects": 0,
-  "sha": "479803b3691ba218",
+  "sha": "084f88583ac6cae7",
   "svgs": 0,
 }
 `;
@@ -226,10 +226,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for kitch
   "buttons": 8,
   "canvases": 0,
   "inputs": 1,
-  "lengthBucket": 192,
+  "lengthBucket": 193,
   "paths": 0,
   "selects": 0,
-  "sha": "9c6b94537dfe82fe",
+  "sha": "39b5850e26275a6d",
   "svgs": 0,
 }
 `;
@@ -398,7 +398,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for water
   "lengthBucket": 107,
   "paths": 0,
   "selects": 0,
-  "sha": "4c0807b634c74e02",
+  "sha": "c16375fb3003472d",
   "svgs": 0,
 }
 `;

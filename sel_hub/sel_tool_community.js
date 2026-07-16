@@ -703,6 +703,71 @@ window.SelHub = window.SelHub || {
         var earnedBadges   = d.earnedBadges || {};
         var showBadgePopup = d.showBadgePopup || null;
         var showBadgesPanel = d.showBadgesPanel || false;
+        var communityBadgeDialogRef = React.useRef(null);
+        var communityBadgeDialogOpenerRef = React.useRef(null);
+        var communityBadgeDialogOpen = !!showBadgePopup || !!showBadgesPanel;
+
+        function closeCommunityBadgeDialogs() {
+          upd({ showBadgePopup: null, showBadgesPanel: false });
+        }
+
+        React.useEffect(function() {
+          if (!communityBadgeDialogOpen) return undefined;
+          var opener = document.activeElement;
+          if (opener && typeof opener.focus === 'function') communityBadgeDialogOpenerRef.current = opener;
+
+          function getCommunityDialogFocusable(dialog) {
+            if (!dialog) return [];
+            return Array.prototype.filter.call(
+              dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+              function(el) { return !el.hidden && el.getAttribute('aria-hidden') !== 'true'; }
+            );
+          }
+
+          function handleCommunityBadgeDialogKeyDown(event) {
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              event.stopPropagation();
+              closeCommunityBadgeDialogs();
+              return;
+            }
+            if (event.key !== 'Tab') return;
+            var dialog = communityBadgeDialogRef.current;
+            var focusable = getCommunityDialogFocusable(dialog);
+            if (!focusable.length) {
+              event.preventDefault();
+              if (dialog) dialog.focus();
+              return;
+            }
+            var first = focusable[0];
+            var last = focusable[focusable.length - 1];
+            if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+              event.preventDefault();
+              last.focus();
+            } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+              event.preventDefault();
+              first.focus();
+            }
+          }
+
+          document.addEventListener('keydown', handleCommunityBadgeDialogKeyDown, true);
+          var focusTimer = setTimeout(function() {
+            var dialog = communityBadgeDialogRef.current;
+            var focusable = getCommunityDialogFocusable(dialog);
+            if (focusable.length) focusable[0].focus();
+            else if (dialog) dialog.focus();
+          }, 0);
+
+          return function() {
+            clearTimeout(focusTimer);
+            document.removeEventListener('keydown', handleCommunityBadgeDialogKeyDown, true);
+            var previous = communityBadgeDialogOpenerRef.current;
+            communityBadgeDialogOpenerRef.current = null;
+            if (previous && previous.isConnected !== false && typeof previous.focus === 'function') {
+              setTimeout(function() { previous.focus(); }, 0);
+            }
+          };
+        }, [communityBadgeDialogOpen]);
 
         // ── Accent Color (cyan) ──
         var ACCENT = _comFg('#06b6d4');
@@ -722,7 +787,6 @@ window.SelHub = window.SelHub || {
             addToast(badge.icon + ' Badge earned: ' + badge.name + '!', 'success');
             if (announceToSR) announceToSR('Badge earned: ' + badge.name);
             awardXP(25);
-            setTimeout(function() { upd({ showBadgePopup: null }); }, 3000);
           }
         }
 
@@ -892,25 +956,27 @@ window.SelHub = window.SelHub || {
         if (showBadgePopup) {
           var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
           if (popBadge) {
-            badgePopup = h('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function() { upd({ showBadgePopup: null }); } },
-              h('div', { style: { background: _comBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
-                h('div', { style: { fontSize: 56, marginBottom: 10 } }, popBadge.icon),
-                h('div', { style: { fontSize: 18, fontWeight: 700, color: _comFg('#f1f5f9'), marginBottom: 6 } }, popBadge.name),
-                h('div', { style: { fontSize: 12, color: _comFg('#94a3b8') } }, popBadge.desc)
+            badgePopup = h('div', { ref: communityBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'community-badge-earned-title', 'aria-describedby': 'community-badge-earned-desc', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function(e) { if (e.target === e.currentTarget) closeCommunityBadgeDialogs(); } },
+              h('div', { style: { position: 'relative', background: _comBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
+                h('button', { 'aria-label': 'Close badge announcement', onClick: closeCommunityBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _comBg('#334155'), color: _comFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+                h('div', { style: { fontSize: 56, marginBottom: 10 }, 'aria-hidden': 'true' }, popBadge.icon),
+                h('h3', { id: 'community-badge-earned-title', style: { fontSize: 18, fontWeight: 700, color: _comFg('#f1f5f9'), margin: '0 0 6px' } }, 'Badge earned: ' + popBadge.name),
+                h('div', { id: 'community-badge-earned-desc', style: { fontSize: 12, color: _comFg('#94a3b8') } }, popBadge.desc)
               )
             );
           }
         }
         if (showBadgesPanel) {
-          badgePopup = h('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function() { upd({ showBadgesPanel: false }); } },
-            h('div', { onClick: function(e) { e.stopPropagation(); }, style: { background: _comBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
-              h('h3', { style: { textAlign: 'center', color: _comFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+          badgePopup = h('div', { ref: communityBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'community-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function(e) { if (e.target === e.currentTarget) closeCommunityBadgeDialogs(); } },
+            h('div', { style: { position: 'relative', background: _comBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
+              h('button', { 'aria-label': 'Close badges panel', onClick: closeCommunityBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _comBg('#334155'), color: _comFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+              h('h3', { id: 'community-badges-panel-title', style: { textAlign: 'center', color: _comFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
                 BADGES.map(function(b) {
                   var earned = !!earnedBadges[b.id];
                   return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _comBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
-                    h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
+                    h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+                    h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? _comFg('#f1f5f9') : _comFg('#94a3b8'), marginTop: 4 } }, b.name),
                     h('div', { style: { fontSize: 10, color: _comFg('#94a3b8'), marginTop: 2 } }, b.desc)
                   );
@@ -919,7 +985,6 @@ window.SelHub = window.SelHub || {
             )
           );
         }
-
         // ══════════════════════════════════════════════════════════
         // ── TAB: Explore ──
         // Cultural awareness content with grade-adaptive items
@@ -1660,6 +1725,11 @@ window.SelHub = window.SelHub || {
                     } else {
                       var ta = document.createElement('textarea');
                       ta.value = text;
+                      ta.setAttribute('aria-label', 'Cultural heritage project text for copying');
+                      ta.setAttribute('readonly', '');
+                      ta.tabIndex = -1;
+                      ta.style.position = 'fixed';
+                      ta.style.left = '-9999px';
                       document.body.appendChild(ta);
                       ta.select();
                       document.execCommand('copy');

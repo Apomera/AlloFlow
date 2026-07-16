@@ -1396,13 +1396,15 @@ window.SelHub = window.SelHub || {
             return h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-6 shadow-lg' },
               h('div', { className: 'text-center mb-4' },
                 h('span', { className: 'text-3xl' }, step.icon),
-                h('h4', { className: 'text-lg font-bold text-slate-800 mt-2' }, 'Step ' + (harmStep + 1) + ': ' + step.title),
-                h('p', { className: 'text-xs text-amber-600 font-medium' }, step.subtitle)
+                h('h4', { id: 'rc-harm-step-title', className: 'text-lg font-bold text-slate-800 mt-2' }, 'Step ' + (harmStep + 1) + ': ' + step.title),
+                h('p', { id: 'rc-harm-step-subtitle', className: 'text-xs text-amber-600 font-medium' }, step.subtitle)
               ),
               h('div', { className: 'bg-amber-50 rounded-lg p-3 mb-4 border border-amber-100' },
-                h('p', { className: 'text-sm text-amber-800 leading-relaxed' }, guidance)
+                h('p', { id: 'rc-harm-step-guidance', className: 'text-sm text-amber-800 leading-relaxed' }, guidance)
               ),
               h('textarea', {
+                'aria-labelledby': 'rc-harm-step-title',
+                'aria-describedby': 'rc-harm-step-subtitle rc-harm-step-guidance',
                 value: harmResponses[step.id] || '',
                 onChange: function(e) {
                   var newResponses = Object.assign({}, harmResponses);
@@ -1410,8 +1412,7 @@ window.SelHub = window.SelHub || {
                   upd('harmResponses', newResponses);
                 },
                 placeholder: placeholder,
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-amber-300',
-                'aria-label': step.title + ' response'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-amber-300'
               }),
               callTTS && h('button', { 'aria-label': 'Read Guidance Aloud',
                 onClick: function() { callTTS(guidance); },
@@ -1898,15 +1899,15 @@ window.SelHub = window.SelHub || {
 
           // Custom agreement input
           h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4' },
-            h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, '\u270D\uFE0F Write Your Own Agreement'),
+            h('h4', { id: 'rc-custom-agreement-label', className: 'text-xs font-bold text-slate-600 mb-2' }, '\u270D\uFE0F Write Your Own Agreement'),
             h('div', { className: 'flex gap-2' },
               h('input', {
+                'aria-labelledby': 'rc-custom-agreement-label',
                 type: 'text',
                 value: customAgreement,
                 onChange: function(e) { upd('customAgreement', e.target.value); },
                 placeholder: 'Type a custom agreement...',
                 className: 'flex-1 text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
-                'aria-label': 'Custom agreement input',
                 onKeyDown: function(e) {
                   if (e.key === 'Enter' && customAgreement.trim()) {
                     var newAg = agreements.concat([customAgreement.trim()]);
@@ -2035,14 +2036,15 @@ window.SelHub = window.SelHub || {
             ),
 
             h('div', { className: 'mt-6 bg-white rounded-xl border border-amber-200 p-4' },
-              h('h4', { className: 'text-xs font-bold text-amber-600 uppercase tracking-widest mb-2' }, '\uD83D\uDCAD Reflection'),
-              h('p', { className: 'text-sm text-amber-800 italic mb-3' }, INDIGENOUS_ROOTS.reflection),
+              h('h4', { id: 'rc-roots-reflection-label', className: 'text-xs font-bold text-amber-600 uppercase tracking-widest mb-2' }, '\uD83D\uDCAD Reflection'),
+              h('p', { id: 'rc-roots-reflection-prompt', className: 'text-sm text-amber-800 italic mb-3' }, INDIGENOUS_ROOTS.reflection),
               h('textarea', {
+                'aria-labelledby': 'rc-roots-reflection-label',
+                'aria-describedby': 'rc-roots-reflection-prompt',
                 value: d.rootsReflection || '',
                 onChange: function(e) { upd('rootsReflection', e.target.value); },
                 placeholder: 'Write your reflection here...',
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
-                'aria-label': 'Indigenous roots reflection'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300'
               })
             ),
 
@@ -2333,9 +2335,10 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: quad.id, className: 'bg-white rounded-xl border-2 p-4', style: { borderColor: quad.color + '40' } },
                   h('div', { className: 'flex items-center gap-2 mb-2' },
                     h('span', { className: 'text-lg' }, quad.emoji),
-                    h('h5', { className: 'text-xs font-bold', style: { color: quad.color } }, quad.label)
+                    h('h5', { id: 'rc-empathy-' + activePerson + '-' + quad.id + '-label', className: 'text-xs font-bold', style: { color: quad.color } }, quad.label)
                   ),
                   h('textarea', {
+                    'aria-labelledby': 'rc-empathy-' + activePerson + '-' + quad.id + '-label',
                     value: (empathyData[dataKey]) || '',
                     onChange: function(e) {
                       var newData = Object.assign({}, empathyData);
@@ -2344,8 +2347,7 @@ window.SelHub = window.SelHub || {
                     },
                     placeholder: quad.placeholder,
                     className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2',
-                    style: { '--tw-ring-color': quad.color + '60' },
-                    'aria-label': quad.label + ' for ' + activePerson
+                    style: { '--tw-ring-color': quad.color + '60' }
                   })
                 );
               })
@@ -2556,6 +2558,7 @@ window.SelHub = window.SelHub || {
                     // Reflection text area
                     ratings[ratingKey] && h('div', { className: 'mt-2' },
                       h('textarea', {
+                        'aria-label': 'Comparison reflection',
                         value: (d.compareReflections || {})[ratingKey] || '',
                         onChange: function(e) {
                           var newReflections = Object.assign({}, d.compareReflections || {});
@@ -2565,8 +2568,7 @@ window.SelHub = window.SelHub || {
                         placeholder: gradeBand === 'elementary'
                           ? 'Tell us why you picked this one...'
                           : 'Explain your reasoning. What makes this approach more effective?',
-                        className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-amber-300',
-                        'aria-label': 'Comparison reflection'
+                        className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-amber-300'
                       })
                     )
                   ),

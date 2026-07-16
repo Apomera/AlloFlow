@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T15:03:44.768Z",
+  "libraryId": "praxis-school-psychologist-5403-learning-library",
+  "standard": {
+    "label": "AlloFlow Praxis School Psychologist 5403 learning-library source and editorial review v1",
+    "meaning": "A pass confirms release counts, stable identifiers, authoritative-source allowlisting, substantive native lessons, one-best-answer knowledge checks, complete card and aid metadata, safety cautions, and item-compatible skills.",
+    "limitation": "This is not ETS or NASP approval, independent school-psychologist validation, psychometric validation, psychological evaluation, diagnosis, mental-health treatment, legal advice, or a substitute for current federal, state, local, district, credential, ethical, crisis, consent, privacy, and mandated-reporting requirements."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "findings": [],
+    "status": "pass"
+  },
+  "chapters": [
+    {
+      "id": "sp5403-ch-01",
+      "title": "Problem Solving and Multimethod Data Integration",
+      "domainId": "permeating-practices",
+      "skillId": "problem-solving-data-integration",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5403-ch-02",
+      "title": "Measurement and Assessment of Diverse Learners",
+      "domainId": "permeating-practices",
+      "skillId": "measurement-assessment-special-populations",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5403-ch-03",
+      "title": "Consultation and Collaborative Problem Solving",
+      "domainId": "permeating-practices",
+      "skillId": "consultation-collaboration",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5403-ch-04",
+      "title": "Academic Interventions and Instructional Supports",
+      "domainId": "student-level-services",
+      "skillId": "academic-instructional-interventions",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5403-ch-05",
+      "title": "Mental and Behavioral Health Services",
+      "domainId": "student-level-services",
+      "skillId": "mental-behavioral-health",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5403-ch-06",
+      "title": "Behavior Analysis, Counseling, and Student Crisis Response",
+      "domainId": "student-level-services",
+      "skillId": "behavior-counseling-crisis",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5403-ch-07",
+      "title": "Schoolwide Learning, MTSS, and Systems Change",
+      "domainId": "systems-level-services",
+      "skillId": "schoolwide-learning-mtss",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5403-ch-08",
+      "title": "Safe and Supportive Schools and Crisis Systems",
+      "domainId": "systems-level-services",
+      "skillId": "safe-supportive-schools",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5403-ch-09",
+      "title": "Family, School, and Community Collaboration",
+      "domainId": "systems-level-services",
+      "skillId": "family-school-community",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5403-ch-10",
+      "title": "Equitable and Culturally Responsive Practice",
+      "domainId": "foundations",
+      "skillId": "equitable-diverse-practice",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5403-ch-11",
+      "title": "Research, Evidence-Based Practice, and Program Evaluation",
+      "domainId": "foundations",
+      "skillId": "research-program-evaluation",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5403-ch-12",
+      "title": "Legal, Ethical, and Professional Practice",
+      "domainId": "foundations",
+      "skillId": "legal-ethical-professional",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 7,
+      "status": "source-reviewed-editorial-pass"
+    }
+  ]
+}

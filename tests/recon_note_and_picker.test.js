@@ -11,7 +11,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const gen = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const gen = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8')
+  + '\n' + readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
 const host = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 
 describe('AI-reconstructed table note no longer baked into the exported document', () => {

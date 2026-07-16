@@ -110,6 +110,11 @@ const CONTRACT = [
     readers: [{ src: 'dp', re: /kind: 'pageEdge'/ }],
   },
   {
+    field: 'columnReorders → ocrColumnOrder note (column-aware OCR ground-truth rebuilds)',
+    producer: /columnReorders: _columnReorders/,
+    readers: [{ src: 'dp', re: /kind: 'ocrColumnOrder'/ }],
+  },
+  {
     field: 'veraPdfAutoSkipped (M25: silent auto-validation skip)',
     producerSrc: 'view',
     producer: /setVeraPdfAutoSkipped\('transport-blocked'\)/,

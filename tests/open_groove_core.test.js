@@ -810,6 +810,26 @@ describe('Open Groove project core', () => {
     expect(OG.ogBuildProjectStorageReport(project)).toMatchObject({ assetCount: 32, factoryCount: 32, proceduralCount: 32 });
     expect(OG.ogBuildLicenseReport(project)).toMatchObject({ assetCount: 32, exportSafe: true });
 
+    const shaped = OG.ogSetPadProceduralVoice(project, drums.id, 'pad_1', { pitch: 9, brightness: 0.1, noise: 1.5 });
+    expect(shaped).toMatchObject({ character: 'electronic', kitId: 'openGrooveElectronicKit', pitch: 2, brightness: 0.35, noise: 1.5 });
+    const shapedPad = drums.pads.find(pad => pad.id === 'pad_1');
+    const shapedAsset = OG.ogFindAsset(project, shapedPad.assetId);
+    expect(shapedAsset.proceduralVoice).toMatchObject({ pitch: 2, brightness: 0.35, noise: 1.5 });
+    OG.ogSetDrumStep(project, project.patterns[0].id, drums.id, 'pad_1', 0, 16, { on: true });
+    expect(OS.ogBuildPlaybackPlan(project, { patternId: project.patterns[0].id })[0]).toMatchObject({ padEngine: 'kick', drumVoice: { pitch: 2, brightness: 0.35, noise: 1.5 } });
+
+    const resetVoice = OG.ogResetPadProceduralVoice(project, drums.id, 'pad_1');
+    expect(resetVoice).toMatchObject({ character: 'electronic', kitId: 'openGrooveElectronicKit', pitch: 1.08, brightness: 1.22, noise: 0.86 });
+    expect(shapedPad.proceduralVoiceDefault).toMatchObject({ character: 'electronic', pitch: 1.08, brightness: 1.22 });
+    expect(shapedAsset.proceduralVoiceDefault).toMatchObject({ character: 'electronic', pitch: 1.08, brightness: 1.22 });
+    const randomizedA = OG.ogRandomizePadProceduralVoice(project, drums.id, 'pad_1', { seed: 'voice-1', amount: 0.42 });
+    expect(randomizedA.pitch).toBeGreaterThanOrEqual(0.5);
+    expect(randomizedA.pitch).toBeLessThanOrEqual(2);
+    OG.ogResetPadProceduralVoice(project, drums.id, 'pad_1');
+    const randomizedB = OG.ogRandomizePadProceduralVoice(project, drums.id, 'pad_1', { seed: 'voice-1', amount: 0.42 });
+    expect(randomizedB).toEqual(randomizedA);
+    expect(OG.ogResetPadProceduralVoice(project, drums.id, 'pad_1')).toMatchObject({ pitch: 1.08, brightness: 1.22, noise: 0.86 });
+
     const classroomProject = OG.ogCreateProject();
     const classroom = OG.ogInstallFactorySampleKit(classroomProject, classroomProject.tracks[0].id, 'openGrooveClassroomPercussionKit');
     expect(classroom).toMatchObject({ assignedCount: 16, createdCount: 16 });

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T15:00:20.268Z",
+  "packId": "praxis-special-education-severe-profound-5547",
+  "standard": {
+    "label": "AlloFlow 5547 source, blueprint, feedback, learning, safety, and linkage QA v1",
+    "limitation": "Not ETS or CEC approval; independent severe-disabilities educator, AAC, assistive-technology, health, family, accessibility, legal, cultural-linguistic, and psychometric validation remain pending."
+  },
+  "summary": {
+    "totalItems": 200,
+    "passedItems": 200,
+    "findings": [],
+    "status": "pass"
+  }
+}

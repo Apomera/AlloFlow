@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-183bbd9b-untitled",
+  "title": "چاند اور ٹوپی",
+  "description": "A Urdu picture book, readable free at Bloom Library.",
+  "language": "Urdu",
+  "langCode": "ur",
+  "isRtl": true,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Institute of Applied Linguistics Trust, Pakistan"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Institute of Applied Linguistics Trust, Pakistan",
+  "license": "CC BY-NC-ND",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/qpHlIkRNuc"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/zubair%40ialtrust.org%2f183bbd9b-bbf2-47fd-9d0a-17be7f3b43cb%2f%da%86%d8%a7%d9%86%d8%af+%d8%a7%d9%88%d8%b1+%d9%b9%d9%88%d9%be%db%8c%2fThe Moon and The Cap_Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"چاند اور ٹوپی\" (Urdu)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-ND) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

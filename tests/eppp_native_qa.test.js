@@ -20,17 +20,23 @@ beforeAll(() => {
 
 describe('EPPP native content QA gate', () => {
   it('requires every current native item to pass every named QA check', () => {
-    expect(report.summary).toMatchObject({ totalItems: 500, passedItems: 500, reviewRequiredItems: 0, status: 'pass' });
-    expect(report.items).toHaveLength(500);
+    expect(report.summary).toMatchObject({ totalItems: 1500, passedItems: 1500, reviewRequiredItems: 0, status: 'pass' });
+    expect(report.items).toHaveLength(1500);
     expect(report.items.every((item) => item.qaStatus === 'pass')).toBe(true);
     expect(report.items.every((item) => item.checks.every((check) => check.status === 'pass'))).toBe(true);
     expect(report.standard.checks).toEqual([
       'authoritative-source',
       'one-best-answer',
       'distractor-quality',
+      'natural-language-quality',
+      'text-encoding',
       'clue-resistance',
       'rationale-quality',
+      'template-completeness',
+      'option-specific-feedback',
+      'domain-and-accessibility-review',
       'provenance',
+      'qa-declaration',
     ]);
   });
 
@@ -38,10 +44,18 @@ describe('EPPP native content QA gate', () => {
     expect(report.standard.meaning).toContain('cited answer support');
     expect(report.standard.limitation).toContain('not psychometric calibration');
     expect(report.standard.limitation).toContain('independent licensed-psychologist validation');
-    expect(eppp.contentReview).toContain('500/500 native items passed content QA');
-    expect(eppp.contentReview).toContain('expert validation pending');
+    expect(eppp.contentReview).toContain('1,500 source-reviewed practice items');
+    expect(eppp.contentReview).toContain('independent expert review pending');
     expect(eppp.items.every((item) => item.qaStatus === 'qa-passed')).toBe(true);
     expect(eppp.items.every((item) => /^\d{4}-\d{2}-\d{2}$/.test(item.qaReviewedAt))).toBe(true);
+  });
+
+  it('enforces the complete v2 template across every added question', () => {
+    const added = eppp.items.filter((item) => item.expansionBatch === 'native-501-1000');
+    expect(added).toHaveLength(500);
+    expect(added.every((item) => item.templateVersion === 2 && item.choiceRationales.length === 4)).toBe(true);
+    expect(added.every((item) => item.sourceDetails.length === item.references.length && item.sourceDetails.every((source) => source.title && source.credibility))).toBe(true);
+    expect(added.every((item) => item.domainAlignmentStatus === 'editorial-pass' && item.biasAccessibilityStatus === 'editorial-pass')).toBe(true);
   });
 
   it('keeps the QA artifact reproducible and deployment-identical', () => {

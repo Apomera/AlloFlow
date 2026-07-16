@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-85c88c14-untitled",
+  "title": "शीतलहर",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/drhcBlWQGA"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f85c88c14-b2b7-4430-a5a2-fc1a6a47adde%2f%e0%a4%b6%e0%a5%80%e0%a4%a4%e0%a4%b2%e0%a4%b9%e0%a4%b0%2fAOR_OCL003.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f85c88c14-b2b7-4430-a5a2-fc1a6a47adde%2f%e0%a4%b6%e0%a5%80%e0%a4%a4%e0%a4%b2%e0%a4%b9%e0%a4%b0%2fAOR_9EEE.png",
+      "text": "दशैं र तिहार चाड पनि मानियो। छठको पूजा पनि सकियो। अब्दुलको गाउँमा रमजान पनि मनाइयो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f85c88c14-b2b7-4430-a5a2-fc1a6a47adde%2f%e0%a4%b6%e0%a5%80%e0%a4%a4%e0%a4%b2%e0%a4%b9%e0%a4%b0%2fimage.png",
+      "text": "बिस्तारै जाडो बढ्न थाल्यो। बिहान बाक्लो हुस्सु लाग्न सुरू भयो। जाडो झन् झन् बढ्न थाल्यो। चिसोले बाहिर निस्कन पनि गाह्रो थियो।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f85c88c14-b2b7-4430-a5a2-fc1a6a47adde%2f%e0%a4%b6%e0%a5%80%e0%a4%a4%e0%a4%b2%e0%a4%b9%e0%a4%b0%2fAOR_fire-03.png",
+      "text": "अब्दुलको गाउँमा साना साना घर थिए। त्यहाँ दाउराको दुःख थियो। दाउरा नभएकोले उनीहरू पराल बाल्थे। गाउँलेहरू आँगनमा जम्मा हुन्थे। वरिपरि झुम्मिएर घुर ताप्थे।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f85c88c14-b2b7-4430-a5a2-fc1a6a47adde%2f%e0%a4%b6%e0%a5%80%e0%a4%a4%e0%a4%b2%e0%a4%b9%e0%a4%b0%2fAOR_HB-LTE01.png",
+      "text": "अब्दुललाई चिसो मन पर्दैन थियो। उनी ओछ्यानमै बसिरहन्थे। आमाले पनि उनलाई चिसोमा नजाऊ भन्नुहुन्थो। इमाजुल र अकबर बाहिर खेलिरहेका थिए।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f85c88c14-b2b7-4430-a5a2-fc1a6a47adde%2f%e0%a4%b6%e0%a5%80%e0%a4%a4%e0%a4%b2%e0%a4%b9%e0%a4%b0%2fAOR_CMB0315.png",
+      "text": "इमाजुलले अब्दुललाई खेल्न बोलाए। तर अब्दुल आएनन्। \"तिमीहरू पनि बाहिर नखेल। चिसोमा बस्यो भने बिरामी परिन्छ। भित्र आएर आगो तापेर बस।\" अब्दुलले भने।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f85c88c14-b2b7-4430-a5a2-fc1a6a47adde%2f%e0%a4%b6%e0%a5%80%e0%a4%a4%e0%a4%b2%e0%a4%b9%e0%a4%b0%2fimage1.png",
+      "text": "\"तिमीलाई कसले भनेको नि ?\" इमाजुलले सोधे। \"आमाले भन्नु भएको।\" अब्दुलले भने। \"जाडोमा बाक्लो लुगा लगाउनु पर्छ। तातो खाने कुरा खानु पर्छ।\" उनले यो पनि भने।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f85c88c14-b2b7-4430-a5a2-fc1a6a47adde%2f%e0%a4%b6%e0%a5%80%e0%a4%a4%e0%a4%b2%e0%a4%b9%e0%a4%b0%2fimage2.png",
+      "text": "\"अनि मात्र चिसोबाट बच्न सकिन्छ।\" \"ओहो! तिमीलाई त धेरै कुरा थाहा रहेछ।\" अकबरले भने। ल एउटा कुरा भन त? यो तराई हो। तरपनि किन यहाँ धेरै चिसो छ?\" सलिमाले सोधिन्।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f85c88c14-b2b7-4430-a5a2-fc1a6a47adde%2f%e0%a4%b6%e0%a5%80%e0%a4%a4%e0%a4%b2%e0%a4%b9%e0%a4%b0%2fAOR_MOUNT.png",
+      "text": "“हो त नि। हिमालमा पो चिसो हुन्छ। सरले यहि पढाउनु भएको होइन?” अकबरले भने। अब्दुलको बाबा हाँस्नु भयो। उहाँ उनीहरूको कुरा सुन्दै हुनुहुन्थ्यो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f85c88c14-b2b7-4430-a5a2-fc1a6a47adde%2f%e0%a4%b6%e0%a5%80%e0%a4%a4%e0%a4%b2%e0%a4%b9%e0%a4%b0%2fAOR_OCL0031.png",
+      "text": "यो त जाडो महिना हो । जाडो महिनामा तराईमा धेरै जाडो हुन्छ। घाम नलागेको धेरै दिन भैसक्यो। अहिले यहाँ शीतलहर चलिरहेको छ। शीतलहरले मान्छे कठाङ्ग्रिएर मर्न सक्छ। अब्दुलका बाबाले भन्नुभयो।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f85c88c14-b2b7-4430-a5a2-fc1a6a47adde%2f%e0%a4%b6%e0%a5%80%e0%a4%a4%e0%a4%b2%e0%a4%b9%e0%a4%b0%2fAOR_EAG006712.png",
+      "text": "सबैले कुरा बुझे। सोमबारबाट त घाम पनि लाग्यो। रजिया आँगनमा नाच्न थालिन्। ए अब्दुल! ए अकबर! बाहिर आऊ। अब्दुल, इमाजुल र अकबर बाहिर आए। घाम लागेको देखेर सबै खुसी भए।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 241
+  }
+}

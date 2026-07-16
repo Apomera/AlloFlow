@@ -64,6 +64,29 @@ const chapters = windowObject.TextbookChapters || [];
 const diagramTemplates = windowObject._epppDiagrams || {};
 const overridesPath = path.join(root, 'test_prep', 'eppp_learning_review_overrides.json');
 const reviewOverrides = fs.existsSync(overridesPath) ? JSON.parse(fs.readFileSync(overridesPath, 'utf8')) : { memoryAids: {} };
+const flashcardWavePattern = /^eppp_flashcard_review_wave_\d+\.json$/i;
+const memoryAidWavePattern = /^eppp_memory_aid_review_wave_\d+\.json$/i;
+const flashcardWaveRecords = new Map();
+for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entry) => flashcardWavePattern.test(entry)).sort()) {
+  const wave = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', filename), 'utf8'));
+  for (const item of (Array.isArray(wave.items) ? wave.items : [])) {
+    const id = String(item && item.id || '');
+    if (!id) throw new Error(`Flashcard review wave ${filename} has an item without an id.`);
+    if (flashcardWaveRecords.has(id)) throw new Error(`Flashcard ${id} appears in more than one review wave.`);
+    flashcardWaveRecords.set(id, { ...item, reviewArtifact: filename });
+  }
+}
+const memoryAidWaveRecords = new Map();
+for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entry) => memoryAidWavePattern.test(entry)).sort()) {
+  const wave = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', filename), 'utf8'));
+  for (const item of (Array.isArray(wave.items) ? wave.items : [])) {
+    const legacyId = String(item && item.legacyId || '');
+    const title = String(item && item.title || '');
+    if (!legacyId || !title) throw new Error(`Memory-aid review wave ${filename} has an item without a legacyId or title.`);
+    if (memoryAidWaveRecords.has(legacyId)) throw new Error(`Memory aid ${legacyId} appears in more than one review wave.`);
+    memoryAidWaveRecords.set(legacyId, { ...item, reviewArtifact: filename });
+  }
+}
 const domainByNumber = new Map(domains.map((domain) => [Number(domain.id), String(domain.name)]));
 const reviewChecks = ['source-support', 'accuracy-and-currency', 'instructional-quality', 'accessibility', 'bias-and-context', 'expert-review'];
 
@@ -103,11 +126,49 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
 const flashcards = [];
 for (const domain of domains) {
   for (const card of (Array.isArray(domain.flashcards) ? domain.flashcards : [])) {
-    const front = cleanText(card && card.front);
-    const back = cleanText(card && card.back);
-    const override = reviewOverrides.flashcards && reviewOverrides.flashcards[front] || {};
+    const legacyFront = cleanText(card && card.front);
+    const legacyBack = cleanText(card && card.back);
+    const id = stableId('flashcard', [domain.id, legacyFront, legacyBack]);
+    const waveOverride = flashcardWaveRecords.get(id) || {};
+    const manualOverride = reviewOverrides.flashcards && reviewOverrides.flashcards[legacyFront] || {};
+    const override = { ...waveOverride, ...manualOverride };
+    const front = cleanText(waveOverride.front || legacyFront);
+    const back = cleanText(waveOverride.back || legacyBack);
+    const checks = waveOverride.id ? {
+        atomicAnswer: override.checks && override.checks.atomicAnswer || (override.reviewStatus ? 'editorial-pass' : 'pending'),
+        sourceSupport: override.checks && override.checks.sourceSupport || (override.reviewStatus === 'source-reviewed-editorial-pass' ? 'pass' : 'pending'),
+        duplication: override.checks && override.checks.duplication || (override.reviewStatus ? 'pass' : 'pending'),
+        accessibility: override.checks && override.checks.accessibility || (front && back ? 'structure-pass' : 'review-required'),
+        accuracyAndCurrency: override.checks && override.checks.accuracyAndCurrency || 'pending',
+        biasAndContext: override.checks && override.checks.biasAndContext || 'pending',
+      } : {
+        atomicAnswer: override.reviewStatus ? 'editorial-pass' : 'pending',
+        sourceSupport: override.reviewStatus === 'source-reviewed-editorial-pass' ? 'pass' : 'pending',
+        duplication: override.reviewStatus ? 'pass' : 'pending',
+        accessibility: front && back ? 'structure-pass' : 'review-required',
+      };
+    const waveMetadata = waveOverride.id ? {
+      legacyFront,
+      legacyBack,
+      revisionApplied: Boolean(waveOverride.revisionApplied),
+      revisionReason: cleanText(waveOverride.revisionReason),
+      reviewMode: cleanText(override.reviewMode),
+      reviewWave: cleanText(override.reviewWave),
+      reviewDate: cleanText(override.reviewDate),
+      reviewArtifact: cleanText(waveOverride.reviewArtifact),
+      sourceDetails: Array.isArray(override.sourceDetails) ? override.sourceDetails : [],
+      contentDisposition: cleanText(override.contentDisposition) || 'retain-after-rewrite',
+      independentExpertStatus: cleanText(override.independentExpertStatus) || 'not-started',
+      productionStatus: cleanText(override.productionStatus) || 'not-production-validated',
+      learnerVisible: override.learnerVisible === true,
+    } : override.reviewStatus === 'source-reviewed-editorial-pass' ? {
+      contentDisposition: cleanText(override.contentDisposition) || 'retain-after-rewrite',
+      independentExpertStatus: cleanText(override.independentExpertStatus) || 'not-started',
+      productionStatus: cleanText(override.productionStatus) || 'not-production-validated',
+      learnerVisible: override.learnerVisible === true,
+    } : {};
     flashcards.push({
-      id: stableId('flashcard', [domain.id, front, back]),
+      id,
       domainId: Number(domain.id),
       domain: cleanText(domain.name),
       front,
@@ -115,24 +176,35 @@ for (const domain of domains) {
       reviewStatus: override.reviewStatus || 'review-required',
       references: Array.isArray(override.references) ? override.references : [],
       reviewNote: String(override.reviewNote || ''),
-      checks: { atomicAnswer: override.reviewStatus ? 'editorial-pass' : 'pending', sourceSupport: override.reviewStatus === 'source-reviewed-editorial-pass' ? 'pass' : 'pending', duplication: override.reviewStatus ? 'pass' : 'pending', accessibility: front && back ? 'structure-pass' : 'review-required' },
+      checks,
+      ...waveMetadata,
     });
   }
 }
 
 const aidRecords = memoryAids.map((aid) => {
-  const override = reviewOverrides.memoryAids && reviewOverrides.memoryAids[String(aid.title || '')] || {};
+  const legacyId = stableId('memory-aid', [aid.domainId, aid.title, aid.type, aid.content]);
+  const waveOverride = memoryAidWaveRecords.get(legacyId) || {};
+  const manualOverride = reviewOverrides.memoryAids && reviewOverrides.memoryAids[String(aid.title || '')] || {};
+  const override = { ...waveOverride, ...manualOverride };
   return ({
-  id: stableId('memory-aid', [aid.domainId, aid.title, aid.type, aid.content]),
+  id: legacyId,
   domainId: Number(aid.domainId),
   domain: domainByNumber.get(Number(aid.domainId)) || 'Unassigned',
   title: cleanText(aid.title) || 'Untitled memory aid',
   type: cleanText(aid.type) || 'unspecified',
-  content: cleanText(aid.content),
+  content: cleanText(override.content || aid.content),
   tags: (Array.isArray(aid.tags) ? aid.tags : []).map(cleanText).filter(Boolean),
   reviewStatus: override.reviewStatus || 'review-required',
   references: Array.isArray(override.references) ? override.references : [],
+  sourceDetails: Array.isArray(override.sourceDetails) ? override.sourceDetails.map((source) => ({
+    title: cleanText(source && source.title),
+    organization: cleanText(source && source.organization),
+    url: cleanText(source && source.url),
+    whyReputable: cleanText(source && source.whyReputable),
+  })).filter((source) => source.title && source.url && source.whyReputable) : [],
   reviewNote: String(override.reviewNote || ''),
+  reviewArtifact: cleanText(waveOverride.reviewArtifact),
   checks: {
     accuracyAndCurrency: override.reviewStatus ? 'editorial-pass' : 'pending',
     oversimplification: override.reviewStatus ? 'editorial-pass' : 'pending',
@@ -178,8 +250,12 @@ const catalog = {
     sourceReviewedChapters: chapterRecords.filter((chapter) => chapter.reviewStatus === 'source-reviewed-editorial-pass').length,
     qaPassedFlashcards: flashcards.filter((card) => card.reviewStatus === 'qa-passed').length,
     sourceReviewedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass').length,
+    retainedReviewedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').length,
+    retiredRedundantFlashcards: flashcards.filter((card) => card.contentDisposition === 'retire-redundant').length,
     qaPassedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'qa-passed').length,
     sourceReviewedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').length,
+    releasedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').length,
+    releasedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').length,
     editorialReviewedSourcePendingMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'editorial-reviewed-source-pending').length,
   },
   chapters: chapterRecords,
@@ -198,7 +274,8 @@ const report = {
   findings: [
     'Legacy content is preserved but is not automatically approved for native publication.',
     'Shared renderer accessibility controls are implemented; each diagram still needs concept and label review.',
-    'Claim-level content, flashcard, and memory-aid source review remains pending.',
+    `${catalog.summary.sourceReviewedFlashcards} of ${catalog.summary.flashcards} flashcards have source-review records; ${catalog.summary.flashcards - catalog.summary.sourceReviewedFlashcards} remain in first-pass review, and independent qualified expert validation is still pending.`,
+    `${catalog.summary.retiredRedundantFlashcards} source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets.`,
   ],
 };
 

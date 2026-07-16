@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-9d347aad-untitled",
+  "title": "مکتب ما",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/mH5qw2CHsw"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f9d347aad-835d-4e03-86cb-3ac1c337d2d8%2f%d9%85%da%a9%d8%aa%d8%a8+%d9%85%d8%a7%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f9d347aad-835d-4e03-86cb-3ac1c337d2d8%2f%d9%85%da%a9%d8%aa%d8%a8+%d9%85%d8%a7%2f3.jpg",
+      "text": "مریم و طاهر باهم قصه می گفتند.\nآن ها از درختان و گل های مکتب شان\nیاد می کردند."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "مریم گفت:\nطاهرجان!\nمن مکتب را بسیار دوست دارم.\nمعلم و هم صنفانم را نیز دوست دارم."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f9d347aad-835d-4e03-86cb-3ac1c337d2d8%2f%d9%85%da%a9%d8%aa%d8%a8+%d9%85%d8%a7%2f8.jpg",
+      "text": "دلم برای همۀ آن ها تنگ شده است.\nطاهر گفت:\nمریم جان!\nمن هم دلتنگ شده ام.\nولی به جای تشویش کردن، درس هایم را می خوانم."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "کتاب خواندن آدم را نمی گذارد که تشویش کند.\nتو هم اگر مانند من کتاب بخوانی، هیچ\nوقت تشویش نمی کنی."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f9d347aad-835d-4e03-86cb-3ac1c337d2d8%2f%d9%85%da%a9%d8%aa%d8%a8+%d9%85%d8%a7%2f10.jpg",
+      "text": "مریم کتاب هایش را آورد و گفت:\nبیا طاهرجان، درس بخوانیم که دیگر تشویش نکنیم."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "یک ساعت درس می خوانم.\nیک ساعت می نویسم.\nیک ساعت رسامی می کنم.\nبعد بازی می کنم."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f9d347aad-835d-4e03-86cb-3ac1c337d2d8%2f%d9%85%da%a9%d8%aa%d8%a8+%d9%85%d8%a7%2f4.jpg",
+      "text": "آفرین خواهر قندم!\nبسیار نظر خوب داری.\nمادرشان گفت:\nپس بیایید که باهم مکتب خود را پاک کاری کنیم."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "بعد از این کار هر دو مصروف درس خواندن شدند.\nمریم از خواندن کتاب، نوشتن و رسامی لذت می برد.\nاو بسیار خوشحال بود و دیگر تشویش نمی کرد."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 165
+  }
+}

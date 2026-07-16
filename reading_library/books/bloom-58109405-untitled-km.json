@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-58109405-untitled-km",
+  "title": "១២ នអើន នាវតឹងនតូត",
+  "description": "A story about mimicking others (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/cMhA4FidC0"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f58109405-70bd-4f8f-80d0-d72780718b12%2f%e1%9f%a1%e1%9f%a2+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%8f%e1%9e%b9%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f58109405-70bd-4f8f-80d0-d72780718b12%2f%e1%9f%a1%e1%9f%a2+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%8f%e1%9e%b9%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%2fimage1.png",
+      "text": "គេស្ពាយកូន\nយើងស្ពាយត្រសក់"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f58109405-70bd-4f8f-80d0-d72780718b12%2f%e1%9f%a1%e1%9f%a2+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%8f%e1%9e%b9%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%2fimage4.png",
+      "text": "គេដើរលើស្ពាន\nយើងដើរលើឈើដួល"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f58109405-70bd-4f8f-80d0-d72780718b12%2f%e1%9f%a1%e1%9f%a2+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%8f%e1%9e%b9%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%2fimage6.png",
+      "text": "គេអោយបាយជ្រូក\nយើងអោយបាយអង្កត់ភ្លើង"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f58109405-70bd-4f8f-80d0-d72780718b12%2f%e1%9f%a1%e1%9f%a2+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%8f%e1%9e%b9%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%2fimage8.png",
+      "text": "គេទៅយកឃ្មុំ\nយើងទៅយកប្រួត"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f58109405-70bd-4f8f-80d0-d72780718b12%2f%e1%9f%a1%e1%9f%a2+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%8f%e1%9e%b9%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%2fimage10.png",
+      "text": "គេសូនអំបោះ\nយើងបោចសំរង"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f58109405-70bd-4f8f-80d0-d72780718b12%2f%e1%9f%a1%e1%9f%a2+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%8f%e1%9e%b9%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%2fimage12.png",
+      "text": "គេពុះឧស\nយើងពុះដើមចំបក់"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f58109405-70bd-4f8f-80d0-d72780718b12%2f%e1%9f%a1%e1%9f%a2+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%8f%e1%9e%b9%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%2fimage14.png",
+      "text": "គេបេះកប្បាស\nយើងបេះស្លឹកម្អម"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f58109405-70bd-4f8f-80d0-d72780718b12%2f%e1%9f%a1%e1%9f%a2+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%8f%e1%9e%b9%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%2fimage16.png",
+      "text": "គេមូរសំឡីកប្បាស\nយើងមូរផ្ការការ"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f58109405-70bd-4f8f-80d0-d72780718b12%2f%e1%9f%a1%e1%9f%a2+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%8f%e1%9e%b9%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%2fimage18.png",
+      "text": "គេឆ្លុះកង្កែប\nយើងឆ្លុះត្រពាំង"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f58109405-70bd-4f8f-80d0-d72780718b12%2f%e1%9f%a1%e1%9f%a2+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%8f%e1%9e%b9%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%2fimage20.png",
+      "text": "ពួកគេពិភាក្សាអំពីបញ្ហា\nខ្ញុំអង្គុយព្រួយពីការអត់ឃ្លាន៕"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 20
+  }
+}

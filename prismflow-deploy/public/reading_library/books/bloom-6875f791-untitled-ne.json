@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-6875f791-untitled-ne",
+  "title": "घर पालुवा र जङ्गली जनावरहरू",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/b3QwLf2iB5"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f6875f791-10da-486e-8414-770b16f5f9a9%2f%e0%a4%98%e0%a4%b0+%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%9c%e0%a4%99%e0%a5%8d%e0%a4%97%e0%a4%b2%e0%a5%80+%e0%a4%9c%e0%a4%a8%e0%a4%be%e0%a4%b5%e0%a4%b0%e0%a4%b9%e0%a4%b0%e0%a5%82%2fAOR_CMB0739.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f6875f791-10da-486e-8414-770b16f5f9a9%2f%e0%a4%98%e0%a4%b0+%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%9c%e0%a4%99%e0%a5%8d%e0%a4%97%e0%a4%b2%e0%a5%80+%e0%a4%9c%e0%a4%a8%e0%a4%be%e0%a4%b5%e0%a4%b0%e0%a4%b9%e0%a4%b0%e0%a5%82%2fanimals.png",
+      "text": "शरदको घरमा गाई, गोरू, भैंसी छन्। बाख्रा, बंगुर, बिरालो, कुकुर पनि छन्। उनी सबैको स्याहार गर्छन्।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f6875f791-10da-486e-8414-770b16f5f9a9%2f%e0%a4%98%e0%a4%b0+%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%9c%e0%a4%99%e0%a5%8d%e0%a4%97%e0%a4%b2%e0%a5%80+%e0%a4%9c%e0%a4%a8%e0%a4%be%e0%a4%b5%e0%a4%b0%e0%a4%b9%e0%a4%b0%e0%a5%82%2fAOR_acf042m.png",
+      "text": "गाई, गोरू, भैंसीलाई गोठमा राख्छन्। बाख्रालाई खोरमा राख्छन्। यिनीहरू घाँस खान्छन्।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f6875f791-10da-486e-8414-770b16f5f9a9%2f%e0%a4%98%e0%a4%b0+%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%9c%e0%a4%99%e0%a5%8d%e0%a4%97%e0%a4%b2%e0%a5%80+%e0%a4%9c%e0%a4%a8%e0%a4%be%e0%a4%b5%e0%a4%b0%e0%a4%b9%e0%a4%b0%e0%a5%82%2fAOR_Cattle.png",
+      "text": "शरदका आमा बुबा बिहान सबेरै उठ्नुहुन्छ। घाँस सोत्तर काट्न जङ्गल जानुहुन्छ। दिउसो नजिकैको चउरमा चराउन लानुहुन्छ।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f6875f791-10da-486e-8414-770b16f5f9a9%2f%e0%a4%98%e0%a4%b0+%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%9c%e0%a4%99%e0%a5%8d%e0%a4%97%e0%a4%b2%e0%a5%80+%e0%a4%9c%e0%a4%a8%e0%a4%be%e0%a4%b5%e0%a4%b0%e0%a4%b9%e0%a4%b0%e0%a5%82%2fAOR_Pigpen2.png",
+      "text": "बंगुरलाई छुट्टै खोरमा थुनेर पाल्छन्। यसले पिठो, ढुटो र घाँस खान्छ। साथै मासु तथा हड्डी पनि खान्छन्।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f6875f791-10da-486e-8414-770b16f5f9a9%2f%e0%a4%98%e0%a4%b0+%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%9c%e0%a4%99%e0%a5%8d%e0%a4%97%e0%a4%b2%e0%a5%80+%e0%a4%9c%e0%a4%a8%e0%a4%be%e0%a4%b5%e0%a4%b0%e0%a4%b9%e0%a4%b0%e0%a5%82%2fAOR_aa022m.png",
+      "text": "शरदले कुकुर र बिरालोलाई खानेकुरा दिन्छन्। यिनीहरू भात, दुध र मासु खान्छन्। मासु खान पाएर मोटाएका छन्।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f6875f791-10da-486e-8414-770b16f5f9a9%2f%e0%a4%98%e0%a4%b0+%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%9c%e0%a4%99%e0%a5%8d%e0%a4%97%e0%a4%b2%e0%a5%80+%e0%a4%9c%e0%a4%a8%e0%a4%be%e0%a4%b5%e0%a4%b0%e0%a4%b9%e0%a4%b0%e0%a5%82%2fAOR_AN31.png",
+      "text": "यिनीहरू जङ्गलमा बस्‍न सक्दैनन्। मानिसको संरक्षणमा मात्रै बस्छन्। त्यसकारण यिनीहरूलाई घर पालुवा जनावर भनिन्छ।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f6875f791-10da-486e-8414-770b16f5f9a9%2f%e0%a4%98%e0%a4%b0+%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%9c%e0%a4%99%e0%a5%8d%e0%a4%97%e0%a4%b2%e0%a5%80+%e0%a4%9c%e0%a4%a8%e0%a4%be%e0%a4%b5%e0%a4%b0%e0%a4%b9%e0%a4%b0%e0%a5%82%2fAOR_CMB0207.png",
+      "text": "शरद आमासँग घाँस काट्न\nजङ्गल गए। उसले जङ्गलमा पनि जनावरहरू देखे। उनले आमालाई सोधे। आमा त्यो\nके हो? त्यसले के खान्छ?"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f6875f791-10da-486e-8414-770b16f5f9a9%2f%e0%a4%98%e0%a4%b0+%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%9c%e0%a4%99%e0%a5%8d%e0%a4%97%e0%a4%b2%e0%a5%80+%e0%a4%9c%e0%a4%a8%e0%a4%be%e0%a4%b5%e0%a4%b0%e0%a4%b9%e0%a4%b0%e0%a5%82%2fAOR_EAG00864.png",
+      "text": "आमाले भन्नु भयो, त्यो स्याल हो । त्यो जङ्गलको नजिकैको झाडीमा बस्छ। त्यसले चरा, कुखुरा मारेर खान्छ।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f6875f791-10da-486e-8414-770b16f5f9a9%2f%e0%a4%98%e0%a4%b0+%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%9c%e0%a4%99%e0%a5%8d%e0%a4%97%e0%a4%b2%e0%a5%80+%e0%a4%9c%e0%a4%a8%e0%a4%be%e0%a4%b5%e0%a4%b0%e0%a4%b9%e0%a4%b0%e0%a5%82%2fAOR_CMB0513.png",
+      "text": "जङ्गलमा बाँदर, मृग, हात्ती पनि पाइन्छ। यिनीहरू घाँस मात्रै खान्छन्। जङ्गलमा चितुवा, बाघ, ब्वाँसो पनि पाइन्छ। यिनीहरू मासु मात्रै खान्छन्।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f6875f791-10da-486e-8414-770b16f5f9a9%2f%e0%a4%98%e0%a4%b0+%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%9c%e0%a4%99%e0%a5%8d%e0%a4%97%e0%a4%b2%e0%a5%80+%e0%a4%9c%e0%a4%a8%e0%a4%be%e0%a4%b5%e0%a4%b0%e0%a4%b9%e0%a4%b0%e0%a5%82%2fAOR_CMB01521.png",
+      "text": "मासु मात्रै खानेलाई मांशाहारी भनिन्छ। घाँस पात मात्रै खानेलाई शाकाहारी भनिन्छ। जङ्गलमा बस्‍ने यी जङ्गली जनावर हुन्।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 166
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-729938ee-untitled",
+  "title": "ນັບໂຕແມວ",
+  "description": "Readers may practice their counting skills by counting cats",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "SIL"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/EfWD2zAohE"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/EfWD2zAohE%2f1752138076027%2f%e0%ba%99%e0%ba%b1%e0%ba%9a%e0%bb%82%e0%ba%95%e0%bb%81%e0%ba%a1%e0%ba%a7%2fPicCover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ນັບໂຕແມວ\" (Lao). Readers may practice their counting skills by counting cats"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 65
+  }
+}

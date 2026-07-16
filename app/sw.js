@@ -4,8 +4,8 @@
 // Other same-origin requests: network-first with cache fallback.
 
 // IMPORTANT: placeholders are replaced by postbuild.js.
-const CACHE_NAME = 'alloflow-student-shell-v1783910274958';
-const PRECACHE_PATHS = ["./index.html","./static/js/main.71996fdd.js","./static/css/main.60a85ea0.css"];
+const CACHE_NAME = 'alloflow-student-shell-v1784165559179';
+const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./static/js/main.4b23cbd5.js","./static/css/main.5efd6c8e.css"];
 const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();
 const SHELL_URL = scopedUrl('./index.html');
 

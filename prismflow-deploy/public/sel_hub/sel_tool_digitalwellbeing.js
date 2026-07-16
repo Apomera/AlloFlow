@@ -17819,8 +17819,8 @@
               display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap'
             } },
               // Ring viz
-              h('div', { 'aria-hidden': 'true', style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
-                h('svg', { width: 100, height: 100, viewBox: '0 0 100 100', style: { transform: 'rotate(-90deg)' } },
+              h('div', { style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
+                h('svg', { width: 100, height: 100, viewBox: '0 0 100 100', 'aria-hidden': 'true', focusable: 'false', style: { transform: 'rotate(-90deg)' } },
                   h('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: _dwC('#e2e8f0'), strokeWidth: 8 }),
                   h('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: result.color, strokeWidth: 8,
                     strokeDasharray: ringCirc, strokeDashoffset: ringCirc * (1 - totalPct),
@@ -19367,8 +19367,8 @@
               border: '2px solid ' + result.color,
               display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap'
             } },
-              h('div', { 'aria-hidden': 'true', style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
-                h('svg', { width: 100, height: 100, viewBox: '0 0 100 100', style: { transform: 'rotate(-90deg)' } },
+              h('div', { style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
+                h('svg', { width: 100, height: 100, viewBox: '0 0 100 100', 'aria-hidden': 'true', focusable: 'false', style: { transform: 'rotate(-90deg)' } },
                   h('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: _dwC('#e2e8f0'), strokeWidth: 8 }),
                   h('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: result.color, strokeWidth: 8,
                     strokeDasharray: aicRingCirc, strokeDashoffset: aicRingCirc * (1 - aicPct),

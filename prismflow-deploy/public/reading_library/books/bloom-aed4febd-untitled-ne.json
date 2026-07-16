@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-aed4febd-untitled-ne",
+  "title": "बाबा",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/kplxvTRDQs"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2faed4febd-7ebe-4409-97d5-2650715ace19%2f%e0%a4%ac%e0%a4%be%e0%a4%ac%e0%a4%be%2fAOR_CMB03801.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2faed4febd-7ebe-4409-97d5-2650715ace19%2f%e0%a4%ac%e0%a4%be%e0%a4%ac%e0%a4%be%2fAOR_group-06.png",
+      "text": "मेरो जस्तो बाबा अरू\nकसैको नि छैन।\nबाबा आमा भन्दा ठुलो\nअरू कोही हैन।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2faed4febd-7ebe-4409-97d5-2650715ace19%2f%e0%a4%ac%e0%a4%be%e0%a4%ac%e0%a4%be%2fAOR_Pa039.png",
+      "text": "दुःखमा नि सुखमा नि।\nबाबा आमा चाहिने।\nउहाँहरूबाट मात्र\nधेरै माया पाइने।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2faed4febd-7ebe-4409-97d5-2650715ace19%2f%e0%a4%ac%e0%a4%be%e0%a4%ac%e0%a4%be%2fAOR_CMB03802.png",
+      "text": "कति माया गर्नुहुन्छ बाबा हामीलाई।\nभाग्यमानी भएका छौं\nतिम्रो माया पाई।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2faed4febd-7ebe-4409-97d5-2650715ace19%2f%e0%a4%ac%e0%a4%be%e0%a4%ac%e0%a4%be%2fAOR_pmr038.png",
+      "text": "बाबाले नै पढ्न लेख्न\nसिकाउनु हुन्छ।\nरिसाउनु हुन्न कहिले\nकति ठुलो गुण छ।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2faed4febd-7ebe-4409-97d5-2650715ace19%2f%e0%a4%ac%e0%a4%be%e0%a4%ac%e0%a4%be%2fAOR_CMB0029.png",
+      "text": "बाबा आमा भन्दा ठुलो\nदेवता छैन अर्को।\nकहिले पनि मान्नुहुन्न\nहामीसँग झर्को।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2faed4febd-7ebe-4409-97d5-2650715ace19%2f%e0%a4%ac%e0%a4%be%e0%a4%ac%e0%a4%be%2fAOR_Pict5s.png",
+      "text": "बाबा सधैँ भन्नुहुन्छ\nलेखपढ गर।\nशिक्षित भई बाँच्नु पर्छ\nअरू छैन भर।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2faed4febd-7ebe-4409-97d5-2650715ace19%2f%e0%a4%ac%e0%a4%be%e0%a4%ac%e0%a4%be%2fAOR_CMB0322.png",
+      "text": "भन्नु हुन्छ बाबा सधैँ\nबन्नु पर्छ ज्ञानी।\nज्ञानी भई अघि बढ\nमेरा बाबु नानी।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2faed4febd-7ebe-4409-97d5-2650715ace19%2f%e0%a4%ac%e0%a4%be%e0%a4%ac%e0%a4%be%2fAOR_CMB0448.png",
+      "text": "बाबाले नै किनिदिने\nकापी किताब पनि।\nगृहकार्य गर्न लगाई\nपापा दिने अनि।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2faed4febd-7ebe-4409-97d5-2650715ace19%2f%e0%a4%ac%e0%a4%be%e0%a4%ac%e0%a4%be%2fAOR_6W-A.png",
+      "text": "दशैंमा नाना अनि\nजुत्ता किनीदिने।\nखुसी पार्न हामीलाई\nखसी पनि लिने।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2faed4febd-7ebe-4409-97d5-2650715ace19%2f%e0%a4%ac%e0%a4%be%e0%a4%ac%e0%a4%be%2fAOR_spmz033m.png",
+      "text": "शनिबार आएपछि\nघुमाउन लाने।\nमिठो मिठो खानेकुरा\nरोजी रोजी खाने।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 121
+  }
+}

@@ -828,9 +828,9 @@
 
                 <!-- Connecting arrow and rule -->
                 <line x1="110" y1="230" x2="540" y2="230" stroke="#a78bfa" stroke-width="2" marker-end="url(#drugArrow)"/>
-                <text x="325" y="245" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="bold" class="diagram-pulse">"A test can be reliable without being valid, but it CANNOT be valid if it isn't reliable."</text>
+                <text x="325" y="245" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="bold" class="diagram-pulse">"Consistency is necessary evidence, but validity depends on the intended score interpretation and use."</text>
             </svg>`,
-            description: '🎯 The classic Target Analogy for Measurement. Reliability = Consistency (grouping of the hits). Validity = Accuracy (hitting the center bullseye). A test must be reliable before it can be valid.'
+            description: '🎯 The classic Target Analogy for Measurement. Reliability/precision concerns consistency across defined replications (grouping of hits). The bullseye is only an analogy: validity concerns evidence for a specified score interpretation and use, not a test property called accuracy.'
         },
 
         // ─── 14. ATKINSON-SHIFFRIN MEMORY MODEL (Cognitive) ───
@@ -1126,12 +1126,12 @@
                 <!-- Content Validity -->
                 <rect x="70" y="185" width="200" height="40" fill="#1e3a8a" stroke="#60a5fa" rx="4"/>
                 <text x="80" y="202" fill="#bfdbfe" font-weight="bold" font-size="11">Content Validity:</text>
-                <text x="80" y="217" fill="#93c5fd" font-size="10">Does it cover the entire domain?</text>
+                <text x="80" y="217" fill="#93c5fd" font-size="10">Does content represent the intended domain?</text>
                 
                 <!-- Face Validity -->
                 <rect x="70" y="235" width="200" height="40" fill="#1e3a8a" stroke="#60a5fa" rx="4"/>
-                <text x="80" y="252" fill="#bfdbfe" font-weight="bold" font-size="11">Face Validity (Not true validity!):</text>
-                <text x="80" y="267" fill="#93c5fd" font-size="10">Does it simply "look" like a good test?</text>
+                <text x="80" y="252" fill="#bfdbfe" font-weight="bold" font-size="11">Face credibility (not validity evidence):</text>
+                <text x="80" y="267" fill="#93c5fd" font-size="10">Does it appear relevant to test takers?</text>
 
                 <!-- Right Branch: Empirical / Criterion Evidence -->
                 <rect x="370" y="150" width="250" height="180" fill="#1e293b" stroke="#22c55e" stroke-width="2" rx="8" class="diagram-box"/>
@@ -1140,19 +1140,19 @@
                 <!-- Concurrent -->
                 <rect x="380" y="185" width="230" height="40" fill="#14532d" stroke="#4ade80" rx="4"/>
                 <text x="390" y="202" fill="#bbf7d0" font-weight="bold" font-size="11">Concurrent Validity:</text>
-                <text x="390" y="217" fill="#86efac" font-size="10">Correlates with gold-standard NOW.</text>
+                <text x="390" y="217" fill="#86efac" font-size="10">Relation to a concurrent criterion.</text>
 
                 <!-- Predictive -->
                 <rect x="380" y="235" width="230" height="40" fill="#14532d" stroke="#4ade80" rx="4"/>
                 <text x="390" y="252" fill="#bbf7d0" font-weight="bold" font-size="11">Predictive Validity:</text>
-                <text x="390" y="267" fill="#86efac" font-size="10">Correlates with future criterion AFTER time.</text>
+                <text x="390" y="267" fill="#86efac" font-size="10">Relation to a criterion measured later.</text>
 
                 <!-- Convergent/Divergent -->
                 <rect x="380" y="285" width="230" height="35" fill="#1e293b" stroke="#f59e0b" stroke-dasharray="2 2" rx="4"/>
-                <text x="390" y="300" fill="#fde68a" font-weight="bold" font-size="10">Convergent: Correlates with similar tests.</text>
-                <text x="390" y="312" fill="#fde68a" font-weight="bold" font-size="10">Discriminant: Doesn't correlate with others.</text>
+                <text x="390" y="300" fill="#fde68a" font-weight="bold" font-size="10">Convergent: Expected relation to similar constructs.</text>
+                <text x="390" y="312" fill="#fde68a" font-weight="bold" font-size="10">Discriminant: Distinct from theoretically different constructs.</text>
             </svg>`,
-            description: '📊 Construct Validity Framework. Construct validity is the "umbrella" term asking if your measure actually captures the theoretical construct. Content validity asks if you sampled all parts of the subject. Criterion validity relies on external data (Concurrent = NOW, Predictive = FUTURE). Convergent/Discriminant validity ensures your construct correlates with similar traits but NOT with unrelated traits.'
+            description: '📊 Construct Validity Framework. Validity is a unified argument for an intended score interpretation and use. Evidence may come from content representation, response processes, internal structure, and theoretically expected relations to concurrent or later criteria and to similar or distinct constructs. Face credibility can affect engagement but is not itself validity evidence.'
         },
 
         // ─── 19. KOHLBERG'S MORAL DEVELOPMENT (Developmental) ───
@@ -1853,7 +1853,7 @@
                     if (!applied.has('freudIceberg')) { sec.interactiveDiagram = window._epppDiagrams.freudIceberg; applied.add('freudIceberg'); }
                 }
                 // Reliability vs Validity
-                if ((heading.includes('reliability') || heading.includes('validity') || heading.includes('psychometrics') || heading.includes('measure') || heading.includes('construct')) && !heading.includes('threats') && !sec.interactiveDiagram) {
+                if ((heading.includes('reliability') || heading.includes('validity') || heading.includes('psychometrics') || heading.includes('measure') || heading.includes('construct')) && !heading.includes('threats') && !heading.includes('validity scales') && !heading.includes('performance validity') && !sec.interactiveDiagram) {
                     if (!applied.has('reliabilityValidity')) { sec.interactiveDiagram = window._epppDiagrams.reliabilityValidity; applied.add('reliabilityValidity'); }
                 }
                 // Memory Model

@@ -14,7 +14,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8')
+  + '\n' + readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
 const start = src.indexOf('function _validateTableGrid(grid) {');
 const end = src.indexOf('var createDocPipeline = function(deps) {', start);
 if (start === -1 || end === -1) throw new Error('extraction markers for the table-grid core missing');

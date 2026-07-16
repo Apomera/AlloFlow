@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e407b9ef-untitled",
+  "title": "مسین",
+  "description": "Thirsty Crow",
+  "language": "Urdu",
+  "langCode": "ur",
+  "isRtl": true,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Gawri Community Development Programme"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Gawri Community Development Programme",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/3Nd6iQMETr"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/gcdpkalam%40gmail.com%2fe407b9ef-6b0a-4823-805d-18b79e886867%2f%d9%85%d8%b3%db%8c%d9%861%2fmasin 3.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gcdpkalam%40gmail.com%2fe407b9ef-6b0a-4823-805d-18b79e886867%2f%d9%85%d8%b3%db%8c%d9%861%2fmasin+01.jpg",
+      "text": "امیر مچھلیاں پکڑنے جا رہا تھا۔"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gcdpkalam%40gmail.com%2fe407b9ef-6b0a-4823-805d-18b79e886867%2f%d9%85%d8%b3%db%8c%d9%861%2fmasin+1.jpg",
+      "text": "اُس کی ماں نے کہا کہ دریا کی طرف مت جاؤ۔"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gcdpkalam%40gmail.com%2fe407b9ef-6b0a-4823-805d-18b79e886867%2f%d9%85%d8%b3%db%8c%d9%861%2fmasin+2.jpg",
+      "text": "لیکن وہ جاکر مچھلیاں پکڑنے لگا۔"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gcdpkalam%40gmail.com%2fe407b9ef-6b0a-4823-805d-18b79e886867%2f%d9%85%d8%b3%db%8c%d9%861%2fmasin+31.jpg",
+      "text": "اچانک اُسکا پیر پھِسلا اور وہ دریا میں ڈوب گیا۔"
+    }
+  ],
+  "stats": {
+    "pages": 4,
+    "words": 33
+  }
+}

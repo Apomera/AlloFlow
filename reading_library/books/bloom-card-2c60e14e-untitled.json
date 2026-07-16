@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-2c60e14e-untitled",
+  "title": "ງົວຂ້ອຍຊື່ ຕາດຳ",
+  "description": "A Lao picture book, readable free at Bloom Library.",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "SIL"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/rMDDMmHiqM"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/rMDDMmHiqM%2f1752232674799%2f%e0%ba%87%e0%ba%bb%e0%ba%a7%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%e0%ba%8a%e0%ba%b7%e0%bb%88+%e0%ba%95%e0%ba%b2%e0%ba%94%e0%ba%b3%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ງົວຂ້ອຍຊື່ ຕາດຳ\" (Lao)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

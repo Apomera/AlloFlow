@@ -59,7 +59,7 @@ let onAuthStateChanged = (auth, cb) => _fbOnAuthStateChanged(auth, cb);
 // assets) and seeds localStorage.alloflow_live_session_config: the command
 // center writes it for the teacher (lanApiBase = the private 127.0.0.1 origin)
 // and the public /join/{code} page writes it for students (lanApiBase = the
-// LAN share origin, plus the validated join PIN). When that config selects a
+// LAN share origin, plus a scoped token minted after join-PIN validation). When that config selects a
 // LAN-backed mode, the wrappers below reroute ONLY classroom session documents
 // (artifacts/{appId}/public/data/sessions/{code}) and their chunked assets
 // (…/session_assets/{id}) from Firestore to the bridge — every other doc
@@ -87,7 +87,7 @@ function _alloLanConfig() {
       // firestoreAllowed !== true keeps explicit cloud opt-ins (byo-firebase,
       // demo cloud) on Firestore even if a stale lanApiBase lingers.
       if ((mode === 'schoolbox-lan' || mode === 'district-server') && base && parsed.firestoreAllowed !== true) {
-        cfg = { base, pin: typeof parsed.lanPin === 'string' ? parsed.lanPin : '' };
+        cfg = { base, token: typeof parsed.lanToken === 'string' ? parsed.lanToken : '' };
       }
     }
   } catch (_) { cfg = null; }
@@ -118,7 +118,7 @@ async function _alloLanFetch(pathname, init) {
   const cfg = _alloLanConfig();
   if (!cfg) throw new Error('LAN session bridge is not configured');
   const headers = Object.assign({}, (init && init.headers) || {});
-  if (cfg.pin) headers['x-allo-lan-pin'] = cfg.pin;
+  if (cfg.token) headers.Authorization = 'Bearer ' + cfg.token;
   if (init && init.body) headers['Content-Type'] = 'application/json';
   return fetch(cfg.base + pathname, Object.assign({}, init, { headers }));
 }
@@ -206,13 +206,13 @@ function _applyLanSessionAdapter() {
       if (errCb) { try { errCb(new Error('LAN session bridge is not configured')); } catch (_) {} }
       return () => {};
     }
-    // EventSource cannot send headers, so the PIN rides as ?pin= (the runtime
-    // accepts both forms; its access logs are expected to redact query args —
+    // EventSource cannot send headers, so the scoped token rides as ?token= (the runtime
+    // and validates its signature/scope; access logs must redact query args —
     // see docs/SCHOOL_SERVER_ARCHITECTURE.md).
-    const pinQs = cfg.pin ? ('?pin=' + encodeURIComponent(cfg.pin)) : '';
+    const tokenQs = cfg.token ? ('?token=' + encodeURIComponent(cfg.token)) : '';
     let closed = false;
     let gotMessage = false;
-    const es = new EventSource(cfg.base + '/api/lan-sessions/' + encodeURIComponent(ref.id) + '/events' + pinQs);
+    const es = new EventSource(cfg.base + '/api/lan-sessions/' + encodeURIComponent(ref.id) + '/events' + tokenQs);
     const handle = (event) => {
       gotMessage = true;
       let payload = null;
@@ -2755,6 +2755,7 @@ let _exportLiveRef = { current: {} };
 let handleExportResearchJSON = () => { console.warn('[handleExportResearchJSON] Fallback'); };
 let handleExportProfiles = () => { console.warn('[handleExportProfiles] Fallback'); };
 let handleExportQTI = async () => { console.warn('[handleExportQTI] Fallback'); };
+let handleExportH5P = async () => { console.warn('[handleExportH5P] Fallback'); };
 let handleExportIMS = async () => { console.warn('[handleExportIMS] Fallback'); };
 let handleExportSlides = () => { console.warn('[handleExportSlides] Fallback'); };
 let handleExportStorybook = async () => { console.warn('[handleExportStorybook] Fallback'); };
@@ -2770,6 +2771,7 @@ function _upgradeExport() {
     handleExportResearchJSON = api.handleExportResearchJSON;
     handleExportProfiles = api.handleExportProfiles;
     handleExportQTI = api.handleExportQTI;
+    handleExportH5P = api.handleExportH5P;
     handleExportIMS = api.handleExportIMS;
     handleExportSlides = api.handleExportSlides;
     handleExportStorybook = api.handleExportStorybook;
@@ -4436,24 +4438,51 @@ const StudentSubmitModal = React.memo((props) => {
 //               keyboard (WCAG 2.1.2 No Keyboard Trap). If omitted, Escape
 //               passes through to the component's own onKeyDown handler.
 const useFocusTrap = (ref, isOpen, onEscape) => {
+  const onEscapeRef = useRef(onEscape);
+  onEscapeRef.current = onEscape;
   useEffect(() => {
     if (!isOpen || !ref.current) return;
+    const root = ref.current;
     const previouslyFocused = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const hadTabIndex = root.hasAttribute('tabindex');
+    if (!hadTabIndex) root.setAttribute('tabindex', '-1');
+    const getFocusableElements = () => Array.from(root.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+    )).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+    });
     const handleKeyDown = (e) => {
+      // Only the topmost dialog owns keyboard focus. This prevents a parent
+      // modal from fighting a nested modal's Tab/Escape handling.
+      if (!isTopTrap()) return;
       if (e.key === 'Escape') {
-        if (typeof onEscape === 'function') {
+        if (typeof onEscapeRef.current === 'function') {
           e.preventDefault();
-          try { onEscape(); } catch (_) {}
+          e.stopPropagation();
+          try { onEscapeRef.current(); } catch (_) {}
         }
         return;
       }
       if (e.key !== 'Tab') return;
-      const focusableElements = ref.current.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusableElements.length === 0) return;
+      const focusableElements = getFocusableElements();
+      if (focusableElements.length === 0) {
+        e.preventDefault();
+        try { root.focus(); } catch (_) {}
+        return;
+      }
       const firstElement = focusableElements[0];
       const lastElement = focusableElements[focusableElements.length - 1];
+      if (!root.contains(document.activeElement)) {
+        e.preventDefault();
+        (e.shiftKey ? lastElement : firstElement).focus();
+        return;
+      }
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {
           e.preventDefault();
@@ -4468,15 +4497,15 @@ const useFocusTrap = (ref, isOpen, onEscape) => {
       }
     };
     document.addEventListener('keydown', handleKeyDown);
-    const focusableElements = ref.current.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    if (focusableElements.length > 0) {
-        focusableElements[0].focus();
-    }
+    const focusableElements = getFocusableElements();
+    try { (focusableElements[0] || root).focus(); } catch (_) {}
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (!hadTabIndex && root.isConnected) root.removeAttribute('tabindex');
+      if (wasTopTrap && previouslyFocused && previouslyFocused !== document.body && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') {
         try { previouslyFocused.focus(); } catch(e) {}
       }
     };
@@ -6009,6 +6038,19 @@ const AlloFlowContent = () => {
     };
   }, []);
   const [inputText, setInputText] = useState('');
+  const [sourceProvenance, setSourceProvenance] = useState(null);
+  const recordSourceProvenance = (meta, content) => {
+    const normalized = String(content == null ? '' : content)
+      .replace(/\r\n?/g, '\n')
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{4,}/g, '\n\n\n')
+      .trim();
+    setSourceProvenance({
+      ...(meta || {}),
+      signature: normalized.length + '|' + normalized.slice(0, 128) + '|' + normalized.slice(-128)
+    });
+  };
   const [studyTimeLeft, setStudyTimeLeft] = useState(0);
   const [studyDuration, setStudyDuration] = useState(0);
   const [isStudyTimerRunning, setIsStudyTimerRunning] = useState(false);
@@ -6509,6 +6551,16 @@ const AlloFlowContent = () => {
       if (timer) clearInterval(timer);
     };
   }, []);
+  const remediationModuleNames = ['DocPipelineModule', 'VerificationPolicy', 'DocBuilderRenderer'];
+  const remediationMissingModules = remediationModuleNames.filter((name) => !(window.AlloModules && window.AlloModules[name]));
+  const remediationFailedModules = remediationMissingModules.filter((name) => moduleLoadInfo.failed.includes(name));
+  const remediationPendingModules = remediationMissingModules.filter((name) => !remediationFailedModules.includes(name));
+  const remediationReady = remediationMissingModules.length === 0;
+  const remediationDependencyState = {
+    pending: remediationPendingModules,
+    failed: remediationFailedModules,
+  };
+  const retryRemediationDependencies = () => { try { window.__alloRetryFailedModules?.(); } catch (_) {} };
   const [canPlayBotIntro, setCanPlayBotIntro] = useState(false);
   useEffect(() => {
     const isWizardOpen = showStudentWelcome && hasSelectedRole && !isTeacherMode;
@@ -6541,6 +6593,11 @@ const AlloFlowContent = () => {
   // When set (e.g. from the idle panel's "Find a resource online"), the wizard
   // opens straight to that source step instead of step 1. Cleared once consumed.
   const [wizardInitialMode, setWizardInitialMode] = useState(null);
+  // Declared here (top-level, before first use). Was previously declared ~10k lines
+  // below, AFTER render-time useEffect dependency arrays (adventure autosave, project
+  // sync) that read it — a temporal-dead-zone ReferenceError ("Cannot access
+  // 'useLowQualityVisuals' before initialization") that crashed AlloFlowContent on mount.
+  const [useLowQualityVisuals, setUseLowQualityVisuals] = useState(false);
   _guidedWizardOpenRef.current = showWizard && hasSelectedRole && isTeacherMode; // keep the guided effect's wizard check current each render
   useEffect(() => {
     const wizardCompleted = safeGetItem('allo_wizard_completed');
@@ -6575,6 +6632,76 @@ const AlloFlowContent = () => {
       warnLog('Unhandled error in handleGenerateGuide:', e);
     } finally {
       setIsGeneratingGuide(prev => ({ ...prev, [index]: false }));
+    }
+  };
+  const handleGenerateBrainstormRubric = async (index) => {
+    const activity = generatedContent && generatedContent.data && generatedContent.data[index];
+    if (!activity || (activity.rubric && Array.isArray(activity.rubric.criteria) && activity.rubric.criteria.length)) return;
+    setIsGeneratingBrainstormRubric(prev => ({ ...prev, [index]: true }));
+    try {
+      const prompt = `You are an assessment and UDL specialist. Create a concise analytic rubric for this activity.
+Activity: ${activity.title}
+Description: ${activity.description}
+Connection to learning: ${activity.connection || 'Not provided'}
+Grade/Audience: ${gradeLevel}
+${standardsInput ? `Standards/context: ${standardsInput}` : ''}
+
+Use 3 or 4 observable criteria. Make the descriptors specific to this activity, student-friendly, and usable without AI. Avoid grading disability-related traits, speed, handwriting, behavior, or use of accommodations. Weights must total 100.
+Return ONLY JSON in this shape:
+{
+  "title": "Activity Rubric",
+  "criteria": [
+    {
+      "criterion": "Criterion name",
+      "weight": 25,
+      "levels": { "4": "Exceeds", "3": "Meets", "2": "Developing", "1": "Beginning" }
+    }
+  ]
+}`;
+      const raw = await callGemini(prompt, true);
+      const parsed = JSON.parse(cleanJson(raw));
+      const source = parsed && parsed.rubric ? parsed.rubric : parsed;
+      const rawCriteria = source && Array.isArray(source.criteria) ? source.criteria.slice(0, 4) : [];
+      if (!rawCriteria.length) throw new Error('The rubric response did not include criteria.');
+      const fallbackWeight = Math.floor(100 / rawCriteria.length);
+      const normalizedCriteria = rawCriteria.map((criterion, criterionIndex) => {
+        const levels = criterion && criterion.levels ? criterion.levels : {};
+        return {
+          criterion: String((criterion && (criterion.criterion || criterion.name)) || `Criterion ${criterionIndex + 1}`).trim(),
+          weight: Math.max(0, Number(criterion && criterion.weight) || fallbackWeight),
+          levels: {
+            '4': String(levels['4'] || levels.exceeds || '').trim(),
+            '3': String(levels['3'] || levels.meets || '').trim(),
+            '2': String(levels['2'] || levels.developing || '').trim(),
+            '1': String(levels['1'] || levels.beginning || '').trim()
+          }
+        };
+      });
+      const rawWeightTotal = normalizedCriteria.reduce((sum, criterion) => sum + criterion.weight, 0) || 100;
+      let assignedWeight = 0;
+      normalizedCriteria.forEach((criterion, criterionIndex) => {
+        criterion.weight = criterionIndex === normalizedCriteria.length - 1
+          ? Math.max(0, 100 - assignedWeight)
+          : Math.max(0, Math.min(100 - assignedWeight, Math.round((criterion.weight / rawWeightTotal) * 100)));
+        assignedWeight += criterion.weight;
+      });
+      const rubric = {
+        schemaVersion: 1,
+        title: String((source && source.title) || `${activity.title} Rubric`).trim(),
+        scale: 4,
+        criteria: normalizedCriteria
+      };
+      const newData = [...generatedContent.data];
+      newData[index] = { ...activity, rubric };
+      const updatedContent = { ...generatedContent, data: newData };
+      setGeneratedContent(updatedContent);
+      setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+      addToast('Activity rubric created. Review and adapt it before assigning.', 'success');
+    } catch (e) {
+      warnLog('Unhandled error in handleGenerateBrainstormRubric:', e);
+      addToast('The activity rubric could not be created. Please try again.', 'error');
+    } finally {
+      setIsGeneratingBrainstormRubric(prev => ({ ...prev, [index]: false }));
     }
   };
   const handleWizardStandardLookup = async (grade, goal, region) => {
@@ -7401,7 +7528,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = 'eaa6f20fb';
+    var pluginCdnVersion = '5f72a297a';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -7623,38 +7750,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=eaa6f20fb');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=eaa6f20fb');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=eaa6f20fb');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=eaa6f20fb');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=eaa6f20fb');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=eaa6f20fb');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=eaa6f20fb');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=eaa6f20fb');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=eaa6f20fb');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=eaa6f20fb');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=eaa6f20fb');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=eaa6f20fb');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=eaa6f20fb');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=eaa6f20fb');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=eaa6f20fb');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=eaa6f20fb');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=eaa6f20fb');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=eaa6f20fb');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=eaa6f20fb');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=eaa6f20fb');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=eaa6f20fb');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=eaa6f20fb');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=eaa6f20fb');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=eaa6f20fb');
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=5f72a297a');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=5f72a297a');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=5f72a297a');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=5f72a297a');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=5f72a297a');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=5f72a297a');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=5f72a297a');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=5f72a297a');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=5f72a297a');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=5f72a297a');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=5f72a297a');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=5f72a297a');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=5f72a297a');
+    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=5f72a297a');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=5f72a297a');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=5f72a297a');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=5f72a297a');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=5f72a297a');
+    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=5f72a297a');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=5f72a297a');
+    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=5f72a297a');
+    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=5f72a297a');
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=5f72a297a');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=5f72a297a');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=eaa6f20fb'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=5f72a297a'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=eaa6f20fb'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=5f72a297a'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -7663,82 +7790,84 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=eaa6f20fb');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=eaa6f20fb');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=eaa6f20fb');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=eaa6f20fb');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=eaa6f20fb');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=eaa6f20fb');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=eaa6f20fb');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=eaa6f20fb');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=eaa6f20fb');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=eaa6f20fb');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=eaa6f20fb');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=eaa6f20fb');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=eaa6f20fb');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=eaa6f20fb'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=5f72a297a');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=5f72a297a');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=5f72a297a');
+    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=5f72a297a');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=5f72a297a');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=5f72a297a');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=5f72a297a');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=5f72a297a');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=5f72a297a');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=5f72a297a');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=5f72a297a');
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=5f72a297a');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=5f72a297a');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=5f72a297a'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=eaa6f20fb');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=eaa6f20fb');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=eaa6f20fb');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=e3efe3e6');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=eaa6f20fb');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=eaa6f20fb');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=eaa6f20fb');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=eaa6f20fb');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=eaa6f20fb');
+    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=5f72a297a');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=5f72a297a');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=5f72a297a');
+    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=216a1867');
+    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=5f72a297a');
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=5f72a297a');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=5f72a297a');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=5f72a297a');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=5f72a297a');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=eaa6f20fb'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=5f72a297a'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=eaa6f20fb');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=5f72a297a');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=eaa6f20fb');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=eaa6f20fb'); }; })();
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=5f72a297a');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=5f72a297a'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=5f72a297a'); }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=eaa6f20fb'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=eaa6f20fb');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=eaa6f20fb');
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=5f72a297a'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=5f72a297a');
+    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=5f72a297a');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
     loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=eaa6f20fb');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=eaa6f20fb');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=eaa6f20fb');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=eaa6f20fb');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=eaa6f20fb');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=eaa6f20fb'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=eaa6f20fb'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=eaa6f20fb'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=eaa6f20fb'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=eaa6f20fb');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=eaa6f20fb');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=eaa6f20fb');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=5f72a297a');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=5f72a297a');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=5f72a297a');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=5f72a297a');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=5f72a297a');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=5f72a297a'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=5f72a297a'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=5f72a297a'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=5f72a297a'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=5f72a297a'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=5f72a297a');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=5f72a297a');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=5f72a297a');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=eaa6f20fb');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=eaa6f20fb');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=eaa6f20fb');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=eaa6f20fb');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=eaa6f20fb');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=eaa6f20fb');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=eaa6f20fb');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=eaa6f20fb');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=eaa6f20fb');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=5f72a297a');
+    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=5f72a297a');
+    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=5f72a297a');
+    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=5f72a297a');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=5f72a297a');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=5f72a297a');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=5f72a297a');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=5f72a297a');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=5f72a297a');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=5f72a297a');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=5f72a297a');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -7775,64 +7904,67 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=eaa6f20fb');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=eaa6f20fb');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=eaa6f20fb');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=3b7b7101');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=5f72a297a');
+    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=5f72a297a');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=eaa6f20fb');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=eaa6f20fb');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=eaa6f20fb');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=eaa6f20fb');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=eaa6f20fb');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=eaa6f20fb');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=eaa6f20fb');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=eaa6f20fb');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=eaa6f20fb');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=eaa6f20fb');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=9dadb72f1');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=eaa6f20fb');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=eaa6f20fb');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=eaa6f20fb');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=eaa6f20fb');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=eaa6f20fb');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=eaa6f20fb');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=eaa6f20fb');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=eaa6f20fb');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=eaa6f20fb');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=eaa6f20fb');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=eaa6f20fb');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=eaa6f20fb');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=eaa6f20fb');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=eaa6f20fb');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=eaa6f20fb');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=eaa6f20fb');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=eaa6f20fb');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=eaa6f20fb');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=eaa6f20fb');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=eaa6f20fb');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=eaa6f20fb');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=eaa6f20fb');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=eaa6f20fb');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=eaa6f20fb');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=eaa6f20fb');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=eaa6f20fb');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=eaa6f20fb');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=eaa6f20fb');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=eaa6f20fb');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=eaa6f20fb');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=5f72a297a');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=5f72a297a');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=5f72a297a');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=5f72a297a');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=5f72a297a');
+    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=5f72a297a');
+    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=5f72a297a');
+    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=5f72a297a');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=5f72a297a');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=5f72a297a');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=5f72a297a');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=5f72a297a');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=5f72a297a');
+    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d5bbc8eb');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=5f72a297a');
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=5f72a297a');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=5f72a297a');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=5f72a297a');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=5f72a297a');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=5f72a297a');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=5f72a297a');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=5f72a297a');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=5f72a297a');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=5f72a297a');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=5f72a297a');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=5f72a297a');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=5f72a297a');
+    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=5f72a297a');
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=5f72a297a');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=5f72a297a');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=5f72a297a');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=5f72a297a');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=5f72a297a');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=7f1632c7');
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=5f72a297a');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=5f72a297a');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=5f72a297a');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=5f72a297a');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=5f72a297a');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=5f72a297a');
+    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=5f72a297a');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=5f72a297a');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=5f72a297a');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=5f72a297a');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=eaa6f20fb');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=eaa6f20fb');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=eaa6f20fb');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=eaa6f20fb');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=eaa6f20fb');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=eaa6f20fb');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=eaa6f20fb');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=eaa6f20fb');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=eaa6f20fb');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=eaa6f20fb');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=5f72a297a');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=5f72a297a');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=5f72a297a');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=5f72a297a');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=5f72a297a');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=5f72a297a');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=5f72a297a');
+    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=5f72a297a');
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=5f72a297a');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=5f72a297a');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -7861,7 +7993,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_coordgrid.js', 'stem_lab/stem_tool_angles.js', 'stem_lab/stem_tool_archstudio.js',
         'stem_lab/stem_tool_physics.js', 'stem_lab/stem_tool_brainatlas.js', 'stem_lab/stem_tool_inequality.js',
         'stem_lab/stem_tool_arccity.js', 'stem_lab/stem_tool_funcgrapher.js', 'stem_lab/stem_tool_multtable.js', 'stem_lab/stem_tool_geosandbox.js',
-        'stem_lab/stem_tool_watercycle.js', 'stem_lab/stem_tool_rocks.js', 'stem_lab/stem_tool_platetectonics.js', 'stem_lab/stem_tool_geologyexplorer.js', 'stem_lab/stem_tool_dinolab.js',
+        'stem_lab/stem_tool_watercycle.js', 'stem_lab/stem_tool_weathersystems.js', 'stem_lab/stem_tool_rocks.js', 'stem_lab/stem_tool_platetectonics.js', 'stem_lab/stem_tool_geologyexplorer.js', 'stem_lab/stem_tool_dinolab.js',
         'stem_lab/stem_tool_dissection.js', 'stem_lab/stem_tool_cyberdefense.js',
         'stem_lab/stem_tool_probability.js', 'stem_lab/stem_tool_logiclab.js',
         'stem_lab/stem_tool_calculus.js', 'stem_lab/stem_tool_unitconvert.js',
@@ -7946,6 +8078,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_aquaculture.js',
         // Jun 2026: Lumen — provenance-bound reactive research canvas (9 honesty-gated chart
         // types). Pairs with the lumen tile (ready:true) + _pluginOnlyTools flag in stem_lab_module.js.
+        'stem_lab/stem_lumen_evidence.js',
+        'stem_lab/stem_lumen_study.js',
         'stem_lab/stem_tool_lumen.js',
         // Jul 2026 catch-up: cellular had registerTool + tile + PLUGIN_FILES
         // but was never added here, so it hit exactly the failure class this
@@ -8458,6 +8592,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isPersonaReflectionOpen, setIsPersonaReflectionOpen] = useState(false);
   const [personaReflectionInput, setPersonaReflectionInput] = useState('');
   const [isGradingReflection, setIsGradingReflection] = useState(false);
+  const personaReflectionSubmitRef = useRef(false);
   const [isGeneratingReflectionPrompt, setIsGeneratingReflectionPrompt] = useState(false);
   const [reflectionFeedback, setReflectionFeedback] = useState(null);
   const [isFabExpanded, setIsFabExpanded] = useState(false);
@@ -10445,16 +10580,42 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useEffect(() => {
       if (adventureState.turnCount > 0 && !adventureState.isLoading) {
           const saveAsync = async () => {
-              const sanitizedState = { ...adventureState };
-              sanitizedState.sceneImage = null;
+              const sanitizedState = {
+                  ...adventureState,
+                  sceneImage: null,
+                  imageCache: [],
+                  _adventureConfig: {
+                      difficulty: adventureDifficulty,
+                      inputMode: adventureInputMode,
+                      languageMode: adventureLanguageMode,
+                      chanceMode: adventureChanceMode,
+                      freeResponse: adventureFreeResponseEnabled,
+                      consistentCharacters: adventureConsistentCharacters,
+                      storyMode: isAdventureStoryMode,
+                      socialStoryMode: isSocialStoryMode,
+                      socialStoryFocus,
+                      artStyle: adventureArtStyle,
+                      customArtStyle: adventureCustomArtStyle,
+                      lowQualityVisuals: useLowQualityVisuals,
+                      enableFactionResources,
+                      factionResourceMode
+                  }
+              };
               if (Array.isArray(sanitizedState.inventory)) {
                   sanitizedState.inventory = sanitizedState.inventory.map(item => {
                       const { image, ...rest } = item;
                       return rest;
                   });
               }
+              if (Array.isArray(sanitizedState.characters)) {
+                  sanitizedState.characters = sanitizedState.characters.map(character => ({
+                      ...character,
+                      portrait: null
+                  }));
+              }
               try {
                   await storageDB.set('allo_adventure_save', sanitizedState);
+                  setHasSavedAdventure(true);
               } catch (e) {
                   warnLog("Adventure Save Error", e);
               }
@@ -10462,7 +10623,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           const timer = setTimeout(saveAsync, 2000);
           return () => clearTimeout(timer);
       }
-  }, [adventureState]);
+  }, [adventureState, adventureDifficulty, adventureInputMode, adventureLanguageMode,
+      adventureChanceMode, adventureFreeResponseEnabled, adventureConsistentCharacters,
+      isAdventureStoryMode, isSocialStoryMode, socialStoryFocus, adventureArtStyle,
+      adventureCustomArtStyle, useLowQualityVisuals, enableFactionResources, factionResourceMode]);
   const [isGateOpen, setIsGateOpen] = useState(false);
   const [pendingRole, setPendingRole] = useState(null);
   const onGateUnlock = () => {
@@ -12046,11 +12210,42 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const strokeWidth = isSelected ? 3 : 2;
     const onMouseDown = (e) => !isMapLocked && handleNodeMouseDown(e, id);
     const onClick = (e) => handleNodeClick(e, id);
+    const onKeyDown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleNodeClick(e, id);
+            return;
+        }
+        if ((e.key === 'Delete' || e.key === 'Backspace') && !isChallengeActive && isTeacherMode && !isMapLocked) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDeleteNode(id);
+            return;
+        }
+        const delta = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+        if (!delta || isMapLocked) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const step = e.shiftKey ? 25 : 10;
+        const width = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
+        const height = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
+        setConceptMapNodes((nodes) => nodes.map((item) => item.id === id ? {
+            ...item,
+            x: Math.max(0, Math.min(width, item.x + delta[0] * step)),
+            y: Math.max(0, Math.min(height, item.y + delta[1] * step))
+        } : item));
+    };
     const gProps = {
         transform: `translate(${x},${y})`,
+        role: 'button',
+        tabIndex: 0,
+        focusable: 'true',
+        'aria-label': text,
+        'aria-pressed': isSelected,
         onMouseDown,
         onClick,
-        className: `${!isMapLocked ? "cursor-grab active:cursor-grabbing hover:opacity-90" : "cursor-default"} transition-all duration-300 group`,
+        onKeyDown,
+        className: `${!isMapLocked ? "cursor-grab active:cursor-grabbing hover:opacity-90" : "cursor-default"} transition-all duration-300 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`,
         key: id
     };
     let shape;
@@ -12107,12 +12302,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
             {shape}
             {!isChallengeActive && isTeacherMode && !isMapLocked && (
                <g
+                 aria-hidden="true"
+                 focusable="false"
                  className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity cursor-pointer"
                  onClick={(e) => { e.stopPropagation(); handleDeleteNode(id); }}
                  transform="translate(45, -35)"
                >
                    <title>{t('concept_map.tooltips.delete_node')}</title>
-                   <circle r="9" fill="#ef4444" stroke="white" strokeWidth="1"/>
+                   <circle r="12" fill="#ef4444" stroke="white" strokeWidth="1"/>
                    <text textAnchor="middle" dy="3" fill="white" fontSize="10" fontWeight="bold">×</text>
                </g>
             )}
@@ -12633,12 +12830,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       addToast(t('toasts.fluency_assessments_export'), 'warning');
       return;
     }
-    const headers = ['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words', 'Duration (s)', 'Substitutions', 'Omissions', 'Insertions', 'Self-Corrections', 'Error Rate', 'Reading Level'];
+    const headers = ['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words', 'Duration (s)', 'Substitutions', 'Omissions', 'Insertions', 'Self-Corrections', 'Error Rate', 'Reading Level', 'Review Status', 'Reviewer', 'Review Date', 'Passage ID', 'Calibrated Parallel Form'];
+    const csvCell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
     const rows = fluencyRecords.map(r => {
       const m = r.data.metrics;
-      const rrm = r.data.wordData ? (calculateRunningRecordMetrics(r.data.wordData, r.data.fullAnalysis?.insertions || []) || { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' }) : { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' };
+      const rrm = r.data.wordData ? (calculateRunningRecordMetrics(r.data.wordData, r.data.insertions || r.data.fullAnalysis?.insertions || []) || { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' }) : { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' };
       const passageTitle = (r.data.sourceText || '').substring(0, 40).replace(/[\n\r,]/g, ' ').trim() || 'Untitled';
-      return [new Date(r.timestamp).toLocaleDateString(), '"' + passageTitle + '"', m.wcpm || 0, m.accuracy || 0, m.totalWords || 0, Math.round(m.durationSeconds || 0), rrm.substitutions || 0, rrm.omissions || 0, rrm.insertions || 0, rrm.selfCorrections || 0, '1:' + (rrm.errorRate || 0), rrm.readingLevel || 'unknown'].join(',');
+      const review = r.data.review || {};
+      const passage = r.data.passageMetadata || {};
+      return [new Date(r.timestamp).toLocaleDateString(), csvCell(passageTitle), m.wcpm || 0, m.accuracy || 0, m.totalWords || 0, Math.round(m.durationSeconds || 0), rrm.substitutions || 0, rrm.omissions || 0, rrm.insertions || 0, rrm.selfCorrections || 0, '1:' + (rrm.errorRate || 0), rrm.readingLevel || 'unknown', review.status || 'unreviewed', csvCell(review.reviewer || ''), review.reviewedAt || '', csvCell(passage.passageId || ''), passage.calibrated === true ? 'yes' : 'no'].join(',');
     });
     const csv = [headers.join(','), ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -12672,6 +12872,45 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const win = window.open('', '_blank');
     if (win) { win.document.write(html); win.document.close(); }
   };
+  const saveFluencyReview = React.useCallback((reviewedResult) => {
+    if (!reviewedResult || !reviewedResult.recordId) return;
+    const recordId = reviewedResult.recordId;
+    const reviewStatus = reviewedResult.review?.status || 'reviewed';
+    setFluencyResult(reviewedResult);
+    setFluencyAssessments(prev => {
+      const items = Array.isArray(prev) ? prev : [];
+      const found = items.some(item => (item?.recordId || item?.id) === recordId);
+      return found
+        ? items.map(item => ((item?.recordId || item?.id) === recordId ? reviewedResult : item))
+        : [...items, reviewedResult];
+    });
+    setHistory(prev => prev.map(item => {
+      if (!item || item.id !== recordId || item.type !== 'fluency-record') return item;
+      return {
+        ...item,
+        title: `Oral Fluency Check (${reviewedResult.accuracy || 0}%)`,
+        meta: `${reviewedResult.wcpm || 0} WCPM - ${Math.round(reviewedResult.durationSeconds || 0)}s - ${reviewStatus}`,
+        data: {
+          ...(item.data || {}),
+          wordData: reviewedResult.wordData,
+          insertions: reviewedResult.insertions || [],
+          passageMetadata: reviewedResult.passageMetadata || item.data?.passageMetadata || null,
+          automatedSnapshot: reviewedResult.automatedSnapshot || null,
+          review: reviewedResult.review || null,
+          reviewAudit: reviewedResult.reviewAudit || [],
+          metrics: {
+            ...(item.data?.metrics || {}),
+            ...(reviewedResult.metrics || {}),
+            accuracy: reviewedResult.accuracy || 0,
+            wcpm: reviewedResult.wcpm || 0,
+            correctWords: reviewedResult.correctWords || 0
+          }
+        }
+      };
+    }));
+    addToast('Teacher review saved. The automated result remains in the audit trail.', 'success');
+  }, [addToast]);
+
   const [isHistoryPulsing, setIsHistoryPulsing] = useState(false);
   const [isSaveActionPulsing, setIsSaveActionPulsing] = useState(false);
   const latestLessonPlan = React.useMemo(() => {
@@ -13179,6 +13418,23 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           targetResourceId = data.roster[user.uid].resourceId;
                       }
                       if (targetResourceId === 'adventure-sync') {
+                          if (data.activeAdventureConfig) {
+                              const config = data.activeAdventureConfig;
+                              if (config.difficulty) setAdventureDifficulty(config.difficulty);
+                              if (config.inputMode) setAdventureInputMode(config.inputMode);
+                              if (config.languageMode) setAdventureLanguageMode(config.languageMode);
+                              if (config.chanceMode !== undefined) setAdventureChanceMode(!!config.chanceMode);
+                              if (config.freeResponse !== undefined) setAdventureFreeResponseEnabled(!!config.freeResponse);
+                              if (config.consistentCharacters !== undefined) setAdventureConsistentCharacters(!!config.consistentCharacters);
+                              if (config.storyMode !== undefined) setIsAdventureStoryMode(!!config.storyMode);
+                              if (config.socialStoryMode !== undefined) setIsSocialStoryMode(!!config.socialStoryMode);
+                              if (config.socialStoryFocus !== undefined) setSocialStoryFocus(config.socialStoryFocus || '');
+                              if (config.artStyle) setAdventureArtStyle(config.artStyle);
+                              if (config.customArtStyle !== undefined) setAdventureCustomArtStyle(config.customArtStyle || '');
+                              if (config.lowQualityVisuals !== undefined) setUseLowQualityVisuals(!!config.lowQualityVisuals);
+                              if (config.enableFactionResources !== undefined) setEnableFactionResources(!!config.enableFactionResources);
+                              if (config.factionResourceMode) setFactionResourceMode(config.factionResourceMode);
+                          }
                           if (data.activeAdventureState) {
                               setAdventureState(prev => {
                                   if (prev.currentScene?.text === data.activeAdventureState.currentScene?.text &&
@@ -13190,7 +13446,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                       ...data.activeAdventureState,
                                       isLoading: false,
                                       history: [],
-                                      isGameOver: data.activeAdventureState.currentScene?.options?.length === 0
+                                      isGameOver: data.activeAdventureState.isGameOver !== undefined
+                                          ? !!data.activeAdventureState.isGameOver
+                                          : (!data.activeAdventureConfig?.freeResponse && data.activeAdventureState.currentScene?.options?.length === 0)
                                   };
                               });
                           }
@@ -13372,23 +13630,51 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [generatedContent && generatedContent.id, activeSessionCode, isTeacherMode, user, activeSessionAppId]);
   useEffect(() => {
       if (isTeacherMode && activeSessionCode && activeView === 'adventure' && adventureState.currentScene) {
-          const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
+          const targetAppId = activeSessionAppId || appId;
+          const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+          const shareableSceneImage = typeof adventureState.sceneImage === 'string'
+              && /^https?:\/\//i.test(adventureState.sceneImage)
+              ? adventureState.sceneImage
+              : null;
+          const shareableInventory = (adventureState.inventory || []).map(({ image, ...item }) => item);
           updateDoc(sessionRef, {
               currentResourceId: 'adventure-sync',
               activeAdventureScene: adventureState.currentScene,
+              activeAdventureConfig: {
+                  difficulty: adventureDifficulty,
+                  inputMode: adventureInputMode,
+                  languageMode: adventureLanguageMode,
+                  chanceMode: adventureChanceMode,
+                  freeResponse: adventureFreeResponseEnabled,
+                  consistentCharacters: adventureConsistentCharacters,
+                  storyMode: isAdventureStoryMode,
+                  socialStoryMode: isSocialStoryMode,
+                  socialStoryFocus,
+                  artStyle: adventureArtStyle,
+                  customArtStyle: adventureCustomArtStyle,
+                  lowQualityVisuals: useLowQualityVisuals,
+                  enableFactionResources,
+                  factionResourceMode
+              },
               activeAdventureState: {
                   currentScene: adventureState.currentScene,
-                  sceneImage: adventureState.sceneImage,
+                  sceneImage: shareableSceneImage,
                   level: adventureState.level,
                   xp: adventureState.xp,
                   xpToNextLevel: adventureState.xpToNextLevel,
                   energy: adventureState.energy,
                   gold: adventureState.gold,
-                  inventory: adventureState.inventory
+                  inventory: shareableInventory,
+                  turnCount: adventureState.turnCount,
+                  isGameOver: adventureState.isGameOver
               }
           }).catch(e => warnLog("Adventure broadcast error:", e));
       }
-  }, [isTeacherMode, activeSessionCode, activeView, adventureState, activeSessionAppId]);
+  }, [isTeacherMode, activeSessionCode, activeView, adventureState, activeSessionAppId, appId,
+      adventureDifficulty, adventureInputMode, adventureLanguageMode, adventureChanceMode,
+      adventureFreeResponseEnabled, adventureConsistentCharacters, isAdventureStoryMode,
+      isSocialStoryMode, socialStoryFocus, adventureArtStyle, adventureCustomArtStyle,
+      useLowQualityVisuals, enableFactionResources, factionResourceMode]);
   useEffect(() => {
     if (_alloQrFirebaseHandoffRequiredButMissing) {
       setUser(null);
@@ -13937,6 +14223,31 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [sourceLength, setSourceLength] = useState('250');
   const [sourceCustomInstructions, setSourceCustomInstructions] = useState('');
   const [qrShareModal, setQrShareModal] = useState(null);
+  const [homeworkExpiryDays, setHomeworkExpiryDays] = useState(() => {
+      const saved = Number(safeGetItem('allo_homework_expiry_days') || 14);
+      return [1, 7, 14, 30].includes(saved) ? saved : 14;
+  });
+  const [recentQrShares, setRecentQrShares] = useState(() => {
+      try {
+          const parsed = JSON.parse(safeGetItem('allo_recent_qr_shares') || '[]');
+          return Array.isArray(parsed) ? parsed.filter(item => item?.url && (!item.expiresAt || Date.parse(item.expiresAt) > Date.now())).slice(0, 6) : [];
+      } catch (_) { return []; }
+  });
+  const [showRecentQrShares, setShowRecentQrShares] = useState(false);
+  useEffect(() => {
+      try { safeSetItem('allo_homework_expiry_days', String(homeworkExpiryDays)); } catch (_) {}
+  }, [homeworkExpiryDays]);
+  useEffect(() => {
+      try { safeSetItem('allo_recent_qr_shares', JSON.stringify(recentQrShares.slice(0, 6))); } catch (_) {}
+  }, [recentQrShares]);
+  const rememberQrShare = useCallback((share) => {
+      if (!share?.url) return;
+      setRecentQrShares(previous => [share, ...previous.filter(item => item.url !== share.url)].slice(0, 6));
+  }, []);
+  const openQrShareModal = useCallback((share) => {
+      setQrShareModal(share);
+      rememberQrShare(share);
+  }, [rememberQrShare]);
   const [qrShareSvg, setQrShareSvg] = useState('');
   const [qrShareError, setQrShareError] = useState(false);
   const homeworkQrDialogRef = useRef(null);
@@ -14734,14 +15045,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           kind: 'assignment',
           title,
           createdAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(),
           currentResourceId: resources[0]?.id || null,
           resources,
           aiPolicy: { studentAi: 'off', defaultStudentAi: 'off', teacherPrepared: true },
       });
       const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
       return { encoded, title, count: resources.length, resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'), expiresAt: packet.expiresAt };
-  }, [generatedContent, history, sourceTopic]);
+  }, [generatedContent, history, homeworkExpiryDays, sourceTopic]);
   // Latest-ref to the mailbox-host callback so the self-contained builder can
   // reroute oversize packs to it (hostPackOnMailbox is declared below), and so a
   // queued host can auto-run after a late mailbox connect. Mirrors the
@@ -14773,7 +15084,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current() : null;
           }
           copyToClipboard(shareUrl);
-          setQrShareModal({
+          openQrShareModal({
               type: 'assignment-pack',
               title: built.title,
               url: shareUrl,
@@ -14790,7 +15101,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           addToast('Could not create a self-contained homework link.', 'error');
           return null;
       }
-  }, [buildAssignmentPackEncoded, copyToClipboard, mbConfig]);
+  }, [buildAssignmentPackEncoded, copyToClipboard, mbConfig, openQrShareModal]);
   // Mailbox-hosted variant: the full pack (images included) is chunk-uploaded
   // to the teacher's own Drive via their mailbox; the QR carries only a tiny
   // pointer, so it is always small enough to print.
@@ -14819,7 +15130,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const shareUrl = _buildAlloMailboxEntryUrl('allo_mbp', { u: mbConfig.url, id, k: secret });
           if (!shareUrl) throw new Error('no student app URL configured');
           copyToClipboard(shareUrl);
-          setQrShareModal({
+          openQrShareModal({
               type: 'assignment-pack-hosted',
               title: built.title,
               url: shareUrl,
@@ -14839,7 +15150,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setMbBusy(false);
           return null;
       }
-  }, [mbConfig, buildAssignmentPackEncoded, copyToClipboard]);
+  }, [mbConfig, buildAssignmentPackEncoded, copyToClipboard, openQrShareModal]);
   // Keep the host-callback ref fresh so the self-contained builder's oversize
   // reroute (above) always calls the current hostPackOnMailbox.
   useEffect(() => { hostPackOnMailboxRef.current = hostPackOnMailbox; });
@@ -14968,7 +15279,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               hostAppId: appId,
               hostId: user?.uid || null,
               createdAt: new Date().toISOString(),
-              expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+              expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000),
               status: 'assignment',
               mode: 'assignment',
               isActive: false,
@@ -14983,7 +15294,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               version: 1,
           }));
           copyToClipboard(shareUrl);
-          setQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length || resourcesToAssign.length, resourceTitles: resourcesToAssign.map(item => item.title || item.type || 'Untitled resource'), expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId });
+          openQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length || resourcesToAssign.length, resourceTitles: resourcesToAssign.map(item => item.title || item.type || 'Untitled resource'), expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId });
           addToast('Homework QR ready. Students open teacher-prepared resources with AI generation off.', 'success');
           if (prepared.droppedCount > 0 || prepared.overLimit) {
               addToast('Some older resources were trimmed to keep the QR assignment reliable.', 'info');
@@ -14994,14 +15305,39 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           addToast('Cloud homework link failed — making a self-contained link instead.', 'info');
           return createSelfContainedHomeworkLink();
       }
-  }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, hostPackOnMailbox, mbConfig, generatedContent, history, sourceTopic, user?.uid]);
-  const testHomeworkAsStudent = useCallback(() => {
-      const url = qrShareModal?.url;
+  }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, homeworkExpiryDays, hostPackOnMailbox, mbConfig, generatedContent, history, openQrShareModal, sourceTopic, user?.uid]);
+  const openStudentQrPreview = useCallback((url, label = 'student link') => {
       if (!url || typeof window === 'undefined') return;
       const preview = window.open(url, '_blank');
-      if (preview) { try { preview.opener = null; } catch (_) {} }
-      else addToast('Allow pop-ups to test this homework link as a student.', 'info');
-  }, [qrShareModal?.url, addToast]);
+      if (preview) {
+          try { preview.opener = null; } catch (_) {}
+          addToast('Student preview opened. Complete the check in the new tab, then return here.', 'success');
+      } else addToast('Allow pop-ups to test this ' + label + '.', 'info');
+  }, [addToast]);
+  const printQrSheet = useCallback((svg, heading, detail, modeLabel, fallbackCode = '') => {
+      if (!svg || typeof window === 'undefined') {
+          addToast('Wait for the QR code to finish loading before printing.', 'info');
+          return;
+      }
+      const popup = window.open('', '_blank', 'width=720,height=900');
+      if (!popup) {
+          addToast('Allow pop-ups to print this QR code.', 'info');
+          return;
+      }
+      try { popup.opener = null; } catch (_) {}
+      const escapeText = value => String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+      const safeHeading = escapeText(heading);
+      const safeDetail = escapeText(detail);
+      const safeMode = escapeText(modeLabel);
+      const safeCode = escapeText(String(fallbackCode || '').replace(/[^A-Z0-9-]/gi, ''));
+      popup.document.open();
+      popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safeHeading}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.detail{font-size:18px;font-weight:700;margin-bottom:8px}.mode{font-weight:700;color:#6d28d9;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 52px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>${safeHeading}</h1><div class="detail">${safeDetail}</div><div class="mode">${safeMode}</div><div class="qr">${svg}</div>${safeCode ? '<div>Fallback class code</div><div class="code">' + safeCode + '</div>' : ''}<div class="note">Scan with a phone or tablet camera. If scanning is unavailable, ask the teacher for the link${safeCode ? ' or class code' : ''}.</div></body></html>`);
+      popup.document.close();
+      setTimeout(() => { try { popup.focus(); popup.print(); } catch (_) {} }, 250);
+  }, [addToast]);
+  const testHomeworkAsStudent = useCallback(() => {
+      openStudentQrPreview(qrShareModal?.url, 'homework link as a student');
+  }, [openStudentQrPreview, qrShareModal?.url]);
   const revokeHomeworkAssignment = useCallback(async () => {
       const current = qrShareModal;
       if (!current || current.type === 'assignment-pack') return;
@@ -15014,6 +15350,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               await deleteDoc(doc(db, 'artifacts', current.hostAppId || appId, 'public', 'data', 'sessions', current.assignmentId));
           }
           setQrShareModal(null);
+          setRecentQrShares(previous => previous.filter(item => item.url !== current.url));
           addToast('Homework link revoked.', 'success');
       } catch (e) {
           warnLog('Homework revocation failed:', e);
@@ -15034,6 +15371,29 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfAuditResult, setPdfAuditResult] = useState(null);
   const [pdfAuditLoading, setPdfAuditLoading] = useState(false);
   const [pendingPdfBase64, setPendingPdfBase64] = useState(null);
+  const pdfAuditEpochRef = useRef(0);
+  const pdfAuditAbortControllerRef = useRef(null);
+  const beginPdfAuditRun = React.useCallback(() => {
+    try { if (pdfAuditAbortControllerRef.current) pdfAuditAbortControllerRef.current.abort(); } catch (_) {}
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const token = { epoch: ++pdfAuditEpochRef.current, signal: controller ? controller.signal : null };
+    pdfAuditAbortControllerRef.current = controller;
+    return token;
+  }, []);
+  const isPdfAuditRunCurrent = React.useCallback((token) => !!(token
+    && token.epoch === pdfAuditEpochRef.current
+    && !(token.signal && token.signal.aborted)), []);
+  const finishPdfAuditRun = React.useCallback((token) => {
+    if (!token || token.epoch !== pdfAuditEpochRef.current) return false;
+    pdfAuditAbortControllerRef.current = null;
+    return true;
+  }, []);
+  const invalidatePdfAuditRun = React.useCallback(() => {
+    try { if (pdfAuditAbortControllerRef.current) pdfAuditAbortControllerRef.current.abort(); } catch (_) {}
+    pdfAuditAbortControllerRef.current = null;
+    pdfAuditEpochRef.current += 1;
+    setPdfAuditLoading(false);
+  }, []);
   const [pendingPdfFile, setPendingPdfFile] = useState(null);
   // Original PDF bytes survive a SOFT modal-close in this ref. The pendingPdfBase64 STATE is nulled on
   // close (it gates the "no doc loaded" panel at the LMS-audit-URLs block), but the re-entry pill reopens
@@ -15074,6 +15434,26 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     _setPdfFixResultRaw(enforced);
     return enforced;
   }, []);
+  const capturePdfHtmlCommitToken = React.useCallback(() => {
+    const current = pdfFixResultRef.current;
+    return {
+      revision: pdfHtmlRevisionRef.current,
+      html: current && typeof current.accessibleHtml === 'string' ? current.accessibleHtml : null,
+    };
+  }, []);
+  const commitPdfFixResultIfCurrent = React.useCallback((token, updater) => {
+    if (!token || token.revision !== pdfHtmlRevisionRef.current) return false;
+    const current = pdfFixResultRef.current;
+    if (!current || current.accessibleHtml !== token.html) return false;
+    let committed = false;
+    setPdfFixResult((prev) => {
+      if (!prev || token.revision !== pdfHtmlRevisionRef.current || prev.accessibleHtml !== token.html) return prev;
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      committed = !!next;
+      return next || prev;
+    });
+    return committed;
+  }, [setPdfFixResult]);
   const [pdfFixLoading, setPdfFixLoading] = useState(false);
   // Three-way "save before closing?" dialog. Fires only when there is work to lose.
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
@@ -15435,6 +15815,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       addToast(t('toasts.help_mode_close_blocked') || '❓ Help mode is on — click any control to learn about it. Press the yellow ✕ (right edge) to exit help mode first.', 'info');
       return;
     }
+    invalidatePdfAuditRun();
     setPdfFixLoading(false);
     setPdfFixStep('');
     setPendingPdfBase64(null);
@@ -15472,6 +15853,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     _closePdfAuditModal();
   };
   const startNewPdfAudit = () => {
+    invalidatePdfAuditRun();
     lastPdfAuditResultRef.current = null; // dropping the result — no re-entry pill for a cleared audit
     setPdfAuditResult(null);
     setPdfFixResult(null);
@@ -15553,16 +15935,20 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [pdfAutoSaveProject]);
   React.useEffect(() => {
     let cancelled = false;
-    if (!pdfAuditResult || !pendingPdfFile || !_docPipeline || !_docPipeline.multiSessionId || !_docPipeline.loadMultiSession) {
+    if (!pdfAuditResult || !pendingPdfFile || !pendingPdfBase64 || !_docPipeline || !_docPipeline.documentDigest || !_docPipeline.multiSessionId || !_docPipeline.loadMultiSession) {
       setPdfMultiSession(null);
       return;
     }
-    const sessionId = _docPipeline.multiSessionId(
-      pendingPdfFile.name || 'document.pdf',
-      pendingPdfFile.size || 0,
-      pdfAuditResult.pageCount || 1
-    );
-    _docPipeline.loadMultiSession(sessionId).then((record) => {
+    _docPipeline.documentDigest(pendingPdfBase64).then((digest) => {
+      if (cancelled || !digest) return null;
+      const sessionId = _docPipeline.multiSessionId(
+        pendingPdfFile.name || 'document.pdf',
+        pendingPdfFile.size || 0,
+        pdfAuditResult.pageCount || 1,
+        digest
+      );
+      return sessionId ? _docPipeline.loadMultiSession(sessionId, digest) : null;
+    }).then((record) => {
       if (cancelled) return;
       setPdfMultiSession(record);
       if (record && record.ranges && record.ranges.length > 0) {
@@ -15577,7 +15963,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
     }).catch(() => { if (!cancelled) setPdfMultiSession(null); });
     return () => { cancelled = true; };
-  }, [pdfAuditResult, pendingPdfFile]);
+  }, [pdfAuditResult, pendingPdfFile, pendingPdfBase64]);
   const PDF_REGRESSION_TOLERANCE = 5;
   const safeCloneAudit = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
   const blendAiAxe = (aiScore, axeScore) => {
@@ -15731,7 +16117,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // could enter the success numerator of the reliability rate Aaron defends to UMaine.
       // Unknown verifier state is now 'incomplete', never 'success': success requires target
       // reached AND a KNOWN-zero axe result AND a complete (non-degraded) AI verification.
-      const _outcome = (cur.afterScore >= pdfTargetScore && _resid === 0 && !cur._aiVerificationIncomplete) ? 'success' : 'incomplete';
+      const _remediationOutcome = (_docPipeline && typeof _docPipeline.remediationOutcome === 'function')
+        ? _docPipeline.remediationOutcome(cur, { targetScore: pdfTargetScore })
+        : { state: (cur.afterScore >= pdfTargetScore && _resid === 0 && !cur._aiVerificationIncomplete) ? 'success' : 'incomplete' };
       const row = {
         _k: key, at: new Date().toISOString(),
         runId: cur.runId || null, // #15 (ChatGPT review 2026-07-10): per-run identity from the pipeline (null on older/loaded rows)
@@ -15743,7 +16131,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         pages: cur.pageCount || null,
         // Reliability telemetry (2026-06-13): an honest outcome + the per-run
         // stats from fixResult.pipelineStats (null on older/loaded rows).
-        outcome: _outcome,
+        outcome: _remediationOutcome.state,
+        remediationOutcome: _remediationOutcome,
+        verificationState: cur.verificationState || 'unavailable',
         retries: _ps ? _ps.retries : null,
         // #15: the honest counter set — retries now counts real retry ATTEMPTS; the old counter
         // incremented on terminal failure (a recovered retry recorded 0, a no-retry failure 1).
@@ -15948,6 +16338,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     includeAudioLeveled: false,
     fontSize: 16,
     useAppFont: false,
+    pageMargin: '1in',
     // Display-mode toggles (May 11 2026):
     //   glossaryDisplayMode: 'table' | 'flash-cards' | 'language-cards'
     //   timelineDisplayMode: 'list' | 'cuttable-strips'
@@ -15980,7 +16371,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // Bump this when DEFAULT_EXPORT_CONFIG gains fields or any preset field's
   // semantics change. Old presets are merged over current defaults on load
   // so users don't silently lose recently-added toggle defaults.
-  const _EXPORT_PRESET_SCHEMA_VERSION = 2;
+  const _EXPORT_PRESET_SCHEMA_VERSION = 3;
   // Migrate one preset object to the current schema. Idempotent: a preset
   // already at the current version round-trips unchanged. Tolerant of
   // malformed shapes (missing config, missing theme, etc.).
@@ -16100,7 +16491,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // 'Default' if the field is empty so the prompt never reads "${''} style."
   const [visualCustomStyle, setVisualCustomStyle] = useState('');
   const [visualLayoutMode, setVisualLayoutMode] = React.useState('auto');
-  const [useLowQualityVisuals, setUseLowQualityVisuals] = useState(false);
+  // useLowQualityVisuals moved UP to the top-level useState cluster (~L6596) so it is
+  // initialized before the render-time useEffect deps arrays that read it (TDZ fix).
   const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [isAutoConfigEnabled, setIsAutoConfigEnabled] = useState(true);
   const [expandedTools, setExpandedTools] = useState(['source-input']);
@@ -16258,6 +16650,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [faqCustomInstructions, setFaqCustomInstructions] = useState('');
   const [brainstormCustomInstructions, setBrainstormCustomInstructions] = useState('');
   const [isGeneratingGuide, setIsGeneratingGuide] = useState({});
+  const [isGeneratingBrainstormRubric, setIsGeneratingBrainstormRubric] = useState({});
   const [isGeneratingWorksheet, setIsGeneratingWorksheet] = useState({});
   const [isGeneratingWorksheetCover, setIsGeneratingWorksheetCover] = useState({});
   const [bridgeSimType, setBridgeSimType] = useState('react');
@@ -19321,11 +19714,28 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     return ok;
   };
   if (typeof window !== 'undefined') window.__alloWebGpuAdapterCheck = _webGpuAdapterOk;
+  // TRANSIENT-ERROR DEBOUNCE: a lone 401/429/503 is usually a momentary cloud
+  // blip that clears on its own — not a reason to interrupt with a ~2GB model
+  // download offer. Rate-limit-class failures must persist (several eligible
+  // failures spanning SD_OFFER_PERSIST_MS with no cloud success in between)
+  // before the offer modal shows. Config states (no key / rejected key) stay
+  // immediate: they never self-heal without user action.
+  const SD_OFFER_PERSIST_MS = 5 * 60 * 1000;
+  const SD_OFFER_MIN_FAILURES = 3;
+  const _sdTurboNoteCloudImageSuccess = () => { window.__sdTurboTransientStreak = null; };
+  const _sdTurboTransientPersisting = () => {
+    const now = Date.now();
+    const streak = window.__sdTurboTransientStreak;
+    if (!streak) { window.__sdTurboTransientStreak = { firstAt: now, count: 1 }; return false; }
+    streak.count += 1;
+    return streak.count >= SD_OFFER_MIN_FAILURES && (now - streak.firstAt) >= SD_OFFER_PERSIST_MS;
+  };
   const _sdTurboMaybeOffer = (err) => {
     if (sdTurboOfferedRef.current || window.__sdTurboOfferDeclined || window.__sdTurboDownloading) return;
     if (window._sdTurbo?.ready) return;
     if (typeof navigator === 'undefined' || !navigator.gpu) return; // no WebGPU API: never offer what can't run
     if (!_sdTurboEligibleError(err)) return;
+    if (!err.isConfigState && !_sdTurboTransientPersisting()) return; // transient blip: wait for persistence
     _webGpuAdapterOk().then((ok) => {
       if (!ok || sdTurboOfferedRef.current) return; // API present but no real adapter → stay silent
       sdTurboOfferedRef.current = true;
@@ -19409,6 +19819,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         throw new Error("No image generated (Likely Safety Block)");
       }
       console.log("[Imagen] ✅ Image generated successfully!", base64.length, "chars");
+      _sdTurboNoteCloudImageSuccess();
       if (imagenRateLimitedRef.current) {
         setTimeout(() => { imagenRateLimitedRef.current = false; }, 30000);
       }
@@ -19597,7 +20008,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       setPersonaReflectionInput, setReflectionFeedback, setIsPersonaDefining,
       setIsGradingReflection, setIsGeneratingReflectionPrompt, setPanelTtsPending,
       setShowPersonaHints, setPersonaTurnHintsViewed, setIsPersonaReflectionOpen,
-      setPlayingContentId, setPlaybackState,
+      setPlayingContentId, setPlaybackState, stopPlayback, setPersonaAutoRead,
       alloBotRef, personaDefinitionCache, lastReadPersonaIndexRef, showPersonaHintsRef,
       callImagen, addToast, playSound, handleScoreUpdate, handleAiSafetyFlag,
       resilientJsonParse,
@@ -19868,6 +20279,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         const content = await fetchAndCleanUrl(targetUrl, callGemini, addToast);
         if (content) {
             setInputText(content);
+            recordSourceProvenance({ title: sourceTopic || targetUrl, locator: targetUrl, type: 'url', importMethod: 'url-fetch' }, content);
             setShowUrlInput(false);
             setUrlToFetch('');
             addToast(t('quick_start.article_imported'), "success");
@@ -19895,6 +20307,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         setIsExtracting,
         setGenerationStep,
         setInputText,
+        recordSourceProvenance,
         setPendingPdfBase64,
         setPendingPdfFile,
         setPdfAuditResult,
@@ -20797,7 +21210,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
   };
   const _ceStopPlayback = _ceFn('stopPlayback');
-  const stopPlayback = function() {
+  // Hoisted function declaration (was `const stopPlayback = function() {`) so it is available to
+  // the render-time `_personasLiveRef.current = { ..., stopPlayback, ... }` capture ~1,200 lines
+  // above its definition. As a const function expression there, it crashed AlloFlowContent on mount
+  // with a temporal-dead-zone ReferenceError. (Still recreated each render, so no behavior change.)
+  function stopPlayback() {
     const stoppedContentId = playingContentId;
     _ceStopPlayback();
     if (playbackTimeoutRef.current) { clearTimeout(playbackTimeoutRef.current); playbackTimeoutRef.current = null; }
@@ -21304,6 +21721,30 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       r.readAsDataURL(blob);
     } catch (e) { reject(e); }
   });
+  const _karaokeAudioMetadata = (provider, includeVoice) => {
+    const meta = {
+      provider: provider || 'unknown',
+      language: leveledTextLanguage || currentUiLanguage || 'English',
+      createdAt: new Date().toISOString(),
+    };
+    if (includeVoice !== false) {
+      meta.voice = selectedVoice || window.__alloSelectedVoice || 'Puck';
+      meta.speed = (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1;
+    }
+    return meta;
+  };
+  const _karaokePutFailureDetail = (st) => {
+    let error = null;
+    try { error = st && typeof st.lastPutError === 'function' ? st.lastPutError() : null; } catch (_) {}
+    const code = (error && error.code) || 'store-failed';
+    const limit = code === 'resource-limit' || code === 'clip-too-large';
+    const reason = code === 'resource-limit'
+      ? 'This resource reached its 12 MB saved read-aloud limit.'
+      : code === 'clip-too-large'
+        ? 'This sentence audio is larger than the 2 MB per-clip limit.'
+        : 'The generated audio could not be stored.';
+    return Object.assign({ code, reason, retryable: !limit }, error || {});
+  };
   // The karaoke store module arrives asynchronously. Resolve the active
   // resource's store lazily at every entry point so Save TTS is never required
   // merely to initialize it, and hydrate persisted clips before the first play.
@@ -21326,6 +21767,23 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     }
     return KS[slot];
   };
+  // Serialize karaoke MP3 work and prefer the cooperative encoder. Generating
+  // or warming several clips can otherwise run multiple synchronous LAME loops
+  // during playback, delaying sentence transitions and edit-mode updates.
+  const _encodeKaraokeMp3 = (pcmBytes, sampleRate, kbps) => {
+    const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
+    if (!_ah) return Promise.reject(new Error('Audio helpers unavailable'));
+    const encode = () => {
+      if (typeof _ah.pcmToMp3Async === 'function') return _ah.pcmToMp3Async(pcmBytes, sampleRate || 24000, kbps || 64);
+      if (typeof _ah.pcmToMp3 === 'function') return _ah.pcmToMp3(pcmBytes, sampleRate || 24000, kbps || 64);
+      throw new Error('MP3 encoder unavailable');
+    };
+    const previous = window.__alloKaraokeMp3Queue || Promise.resolve();
+    const next = Promise.resolve(previous).catch(() => {}).then(encode);
+    window.__alloKaraokeMp3Queue = next.catch(() => {});
+    return next;
+  };
+
   // MediaRecorder commonly produces Opus/WebM. Normalize teacher/student
   // sentence takes to the same compact 24 kHz mono MP3 used by generated
   // karaoke clips. If this browser cannot decode or encode the recording,
@@ -21338,7 +21796,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     }
     const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!window.lamejs || !_ah || typeof _ah.pcmToMp3 !== 'function' || !AudioCtx) {
+    if (!window.lamejs || !_ah || (typeof _ah.pcmToMp3Async !== 'function' && typeof _ah.pcmToMp3 !== 'function') || !AudioCtx) {
       return { b64: await _blobToBase64(blob), mime: originalMime };
     }
     let ctx = null;
@@ -21373,7 +21831,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           else setTimeout(resolve, 0);
         } catch (_) { setTimeout(resolve, 0); }
       });
-      const mp3Blob = _ah.pcmToMp3(new Uint8Array(pcm16.buffer), targetRate, 64);
+      const mp3Blob = await _encodeKaraokeMp3(new Uint8Array(pcm16.buffer), targetRate, 64);
       return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg' };
     } catch (e) {
       warnLog('[Karaoke audio] Microphone MP3 normalization failed; preserving original recording:', e && e.message ? e.message : e);
@@ -21388,13 +21846,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const _synthSentenceForStore = async (sentence) => {
     try {
       const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
-      if (window.lamejs && _ah && typeof _ah.pcmToMp3 === 'function') {
+      if (window.lamejs && _ah && (typeof _ah.pcmToMp3Async === 'function' || typeof _ah.pcmToMp3 === 'function')) {
         const r = await fetchTTSBytes(sentence, selectedVoice, voiceSpeed || 1, leveledTextLanguage || currentUiLanguage || 'English');
         if (r && r.bytes) {
           // 64 kbps mono is transparent for 24 kHz speech and halves the
           // embedded-JSON weight vs the 128 kbps download default.
-          const mp3Blob = _ah.pcmToMp3(r.bytes, 24000, 64);
-          return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg' };
+          const mp3Blob = await _encodeKaraokeMp3(r.bytes, 24000, 64);
+          return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg', provider: 'gemini-pcm' };
         }
       }
     } catch (_) {}
@@ -21402,7 +21860,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const url = await callTTS(sentence, selectedVoice, voiceSpeed || 1, { language: leveledTextLanguage || currentUiLanguage || 'English' }).catch(() => null);
       if (!url) return null;
       const blob = await (await fetch(url)).blob();
-      return { b64: await _blobToBase64(blob), mime: blob.type || 'audio/wav' };
+      return { b64: await _blobToBase64(blob), mime: blob.type || 'audio/wav', provider: 'tts-resolver' };
     } catch (_) { return null; }
   };
   const _persistKaraokeAudioField = (field, payload, targetResourceId) => {
@@ -21433,7 +21891,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const resourceId = generatedContent && generatedContent.id;
     const out = await _synthSentenceForStore(sentence);
     if (!out || !out.b64) return null;
-    const url = st.put(sentence, out.b64, out.mime);
+    const url = st.put(sentence, out.b64, out.mime, 'ai-generated', _karaokeAudioMetadata(out.provider || 'tts-resolver'));
+    if (!url) {
+      const detail = _karaokePutFailureDetail(st);
+      _notifyKaraokeAudioCapture(sentence, detail.retryable ? 'error' : 'limit', resourceId, detail);
+      return null;
+    }
     _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
     return url;
   };
@@ -21460,21 +21923,34 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const todo = st.missing(list);
     let n = 0;
     let generatedCount = 0;
+    let failedCount = 0;
+    let lastFailure = null;
+    let wasCancelled = false;
     // A Stop click that landed after the previous run finished must not
     // cancel this run's first sentence.
     window.__alloPrepareReadAloudCancel = false;
     for (let i = 0; i < todo.length; i++) {
-      if (window.__alloPrepareReadAloudCancel) { window.__alloPrepareReadAloudCancel = false; break; }
+      if (window.__alloPrepareReadAloudCancel) { window.__alloPrepareReadAloudCancel = false; wasCancelled = true; break; }
       const out = await _synthSentenceForStore(todo[i]);
       if (out && out.b64) {
-        st.put(todo[i], out.b64, out.mime);
-        generatedCount++;
+        const storedUrl = st.put(todo[i], out.b64, out.mime, 'ai-generated', _karaokeAudioMetadata(out.provider || 'tts-resolver'));
+        if (storedUrl) {
+          generatedCount++;
+        } else {
+          failedCount++;
+          lastFailure = _karaokePutFailureDetail(st);
+          _notifyKaraokeAudioCapture(todo[i], lastFailure.retryable ? 'error' : 'limit', resourceId, lastFailure);
+        }
+      } else {
+        failedCount++;
+        lastFailure = { code: 'synthesis-failed', reason: 'Audio generation failed for this sentence.', retryable: true };
       }
       n++;
       try { if (typeof onProgress === 'function') onProgress(n, todo.length, todo[i]); } catch (_) {}
     }
     _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
-    return { ok: generatedCount === todo.length, generated: generatedCount, attempted: n, total: todo.length, bytes: st.estimateBytes() };
+    const remainingCount = Math.max(0, todo.length - generatedCount);
+    return { ok: remainingCount === 0, generated: generatedCount, failed: failedCount, remaining: remainingCount, cancelled: wasCancelled, attempted: n, total: todo.length, bytes: st.estimateBytes(), failure: lastFailure };
   };
   const _notifyKaraokeAudioCapture = (sentence, status, resourceId, extra) => {
     try {
@@ -21490,45 +21966,98 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // Prefers MP3 (the played clip is our own 24kHz mono WAV, RIFF + 44-byte
   // header) to keep the resource small; stores the raw clip if conversion
   // isn't possible. Persists into the resource like regenerate does.
+  const _karaokeCaptureInFlight = window.__alloKaraokeCaptureInFlight instanceof Map
+    ? window.__alloKaraokeCaptureInFlight
+    : (window.__alloKaraokeCaptureInFlight = new Map());
+  const _fetchKaraokeCaptureBuffer = async (url) => {
+    let lastError = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const response = await fetch(url);
+        if (!response || response.ok === false || typeof response.arrayBuffer !== 'function') {
+          throw new Error('Audio clip fetch failed');
+        }
+        return await response.arrayBuffer();
+      } catch (error) {
+        lastError = error;
+        if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 120));
+      }
+    }
+    throw lastError || new Error('Audio clip fetch failed');
+  };
   window.__alloCaptureKaraokeAudio = async (sentence, url) => {
     if (!sentence || !url) return false;
     const st = _ensureKaraokeStore('reference');
     if (!st) return false;
     const resourceId = generatedContent && generatedContent.id;
     if (st.has(sentence)) return false;
-    _notifyKaraokeAudioCapture(sentence, 'saving', resourceId);
-    try {
-      // Snapshot the bytes IMMEDIATELY: playSequence revokes the played clip's
-      // blob URL in its onended handler, so a deferred fetch can lose very
-      // short clips. The heavy part (MP3 encode) still waits for an idle slot.
-      const buf = await (await fetch(url)).arrayBuffer();
-      await new Promise(res => {
-        try {
-          if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(res, { timeout: 1200 });
-          else setTimeout(res, 250);
-        } catch (_) { setTimeout(res, 250); }
-      });
-      const bytes = new Uint8Array(buf);
-      const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46; // 'RIFF'
-      const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
-      if (isWav && window.lamejs && _ah && typeof _ah.pcmToMp3 === 'function') {
-        try {
-          const pcm = new Uint8Array(buf, 44); // strip WAV header -> PCM
-          const mp3Blob = _ah.pcmToMp3(pcm, 24000, 64); // 64 kbps: speech-transparent, half the JSON weight
-          st.put(sentence, await _blobToBase64(mp3Blob), 'audio/mpeg');
-          _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
-          _notifyKaraokeAudioCapture(sentence, 'saved', resourceId, { mime: 'audio/mpeg' });
-          return true;
-        } catch (_) {}
+    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    const sentenceKey = KS && typeof KS.keyFor === 'function' ? KS.keyFor(sentence) : String(sentence).toLowerCase().replace(/\s+/g, ' ').trim();
+    const captureKey = String(resourceId || 'unsaved') + '::' + sentenceKey;
+    if (_karaokeCaptureInFlight.has(captureKey)) return _karaokeCaptureInFlight.get(captureKey);
+
+    const capturePromise = (async () => {
+      _notifyKaraokeAudioCapture(sentence, 'saving', resourceId);
+      try {
+        // Snapshot the bytes IMMEDIATELY: playSequence may revoke the blob URL
+        // in its onended handler. A bounded retry covers transient fetch races.
+        const buf = await _fetchKaraokeCaptureBuffer(url);
+        await new Promise(res => {
+          try {
+            if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(res, { timeout: 1200 });
+            else setTimeout(res, 250);
+          } catch (_) { setTimeout(res, 250); }
+        });
+        // An explicit regenerate/record may have won while capture was idle.
+        if (st.has(sentence)) return false;
+        const bytes = new Uint8Array(buf);
+        const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
+        const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
+        let b64 = null;
+        let mime = null;
+        let provider = 'played-tts';
+        if (isWav && window.lamejs && _ah && (typeof _ah.pcmToMp3Async === 'function' || typeof _ah.pcmToMp3 === 'function')) {
+          try {
+            const pcm = new Uint8Array(buf, 44);
+            const mp3Blob = await _encodeKaraokeMp3(pcm, 24000, 64);
+            b64 = await _blobToBase64(mp3Blob);
+            mime = 'audio/mpeg';
+            provider = 'played-tts-mp3';
+          } catch (_) {}
+        }
+        if (!b64) {
+          const blob = new Blob([buf], { type: isWav ? 'audio/wav' : 'audio/mpeg' });
+          b64 = await _blobToBase64(blob);
+          mime = blob.type;
+        }
+        const storedUrl = st.put(sentence, b64, mime, 'ai-played', _karaokeAudioMetadata(provider));
+        if (!storedUrl) {
+          const detail = _karaokePutFailureDetail(st);
+          _notifyKaraokeAudioCapture(sentence, detail.retryable ? 'error' : 'limit', resourceId, detail);
+          return false;
+        }
+        _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
+        _notifyKaraokeAudioCapture(sentence, 'saved', resourceId, {
+          mime,
+          storedBytes: st.estimateBytes(),
+          maxBytes: st.limits && st.limits().maxBytes,
+        });
+        return true;
+      } catch (error) {
+        _notifyKaraokeAudioCapture(sentence, 'error', resourceId, {
+          code: 'capture-failed',
+          reason: 'The played audio could not be saved.',
+          retryable: true,
+          message: error && error.message ? error.message : String(error || ''),
+        });
+        return false;
       }
-      const blob = new Blob([buf], { type: isWav ? 'audio/wav' : 'audio/mpeg' });
-      st.put(sentence, await _blobToBase64(blob), blob.type);
-      _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
-      _notifyKaraokeAudioCapture(sentence, 'saved', resourceId, { mime: blob.type });
-      return true;
-    } catch (_) {
-      _notifyKaraokeAudioCapture(sentence, 'error', resourceId);
-      return false;
+    })();
+    _karaokeCaptureInFlight.set(captureKey, capturePromise);
+    try {
+      return await capturePromise;
+    } finally {
+      if (_karaokeCaptureInFlight.get(captureKey) === capturePromise) _karaokeCaptureInFlight.delete(captureKey);
     }
   };
   // Human voice takes: persist a recorded clip (teacher or student) as one
@@ -21547,7 +22076,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     try {
       const normalized = await _normalizeRecordedAudioForStore(blob);
       if (!normalized || !normalized.b64) return false;
-      st.put(sentence, normalized.b64, normalized.mime, 'human-student');
+      const storedUrl = st.put(sentence, normalized.b64, normalized.mime, 'human-student', _karaokeAudioMetadata('microphone', false));
+      if (!storedUrl) return false;
       _persistKaraokeAudioField('karaokeStudentAudio', st.serialize(), resourceId);
       return true;
     } catch (_) { return false; }
@@ -21560,7 +22090,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     try {
       const normalized = await _normalizeRecordedAudioForStore(blob);
       if (!normalized || !normalized.b64) return false;
-      st.put(sentence, normalized.b64, normalized.mime, source || 'human-teacher');
+      const storedUrl = st.put(sentence, normalized.b64, normalized.mime, source || 'human-teacher', _karaokeAudioMetadata('microphone', false));
+      if (!storedUrl) return false;
       _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
       return true;
     } catch (_) { return false; }
@@ -21604,6 +22135,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef,
     exportAuditResult,
     setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading,
+    beginPdfAuditRun, isPdfAuditRunCurrent, finishPdfAuditRun,
     setPdfFixStep, setPendingPdfBase64, setPendingPdfFile,
     setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex,
     setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle,
@@ -21694,7 +22226,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         _eaStatus = 'partial';
         _reasons.push('equal-access-review-count-unknown');
       } else {
-        _eaReviewCount = _eaAggregate !== null ? _eaAggregate : ((_eaPotential || 0) + (_eaManual || 0));
+        _eaReviewCount = _eaAggregate !== null ? Math.max(_eaAggregate, (_eaPotential || 0) + (_eaManual || 0)) : ((_eaPotential || 0) + (_eaManual || 0)); // B7 parity: matches VerificationPolicy (max, not bare aggregate)
         if (_eaReviewCount > 0) {
           _eaStatus = 'complete-with-review';
           if ((_eaPotential || 0) > 0) _reasons.push('equal-access-potential:' + _eaPotential);
@@ -21715,13 +22247,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     });
     if (_v.languageReviewRequired) _reasons.push(String(_v.languageReviewReason || 'document-language-needs-review'));
 
+    // B3/B7 parity (2026-07-13): extraReasons are context, not review findings —
+    // mirrors the canonical VerificationPolicy exactly (this fallback only runs
+    // when the policy module is unavailable, and it must not be STRICTER).
     const _reviewCount = _axeReviewCount + _eaReviewCount
-      + _extraReasons.filter((reason) => String(reason == null ? '' : reason).trim()).length
       + (_v.languageReviewRequired ? 1 : 0);
     const _allComplete = _aiStatus === 'complete' && _axeStatus === 'complete' && _eaStatus === 'complete';
     const _allUnavailable = _aiStatus === 'unavailable' && _axeStatus === 'unavailable' && _eaStatus === 'unavailable';
     const _hasReviewEvidence = _reviewCount > 0 || _aiStatus === 'complete-with-review' || _axeStatus === 'complete-with-review' || _eaStatus === 'complete-with-review';
-    const _verificationState = _hasReviewEvidence ? 'review-required' : (_allComplete ? 'complete' : (_allUnavailable ? 'unavailable' : 'partial'));
+    const _verificationState = _allUnavailable ? 'unavailable' : (_hasReviewEvidence ? 'review-required' : (_allComplete ? 'complete' : 'partial')); // B7 parity: unavailable beats review evidence (a zero-engines result must not claim review-required)
     const _coverage = {
       standard: 'WCAG 2.2 AA',
       ai: _aiStatus,
@@ -21872,10 +22406,6 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const downgraded = applyVerificationHtmlBinding(result, false, optionalReason || 'verification-html-binding-missing-or-stale');
     try { delete downgraded._verificationHtmlSnapshot; } catch (_) {}
     try { delete downgraded._verificationHtmlBindingDigest; } catch (_) {}
-    const priorReason = downgraded.expertReviewReason;
-    downgraded.needsExpertReview = true;
-    downgraded.expertReviewReason = (priorReason === 'content-fidelity' || priorReason === 'both') ? 'both' : 'accessibility';
-    downgraded._verificationExpertReview = true;
     return downgraded;
   }
   verificationBindingHelpersRef.current.enforce = enforceVerificationHtmlBinding;
@@ -22012,6 +22542,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     pdfAutoContinueAbortRef.current = false;
     const _abortCtrl = new AbortController();
     pdfAutoContinueAbortCtrlRef.current = _abortCtrl;
+    // M11 (2026-07-13): save/restore the shared slot like the per-file controller does.
+    // Batch + auto-continue overlap is explicitly supported; overwriting without saving
+    // left the batch's per-call aborts dead for its remaining files once this loop
+    // finished (the slot was nulled, never restored).
+    const _prevAbortSlot = (typeof window !== 'undefined') ? window.__alloPdfAbortSignal : null;
     if (typeof window !== 'undefined') window.__alloPdfAbortSignal = _abortCtrl.signal;
     // Run-generation guard (acl-1, 2026-06-21): capture the gen at entry. The watchdog fire() bumps
     // window.__alloPdfRunGen when it invalidates a stalled run; if a NEW run then starts, this loop's
@@ -22099,6 +22634,19 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           break;
         }
         const _auditOnlyRefresh = _vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && !_isCanonicalComplete(cur);
+        // A3 (2026-07-13): when the ONLY thing between this doc and 'complete' is the
+        // Equal Access engine and that engine is environmentally unavailable (Canvas
+        // CSP blocks both CDN mirrors), the refresh's full AI audit is guaranteed
+        // futile — it can never yield 'complete'. Skip the spend; the state is
+        // already disclosed as partial with EA unavailable.
+        if (_auditOnlyRefresh) {
+          const _covA3 = cur.verificationCoverage || {};
+          const _eaDead = !!(_docPipeline && typeof _docPipeline.equalAccessUnavailable === 'function' && _docPipeline.equalAccessUnavailable());
+          if (_eaDead && _covA3.ai === 'complete' && _covA3.axe === 'complete' && _covA3.equalAccess !== 'complete') {
+            warnLog('[AutoContinue] verification refresh skipped: the Equal Access engine cannot load in this environment, so a refresh cannot reach complete.');
+            break;
+          }
+        }
         const _acDetail = _auditOnlyRefresh
           ? 'verification refresh (no content rewrite)'
           : (_vio > 0
@@ -22152,9 +22700,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         let _ea = null;
         try { _ea = runEqualAccessAudit ? await runEqualAccessAudit(result.html) : null; } catch (_) {}
         // Only scored fresh audits are retained. Empty/error objects replace, rather
-        // than inherit, a prior successful verifier object.
-        const _freshAxe = (result.axe && typeof result.axe.score === 'number' && Number.isFinite(result.axe.score)) ? result.axe : null;
-        const _freshEa = (_ea && typeof _ea.score === 'number' && Number.isFinite(_ea.score)) ? _ea : null;
+        // than inherit, a prior successful verifier object — EXCEPT on an audit-only
+        // refresh (C6, 2026-07-13): that round changed NOTHING, so the prior
+        // deterministic evidence still describes these exact bytes. Nulling it let a
+        // failed axe refresh RAISE an axe-governed 88 to an AI-only 97 on a no-change
+        // round. Rounds that rewrote the html keep the replace-not-inherit rule.
+        const _freshAxeRaw = (result.axe && typeof result.axe.score === 'number' && Number.isFinite(result.axe.score)) ? result.axe : null;
+        const _freshEaRaw = (_ea && typeof _ea.score === 'number' && Number.isFinite(_ea.score)) ? _ea : null;
+        const _freshAxe = _freshAxeRaw || ((result._auditOnly && cur.axeAudit && typeof cur.axeAudit.score === 'number' && Number.isFinite(cur.axeAudit.score)) ? cur.axeAudit : null);
+        const _freshEa = _freshEaRaw || ((result._auditOnly && cur.secondEngineAudit && typeof cur.secondEngineAudit.score === 'number' && Number.isFinite(cur.secondEngineAudit.score)) ? cur.secondEngineAudit : null);
         let _det = _freshAxe ? _freshAxe.score : null;
         if (_freshEa) _det = _det !== null ? Math.min(_det, _freshEa.score) : _freshEa.score;
         const newScore = (_det !== null) ? blendAiAxe(reVerify.score, _det) : reVerify.score; // shared weakest-layer (delegates to computeHeadline)
@@ -22255,15 +22809,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           ? (_freshContentFidelityReview ? 'both' : 'accessibility')
           : (_freshContentFidelityReview ? 'content-fidelity' : null);
         const _expertBase = { needed: !!_expertBaseReason, reason: _expertBaseReason };
-        let _nextNeedsExpertReview;
-        let _nextExpertReviewReason;
-        if (_requiresManualReview) {
-          _nextNeedsExpertReview = true;
-          _nextExpertReviewReason = (_expertBase.reason === 'content-fidelity' || _expertBase.reason === 'both') ? 'both' : 'accessibility';
-        } else {
-          _nextNeedsExpertReview = _expertBase.needed;
-          _nextExpertReviewReason = _expertBase.reason;
-        }
+        const _nextNeedsExpertReview = _expertBase.needed;
+        const _nextExpertReviewReason = _expertBase.reason;
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: _freshAxe,
@@ -22290,8 +22837,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           secondEngineAudit: _freshEa,
           needsExpertReview: _nextNeedsExpertReview,
           expertReviewReason: _nextExpertReviewReason,
-          _verificationExpertReview: _requiresManualReview,
-          _expertReviewBeforeVerification: _requiresManualReview ? _expertBase : null,
+          _verificationExpertReview: false,
+          _expertReviewBeforeVerification: null,
           finalText: _newPlain || cur.finalText,
           autoFixPasses: (cur.autoFixPasses || 0) + (result.passes || 0),
           htmlChars: result.html.length,
@@ -22362,7 +22909,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         pdfAutoContinueAbortCtrlRef.current = null;
       }
       if (typeof window !== 'undefined' && window.__alloPdfAbortSignal === _abortCtrl.signal) {
-        window.__alloPdfAbortSignal = null;
+        window.__alloPdfAbortSignal = _prevAbortSlot || null; // M11: hand the slot back to the overlapping origin (an aborted prev correctly aborts its own remaining calls)
       }
       if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
     }
@@ -22390,7 +22937,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           fileSize: (pendingPdfFile && typeof pendingPdfFile.size === 'number' && pendingPdfFile.size > 0)
             ? pendingPdfFile.size
             : (_override.base64 ? Math.floor(String(_override.base64).replace(/^data:[^,]*,/, '').replace(/\s+/g, '').length * 3 / 4) : null),
-          docKey: (() => { try { const _f = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.docFingerprint; return (_f && _override.base64) ? _f(_override.base64) : null; } catch (_) { return null; } })(),
+          docKey: _override.docKey || null,
           extractedText: _override.extractedText || '',
           pdfBase64: _override.base64 || null,
           failureReason: _override.failureReason || 'other',
@@ -22428,6 +22975,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       version: 1,
       savedAt: new Date().toISOString(),
       fileName: pendingPdfFile?.name || 'document.pdf',
+      documentDigest: cur.documentDigest || null,
       accessibleHtml: cur.accessibleHtml,
       beforeScore: cur.beforeScore,
       afterScore: cur.afterScore,
@@ -22497,11 +23045,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     };
     if (pdfMultiSession && Array.isArray(pdfMultiSession.ranges) && pdfMultiSession.ranges.length > 0) {
       project.multiSession = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         sessionId: pdfMultiSession.sessionId,
         fileName: pdfMultiSession.fileName || project.fileName,
         fileSize: pdfMultiSession.fileSize || (pendingPdfFile?.size || 0),
         pageCount: pdfMultiSession.pageCount || project.pageCount,
+        documentDigest: pdfMultiSession.documentDigest || cur.documentDigest || null,
         ranges: pdfMultiSession.ranges,
       };
     }
@@ -22659,10 +23208,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
 
   const _prevPdfFixLoadingRef = useRef(pdfFixLoading);
+  const _pdfFidelityRepairEpochRef = useRef(0);
   useEffect(() => {
     const wasLoading = _prevPdfFixLoadingRef.current;
     _prevPdfFixLoadingRef.current = pdfFixLoading;
     if (!wasLoading || pdfFixLoading) return; // fire only on true → false
+    const _repairEpoch = ++_pdfFidelityRepairEpochRef.current;
     const tid = setTimeout(() => {
       try {
         if (!extractionData || !extractionData.fullText) return;
@@ -22686,6 +23237,28 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           } catch (e) { return ''; }
         };
         const sourceText = extractionData.fullText || '';
+        let _repairToken = capturePdfHtmlCommitToken();
+        let _workingHtml = String((_repairToken && _repairToken.html) || '');
+        let _staleRepairNotified = false;
+        const _repairCurrent = () => !!(_repairToken
+          && _pdfFidelityRepairEpochRef.current === _repairEpoch
+          && _repairToken.revision === pdfHtmlRevisionRef.current
+          && pdfFixResultRef.current
+          && pdfFixResultRef.current.accessibleHtml === _repairToken.html);
+        const _discardStaleRepair = () => {
+          if (_staleRepairNotified) return;
+          _staleRepairNotified = true;
+          if (addToast) addToast(t('toasts.fidelity_stale_discarded') || 'The document changed during automatic fidelity repair ? the stale repair was discarded.', 'info');
+        };
+        const _commitRepairHtml = (nextHtml) => {
+          if (!_repairCurrent() || !commitPdfFixResultIfCurrent(_repairToken, (prev) => ({ ...prev, accessibleHtml: nextHtml }))) {
+            _discardStaleRepair(); return false;
+          }
+          _repairToken = capturePdfHtmlCommitToken();
+          _workingHtml = String(nextHtml || '');
+          return true;
+        };
+        const _commitRepairMeta = (updater) => _repairCurrent() && commitPdfFixResultIfCurrent(_repairToken, updater);
         const remText1 = extractText();
         const pass1 = _buildMissingList(sourceText, remText1);
         const missing1 = pass1.missing;
@@ -22698,7 +23271,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           if (addToast) addToast(t('toasts.fidelity_100_words_missing'), 'success');
           try {
             if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-              setPdfFixResult(prev => prev ? Object.assign({}, prev, {
+              _commitRepairMeta(prev => prev ? Object.assign({}, prev, {
                 integrityVerifying: false,
                 integrityFinal: {
                   coverage: beforeFidelity,
@@ -22715,7 +23288,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         }
         try {
           if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-            setPdfFixResult(prev => prev ? Object.assign({}, prev, { integrityVerifying: true }) : prev);
+            _commitRepairMeta(prev => prev ? Object.assign({}, prev, { integrityVerifying: true }) : prev);
           }
         } catch (e) { /* non-blocking */ }
         (async () => {
@@ -22723,49 +23296,48 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           const stageCounts = { retry: 0, sentence: 0 };
           let currentMissing = missing1;
           try {
-            const currentHtml = getPdfPreviewHtml ? getPdfPreviewHtml() : ((pdfFixResult && pdfFixResult.accessibleHtml) || '');
+            const currentHtml = _workingHtml;
             const stageA = await retargetMissingWordsViaGemini(currentHtml, currentMissing, sourceText);
+            if (!_repairCurrent()) { _discardStaleRepair(); return; }
             if (stageA && Array.isArray(stageA.restoredViaRetry) && stageA.restoredViaRetry.length > 0 && stageA.html && stageA.html !== currentHtml) {
               stageCounts.retry = stageA.restoredViaRetry.length;
-              if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: stageA.html } : prev);
-              }
+              if (!_commitRepairHtml(stageA.html)) return;
               currentMissing = Array.isArray(stageA.stillMissing) ? stageA.stillMissing : currentMissing;
             }
           } catch (eA) { /* non-blocking */ }
           if (currentMissing.length > 0) {
             try {
-              const currentHtml = (pdfFixResult && pdfFixResult.accessibleHtml) || (getPdfPreviewHtml ? getPdfPreviewHtml() : '');
+              const currentHtml = _workingHtml;
               const stageB = restoreSentencesDeterministic(currentHtml, currentMissing, sourceText);
               if (stageB && Array.isArray(stageB.restoredViaSentence) && stageB.restoredViaSentence.length > 0 && stageB.html && stageB.html !== currentHtml) {
                 stageCounts.sentence = stageB.restoredViaSentence.length;
-                if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                  setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: stageB.html } : prev);
-                }
+                if (!_commitRepairHtml(stageB.html)) return;
                 currentMissing = Array.isArray(stageB.stillMissing) ? stageB.stillMissing : currentMissing;
               }
             } catch (eB) { /* non-blocking */ }
           }
           setTimeout(() => {
             try {
+            if (!_repairCurrent()) { _discardStaleRepair(); return; }
             let restoreResult = { restored: [], unplaceable: currentMissing };
             if (currentMissing.length > 0) {
               try { restoreResult = applyWordRestorationInPlace(currentMissing, sourceText) || restoreResult; }
               catch (restoreErr) { /* warn already in pipeline */ }
+              _repairToken = capturePdfHtmlCommitToken();
+              _workingHtml = String((_repairToken && _repairToken.html) || '');
             }
             let dedupResult = { autoRemoved: [], highlighted: [] };
             try {
-              const currentHtml = (pdfFixResult && pdfFixResult.accessibleHtml) || (getPdfPreviewHtml ? getPdfPreviewHtml() : '');
+              const currentHtml = _workingHtml;
               const dedup = detectAndHandleDuplicates(currentHtml, sourceText);
               if (dedup && dedup.html && dedup.html !== currentHtml) {
-                if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                  setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: dedup.html } : prev);
-                }
+                if (!_commitRepairHtml(dedup.html)) return;
                 dedupResult = { autoRemoved: dedup.autoRemoved || [], highlighted: dedup.highlighted || [] };
               }
             } catch (eD) { /* non-blocking */ }
             setTimeout(() => {
               try {
+              if (!_repairCurrent()) { _discardStaleRepair(); return; }
               try {
                 const remText2 = extractText();
                 const pass2 = _buildMissingList(sourceText, remText2);
@@ -22782,7 +23354,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                 const _dedupRemovedCount = (dedupResult.autoRemoved || []).length;
                 try {
                   if (typeof setPdfFixResult === 'function') {
-                    setPdfFixResult(prev => prev ? Object.assign({}, prev, {
+                    _commitRepairMeta(prev => prev ? Object.assign({}, prev, {
                       integrityVerifying: false,
                       integrityFinal: {
                         coverage: afterFidelity,
@@ -22818,20 +23390,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                 }
               } catch (e) { /* non-blocking */ }
               } finally {
-                setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+                _commitRepairMeta(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
               }
             }, 500);
             } finally {
-              setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+              _commitRepairMeta(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
             }
           }, 200);
           } finally {
-            setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+            _commitRepairMeta(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
           }
         })();
       } catch (outerErr) { /* non-blocking */ }
     }, 200);
-    return () => clearTimeout(tid);
+    return () => { clearTimeout(tid); if (_pdfFidelityRepairEpochRef.current === _repairEpoch) _pdfFidelityRepairEpochRef.current += 1; };
   }, [pdfFixLoading, extractionData, pdfMultiSession]);
 
   const [expertCommandInput, setExpertCommandInput] = useState('');
@@ -23453,9 +24025,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const iframe = exportPreviewRef.current;
       const doc = iframe && (iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document));
       if (!doc || !doc.body || !doc.documentElement) return;
+      const hasLiveEdits = doc.body.getAttribute('data-allo-user-edited') === '1';
+      if (doc.body.getAttribute('data-allo-preview-error') === '1') return;
+      if (exportPreviewSource === 'remediation' && !hasLiveEdits) return;
       // Never persist an empty/failed render, while allowing legitimate short,
       // image-led, equation-only, form, and title-page documents.
-      const hasMeaningfulContent = (doc.body.textContent || '').trim().length > 0 || !!doc.body.querySelector('img,svg,canvas,video,audio,math,table,form,input,textarea,select,hr');
+      const hasMeaningfulContent = (doc.body.textContent || '').trim().length > 0 || !!doc.body.querySelector('img,svg,canvas,video,audio,math,table,form,input,textarea,select');
       if (!hasMeaningfulContent) return;
       const clone = doc.documentElement.cloneNode(true);
       try {
@@ -23500,13 +24075,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     return raw.length + ':' + (hash >>> 0).toString(16);
   };
   const BUILDER_PROJECT_DRAFT_MAX_BYTES = 32 * 1024 * 1024;
+  const BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES = 32 * 1024 * 1024;
+  const _builderUtf8ByteLength = (value) => {
+    try { return new TextEncoder().encode(String(value == null ? '' : value)).byteLength; }
+    catch (_) { return String(value == null ? '' : value).length; }
+  };
   // Project files can come from outside this app. A saved Builder draft is
   // therefore treated as untrusted HTML before it is ever placed in the
   // same-origin editing iframe. Preserve document structure and styling while
   // removing executable/embedded content, event handlers, navigation targets,
   // remote CSS fetches, and dangerous URL schemes.
   const _sanitizeBuilderProjectDraft = (html, historySignature) => {
-    if (typeof html !== 'string' || html.length === 0 || html.length > BUILDER_PROJECT_DRAFT_MAX_BYTES || !/<body[\s>]/i.test(html)) return null;
+    if (typeof html !== 'string' || html.length === 0 || _builderUtf8ByteLength(html) > BUILDER_PROJECT_DRAFT_MAX_BYTES || !/<body[\s>]/i.test(html)) return null;
     try {
       const parsed = new DOMParser().parseFromString(html, 'text/html');
       if (!parsed || !parsed.documentElement || !parsed.body) return null;
@@ -23525,31 +24105,149 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       });
       parsed.querySelectorAll('form').forEach((form) => { form.removeAttribute('action'); form.removeAttribute('target'); form.removeAttribute('method'); });
       const cleanHtml = '<!DOCTYPE html>\n' + parsed.documentElement.outerHTML;
-      if (cleanHtml.length > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
+      if (_builderUtf8ByteLength(cleanHtml) > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
       return { version: 1, source: 'history', historySignature, html: cleanHtml, savedAt: new Date().toISOString(), activeContentRemoved: true };
     } catch (_) { return null; }
   };
-  const _getBuilderDraftForProject = () => {
+  const _deduplicateBuilderDraftAssets = (html) => {
+    const assets = [];
+    const indexes = new Map();
+    const compactHtml = String(html || '').replace(/data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=\r\n]+/gi, (asset) => {
+      let index = indexes.get(asset);
+      if (index === undefined) {
+        index = assets.length;
+        indexes.set(asset, index);
+        assets.push(asset);
+      }
+      return 'allo-builder-asset:' + index;
+    });
+    return { html: compactHtml, assets };
+  };
+  const _restoreBuilderDraftAssets = (html, assets) => {
+    if (!Array.isArray(assets) || assets.length > 2048 || assets.some((asset) => typeof asset !== 'string' || !/^data:image\/[a-z0-9.+-]+;base64,/i.test(asset))) return null;
+    return String(html || '').replace(/allo-builder-asset:(\d+)/g, (_match, rawIndex) => {
+      const index = Number(rawIndex);
+      return Number.isSafeInteger(index) && assets[index] ? assets[index] : '';
+    });
+  };
+  const _builderBytesToBase64 = (bytes) => {
+    let binary = '';
+    for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(offset, Math.min(offset + 0x8000, bytes.length)));
+    }
+    return btoa(binary);
+  };
+  const _builderBase64ToBytes = (encoded) => {
+    try {
+      const binary = atob(String(encoded || ''));
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    } catch (_) { return null; }
+  };
+  const _readBuilderDraftStreamBounded = async (stream, maxBytes) => {
+    if (!stream || typeof stream.getReader !== 'function' || typeof TextDecoder === 'undefined') return null;
+    const reader = stream.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+      while (true) {
+        const part = await reader.read();
+        if (part.done) break;
+        total += part.value.byteLength;
+        if (total > maxBytes) { try { await reader.cancel(); } catch (_) {} return null; }
+        chunks.push(part.value);
+      }
+    } finally { try { reader.releaseLock(); } catch (_) {} }
+    const merged = new Uint8Array(total);
+    let offset = 0;
+    chunks.forEach((chunk) => { merged.set(chunk, offset); offset += chunk.byteLength; });
+    return new TextDecoder().decode(merged);
+  };
+  const _encodeBuilderDraftPayload = async (payloadText) => {
+    try {
+      if (typeof CompressionStream === 'function' && typeof Blob === 'function' && typeof Response === 'function') {
+        const compressedStream = new Blob([payloadText]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+        const compressed = new Uint8Array(await new Response(compressedStream).arrayBuffer());
+        if (compressed.byteLength <= BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES) {
+          return { encoding: 'deflate-raw-base64', payload: _builderBytesToBase64(compressed), storedByteLength: compressed.byteLength };
+        }
+        return null;
+      }
+    } catch (_) {}
+    const storedByteLength = _builderUtf8ByteLength(payloadText);
+    return storedByteLength <= BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES
+      ? { encoding: 'plain-json', payload: payloadText, storedByteLength }
+      : null;
+  };
+  const _decodeBuilderDraftPayload = async (candidate) => {
+    if (!candidate || typeof candidate.payload !== 'string' || candidate.payload.length > BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES * 2) return null;
+    if (candidate.encoding === 'plain-json') {
+      if (_builderUtf8ByteLength(candidate.payload) > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
+      return candidate.payload;
+    }
+    if (candidate.encoding !== 'deflate-raw-base64' || typeof DecompressionStream !== 'function' || typeof Blob !== 'function') return null;
+    const bytes = _builderBase64ToBytes(candidate.payload);
+    if (!bytes || bytes.byteLength > BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES) return null;
+    try {
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+      return await _readBuilderDraftStreamBounded(stream, BUILDER_PROJECT_DRAFT_MAX_BYTES);
+    } catch (_) { return null; }
+  };
+  const _packBuilderProjectDraft = async (cleanDraft, historySignature) => {
+    const compact = _deduplicateBuilderDraftAssets(cleanDraft.html);
+    const payloadText = JSON.stringify(compact);
+    if (_builderUtf8ByteLength(payloadText) > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
+    const encoded = await _encodeBuilderDraftPayload(payloadText);
+    if (!encoded) return null;
+    return {
+      version: 2,
+      source: 'history',
+      historySignature,
+      encoding: encoded.encoding,
+      payload: encoded.payload,
+      storedByteLength: encoded.storedByteLength,
+      uncompressedByteLength: _builderUtf8ByteLength(cleanDraft.html),
+      assetCount: compact.assets.length,
+      savedAt: new Date().toISOString(),
+      activeContentRemoved: true
+    };
+  };
+  const _unpackBuilderProjectDraft = async (candidate, historySignature) => {
+    if (!candidate || candidate.source !== 'history' || candidate.historySignature !== historySignature) return null;
+    if (candidate.version === 1) return typeof candidate.html === 'string' ? candidate.html : null;
+    if (candidate.version !== 2) return null;
+    const payloadText = await _decodeBuilderDraftPayload(candidate);
+    if (!payloadText) return null;
+    try {
+      const compact = JSON.parse(payloadText);
+      if (!compact || typeof compact.html !== 'string') return null;
+      const html = _restoreBuilderDraftAssets(compact.html, compact.assets || []);
+      return html && _builderUtf8ByteLength(html) <= BUILDER_PROJECT_DRAFT_MAX_BYTES ? html : null;
+    } catch (_) { return null; }
+  };
+  const _getBuilderDraftForProject = async () => {
     try {
       _syncBuilderEditsToRemediation();
       const draft = window.__alloBuilderEditedPack;
       const signature = _getBuilderHistorySignature();
       if (!draft || draft.source !== 'history' || draft.historySignature !== signature) return null;
-      return _sanitizeBuilderProjectDraft(draft.html, signature);
+      const cleanDraft = _sanitizeBuilderProjectDraft(draft.html, signature);
+      return cleanDraft ? await _packBuilderProjectDraft(cleanDraft, signature) : null;
     } catch (_) { return null; }
   };
-  const _restoreBuilderDraftFromProject = (candidate, loadedHistory) => {
+  const _restoreBuilderDraftFromProject = async (candidate, loadedHistory) => {
     try {
       window.__alloBuilderEditedPack = null;
       if (candidate == null) return;
       const signature = _getBuilderHistorySignature(loadedHistory);
-      const validEnvelope = candidate && candidate.version === 1 && candidate.source === 'history' && candidate.historySignature === signature;
-      const cleanDraft = validEnvelope ? _sanitizeBuilderProjectDraft(candidate.html, signature) : null;
+      const unpackedHtml = await _unpackBuilderProjectDraft(candidate, signature);
+      const cleanDraft = unpackedHtml ? _sanitizeBuilderProjectDraft(unpackedHtml, signature) : null;
       if (!cleanDraft) {
         addToast(t('toasts.builder_draft_skipped') || 'A saved Document Builder draft was not restored because it was stale or unsafe.', 'info');
         return;
       }
-      window.__alloBuilderEditedPack = { ...cleanDraft, at: Date.now(), restoredFromProject: true };
+      window.__alloBuilderEditedPack = { ...cleanDraft, at: Date.now(), restoredFromProject: true, storedVersion: candidate.version };
       addToast(t('toasts.builder_draft_restored') || 'Document Builder edits were restored with this project.', 'success');
     } catch (_) {
       try { window.__alloBuilderEditedPack = null; } catch (_) {}
@@ -23577,13 +24275,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     // their own CSS on repeated application. Slides mode stays history-based
     // (no remediation slide deck exists; the audit modal's accessible-PPTX
     // export covers decks).
+      if (!_docPipeline || typeof _docPipeline.sanitizeRemediationHtml !== 'function') {
+        throw new Error('Remediation security module unavailable ? reload after the application modules finish loading.');
+      }
+      const _safeRemediationHtml = _docPipeline.sanitizeRemediationHtml(pdfFixResult.accessibleHtml);
     if (exportPreviewSource === 'remediation' && pdfFixResult?.accessibleHtml && exportPreviewMode !== 'slides') {
       try {
         if (_docPipeline && typeof _docPipeline.applyStyleSeedToHtml === 'function') {
-          return _docPipeline.applyStyleSeedToHtml(pdfFixResult.accessibleHtml, exportTheme, exportConfig.fontSize || 16);
+          return _docPipeline.applyStyleSeedToHtml(_safeRemediationHtml, exportTheme, exportConfig.fontSize || 16);
         }
       } catch (err) { warnLog('[Export preview] remediation theming failed — serving unthemed remediated HTML:', err); }
-      return pdfFixResult.accessibleHtml;
+      return _safeRemediationHtml;
     }
     if (exportPreviewMode === 'slides') {
       return getSlidesPreviewHTML();
@@ -23643,7 +24345,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         addToast && addToast(t('toasts.preview_failed_render_document_pipeline'), 'error');
       }
       const escapedMsg = msg.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-      html = `<!DOCTYPE html><html><body style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
+      html = `<!DOCTYPE html><html><body data-allo-preview-error="1" style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
     }
     doc.open();
     doc.write(html);
@@ -24348,6 +25050,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         adventureFreeResponseEnabled,
         adventureInputMode,
         adventureLanguageMode,
+        adventureConsistentCharacters,
+        isAdventureStoryMode,
+        isSocialStoryMode,
+        socialStoryFocus,
+        adventureArtStyle,
+        adventureCustomArtStyle,
+        useLowQualityVisuals,
+        enableFactionResources,
+        factionResourceMode,
         completedActivities,
         escapeRoomState,
         externalCBMScores,
@@ -24469,6 +25180,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         setAdventureCustomInstructions,
         setAdventureChanceMode,
         setAdventureFreeResponseEnabled,
+        setAdventureConsistentCharacters,
+        setIsAdventureStoryMode,
+        setIsSocialStoryMode,
+        setSocialStoryFocus,
+        setAdventureArtStyle,
+        setAdventureCustomArtStyle,
+        setUseLowQualityVisuals,
+        setEnableFactionResources,
+        setFactionResourceMode,
         setStudentNickname,
         setAdventureState,
         setHasSavedAdventure,
@@ -24738,7 +25458,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   addToast('Homework loaded: ' + (packet.title || firstResource.title || 'AlloFlow assignment'), 'success');
               } catch (e) {
                   warnLog('Homework QR load failed:', e);
-                  if (!cancelled) addToast('Could not load this homework QR assignment.', 'error');
+                  if (!cancelled) {
+                      const message = String(e?.message || '').toLowerCase();
+                      const code = String(e?.code || '').toLowerCase();
+                      const recovery = message.includes('expired')
+                          ? 'This homework link has expired. Ask your teacher for a new QR code.'
+                          : message.includes('not found')
+                              ? 'This homework link was revoked or is no longer available. Ask your teacher for a new QR code.'
+                              : message.includes('no resources') || message.includes('no openable')
+                                  ? 'This homework link is incomplete. Ask your teacher to create it again.'
+                                  : code.includes('permission-denied')
+                                      ? 'This homework link cannot access the teacher class storage. Ask your teacher to use a Class Mailbox or self-contained QR.'
+                                      : 'Could not load this homework assignment. Check the connection, then retry or ask your teacher for a new QR code.';
+                      addToast(recovery, 'error');
+                  }
               }
           };
           loadAssignment();
@@ -24786,9 +25519,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           } catch (e) {
               warnLog('Self-contained homework load failed:', e);
               if (!cancelled) {
+                  const errorMessage = String(e?.message || '').toLowerCase();
                   const message = e?.code === 'allo/pack-unsupported-browser'
                       ? 'This browser is too old to open compressed homework links. Try another device or browser.'
-                      : 'Could not open this homework link. Ask your teacher for a new one.';
+                      : errorMessage.includes('expired')
+                          ? 'This homework link has expired. Ask your teacher for a new QR code.'
+                          : errorMessage.includes('no resources')
+                              ? 'This homework link is incomplete. Ask your teacher to create it again.'
+                              : 'Could not open this homework link. It may be damaged or truncated; ask your teacher for a new one.';
                   addToast(message, 'error');
               }
           }
@@ -26210,6 +26948,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         setShowDice,
         setShowGlobalLevelUp,
         setShowNewGameSetup,
+        setAdventureDifficulty,
+        setAdventureInputMode,
+        setAdventureLanguageMode,
+        setAdventureChanceMode,
+        setAdventureFreeResponseEnabled,
+        setAdventureConsistentCharacters,
+        setIsAdventureStoryMode,
+        setIsSocialStoryMode,
+        setSocialStoryFocus,
+        setAdventureArtStyle,
+        setAdventureCustomArtStyle,
+        setUseLowQualityVisuals,
+        setEnableFactionResources,
+        setFactionResourceMode,
         callGemini,
         callGeminiVision,
         addToast,
@@ -26230,6 +26982,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         flyToElement,
         resilientJsonParse,
         storageDB,
+        adventureImageDB,
         updateDoc,
         doc,
         db,
@@ -27445,6 +28198,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       symbolStudioOpen: isSymbolStudioOpen,
       videoStudioOpen: isVideoStudioOpen,
       alloStudioOpen: isAlloStudioOpen,
+      cinematicStudioOpen: showCinematicStudio,
+      openGrooveOpen: isOpenGrooveOpen,
+      timelineStudioOpen: isTimelineStudioOpen,
+      linguaPracticeOpen: isLinguaPracticeOpen,
+      testPrepHubOpen: isTestPrepHubOpen,
       stemLabOpen: showStemLab,
       stemLabTool,
       behaviorLensOpen: showBehaviorLens,
@@ -27549,6 +28307,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           symbolStudio: () => setIsSymbolStudioOpen(false),
           videoStudio: () => setIsVideoStudioOpen(false),
           alloStudio: () => setIsAlloStudioOpen(false),
+          cinematicStudio: () => setShowCinematicStudio(false),
+          openGroove: () => setIsOpenGrooveOpen(false),
+          timelineStudio: () => setIsTimelineStudioOpen(false),
+          linguaPractice: () => setIsLinguaPracticeOpen(false),
+          testPrepHub: () => setIsTestPrepHubOpen(false),
           accessibilityLab: () => setIsAccessibilityLabOpen(false),
           communityCatalog: () => setIsCommunityCatalogOpen(false),
           readingLibrary: () => setIsReadingLibraryOpen(false),
@@ -27583,7 +28346,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       openReportWriter: () => setShowReportWriter(true),
       openSymbolStudio: () => setIsSymbolStudioOpen(true),
       openVideoStudio: () => setIsVideoStudioOpen(true),
+      openCinematicStudio: () => setShowCinematicStudio(true),
       openAlloStudio: () => setIsAlloStudioOpen(true),
+      openOpenGroove: () => setIsOpenGrooveOpen(true),
+      openTimelineStudio: () => setIsTimelineStudioOpen(true),
+      openLinguaPractice: () => setIsLinguaPracticeOpen(true),
+      openTestPrepHub: () => setIsTestPrepHubOpen(true),
       openAccessibilityLab: () => setIsAccessibilityLabOpen(true),
       openLumen: () => { setStemLabTool('lumen'); setShowStemLab(true); },
       openCommunityCatalog: () => setIsCommunityCatalogOpen(true),
@@ -27783,6 +28551,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     // chip says exactly what it restores.
     if (_rawUtter === '__allo_plan_undo') {
       setUdlInput('');
+      _pendingBotPlanRef.current = null;
       const _snap = _planUndoRef.current;
       if (!_snap) {
         setUdlMessages(prev => [...prev, { role: 'model', text: (t('chat_guide.plan_undo_none') || 'There’s nothing from a plan to undo right now.') }]);
@@ -27856,11 +28625,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         if (_isRun && _AC && typeof _AC.runPlan === 'function') {
           const _steps = _pendingPlan.steps;
           _planRunRef.current = { running: true, stop: false };
-          // Undo restore point: content refs + the settings intent snapshot.
-          try {
-            captureIntentSnapshot('plan');
-            _planUndoRef.current = { generatedContent, history, activeView, settings: lastIntentSnapshotRef.current };
-          } catch (_) { _planUndoRef.current = null; }
+          // A resumed remainder is still the same plan. Preserve the original
+          // restore point so Undo returns to the state before step one, not
+          // merely to the state before the continuation.
+          if (!_pendingPlan.resume || !_planUndoRef.current) {
+            try {
+              captureIntentSnapshot('plan');
+              _planUndoRef.current = { generatedContent, history, activeView, settings: lastIntentSnapshotRef.current };
+            } catch (_) { _planUndoRef.current = null; }
+          }
           setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '▶ ' + (t('chat_guide.plan_running') || 'Running the plan — I’ll report each step here.'), choices: [
             { label: '🛑 ' + (t('chat_guide.plan_stop') || 'Stop after current step'), value: '__allo_plan_stop' }
           ] }]);
@@ -27880,13 +28653,25 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                 { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
               ] }]);
               try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_done') || 'All steps finished.'); } catch (_) {}
-            } else if (_pr && Array.isArray(_pr.results) && _pr.results.length) {
-              // Partial run: some steps landed — offer the same restore point.
-              setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + (_pr.reason || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_hint') || 'The finished steps are kept. To do the rest, just ask again for what’s left — for example “make a glossary, then translate it to Spanish”.'), choices: [
-                { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
-              ] }]);
             } else {
-              setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_hint') || 'The finished steps are kept. To do the rest, just ask again for what’s left — for example “make a glossary, then translate it to Spanish”.') }]);
+              const _remaining = (_pr && Array.isArray(_pr.remainingSteps)) ? _pr.remainingSteps : [];
+              const _hasFinished = !!(_pr && Array.isArray(_pr.results) && _pr.results.length);
+              const _canResume = _remaining.length > 0 && !(_pr && _pr.timedOut);
+              if (_canResume) {
+                _pendingBotPlanRef.current = { steps: _remaining, originalText: _pendingPlan.originalText, resume: true };
+                const _countLabel = _remaining.length + ' remaining step' + (_remaining.length === 1 ? '' : 's');
+                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_exact') || 'The finished steps are kept. You can resume the exact remaining sequence without re-entering it.'), choices: [
+                  { label: '▶ ' + (t('chat_guide.plan_resume') || 'Resume') + ' (' + _countLabel + ')', value: '__allo_plan_run' },
+                  { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+                ] }]);
+              } else if (_hasFinished) {
+                const _held = _remaining.length ? (' ' + _remaining.length + ' later step' + (_remaining.length === 1 ? ' is' : 's are') + ' still held.') : '';
+                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + (_pr.reason || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + _held + ' ' + ((_pr && _pr.timedOut) ? (t('chat_guide.plan_timeout_wait') || 'Wait for the current background task to finish before starting another command.') : (t('chat_guide.plan_resume_hint') || 'The finished steps are kept.')), choices: [
+                  { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+                ] }]);
+              } else {
+                setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + (_remaining.length ? ' The remaining sequence is preserved; resolve the blocker and ask to run it again.' : '') }]);
+              }
             }
           } catch (_) {
             setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_failed') || 'The plan stopped early.') }]);
@@ -28495,6 +29280,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         latestGlossary,
         toFocusText,
         personaReflectionInput,
+        personaReflectionSubmitRef,
         fluencyStatus,
         fluencyTimeLimit,
         selectedGrammarErrors,
@@ -28555,10 +29341,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
   }, [personaState.chatHistory, isPersonaChatOpen]);
   useEffect(() => {
-      if (!isPersonaFreeResponse && isPersonaChatOpen && !personaState.isLoading && (personaState.suggestions || []).length < 6 && personaState.selectedCharacter) {
+      if (isPersonaFreeResponse || !isPersonaChatOpen || personaState.isLoading) return;
+      if (personaState.mode === 'panel' && personaState.selectedCharacters?.length === 2) {
+          if ((personaState.panelSuggestions || []).length < 6) {
+              generatePanelFollowUps(personaState.chatHistory, personaState.selectedCharacters[0], personaState.selectedCharacters[1]);
+          }
+      } else if (personaState.selectedCharacter && (personaState.suggestions || []).length < 6) {
           generatePersonaFollowUps(personaState.chatHistory, personaState.selectedCharacter, 6);
       }
-  }, [isPersonaFreeResponse, isPersonaChatOpen]);
+  }, [isPersonaFreeResponse, isPersonaChatOpen, personaState.isLoading, personaState.mode, personaState.selectedCharacter?.name,
+      (personaState.selectedCharacters || []).map(c => c?.name).join(','),
+      (personaState.suggestions || []).length, (personaState.panelSuggestions || []).length]);
   const saveFullChat = () => {
       if (udlMessages.length <= 1) {
           addToast(t('toasts.no_conversation_yet'), "info");
@@ -29091,6 +29884,26 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       }
   };
   const handleExecuteBlueprint = async () => {
+    const _adapterModule = window.AlloModules && window.AlloModules.AgentCoreUIAdapter;
+    if (!_adapterModule || typeof _adapterModule.createUIAdapter !== 'function') {
+      throw new Error('[AgentCoreUIAdapter] module not loaded - reload the page');
+    }
+    const _knownTools = Array.isArray(window.TOOL_CATALOG)
+      ? window.TOOL_CATALOG.map(item => item && item.id).filter(Boolean)
+      : undefined;
+    const _uiAdapter = _adapterModule.createUIAdapter({ knownTools: _knownTools });
+    const _prepared = _uiAdapter.prepareExecution(activeBlueprint, {
+      gradeLevel,
+      language: leveledTextLanguage,
+      standards: standardsInput,
+      interests: studentInterests,
+    }, 'ui-confirmation');
+    if (!_prepared.ok) {
+      const _approvalError = new Error((_prepared.errors && _prepared.errors[0] && _prepared.errors[0].message) || 'Blueprint approval failed');
+      _approvalError.report = _prepared;
+      throw _approvalError;
+    }
+    const _executionBlueprint = _prepared.legacyConfig;
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
     if (_m && typeof _m.handleExecuteBlueprint === "function") return _m.handleExecuteBlueprint({
         gradeLevel,
@@ -29136,7 +29949,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         aiStandardQuery,
         aiStandardRegion,
         imageRefinementInput,
-        activeBlueprint,
+        activeBlueprint: _executionBlueprint,
         ai,
         alloBotRef,
         pdfPreviewRef,
@@ -32138,7 +32951,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
  * color utilities). Contrast matrix + drift enforced by
  * tests/docsuite_theme_contrast.test.js.
  * Scope class .allo-docsuite covers: docsuite (PDF remediation + Document Hub modals); selsuite (4 Tailwind SEL tools); appsuite (main-content artifact views + sidebar);
- * plus the main-content JSX region of ANTI. Union 993 tokens. */
+ * plus the main-content JSX region of ANTI. Union 1015 tokens. */
 .theme-dark .allo-docsuite { color-scheme: dark; }
 .theme-dark .allo-docsuite input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .theme-dark .allo-docsuite textarea,
@@ -32168,16 +32981,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite .ring-cyan-200, .theme-dark .allo-docsuite .ring-cyan-300, .theme-dark .allo-docsuite .ring-cyan-400, .theme-dark .allo-docsuite [class~="ring-cyan-400/50"], .theme-dark .allo-docsuite .ring-cyan-500, .theme-dark .allo-docsuite [class~="ring-cyan-500/20"] { --tw-ring-color:#0e7490 !important; }
 .theme-dark .allo-docsuite .ring-teal-200, .theme-dark .allo-docsuite .ring-teal-300, .theme-dark .allo-docsuite .ring-teal-400, .theme-dark .allo-docsuite .ring-teal-500 { --tw-ring-color:#0f766e !important; }
 .theme-dark .allo-docsuite .ring-green-200, .theme-dark .allo-docsuite .ring-green-300, .theme-dark .allo-docsuite .ring-green-400, .theme-dark .allo-docsuite .ring-green-500 { --tw-ring-color:#15803d !important; }
-.theme-dark .allo-docsuite .ring-blue-200, .theme-dark .allo-docsuite .ring-blue-400, .theme-dark .allo-docsuite .ring-blue-500, .theme-dark .allo-docsuite [class~="ring-blue-500/20"], .theme-dark .allo-docsuite [class~="ring-blue-500/30"] { --tw-ring-color:#1d4ed8 !important; }
+.theme-dark .allo-docsuite .ring-blue-200, .theme-dark .allo-docsuite .ring-blue-400, .theme-dark .allo-docsuite .ring-blue-500, .theme-dark .allo-docsuite [class~="ring-blue-500/20"], .theme-dark .allo-docsuite [class~="ring-blue-500/30"], .theme-dark .allo-docsuite .ring-blue-600 { --tw-ring-color:#1d4ed8 !important; }
 .theme-dark .allo-docsuite .ring-indigo-100, .theme-dark .allo-docsuite .ring-indigo-200, .theme-dark .allo-docsuite .ring-indigo-300, .theme-dark .allo-docsuite .ring-indigo-400, .theme-dark .allo-docsuite [class~="ring-indigo-400/50"], .theme-dark .allo-docsuite .ring-indigo-500, .theme-dark .allo-docsuite [class~="ring-indigo-500/20"], .theme-dark .allo-docsuite [class~="ring-indigo-500/30"], .theme-dark .allo-docsuite .ring-indigo-600 { --tw-ring-color:#4338ca !important; }
-.theme-dark .allo-docsuite .ring-slate-200, .theme-dark .allo-docsuite .ring-slate-300, .theme-dark .allo-docsuite .ring-slate-400, .theme-dark .allo-docsuite .ring-slate-500 { --tw-ring-color:#475569 !important; }
+.theme-dark .allo-docsuite .ring-slate-200, .theme-dark .allo-docsuite .ring-slate-300, .theme-dark .allo-docsuite .ring-slate-400, .theme-dark .allo-docsuite .ring-slate-500, .theme-dark .allo-docsuite .ring-slate-600, .theme-dark .allo-docsuite .ring-slate-700 { --tw-ring-color:#475569 !important; }
 .theme-dark .allo-docsuite .ring-violet-200, .theme-dark .allo-docsuite .ring-violet-300, .theme-dark .allo-docsuite .ring-violet-400, .theme-dark .allo-docsuite [class~="ring-violet-400/40"], .theme-dark .allo-docsuite .ring-violet-500, .theme-dark .allo-docsuite [class~="ring-violet-500/20"] { --tw-ring-color:#6d28d9 !important; }
 .theme-dark .allo-docsuite .ring-purple-100, .theme-dark .allo-docsuite .ring-purple-200, .theme-dark .allo-docsuite .ring-purple-300, .theme-dark .allo-docsuite .ring-purple-400, .theme-dark .allo-docsuite .ring-purple-500, .theme-dark .allo-docsuite [class~="ring-purple-500/30"], .theme-dark .allo-docsuite .ring-purple-600 { --tw-ring-color:#7e22ce !important; }
-.theme-dark .allo-docsuite .ring-yellow-100, .theme-dark .allo-docsuite .ring-yellow-200, .theme-dark .allo-docsuite .ring-yellow-400, .theme-dark .allo-docsuite [class~="ring-yellow-400/50"], .theme-dark .allo-docsuite .ring-yellow-500 { --tw-ring-color:#a16207 !important; }
+.theme-dark .allo-docsuite .ring-yellow-100, .theme-dark .allo-docsuite .ring-yellow-200, .theme-dark .allo-docsuite .ring-yellow-300, .theme-dark .allo-docsuite .ring-yellow-400, .theme-dark .allo-docsuite [class~="ring-yellow-400/50"], .theme-dark .allo-docsuite .ring-yellow-500, .theme-dark .allo-docsuite .ring-yellow-600 { --tw-ring-color:#a16207 !important; }
 .theme-dark .allo-docsuite .ring-fuchsia-400 { --tw-ring-color:#a21caf !important; }
 .theme-dark .allo-docsuite .ring-amber-100, .theme-dark .allo-docsuite .ring-amber-200, .theme-dark .allo-docsuite .ring-amber-300, .theme-dark .allo-docsuite [class~="ring-amber-300/30"], .theme-dark .allo-docsuite .ring-amber-400, .theme-dark .allo-docsuite .ring-amber-500, .theme-dark .allo-docsuite [class~="ring-amber-500/20"] { --tw-ring-color:#b45309 !important; }
 .theme-dark .allo-docsuite .ring-red-300, .theme-dark .allo-docsuite [class~="ring-red-300/30"], .theme-dark .allo-docsuite .ring-red-400, .theme-dark .allo-docsuite .ring-red-500 { --tw-ring-color:#b91c1c !important; }
-.theme-dark .allo-docsuite .ring-rose-200, .theme-dark .allo-docsuite .ring-rose-300, .theme-dark .allo-docsuite .ring-rose-400, .theme-dark .allo-docsuite .ring-rose-500 { --tw-ring-color:#be123c !important; }
+.theme-dark .allo-docsuite .ring-rose-200, .theme-dark .allo-docsuite .ring-rose-300, .theme-dark .allo-docsuite .ring-rose-400, .theme-dark .allo-docsuite .ring-rose-500, .theme-dark .allo-docsuite .ring-rose-600 { --tw-ring-color:#be123c !important; }
 .theme-dark .allo-docsuite .ring-pink-200, .theme-dark .allo-docsuite .ring-pink-400, .theme-dark .allo-docsuite .ring-pink-500 { --tw-ring-color:#be185d !important; }
 .theme-dark .allo-docsuite .ring-orange-200, .theme-dark .allo-docsuite .ring-orange-300, .theme-dark .allo-docsuite .ring-orange-400, .theme-dark .allo-docsuite .ring-orange-500 { --tw-ring-color:#c2410c !important; }
 .theme-dark .allo-docsuite .bg-emerald-100, .theme-dark .allo-docsuite .bg-emerald-200, .theme-dark .allo-docsuite .bg-emerald-300, .theme-dark .allo-docsuite .bg-emerald-50, .theme-dark .allo-docsuite [class~="bg-emerald-50/40"], .theme-dark .allo-docsuite [class~="bg-emerald-50/50"], .theme-dark .allo-docsuite [class~="bg-emerald-50/60"], .theme-dark .allo-docsuite [class~="bg-emerald-50/70"] { background-color:#022c22 !important; }
@@ -32219,7 +33032,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite [class~="from-orange-50/80"], .theme-dark .allo-docsuite .to-orange-100, .theme-dark .allo-docsuite [class~="to-orange-100/40"], .theme-dark .allo-docsuite .to-orange-50, .theme-dark .allo-docsuite .via-orange-300, .theme-dark .allo-docsuite [class~="via-orange-50/40"] { background-image:none !important;background-color:#431407 !important; }
 .theme-dark .allo-docsuite [class~="from-red-50/70"] { background-image:none !important;background-color:#450a0a !important; }
 .theme-dark .allo-docsuite .from-amber-100, .theme-dark .allo-docsuite .from-amber-300, .theme-dark .allo-docsuite .from-amber-50, .theme-dark .allo-docsuite [class~="from-amber-50/80"], .theme-dark .allo-docsuite .to-amber-50, .theme-dark .allo-docsuite [class~="to-amber-50/40"] { background-image:none !important;background-color:#451a03 !important; }
-.theme-dark .allo-docsuite .to-fuchsia-100 { background-image:none !important;background-color:#4a044e !important; }
+.theme-dark .allo-docsuite .from-fuchsia-50, .theme-dark .allo-docsuite .to-fuchsia-100 { background-image:none !important;background-color:#4a044e !important; }
 .theme-dark .allo-docsuite .from-rose-100, .theme-dark .allo-docsuite .from-rose-50, .theme-dark .allo-docsuite .to-rose-50, .theme-dark .allo-docsuite [class~="to-rose-50/30"] { background-image:none !important;background-color:#4c0519 !important; }
 .theme-dark .allo-docsuite .from-pink-100, .theme-dark .allo-docsuite .to-pink-50 { background-image:none !important;background-color:#500724 !important; }
 .theme-dark .allo-docsuite [class~="from-white/0"], .theme-dark .allo-docsuite [class~="to-white/20"], .theme-dark .allo-docsuite [class~="via-white/20"] { background-image:none !important;background-color:rgba(30,41,59,0.85) !important; }
@@ -32236,12 +33049,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite .border-green-100, .theme-dark .allo-docsuite .border-green-200, .theme-dark .allo-docsuite .border-green-300 { border-color:#166534 !important; }
 .theme-dark .allo-docsuite .border-blue-400, .theme-dark .allo-docsuite [class~="border-blue-400/50"], .theme-dark .allo-docsuite .border-blue-500, .theme-dark .allo-docsuite [class~="border-blue-500/30"], .theme-dark .allo-docsuite [class~="border-blue-500/40"], .theme-dark .allo-docsuite .border-blue-600 { border-color:#1d4ed8 !important; }
 .theme-dark .allo-docsuite .border-blue-100, .theme-dark .allo-docsuite .border-blue-200, .theme-dark .allo-docsuite [class~="border-blue-200/50"], .theme-dark .allo-docsuite .border-blue-300, .theme-dark .allo-docsuite [class~="border-blue-300/30"], .theme-dark .allo-docsuite [class~="border-blue-300/40"] { border-color:#1e40af !important; }
-.theme-dark .allo-docsuite .border-slate-100, .theme-dark .allo-docsuite .border-slate-200, .theme-dark .allo-docsuite .border-slate-50, .theme-dark .allo-docsuite .border-white, .theme-dark .allo-docsuite [class~="border-white/10"], .theme-dark .allo-docsuite [class~="border-white/15"], .theme-dark .allo-docsuite [class~="border-white/20"], .theme-dark .allo-docsuite [class~="border-white/30"], .theme-dark .allo-docsuite [class~="border-white/50"], .theme-dark .allo-docsuite .divide-slate-100 > * + *, .theme-dark .allo-docsuite .divide-slate-200 > * + *, .theme-dark .allo-docsuite .divide-slate-700 > * + * { border-color:#334155 !important; }
-.theme-dark .allo-docsuite .border-indigo-100, .theme-dark .allo-docsuite [class~="border-indigo-100/50"], .theme-dark .allo-docsuite .border-indigo-200, .theme-dark .allo-docsuite [class~="border-indigo-200/50"], .theme-dark .allo-docsuite [class~="border-indigo-200/60"], .theme-dark .allo-docsuite [class~="border-indigo-200/70"], .theme-dark .allo-docsuite .border-indigo-300, .theme-dark .allo-docsuite [class~="border-indigo-300/30"], .theme-dark .allo-docsuite [class~="border-indigo-300/50"], .theme-dark .allo-docsuite .border-indigo-50 { border-color:#3730a3 !important; }
+.theme-dark .allo-docsuite .border-slate-100, .theme-dark .allo-docsuite .border-slate-200, .theme-dark .allo-docsuite [class~="border-slate-200/80"], .theme-dark .allo-docsuite .border-slate-50, .theme-dark .allo-docsuite .border-white, .theme-dark .allo-docsuite [class~="border-white/10"], .theme-dark .allo-docsuite [class~="border-white/15"], .theme-dark .allo-docsuite [class~="border-white/20"], .theme-dark .allo-docsuite [class~="border-white/30"], .theme-dark .allo-docsuite [class~="border-white/40"], .theme-dark .allo-docsuite [class~="border-white/50"], .theme-dark .allo-docsuite [class~="border-white/90"], .theme-dark .allo-docsuite .divide-slate-100 > * + *, .theme-dark .allo-docsuite .divide-slate-200 > * + *, .theme-dark .allo-docsuite .divide-slate-700 > * + * { border-color:#334155 !important; }
+.theme-dark .allo-docsuite .border-indigo-100, .theme-dark .allo-docsuite [class~="border-indigo-100/50"], .theme-dark .allo-docsuite .border-indigo-200, .theme-dark .allo-docsuite [class~="border-indigo-200/50"], .theme-dark .allo-docsuite [class~="border-indigo-200/60"], .theme-dark .allo-docsuite [class~="border-indigo-200/70"], .theme-dark .allo-docsuite .border-indigo-300, .theme-dark .allo-docsuite [class~="border-indigo-300/30"], .theme-dark .allo-docsuite .border-indigo-50 { border-color:#3730a3 !important; }
 .theme-dark .allo-docsuite .border-indigo-400, .theme-dark .allo-docsuite [class~="border-indigo-400/30"], .theme-dark .allo-docsuite .border-indigo-500, .theme-dark .allo-docsuite [class~="border-indigo-500/20"], .theme-dark .allo-docsuite [class~="border-indigo-500/30"], .theme-dark .allo-docsuite [class~="border-indigo-500/40"], .theme-dark .allo-docsuite [class~="border-indigo-500/50"], .theme-dark .allo-docsuite .border-indigo-600, .theme-dark .allo-docsuite [class~="border-indigo-600/60"] { border-color:#4338ca !important; }
 .theme-dark .allo-docsuite .border-slate-300, .theme-dark .allo-docsuite .border-slate-400, .theme-dark .allo-docsuite .border-stone-300 { border-color:#475569 !important; }
 .theme-dark .allo-docsuite [class~="border-lime-500/30"] { border-color:#4d7c0f !important; }
-.theme-dark .allo-docsuite .border-violet-100, .theme-dark .allo-docsuite .border-violet-200, .theme-dark .allo-docsuite .border-violet-300, .theme-dark .allo-docsuite .border-violet-50 { border-color:#5b21b6 !important; }
+.theme-dark .allo-docsuite .border-violet-100, .theme-dark .allo-docsuite .border-violet-200, .theme-dark .allo-docsuite .border-violet-300, .theme-dark .allo-docsuite .border-violet-50, .theme-dark .allo-docsuite .divide-violet-100 > * + * { border-color:#5b21b6 !important; }
 .theme-dark .allo-docsuite .border-purple-100, .theme-dark .allo-docsuite .border-purple-200, .theme-dark .allo-docsuite .border-purple-300 { border-color:#6b21a8 !important; }
 .theme-dark .allo-docsuite .border-violet-400, .theme-dark .allo-docsuite .border-violet-500, .theme-dark .allo-docsuite [class~="border-violet-500/30"], .theme-dark .allo-docsuite .border-violet-600 { border-color:#6d28d9 !important; }
 .theme-dark .allo-docsuite .border-purple-400, .theme-dark .allo-docsuite .border-purple-500, .theme-dark .allo-docsuite [class~="border-purple-500/30"], .theme-dark .allo-docsuite [class~="border-purple-500/40"], .theme-dark .allo-docsuite .border-purple-600 { border-color:#7e22ce !important; }
@@ -32252,7 +33065,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite .border-orange-100, .theme-dark .allo-docsuite .border-orange-200, .theme-dark .allo-docsuite .border-orange-300, .theme-dark .allo-docsuite [class~="border-orange-300/30"] { border-color:#9a3412 !important; }
 .theme-dark .allo-docsuite .border-pink-200, .theme-dark .allo-docsuite .border-pink-300 { border-color:#9d174d !important; }
 .theme-dark .allo-docsuite .border-rose-100, .theme-dark .allo-docsuite .border-rose-200, .theme-dark .allo-docsuite [class~="border-rose-200/50"], .theme-dark .allo-docsuite .border-rose-300 { border-color:#9f1239 !important; }
-.theme-dark .allo-docsuite .border-yellow-400, .theme-dark .allo-docsuite [class~="border-yellow-400/30"], .theme-dark .allo-docsuite .border-yellow-500, .theme-dark .allo-docsuite [class~="border-yellow-500/30"], .theme-dark .allo-docsuite .border-yellow-600 { border-color:#a16207 !important; }
+.theme-dark .allo-docsuite .border-yellow-400, .theme-dark .allo-docsuite [class~="border-yellow-400/30"], .theme-dark .allo-docsuite .border-yellow-500, .theme-dark .allo-docsuite [class~="border-yellow-500/60"], .theme-dark .allo-docsuite .border-yellow-600 { border-color:#a16207 !important; }
 .theme-dark .allo-docsuite .border-fuchsia-400, .theme-dark .allo-docsuite [class~="border-fuchsia-500/20"], .theme-dark .allo-docsuite [class~="border-fuchsia-500/30"], .theme-dark .allo-docsuite [class~="border-fuchsia-500/40"], .theme-dark .allo-docsuite [class~="border-fuchsia-500/50"], .theme-dark .allo-docsuite .border-fuchsia-600 { border-color:#a21caf !important; }
 .theme-dark .allo-docsuite .border-amber-400, .theme-dark .allo-docsuite [class~="border-amber-400/40"], .theme-dark .allo-docsuite [class~="border-amber-400/50"], .theme-dark .allo-docsuite .border-amber-500, .theme-dark .allo-docsuite [class~="border-amber-500/30"], .theme-dark .allo-docsuite [class~="border-amber-500/40"], .theme-dark .allo-docsuite [class~="border-amber-500/50"], .theme-dark .allo-docsuite .border-amber-600, .theme-dark .allo-docsuite [class~="border-amber-600/30"], .theme-dark .allo-docsuite [class~="border-amber-600/40"] { border-color:#b45309 !important; }
 .theme-dark .allo-docsuite .border-red-400, .theme-dark .allo-docsuite .border-red-500, .theme-dark .allo-docsuite .border-red-600 { border-color:#b91c1c !important; }
@@ -32266,9 +33079,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite .text-green-400, .theme-dark .allo-docsuite .text-green-500, .theme-dark .allo-docsuite .text-green-600, .theme-dark .allo-docsuite .text-green-700, .theme-dark .allo-docsuite .text-green-800, .theme-dark .allo-docsuite .text-green-900 { color:#86efac !important; }
 .theme-dark .allo-docsuite .text-blue-400, .theme-dark .allo-docsuite [class~="text-blue-400/70"], .theme-dark .allo-docsuite .text-blue-500, .theme-dark .allo-docsuite [class~="text-blue-500/70"], .theme-dark .allo-docsuite .text-blue-600, .theme-dark .allo-docsuite .text-blue-700, .theme-dark .allo-docsuite .text-blue-800, .theme-dark .allo-docsuite [class~="text-blue-800/80"], .theme-dark .allo-docsuite .text-blue-900, .theme-dark .allo-docsuite .text-blue-950 { color:#93c5fd !important; }
 .theme-dark .allo-docsuite .text-slate-400 { color:#a3b1c2 !important; }
-.theme-dark .allo-docsuite .text-indigo-400, .theme-dark .allo-docsuite .text-indigo-500, .theme-dark .allo-docsuite .text-indigo-600, .theme-dark .allo-docsuite [class~="text-indigo-600/80"], .theme-dark .allo-docsuite .text-indigo-700, .theme-dark .allo-docsuite .text-indigo-800, .theme-dark .allo-docsuite .text-indigo-900 { color:#a5b4fc !important; }
+.theme-dark .allo-docsuite .text-indigo-400, .theme-dark .allo-docsuite .text-indigo-500, .theme-dark .allo-docsuite .text-indigo-600, .theme-dark .allo-docsuite [class~="text-indigo-600/80"], .theme-dark .allo-docsuite .text-indigo-700, .theme-dark .allo-docsuite .text-indigo-800, .theme-dark .allo-docsuite .text-indigo-900, .theme-dark .allo-docsuite .text-indigo-950 { color:#a5b4fc !important; }
 .theme-dark .allo-docsuite .text-slate-500 { color:#a9b7c8 !important; }
-.theme-dark .allo-docsuite .text-violet-400, .theme-dark .allo-docsuite .text-violet-500, .theme-dark .allo-docsuite .text-violet-600, .theme-dark .allo-docsuite .text-violet-700, .theme-dark .allo-docsuite .text-violet-800, .theme-dark .allo-docsuite .text-violet-900 { color:#c4b5fd !important; }
+.theme-dark .allo-docsuite .text-violet-400, .theme-dark .allo-docsuite .text-violet-500, .theme-dark .allo-docsuite .text-violet-600, .theme-dark .allo-docsuite .text-violet-700, .theme-dark .allo-docsuite [class~="text-violet-700/70"], .theme-dark .allo-docsuite .text-violet-800, .theme-dark .allo-docsuite .text-violet-900, .theme-dark .allo-docsuite .text-violet-950 { color:#c4b5fd !important; }
 .theme-dark .allo-docsuite .text-gray-600, .theme-dark .allo-docsuite .text-slate-600 { color:#cbd5e1 !important; }
 .theme-dark .allo-docsuite .text-purple-400, .theme-dark .allo-docsuite .text-purple-500, .theme-dark .allo-docsuite .text-purple-600, .theme-dark .allo-docsuite .text-purple-700, .theme-dark .allo-docsuite .text-purple-800, .theme-dark .allo-docsuite .text-purple-900, .theme-dark .allo-docsuite .text-purple-950 { color:#d8b4fe !important; }
 .theme-dark .allo-docsuite .text-slate-700, .theme-dark .allo-docsuite .text-stone-700 { color:#e2e8f0 !important; }
@@ -32277,15 +33090,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite .text-slate-900, .theme-dark .allo-docsuite [class~="text-slate-900/95"] { color:#f8fafc !important; }
 .theme-dark .allo-docsuite .text-pink-600, .theme-dark .allo-docsuite .text-pink-700, .theme-dark .allo-docsuite .text-pink-800, .theme-dark .allo-docsuite .text-pink-900 { color:#f9a8d4 !important; }
 .theme-dark .allo-docsuite .text-red-400, .theme-dark .allo-docsuite .text-red-500, .theme-dark .allo-docsuite .text-red-600, .theme-dark .allo-docsuite .text-red-700, .theme-dark .allo-docsuite [class~="text-red-700/70"], .theme-dark .allo-docsuite [class~="text-red-700/80"], .theme-dark .allo-docsuite .text-red-800, .theme-dark .allo-docsuite .text-red-900 { color:#fca5a5 !important; }
-.theme-dark .allo-docsuite .text-amber-400, .theme-dark .allo-docsuite [class~="text-amber-400/70"], .theme-dark .allo-docsuite [class~="text-amber-400/80"], .theme-dark .allo-docsuite .text-amber-500, .theme-dark .allo-docsuite .text-amber-600, .theme-dark .allo-docsuite .text-amber-700, .theme-dark .allo-docsuite [class~="text-amber-700/90"], .theme-dark .allo-docsuite .text-amber-800, .theme-dark .allo-docsuite .text-amber-900, .theme-dark .allo-docsuite .text-amber-950 { color:#fcd34d !important; }
+.theme-dark .allo-docsuite .text-amber-400, .theme-dark .allo-docsuite [class~="text-amber-400/70"], .theme-dark .allo-docsuite .text-amber-500, .theme-dark .allo-docsuite .text-amber-600, .theme-dark .allo-docsuite .text-amber-700, .theme-dark .allo-docsuite [class~="text-amber-700/90"], .theme-dark .allo-docsuite .text-amber-800, .theme-dark .allo-docsuite .text-amber-900, .theme-dark .allo-docsuite .text-amber-950 { color:#fcd34d !important; }
 .theme-dark .allo-docsuite .text-rose-400, .theme-dark .allo-docsuite .text-rose-500, .theme-dark .allo-docsuite .text-rose-600, .theme-dark .allo-docsuite .text-rose-700, .theme-dark .allo-docsuite .text-rose-800, .theme-dark .allo-docsuite .text-rose-900 { color:#fda4af !important; }
 .theme-dark .allo-docsuite .text-orange-400, .theme-dark .allo-docsuite .text-orange-500, .theme-dark .allo-docsuite .text-orange-600, .theme-dark .allo-docsuite .text-orange-700, .theme-dark .allo-docsuite .text-orange-800, .theme-dark .allo-docsuite .text-orange-900 { color:#fdba74 !important; }
 .theme-dark .allo-docsuite .text-yellow-400, .theme-dark .allo-docsuite .text-yellow-500, .theme-dark .allo-docsuite .text-yellow-600, .theme-dark .allo-docsuite [class~="text-yellow-600/70"], .theme-dark .allo-docsuite .text-yellow-700, .theme-dark .allo-docsuite .text-yellow-800, .theme-dark .allo-docsuite .text-yellow-900 { color:#fde047 !important; }
-.theme-contrast .allo-docsuite .ring-amber-100, .theme-contrast .allo-docsuite .ring-amber-200, .theme-contrast .allo-docsuite .ring-amber-300, .theme-contrast .allo-docsuite [class~="ring-amber-300/30"], .theme-contrast .allo-docsuite .ring-amber-400, .theme-contrast .allo-docsuite .ring-amber-500, .theme-contrast .allo-docsuite [class~="ring-amber-500/20"], .theme-contrast .allo-docsuite .ring-blue-200, .theme-contrast .allo-docsuite .ring-blue-400, .theme-contrast .allo-docsuite .ring-blue-500, .theme-contrast .allo-docsuite [class~="ring-blue-500/20"], .theme-contrast .allo-docsuite [class~="ring-blue-500/30"], .theme-contrast .allo-docsuite .ring-cyan-200, .theme-contrast .allo-docsuite .ring-cyan-300, .theme-contrast .allo-docsuite .ring-cyan-400, .theme-contrast .allo-docsuite [class~="ring-cyan-400/50"], .theme-contrast .allo-docsuite .ring-cyan-500, .theme-contrast .allo-docsuite [class~="ring-cyan-500/20"], .theme-contrast .allo-docsuite .ring-emerald-200, .theme-contrast .allo-docsuite .ring-emerald-300, .theme-contrast .allo-docsuite .ring-emerald-400, .theme-contrast .allo-docsuite [class~="ring-emerald-500/20"], .theme-contrast .allo-docsuite .ring-fuchsia-400, .theme-contrast .allo-docsuite .ring-green-200, .theme-contrast .allo-docsuite .ring-green-300, .theme-contrast .allo-docsuite .ring-green-400, .theme-contrast .allo-docsuite .ring-green-500, .theme-contrast .allo-docsuite .ring-indigo-100, .theme-contrast .allo-docsuite .ring-indigo-200, .theme-contrast .allo-docsuite .ring-indigo-300, .theme-contrast .allo-docsuite .ring-indigo-400, .theme-contrast .allo-docsuite [class~="ring-indigo-400/50"], .theme-contrast .allo-docsuite .ring-indigo-500, .theme-contrast .allo-docsuite [class~="ring-indigo-500/20"], .theme-contrast .allo-docsuite [class~="ring-indigo-500/30"], .theme-contrast .allo-docsuite .ring-indigo-600, .theme-contrast .allo-docsuite .ring-orange-200, .theme-contrast .allo-docsuite .ring-orange-300, .theme-contrast .allo-docsuite .ring-orange-400, .theme-contrast .allo-docsuite .ring-orange-500, .theme-contrast .allo-docsuite .ring-pink-200, .theme-contrast .allo-docsuite .ring-pink-400, .theme-contrast .allo-docsuite .ring-pink-500, .theme-contrast .allo-docsuite .ring-purple-100, .theme-contrast .allo-docsuite .ring-purple-200, .theme-contrast .allo-docsuite .ring-purple-300, .theme-contrast .allo-docsuite .ring-purple-400, .theme-contrast .allo-docsuite .ring-purple-500, .theme-contrast .allo-docsuite [class~="ring-purple-500/30"], .theme-contrast .allo-docsuite .ring-purple-600, .theme-contrast .allo-docsuite .ring-red-300, .theme-contrast .allo-docsuite [class~="ring-red-300/30"], .theme-contrast .allo-docsuite .ring-red-400, .theme-contrast .allo-docsuite .ring-red-500, .theme-contrast .allo-docsuite .ring-rose-200, .theme-contrast .allo-docsuite .ring-rose-300, .theme-contrast .allo-docsuite .ring-rose-400, .theme-contrast .allo-docsuite .ring-rose-500, .theme-contrast .allo-docsuite .ring-rose-700, .theme-contrast .allo-docsuite .ring-sky-200, .theme-contrast .allo-docsuite .ring-sky-500, .theme-contrast .allo-docsuite [class~="ring-sky-500/30"], .theme-contrast .allo-docsuite .ring-slate-200, .theme-contrast .allo-docsuite .ring-slate-300, .theme-contrast .allo-docsuite .ring-slate-400, .theme-contrast .allo-docsuite .ring-slate-500, .theme-contrast .allo-docsuite .ring-teal-200, .theme-contrast .allo-docsuite .ring-teal-300, .theme-contrast .allo-docsuite .ring-teal-400, .theme-contrast .allo-docsuite .ring-teal-500, .theme-contrast .allo-docsuite .ring-teal-700, .theme-contrast .allo-docsuite .ring-violet-200, .theme-contrast .allo-docsuite .ring-violet-300, .theme-contrast .allo-docsuite .ring-violet-400, .theme-contrast .allo-docsuite [class~="ring-violet-400/40"], .theme-contrast .allo-docsuite .ring-violet-500, .theme-contrast .allo-docsuite [class~="ring-violet-500/20"], .theme-contrast .allo-docsuite .ring-white, .theme-contrast .allo-docsuite [class~="ring-white/10"], .theme-contrast .allo-docsuite [class~="ring-white/20"], .theme-contrast .allo-docsuite [class~="ring-white/50"], .theme-contrast .allo-docsuite .ring-yellow-100, .theme-contrast .allo-docsuite .ring-yellow-200, .theme-contrast .allo-docsuite .ring-yellow-400, .theme-contrast .allo-docsuite [class~="ring-yellow-400/50"], .theme-contrast .allo-docsuite .ring-yellow-500 { --tw-ring-color:#ffff00 !important; }
-.theme-contrast .allo-docsuite .bg-amber-100, .theme-contrast .allo-docsuite [class~="bg-amber-100/50"], .theme-contrast .allo-docsuite .bg-amber-200, .theme-contrast .allo-docsuite [class~="bg-amber-200/50"], .theme-contrast .allo-docsuite [class~="bg-amber-200/60"], .theme-contrast .allo-docsuite .bg-amber-300, .theme-contrast .allo-docsuite [class~="bg-amber-300/15"], .theme-contrast .allo-docsuite [class~="bg-amber-300/50"], .theme-contrast .allo-docsuite .bg-amber-400, .theme-contrast .allo-docsuite .bg-amber-50, .theme-contrast .allo-docsuite [class~="bg-amber-50/50"], .theme-contrast .allo-docsuite [class~="bg-amber-50/60"], .theme-contrast .allo-docsuite [class~="bg-amber-50/70"], .theme-contrast .allo-docsuite .bg-amber-500, .theme-contrast .allo-docsuite [class~="bg-amber-500/15"], .theme-contrast .allo-docsuite [class~="bg-amber-500/20"], .theme-contrast .allo-docsuite .bg-amber-600, .theme-contrast .allo-docsuite .bg-amber-700, .theme-contrast .allo-docsuite [class~="bg-amber-700/40"], .theme-contrast .allo-docsuite .bg-amber-800, .theme-contrast .allo-docsuite [class~="bg-amber-900/20"], .theme-contrast .allo-docsuite [class~="bg-amber-900/30"], .theme-contrast .allo-docsuite [class~="bg-amber-900/40"], .theme-contrast .allo-docsuite [class~="bg-amber-900/50"], .theme-contrast .allo-docsuite [class~="bg-amber-900/60"], .theme-contrast .allo-docsuite [class~="bg-amber-900/80"], .theme-contrast .allo-docsuite .bg-blue-100, .theme-contrast .allo-docsuite [class~="bg-blue-100/50"], .theme-contrast .allo-docsuite .bg-blue-200, .theme-contrast .allo-docsuite [class~="bg-blue-200/20"], .theme-contrast .allo-docsuite [class~="bg-blue-200/30"], .theme-contrast .allo-docsuite .bg-blue-300, .theme-contrast .allo-docsuite .bg-blue-400, .theme-contrast .allo-docsuite .bg-blue-50, .theme-contrast .allo-docsuite [class~="bg-blue-50/50"], .theme-contrast .allo-docsuite [class~="bg-blue-50/95"], .theme-contrast .allo-docsuite [class~="bg-blue-500/10"], .theme-contrast .allo-docsuite .bg-blue-600, .theme-contrast .allo-docsuite .bg-blue-700, .theme-contrast .allo-docsuite .bg-blue-800, .theme-contrast .allo-docsuite [class~="bg-blue-900/30"], .theme-contrast .allo-docsuite [class~="bg-blue-900/50"], .theme-contrast .allo-docsuite .bg-cyan-100, .theme-contrast .allo-docsuite [class~="bg-cyan-100/80"], .theme-contrast .allo-docsuite .bg-cyan-200, .theme-contrast .allo-docsuite .bg-cyan-50, .theme-contrast .allo-docsuite [class~="bg-cyan-50/50"], .theme-contrast .allo-docsuite .bg-cyan-500, .theme-contrast .allo-docsuite .bg-cyan-600, .theme-contrast .allo-docsuite .bg-cyan-700, .theme-contrast .allo-docsuite .bg-cyan-800, .theme-contrast .allo-docsuite .bg-emerald-100, .theme-contrast .allo-docsuite .bg-emerald-200, .theme-contrast .allo-docsuite .bg-emerald-300, .theme-contrast .allo-docsuite .bg-emerald-400, .theme-contrast .allo-docsuite .bg-emerald-50, .theme-contrast .allo-docsuite [class~="bg-emerald-50/40"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/50"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/70"], .theme-contrast .allo-docsuite .bg-emerald-500, .theme-contrast .allo-docsuite [class~="bg-emerald-500/15"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/25"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/30"], .theme-contrast .allo-docsuite .bg-emerald-600, .theme-contrast .allo-docsuite .bg-emerald-700, .theme-contrast .allo-docsuite .bg-emerald-800, .theme-contrast .allo-docsuite [class~="bg-emerald-800/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/30"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/40"], .theme-contrast .allo-docsuite .bg-emerald-950, .theme-contrast .allo-docsuite .bg-fuchsia-100, .theme-contrast .allo-docsuite .bg-fuchsia-50, .theme-contrast .allo-docsuite [class~="bg-fuchsia-50/50"], .theme-contrast .allo-docsuite .bg-fuchsia-500, .theme-contrast .allo-docsuite .bg-fuchsia-600, .theme-contrast .allo-docsuite [class~="bg-fuchsia-600/60"], .theme-contrast .allo-docsuite .bg-fuchsia-700, .theme-contrast .allo-docsuite [class~="bg-fuchsia-700/50"], .theme-contrast .allo-docsuite [class~="bg-fuchsia-900/40"], .theme-contrast .allo-docsuite .bg-green-100, .theme-contrast .allo-docsuite [class~="bg-green-100/50"], .theme-contrast .allo-docsuite .bg-green-200, .theme-contrast .allo-docsuite .bg-green-300, .theme-contrast .allo-docsuite .bg-green-400, .theme-contrast .allo-docsuite .bg-green-50, .theme-contrast .allo-docsuite [class~="bg-green-50/50"], .theme-contrast .allo-docsuite .bg-green-500, .theme-contrast .allo-docsuite .bg-green-600, .theme-contrast .allo-docsuite .bg-green-700, .theme-contrast .allo-docsuite .bg-green-800, .theme-contrast .allo-docsuite .bg-indigo-100, .theme-contrast .allo-docsuite [class~="bg-indigo-100/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/80"], .theme-contrast .allo-docsuite .bg-indigo-200, .theme-contrast .allo-docsuite [class~="bg-indigo-200/50"], .theme-contrast .allo-docsuite .bg-indigo-300, .theme-contrast .allo-docsuite [class~="bg-indigo-300/20"], .theme-contrast .allo-docsuite .bg-indigo-400, .theme-contrast .allo-docsuite .bg-indigo-50, .theme-contrast .allo-docsuite [class~="bg-indigo-50/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/70"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/80"], .theme-contrast .allo-docsuite .bg-indigo-500, .theme-contrast .allo-docsuite [class~="bg-indigo-500/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/15"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/25"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/30"], .theme-contrast .allo-docsuite .bg-indigo-600, .theme-contrast .allo-docsuite [class~="bg-indigo-600/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-600/30"], .theme-contrast .allo-docsuite .bg-indigo-700, .theme-contrast .allo-docsuite .bg-indigo-800, .theme-contrast .allo-docsuite [class~="bg-indigo-800/50"], .theme-contrast .allo-docsuite .bg-indigo-900, .theme-contrast .allo-docsuite [class~="bg-indigo-900/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/50"], .theme-contrast .allo-docsuite .bg-indigo-950, .theme-contrast .allo-docsuite [class~="bg-indigo-950/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/80"], .theme-contrast .allo-docsuite .bg-lime-500, .theme-contrast .allo-docsuite .bg-lime-600, .theme-contrast .allo-docsuite .bg-orange-100, .theme-contrast .allo-docsuite [class~="bg-orange-100/50"], .theme-contrast .allo-docsuite .bg-orange-200, .theme-contrast .allo-docsuite [class~="bg-orange-200/30"], .theme-contrast .allo-docsuite .bg-orange-300, .theme-contrast .allo-docsuite .bg-orange-400, .theme-contrast .allo-docsuite [class~="bg-orange-400/15"], .theme-contrast .allo-docsuite .bg-orange-50, .theme-contrast .allo-docsuite [class~="bg-orange-50/50"], .theme-contrast .allo-docsuite [class~="bg-orange-50/80"], .theme-contrast .allo-docsuite .bg-orange-600, .theme-contrast .allo-docsuite .bg-orange-700, .theme-contrast .allo-docsuite .bg-orange-800, .theme-contrast .allo-docsuite .bg-pink-100, .theme-contrast .allo-docsuite .bg-pink-200, .theme-contrast .allo-docsuite .bg-pink-50, .theme-contrast .allo-docsuite [class~="bg-pink-50/50"], .theme-contrast .allo-docsuite .bg-pink-500, .theme-contrast .allo-docsuite [class~="bg-pink-500/30"], .theme-contrast .allo-docsuite .bg-pink-600, .theme-contrast .allo-docsuite .bg-pink-700, .theme-contrast .allo-docsuite .bg-pink-800, .theme-contrast .allo-docsuite [class~="bg-pink-800/60"], .theme-contrast .allo-docsuite [class~="bg-pink-900/40"], .theme-contrast .allo-docsuite .bg-purple-100, .theme-contrast .allo-docsuite [class~="bg-purple-100/50"], .theme-contrast .allo-docsuite .bg-purple-200, .theme-contrast .allo-docsuite .bg-purple-300, .theme-contrast .allo-docsuite [class~="bg-purple-300/20"], .theme-contrast .allo-docsuite .bg-purple-400, .theme-contrast .allo-docsuite .bg-purple-50, .theme-contrast .allo-docsuite [class~="bg-purple-50/50"], .theme-contrast .allo-docsuite .bg-purple-500, .theme-contrast .allo-docsuite .bg-purple-600, .theme-contrast .allo-docsuite [class~="bg-purple-600/10"], .theme-contrast .allo-docsuite .bg-purple-700, .theme-contrast .allo-docsuite .bg-red-100, .theme-contrast .allo-docsuite [class~="bg-red-100/50"], .theme-contrast .allo-docsuite .bg-red-200, .theme-contrast .allo-docsuite .bg-red-300, .theme-contrast .allo-docsuite .bg-red-400, .theme-contrast .allo-docsuite .bg-red-50, .theme-contrast .allo-docsuite .bg-red-500, .theme-contrast .allo-docsuite [class~="bg-red-500/30"], .theme-contrast .allo-docsuite .bg-red-600, .theme-contrast .allo-docsuite .bg-red-700, .theme-contrast .allo-docsuite [class~="bg-red-900/50"], .theme-contrast .allo-docsuite [class~="bg-red-900/90"], .theme-contrast .allo-docsuite [class~="bg-red-950/40"], .theme-contrast .allo-docsuite .bg-rose-100, .theme-contrast .allo-docsuite .bg-rose-200, .theme-contrast .allo-docsuite .bg-rose-300, .theme-contrast .allo-docsuite .bg-rose-50, .theme-contrast .allo-docsuite [class~="bg-rose-50/50"], .theme-contrast .allo-docsuite [class~="bg-rose-50/70"], .theme-contrast .allo-docsuite [class~="bg-rose-50/80"], .theme-contrast .allo-docsuite .bg-rose-500, .theme-contrast .allo-docsuite .bg-rose-600, .theme-contrast .allo-docsuite .bg-rose-700, .theme-contrast .allo-docsuite .bg-rose-800, .theme-contrast .allo-docsuite [class~="bg-rose-900/20"], .theme-contrast .allo-docsuite [class~="bg-rose-900/30"], .theme-contrast .allo-docsuite [class~="bg-rose-900/40"], .theme-contrast .allo-docsuite .bg-sky-100, .theme-contrast .allo-docsuite .bg-sky-200, .theme-contrast .allo-docsuite .bg-sky-50, .theme-contrast .allo-docsuite [class~="bg-sky-50/50"], .theme-contrast .allo-docsuite [class~="bg-sky-50/70"], .theme-contrast .allo-docsuite .bg-sky-500, .theme-contrast .allo-docsuite .bg-sky-600, .theme-contrast .allo-docsuite .bg-slate-100, .theme-contrast .allo-docsuite [class~="bg-slate-100/50"], .theme-contrast .allo-docsuite .bg-slate-200, .theme-contrast .allo-docsuite .bg-slate-300, .theme-contrast .allo-docsuite .bg-slate-400, .theme-contrast .allo-docsuite .bg-slate-50, .theme-contrast .allo-docsuite [class~="bg-slate-50/30"], .theme-contrast .allo-docsuite [class~="bg-slate-50/50"], .theme-contrast .allo-docsuite [class~="bg-slate-50/70"], .theme-contrast .allo-docsuite [class~="bg-slate-50/80"], .theme-contrast .allo-docsuite [class~="bg-slate-50/90"], .theme-contrast .allo-docsuite .bg-slate-600, .theme-contrast .allo-docsuite .bg-slate-700, .theme-contrast .allo-docsuite [class~="bg-slate-700/50"], .theme-contrast .allo-docsuite [class~="bg-slate-700/90"], .theme-contrast .allo-docsuite .bg-slate-800, .theme-contrast .allo-docsuite [class~="bg-slate-800/40"], .theme-contrast .allo-docsuite [class~="bg-slate-800/50"], .theme-contrast .allo-docsuite [class~="bg-slate-800/60"], .theme-contrast .allo-docsuite [class~="bg-slate-800/70"], .theme-contrast .allo-docsuite [class~="bg-slate-800/80"], .theme-contrast .allo-docsuite [class~="bg-slate-800/90"], .theme-contrast .allo-docsuite [class~="bg-slate-800/95"], .theme-contrast .allo-docsuite .bg-slate-900, .theme-contrast .allo-docsuite [class~="bg-slate-900/40"], .theme-contrast .allo-docsuite [class~="bg-slate-900/50"], .theme-contrast .allo-docsuite [class~="bg-slate-900/60"], .theme-contrast .allo-docsuite [class~="bg-slate-900/70"], .theme-contrast .allo-docsuite [class~="bg-slate-900/80"], .theme-contrast .allo-docsuite [class~="bg-slate-900/90"], .theme-contrast .allo-docsuite [class~="bg-slate-900/95"], .theme-contrast .allo-docsuite .bg-slate-950, .theme-contrast .allo-docsuite [class~="bg-slate-950/40"], .theme-contrast .allo-docsuite [class~="bg-slate-950/70"], .theme-contrast .allo-docsuite [class~="bg-slate-950/80"], .theme-contrast .allo-docsuite [class~="bg-slate-950/90"], .theme-contrast .allo-docsuite .bg-stone-50, .theme-contrast .allo-docsuite .bg-stone-700, .theme-contrast .allo-docsuite .bg-teal-100, .theme-contrast .allo-docsuite .bg-teal-200, .theme-contrast .allo-docsuite .bg-teal-300, .theme-contrast .allo-docsuite .bg-teal-400, .theme-contrast .allo-docsuite .bg-teal-50, .theme-contrast .allo-docsuite [class~="bg-teal-50/50"], .theme-contrast .allo-docsuite [class~="bg-teal-50/60"], .theme-contrast .allo-docsuite .bg-teal-500, .theme-contrast .allo-docsuite .bg-teal-600, .theme-contrast .allo-docsuite .bg-teal-700, .theme-contrast .allo-docsuite .bg-teal-800, .theme-contrast .allo-docsuite .bg-teal-950, .theme-contrast .allo-docsuite .bg-violet-100, .theme-contrast .allo-docsuite [class~="bg-violet-100/50"], .theme-contrast .allo-docsuite .bg-violet-200, .theme-contrast .allo-docsuite .bg-violet-400, .theme-contrast .allo-docsuite .bg-violet-50, .theme-contrast .allo-docsuite [class~="bg-violet-50/50"], .theme-contrast .allo-docsuite [class~="bg-violet-50/60"], .theme-contrast .allo-docsuite [class~="bg-violet-50/70"], .theme-contrast .allo-docsuite .bg-violet-500, .theme-contrast .allo-docsuite .bg-violet-600, .theme-contrast .allo-docsuite [class~="bg-violet-600/30"], .theme-contrast .allo-docsuite [class~="bg-violet-600/40"], .theme-contrast .allo-docsuite [class~="bg-violet-600/60"], .theme-contrast .allo-docsuite .bg-violet-700, .theme-contrast .allo-docsuite [class~="bg-violet-700/20"], .theme-contrast .allo-docsuite [class~="bg-violet-900/50"], .theme-contrast .allo-docsuite .bg-white, .theme-contrast .allo-docsuite [class~="bg-white/10"], .theme-contrast .allo-docsuite [class~="bg-white/15"], .theme-contrast .allo-docsuite [class~="bg-white/20"], .theme-contrast .allo-docsuite [class~="bg-white/30"], .theme-contrast .allo-docsuite [class~="bg-white/35"], .theme-contrast .allo-docsuite [class~="bg-white/5"], .theme-contrast .allo-docsuite [class~="bg-white/50"], .theme-contrast .allo-docsuite [class~="bg-white/60"], .theme-contrast .allo-docsuite [class~="bg-white/70"], .theme-contrast .allo-docsuite [class~="bg-white/80"], .theme-contrast .allo-docsuite [class~="bg-white/90"], .theme-contrast .allo-docsuite [class~="bg-white/95"], .theme-contrast .allo-docsuite .bg-yellow-100, .theme-contrast .allo-docsuite [class~="bg-yellow-100/5"], .theme-contrast .allo-docsuite .bg-yellow-200, .theme-contrast .allo-docsuite [class~="bg-yellow-200/30"], .theme-contrast .allo-docsuite .bg-yellow-300, .theme-contrast .allo-docsuite .bg-yellow-400, .theme-contrast .allo-docsuite [class~="bg-yellow-400/20"], .theme-contrast .allo-docsuite [class~="bg-yellow-400/30"], .theme-contrast .allo-docsuite .bg-yellow-50, .theme-contrast .allo-docsuite [class~="bg-yellow-50/50"], .theme-contrast .allo-docsuite .bg-yellow-500, .theme-contrast .allo-docsuite [class~="bg-yellow-500/20"], .theme-contrast .allo-docsuite .bg-yellow-600, .theme-contrast .allo-docsuite .bg-yellow-700, .theme-contrast .allo-docsuite .bg-yellow-900, .theme-contrast .allo-docsuite .bg-zinc-500, .theme-contrast .allo-docsuite .bg-zinc-600 { background-color:#000000 !important; }
-.theme-contrast .allo-docsuite .from-amber-100, .theme-contrast .allo-docsuite .from-amber-300, .theme-contrast .allo-docsuite .from-amber-400, .theme-contrast .allo-docsuite [class~="from-amber-400/20"], .theme-contrast .allo-docsuite .from-amber-50, .theme-contrast .allo-docsuite [class~="from-amber-50/80"], .theme-contrast .allo-docsuite .from-amber-500, .theme-contrast .allo-docsuite .from-amber-600, .theme-contrast .allo-docsuite [class~="from-amber-600/80"], .theme-contrast .allo-docsuite .from-amber-700, .theme-contrast .allo-docsuite .from-amber-800, .theme-contrast .allo-docsuite .from-amber-900, .theme-contrast .allo-docsuite [class~="from-amber-900/40"], .theme-contrast .allo-docsuite .from-black, .theme-contrast .allo-docsuite .from-blue-100, .theme-contrast .allo-docsuite .from-blue-400, .theme-contrast .allo-docsuite .from-blue-50, .theme-contrast .allo-docsuite [class~="from-blue-50/60"], .theme-contrast .allo-docsuite .from-blue-500, .theme-contrast .allo-docsuite .from-blue-600, .theme-contrast .allo-docsuite .from-blue-700, .theme-contrast .allo-docsuite [class~="from-blue-900/40"], .theme-contrast .allo-docsuite .from-cyan-50, .theme-contrast .allo-docsuite [class~="from-cyan-50/60"], .theme-contrast .allo-docsuite .from-cyan-500, .theme-contrast .allo-docsuite .from-cyan-600, .theme-contrast .allo-docsuite [class~="from-cyan-900/40"], .theme-contrast .allo-docsuite .from-emerald-50, .theme-contrast .allo-docsuite .from-emerald-500, .theme-contrast .allo-docsuite .from-emerald-600, .theme-contrast .allo-docsuite [class~="from-emerald-900/40"], .theme-contrast .allo-docsuite .from-fuchsia-600, .theme-contrast .allo-docsuite .from-green-400, .theme-contrast .allo-docsuite .from-green-50, .theme-contrast .allo-docsuite .from-green-500, .theme-contrast .allo-docsuite .from-green-700, .theme-contrast .allo-docsuite .from-green-800, .theme-contrast .allo-docsuite .from-indigo-200, .theme-contrast .allo-docsuite .from-indigo-400, .theme-contrast .allo-docsuite .from-indigo-50, .theme-contrast .allo-docsuite [class~="from-indigo-50/60"], .theme-contrast .allo-docsuite [class~="from-indigo-50/80"], .theme-contrast .allo-docsuite [class~="from-indigo-50/95"], .theme-contrast .allo-docsuite .from-indigo-500, .theme-contrast .allo-docsuite .from-indigo-600, .theme-contrast .allo-docsuite .from-indigo-700, .theme-contrast .allo-docsuite [class~="from-indigo-900/40"], .theme-contrast .allo-docsuite [class~="from-indigo-900/50"], .theme-contrast .allo-docsuite .from-lime-600, .theme-contrast .allo-docsuite [class~="from-orange-50/80"], .theme-contrast .allo-docsuite .from-orange-500, .theme-contrast .allo-docsuite .from-pink-100, .theme-contrast .allo-docsuite .from-pink-500, .theme-contrast .allo-docsuite .from-pink-600, .theme-contrast .allo-docsuite [class~="from-pink-900/40"], .theme-contrast .allo-docsuite .from-purple-50, .theme-contrast .allo-docsuite .from-purple-600, .theme-contrast .allo-docsuite .from-purple-900, .theme-contrast .allo-docsuite [class~="from-purple-900/40"], .theme-contrast .allo-docsuite [class~="from-red-50/70"], .theme-contrast .allo-docsuite .from-red-800, .theme-contrast .allo-docsuite .from-rose-100, .theme-contrast .allo-docsuite .from-rose-50, .theme-contrast .allo-docsuite .from-rose-500, .theme-contrast .allo-docsuite .from-rose-600, .theme-contrast .allo-docsuite [class~="from-rose-900/40"], .theme-contrast .allo-docsuite .from-sky-50, .theme-contrast .allo-docsuite [class~="from-sky-50/80"], .theme-contrast .allo-docsuite .from-sky-500, .theme-contrast .allo-docsuite .from-sky-600, .theme-contrast .allo-docsuite [class~="from-sky-900/40"], .theme-contrast .allo-docsuite .from-slate-50, .theme-contrast .allo-docsuite .from-slate-600, .theme-contrast .allo-docsuite .from-slate-700, .theme-contrast .allo-docsuite .from-slate-800, .theme-contrast .allo-docsuite .from-slate-900, .theme-contrast .allo-docsuite .from-stone-600, .theme-contrast .allo-docsuite .from-teal-50, .theme-contrast .allo-docsuite [class~="from-teal-50/80"], .theme-contrast .allo-docsuite .from-teal-500, .theme-contrast .allo-docsuite .from-teal-600, .theme-contrast .allo-docsuite .from-teal-700, .theme-contrast .allo-docsuite .from-violet-100, .theme-contrast .allo-docsuite .from-violet-50, .theme-contrast .allo-docsuite .from-violet-500, .theme-contrast .allo-docsuite .from-violet-600, .theme-contrast .allo-docsuite .from-violet-700, .theme-contrast .allo-docsuite [class~="from-violet-900/40"], .theme-contrast .allo-docsuite .from-white, .theme-contrast .allo-docsuite [class~="from-white/0"], .theme-contrast .allo-docsuite .from-yellow-300, .theme-contrast .allo-docsuite .from-yellow-400, .theme-contrast .allo-docsuite .from-yellow-50, .theme-contrast .allo-docsuite .from-yellow-600, .theme-contrast .allo-docsuite .from-zinc-600, .theme-contrast .allo-docsuite .to-amber-50, .theme-contrast .allo-docsuite [class~="to-amber-50/40"], .theme-contrast .allo-docsuite .to-amber-500, .theme-contrast .allo-docsuite .to-amber-600, .theme-contrast .allo-docsuite .to-amber-800, .theme-contrast .allo-docsuite [class~="to-amber-800/20"], .theme-contrast .allo-docsuite [class~="to-amber-800/80"], .theme-contrast .allo-docsuite .to-blue-50, .theme-contrast .allo-docsuite .to-blue-500, .theme-contrast .allo-docsuite .to-blue-600, .theme-contrast .allo-docsuite .to-blue-700, .theme-contrast .allo-docsuite [class~="to-blue-900/40"], .theme-contrast .allo-docsuite .to-cyan-50, .theme-contrast .allo-docsuite .to-cyan-600, .theme-contrast .allo-docsuite .to-cyan-700, .theme-contrast .allo-docsuite .to-emerald-50, .theme-contrast .allo-docsuite .to-emerald-500, .theme-contrast .allo-docsuite .to-emerald-600, .theme-contrast .allo-docsuite .to-emerald-700, .theme-contrast .allo-docsuite .to-emerald-800, .theme-contrast .allo-docsuite .to-emerald-900, .theme-contrast .allo-docsuite .to-fuchsia-100, .theme-contrast .allo-docsuite .to-fuchsia-500, .theme-contrast .allo-docsuite .to-fuchsia-600, .theme-contrast .allo-docsuite [class~="to-fuchsia-900/40"], .theme-contrast .allo-docsuite .to-gray-700, .theme-contrast .allo-docsuite .to-green-700, .theme-contrast .allo-docsuite .to-indigo-100, .theme-contrast .allo-docsuite .to-indigo-50, .theme-contrast .allo-docsuite [class~="to-indigo-50/30"], .theme-contrast .allo-docsuite .to-indigo-500, .theme-contrast .allo-docsuite .to-indigo-600, .theme-contrast .allo-docsuite .to-indigo-700, .theme-contrast .allo-docsuite [class~="to-indigo-900/40"], .theme-contrast .allo-docsuite .to-lime-50, .theme-contrast .allo-docsuite .to-orange-100, .theme-contrast .allo-docsuite [class~="to-orange-100/40"], .theme-contrast .allo-docsuite .to-orange-400, .theme-contrast .allo-docsuite .to-orange-50, .theme-contrast .allo-docsuite .to-orange-500, .theme-contrast .allo-docsuite [class~="to-orange-500/20"], .theme-contrast .allo-docsuite .to-orange-600, .theme-contrast .allo-docsuite .to-orange-700, .theme-contrast .allo-docsuite .to-orange-800, .theme-contrast .allo-docsuite .to-orange-900, .theme-contrast .allo-docsuite [class~="to-orange-900/40"], .theme-contrast .allo-docsuite .to-pink-50, .theme-contrast .allo-docsuite .to-pink-500, .theme-contrast .allo-docsuite .to-pink-600, .theme-contrast .allo-docsuite [class~="to-pink-900/40"], .theme-contrast .allo-docsuite .to-purple-50, .theme-contrast .allo-docsuite [class~="to-purple-50/80"], .theme-contrast .allo-docsuite [class~="to-purple-50/95"], .theme-contrast .allo-docsuite .to-purple-500, .theme-contrast .allo-docsuite .to-purple-600, .theme-contrast .allo-docsuite .to-purple-700, .theme-contrast .allo-docsuite [class~="to-purple-900/40"], .theme-contrast .allo-docsuite .to-red-600, .theme-contrast .allo-docsuite .to-rose-50, .theme-contrast .allo-docsuite [class~="to-rose-50/30"], .theme-contrast .allo-docsuite .to-rose-500, .theme-contrast .allo-docsuite .to-rose-600, .theme-contrast .allo-docsuite .to-rose-700, .theme-contrast .allo-docsuite .to-rose-800, .theme-contrast .allo-docsuite .to-rose-900, .theme-contrast .allo-docsuite [class~="to-rose-900/40"], .theme-contrast .allo-docsuite .to-sky-50, .theme-contrast .allo-docsuite .to-sky-600, .theme-contrast .allo-docsuite [class~="to-sky-900/40"], .theme-contrast .allo-docsuite .to-slate-50, .theme-contrast .allo-docsuite .to-slate-700, .theme-contrast .allo-docsuite .to-slate-800, .theme-contrast .allo-docsuite .to-slate-900, .theme-contrast .allo-docsuite .to-stone-600, .theme-contrast .allo-docsuite .to-stone-700, .theme-contrast .allo-docsuite [class~="to-teal-100/40"], .theme-contrast .allo-docsuite .to-teal-200, .theme-contrast .allo-docsuite .to-teal-50, .theme-contrast .allo-docsuite .to-teal-500, .theme-contrast .allo-docsuite .to-teal-600, .theme-contrast .allo-docsuite .to-violet-100, .theme-contrast .allo-docsuite .to-violet-50, .theme-contrast .allo-docsuite [class~="to-violet-50/30"], .theme-contrast .allo-docsuite [class~="to-violet-50/40"], .theme-contrast .allo-docsuite .to-violet-500, .theme-contrast .allo-docsuite .to-violet-600, .theme-contrast .allo-docsuite .to-violet-700, .theme-contrast .allo-docsuite [class~="to-violet-900/50"], .theme-contrast .allo-docsuite .to-white, .theme-contrast .allo-docsuite [class~="to-white/20"], .theme-contrast .allo-docsuite .to-yellow-300, .theme-contrast .allo-docsuite .to-yellow-50, .theme-contrast .allo-docsuite .to-yellow-500, .theme-contrast .allo-docsuite .to-yellow-600, .theme-contrast .allo-docsuite .to-zinc-700, .theme-contrast .allo-docsuite .via-amber-400, .theme-contrast .allo-docsuite [class~="via-black/40"], .theme-contrast .allo-docsuite [class~="via-blue-50/40"], .theme-contrast .allo-docsuite [class~="via-green-50/30"], .theme-contrast .allo-docsuite [class~="via-indigo-50/40"], .theme-contrast .allo-docsuite [class~="via-indigo-50/50"], .theme-contrast .allo-docsuite .via-indigo-950, .theme-contrast .allo-docsuite .via-orange-300, .theme-contrast .allo-docsuite [class~="via-orange-50/40"], .theme-contrast .allo-docsuite .via-purple-200, .theme-contrast .allo-docsuite .via-purple-500, .theme-contrast .allo-docsuite .via-white, .theme-contrast .allo-docsuite [class~="via-white/20"], .theme-contrast .allo-docsuite [class~="via-white/95"] { background-image:none !important;background-color:#000000 !important; }
-.theme-contrast .allo-docsuite .border-amber-100, .theme-contrast .allo-docsuite [class~="border-amber-100/50"], .theme-contrast .allo-docsuite [class~="border-amber-100/70"], .theme-contrast .allo-docsuite .border-amber-200, .theme-contrast .allo-docsuite [class~="border-amber-200/30"], .theme-contrast .allo-docsuite [class~="border-amber-200/50"], .theme-contrast .allo-docsuite [class~="border-amber-200/60"], .theme-contrast .allo-docsuite .border-amber-300, .theme-contrast .allo-docsuite .border-amber-400, .theme-contrast .allo-docsuite [class~="border-amber-400/40"], .theme-contrast .allo-docsuite [class~="border-amber-400/50"], .theme-contrast .allo-docsuite .border-amber-500, .theme-contrast .allo-docsuite [class~="border-amber-500/30"], .theme-contrast .allo-docsuite [class~="border-amber-500/40"], .theme-contrast .allo-docsuite [class~="border-amber-500/50"], .theme-contrast .allo-docsuite .border-amber-600, .theme-contrast .allo-docsuite [class~="border-amber-600/30"], .theme-contrast .allo-docsuite [class~="border-amber-600/40"], .theme-contrast .allo-docsuite [class~="border-amber-700/50"], .theme-contrast .allo-docsuite .border-black, .theme-contrast .allo-docsuite [class~="border-black/20"], .theme-contrast .allo-docsuite [class~="border-black/5"], .theme-contrast .allo-docsuite .border-blue-100, .theme-contrast .allo-docsuite .border-blue-200, .theme-contrast .allo-docsuite [class~="border-blue-200/50"], .theme-contrast .allo-docsuite .border-blue-300, .theme-contrast .allo-docsuite [class~="border-blue-300/30"], .theme-contrast .allo-docsuite [class~="border-blue-300/40"], .theme-contrast .allo-docsuite .border-blue-400, .theme-contrast .allo-docsuite [class~="border-blue-400/50"], .theme-contrast .allo-docsuite .border-blue-500, .theme-contrast .allo-docsuite [class~="border-blue-500/30"], .theme-contrast .allo-docsuite [class~="border-blue-500/40"], .theme-contrast .allo-docsuite .border-blue-600, .theme-contrast .allo-docsuite .border-blue-700, .theme-contrast .allo-docsuite .border-blue-800, .theme-contrast .allo-docsuite .border-cyan-100, .theme-contrast .allo-docsuite .border-cyan-200, .theme-contrast .allo-docsuite .border-cyan-300, .theme-contrast .allo-docsuite .border-cyan-400, .theme-contrast .allo-docsuite .border-cyan-500, .theme-contrast .allo-docsuite [class~="border-cyan-500/30"], .theme-contrast .allo-docsuite .border-cyan-600, .theme-contrast .allo-docsuite .border-cyan-700, .theme-contrast .allo-docsuite .border-emerald-100, .theme-contrast .allo-docsuite [class~="border-emerald-100/50"], .theme-contrast .allo-docsuite .border-emerald-200, .theme-contrast .allo-docsuite .border-emerald-300, .theme-contrast .allo-docsuite [class~="border-emerald-300/30"], .theme-contrast .allo-docsuite .border-emerald-400, .theme-contrast .allo-docsuite [class~="border-emerald-400/40"], .theme-contrast .allo-docsuite .border-emerald-500, .theme-contrast .allo-docsuite [class~="border-emerald-500/30"], .theme-contrast .allo-docsuite [class~="border-emerald-500/40"], .theme-contrast .allo-docsuite [class~="border-emerald-500/50"], .theme-contrast .allo-docsuite .border-emerald-600, .theme-contrast .allo-docsuite .border-emerald-700, .theme-contrast .allo-docsuite [class~="border-emerald-700/50"], .theme-contrast .allo-docsuite .border-fuchsia-200, .theme-contrast .allo-docsuite .border-fuchsia-300, .theme-contrast .allo-docsuite .border-fuchsia-400, .theme-contrast .allo-docsuite [class~="border-fuchsia-500/20"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/30"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/40"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/50"], .theme-contrast .allo-docsuite .border-fuchsia-600, .theme-contrast .allo-docsuite .border-green-100, .theme-contrast .allo-docsuite .border-green-200, .theme-contrast .allo-docsuite .border-green-300, .theme-contrast .allo-docsuite .border-green-400, .theme-contrast .allo-docsuite .border-green-500, .theme-contrast .allo-docsuite .border-green-600, .theme-contrast .allo-docsuite .border-indigo-100, .theme-contrast .allo-docsuite [class~="border-indigo-100/50"], .theme-contrast .allo-docsuite .border-indigo-200, .theme-contrast .allo-docsuite [class~="border-indigo-200/50"], .theme-contrast .allo-docsuite [class~="border-indigo-200/60"], .theme-contrast .allo-docsuite [class~="border-indigo-200/70"], .theme-contrast .allo-docsuite .border-indigo-300, .theme-contrast .allo-docsuite [class~="border-indigo-300/30"], .theme-contrast .allo-docsuite [class~="border-indigo-300/50"], .theme-contrast .allo-docsuite .border-indigo-400, .theme-contrast .allo-docsuite [class~="border-indigo-400/30"], .theme-contrast .allo-docsuite .border-indigo-50, .theme-contrast .allo-docsuite .border-indigo-500, .theme-contrast .allo-docsuite [class~="border-indigo-500/20"], .theme-contrast .allo-docsuite [class~="border-indigo-500/30"], .theme-contrast .allo-docsuite [class~="border-indigo-500/40"], .theme-contrast .allo-docsuite [class~="border-indigo-500/50"], .theme-contrast .allo-docsuite .border-indigo-600, .theme-contrast .allo-docsuite [class~="border-indigo-600/60"], .theme-contrast .allo-docsuite .border-indigo-700, .theme-contrast .allo-docsuite [class~="border-indigo-700/50"], .theme-contrast .allo-docsuite .border-indigo-800, .theme-contrast .allo-docsuite [class~="border-indigo-800/30"], .theme-contrast .allo-docsuite .border-indigo-900, .theme-contrast .allo-docsuite [class~="border-indigo-900/20"], .theme-contrast .allo-docsuite [class~="border-lime-500/30"], .theme-contrast .allo-docsuite .border-orange-100, .theme-contrast .allo-docsuite .border-orange-200, .theme-contrast .allo-docsuite .border-orange-300, .theme-contrast .allo-docsuite [class~="border-orange-300/30"], .theme-contrast .allo-docsuite .border-orange-400, .theme-contrast .allo-docsuite .border-orange-500, .theme-contrast .allo-docsuite .border-orange-600, .theme-contrast .allo-docsuite .border-pink-200, .theme-contrast .allo-docsuite .border-pink-300, .theme-contrast .allo-docsuite .border-pink-400, .theme-contrast .allo-docsuite .border-pink-500, .theme-contrast .allo-docsuite [class~="border-pink-500/30"], .theme-contrast .allo-docsuite .border-pink-600, .theme-contrast .allo-docsuite [class~="border-pink-700/50"], .theme-contrast .allo-docsuite .border-purple-100, .theme-contrast .allo-docsuite .border-purple-200, .theme-contrast .allo-docsuite .border-purple-300, .theme-contrast .allo-docsuite .border-purple-400, .theme-contrast .allo-docsuite .border-purple-500, .theme-contrast .allo-docsuite [class~="border-purple-500/30"], .theme-contrast .allo-docsuite [class~="border-purple-500/40"], .theme-contrast .allo-docsuite .border-purple-600, .theme-contrast .allo-docsuite [class~="border-purple-700/50"], .theme-contrast .allo-docsuite .border-red-100, .theme-contrast .allo-docsuite .border-red-200, .theme-contrast .allo-docsuite [class~="border-red-200/60"], .theme-contrast .allo-docsuite .border-red-300, .theme-contrast .allo-docsuite .border-red-400, .theme-contrast .allo-docsuite .border-red-500, .theme-contrast .allo-docsuite .border-red-600, .theme-contrast .allo-docsuite .border-red-700, .theme-contrast .allo-docsuite [class~="border-red-700/60"], .theme-contrast .allo-docsuite .border-rose-100, .theme-contrast .allo-docsuite .border-rose-200, .theme-contrast .allo-docsuite [class~="border-rose-200/50"], .theme-contrast .allo-docsuite .border-rose-300, .theme-contrast .allo-docsuite .border-rose-400, .theme-contrast .allo-docsuite .border-rose-500, .theme-contrast .allo-docsuite [class~="border-rose-500/30"], .theme-contrast .allo-docsuite [class~="border-rose-500/40"], .theme-contrast .allo-docsuite [class~="border-rose-500/50"], .theme-contrast .allo-docsuite .border-rose-600, .theme-contrast .allo-docsuite .border-rose-700, .theme-contrast .allo-docsuite .border-sky-100, .theme-contrast .allo-docsuite .border-sky-200, .theme-contrast .allo-docsuite [class~="border-sky-200/60"], .theme-contrast .allo-docsuite .border-sky-300, .theme-contrast .allo-docsuite .border-sky-500, .theme-contrast .allo-docsuite [class~="border-sky-500/30"], .theme-contrast .allo-docsuite [class~="border-sky-500/40"], .theme-contrast .allo-docsuite .border-sky-600, .theme-contrast .allo-docsuite .border-slate-100, .theme-contrast .allo-docsuite .border-slate-200, .theme-contrast .allo-docsuite .border-slate-300, .theme-contrast .allo-docsuite .border-slate-400, .theme-contrast .allo-docsuite .border-slate-50, .theme-contrast .allo-docsuite .border-slate-500, .theme-contrast .allo-docsuite [class~="border-slate-500/30"], .theme-contrast .allo-docsuite [class~="border-slate-500/40"], .theme-contrast .allo-docsuite .border-slate-600, .theme-contrast .allo-docsuite .border-slate-700, .theme-contrast .allo-docsuite [class~="border-slate-700/50"], .theme-contrast .allo-docsuite .border-slate-800, .theme-contrast .allo-docsuite .border-slate-900, .theme-contrast .allo-docsuite .border-stone-300, .theme-contrast .allo-docsuite .border-stone-500, .theme-contrast .allo-docsuite [class~="border-stone-500/20"], .theme-contrast .allo-docsuite [class~="border-stone-500/30"], .theme-contrast .allo-docsuite [class~="border-stone-500/40"], .theme-contrast .allo-docsuite .border-stone-700, .theme-contrast .allo-docsuite .border-teal-100, .theme-contrast .allo-docsuite [class~="border-teal-100/50"], .theme-contrast .allo-docsuite .border-teal-200, .theme-contrast .allo-docsuite .border-teal-300, .theme-contrast .allo-docsuite .border-teal-400, .theme-contrast .allo-docsuite .border-teal-500, .theme-contrast .allo-docsuite [class~="border-teal-500/30"], .theme-contrast .allo-docsuite [class~="border-teal-500/40"], .theme-contrast .allo-docsuite .border-teal-600, .theme-contrast .allo-docsuite .border-teal-700, .theme-contrast .allo-docsuite .border-violet-100, .theme-contrast .allo-docsuite .border-violet-200, .theme-contrast .allo-docsuite .border-violet-300, .theme-contrast .allo-docsuite .border-violet-400, .theme-contrast .allo-docsuite .border-violet-50, .theme-contrast .allo-docsuite .border-violet-500, .theme-contrast .allo-docsuite [class~="border-violet-500/30"], .theme-contrast .allo-docsuite .border-violet-600, .theme-contrast .allo-docsuite [class~="border-violet-700/50"], .theme-contrast .allo-docsuite .border-white, .theme-contrast .allo-docsuite [class~="border-white/10"], .theme-contrast .allo-docsuite [class~="border-white/15"], .theme-contrast .allo-docsuite [class~="border-white/20"], .theme-contrast .allo-docsuite [class~="border-white/30"], .theme-contrast .allo-docsuite [class~="border-white/50"], .theme-contrast .allo-docsuite .border-yellow-100, .theme-contrast .allo-docsuite .border-yellow-200, .theme-contrast .allo-docsuite [class~="border-yellow-200/50"], .theme-contrast .allo-docsuite .border-yellow-300, .theme-contrast .allo-docsuite .border-yellow-400, .theme-contrast .allo-docsuite [class~="border-yellow-400/30"], .theme-contrast .allo-docsuite .border-yellow-500, .theme-contrast .allo-docsuite [class~="border-yellow-500/30"], .theme-contrast .allo-docsuite .border-yellow-600, .theme-contrast .allo-docsuite [class~="border-zinc-500/30"], .theme-contrast .allo-docsuite .divide-slate-100 > * + *, .theme-contrast .allo-docsuite .divide-slate-200 > * + *, .theme-contrast .allo-docsuite .divide-slate-700 > * + *, .theme-contrast .allo-docsuite .divide-white > * + * { border-color:#ffff00 !important; }
-.theme-contrast .allo-docsuite .text-amber-100, .theme-contrast .allo-docsuite .text-amber-200, .theme-contrast .allo-docsuite [class~="text-amber-200/50"], .theme-contrast .allo-docsuite [class~="text-amber-200/80"], .theme-contrast .allo-docsuite .text-amber-300, .theme-contrast .allo-docsuite [class~="text-amber-300/60"], .theme-contrast .allo-docsuite [class~="text-amber-300/70"], .theme-contrast .allo-docsuite .text-amber-400, .theme-contrast .allo-docsuite [class~="text-amber-400/70"], .theme-contrast .allo-docsuite [class~="text-amber-400/80"], .theme-contrast .allo-docsuite .text-amber-500, .theme-contrast .allo-docsuite .text-amber-600, .theme-contrast .allo-docsuite .text-amber-700, .theme-contrast .allo-docsuite [class~="text-amber-700/90"], .theme-contrast .allo-docsuite .text-amber-800, .theme-contrast .allo-docsuite .text-amber-900, .theme-contrast .allo-docsuite .text-amber-950, .theme-contrast .allo-docsuite .text-black, .theme-contrast .allo-docsuite .text-blue-200, .theme-contrast .allo-docsuite .text-blue-300, .theme-contrast .allo-docsuite .text-blue-400, .theme-contrast .allo-docsuite [class~="text-blue-400/70"], .theme-contrast .allo-docsuite .text-blue-50, .theme-contrast .allo-docsuite .text-blue-500, .theme-contrast .allo-docsuite [class~="text-blue-500/70"], .theme-contrast .allo-docsuite .text-blue-600, .theme-contrast .allo-docsuite .text-blue-700, .theme-contrast .allo-docsuite .text-blue-800, .theme-contrast .allo-docsuite [class~="text-blue-800/80"], .theme-contrast .allo-docsuite .text-blue-900, .theme-contrast .allo-docsuite .text-blue-950, .theme-contrast .allo-docsuite .text-cyan-200, .theme-contrast .allo-docsuite .text-cyan-300, .theme-contrast .allo-docsuite .text-cyan-500, .theme-contrast .allo-docsuite .text-cyan-600, .theme-contrast .allo-docsuite [class~="text-cyan-600/60"], .theme-contrast .allo-docsuite .text-cyan-700, .theme-contrast .allo-docsuite .text-cyan-800, .theme-contrast .allo-docsuite .text-cyan-900, .theme-contrast .allo-docsuite .text-emerald-100, .theme-contrast .allo-docsuite .text-emerald-200, .theme-contrast .allo-docsuite .text-emerald-300, .theme-contrast .allo-docsuite .text-emerald-500, .theme-contrast .allo-docsuite .text-emerald-600, .theme-contrast .allo-docsuite [class~="text-emerald-600/70"], .theme-contrast .allo-docsuite .text-emerald-700, .theme-contrast .allo-docsuite [class~="text-emerald-700/70"], .theme-contrast .allo-docsuite .text-emerald-800, .theme-contrast .allo-docsuite .text-emerald-900, .theme-contrast .allo-docsuite [class~="text-emerald-900/90"], .theme-contrast .allo-docsuite .text-emerald-950, .theme-contrast .allo-docsuite .text-fuchsia-100, .theme-contrast .allo-docsuite .text-fuchsia-200, .theme-contrast .allo-docsuite .text-fuchsia-300, .theme-contrast .allo-docsuite [class~="text-fuchsia-300/70"], .theme-contrast .allo-docsuite .text-fuchsia-400, .theme-contrast .allo-docsuite .text-fuchsia-500, .theme-contrast .allo-docsuite .text-fuchsia-600, .theme-contrast .allo-docsuite .text-fuchsia-700, .theme-contrast .allo-docsuite .text-fuchsia-800, .theme-contrast .allo-docsuite .text-fuchsia-900, .theme-contrast .allo-docsuite .text-gray-600, .theme-contrast .allo-docsuite .text-green-200, .theme-contrast .allo-docsuite .text-green-300, .theme-contrast .allo-docsuite .text-green-400, .theme-contrast .allo-docsuite .text-green-500, .theme-contrast .allo-docsuite .text-green-600, .theme-contrast .allo-docsuite .text-green-700, .theme-contrast .allo-docsuite .text-green-800, .theme-contrast .allo-docsuite .text-green-900, .theme-contrast .allo-docsuite .text-indigo-100, .theme-contrast .allo-docsuite [class~="text-indigo-100/70"], .theme-contrast .allo-docsuite .text-indigo-200, .theme-contrast .allo-docsuite .text-indigo-300, .theme-contrast .allo-docsuite .text-indigo-400, .theme-contrast .allo-docsuite .text-indigo-500, .theme-contrast .allo-docsuite .text-indigo-600, .theme-contrast .allo-docsuite [class~="text-indigo-600/80"], .theme-contrast .allo-docsuite .text-indigo-700, .theme-contrast .allo-docsuite .text-indigo-800, .theme-contrast .allo-docsuite .text-indigo-900, .theme-contrast .allo-docsuite .text-lime-300, .theme-contrast .allo-docsuite .text-orange-100, .theme-contrast .allo-docsuite .text-orange-300, .theme-contrast .allo-docsuite .text-orange-400, .theme-contrast .allo-docsuite .text-orange-500, .theme-contrast .allo-docsuite .text-orange-600, .theme-contrast .allo-docsuite .text-orange-700, .theme-contrast .allo-docsuite .text-orange-800, .theme-contrast .allo-docsuite .text-orange-900, .theme-contrast .allo-docsuite .text-pink-100, .theme-contrast .allo-docsuite .text-pink-200, .theme-contrast .allo-docsuite .text-pink-300, .theme-contrast .allo-docsuite .text-pink-600, .theme-contrast .allo-docsuite .text-pink-700, .theme-contrast .allo-docsuite .text-pink-800, .theme-contrast .allo-docsuite .text-pink-900, .theme-contrast .allo-docsuite .text-purple-200, .theme-contrast .allo-docsuite .text-purple-300, .theme-contrast .allo-docsuite .text-purple-400, .theme-contrast .allo-docsuite .text-purple-500, .theme-contrast .allo-docsuite .text-purple-600, .theme-contrast .allo-docsuite .text-purple-700, .theme-contrast .allo-docsuite .text-purple-800, .theme-contrast .allo-docsuite .text-purple-900, .theme-contrast .allo-docsuite .text-purple-950, .theme-contrast .allo-docsuite .text-red-200, .theme-contrast .allo-docsuite .text-red-300, .theme-contrast .allo-docsuite .text-red-400, .theme-contrast .allo-docsuite .text-red-500, .theme-contrast .allo-docsuite .text-red-600, .theme-contrast .allo-docsuite .text-red-700, .theme-contrast .allo-docsuite [class~="text-red-700/70"], .theme-contrast .allo-docsuite [class~="text-red-700/80"], .theme-contrast .allo-docsuite .text-red-800, .theme-contrast .allo-docsuite .text-red-900, .theme-contrast .allo-docsuite .text-rose-100, .theme-contrast .allo-docsuite .text-rose-200, .theme-contrast .allo-docsuite .text-rose-300, .theme-contrast .allo-docsuite .text-rose-400, .theme-contrast .allo-docsuite .text-rose-500, .theme-contrast .allo-docsuite .text-rose-600, .theme-contrast .allo-docsuite .text-rose-700, .theme-contrast .allo-docsuite .text-rose-800, .theme-contrast .allo-docsuite .text-rose-900, .theme-contrast .allo-docsuite .text-sky-200, .theme-contrast .allo-docsuite .text-sky-300, .theme-contrast .allo-docsuite .text-sky-400, .theme-contrast .allo-docsuite .text-sky-500, .theme-contrast .allo-docsuite .text-sky-600, .theme-contrast .allo-docsuite .text-sky-700, .theme-contrast .allo-docsuite .text-sky-800, .theme-contrast .allo-docsuite .text-sky-900, .theme-contrast .allo-docsuite .text-slate-100, .theme-contrast .allo-docsuite .text-slate-200, .theme-contrast .allo-docsuite .text-slate-300, .theme-contrast .allo-docsuite [class~="text-slate-300/60"], .theme-contrast .allo-docsuite .text-slate-400, .theme-contrast .allo-docsuite .text-slate-500, .theme-contrast .allo-docsuite .text-slate-600, .theme-contrast .allo-docsuite .text-slate-700, .theme-contrast .allo-docsuite .text-slate-800, .theme-contrast .allo-docsuite .text-slate-900, .theme-contrast .allo-docsuite [class~="text-slate-900/95"], .theme-contrast .allo-docsuite .text-slate-950, .theme-contrast .allo-docsuite .text-stone-100, .theme-contrast .allo-docsuite .text-stone-300, .theme-contrast .allo-docsuite .text-stone-700, .theme-contrast .allo-docsuite .text-teal-100, .theme-contrast .allo-docsuite .text-teal-200, .theme-contrast .allo-docsuite .text-teal-300, .theme-contrast .allo-docsuite .text-teal-400, .theme-contrast .allo-docsuite .text-teal-500, .theme-contrast .allo-docsuite [class~="text-teal-500/70"], .theme-contrast .allo-docsuite .text-teal-600, .theme-contrast .allo-docsuite [class~="text-teal-600/60"], .theme-contrast .allo-docsuite .text-teal-700, .theme-contrast .allo-docsuite .text-teal-800, .theme-contrast .allo-docsuite .text-teal-900, .theme-contrast .allo-docsuite .text-teal-950, .theme-contrast .allo-docsuite .text-violet-200, .theme-contrast .allo-docsuite .text-violet-300, .theme-contrast .allo-docsuite .text-violet-400, .theme-contrast .allo-docsuite .text-violet-500, .theme-contrast .allo-docsuite .text-violet-600, .theme-contrast .allo-docsuite .text-violet-700, .theme-contrast .allo-docsuite .text-violet-800, .theme-contrast .allo-docsuite .text-violet-900, .theme-contrast .allo-docsuite .text-white, .theme-contrast .allo-docsuite [class~="text-white/40"], .theme-contrast .allo-docsuite [class~="text-white/50"], .theme-contrast .allo-docsuite [class~="text-white/70"], .theme-contrast .allo-docsuite [class~="text-white/80"], .theme-contrast .allo-docsuite [class~="text-white/90"], .theme-contrast .allo-docsuite .text-yellow-100, .theme-contrast .allo-docsuite .text-yellow-200, .theme-contrast .allo-docsuite .text-yellow-300, .theme-contrast .allo-docsuite [class~="text-yellow-300/50"], .theme-contrast .allo-docsuite .text-yellow-400, .theme-contrast .allo-docsuite .text-yellow-500, .theme-contrast .allo-docsuite .text-yellow-600, .theme-contrast .allo-docsuite [class~="text-yellow-600/70"], .theme-contrast .allo-docsuite .text-yellow-700, .theme-contrast .allo-docsuite .text-yellow-800, .theme-contrast .allo-docsuite .text-yellow-900, .theme-contrast .allo-docsuite .text-zinc-200, .theme-contrast .allo-docsuite .text-zinc-300 { color:#ffff00 !important; }
+.theme-contrast .allo-docsuite .ring-amber-100, .theme-contrast .allo-docsuite .ring-amber-200, .theme-contrast .allo-docsuite .ring-amber-300, .theme-contrast .allo-docsuite [class~="ring-amber-300/30"], .theme-contrast .allo-docsuite .ring-amber-400, .theme-contrast .allo-docsuite .ring-amber-500, .theme-contrast .allo-docsuite [class~="ring-amber-500/20"], .theme-contrast .allo-docsuite .ring-amber-700, .theme-contrast .allo-docsuite .ring-blue-200, .theme-contrast .allo-docsuite .ring-blue-400, .theme-contrast .allo-docsuite .ring-blue-500, .theme-contrast .allo-docsuite [class~="ring-blue-500/20"], .theme-contrast .allo-docsuite [class~="ring-blue-500/30"], .theme-contrast .allo-docsuite .ring-blue-600, .theme-contrast .allo-docsuite .ring-cyan-200, .theme-contrast .allo-docsuite .ring-cyan-300, .theme-contrast .allo-docsuite .ring-cyan-400, .theme-contrast .allo-docsuite [class~="ring-cyan-400/50"], .theme-contrast .allo-docsuite .ring-cyan-500, .theme-contrast .allo-docsuite [class~="ring-cyan-500/20"], .theme-contrast .allo-docsuite .ring-emerald-200, .theme-contrast .allo-docsuite .ring-emerald-300, .theme-contrast .allo-docsuite .ring-emerald-400, .theme-contrast .allo-docsuite [class~="ring-emerald-500/20"], .theme-contrast .allo-docsuite .ring-fuchsia-400, .theme-contrast .allo-docsuite .ring-green-200, .theme-contrast .allo-docsuite .ring-green-300, .theme-contrast .allo-docsuite .ring-green-400, .theme-contrast .allo-docsuite .ring-green-500, .theme-contrast .allo-docsuite .ring-green-800, .theme-contrast .allo-docsuite .ring-indigo-100, .theme-contrast .allo-docsuite .ring-indigo-200, .theme-contrast .allo-docsuite .ring-indigo-300, .theme-contrast .allo-docsuite .ring-indigo-400, .theme-contrast .allo-docsuite [class~="ring-indigo-400/50"], .theme-contrast .allo-docsuite .ring-indigo-500, .theme-contrast .allo-docsuite [class~="ring-indigo-500/20"], .theme-contrast .allo-docsuite [class~="ring-indigo-500/30"], .theme-contrast .allo-docsuite .ring-indigo-600, .theme-contrast .allo-docsuite .ring-indigo-700, .theme-contrast .allo-docsuite .ring-orange-200, .theme-contrast .allo-docsuite .ring-orange-300, .theme-contrast .allo-docsuite .ring-orange-400, .theme-contrast .allo-docsuite .ring-orange-500, .theme-contrast .allo-docsuite .ring-pink-200, .theme-contrast .allo-docsuite .ring-pink-400, .theme-contrast .allo-docsuite .ring-pink-500, .theme-contrast .allo-docsuite .ring-purple-100, .theme-contrast .allo-docsuite .ring-purple-200, .theme-contrast .allo-docsuite .ring-purple-300, .theme-contrast .allo-docsuite .ring-purple-400, .theme-contrast .allo-docsuite .ring-purple-500, .theme-contrast .allo-docsuite [class~="ring-purple-500/30"], .theme-contrast .allo-docsuite .ring-purple-600, .theme-contrast .allo-docsuite .ring-red-300, .theme-contrast .allo-docsuite [class~="ring-red-300/30"], .theme-contrast .allo-docsuite .ring-red-400, .theme-contrast .allo-docsuite .ring-red-500, .theme-contrast .allo-docsuite .ring-red-700, .theme-contrast .allo-docsuite .ring-rose-200, .theme-contrast .allo-docsuite .ring-rose-300, .theme-contrast .allo-docsuite .ring-rose-400, .theme-contrast .allo-docsuite .ring-rose-500, .theme-contrast .allo-docsuite .ring-rose-600, .theme-contrast .allo-docsuite .ring-rose-700, .theme-contrast .allo-docsuite .ring-sky-200, .theme-contrast .allo-docsuite .ring-sky-500, .theme-contrast .allo-docsuite [class~="ring-sky-500/30"], .theme-contrast .allo-docsuite .ring-slate-200, .theme-contrast .allo-docsuite .ring-slate-300, .theme-contrast .allo-docsuite .ring-slate-400, .theme-contrast .allo-docsuite .ring-slate-500, .theme-contrast .allo-docsuite .ring-slate-600, .theme-contrast .allo-docsuite .ring-slate-700, .theme-contrast .allo-docsuite .ring-teal-200, .theme-contrast .allo-docsuite .ring-teal-300, .theme-contrast .allo-docsuite .ring-teal-400, .theme-contrast .allo-docsuite .ring-teal-500, .theme-contrast .allo-docsuite .ring-teal-700, .theme-contrast .allo-docsuite .ring-violet-200, .theme-contrast .allo-docsuite .ring-violet-300, .theme-contrast .allo-docsuite .ring-violet-400, .theme-contrast .allo-docsuite [class~="ring-violet-400/40"], .theme-contrast .allo-docsuite .ring-violet-500, .theme-contrast .allo-docsuite [class~="ring-violet-500/20"], .theme-contrast .allo-docsuite .ring-violet-700, .theme-contrast .allo-docsuite .ring-white, .theme-contrast .allo-docsuite [class~="ring-white/10"], .theme-contrast .allo-docsuite [class~="ring-white/20"], .theme-contrast .allo-docsuite [class~="ring-white/50"], .theme-contrast .allo-docsuite .ring-yellow-100, .theme-contrast .allo-docsuite .ring-yellow-200, .theme-contrast .allo-docsuite .ring-yellow-300, .theme-contrast .allo-docsuite .ring-yellow-400, .theme-contrast .allo-docsuite [class~="ring-yellow-400/50"], .theme-contrast .allo-docsuite .ring-yellow-500, .theme-contrast .allo-docsuite .ring-yellow-600, .theme-contrast .allo-docsuite .ring-yellow-700 { --tw-ring-color:#ffff00 !important; }
+.theme-contrast .allo-docsuite .bg-amber-100, .theme-contrast .allo-docsuite [class~="bg-amber-100/50"], .theme-contrast .allo-docsuite .bg-amber-200, .theme-contrast .allo-docsuite [class~="bg-amber-200/50"], .theme-contrast .allo-docsuite [class~="bg-amber-200/60"], .theme-contrast .allo-docsuite .bg-amber-300, .theme-contrast .allo-docsuite [class~="bg-amber-300/15"], .theme-contrast .allo-docsuite [class~="bg-amber-300/50"], .theme-contrast .allo-docsuite .bg-amber-400, .theme-contrast .allo-docsuite .bg-amber-50, .theme-contrast .allo-docsuite [class~="bg-amber-50/50"], .theme-contrast .allo-docsuite [class~="bg-amber-50/60"], .theme-contrast .allo-docsuite [class~="bg-amber-50/70"], .theme-contrast .allo-docsuite .bg-amber-500, .theme-contrast .allo-docsuite [class~="bg-amber-500/15"], .theme-contrast .allo-docsuite [class~="bg-amber-500/20"], .theme-contrast .allo-docsuite .bg-amber-600, .theme-contrast .allo-docsuite .bg-amber-700, .theme-contrast .allo-docsuite [class~="bg-amber-700/40"], .theme-contrast .allo-docsuite .bg-amber-800, .theme-contrast .allo-docsuite [class~="bg-amber-900/20"], .theme-contrast .allo-docsuite [class~="bg-amber-900/30"], .theme-contrast .allo-docsuite [class~="bg-amber-900/40"], .theme-contrast .allo-docsuite [class~="bg-amber-900/50"], .theme-contrast .allo-docsuite [class~="bg-amber-900/60"], .theme-contrast .allo-docsuite [class~="bg-amber-900/80"], .theme-contrast .allo-docsuite .bg-blue-100, .theme-contrast .allo-docsuite [class~="bg-blue-100/50"], .theme-contrast .allo-docsuite .bg-blue-200, .theme-contrast .allo-docsuite [class~="bg-blue-200/20"], .theme-contrast .allo-docsuite [class~="bg-blue-200/30"], .theme-contrast .allo-docsuite .bg-blue-300, .theme-contrast .allo-docsuite .bg-blue-400, .theme-contrast .allo-docsuite .bg-blue-50, .theme-contrast .allo-docsuite [class~="bg-blue-50/50"], .theme-contrast .allo-docsuite [class~="bg-blue-50/95"], .theme-contrast .allo-docsuite [class~="bg-blue-500/10"], .theme-contrast .allo-docsuite .bg-blue-600, .theme-contrast .allo-docsuite .bg-blue-700, .theme-contrast .allo-docsuite .bg-blue-800, .theme-contrast .allo-docsuite [class~="bg-blue-900/30"], .theme-contrast .allo-docsuite [class~="bg-blue-900/50"], .theme-contrast .allo-docsuite .bg-cyan-100, .theme-contrast .allo-docsuite [class~="bg-cyan-100/80"], .theme-contrast .allo-docsuite .bg-cyan-200, .theme-contrast .allo-docsuite .bg-cyan-50, .theme-contrast .allo-docsuite [class~="bg-cyan-50/50"], .theme-contrast .allo-docsuite .bg-cyan-500, .theme-contrast .allo-docsuite .bg-cyan-600, .theme-contrast .allo-docsuite .bg-cyan-700, .theme-contrast .allo-docsuite .bg-cyan-800, .theme-contrast .allo-docsuite .bg-emerald-100, .theme-contrast .allo-docsuite .bg-emerald-200, .theme-contrast .allo-docsuite .bg-emerald-300, .theme-contrast .allo-docsuite .bg-emerald-400, .theme-contrast .allo-docsuite .bg-emerald-50, .theme-contrast .allo-docsuite [class~="bg-emerald-50/40"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/50"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/70"], .theme-contrast .allo-docsuite .bg-emerald-500, .theme-contrast .allo-docsuite [class~="bg-emerald-500/15"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/25"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/30"], .theme-contrast .allo-docsuite .bg-emerald-600, .theme-contrast .allo-docsuite .bg-emerald-700, .theme-contrast .allo-docsuite .bg-emerald-800, .theme-contrast .allo-docsuite [class~="bg-emerald-800/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/30"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/40"], .theme-contrast .allo-docsuite .bg-emerald-950, .theme-contrast .allo-docsuite .bg-fuchsia-100, .theme-contrast .allo-docsuite .bg-fuchsia-50, .theme-contrast .allo-docsuite [class~="bg-fuchsia-50/50"], .theme-contrast .allo-docsuite .bg-fuchsia-500, .theme-contrast .allo-docsuite .bg-fuchsia-600, .theme-contrast .allo-docsuite [class~="bg-fuchsia-600/60"], .theme-contrast .allo-docsuite .bg-fuchsia-700, .theme-contrast .allo-docsuite [class~="bg-fuchsia-700/50"], .theme-contrast .allo-docsuite [class~="bg-fuchsia-900/40"], .theme-contrast .allo-docsuite .bg-green-100, .theme-contrast .allo-docsuite [class~="bg-green-100/50"], .theme-contrast .allo-docsuite .bg-green-200, .theme-contrast .allo-docsuite .bg-green-300, .theme-contrast .allo-docsuite .bg-green-400, .theme-contrast .allo-docsuite .bg-green-50, .theme-contrast .allo-docsuite [class~="bg-green-50/50"], .theme-contrast .allo-docsuite .bg-green-500, .theme-contrast .allo-docsuite .bg-green-600, .theme-contrast .allo-docsuite .bg-green-700, .theme-contrast .allo-docsuite .bg-green-800, .theme-contrast .allo-docsuite .bg-indigo-100, .theme-contrast .allo-docsuite [class~="bg-indigo-100/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/80"], .theme-contrast .allo-docsuite .bg-indigo-200, .theme-contrast .allo-docsuite [class~="bg-indigo-200/50"], .theme-contrast .allo-docsuite .bg-indigo-300, .theme-contrast .allo-docsuite [class~="bg-indigo-300/20"], .theme-contrast .allo-docsuite .bg-indigo-400, .theme-contrast .allo-docsuite .bg-indigo-50, .theme-contrast .allo-docsuite [class~="bg-indigo-50/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/70"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/80"], .theme-contrast .allo-docsuite .bg-indigo-500, .theme-contrast .allo-docsuite [class~="bg-indigo-500/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/15"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/25"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/30"], .theme-contrast .allo-docsuite .bg-indigo-600, .theme-contrast .allo-docsuite [class~="bg-indigo-600/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-600/30"], .theme-contrast .allo-docsuite .bg-indigo-700, .theme-contrast .allo-docsuite .bg-indigo-800, .theme-contrast .allo-docsuite [class~="bg-indigo-800/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-800/70"], .theme-contrast .allo-docsuite .bg-indigo-900, .theme-contrast .allo-docsuite [class~="bg-indigo-900/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/50"], .theme-contrast .allo-docsuite .bg-indigo-950, .theme-contrast .allo-docsuite [class~="bg-indigo-950/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/80"], .theme-contrast .allo-docsuite .bg-lime-500, .theme-contrast .allo-docsuite .bg-lime-600, .theme-contrast .allo-docsuite .bg-orange-100, .theme-contrast .allo-docsuite [class~="bg-orange-100/50"], .theme-contrast .allo-docsuite .bg-orange-200, .theme-contrast .allo-docsuite [class~="bg-orange-200/30"], .theme-contrast .allo-docsuite .bg-orange-300, .theme-contrast .allo-docsuite .bg-orange-400, .theme-contrast .allo-docsuite [class~="bg-orange-400/15"], .theme-contrast .allo-docsuite .bg-orange-50, .theme-contrast .allo-docsuite [class~="bg-orange-50/50"], .theme-contrast .allo-docsuite [class~="bg-orange-50/80"], .theme-contrast .allo-docsuite .bg-orange-600, .theme-contrast .allo-docsuite .bg-orange-700, .theme-contrast .allo-docsuite .bg-orange-800, .theme-contrast .allo-docsuite .bg-pink-100, .theme-contrast .allo-docsuite .bg-pink-200, .theme-contrast .allo-docsuite .bg-pink-50, .theme-contrast .allo-docsuite [class~="bg-pink-50/50"], .theme-contrast .allo-docsuite .bg-pink-500, .theme-contrast .allo-docsuite [class~="bg-pink-500/30"], .theme-contrast .allo-docsuite .bg-pink-600, .theme-contrast .allo-docsuite .bg-pink-700, .theme-contrast .allo-docsuite .bg-pink-800, .theme-contrast .allo-docsuite [class~="bg-pink-800/60"], .theme-contrast .allo-docsuite [class~="bg-pink-900/40"], .theme-contrast .allo-docsuite .bg-purple-100, .theme-contrast .allo-docsuite [class~="bg-purple-100/50"], .theme-contrast .allo-docsuite .bg-purple-200, .theme-contrast .allo-docsuite .bg-purple-300, .theme-contrast .allo-docsuite [class~="bg-purple-300/20"], .theme-contrast .allo-docsuite .bg-purple-400, .theme-contrast .allo-docsuite .bg-purple-50, .theme-contrast .allo-docsuite [class~="bg-purple-50/50"], .theme-contrast .allo-docsuite .bg-purple-500, .theme-contrast .allo-docsuite .bg-purple-600, .theme-contrast .allo-docsuite [class~="bg-purple-600/10"], .theme-contrast .allo-docsuite .bg-purple-700, .theme-contrast .allo-docsuite .bg-red-100, .theme-contrast .allo-docsuite [class~="bg-red-100/50"], .theme-contrast .allo-docsuite .bg-red-200, .theme-contrast .allo-docsuite .bg-red-300, .theme-contrast .allo-docsuite .bg-red-400, .theme-contrast .allo-docsuite .bg-red-50, .theme-contrast .allo-docsuite .bg-red-500, .theme-contrast .allo-docsuite [class~="bg-red-500/30"], .theme-contrast .allo-docsuite .bg-red-600, .theme-contrast .allo-docsuite .bg-red-700, .theme-contrast .allo-docsuite .bg-red-800, .theme-contrast .allo-docsuite [class~="bg-red-900/50"], .theme-contrast .allo-docsuite [class~="bg-red-900/90"], .theme-contrast .allo-docsuite [class~="bg-red-950/40"], .theme-contrast .allo-docsuite .bg-rose-100, .theme-contrast .allo-docsuite .bg-rose-200, .theme-contrast .allo-docsuite .bg-rose-300, .theme-contrast .allo-docsuite .bg-rose-50, .theme-contrast .allo-docsuite [class~="bg-rose-50/50"], .theme-contrast .allo-docsuite [class~="bg-rose-50/70"], .theme-contrast .allo-docsuite [class~="bg-rose-50/80"], .theme-contrast .allo-docsuite .bg-rose-500, .theme-contrast .allo-docsuite .bg-rose-600, .theme-contrast .allo-docsuite .bg-rose-700, .theme-contrast .allo-docsuite .bg-rose-800, .theme-contrast .allo-docsuite [class~="bg-rose-900/20"], .theme-contrast .allo-docsuite [class~="bg-rose-900/30"], .theme-contrast .allo-docsuite [class~="bg-rose-900/40"], .theme-contrast .allo-docsuite .bg-sky-100, .theme-contrast .allo-docsuite .bg-sky-200, .theme-contrast .allo-docsuite .bg-sky-50, .theme-contrast .allo-docsuite [class~="bg-sky-50/50"], .theme-contrast .allo-docsuite [class~="bg-sky-50/70"], .theme-contrast .allo-docsuite .bg-sky-500, .theme-contrast .allo-docsuite .bg-sky-600, .theme-contrast .allo-docsuite .bg-slate-100, .theme-contrast .allo-docsuite [class~="bg-slate-100/50"], .theme-contrast .allo-docsuite .bg-slate-200, .theme-contrast .allo-docsuite .bg-slate-300, .theme-contrast .allo-docsuite .bg-slate-400, .theme-contrast .allo-docsuite .bg-slate-50, .theme-contrast .allo-docsuite [class~="bg-slate-50/30"], .theme-contrast .allo-docsuite [class~="bg-slate-50/50"], .theme-contrast .allo-docsuite [class~="bg-slate-50/70"], .theme-contrast .allo-docsuite [class~="bg-slate-50/80"], .theme-contrast .allo-docsuite [class~="bg-slate-50/90"], .theme-contrast .allo-docsuite .bg-slate-600, .theme-contrast .allo-docsuite .bg-slate-700, .theme-contrast .allo-docsuite [class~="bg-slate-700/50"], .theme-contrast .allo-docsuite [class~="bg-slate-700/90"], .theme-contrast .allo-docsuite .bg-slate-800, .theme-contrast .allo-docsuite [class~="bg-slate-800/40"], .theme-contrast .allo-docsuite [class~="bg-slate-800/50"], .theme-contrast .allo-docsuite [class~="bg-slate-800/60"], .theme-contrast .allo-docsuite [class~="bg-slate-800/70"], .theme-contrast .allo-docsuite [class~="bg-slate-800/80"], .theme-contrast .allo-docsuite [class~="bg-slate-800/90"], .theme-contrast .allo-docsuite [class~="bg-slate-800/95"], .theme-contrast .allo-docsuite .bg-slate-900, .theme-contrast .allo-docsuite [class~="bg-slate-900/40"], .theme-contrast .allo-docsuite [class~="bg-slate-900/50"], .theme-contrast .allo-docsuite [class~="bg-slate-900/60"], .theme-contrast .allo-docsuite [class~="bg-slate-900/70"], .theme-contrast .allo-docsuite [class~="bg-slate-900/80"], .theme-contrast .allo-docsuite [class~="bg-slate-900/90"], .theme-contrast .allo-docsuite [class~="bg-slate-900/95"], .theme-contrast .allo-docsuite .bg-slate-950, .theme-contrast .allo-docsuite [class~="bg-slate-950/40"], .theme-contrast .allo-docsuite [class~="bg-slate-950/70"], .theme-contrast .allo-docsuite [class~="bg-slate-950/80"], .theme-contrast .allo-docsuite [class~="bg-slate-950/90"], .theme-contrast .allo-docsuite .bg-stone-50, .theme-contrast .allo-docsuite .bg-stone-700, .theme-contrast .allo-docsuite .bg-teal-100, .theme-contrast .allo-docsuite .bg-teal-200, .theme-contrast .allo-docsuite .bg-teal-300, .theme-contrast .allo-docsuite .bg-teal-400, .theme-contrast .allo-docsuite .bg-teal-50, .theme-contrast .allo-docsuite [class~="bg-teal-50/50"], .theme-contrast .allo-docsuite [class~="bg-teal-50/60"], .theme-contrast .allo-docsuite .bg-teal-500, .theme-contrast .allo-docsuite .bg-teal-600, .theme-contrast .allo-docsuite .bg-teal-700, .theme-contrast .allo-docsuite .bg-teal-800, .theme-contrast .allo-docsuite .bg-teal-950, .theme-contrast .allo-docsuite .bg-violet-100, .theme-contrast .allo-docsuite [class~="bg-violet-100/50"], .theme-contrast .allo-docsuite .bg-violet-200, .theme-contrast .allo-docsuite .bg-violet-400, .theme-contrast .allo-docsuite .bg-violet-50, .theme-contrast .allo-docsuite [class~="bg-violet-50/50"], .theme-contrast .allo-docsuite [class~="bg-violet-50/60"], .theme-contrast .allo-docsuite [class~="bg-violet-50/70"], .theme-contrast .allo-docsuite .bg-violet-500, .theme-contrast .allo-docsuite .bg-violet-600, .theme-contrast .allo-docsuite [class~="bg-violet-600/30"], .theme-contrast .allo-docsuite [class~="bg-violet-600/40"], .theme-contrast .allo-docsuite [class~="bg-violet-600/60"], .theme-contrast .allo-docsuite .bg-violet-700, .theme-contrast .allo-docsuite [class~="bg-violet-700/20"], .theme-contrast .allo-docsuite [class~="bg-violet-900/50"], .theme-contrast .allo-docsuite .bg-white, .theme-contrast .allo-docsuite [class~="bg-white/10"], .theme-contrast .allo-docsuite [class~="bg-white/15"], .theme-contrast .allo-docsuite [class~="bg-white/20"], .theme-contrast .allo-docsuite [class~="bg-white/30"], .theme-contrast .allo-docsuite [class~="bg-white/35"], .theme-contrast .allo-docsuite [class~="bg-white/5"], .theme-contrast .allo-docsuite [class~="bg-white/50"], .theme-contrast .allo-docsuite [class~="bg-white/60"], .theme-contrast .allo-docsuite [class~="bg-white/70"], .theme-contrast .allo-docsuite [class~="bg-white/80"], .theme-contrast .allo-docsuite [class~="bg-white/90"], .theme-contrast .allo-docsuite [class~="bg-white/95"], .theme-contrast .allo-docsuite .bg-yellow-100, .theme-contrast .allo-docsuite [class~="bg-yellow-100/5"], .theme-contrast .allo-docsuite .bg-yellow-200, .theme-contrast .allo-docsuite [class~="bg-yellow-200/30"], .theme-contrast .allo-docsuite .bg-yellow-300, .theme-contrast .allo-docsuite .bg-yellow-400, .theme-contrast .allo-docsuite [class~="bg-yellow-400/20"], .theme-contrast .allo-docsuite [class~="bg-yellow-400/30"], .theme-contrast .allo-docsuite .bg-yellow-50, .theme-contrast .allo-docsuite [class~="bg-yellow-50/50"], .theme-contrast .allo-docsuite .bg-yellow-500, .theme-contrast .allo-docsuite [class~="bg-yellow-500/20"], .theme-contrast .allo-docsuite .bg-yellow-600, .theme-contrast .allo-docsuite .bg-yellow-700, .theme-contrast .allo-docsuite .bg-yellow-900, .theme-contrast .allo-docsuite .bg-zinc-500, .theme-contrast .allo-docsuite .bg-zinc-600 { background-color:#000000 !important; }
+.theme-contrast .allo-docsuite .from-amber-100, .theme-contrast .allo-docsuite .from-amber-300, .theme-contrast .allo-docsuite .from-amber-400, .theme-contrast .allo-docsuite [class~="from-amber-400/20"], .theme-contrast .allo-docsuite .from-amber-50, .theme-contrast .allo-docsuite [class~="from-amber-50/80"], .theme-contrast .allo-docsuite .from-amber-500, .theme-contrast .allo-docsuite .from-amber-600, .theme-contrast .allo-docsuite [class~="from-amber-600/80"], .theme-contrast .allo-docsuite .from-amber-700, .theme-contrast .allo-docsuite .from-amber-800, .theme-contrast .allo-docsuite .from-amber-900, .theme-contrast .allo-docsuite [class~="from-amber-900/40"], .theme-contrast .allo-docsuite .from-black, .theme-contrast .allo-docsuite .from-blue-100, .theme-contrast .allo-docsuite .from-blue-400, .theme-contrast .allo-docsuite .from-blue-50, .theme-contrast .allo-docsuite [class~="from-blue-50/60"], .theme-contrast .allo-docsuite .from-blue-500, .theme-contrast .allo-docsuite .from-blue-600, .theme-contrast .allo-docsuite .from-blue-700, .theme-contrast .allo-docsuite [class~="from-blue-900/40"], .theme-contrast .allo-docsuite .from-cyan-50, .theme-contrast .allo-docsuite [class~="from-cyan-50/60"], .theme-contrast .allo-docsuite .from-cyan-500, .theme-contrast .allo-docsuite .from-cyan-600, .theme-contrast .allo-docsuite [class~="from-cyan-900/40"], .theme-contrast .allo-docsuite .from-emerald-50, .theme-contrast .allo-docsuite .from-emerald-500, .theme-contrast .allo-docsuite .from-emerald-600, .theme-contrast .allo-docsuite [class~="from-emerald-900/40"], .theme-contrast .allo-docsuite .from-fuchsia-50, .theme-contrast .allo-docsuite .from-fuchsia-600, .theme-contrast .allo-docsuite .from-green-400, .theme-contrast .allo-docsuite .from-green-50, .theme-contrast .allo-docsuite .from-green-500, .theme-contrast .allo-docsuite .from-green-700, .theme-contrast .allo-docsuite .from-green-800, .theme-contrast .allo-docsuite .from-indigo-200, .theme-contrast .allo-docsuite .from-indigo-400, .theme-contrast .allo-docsuite .from-indigo-50, .theme-contrast .allo-docsuite [class~="from-indigo-50/60"], .theme-contrast .allo-docsuite [class~="from-indigo-50/80"], .theme-contrast .allo-docsuite [class~="from-indigo-50/95"], .theme-contrast .allo-docsuite .from-indigo-500, .theme-contrast .allo-docsuite .from-indigo-600, .theme-contrast .allo-docsuite .from-indigo-700, .theme-contrast .allo-docsuite [class~="from-indigo-900/40"], .theme-contrast .allo-docsuite [class~="from-indigo-900/50"], .theme-contrast .allo-docsuite .from-lime-600, .theme-contrast .allo-docsuite [class~="from-orange-50/80"], .theme-contrast .allo-docsuite .from-orange-500, .theme-contrast .allo-docsuite .from-pink-100, .theme-contrast .allo-docsuite .from-pink-500, .theme-contrast .allo-docsuite .from-pink-600, .theme-contrast .allo-docsuite [class~="from-pink-900/40"], .theme-contrast .allo-docsuite .from-purple-50, .theme-contrast .allo-docsuite .from-purple-600, .theme-contrast .allo-docsuite .from-purple-900, .theme-contrast .allo-docsuite [class~="from-purple-900/40"], .theme-contrast .allo-docsuite [class~="from-red-50/70"], .theme-contrast .allo-docsuite .from-red-800, .theme-contrast .allo-docsuite .from-rose-100, .theme-contrast .allo-docsuite .from-rose-50, .theme-contrast .allo-docsuite .from-rose-500, .theme-contrast .allo-docsuite .from-rose-600, .theme-contrast .allo-docsuite [class~="from-rose-900/40"], .theme-contrast .allo-docsuite .from-sky-50, .theme-contrast .allo-docsuite [class~="from-sky-50/80"], .theme-contrast .allo-docsuite .from-sky-500, .theme-contrast .allo-docsuite .from-sky-600, .theme-contrast .allo-docsuite [class~="from-sky-900/40"], .theme-contrast .allo-docsuite .from-slate-50, .theme-contrast .allo-docsuite .from-slate-600, .theme-contrast .allo-docsuite .from-slate-700, .theme-contrast .allo-docsuite .from-slate-800, .theme-contrast .allo-docsuite .from-slate-900, .theme-contrast .allo-docsuite .from-stone-600, .theme-contrast .allo-docsuite .from-teal-50, .theme-contrast .allo-docsuite [class~="from-teal-50/80"], .theme-contrast .allo-docsuite .from-teal-500, .theme-contrast .allo-docsuite .from-teal-600, .theme-contrast .allo-docsuite .from-teal-700, .theme-contrast .allo-docsuite .from-violet-100, .theme-contrast .allo-docsuite .from-violet-50, .theme-contrast .allo-docsuite .from-violet-500, .theme-contrast .allo-docsuite .from-violet-600, .theme-contrast .allo-docsuite .from-violet-700, .theme-contrast .allo-docsuite [class~="from-violet-900/40"], .theme-contrast .allo-docsuite .from-white, .theme-contrast .allo-docsuite [class~="from-white/0"], .theme-contrast .allo-docsuite .from-yellow-300, .theme-contrast .allo-docsuite .from-yellow-400, .theme-contrast .allo-docsuite .from-yellow-50, .theme-contrast .allo-docsuite .from-yellow-600, .theme-contrast .allo-docsuite .from-zinc-600, .theme-contrast .allo-docsuite .to-amber-50, .theme-contrast .allo-docsuite [class~="to-amber-50/40"], .theme-contrast .allo-docsuite .to-amber-500, .theme-contrast .allo-docsuite .to-amber-600, .theme-contrast .allo-docsuite .to-amber-800, .theme-contrast .allo-docsuite [class~="to-amber-800/20"], .theme-contrast .allo-docsuite [class~="to-amber-800/80"], .theme-contrast .allo-docsuite .to-blue-50, .theme-contrast .allo-docsuite .to-blue-500, .theme-contrast .allo-docsuite .to-blue-600, .theme-contrast .allo-docsuite .to-blue-700, .theme-contrast .allo-docsuite [class~="to-blue-900/40"], .theme-contrast .allo-docsuite .to-cyan-50, .theme-contrast .allo-docsuite .to-cyan-600, .theme-contrast .allo-docsuite .to-cyan-700, .theme-contrast .allo-docsuite .to-emerald-50, .theme-contrast .allo-docsuite .to-emerald-500, .theme-contrast .allo-docsuite .to-emerald-600, .theme-contrast .allo-docsuite .to-emerald-700, .theme-contrast .allo-docsuite .to-emerald-800, .theme-contrast .allo-docsuite .to-emerald-900, .theme-contrast .allo-docsuite .to-fuchsia-100, .theme-contrast .allo-docsuite .to-fuchsia-500, .theme-contrast .allo-docsuite .to-fuchsia-600, .theme-contrast .allo-docsuite [class~="to-fuchsia-900/40"], .theme-contrast .allo-docsuite .to-gray-700, .theme-contrast .allo-docsuite .to-green-700, .theme-contrast .allo-docsuite .to-indigo-100, .theme-contrast .allo-docsuite .to-indigo-50, .theme-contrast .allo-docsuite [class~="to-indigo-50/30"], .theme-contrast .allo-docsuite .to-indigo-500, .theme-contrast .allo-docsuite .to-indigo-600, .theme-contrast .allo-docsuite .to-indigo-700, .theme-contrast .allo-docsuite [class~="to-indigo-900/40"], .theme-contrast .allo-docsuite .to-lime-50, .theme-contrast .allo-docsuite .to-orange-100, .theme-contrast .allo-docsuite [class~="to-orange-100/40"], .theme-contrast .allo-docsuite .to-orange-400, .theme-contrast .allo-docsuite .to-orange-50, .theme-contrast .allo-docsuite .to-orange-500, .theme-contrast .allo-docsuite [class~="to-orange-500/20"], .theme-contrast .allo-docsuite .to-orange-600, .theme-contrast .allo-docsuite .to-orange-700, .theme-contrast .allo-docsuite .to-orange-800, .theme-contrast .allo-docsuite .to-orange-900, .theme-contrast .allo-docsuite [class~="to-orange-900/40"], .theme-contrast .allo-docsuite .to-pink-50, .theme-contrast .allo-docsuite .to-pink-500, .theme-contrast .allo-docsuite .to-pink-600, .theme-contrast .allo-docsuite [class~="to-pink-900/40"], .theme-contrast .allo-docsuite .to-purple-50, .theme-contrast .allo-docsuite [class~="to-purple-50/80"], .theme-contrast .allo-docsuite [class~="to-purple-50/95"], .theme-contrast .allo-docsuite .to-purple-500, .theme-contrast .allo-docsuite .to-purple-600, .theme-contrast .allo-docsuite .to-purple-700, .theme-contrast .allo-docsuite [class~="to-purple-900/40"], .theme-contrast .allo-docsuite .to-red-600, .theme-contrast .allo-docsuite .to-rose-50, .theme-contrast .allo-docsuite [class~="to-rose-50/30"], .theme-contrast .allo-docsuite .to-rose-500, .theme-contrast .allo-docsuite .to-rose-600, .theme-contrast .allo-docsuite .to-rose-700, .theme-contrast .allo-docsuite .to-rose-800, .theme-contrast .allo-docsuite .to-rose-900, .theme-contrast .allo-docsuite [class~="to-rose-900/40"], .theme-contrast .allo-docsuite .to-sky-50, .theme-contrast .allo-docsuite .to-sky-600, .theme-contrast .allo-docsuite [class~="to-sky-900/40"], .theme-contrast .allo-docsuite .to-slate-50, .theme-contrast .allo-docsuite .to-slate-700, .theme-contrast .allo-docsuite .to-slate-800, .theme-contrast .allo-docsuite .to-slate-900, .theme-contrast .allo-docsuite .to-stone-600, .theme-contrast .allo-docsuite .to-stone-700, .theme-contrast .allo-docsuite [class~="to-teal-100/40"], .theme-contrast .allo-docsuite .to-teal-200, .theme-contrast .allo-docsuite .to-teal-50, .theme-contrast .allo-docsuite .to-teal-500, .theme-contrast .allo-docsuite .to-teal-600, .theme-contrast .allo-docsuite .to-violet-100, .theme-contrast .allo-docsuite .to-violet-50, .theme-contrast .allo-docsuite [class~="to-violet-50/30"], .theme-contrast .allo-docsuite [class~="to-violet-50/40"], .theme-contrast .allo-docsuite .to-violet-500, .theme-contrast .allo-docsuite .to-violet-600, .theme-contrast .allo-docsuite .to-violet-700, .theme-contrast .allo-docsuite [class~="to-violet-900/50"], .theme-contrast .allo-docsuite .to-white, .theme-contrast .allo-docsuite [class~="to-white/20"], .theme-contrast .allo-docsuite .to-yellow-300, .theme-contrast .allo-docsuite .to-yellow-50, .theme-contrast .allo-docsuite .to-yellow-500, .theme-contrast .allo-docsuite .to-yellow-600, .theme-contrast .allo-docsuite .to-zinc-700, .theme-contrast .allo-docsuite .via-amber-400, .theme-contrast .allo-docsuite [class~="via-black/40"], .theme-contrast .allo-docsuite [class~="via-blue-50/40"], .theme-contrast .allo-docsuite [class~="via-green-50/30"], .theme-contrast .allo-docsuite [class~="via-indigo-50/40"], .theme-contrast .allo-docsuite [class~="via-indigo-50/50"], .theme-contrast .allo-docsuite .via-indigo-950, .theme-contrast .allo-docsuite .via-orange-300, .theme-contrast .allo-docsuite [class~="via-orange-50/40"], .theme-contrast .allo-docsuite .via-purple-200, .theme-contrast .allo-docsuite .via-purple-500, .theme-contrast .allo-docsuite .via-white, .theme-contrast .allo-docsuite [class~="via-white/20"], .theme-contrast .allo-docsuite [class~="via-white/95"] { background-image:none !important;background-color:#000000 !important; }
+.theme-contrast .allo-docsuite .border-amber-100, .theme-contrast .allo-docsuite [class~="border-amber-100/50"], .theme-contrast .allo-docsuite [class~="border-amber-100/70"], .theme-contrast .allo-docsuite .border-amber-200, .theme-contrast .allo-docsuite [class~="border-amber-200/30"], .theme-contrast .allo-docsuite [class~="border-amber-200/50"], .theme-contrast .allo-docsuite [class~="border-amber-200/60"], .theme-contrast .allo-docsuite .border-amber-300, .theme-contrast .allo-docsuite .border-amber-400, .theme-contrast .allo-docsuite [class~="border-amber-400/40"], .theme-contrast .allo-docsuite [class~="border-amber-400/50"], .theme-contrast .allo-docsuite .border-amber-500, .theme-contrast .allo-docsuite [class~="border-amber-500/30"], .theme-contrast .allo-docsuite [class~="border-amber-500/40"], .theme-contrast .allo-docsuite [class~="border-amber-500/50"], .theme-contrast .allo-docsuite .border-amber-600, .theme-contrast .allo-docsuite [class~="border-amber-600/30"], .theme-contrast .allo-docsuite [class~="border-amber-600/40"], .theme-contrast .allo-docsuite .border-amber-700, .theme-contrast .allo-docsuite [class~="border-amber-700/50"], .theme-contrast .allo-docsuite .border-black, .theme-contrast .allo-docsuite [class~="border-black/20"], .theme-contrast .allo-docsuite [class~="border-black/5"], .theme-contrast .allo-docsuite .border-blue-100, .theme-contrast .allo-docsuite .border-blue-200, .theme-contrast .allo-docsuite [class~="border-blue-200/50"], .theme-contrast .allo-docsuite .border-blue-300, .theme-contrast .allo-docsuite [class~="border-blue-300/30"], .theme-contrast .allo-docsuite [class~="border-blue-300/40"], .theme-contrast .allo-docsuite .border-blue-400, .theme-contrast .allo-docsuite [class~="border-blue-400/50"], .theme-contrast .allo-docsuite .border-blue-500, .theme-contrast .allo-docsuite [class~="border-blue-500/30"], .theme-contrast .allo-docsuite [class~="border-blue-500/40"], .theme-contrast .allo-docsuite .border-blue-600, .theme-contrast .allo-docsuite .border-blue-700, .theme-contrast .allo-docsuite .border-blue-800, .theme-contrast .allo-docsuite .border-cyan-100, .theme-contrast .allo-docsuite .border-cyan-200, .theme-contrast .allo-docsuite .border-cyan-300, .theme-contrast .allo-docsuite .border-cyan-400, .theme-contrast .allo-docsuite .border-cyan-500, .theme-contrast .allo-docsuite [class~="border-cyan-500/30"], .theme-contrast .allo-docsuite .border-cyan-600, .theme-contrast .allo-docsuite .border-cyan-700, .theme-contrast .allo-docsuite .border-emerald-100, .theme-contrast .allo-docsuite [class~="border-emerald-100/50"], .theme-contrast .allo-docsuite .border-emerald-200, .theme-contrast .allo-docsuite .border-emerald-300, .theme-contrast .allo-docsuite [class~="border-emerald-300/30"], .theme-contrast .allo-docsuite .border-emerald-400, .theme-contrast .allo-docsuite [class~="border-emerald-400/40"], .theme-contrast .allo-docsuite .border-emerald-500, .theme-contrast .allo-docsuite [class~="border-emerald-500/30"], .theme-contrast .allo-docsuite [class~="border-emerald-500/40"], .theme-contrast .allo-docsuite [class~="border-emerald-500/50"], .theme-contrast .allo-docsuite .border-emerald-600, .theme-contrast .allo-docsuite .border-emerald-700, .theme-contrast .allo-docsuite [class~="border-emerald-700/50"], .theme-contrast .allo-docsuite .border-fuchsia-200, .theme-contrast .allo-docsuite .border-fuchsia-300, .theme-contrast .allo-docsuite .border-fuchsia-400, .theme-contrast .allo-docsuite [class~="border-fuchsia-500/20"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/30"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/40"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/50"], .theme-contrast .allo-docsuite .border-fuchsia-600, .theme-contrast .allo-docsuite .border-green-100, .theme-contrast .allo-docsuite .border-green-200, .theme-contrast .allo-docsuite .border-green-300, .theme-contrast .allo-docsuite .border-green-400, .theme-contrast .allo-docsuite .border-green-500, .theme-contrast .allo-docsuite .border-green-600, .theme-contrast .allo-docsuite .border-indigo-100, .theme-contrast .allo-docsuite [class~="border-indigo-100/50"], .theme-contrast .allo-docsuite .border-indigo-200, .theme-contrast .allo-docsuite [class~="border-indigo-200/50"], .theme-contrast .allo-docsuite [class~="border-indigo-200/60"], .theme-contrast .allo-docsuite [class~="border-indigo-200/70"], .theme-contrast .allo-docsuite .border-indigo-300, .theme-contrast .allo-docsuite [class~="border-indigo-300/30"], .theme-contrast .allo-docsuite .border-indigo-400, .theme-contrast .allo-docsuite [class~="border-indigo-400/30"], .theme-contrast .allo-docsuite .border-indigo-50, .theme-contrast .allo-docsuite .border-indigo-500, .theme-contrast .allo-docsuite [class~="border-indigo-500/20"], .theme-contrast .allo-docsuite [class~="border-indigo-500/30"], .theme-contrast .allo-docsuite [class~="border-indigo-500/40"], .theme-contrast .allo-docsuite [class~="border-indigo-500/50"], .theme-contrast .allo-docsuite .border-indigo-600, .theme-contrast .allo-docsuite [class~="border-indigo-600/60"], .theme-contrast .allo-docsuite .border-indigo-700, .theme-contrast .allo-docsuite [class~="border-indigo-700/50"], .theme-contrast .allo-docsuite .border-indigo-800, .theme-contrast .allo-docsuite [class~="border-indigo-800/30"], .theme-contrast .allo-docsuite .border-indigo-900, .theme-contrast .allo-docsuite [class~="border-indigo-900/20"], .theme-contrast .allo-docsuite [class~="border-lime-500/30"], .theme-contrast .allo-docsuite .border-orange-100, .theme-contrast .allo-docsuite .border-orange-200, .theme-contrast .allo-docsuite .border-orange-300, .theme-contrast .allo-docsuite [class~="border-orange-300/30"], .theme-contrast .allo-docsuite .border-orange-400, .theme-contrast .allo-docsuite .border-orange-500, .theme-contrast .allo-docsuite .border-orange-600, .theme-contrast .allo-docsuite .border-pink-200, .theme-contrast .allo-docsuite .border-pink-300, .theme-contrast .allo-docsuite .border-pink-400, .theme-contrast .allo-docsuite .border-pink-500, .theme-contrast .allo-docsuite [class~="border-pink-500/30"], .theme-contrast .allo-docsuite .border-pink-600, .theme-contrast .allo-docsuite [class~="border-pink-700/50"], .theme-contrast .allo-docsuite .border-purple-100, .theme-contrast .allo-docsuite .border-purple-200, .theme-contrast .allo-docsuite .border-purple-300, .theme-contrast .allo-docsuite .border-purple-400, .theme-contrast .allo-docsuite .border-purple-500, .theme-contrast .allo-docsuite [class~="border-purple-500/30"], .theme-contrast .allo-docsuite [class~="border-purple-500/40"], .theme-contrast .allo-docsuite .border-purple-600, .theme-contrast .allo-docsuite [class~="border-purple-700/50"], .theme-contrast .allo-docsuite .border-red-100, .theme-contrast .allo-docsuite .border-red-200, .theme-contrast .allo-docsuite [class~="border-red-200/60"], .theme-contrast .allo-docsuite .border-red-300, .theme-contrast .allo-docsuite .border-red-400, .theme-contrast .allo-docsuite .border-red-500, .theme-contrast .allo-docsuite .border-red-600, .theme-contrast .allo-docsuite .border-red-700, .theme-contrast .allo-docsuite [class~="border-red-700/60"], .theme-contrast .allo-docsuite .border-rose-100, .theme-contrast .allo-docsuite .border-rose-200, .theme-contrast .allo-docsuite [class~="border-rose-200/50"], .theme-contrast .allo-docsuite .border-rose-300, .theme-contrast .allo-docsuite .border-rose-400, .theme-contrast .allo-docsuite .border-rose-500, .theme-contrast .allo-docsuite [class~="border-rose-500/30"], .theme-contrast .allo-docsuite [class~="border-rose-500/40"], .theme-contrast .allo-docsuite [class~="border-rose-500/50"], .theme-contrast .allo-docsuite .border-rose-600, .theme-contrast .allo-docsuite .border-rose-700, .theme-contrast .allo-docsuite .border-sky-100, .theme-contrast .allo-docsuite .border-sky-200, .theme-contrast .allo-docsuite [class~="border-sky-200/60"], .theme-contrast .allo-docsuite .border-sky-300, .theme-contrast .allo-docsuite .border-sky-500, .theme-contrast .allo-docsuite [class~="border-sky-500/30"], .theme-contrast .allo-docsuite [class~="border-sky-500/40"], .theme-contrast .allo-docsuite .border-sky-600, .theme-contrast .allo-docsuite .border-slate-100, .theme-contrast .allo-docsuite .border-slate-200, .theme-contrast .allo-docsuite [class~="border-slate-200/80"], .theme-contrast .allo-docsuite .border-slate-300, .theme-contrast .allo-docsuite .border-slate-400, .theme-contrast .allo-docsuite .border-slate-50, .theme-contrast .allo-docsuite .border-slate-500, .theme-contrast .allo-docsuite [class~="border-slate-500/30"], .theme-contrast .allo-docsuite [class~="border-slate-500/40"], .theme-contrast .allo-docsuite .border-slate-600, .theme-contrast .allo-docsuite .border-slate-700, .theme-contrast .allo-docsuite [class~="border-slate-700/50"], .theme-contrast .allo-docsuite .border-slate-800, .theme-contrast .allo-docsuite .border-slate-900, .theme-contrast .allo-docsuite .border-stone-300, .theme-contrast .allo-docsuite .border-stone-500, .theme-contrast .allo-docsuite [class~="border-stone-500/20"], .theme-contrast .allo-docsuite [class~="border-stone-500/30"], .theme-contrast .allo-docsuite [class~="border-stone-500/40"], .theme-contrast .allo-docsuite .border-stone-700, .theme-contrast .allo-docsuite .border-teal-100, .theme-contrast .allo-docsuite [class~="border-teal-100/50"], .theme-contrast .allo-docsuite .border-teal-200, .theme-contrast .allo-docsuite .border-teal-300, .theme-contrast .allo-docsuite .border-teal-400, .theme-contrast .allo-docsuite .border-teal-500, .theme-contrast .allo-docsuite [class~="border-teal-500/30"], .theme-contrast .allo-docsuite [class~="border-teal-500/40"], .theme-contrast .allo-docsuite .border-teal-600, .theme-contrast .allo-docsuite .border-teal-700, .theme-contrast .allo-docsuite .border-violet-100, .theme-contrast .allo-docsuite .border-violet-200, .theme-contrast .allo-docsuite .border-violet-300, .theme-contrast .allo-docsuite .border-violet-400, .theme-contrast .allo-docsuite .border-violet-50, .theme-contrast .allo-docsuite .border-violet-500, .theme-contrast .allo-docsuite [class~="border-violet-500/30"], .theme-contrast .allo-docsuite .border-violet-600, .theme-contrast .allo-docsuite [class~="border-violet-700/50"], .theme-contrast .allo-docsuite .border-white, .theme-contrast .allo-docsuite [class~="border-white/10"], .theme-contrast .allo-docsuite [class~="border-white/15"], .theme-contrast .allo-docsuite [class~="border-white/20"], .theme-contrast .allo-docsuite [class~="border-white/30"], .theme-contrast .allo-docsuite [class~="border-white/40"], .theme-contrast .allo-docsuite [class~="border-white/50"], .theme-contrast .allo-docsuite [class~="border-white/90"], .theme-contrast .allo-docsuite .border-yellow-100, .theme-contrast .allo-docsuite .border-yellow-200, .theme-contrast .allo-docsuite [class~="border-yellow-200/50"], .theme-contrast .allo-docsuite .border-yellow-300, .theme-contrast .allo-docsuite .border-yellow-400, .theme-contrast .allo-docsuite [class~="border-yellow-400/30"], .theme-contrast .allo-docsuite .border-yellow-500, .theme-contrast .allo-docsuite [class~="border-yellow-500/60"], .theme-contrast .allo-docsuite .border-yellow-600, .theme-contrast .allo-docsuite [class~="border-zinc-500/30"], .theme-contrast .allo-docsuite .divide-slate-100 > * + *, .theme-contrast .allo-docsuite .divide-slate-200 > * + *, .theme-contrast .allo-docsuite .divide-slate-700 > * + *, .theme-contrast .allo-docsuite .divide-violet-100 > * + *, .theme-contrast .allo-docsuite .divide-white > * + * { border-color:#ffff00 !important; }
+.theme-contrast .allo-docsuite .text-amber-100, .theme-contrast .allo-docsuite .text-amber-200, .theme-contrast .allo-docsuite [class~="text-amber-200/50"], .theme-contrast .allo-docsuite [class~="text-amber-200/80"], .theme-contrast .allo-docsuite .text-amber-300, .theme-contrast .allo-docsuite [class~="text-amber-300/60"], .theme-contrast .allo-docsuite [class~="text-amber-300/70"], .theme-contrast .allo-docsuite .text-amber-400, .theme-contrast .allo-docsuite [class~="text-amber-400/70"], .theme-contrast .allo-docsuite .text-amber-500, .theme-contrast .allo-docsuite .text-amber-600, .theme-contrast .allo-docsuite .text-amber-700, .theme-contrast .allo-docsuite [class~="text-amber-700/90"], .theme-contrast .allo-docsuite .text-amber-800, .theme-contrast .allo-docsuite .text-amber-900, .theme-contrast .allo-docsuite .text-amber-950, .theme-contrast .allo-docsuite .text-black, .theme-contrast .allo-docsuite .text-blue-100, .theme-contrast .allo-docsuite .text-blue-200, .theme-contrast .allo-docsuite .text-blue-300, .theme-contrast .allo-docsuite .text-blue-400, .theme-contrast .allo-docsuite [class~="text-blue-400/70"], .theme-contrast .allo-docsuite .text-blue-50, .theme-contrast .allo-docsuite .text-blue-500, .theme-contrast .allo-docsuite [class~="text-blue-500/70"], .theme-contrast .allo-docsuite .text-blue-600, .theme-contrast .allo-docsuite .text-blue-700, .theme-contrast .allo-docsuite .text-blue-800, .theme-contrast .allo-docsuite [class~="text-blue-800/80"], .theme-contrast .allo-docsuite .text-blue-900, .theme-contrast .allo-docsuite .text-blue-950, .theme-contrast .allo-docsuite .text-cyan-200, .theme-contrast .allo-docsuite .text-cyan-300, .theme-contrast .allo-docsuite .text-cyan-500, .theme-contrast .allo-docsuite .text-cyan-600, .theme-contrast .allo-docsuite [class~="text-cyan-600/60"], .theme-contrast .allo-docsuite .text-cyan-700, .theme-contrast .allo-docsuite .text-cyan-800, .theme-contrast .allo-docsuite .text-cyan-900, .theme-contrast .allo-docsuite .text-emerald-100, .theme-contrast .allo-docsuite .text-emerald-200, .theme-contrast .allo-docsuite .text-emerald-300, .theme-contrast .allo-docsuite .text-emerald-500, .theme-contrast .allo-docsuite .text-emerald-600, .theme-contrast .allo-docsuite [class~="text-emerald-600/70"], .theme-contrast .allo-docsuite .text-emerald-700, .theme-contrast .allo-docsuite [class~="text-emerald-700/70"], .theme-contrast .allo-docsuite .text-emerald-800, .theme-contrast .allo-docsuite .text-emerald-900, .theme-contrast .allo-docsuite [class~="text-emerald-900/90"], .theme-contrast .allo-docsuite .text-emerald-950, .theme-contrast .allo-docsuite .text-fuchsia-100, .theme-contrast .allo-docsuite .text-fuchsia-200, .theme-contrast .allo-docsuite .text-fuchsia-300, .theme-contrast .allo-docsuite [class~="text-fuchsia-300/70"], .theme-contrast .allo-docsuite .text-fuchsia-400, .theme-contrast .allo-docsuite .text-fuchsia-500, .theme-contrast .allo-docsuite .text-fuchsia-600, .theme-contrast .allo-docsuite .text-fuchsia-700, .theme-contrast .allo-docsuite .text-fuchsia-800, .theme-contrast .allo-docsuite .text-fuchsia-900, .theme-contrast .allo-docsuite .text-gray-600, .theme-contrast .allo-docsuite .text-green-200, .theme-contrast .allo-docsuite .text-green-300, .theme-contrast .allo-docsuite .text-green-400, .theme-contrast .allo-docsuite .text-green-500, .theme-contrast .allo-docsuite .text-green-600, .theme-contrast .allo-docsuite .text-green-700, .theme-contrast .allo-docsuite .text-green-800, .theme-contrast .allo-docsuite .text-green-900, .theme-contrast .allo-docsuite .text-indigo-100, .theme-contrast .allo-docsuite [class~="text-indigo-100/70"], .theme-contrast .allo-docsuite .text-indigo-200, .theme-contrast .allo-docsuite .text-indigo-300, .theme-contrast .allo-docsuite .text-indigo-400, .theme-contrast .allo-docsuite .text-indigo-500, .theme-contrast .allo-docsuite .text-indigo-600, .theme-contrast .allo-docsuite [class~="text-indigo-600/80"], .theme-contrast .allo-docsuite .text-indigo-700, .theme-contrast .allo-docsuite .text-indigo-800, .theme-contrast .allo-docsuite .text-indigo-900, .theme-contrast .allo-docsuite .text-indigo-950, .theme-contrast .allo-docsuite .text-lime-300, .theme-contrast .allo-docsuite .text-orange-100, .theme-contrast .allo-docsuite .text-orange-300, .theme-contrast .allo-docsuite .text-orange-400, .theme-contrast .allo-docsuite .text-orange-500, .theme-contrast .allo-docsuite .text-orange-600, .theme-contrast .allo-docsuite .text-orange-700, .theme-contrast .allo-docsuite .text-orange-800, .theme-contrast .allo-docsuite .text-orange-900, .theme-contrast .allo-docsuite .text-pink-100, .theme-contrast .allo-docsuite .text-pink-200, .theme-contrast .allo-docsuite .text-pink-300, .theme-contrast .allo-docsuite .text-pink-600, .theme-contrast .allo-docsuite .text-pink-700, .theme-contrast .allo-docsuite .text-pink-800, .theme-contrast .allo-docsuite .text-pink-900, .theme-contrast .allo-docsuite .text-purple-200, .theme-contrast .allo-docsuite .text-purple-300, .theme-contrast .allo-docsuite .text-purple-400, .theme-contrast .allo-docsuite .text-purple-500, .theme-contrast .allo-docsuite .text-purple-600, .theme-contrast .allo-docsuite .text-purple-700, .theme-contrast .allo-docsuite .text-purple-800, .theme-contrast .allo-docsuite .text-purple-900, .theme-contrast .allo-docsuite .text-purple-950, .theme-contrast .allo-docsuite .text-red-200, .theme-contrast .allo-docsuite .text-red-300, .theme-contrast .allo-docsuite .text-red-400, .theme-contrast .allo-docsuite .text-red-500, .theme-contrast .allo-docsuite .text-red-600, .theme-contrast .allo-docsuite .text-red-700, .theme-contrast .allo-docsuite [class~="text-red-700/70"], .theme-contrast .allo-docsuite [class~="text-red-700/80"], .theme-contrast .allo-docsuite .text-red-800, .theme-contrast .allo-docsuite .text-red-900, .theme-contrast .allo-docsuite .text-rose-100, .theme-contrast .allo-docsuite .text-rose-200, .theme-contrast .allo-docsuite .text-rose-300, .theme-contrast .allo-docsuite .text-rose-400, .theme-contrast .allo-docsuite .text-rose-500, .theme-contrast .allo-docsuite .text-rose-600, .theme-contrast .allo-docsuite .text-rose-700, .theme-contrast .allo-docsuite .text-rose-800, .theme-contrast .allo-docsuite .text-rose-900, .theme-contrast .allo-docsuite .text-sky-200, .theme-contrast .allo-docsuite .text-sky-300, .theme-contrast .allo-docsuite .text-sky-400, .theme-contrast .allo-docsuite .text-sky-500, .theme-contrast .allo-docsuite .text-sky-600, .theme-contrast .allo-docsuite .text-sky-700, .theme-contrast .allo-docsuite .text-sky-800, .theme-contrast .allo-docsuite .text-sky-900, .theme-contrast .allo-docsuite .text-slate-100, .theme-contrast .allo-docsuite .text-slate-200, .theme-contrast .allo-docsuite .text-slate-300, .theme-contrast .allo-docsuite [class~="text-slate-300/60"], .theme-contrast .allo-docsuite .text-slate-400, .theme-contrast .allo-docsuite .text-slate-500, .theme-contrast .allo-docsuite .text-slate-600, .theme-contrast .allo-docsuite .text-slate-700, .theme-contrast .allo-docsuite .text-slate-800, .theme-contrast .allo-docsuite .text-slate-900, .theme-contrast .allo-docsuite [class~="text-slate-900/95"], .theme-contrast .allo-docsuite .text-slate-950, .theme-contrast .allo-docsuite .text-stone-100, .theme-contrast .allo-docsuite .text-stone-300, .theme-contrast .allo-docsuite .text-stone-700, .theme-contrast .allo-docsuite .text-teal-100, .theme-contrast .allo-docsuite .text-teal-200, .theme-contrast .allo-docsuite .text-teal-300, .theme-contrast .allo-docsuite .text-teal-400, .theme-contrast .allo-docsuite .text-teal-500, .theme-contrast .allo-docsuite [class~="text-teal-500/70"], .theme-contrast .allo-docsuite .text-teal-600, .theme-contrast .allo-docsuite [class~="text-teal-600/60"], .theme-contrast .allo-docsuite .text-teal-700, .theme-contrast .allo-docsuite .text-teal-800, .theme-contrast .allo-docsuite .text-teal-900, .theme-contrast .allo-docsuite .text-teal-950, .theme-contrast .allo-docsuite .text-violet-200, .theme-contrast .allo-docsuite .text-violet-300, .theme-contrast .allo-docsuite .text-violet-400, .theme-contrast .allo-docsuite .text-violet-500, .theme-contrast .allo-docsuite .text-violet-600, .theme-contrast .allo-docsuite .text-violet-700, .theme-contrast .allo-docsuite [class~="text-violet-700/70"], .theme-contrast .allo-docsuite .text-violet-800, .theme-contrast .allo-docsuite .text-violet-900, .theme-contrast .allo-docsuite .text-violet-950, .theme-contrast .allo-docsuite .text-white, .theme-contrast .allo-docsuite [class~="text-white/50"], .theme-contrast .allo-docsuite [class~="text-white/60"], .theme-contrast .allo-docsuite [class~="text-white/70"], .theme-contrast .allo-docsuite [class~="text-white/80"], .theme-contrast .allo-docsuite [class~="text-white/90"], .theme-contrast .allo-docsuite .text-yellow-100, .theme-contrast .allo-docsuite .text-yellow-200, .theme-contrast .allo-docsuite .text-yellow-300, .theme-contrast .allo-docsuite [class~="text-yellow-300/50"], .theme-contrast .allo-docsuite .text-yellow-400, .theme-contrast .allo-docsuite .text-yellow-500, .theme-contrast .allo-docsuite .text-yellow-600, .theme-contrast .allo-docsuite [class~="text-yellow-600/70"], .theme-contrast .allo-docsuite .text-yellow-700, .theme-contrast .allo-docsuite .text-yellow-800, .theme-contrast .allo-docsuite .text-yellow-900, .theme-contrast .allo-docsuite .text-zinc-200, .theme-contrast .allo-docsuite .text-zinc-300 { color:#ffff00 !important; }
       `}</style>
       <a
         href="#main-content"
@@ -32369,6 +33182,38 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             </div>
         ))}
       </div>
+      {showRecentQrShares && (
+        <div className="fixed inset-0 z-[151] flex items-center justify-center bg-slate-950/80 p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="recent-homework-links-title" onClick={() => setShowRecentQrShares(false)}>
+          <div className="relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl" onClick={event => event.stopPropagation()}>
+            <button onClick={() => setShowRecentQrShares(false)} className="absolute right-3 top-3 rounded-full p-2 text-slate-600 hover:bg-slate-100" aria-label="Close recent homework links"><X size={20}/></button>
+            <h2 id="recent-homework-links-title" className="pr-10 text-xl font-black text-slate-900">Recent homework links</h2>
+            <p className="mt-1 text-xs text-slate-600">Saved only on this teacher device. Reopen a link to print, test, or revoke it.</p>
+            <div className="mt-4 space-y-3">
+              {recentQrShares.length === 0 && <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-600">No recent homework links on this device.</p>}
+              {recentQrShares.map((share, index) => {
+                const expired = share.expiresAt && Date.parse(share.expiresAt) <= Date.now();
+                return (
+                  <article key={share.url || index} className="rounded-xl border border-slate-200 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm font-black text-slate-900">{share.title || 'AlloFlow homework'}</h3>
+                        <p className="mt-0.5 text-[11px] text-slate-600">{share.resourceCount || 1} {(share.resourceCount || 1) === 1 ? 'resource' : 'resources'} · {expired ? 'Expired' : `Expires ${share.expiresAt ? new Date(share.expiresAt).toLocaleDateString() : 'later'}`}</p>
+                      </div>
+                      <span className={`rounded-full px-2 py-1 text-[10px] font-black uppercase ${expired ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}`}>{expired ? 'Expired' : 'Active'}</span>
+                    </div>
+                    <input aria-label={`Selectable link for ${share.title || 'homework'}`} readOnly value={share.url} onFocus={event => event.target.select()} className="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] text-slate-700" />
+                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                      <button disabled={expired} onClick={() => { openQrShareModal(share); setShowRecentQrShares(false); }} className="min-h-10 rounded-lg border border-violet-300 bg-violet-50 px-2 text-xs font-bold text-violet-900 disabled:opacity-50">Reopen</button>
+                      <button onClick={() => copyToClipboard(share.url)} className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-800">Copy</button>
+                      <button onClick={() => setRecentQrShares(previous => previous.filter(item => item.url !== share.url))} className="min-h-10 rounded-lg border border-rose-300 bg-rose-50 px-2 text-xs font-bold text-rose-800">Remove</button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
       {qrShareModal && (
         <div className="fixed inset-0 bg-slate-950/80 z-[151] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="alloflow-homework-qr-title" aria-describedby="alloflow-homework-qr-description" onClick={() => setQrShareModal(null)}>
           <div ref={homeworkQrDialogRef} tabIndex={-1} className="bg-gradient-to-b from-violet-50 to-white rounded-3xl shadow-2xl border border-violet-200 p-6 text-center max-w-md w-full relative max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -32403,13 +33248,19 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               <p className="text-xs font-black text-violet-950">Students scan to open the assignment on their own time.</p>
               <p className="text-[11px] text-violet-800 mt-0.5">This QR does not join your class, show a session code, or connect to live pacing.</p>
             </div>
-            <p className="text-[11px] text-slate-500 mb-3">Expires {qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : '14 days after creation'}.</p>
-            <button onClick={testHomeworkAsStudent} className="w-full mb-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-500 rounded-lg p-2 transition-all">
-              Test as student <ExternalLink size={12}/>
-            </button>
+            <p className="text-[11px] text-slate-500 mb-3">{qrShareSvg ? 'Ready to scan' : qrShareError ? 'QR unavailable - use the link below' : 'Validating QR code...'} &middot; Expires {qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : '14 days after creation'}.</p>
+            <div className="mb-2 grid grid-cols-2 gap-2">
+              <button onClick={testHomeworkAsStudent} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
+                Test as student <ExternalLink size={12}/>
+              </button>
+              <button onClick={() => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, 'Teacher-prepared resources · Student AI off · No live session')} disabled={!qrShareSvg} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
+                Print QR <Printer size={12}/>
+              </button>
+            </div>
             <button onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-violet-900 hover:text-violet-950 bg-violet-100 border border-violet-300 hover:border-violet-500 rounded-lg p-2 transition-all break-all">
               {qrShareModal.type === 'assignment-pack-hosted' ? 'Copy hosted homework link' : qrShareModal.type === 'assignment-pack' ? 'Copy self-contained link' : 'Copy homework link'} <Copy size={12}/>
             </button>
+            <input aria-label="Selectable homework link" readOnly value={qrShareModal.url || ''} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-violet-500" />
             {qrShareModal.type !== 'assignment-pack' && (
               <button onClick={revokeHomeworkAssignment} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-red-800 bg-red-50 border border-red-300 hover:border-red-500 rounded-lg p-2 transition-all">
                 Revoke homework link <Trash2 size={12}/>
@@ -32595,8 +33446,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <div className="bg-white border border-slate-200 rounded-xl p-3 w-48 h-48 [&_svg]:w-full [&_svg]:h-full shadow-sm" dangerouslySetInnerHTML={{ __html: mbQrSvg }} />
                   </div>
                 ) : (
-                  <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="w-full mb-3 text-xs font-bold text-indigo-700 underline underline-offset-2">Copy join link</button>
+                  <p className="mb-3 text-center text-xs font-bold text-indigo-700">Validating live-session QR...</p>
                 )}
+                <p className="mb-2 text-center text-[11px] text-indigo-800">{mbQrSvg ? 'Ready to scan · AI tools off · Active until you end the session' : 'The class code remains available while the QR loads.'}</p>
+                <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
+                  <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-indigo-300 bg-white p-2 text-[11px] font-bold text-indigo-800 hover:border-indigo-500">
+                    Copy link <Copy size={12}/>
+                  </button>
+                  <button onClick={() => openStudentQrPreview(mbLive.joinUrl, 'live-session link as a student')} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-[11px] font-bold text-emerald-900 hover:border-emerald-500">
+                    Test <ExternalLink size={12}/>
+                  </button>
+                  <button onClick={() => printQrSheet(mbQrSvg, 'AlloFlow live session', 'Class code ' + mbLive.code, 'Class Mailbox QR join · Student AI off', mbLive.code)} disabled={!mbQrSvg} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white p-2 text-[11px] font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
+                    Print <Printer size={12}/>
+                  </button>
+                  <button onClick={() => { setMbPanelOpen(false); setShowSessionModal(true); }} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-cyan-300 bg-cyan-50 p-2 text-[11px] font-bold text-cyan-900 hover:border-cyan-500">
+                    Project <Maximize size={12}/>
+                  </button>
+                </div>
+                <input aria-label="Selectable mailbox live join link" readOnly value={mbLive.joinUrl || ''} onFocus={event => event.target.select()} className="mb-3 w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" />
                 <div className="mb-3 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Connected students ({Object.keys(mbRoster).length}{(() => { const rt = Object.values(mbRoster).filter(s => s.rtc).length; return rt ? ` · ${rt} real-time ⚡` : ''; })()})</p>
                   {Object.keys(mbRoster).length === 0 && <p className="text-xs text-slate-400">Waiting for students to scan…</p>}
@@ -32627,16 +33494,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           </div>
         </div>
       )}
-      {liveJoinStatus && !isTeacherMode && window.__alloQrStudentMode?.type === 'live' && (
-        <div role={liveJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] max-w-[calc(100vw-24px)] rounded-xl border border-cyan-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
-          <span>{liveJoinStatus}</span>
-          {liveJoinError && liveJoinRetryable && <button onClick={() => setLiveJoinAttempt(value => value + 1)} className="ml-3 rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-800">Retry</button>}
+      {!isTeacherMode && window.__alloQrStudentMode?.type === 'live' && (liveJoinStatus || activeSessionCode) && (
+        <div role={liveJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-cyan-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
+          <span>{liveJoinStatus || `Class ${activeSessionCode} · ${studentNickname || 'Student'} · AI tools off`}</span>
+          {liveJoinError && liveJoinRetryable && <button onClick={() => setLiveJoinAttempt(value => value + 1)} className="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-800">Retry</button>}
+          {!liveJoinError && <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-xs font-bold text-cyan-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>}
         </div>
       )}
-      {mbJoinStatus && !isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (
-        <div role={mbJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] max-w-[calc(100vw-24px)] rounded-xl border border-indigo-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
-          <span>{mbJoinStatus}</span>
-          {mbJoinError && <button onClick={() => setMbJoinAttempt(v => v + 1)} className="ml-3 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Retry</button>}
+      {!isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (mbJoinStatus || activeSessionCode) && (
+        <div role={mbJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
+          <span>{mbJoinStatus || `Class ${activeSessionCode || window.__alloQrStudentMode?.code || ''} · ${studentNickname || 'Student'} · AI tools off`}</span>
+          {mbJoinError && <button onClick={() => setMbJoinAttempt(v => v + 1)} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Retry</button>}
+          {!mbJoinError && <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-indigo-300 bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>}
+        </div>
+      )}
+      {!isTeacherMode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) && (
+        <div role="status" aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
+          <span>Homework ready · {studentNickname || 'Student'} · AI tools off</span>
+          <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-violet-300 bg-violet-50 px-2 py-1 text-xs font-bold text-violet-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>
         </div>
       )}
       {mbStudent && !isTeacherMode && (
@@ -32659,7 +33534,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           )}
         </div>
       )}
-      {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} isMailboxSession={!!mbLive} mailboxJoinUrl={mbLive?.joinUrl || ''} onRequestEndSession={requestEndLiveSession} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
+      {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} connectedStudentCount={mbLive ? Object.keys(mbRoster).length : Object.keys(sessionData?.roster || {}).length} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} isMailboxSession={!!mbLive} mailboxJoinUrl={mbLive?.joinUrl || ''} onRequestEndSession={requestEndLiveSession} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
       {endSessionPreview && (
         <div className="fixed inset-0 z-[10020] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4" role="presentation">
           <div ref={endSessionPreviewRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="end-session-summary-title" className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 border-2 border-indigo-100">
@@ -33526,7 +34401,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {/* SR announcement regions — drive these via window.alloAnnounce(msg, 'polite'|'assertive'). */}
       <div id="allo-live-polite" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
       <div id="allo-live-assertive" role="alert" aria-live="assertive" aria-atomic="true" className="sr-only" />
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={() => setShowSessionStartOptions(true)} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={() => setShowSessionStartOptions(true)} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {/* Wrapper divs attach the focus-trap refs declared near line 6677. They
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and
@@ -33591,7 +34466,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       )}
       {isPersonaChatOpen && (personaState.selectedCharacter || (personaState.mode === 'panel' && personaState.selectedCharacters.length > 0)) && window.AlloModules && window.AlloModules.PersonaChatView && ReactDOM.createPortal(
         React.createElement(window.AlloModules.PersonaChatView, {
-            personaState, t, theme,
+            personaState, generatedContent, appId, studentNickname, t, theme,
             isPersonaFreeResponse, showPersonaHints, personaAutoRead,
             personaInput, personaAutoSend,
             isPersonaReflectionOpen, personaDefinitionData, reflectionFeedback,
@@ -33605,7 +34480,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             setIsPersonaFreeResponse, setIsPersonaReflectionOpen,
             setPersonaReflectionInput, setReflectionFeedback,
             handleClosePersonaChat, handleGenerateReflectionPrompt,
-            handlePanelChatSubmit, handlePersonaChatSubmit,
+            handlePanelChatSubmit, handlePersonaChatSubmit, generatePanelFollowUps,
             handlePersonaTopicSpark, handleRetryPortraitGeneration,
             handleSavePersonaChat, handleSaveReflection,
             handleSetIsPersonaReflectionOpenToFalse,
@@ -33719,6 +34594,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
                           const file = e.target.files?.[0]; if (!file) return;
+                          if (file.size > 320 * 1024 * 1024) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
                           const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;
                           const reader = new FileReader();
                           reader.onload = async (ev) => {
@@ -33728,7 +34604,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                               if (!_savedProject.accessibleHtml || !_savedProject.version) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
                               // Ignore any serialized runtime snapshot. Rehydrate makes it live
                               // only when the persisted SHA-256 digest matches accessibleHtml.
-                              const project = await rehydrateVerificationHtmlBinding(_savedProject);
+                              const _projectSanitizer = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.sanitizeRemediationProject;
+                              if (typeof _projectSanitizer !== 'function') throw new Error('Remediation security module is still loading. Please retry in a moment.');
+                              const _sanitizedImport = _projectSanitizer(_savedProject);
+                              const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);
                               if (_projectLoadEpoch !== pdfProjectLoadEpochRef.current) return;
                               const _derivedProjectVerification = deriveVerificationState({
                                 ai: project.verificationAudit || null,
@@ -33756,6 +34635,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                               });
                               const _loadedPdfFixResult = {
                                 accessibleHtml: project.accessibleHtml,
+                                documentDigest: project.documentDigest || null,
                                 beforeScore: project.beforeScore, afterScore: project.afterScore,
                                 axeAudit: project.axeAudit || null, verificationAudit: project.verificationAudit || null,
                                 secondEngineAudit: project.secondEngineAudit || null,
@@ -35290,9 +36170,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 })}
                 {activeView === 'brainstorm' && window.AlloModules && window.AlloModules.BrainstormView && React.createElement(window.AlloModules.BrainstormView, {
                     t, generatedContent, isTeacherMode, isEditingBrainstorm,
-                    isGeneratingGuide, isGeneratingWorksheet, isGeneratingWorksheetCover,
+                    isGeneratingGuide, isGeneratingBrainstormRubric, isGeneratingWorksheet, isGeneratingWorksheetCover,
                     handleToggleIsEditingBrainstorm, handleBrainstormChange,
-                    handleGenerateGuide, handleGenerateWorksheet, handleGenerateWorksheetCover,
+                    handleGenerateGuide, handleGenerateBrainstormRubric, handleGenerateWorksheet, handleGenerateWorksheetCover,
                     getRows, renderFormattedText
                 })}
                 {adventureState.isReviewingCharacters && adventureState.characters.length > 0 && (
@@ -35632,14 +36512,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 </div>
                             </div>
                             <div className="flex bg-white/60 p-1 rounded-lg border border-yellow-200 shrink-0">
-                                <button
+                                <button type="button"
+                                    aria-pressed={personaState.mode === 'single'}
+                                    aria-label={t('persona.mode_single') || 'Single interview'}
                                     onClick={() => setPersonaState(prev => ({ ...prev, mode: 'single', selectedCharacters: [] }))}
                                     className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.mode === 'single' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
                                 >
                                     {t('persona.mode_single')}
                                 </button>
-                                <button
-                                    aria-label={t('common.generate')}
+                                <button type="button"
+                                    aria-pressed={personaState.mode === 'panel'}
+                                    aria-label={t('persona.mode_panel') || 'Panel interview'}
                                     onClick={() => setPersonaState(prev => ({ ...prev, mode: 'panel' }))}
                                     className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.mode === 'panel' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
                                 >
@@ -35823,9 +36706,18 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                        _fingerprint: _wsFingerprint,
                    };
                    setGeneratedContent(wordSoundsResource);
-                   setHistory(prev => _existingWs
-                       ? prev.map(r => (r && r.id === _existingWs.id ? wordSoundsResource : r))
-                       : [wordSoundsResource, ...prev]);
+                   setHistory(prev => {
+                       const _latestHistory = Array.isArray(prev) ? prev : [];
+                       // Re-check inside the functional updater so multiple
+                       // completions queued before a render cannot both insert.
+                       const _latestWsIndex = _wsFingerprint
+                           ? _latestHistory.findIndex(r => r && r.type === 'word-sounds' && r._fingerprint === _wsFingerprint)
+                           : -1;
+                       if (_latestWsIndex < 0) return [wordSoundsResource, ..._latestHistory];
+                       const _updatedHistory = [..._latestHistory];
+                       _updatedHistory[_latestWsIndex] = wordSoundsResource;
+                       return _updatedHistory;
+                   });
                    setWsPreloadedWords(words);
                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
                    setIsProbeMode(_isProbe);
@@ -35897,7 +36789,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           generateFluencyScoreSheet, generatedContent, getBenchmarkComparison, isFluencyMode, setFluencyBenchmarkGrade,
           setFluencyBenchmarkSeason, setFluencyCustomNorms, setFluencyFeedback, setFluencyResult, setFluencyStatus,
           setFluencyTimeLimit, setFluencyTimeRemaining, setFluencyTimerVisibility, setFluencyTranscript, setIsFluencyMode,
-          showFluencyConfetti, t, toggleFluencyRecording
+          applyFluencyReview: window.applyFluencyReview, fluencyAssessments, isTeacherMode, saveFluencyReview,
+          showFluencyConfetti, summarizeFluencyEvidence: window.summarizeFluencyEvidence, t, toggleFluencyRecording
       })}
       {showGlobalLevelUp && <GlobalLevelUpModal AnimatedNumber={AnimatedNumber} ConfettiExplosion={ConfettiExplosion} adventureState={adventureState} handleSetShowGlobalLevelUpToFalse={handleSetShowGlobalLevelUpToFalse} t={t} />}
       {escapeRoomState.showSettings && window.AlloModules && window.AlloModules.EscapeRoomDialogs && (
@@ -36688,6 +37581,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit, _docPipeline, recomputeIssueResolution,
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
+          remediationReady, remediationDependencyState, retryRemediationDependencies,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
           applyFormBlanks, detectFormBlanks, detectPdfBlankFields, overlayPdfFormFields, languageToTTSCode, callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, simplifyAccessibleHtml, translateAccessibleHtml, t, theme, updatePdfPreview,
           diffLibReady, downloadAccessiblePdf, downloadBatchResults, ensurePdfBase64, expertCommandInput,
@@ -36700,6 +37594,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           pdfAutoSaveProject, pdfBatchCurrentIndex, pdfBatchMode, pdfBatchProcessing, pdfBatchQueue,
           pdfBatchStep, pdfBatchSummary, pdfFixLoading, pdfFixMode, pdfFixModeRef,
           pdfFixResult, pdfFixResultRef, pdfFixStep, pdfMultiSession, pdfPageRange,
+          capturePdfHtmlCommitToken, commitPdfFixResultIfCurrent,
           pdfPolishPasses, pdfPreviewA11yInspect, pdfPreviewFontSize, pdfPreviewOpen, pdfPreviewRef,
           pdfPreviewTheme, pdfTargetScore, pdfWebMode, pendingPdfBase64, pendingPdfFile,
           proceedWithPdfTransform, processExpertCommand, refixChunk, remediateSurgicallyThenAI, runAutoFixLoop,
@@ -36857,6 +37752,20 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 {window.AlloModules && window.AlloModules.ModelDiagnosticsSection && React.createElement(window.AlloModules.ModelDiagnosticsSection, {
                     t, _isCanvasEnv, GEMINI_MODELS
                 })}
+                {/* Device storage (2026-07-14): permanent, discoverable home for the
+                    on-device storage manager — the probe/review panel is otherwise only
+                    reachable via Ctrl+Alt+Shift+D. The button click doubles as the user
+                    gesture popup-channel operations need. */}
+                <div className="border-t border-slate-100 pt-4">
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</label>
+                    <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.device_storage_hint') || 'Work and settings are saved on this device only — nothing goes to a server. Review, export, or erase what is stored here.'}</p>
+                    <button
+                        onClick={() => { if (typeof window.__alloOpenDeviceStorageProbe === 'function') window.__alloOpenDeviceStorageProbe(); }}
+                        className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
+                    >
+                        🔌 {t('canvas_settings.device_storage_btn') || 'Manage device storage'}
+                    </button>
+                </div>
                 <div className="flex justify-end pt-2">
                     <button
                         onClick={() => setShowAIBackendModal(false)}
@@ -37130,7 +38039,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           customExportCSS, deleteExportPreset, diffLibReady, executeExportFromPreview, expertCommandInput,
           exportAuditLoading, exportAuditResult, exportConfig, exportPresets, exportPreviewMode,
           exportPreviewRef, exportStylePrompt, exportTheme, generateCustomExportStyle, getExportPreviewHTML,
-          getSkippedResources, history, isAgentRunning, isGeneratingStyle, pdfFixResult, pptxLoaded,
+          getSkippedResources, handleExportH5P, handleExportIMS, handleExportQTI, history, isAgentRunning, isGeneratingStyle, pdfFixResult, pptxLoaded,
           processExpertCommand, runAxeAudit, saveExportPreset, selectedFont, setAgentActivityLog,
           setAgentLogFullView, setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
@@ -37173,14 +38082,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   t, toolSnapshots, areaChallenge, areaFeedback, areaAnswer,
                   fracChallenge, fracFeedback, fracAnswer, handleGenerateMath,
                   labToolData, setLabToolData, gradeLevel, sourceTopic,
+                  inputText, storageDB, ai, sourceProvenance,
                   callGemini, callTTS, callImagen, callGeminiVision, callGeminiImageEdit,
                   activeStation, setActiveStation,
                   theme,
                   activeSessionCode, studentNickname, isTeacherMode
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
-        {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
+        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
+        {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
                 onClose: () => setShowReportWriter(false),
@@ -37303,9 +38213,19 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
                         const priorOutline = el.style.outline;
                         const priorOffset = el.style.outlineOffset;
+                        let cursorMarker = null;
                         el.style.outline = '4px solid #f59e0b';
                         el.style.outlineOffset = '5px';
+                        if (!hooks || hooks.cursorEmphasis !== false) {
+                            const rect = el.getBoundingClientRect();
+                            cursorMarker = document.createElement('div');
+                            cursorMarker.setAttribute('aria-hidden', 'true');
+                            cursorMarker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:34px;height:34px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 38, rect.left + rect.width / 2 - 17)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 38, rect.top + rect.height / 2 - 17)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.2);transition:transform .25s ease,opacity .25s ease';
+                            document.body.appendChild(cursorMarker);
+                            requestAnimationFrame(() => { if (cursorMarker) cursorMarker.style.transform = 'scale(.72)'; });
+                        }
                         await wait(650);
+                        if (cursorMarker) cursorMarker.remove();
                         el.style.outline = priorOutline;
                         el.style.outlineOffset = priorOffset;
                     };
@@ -37332,8 +38252,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             await wait(900);
                             await spotlight(step.anchorId);
                             await wait(900);
+                            const resultHoldMs = Math.round(Math.max(0.5, Math.min(8, Number(step.pauseAfter) || 2.2)) * 1000);
+                            for (let held = 0; held < resultHoldMs && !stopWanted(); held += 100) await wait(Math.min(100, resultHoldMs - held));
                             if (hooks && hooks.onStep) hooks.onStep(i, 'done', step.label, (successBeat && successBeat.text) || (step.label + ' ready.'));
                             completed++;
+                            if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
                         }
                         addToast('Official Text Adaptation tutorial finished. Video Studio is wrapping up the recording.', 'success');
                         return { ok: true, completed };
@@ -37355,14 +38278,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     // Demo Autopilot planning: reuses AlloBot's planUtterance over
                     // the live command registry (goal TEXT only goes to Gemini).
                     const AC = window.AlloModules && window.AlloModules.AlloCommands;
-                    if (!AC || typeof AC.planUtterance !== 'function' || typeof AC.buildAlloCommands !== 'function') {
+                    if (!AC || typeof AC.planUtterance !== 'function' || typeof AC.buildAlloCommands !== 'function' || typeof AC.validatePlan !== 'function') {
                         // AlloCommands loads eagerly at app boot — if it's absent the
                         // script is still arriving (or the CDN failed), so waiting is
                         // the honest remedy.
                         throw new Error('The command planner is still loading — wait a moment and try again.');
                     }
                     const cleanGoal = String(goal || '').slice(0, 300);
-                    let steps = await AC.planUtterance(_alloCmdCtx(), cleanGoal);
+                    let steps = await AC.planUtterance(_alloCmdCtx(), cleanGoal, { demoSafeOnly: true });
                     if ((!steps || !steps.length) && typeof AC.routeUtterance === 'function') {
                         // Single-action demos are legitimate ("show how to open the
                         // reading library") but planUtterance requires 2+ steps — an
@@ -37370,27 +38293,84 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         // single-command router and wrap its match as a 1-step plan.
                         try {
                             const m = await AC.routeUtterance(_alloCmdCtx(), cleanGoal, { allowAi: true, preview: true });
-                            if (m && m.commandId) steps = [{ commandId: m.commandId, params: m.params || {}, why: '' }];
+                            if (m && m.commandId) {
+                                const candidate = [{ commandId: m.commandId, params: m.params || {}, why: '' }];
+                                const report = AC.validatePlan(_alloCmdCtx(), candidate, { demoSafeOnly: true });
+                                if (report && report.ok) steps = candidate;
+                            }
                         } catch (_) {}
                     }
                     if (!steps || !steps.length) return { steps: [] };
                     const cmds = AC.buildAlloCommands(_alloCmdCtx(), { includeGated: true });
                     return { steps: steps.map(s => {
                         const c = cmds.find(x => x.id === s.commandId);
-                        return { commandId: s.commandId, params: s.params || {}, why: s.why || '', label: (c && c.label) || s.commandId };
+                        return { commandId: s.commandId, params: s.params || {}, paramNames: typeof AC.getCommandContract === 'function' ? AC.getCommandContract(c || s.commandId).params : [], why: s.why || '', label: (c && c.label) || s.commandId };
                     }) };
                 },
-                onRunDemoPlan: async (steps, hooks) => {
+                onValidateDemoPlan: async (steps) => {
+                    const AC = window.AlloModules && window.AlloModules.AlloCommands;
+                    if (!AC || typeof AC.validatePlan !== 'function') throw new Error('The command readiness checker has not loaded.');
+                    return AC.validatePlan(_alloCmdCtx(), steps, { demoSafeOnly: true });
+                },
+                onRunDemoPlan: async (steps, hooks, options) => {
                     // Demo Autopilot execution: one guarded runPlan call PER STEP so
                     // the demo breathes between steps (runPlan rechecks when-guards
                     // and never auto-runs destructive commands). Shares AlloBot's
                     // single-flight guard so a bot plan and a demo can't interleave.
                     const AC = window.AlloModules && window.AlloModules.AlloCommands;
-                    if (!AC || typeof AC.runPlan !== 'function') throw new Error('The command runner has not loaded.');
+                    const rehearsal = !!(options && options.rehearsal);
+                    if (!AC || typeof AC.runPlan !== 'function' || typeof AC.validatePlan !== 'function') throw new Error('The command runner has not loaded.');
+                    const readiness = AC.validatePlan(_alloCmdCtx(), steps, { demoSafeOnly: true });
+                    if (!readiness || !readiness.ok) {
+                        const blocked = readiness && readiness.items && readiness.items.find(item => item.status === 'block');
+                        return { ok: false, completed: 0, reason: (blocked && ((blocked.label || blocked.commandId) + ': ' + blocked.detail)) || 'This demo plan is not ready to run.' };
+                    }
                     if (_planRunRef.current && _planRunRef.current.running) throw new Error('AlloBot is already running a plan — stop it first.');
                     _planRunRef.current = { running: true, stop: false };
                     const stopWanted = () => (_planRunRef.current.stop || !!(hooks && hooks.shouldStop && hooks.shouldStop()));
+                    const cursorMarkers = new Set();
+                    const emphasizeCursorTarget = (cmd, label) => {
+                        if (!options || options.cursorEmphasis === false) return;
+                        const needle = String(label || (cmd && cmd.label) || '').trim().toLowerCase();
+                        let target = null;
+                        const directId = cmd && (cmd.anchorId || cmd.targetId);
+                        if (directId) target = document.getElementById(String(directId));
+                        if (!target && needle) {
+                            const nodes = Array.from(document.querySelectorAll('button,[role="button"],a,input,textarea,select,[data-tutorial-anchor]')).slice(0, 300);
+                            target = nodes.find(node => {
+                                const r = node.getBoundingClientRect();
+                                if (!r.width || !r.height || r.bottom < 0 || r.right < 0 || r.top > window.innerHeight || r.left > window.innerWidth) return false;
+                                const text = String(node.getAttribute('aria-label') || node.textContent || node.value || '').trim().toLowerCase();
+                                return text && (text === needle || text.includes(needle) || needle.includes(text));
+                            }) || null;
+                        }
+                        if (!target && document.activeElement && document.activeElement !== document.body) target = document.activeElement;
+                        const rect = target && target.getBoundingClientRect ? target.getBoundingClientRect() : { left: window.innerWidth / 2 - 1, top: window.innerHeight / 2 - 1, width: 2, height: 2 };
+                        const marker = document.createElement('div');
+                        marker.setAttribute('aria-hidden', 'true');
+                        marker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:32px;height:32px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 36, rect.left + rect.width / 2 - 16)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 36, rect.top + rect.height / 2 - 16)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.18);transform:scale(1.2);transition:transform .3s ease,opacity .3s ease';
+                        document.body.appendChild(marker);
+                        cursorMarkers.add(marker);
+                        requestAnimationFrame(() => { marker.style.transform = 'scale(.7)'; });
+                        setTimeout(() => { marker.style.opacity = '0'; setTimeout(() => { cursorMarkers.delete(marker); marker.remove(); }, 320); }, 700);
+                    };
                     try {
+                        if (rehearsal) {
+                            const previewList = (Array.isArray(steps) ? steps : []).slice(0, 8);
+                            let previewCompleted = 0;
+                            for (let i = 0; i < previewList.length; i++) {
+                                if (stopWanted()) return { ok: false, stopped: true, completed: previewCompleted, reason: 'Rehearsal stopped by the teacher.' };
+                                const readyItem = readiness.items[i] || {};
+                                const previewLabel = readyItem.label || previewList[i].commandId;
+                                try { if (hooks && hooks.onStep) hooks.onStep(i, 'start', previewLabel, 'Checking: ' + previewLabel + '.'); } catch (_) {}
+                                await new Promise(resolve => setTimeout(resolve, 220));
+                                if (stopWanted()) return { ok: false, stopped: true, completed: previewCompleted, reason: 'Rehearsal stopped by the teacher.' };
+                                try { if (hooks && hooks.onStep) hooks.onStep(i, 'done', previewLabel, readyItem.detail || 'Command and prerequisites are ready.'); } catch (_) {}
+                                previewCompleted++;
+                                await new Promise(resolve => setTimeout(resolve, 500));
+                            }
+                            return { ok: true, completed: previewCompleted, rehearsal: true };
+                        }
                         // The teacher just picked the tab in the share dialog — wait
                         // until this tab is actually visible before driving it.
                         for (let waited = 0; document.visibilityState !== 'visible' && waited < 15000 && !stopWanted(); waited += 250) {
@@ -37405,20 +38385,31 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         let completed = 0;
                         for (let i = 0; i < list.length; i++) {
                             if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
+                            let completionEvent = null;
                             const r = await AC.runPlan(() => _alloCmdCtx(), [list[i]], {
                                 shouldStop: stopWanted,
                                 onStep: (j, phase, cmd, narr) => {
-                                    try { if (hooks && hooks.onStep) hooks.onStep(i, phase, (cmd && cmd.label) || list[i].commandId, narr || ''); } catch (_) {}
+                                    const label = (cmd && cmd.label) || list[i].commandId;
+                                    if (phase === 'done') completionEvent = { label, narration: narr || '' };
+                                    else {
+                                        emphasizeCursorTarget(cmd, label);
+                                        try { if (hooks && hooks.onStep) hooks.onStep(i, phase, label, narr || ''); } catch (_) {}
+                                    }
                                 }
                             });
-                            if (!r || !r.ok) return { ok: false, completed, stopped: !!(r && r.stopped), reason: (r && r.reason) || ('Step ' + (i + 1) + ' did not finish.') };
+                            if (!r || !r.ok) return { ok: false, completed, stopped: !!(r && r.stopped), timedOut: !!(r && r.timedOut), reason: (r && r.reason) || ('Step ' + (i + 1) + ' did not finish.') };
+                            const resultHoldMs = Math.round(Math.max(0.5, Math.min(8, Number(list[i].pauseAfter) || 2.2)) * 1000);
+                            for (let held = 0; held < resultHoldMs && !stopWanted(); held += 100) await new Promise(resolve => setTimeout(resolve, Math.min(100, resultHoldMs - held)));
+                            const done = completionEvent || { label: list[i].commandId, narration: 'Step complete.' };
+                            try { if (hooks && hooks.onStep) hooks.onStep(i, 'done', done.label, done.narration); } catch (_) {}
                             completed++;
-                            // A beat between steps so viewers see each result land.
-                            await new Promise(r2 => setTimeout(r2, 2200));
+                            if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
                         }
                         addToast('🎉 Demo finished — Video Studio is wrapping up the recording.', 'success');
                         return { ok: true, completed };
                     } finally {
+                        cursorMarkers.forEach(marker => { try { marker.remove(); } catch (_) {} });
+                        cursorMarkers.clear();
                         _planRunRef.current = { running: false, stop: false };
                     }
                 },
@@ -38744,18 +39735,34 @@ export default function WrappedApp() {
 if (typeof __firebase_config !== 'undefined') {
   const container = document.getElementById('root');
   if (container) {
-    if (ReactDOM.createRoot) {
-       const originalConsoleError = console.error;
-       console.error = (...args) => {
-         if (typeof args[0] === 'string' && args[0].includes('You are calling ReactDOMClient.createRoot()')) {
-           return;
-         }
-         originalConsoleError(...args);
-       };
-       const root = ReactDOM.createRoot(container);
-       root.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)));
+    const _alloMountApp = () => {
+      if (ReactDOM.createRoot) {
+         const originalConsoleError = console.error;
+         console.error = (...args) => {
+           if (typeof args[0] === 'string' && args[0].includes('You are calling ReactDOMClient.createRoot()')) {
+             return;
+           }
+           originalConsoleError(...args);
+         };
+         const root = ReactDOM.createRoot(container);
+         root.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)));
+      } else {
+         ReactDOM.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)), container);
+      }
+    };
+    // Canvas localStorage hydration gate (2026-07-14): boot-time useState
+    // initializers read prefs (theme, a11y, voice) synchronously, but on
+    // Canvas the origin's localStorage starts empty every session. UtilsPure
+    // restores it from the device-storage bridge and announces via
+    // window.__alloPrefsHydrated / the allo-prefs-hydrated event — hold
+    // first paint for that (1.5s cap so a blocked bridge never stalls boot).
+    if (_isCanvasEnv && !window.__alloPrefsHydrated) {
+      let _alloMounted = false;
+      const _alloGo = () => { if (!_alloMounted) { _alloMounted = true; _alloMountApp(); } };
+      window.addEventListener('allo-prefs-hydrated', _alloGo, { once: true });
+      setTimeout(_alloGo, 1500);
     } else {
-       ReactDOM.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)), container);
+      _alloMountApp();
     }
   }
 }

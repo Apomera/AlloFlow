@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-91d6d28d-hal-il-le-lix-lugood-nimco",
+  "title": "Hal il le, Lix-lugood NIMCO",
+  "description": "Nimco waa hal Geela oo niyad jabsan oo  leh il keliya iyo lix lugood. Waxay keliya rabtaa inay ka farxiso mulkiilaheeda Cabdi iyo inay la jaan qaado xoolaha kale. Si kastaba ay isku dayday in ay si toos ah u socoto, haddana Nimco waxay keliya awoodaa inay iska daba wareegaaleysato.\n\nIlaa….. Intii ninkii qalaadaa ee naxariista badnaa ka imaanayey…",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Hopeful Hearts"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Hopeful Hearts",
+  "license": "CC BY-NC-ND",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/uEDqddUFcr"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/uEDqddUFcr%2f1745998719549%2fTsega+-+Somali%2fTsega_English-Prophet+Isa_1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"Hal il le, Lix-lugood NIMCO\" (Somali). Nimco waa hal Geela oo niyad jabsan oo  leh il keliya iyo lix lugood. Waxay keliya rabtaa inay ka farxiso mulkiilaheeda Cabdi iyo inay la jaan qaado xoolaha kale. Si kastaba ay isku dayday in ay si toos ah u socoto, haddana Nimco waxay keliya awoodaa inay iska daba wareegaaleysato.\n\nIlaa….. Intii ninkii qalaadaa ee naxariista badnaa ka imaanayey…"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-ND) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 119
+  }
+}

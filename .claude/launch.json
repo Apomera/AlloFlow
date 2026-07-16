@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "desktop-runtime",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["desktop/runtime/alloflow-desktop-runtime.cjs", "--port", "32199"],
+      "port": 32199
+    }
+  ]
+}

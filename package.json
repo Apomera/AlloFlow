@@ -4,6 +4,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "build:adventure": "node _build_adventure_module.js",
+    "verify:adventure-build": "node _build_adventure_module.js --check",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
@@ -26,6 +28,7 @@
     "verify:source-pair": "node dev-tools/check_source_pair_drift.js",
     "verify:pipeline": "node dev-tools/check_pipeline_integrity.js",
     "verify:build": "node dev-tools/check_build_smoke.cjs",
+    "verify:epub": "node dev-tools/run_epubcheck.cjs --self-test",
     "verify:mirror": "node dev-tools/check_deploy_mirror.cjs",
     "verify:lessons": "node dev-tools/check_sample_lessons.cjs",
     "verify:css": "node dev-tools/check_css_template_literals.cjs",
@@ -66,7 +69,7 @@
     "verify:iife-lazy": "node dev-tools/check_iife_lazy_lookup.cjs",
     "verify:dashes": "node dev-tools/check_em_en_dashes.cjs",
     "verify:security": "node dev-tools/check_secrets.cjs && node dev-tools/check_cors_strict.cjs --strict && node dev-tools/check_xss_surface.cjs && node dev-tools/check_eval.cjs && node dev-tools/check_npm_audit.cjs && node dev-tools/check_lti_surface.cjs && node dev-tools/check_firebase_security.cjs",
-    "verify:gate": "node dev-tools/check_render_refs.cjs && node dev-tools/check_keyless_map.cjs && node dev-tools/check_stem_render.cjs --quiet && node dev-tools/check_sel_render.cjs --quiet && node dev-tools/check_module_render.cjs --quiet && node dev-tools/check_aria_handler.cjs --quiet && node dev-tools/check_lang_json.cjs && node dev-tools/check_cmd_i18n.cjs --quiet && node dev-tools/i18n/check_safety_string_spanglish.cjs --quiet && node dev-tools/check_build_smoke.cjs --quiet && node dev-tools/verify_module_registry.cjs --quiet && node dev-tools/check_view_props.cjs && node dev-tools/check_window_icons.cjs && node dev-tools/check_iife_lazy_lookup.cjs",
+    "verify:gate": "node _build_adventure_module.js --check && node dev-tools/check_render_refs.cjs && node dev-tools/check_keyless_map.cjs && node dev-tools/check_stem_render.cjs --quiet && node dev-tools/check_sel_render.cjs --quiet && node dev-tools/check_module_render.cjs --quiet && node dev-tools/check_aria_handler.cjs --quiet && node dev-tools/check_lang_json.cjs && node dev-tools/check_cmd_i18n.cjs --quiet && node dev-tools/i18n/check_safety_string_spanglish.cjs --quiet && node dev-tools/check_build_smoke.cjs --quiet && node dev-tools/verify_module_registry.cjs --quiet && node dev-tools/check_view_props.cjs && node dev-tools/check_window_icons.cjs && node dev-tools/check_iife_lazy_lookup.cjs",
     "audit:a11y": "cd a11y-audit && node static-audit.js",
     "audit:a11y:runtime": "cd a11y-audit && node runtime-audit.js",
     "desktop": "node desktop/runtime/alloflow-desktop-runtime.cjs",
@@ -89,6 +92,7 @@
     "esbuild": "^0.28.1",
     "eslint-scope": "^9.1.2",
     "jsdom": "^29.1.0",
+    "jszip": "^3.10.1",
     "playwright": "^1.59.1",
     "vitest": "^4.1.5"
   }

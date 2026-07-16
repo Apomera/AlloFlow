@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-bf4b6a0d-untitled-prs",
+  "title": "خاطرۀ سفر",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Ax1eIKsA4V"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fbf4b6a0d-960d-4e8b-99ba-55dd9d188d2a%2f%d8%ae%d8%a7%d8%b7%d8%b1%db%80+%d8%b3%d9%81%d8%b1%2fmadan 12.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fbf4b6a0d-960d-4e8b-99ba-55dd9d188d2a%2f%d8%ae%d8%a7%d8%b7%d8%b1%db%80+%d8%b3%d9%81%d8%b1%2fmadan+1.jpg",
+      "text": "به یاد دارم تابستان بود و رخصتی های مکتب.\nمن و برادرم گفتیم: بیایید به تفریح برویم.\nپدرم، رو به مادرم کرد و گفت: بیایید که پنجشیر برویم."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "هوای آن جا خیلی خوش و گوارا است.\nما همه دویدیم کنار مادرم.\nگفتیم: مادرجان مادرجان!\nبرویم، برویم!\nمادرم لبخند زد و گفت: بیایید وسایل را جمع کنیم.\nهمه سوار موتر شدیم و حرکت کردیم.\nدر راه منظره های زیبا و جا های قشنگ را دیدیم."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fbf4b6a0d-960d-4e8b-99ba-55dd9d188d2a%2f%d8%ae%d8%a7%d8%b7%d8%b1%db%80+%d8%b3%d9%81%d8%b1%2f2.jpg",
+      "text": "سر انجام موتر ما به پنجشیر رسید.\nبه خانه دوست پدرم، کاکا عبدالمتین رفتیم.\nآن ها از ما خوب پذیرایی کردند.\nنان چاشت آماده بود.\nنان را خوردیم و بعد از آن باهم قصه کردیم."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "دوست پدرم گفت: بیایید که جاهای دیدنی پنجشیر را برای تان نشان دهم.\nمن، حامد برادرم و پدرم با او روانه شدیم.\nهمه مناظر زیبا بود.\nرفتیم و رفتیم تا به دامنۀ کوه ها رسیدیم."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fbf4b6a0d-960d-4e8b-99ba-55dd9d188d2a%2f%d8%ae%d8%a7%d8%b7%d8%b1%db%80+%d8%b3%d9%81%d8%b1%2f3.jpg",
+      "text": "ازکاکا عبدالمتین پرسیدم: کاکا جان این کدام کوه است؟\nاو گفت: نسرین جان، دراین کوه معدن زمرد است.\nپنجشیر معدن های زیاد زمرد دارد."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "زمرد یک سنگ قیمتی است که از آن در زیورات کار می گیرند.\nزمرد افغانستان در جهان شهرت زیاد دارد.\nقیمت آن بیشتر از زمرد کشورهای دیگر است.\nدر بدخشان معدن لعل، یاقوت و لاجورد وجود دارد.\nهمچنان معدن مس در لوگر و آهن در بامیان وجود دارد.\nاین معدن ها سرمایه های ملی ما است."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fbf4b6a0d-960d-4e8b-99ba-55dd9d188d2a%2f%d8%ae%d8%a7%d8%b7%d8%b1%db%80+%d8%b3%d9%81%d8%b1%2f4.jpg",
+      "text": "حامد پرسید: دیگر چه چیزها سرمایه ملی گفته میشود؟\nکاکا گفت: دریاها، جنگل ها ومعدن ها.\nپدرم گفت: سال آینده به بادغیس می رویم.\nجنگل های پسته را از نزدیک ببینیم."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "من از خوشی زیاد صدا زدم.\nافغانستان عزیزم، وطن قشنگم دوستت دارم!\nچند روزی که آن جا بودیم خیلی خوش گذشت.\nمن خاطرۀ آن سفر را نوشتم و برای شما بیان کردم.\nشما هم می توانید خاطرۀ تان را از سفر بنویسید."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 297
+  }
+}

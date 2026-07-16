@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-ea81a470-untitled",
+  "title": "ድብቅ ኃጢአት?",
+  "description": "A Amharic picture book, readable free at Bloom Library.",
+  "language": "Amharic",
+  "langCode": "am",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Spiritual"
+  ],
+  "authors": [
+    "BTL Kenya"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "BTL Kenya",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/D8IHZjwffs"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/musie_menna%40sil.org%2fea81a470-410a-45ea-960c-460b5a61ed82%2f%e1%8b%b5%e1%89%a5%e1%89%85+%e1%8a%83%e1%8c%a2%e1%8a%a0%e1%89%b5%2fyrwvuj2b.uga.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ድብቅ ኃጢአት?\" (Amharic)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

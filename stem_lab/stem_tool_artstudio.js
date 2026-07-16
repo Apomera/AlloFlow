@@ -450,7 +450,7 @@ const d = labToolData.artStudio || {};
 
             // In rainbow mode, pick a color based on distance from center or time; otherwise use selected
 
-            var mode = d.symBrushMode || 'rainbow'; 
+            var mode = d.symBrushMode || 'rainbow';
 
             var mirrorOnly = d.symMirrorOnly || false;
 
@@ -462,7 +462,7 @@ const d = labToolData.artStudio || {};
 
               var baseAngle = Math.atan2(dy, dx);
 
-              
+
 
               var drawColor = brushColor;
 
@@ -520,7 +520,7 @@ const d = labToolData.artStudio || {};
 
                  var prevBaseAngle = Math.atan2(py, px);
 
-                 
+
 
                  for (var j = 0; j < folds; j++) {
 
@@ -582,41 +582,41 @@ const d = labToolData.artStudio || {};
 
 
 
-            canvas.onmousedown = canvas.ontouchstart = function (e) { 
+            canvas.onmousedown = canvas.ontouchstart = function (e) {
 
-               e.preventDefault(); 
+               e.preventDefault();
 
-               drawing = true; 
+               drawing = true;
 
                canvas._prevX = null; canvas._prevY = null;
 
-               handleDraw(e, true); 
+               handleDraw(e, true);
 
             };
 
-            canvas.onmousemove = canvas.ontouchmove = function (e) { 
+            canvas.onmousemove = canvas.ontouchmove = function (e) {
 
                if (drawing) {
 
                  e.preventDefault();
 
-                 handleDraw(e, false); 
+                 handleDraw(e, false);
 
                }
 
             };
 
-            canvas.onmouseup = canvas.ontouchend = function () { 
+            canvas.onmouseup = canvas.ontouchend = function () {
 
-               drawing = false; 
+               drawing = false;
 
                canvas._prevX = null; canvas._prevY = null;
 
             };
 
-            canvas.onmouseleave = function () { 
+            canvas.onmouseleave = function () {
 
-               drawing = false; 
+               drawing = false;
 
                canvas._prevX = null; canvas._prevY = null;
 
@@ -725,16 +725,6 @@ const d = labToolData.artStudio || {};
             }
 
           };
-
-          // Inject fullscreen CSS for Game of Life (controls + canvas visible)
-          if (!document.getElementById('life-fullscreen-css')) {
-            var fsStyle = document.createElement('style');
-            fsStyle.id = 'life-fullscreen-css';
-            fsStyle.textContent = '#lifeFullscreenContainer:fullscreen, #lifeFullscreenContainer:-webkit-full-screen { background: #0a1a0a !important; overflow-y: auto !important; padding: 16px !important; display: flex !important; flex-direction: column !important; } #lifeFullscreenContainer:fullscreen #lifeCanvasContainer, #lifeFullscreenContainer:-webkit-full-screen #lifeCanvasContainer { flex: 1 !important; min-height: 0 !important; aspect-ratio: auto !important; } #lifeFullscreenContainer:fullscreen canvas, #lifeFullscreenContainer:-webkit-full-screen canvas { max-height: calc(100vh - 280px) !important; width: auto !important; }';
-            document.head.appendChild(fsStyle);
-          }
-
-          // ═══ ANIMATED STEREOGRAM HELPERS ═══
 
             var _stereoAnimRef = { timer: null, frames: [] };
 
@@ -1366,7 +1356,7 @@ const d = labToolData.artStudio || {};
 
           return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
@@ -1399,7 +1389,8 @@ const d = labToolData.artStudio || {};
                   { icon: '\uD83D\uDD2E', name: __alloT('stem.artstudio.fractals', 'Fractals'), desc: __alloT('stem.artstudio.mandelbrot_julia_sets_sierpinski_trian', 'Mandelbrot, Julia sets, Sierpinski triangle') },
                   { icon: '\uD83C\uDF08', name: __alloT('stem.artstudio.gradient', 'Gradient'), desc: __alloT('stem.artstudio.design_and_export_css_gradient_pattern', 'Design and export CSS gradient patterns') },
                   { icon: '\uD83D\uDC53', name: __alloT('stem.artstudio.stereogram', 'Stereogram'), desc: __alloT('stem.artstudio.hidden_3d_images_magic_eye_style', 'Hidden 3D images (Magic Eye style)') },
-                  { icon: '\uD83E\uDDEC', name: __alloT('stem.artstudio.game_of_life', 'Game of Life'), desc: __alloT('stem.artstudio.conway_s_cellular_automaton_emergent_c', 'Conway\u2019s cellular automaton \u2014 emergent complexity') },
+
+                  { icon: '\uD83C\uDFB6', name: __alloT('stem.artstudio.harmony', 'Harmony'), desc: __alloT('stem.artstudio.harmony_desc', 'Explore musical consonance, intervals, and visual sound relationships') },
                   { icon: '\u267F', name: __alloT('stem.artstudio.contrast', 'Contrast'), desc: __alloT('stem.artstudio.wcag_contrast_checker_for_accessibilit', 'WCAG contrast checker for accessibility') },
                 ].map(function(tool) {
                   return React.createElement("div", { key: tool.name, className: "bg-white rounded-lg p-2 border border-slate-100 text-center shadow-sm hover:shadow-md transition-shadow cursor-default" },
@@ -1412,7 +1403,7 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "bg-white rounded-lg p-3 border border-pink-100" },
                 React.createElement("h5", { className: "text-[11px] font-bold text-pink-700 uppercase mb-1" }, __alloT('stem.artstudio.educational_concepts', "\uD83D\uDCA1 Educational Concepts")),
                 React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" },
-                  __alloT('stem.artstudio.color_theory_additive_vs_subtractive_m', "Color theory (additive vs subtractive mixing, complementary colors, HSL/RGB), mathematical curves (hypotrochoids, Lissajous), fractals & self-similarity, cellular automata & emergence, tessellation geometry, op art visual perception, WCAG accessibility standards, and computational art. Every tool teaches the math behind the beauty.")
+                  __alloT('stem.artstudio.color_theory_additive_vs_subtractive_m', "Color theory (additive vs subtractive mixing, complementary colors, HSL/RGB), mathematical curves (hypotrochoids, Lissajous), fractals & self-similarity, tessellation geometry, op art visual perception, WCAG accessibility standards, and computational art. Every tool teaches the math behind the beauty.")
                 )
               ),
               React.createElement("button", { onClick: function () { upd('showTour', false); }, className: "mt-3 w-full py-2 bg-pink-600 text-white text-sm font-bold rounded-lg hover:bg-pink-700 transition-colors" }, __alloT('stem.artstudio.got_it_let_s_create', "Got it \u2014 let\u2019s create! \uD83C\uDFA8"))
@@ -1420,7 +1411,7 @@ const d = labToolData.artStudio || {};
 
             React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-400", role: 'tablist', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections') },
 
-              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.color_wheel_2', 'Color Wheel') }, { id: 'mixer', icon: '\uD83E\uDDEA', label: __alloT('stem.artstudio.color_mixer_2', 'Color Mixer') }, { id: 'pixel', icon: '\uD83D\uDDBC', label: __alloT('stem.artstudio.pixel_art_2', 'Pixel Art') }, { id: 'symmetry', icon: '\u2728', label: __alloT('stem.artstudio.symmetry_2', 'Symmetry') }, { id: 'spirograph', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spirograph_2', 'Spirograph') }, { id: 'generative', icon: '\uD83C\uDF86', label: __alloT('stem.artstudio.generative_2', 'Generative') }, { id: 'spinArt', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spin_art_2', 'Spin Art') }, { id: 'stringArt', icon: '\uD83D\uDD78', label: __alloT('stem.artstudio.string_art_2', 'String Art') }, { id: 'opArt', icon: '\uD83D\uDC41', label: __alloT('stem.artstudio.op_art_2', 'Op Art') }, { id: 'tessellation', icon: '\uD83D\uDD37', label: __alloT('stem.artstudio.tessellation_2', 'Tessellation') }, { id: 'fractal', icon: '\uD83D\uDD2E', label: __alloT('stem.artstudio.fractals_2', 'Fractals') }, { id: 'gradient', icon: '\uD83C\uDF08', label: __alloT('stem.artstudio.gradient_2', 'Gradient') }, { id: 'stereogram', icon: '\uD83D\uDC53', label: __alloT('stem.artstudio.stereogram_2', 'Stereogram') }, { id: 'life', icon: '\uD83E\uDDEC', label: __alloT('stem.artstudio.game_of_life_2', 'Game of Life') }, { id: 'contrast', icon: '\u267F', label: __alloT('stem.artstudio.contrast_2', 'Contrast') }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: __alloT('stem.artstudio.harmony', 'Harmony') }].map(function (tb) {
+              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.color_wheel_2', 'Color Wheel') }, { id: 'mixer', icon: '\uD83E\uDDEA', label: __alloT('stem.artstudio.color_mixer_2', 'Color Mixer') }, { id: 'pixel', icon: '\uD83D\uDDBC', label: __alloT('stem.artstudio.pixel_art_2', 'Pixel Art') }, { id: 'symmetry', icon: '\u2728', label: __alloT('stem.artstudio.symmetry_2', 'Symmetry') }, { id: 'spirograph', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spirograph_2', 'Spirograph') }, { id: 'generative', icon: '\uD83C\uDF86', label: __alloT('stem.artstudio.generative_2', 'Generative') }, { id: 'spinArt', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spin_art_2', 'Spin Art') }, { id: 'stringArt', icon: '\uD83D\uDD78', label: __alloT('stem.artstudio.string_art_2', 'String Art') }, { id: 'opArt', icon: '\uD83D\uDC41', label: __alloT('stem.artstudio.op_art_2', 'Op Art') }, { id: 'tessellation', icon: '\uD83D\uDD37', label: __alloT('stem.artstudio.tessellation_2', 'Tessellation') }, { id: 'fractal', icon: '\uD83D\uDD2E', label: __alloT('stem.artstudio.fractals_2', 'Fractals') }, { id: 'gradient', icon: '\uD83C\uDF08', label: __alloT('stem.artstudio.gradient_2', 'Gradient') }, { id: 'stereogram', icon: '\uD83D\uDC53', label: __alloT('stem.artstudio.stereogram_2', 'Stereogram') }, { id: 'contrast', icon: '\u267F', label: __alloT('stem.artstudio.contrast_2', 'Contrast') }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: __alloT('stem.artstudio.harmony', 'Harmony') }].map(function (tb) {
 
                 return React.createElement("button", { "aria-label": 'Switch to ' + tb.label + ' tab', key: tb.id, onClick: function () { upd('tab', tb.id); if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'tabSwitch', 'Switched to ' + tb.label + ' canvas tool.', { debounce: 500 }); }, role: 'tab', 'aria-selected': tab === tb.id, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-600 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
 
@@ -1444,8 +1435,9 @@ const d = labToolData.artStudio || {};
                 fractal:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDD2E', title: __alloT('stem.artstudio.fractal_self_similar_at_every_scale', 'Fractal \u2014 self-similar at every scale'),                  hint: __alloT('stem.artstudio.mandelbrot_1975_cauliflower_coastlines', 'Mandelbrot 1975. Cauliflower, coastlines, blood vessels, lightning, lung alveoli \u2014 all fractal. \u201CClouds are not spheres, mountains are not cones, bark is not smooth.\u201D') },
                 gradient:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83C\uDF08', title: __alloT('stem.artstudio.gradient_smooth_color_transitions', 'Gradient \u2014 smooth color transitions'),                    hint: __alloT('stem.artstudio.css_gives_you_linear_radial_and_conic_', 'CSS gives you linear, radial, and conic gradients. Real rainbows have continuous spectra (no discrete bands) \u2014 the 7 \u201Ccolors of the rainbow\u201D were Newton\u2019s arbitrary choice for musical reasons.') },
                 stereogram:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDC53', title: __alloT('stem.artstudio.stereogram_3d_from_a_flat_page', 'Stereogram \u2014 3D from a flat page'),                       hint: __alloT('stem.artstudio.90s_magic_eye_craze_each_eye_sees_a_sl', '90s Magic Eye craze. Each eye sees a slightly shifted version; if you cross or diverge correctly, the brain fuses them into depth. ~5% of people genuinely can\u2019t \u2014 not their fault.') },
-                life:         { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83E\uDDEC', title: __alloT('stem.artstudio.game_of_life_4_rules_infinite_emergenc', 'Game of Life \u2014 4 rules, infinite emergence'),             hint: __alloT('stem.artstudio.conway_1970_born_3_survive_2_3_else_di', 'Conway, 1970. Born=3, survive=2-3, else die. Gliders glide, oscillators oscillate, glider guns shoot. Conway proved Life is Turing-complete \u2014 you can build a CPU in cells.') },
-                contrast:     { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u267F',         title: __alloT('stem.artstudio.contrast_wcag_4_5_1_3_1_apca', 'Contrast \u2014 WCAG 4.5:1 / 3:1 / APCA'),                   hint: __alloT('stem.artstudio.wcag_2_1_normal_text_4_5_1_large_3_1_w', 'WCAG 2.1: normal text 4.5:1, large 3:1. Why low contrast hurts low-vision readers, even if you can read it. APCA (the WCAG 3.0 successor) uses perceptual lightness, not raw luminance ratio.') }
+
+                contrast:     { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u267F',         title: __alloT('stem.artstudio.contrast_wcag_4_5_1_3_1_apca', 'Contrast \u2014 WCAG 4.5:1 / 3:1 / APCA'),                   hint: __alloT('stem.artstudio.wcag_2_1_normal_text_4_5_1_large_3_1_w', 'WCAG 2.1: normal text 4.5:1, large 3:1. Why low contrast hurts low-vision readers, even if you can read it. APCA (the WCAG 3.0 successor) uses perceptual lightness, not raw luminance ratio.') },
+                harmonyHunt:  { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83C\uDFB6', title: __alloT('stem.artstudio.harmony_lab_title', 'Harmony - sound, ratio, and color'), hint: __alloT('stem.artstudio.harmony_lab_hint', 'Compare consonant and dissonant intervals, connect frequency ratios to pattern, and translate musical relationships into visual harmony.') }
               };
               var meta = TAB_META[tab] || TAB_META.colorWheel;
               return React.createElement('div', {
@@ -1479,7 +1471,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("h4", { className: "text-xs font-bold text-pink-700 mb-2" }, __alloT('stem.artstudio.selected_color', "\uD83C\uDFAF Selected Color")),
 
-                    React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+                    React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
                       React.createElement("div", { style: { width: 60, height: 60, borderRadius: 12, background: 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
 
@@ -4678,7 +4670,7 @@ const d = labToolData.artStudio || {};
 
                     }),
 
-                    
+
 
                     // --- AI GENERATION ---
 
@@ -4692,9 +4684,9 @@ const d = labToolData.artStudio || {};
 
                       ),
 
-                      React.createElement("textarea", { 
+                      React.createElement("textarea", {
 
-                        value: d.stereoAiStr || '', 
+                        value: d.stereoAiStr || '',
 
                         onChange: function(e) { upd('stereoAiStr', e.target.value); },
 
@@ -4708,7 +4700,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("div", { className: "flex gap-2" },
 
-                        React.createElement("button", { "aria-label": __alloT('stem.artstudio.generate_ai_depth_map', "Generate AI Depth Map"), 
+                        React.createElement("button", { "aria-label": __alloT('stem.artstudio.generate_ai_depth_map', "Generate AI Depth Map"),
 
                           onClick: function() {
 
@@ -4760,7 +4752,7 @@ const d = labToolData.artStudio || {};
 
                         }, __alloT('stem.artstudio.generate_depth_map', "\u2B1C Generate Depth Map")),
 
-                        React.createElement("button", { "aria-label": __alloT('stem.artstudio.generate_ai_pattern_tile', "Generate AI Pattern Tile"), 
+                        React.createElement("button", { "aria-label": __alloT('stem.artstudio.generate_ai_pattern_tile', "Generate AI Pattern Tile"),
 
                           onClick: function() {
 
@@ -4814,7 +4806,7 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    
+
 
                     React.createElement("div", { className: "flex gap-2 mt-4" },
 
@@ -6446,1300 +6438,6 @@ const d = labToolData.artStudio || {};
                 )
 
               ),
-
-            tab === 'life' && React.createElement("div", { className: "space-y-3" },
-
-              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
-
-                React.createElement("div", { className: "space-y-3", style: { maxHeight: '85vh', overflowY: 'auto' } },
-
-                  React.createElement("div", { id: "lifeFullscreenContainer", className: "bg-gradient-to-br from-emerald-50 to-lime-50 rounded-xl p-4 border border-emerald-200" },
-
-                    React.createElement("div", { className: "flex justify-between items-start mb-3" },
-
-                      React.createElement("h4", { className: "text-xs font-bold text-emerald-700" }, __alloT('stem.artstudio.conway_s_game_of_life', "\uD83E\uDDEC Conway's Game of Life")),
-
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.fullscreen_mode', "Fullscreen Mode"), onClick: function () { toggleFullscreen('lifeFullscreenContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all shadow-sm" }, __alloT('stem.artstudio.fullscreen_mode_2', "\uD83D\uDD0D Fullscreen Mode"))
-
-                    ),
-
-                    // Simulation controls
-
-                    React.createElement("div", { className: "flex gap-1 mb-3" },
-
-                      React.createElement("button", { onClick: function () { upd('lifeRunning', !(d.lifeRunning)); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black transition-all " + (d.lifeRunning ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-md') }, d.lifeRunning ? '\u23F8 Pause' : '\u25B6 Run'),
-
-                      React.createElement("button", { onClick: function () { upd('lifeStep', (d.lifeStep || 0) + 1); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200", disabled: d.lifeRunning }, __alloT('stem.artstudio.step', '\u23ED Step')),
-
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.clear_11', "Clear"), onClick: function () { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); upd('lifeChallengeStatus', null); upd('lifeChallengeMsg', null); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, __alloT('stem.artstudio.clear_12', '\uD83D\uDDD1 Clear'))
-
-                    ),
-
-                    // Stats
-
-                    React.createElement("div", { className: "flex gap-3 mb-3 text-[11px] font-bold" },
-
-                      React.createElement("span", { className: "px-2 py-1 rounded-full bg-emerald-100 text-emerald-700" }, '\uD83D\uDD04 Gen: ' + (d.lifeGen || 0)),
-
-                      React.createElement("span", { className: "px-2 py-1 rounded-full bg-lime-100 text-lime-700" }, '\uD83E\uDDA0 Pop: ' + (d.lifePop || 0)),
-
-                      (d.lifeMaxPop > 0) && React.createElement("span", { className: "px-2 py-1 rounded-full bg-amber-100 text-amber-700" }, '\uD83D\uDCC8 Max: ' + d.lifeMaxPop)
-
-                    ),
-
-                    // Speed
-
-                    React.createElement("div", { className: "mb-2" },
-
-                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-0.5" }, 'Speed: ' + (typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10) + ' fps'),
-
-                      React.createElement("input", { type: "range", min: 1, max: 30, value: typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10, 'aria-label': __alloT('stem.artstudio.simulation_speed', 'Simulation speed'), onChange: function (e) { upd('lifeSpeed', parseInt(e.target.value)); }, className: "w-full accent-emerald-600" })
-
-                    ),
-
-                    // Grid size
-
-                    React.createElement("div", { className: "mb-3" },
-
-                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, __alloT('stem.artstudio.grid_size_3', 'Grid Size')),
-
-                      React.createElement("div", { className: "flex gap-1" },
-
-                        [{ id: 40, label: '40\u00D740' }, { id: 60, label: '60\u00D760' }, { id: 80, label: '80\u00D780' }, { id: 120, label: '120\u00D7120' }].map(function (s) {
-
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('lifeSize', s.id); upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeSize || 60) === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50') }, s.label);
-
-                        })
-
-                      )
-
-                    ),
-
-                    // Draw tool
-
-                    React.createElement("div", { className: "mb-3" },
-
-                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, __alloT('stem.artstudio.draw_tool', 'Draw Tool')),
-
-                      React.createElement("div", { className: "flex gap-1" },
-
-                        [{ id: 'draw', label: __alloT('stem.artstudio.draw_2', '\u270F Draw') }, { id: 'erase', label: __alloT('stem.artstudio.erase_3', '\uD83E\uDDFD Erase') }].map(function (s) {
-
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('lifeTool', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeTool || 'draw') === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50') }, s.label);
-
-                        })
-
-                      )
-
-                    ),
-
-                    // Wrap toggle + Random
-
-                    React.createElement("div", { className: "flex items-center gap-2 mb-3" },
-
-                      React.createElement("button", { onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
-
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.random', "Random"), onClick: function () {
-
-                        var sz = d.lifeSize || 60;
-
-                        var newGrid = {};
-
-                        for (var ry = 0; ry < sz; ry++) for (var rx = 0; rx < sz; rx++) { if (Math.random() < 0.3) newGrid[rx + ',' + ry] = 1; }
-
-                        upd('lifeGrid', newGrid); upd('lifeSeed', Date.now()); upd('lifeGen', 0);
-
-                      }, className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200" }, __alloT('stem.artstudio.random_2', '\uD83C\uDFB2 Random'))
-
-                    ),
-
-                    // ─── Visualization Mode ───
-
-                    React.createElement("div", { className: "mb-3" },
-
-                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, __alloT('stem.artstudio.visualization', '\uD83D\uDD0D Visualization')),
-
-                      React.createElement("div", { className: "flex gap-1" },
-
-                        [{ id: 'normal', label: __alloT('stem.artstudio.normal', '\uD83D\uDFE2 Normal') }, { id: 'heatmap', label: __alloT('stem.artstudio.age_map', '\uD83C\uDF21 Age Map') }, { id: 'xray', label: __alloT('stem.artstudio.x_ray', '\uD83D\uDD2C X-Ray') }].map(function (v) {
-
-                          return React.createElement("button", { key: v.id, onClick: function () { upd('lifeVizMode', v.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeVizMode || 'normal') === v.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50') }, v.label);
-
-                        })
-
-                      ),
-
-                      React.createElement("p", { className: "text-[11px] text-slate-600 mt-1 italic" }, (d.lifeVizMode || 'normal') === 'heatmap' ? '\uD83C\uDF21 Bright = newborn, dark = old survivors' : (d.lifeVizMode || 'normal') === 'xray' ? '\uD83D\uDD2C Numbers show neighbor count \u2014 see WHY cells live/die' : 'Standard cell coloring')
-
-                    ),
-
-                    // Cell Color (only in normal mode)
-
-                    (d.lifeVizMode || 'normal') === 'normal' && React.createElement("div", { className: "mb-3" },
-
-                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, __alloT('stem.artstudio.cell_color', 'Cell Color')),
-
-                      React.createElement("div", { className: "flex gap-1" },
-
-                        [{ id: 'green', label: '\uD83D\uDFE2', hue: 140 }, { id: 'cyan', label: '\uD83D\uDD35', hue: 190 }, { id: 'gold', label: '\uD83D\uDFE1', hue: 45 }, { id: 'pink', label: '\uD83D\uDFE3', hue: 320 }, { id: 'white', label: '\u26AA', hue: -1 }].map(function (c) {
-
-                          return React.createElement("button", { key: c.id, onClick: function () { upd('lifeHue', c.hue); }, className: "flex-1 px-2 py-1 rounded-lg text-sm transition-all " + ((d.lifeHue || 140) === c.hue ? 'bg-slate-200 ring-2 ring-emerald-400' : 'bg-slate-50 hover:bg-slate-100') }, c.label);
-
-                        })
-
-                      )
-
-                    ),
-
-                    // Export
-
-                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_17', "Export PNG"), onClick: function () { var c = document.getElementById('lifeCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'game-of-life-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png_18', '\uD83D\uDCE5 Export PNG')),
-
-                    // ─── Expanded Preset Library ───
-
-                    React.createElement("div", { className: "mt-3" },
-
-                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-500 block mb-1" }, __alloT('stem.artstudio.pattern_library', '\uD83D\uDCDA Pattern Library')),
-
-                      [
-
-                        { cat: 'Still Lifes', emoji: '\uD83E\uDDF1', items: [
-
-                          { label: __alloT('stem.artstudio.block', 'Block'), id: 'block', desc: __alloT('stem.artstudio.simplest_still_life_4_cells_in_a_squar', 'Simplest still life \u2014 4 cells in a square') },
-
-                          { label: __alloT('stem.artstudio.beehive', 'Beehive'), id: 'beehive', desc: __alloT('stem.artstudio.6_cell_still_life_shaped_like_a_hexago', '6-cell still life shaped like a hexagon') },
-
-                          { label: __alloT('stem.artstudio.loaf', 'Loaf'), id: 'loaf', desc: __alloT('stem.artstudio.7_cell_asymmetric_still_life', '7-cell asymmetric still life') },
-
-                          { label: __alloT('stem.artstudio.boat', 'Boat'), id: 'boat', desc: __alloT('stem.artstudio.5_cell_still_life', '5-cell still life') }
-
-                        ]},
-
-                        { cat: 'Oscillators', emoji: '\uD83D\uDD04', items: [
-
-                          { label: __alloT('stem.artstudio.blinker', 'Blinker'), id: 'blinker', desc: __alloT('stem.artstudio.period_2_the_simplest_oscillator', 'Period 2 \u2014 the simplest oscillator') },
-
-                          { label: __alloT('stem.artstudio.toad', 'Toad'), id: 'toad', desc: __alloT('stem.artstudio.period_2_6_cells_that_shift_back_and_f', 'Period 2 \u2014 6 cells that shift back and forth') },
-
-                          { label: __alloT('stem.artstudio.beacon', 'Beacon'), id: 'beacon', desc: __alloT('stem.artstudio.period_2_two_blocks_that_blink', 'Period 2 \u2014 two blocks that blink') },
-
-                          { label: __alloT('stem.artstudio.pulsar', 'Pulsar'), id: 'pulsar', desc: __alloT('stem.artstudio.period_3_beautiful_rotational_symmetry', 'Period 3 \u2014 beautiful rotational symmetry') }
-
-                        ]},
-
-                        { cat: 'Spaceships', emoji: '\uD83D\uDE80', items: [
-
-                          { label: __alloT('stem.artstudio.glider', 'Glider'), id: 'glider', desc: __alloT('stem.artstudio.moves_diagonally_discovered_1970', 'Moves diagonally \u2014 discovered 1970') },
-
-                          { label: 'LWSS', id: 'lwss', desc: __alloT('stem.artstudio.lightweight_spaceship_moves_horizontal', 'Lightweight spaceship \u2014 moves horizontally') },
-
-                          { label: 'MWSS', id: 'mwss', desc: __alloT('stem.artstudio.middleweight_spaceship_9_cells', 'Middleweight spaceship \u2014 9 cells') },
-
-                          { label: 'HWSS', id: 'hwss', desc: __alloT('stem.artstudio.heavyweight_spaceship_largest_basic_sh', 'Heavyweight spaceship \u2014 largest basic ship') }
-
-                        ]},
-
-                        { cat: 'Methuselahs', emoji: '\uD83C\uDF0B', items: [
-
-                          { label: 'R-pentomino', id: 'rpent', desc: __alloT('stem.artstudio.5_cells_1103_generations_to_stabilize', '5 cells \u2192 1103 generations to stabilize!') },
-
-                          { label: __alloT('stem.artstudio.acorn', 'Acorn'), id: 'acorn', desc: __alloT('stem.artstudio.7_cells_takes_5206_generations', '7 cells \u2192 takes 5206 generations!') },
-
-                          { label: __alloT('stem.artstudio.diehard', 'Diehard'), id: 'diehard', desc: __alloT('stem.artstudio.7_cells_dies_completely_at_gen_130', '7 cells \u2192 dies completely at gen 130') },
-
-                          { label: 'Pi-heptomino', id: 'pihept', desc: __alloT('stem.artstudio.7_cells_stabilizes_at_gen_173', '7 cells \u2192 stabilizes at gen 173') }
-
-                        ]},
-
-                        { cat: 'Guns', emoji: '\u2694\uFE0F', items: [
-
-                          { label: __alloT('stem.artstudio.gosper_gun', 'Gosper Gun'), id: 'gliderGun', desc: __alloT('stem.artstudio.first_gun_found_shoots_gliders_endless', 'First gun found \u2014 shoots gliders endlessly') }
-
-                        ]}
-
-                      ].map(function (cat) {
-
-                        return React.createElement("div", { key: cat.cat, className: "mb-2" },
-
-                          React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-0.5" }, cat.emoji + ' ' + cat.cat),
-
-                          React.createElement("div", { className: "flex gap-1 flex-wrap" },
-
-                            cat.items.map(function (pr) {
-
-                              return React.createElement("button", { key: pr.id, onClick: function () { upd('lifePreset', pr.id); upd('lifeClear', Date.now()); upd('lifeGen', 0); upd('lifeMaxPop', 0); var stillLifes = { block:1, beehive:1, loaf:1, boat:1 }; upd('lifeRunning', !stillLifes[pr.id]); }, className: "px-2 py-0.5 rounded text-[11px] font-bold bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50 transition-all", title: pr.desc }, pr.label);
-
-                            })
-
-                          )
-
-                        );
-
-                      })
-
-                    )
-
-                  ),
-
-                  // ─── Rule Editor Card ───
-
-                  React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
-
-                    React.createElement("h4", { className: "text-[11px] font-bold text-purple-700 mb-2" }, __alloT('stem.artstudio.rule_editor_b_s_notation', '\uD83E\uDDEC Rule Editor (B/S Notation)')),
-
-                    React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, __alloT('stem.artstudio.change_the_rules_b_counts_that_birth_a', 'Change the rules! B = counts that birth a cell. S = counts that keep it alive.')),
-
-                    React.createElement("div", { className: "flex gap-2 mb-2" },
-
-                      React.createElement("div", { className: "flex-1" },
-
-                        React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, __alloT('stem.artstudio.birth_b', 'Birth (B)')),
-
-                        React.createElement("input", { type: "text", value: d.lifeRuleB || '3', 'aria-label': __alloT('stem.artstudio.birth_rule', 'Birth rule'), onChange: function (e) { upd('lifeRuleB', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-600 rounded-lg", placeholder: '3' })
-
-                      ),
-
-                      React.createElement("div", { className: "flex-1" },
-
-                        React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, __alloT('stem.artstudio.survival_s', 'Survival (S)')),
-
-                        React.createElement("input", { type: "text", value: d.lifeRuleS || '23', 'aria-label': __alloT('stem.artstudio.survival_rule', 'Survival rule'), onChange: function (e) { upd('lifeRuleS', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-600 rounded-lg", placeholder: '23' })
-
-                      )
-
-                    ),
-
-                    React.createElement("div", { className: "flex gap-1 flex-wrap" },
-
-                      React.createElement("span", { className: "text-[11px] font-bold text-purple-500 mr-1" }, 'Try:'),
-
-                      [
-
-                        { label: __alloT('stem.artstudio.conway_b3_s23', 'Conway B3/S23'), b: '3', s: '23', desc: __alloT('stem.artstudio.the_classic_balanced_growth', 'The classic \u2014 balanced growth') },
-
-                        { label: __alloT('stem.artstudio.seeds_b2_s', 'Seeds B2/S'), b: '2', s: '', desc: __alloT('stem.artstudio.explosive_every_cell_dies_immediately', 'Explosive! Every cell dies immediately') },
-
-                        { label: __alloT('stem.artstudio.highlife_b36_s23', 'Highlife B36/S23'), b: '36', s: '23', desc: __alloT('stem.artstudio.like_conway_but_has_a_replicator', 'Like Conway but has a replicator!') },
-
-                        { label: __alloT('stem.artstudio.day_night_b3678_s34678', 'Day&Night B3678/S34678'), b: '3678', s: '34678', desc: __alloT('stem.artstudio.symmetric_dead_alive_are_interchangeab', 'Symmetric \u2014 dead/alive are interchangeable') },
-
-                        { label: __alloT('stem.artstudio.diamoeba_b35678_s5678', 'Diamoeba B35678/S5678'), b: '35678', s: '5678', desc: __alloT('stem.artstudio.creates_diamond_shaped_amoebas', 'Creates diamond-shaped amoebas') }
-
-                      ].map(function (rp) {
-
-                        return React.createElement("button", { key: rp.label, onClick: function () { upd('lifeRuleB', rp.b); upd('lifeRuleS', rp.s); }, className: "px-2 py-0.5 rounded text-[11px] font-bold bg-white text-purple-600 border border-purple-600 hover:bg-purple-50 transition-all", title: rp.desc }, rp.label);
-
-                      })
-
-                    ),
-
-                    React.createElement("p", { className: "text-[11px] text-slate-600 mt-1 italic" }, 'Currently: B' + (d.lifeRuleB || '3') + '/S' + (d.lifeRuleS || '23') + ((d.lifeRuleB || '3') === '3' && (d.lifeRuleS || '23') === '23' ? ' (Conway\'s classic rules)' : ' (custom rules)'))
-
-                  ),
-
-                  // ─── Pattern Challenges Card ───
-
-                  React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-3 border border-amber-200" },
-
-                    React.createElement("h4", { className: "text-[11px] font-bold text-amber-700 mb-2" }, __alloT('stem.artstudio.pattern_challenges_10_xp_each', '\uD83C\uDFAF Pattern Challenges (+10 XP each)')),
-
-                    React.createElement("div", { className: "flex gap-1 flex-wrap mb-2" },
-
-                      [
-
-                        { id: 'still', label: __alloT('stem.artstudio.still_life', '\uD83E\uDDF1 Still Life'), desc: __alloT('stem.artstudio.draw_a_pattern_that_stays_perfectly_un', 'Draw a pattern that stays perfectly unchanged after 1 step') },
-
-                        { id: 'oscillator', label: __alloT('stem.artstudio.oscillator', '\uD83D\uDD04 Oscillator'), desc: __alloT('stem.artstudio.draw_a_pattern_that_repeats_itself_com', 'Draw a pattern that repeats itself (comes back to initial state)') },
-
-                        { id: 'extinction', label: __alloT('stem.artstudio.extinction', '\uD83D\uDC80 Extinction'), desc: __alloT('stem.artstudio.draw_a_pattern_that_completely_dies_ou', 'Draw a pattern that completely dies out') },
-
-                        { id: 'methuselah', label: __alloT('stem.artstudio.methuselah', '\uD83C\uDF0B Methuselah'), desc: __alloT('stem.artstudio.use_5_cells_to_create_a_pattern_that_s', 'Use \u22645 cells to create a pattern that survives 50+ generations') },
-
-                        { id: 'maxpop', label: __alloT('stem.artstudio.pop_boom', '\uD83D\uDCC8 Pop Boom'), desc: __alloT('stem.artstudio.use_exactly_5_cells_maximize_populatio', 'Use exactly 5 cells \u2014 maximize population within 50 generations!') }
-
-                      ].map(function (ch) {
-
-                        var isActive = d.lifeChallenge === ch.id;
-
-                        return React.createElement("button", { key: ch.id, onClick: function () {
-
-                          upd('lifeChallenge', isActive ? null : ch.id);
-
-                          upd('lifeChallengeStatus', isActive ? null : 'active');
-
-                          upd('lifeChallengeMsg', isActive ? null : ch.desc);
-
-                          upd('lifeMaxPop', 0);
-
-                          if (!isActive) { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); }
-
-                        }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-white text-amber-700 border border-amber-600 hover:bg-amber-50'), title: ch.desc }, ch.label);
-
-                      })
-
-                    ),
-
-                    d.lifeChallenge && d.lifeChallengeStatus === 'active' && React.createElement("div", { className: "space-y-1" },
-
-                      React.createElement("p", { className: "text-[11px] text-amber-600 italic" }, d.lifeChallengeMsg || ''),
-
-                      React.createElement("p", { className: "text-[11px] text-slate-600" }, __alloT('stem.artstudio.draw_your_pattern_then_press_run_to_te', 'Draw your pattern, then press \u25B6 Run to test!')),
-
-                      (d.lifeChallenge === 'methuselah' || d.lifeChallenge === 'maxpop') && React.createElement("p", { className: "text-[11px] font-bold " + ((d.lifePop || 0) > 5 ? 'text-red-500' : 'text-green-600') }, 'Cells placed: ' + (d.lifePop || 0) + '/5')
-
-                    ),
-
-                    d.lifeChallengeStatus === 'success' && React.createElement("div", { className: "mt-1 px-3 py-2 bg-green-100 rounded-lg border border-green-300" },
-
-                      React.createElement("p", { className: "text-sm font-bold text-green-600" }, '\u2705 ' + (d.lifeChallengeMsg || 'Challenge complete! +10 XP'))
-
-                    ),
-
-                    d.lifeChallengeStatus === 'fail' && React.createElement("div", { className: "mt-1 px-3 py-2 bg-red-50 rounded-lg border border-red-200" },
-
-                      React.createElement("p", { className: "text-[11px] font-bold text-red-500" }, '\u274C ' + (d.lifeChallengeMsg || 'Not quite \u2014 try again!'))
-
-                    )
-
-                  ),
-
-                  // Educational panel (Moved Up)
-
-                  React.createElement("div", { className: "bg-gradient-to-br from-lime-50 to-green-50 rounded-xl p-3 border border-lime-200" },
-
-                    React.createElement("button", { onClick: function () { upd('showLifeInfo', d.showLifeInfo === undefined ? false : !d.showLifeInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-lime-700" },
-
-                      React.createElement("span", null, __alloT('stem.artstudio.the_science_of_cellular_automata', '\uD83E\uDDE0 The Science of Cellular Automata')),
-
-                      React.createElement("span", null, (d.showLifeInfo !== false) ? '\u25B2' : '\u25BC')
-
-                    ),
-
-                    (d.showLifeInfo !== false) && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
-
-                      React.createElement("p", null, '\uD83E\uDDEC ', React.createElement("strong", null, __alloT('stem.artstudio.conway_s_game_of_life_2', "Conway\'s Game of Life")), __alloT('stem.artstudio.was_invented_by_mathematician_john_hor', ' was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity \u2014 it\'s actually '), React.createElement("strong", null, __alloT('stem.artstudio.turing_complete', "Turing complete")), __alloT('stem.artstudio.meaning_it_can_compute_anything_a_real', ', meaning it can compute anything a real computer can.')),
-
-                      React.createElement("div", { className: "bg-white rounded-lg p-2 border border-lime-200" },
-
-                        React.createElement("p", { className: "font-bold text-lime-700 mb-1" }, __alloT('stem.artstudio.the_rules', '\uD83D\uDCCF The Rules:')),
-
-                        React.createElement("ol", { className: "list-decimal ml-4 space-y-0.5" },
-
-                          React.createElement("li", null, React.createElement("strong", null, "Survival:"), __alloT('stem.artstudio.a_live_cell_with_2_3_neighbors_stays_a', ' A live cell with 2\u20133 neighbors stays alive')),
-
-                          React.createElement("li", null, React.createElement("strong", null, "Birth:"), __alloT('stem.artstudio.a_dead_cell_with_exactly_3_neighbors_b', ' A dead cell with exactly 3 neighbors becomes alive')),
-
-                          React.createElement("li", null, React.createElement("strong", null, "Death:"), __alloT('stem.artstudio.all_other_live_cells_die_loneliness_or', ' All other live cells die (loneliness or overcrowding)'))
-
-                        ),
-
-                        React.createElement("p", { className: "text-[11px] italic mt-1 text-slate-600" }, __alloT('stem.artstudio.use_x_ray_mode_to_see_neighbor_counts_', 'Use \uD83D\uDD2C X-Ray mode to see neighbor counts and understand why each cell lives or dies!'))
-
-                      ),
-
-                      React.createElement("div", { className: "bg-white rounded-lg p-2 border border-lime-200" },
-
-                        React.createElement("p", { className: "font-bold text-lime-700 mb-1" }, __alloT('stem.artstudio.pattern_types', '\uD83D\uDCDA Pattern Types:')),
-
-                        React.createElement("ul", { className: "list-disc ml-4 space-y-0.5" },
-
-                          React.createElement("li", null, React.createElement("strong", null, __alloT('stem.artstudio.still_lifes', "Still Lifes")), __alloT('stem.artstudio.patterns_that_never_change_every_cell_', ' \u2014 patterns that never change (every cell has 2\u20133 neighbors)')),
-
-                          React.createElement("li", null, React.createElement("strong", null, __alloT('stem.artstudio.oscillators', "Oscillators")), __alloT('stem.artstudio.patterns_that_cycle_through_states_and', ' \u2014 patterns that cycle through states and repeat')),
-
-                          React.createElement("li", null, React.createElement("strong", null, __alloT('stem.artstudio.spaceships', "Spaceships")), __alloT('stem.artstudio.patterns_that_move_across_the_grid', ' \u2014 patterns that move across the grid')),
-
-                          React.createElement("li", null, React.createElement("strong", null, __alloT('stem.artstudio.methuselahs', "Methuselahs")), __alloT('stem.artstudio.small_patterns_that_take_very_long_to_', ' \u2014 small patterns that take very long to stabilize')),
-
-                          React.createElement("li", null, React.createElement("strong", null, __alloT('stem.artstudio.guns', "Guns")), __alloT('stem.artstudio.patterns_that_emit_spaceships_forever', ' \u2014 patterns that emit spaceships forever'))
-
-                        )
-
-                      ),
-
-                      React.createElement("p", null, '\uD83D\uDE80 ', React.createElement("strong", null, __alloT('stem.artstudio.gliders', "Gliders")), __alloT('stem.artstudio.are_patterns_that_move_across_the_grid', ' are patterns that move across the grid. The '), React.createElement("strong", null, __alloT('stem.artstudio.gosper_glider_gun', "Gosper Glider Gun")), __alloT('stem.artstudio.1970_was_the_first_pattern_proven_to_g', ' (1970) was the first pattern proven to grow without bound.')),
-
-                      React.createElement("p", null, '\uD83C\uDF0D ', React.createElement("strong", null, "Emergence:"), __alloT('stem.artstudio.the_game_of_life_demonstrates_how_comp', ' The Game of Life demonstrates how complex, seemingly \u201Cintelligent\u201D behavior can arise from very simple rules with no central controller. This same principle appears in ant colonies, flocking birds, brain neurons, and even market economies.')),
-
-                      React.createElement("p", null, '\u26A1 ', React.createElement("strong", null, "Self-replication:"), __alloT('stem.artstudio.in_2010_andrew_wade_built_a_pattern_ca', ' In 2010, Andrew Wade built a pattern called \u201CGemini\u201D that creates a complete copy of itself and then destroys the original \u2014 true self-replication from simple rules.'))
-
-                    )
-
-                  ),
-
-                  React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic" }, __alloT('stem.artstudio.click_drag_to_draw_run_to_simulate_x_r', '\uD83D\uDC46 Click/drag to draw \u2022 \u25B6 Run to simulate \u2022 \uD83D\uDD2C X-Ray to learn'))
-
-                ),
-
-                // ─── RIGHT COLUMN: Canvas + Sparkline ───
-
-                React.createElement("div", { id: "lifeCanvasContainer", className: "space-y-2 bg-slate-900 aspect-square flex flex-col items-center justify-center p-2 rounded-xl" },
-
-                  React.createElement("canvas", { tabIndex: 0, id: 'lifeCanvas', width: 600, height: 600, role: "img", 'aria-label': __alloT('stem.artstudio.game_of_life_simulation_canvas', 'Game of Life simulation canvas'),
-
-                    key: 'life-' + (d.lifeClear || 0) + '-' + (d.lifeSize || 60),
-
-                    className: "rounded-xl border-2 border-emerald-200 shadow-lg mx-auto block cursor-crosshair flex-shrink-0", style: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', background: '#0a0f0a' },
-
-                    ref: function (canvas) {
-
-                      if (!canvas) return;
-
-                      if (canvas._lifeInit) return;
-
-                      canvas._lifeInit = true;
-
-                      var ctx = canvas.getContext('2d');
-
-                      var W = canvas.width, H = canvas.height;
-
-                      var gridSize = d.lifeSize || 60;
-
-                      var cellW = W / gridSize, cellH = H / gridSize;
-
-                      var grid = d.lifeGrid || {};
-
-                      var ageGrid = {};
-
-                      var wrap = d.lifeWrap !== false;
-
-                      var generation = d.lifeGen || 0;
-
-                      var running = false;
-
-                      var speed = typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10;
-
-                      var hue = typeof d.lifeHue === 'number' ? d.lifeHue : 140;
-
-                      var vizMode = 'normal';
-
-                      var lastFrameTime = 0;
-
-                      var popHistory = [];
-
-                      var birthSet = { 3: true };
-
-                      var survivalSet = { 2: true, 3: true };
-
-                      var challengeInitGridStr = null;
-
-                      var challengeInitPop = 0;
-
-                      var maxPopSeen = 0;
-
-
-
-                      // Initialize ages
-
-                      Object.keys(grid).forEach(function (k) { ageGrid[k] = 1; });
-
-
-
-                      // Load preset
-
-                      var preset = d.lifePreset;
-
-                      if (preset) {
-
-                        upd('lifePreset', null);
-
-                        grid = {};
-
-                        ageGrid = {};
-
-                        var cx = Math.floor(gridSize / 2), cy = Math.floor(gridSize / 2);
-
-                        var cells = [];
-
-                        if (preset === 'glider') cells = [[0,0],[1,1],[2,1],[0,2],[1,2]];
-
-                        else if (preset === 'gliderGun') cells = [[24,0],[22,1],[24,1],[12,2],[13,2],[20,2],[21,2],[34,2],[35,2],[11,3],[15,3],[20,3],[21,3],[34,3],[35,3],[0,4],[1,4],[10,4],[16,4],[20,4],[21,4],[0,5],[1,5],[10,5],[14,5],[16,5],[17,5],[22,5],[24,5],[10,6],[16,6],[24,6],[11,7],[15,7],[12,8],[13,8]];
-
-                        else if (preset === 'pulsar') {
-
-                          var pRows = [[2,3,4,8,9,10],[0,5,7,12],[0,5,7,12],[0,5,7,12],[2,3,4,8,9,10]];
-
-                          pRows.forEach(function (cols, ri) {
-
-                            cols.forEach(function (c) {
-
-                              cells.push([c - 6, ri - 6 + 1]);
-
-                              cells.push([c - 6, -(ri - 6 + 1)]);
-
-                            });
-
-                          });
-
-                        }
-
-                        else if (preset === 'spaceship') cells = [[1,0],[4,0],[0,1],[0,2],[4,2],[0,3],[1,3],[2,3],[3,3]];
-
-                        else if (preset === 'rpent') cells = [[1,0],[2,0],[0,1],[1,1],[1,2]];
-
-                        else if (preset === 'acorn') cells = [[1,0],[3,1],[0,2],[1,2],[4,2],[5,2],[6,2]];
-
-                        else if (preset === 'diehard') cells = [[6,0],[0,1],[1,1],[1,2],[5,2],[6,2],[7,2]];
-
-                        // New presets
-
-                        else if (preset === 'block') cells = [[0,0],[1,0],[0,1],[1,1]];
-
-                        else if (preset === 'beehive') cells = [[1,0],[2,0],[0,1],[3,1],[1,2],[2,2]];
-
-                        else if (preset === 'loaf') cells = [[1,0],[2,0],[0,1],[3,1],[1,2],[3,2],[2,3]];
-
-                        else if (preset === 'boat') cells = [[0,0],[1,0],[0,1],[2,1],[1,2]];
-
-                        else if (preset === 'blinker') cells = [[0,0],[1,0],[2,0]];
-
-                        else if (preset === 'toad') cells = [[1,0],[2,0],[3,0],[0,1],[1,1],[2,1]];
-
-                        else if (preset === 'beacon') cells = [[0,0],[1,0],[0,1],[1,1],[2,2],[3,2],[2,3],[3,3]];
-
-                        else if (preset === 'lwss') cells = [[1,0],[4,0],[0,1],[0,2],[4,2],[0,3],[1,3],[2,3],[3,3]];
-
-                        else if (preset === 'mwss') cells = [[2,0],[0,1],[4,1],[5,2],[0,2],[5,3],[0,3],[1,4],[2,4],[3,4],[4,4],[5,4]];
-
-                        else if (preset === 'hwss') cells = [[2,0],[3,0],[0,1],[5,1],[6,2],[0,2],[6,3],[0,3],[1,4],[2,4],[3,4],[4,4],[5,4],[6,4]];
-
-                        else if (preset === 'pihept') cells = [[0,0],[1,0],[2,0],[0,1],[2,1],[0,2],[2,2]];
-
-                        cells.forEach(function (c) {
-
-                          var gx = cx + c[0], gy = cy + c[1];
-
-                          if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) { grid[gx + ',' + gy] = 1; ageGrid[gx + ',' + gy] = 1; }
-
-                        });
-
-                        upd('lifeGrid', Object.assign({}, grid));
-
-                        upd('lifePop', Object.keys(grid).length);
-
-                      }
-
-
-
-                      function parseRuleSet(str) {
-
-                        var set = {};
-
-                        for (var i = 0; i < str.length; i++) {
-
-                          var n = parseInt(str[i]);
-
-                          if (!isNaN(n) && n >= 0 && n <= 8) set[n] = true;
-
-                        }
-
-                        return set;
-
-                      }
-
-
-
-                      function countNeighbors(x, y) {
-
-                        var count = 0;
-
-                        for (var dy = -1; dy <= 1; dy++) {
-
-                          for (var dx = -1; dx <= 1; dx++) {
-
-                            if (dx === 0 && dy === 0) continue;
-
-                            var nx = x + dx, ny = y + dy;
-
-                            if (wrap) { nx = (nx + gridSize) % gridSize; ny = (ny + gridSize) % gridSize; }
-
-                            else if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) continue;
-
-                            if (grid[nx + ',' + ny]) count++;
-
-                          }
-
-                        }
-
-                        return count;
-
-                      }
-
-
-
-                      function gridToString() {
-
-                        return Object.keys(grid).sort().join('|');
-
-                      }
-
-
-
-                      function step() {
-
-                        var newGrid = {};
-
-                        var newAgeGrid = {};
-
-                        var checked = {};
-
-                        var keys = Object.keys(grid);
-
-                        keys.forEach(function (key) {
-
-                          var parts = key.split(',');
-
-                          var x = parseInt(parts[0]), y = parseInt(parts[1]);
-
-                          for (var dy = -1; dy <= 1; dy++) {
-
-                            for (var dx = -1; dx <= 1; dx++) {
-
-                              var nx = x + dx, ny = y + dy;
-
-                              if (wrap) { nx = (nx + gridSize) % gridSize; ny = (ny + gridSize) % gridSize; }
-
-                              else if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) continue;
-
-                              var nk = nx + ',' + ny;
-
-                              if (checked[nk]) continue;
-
-                              checked[nk] = true;
-
-                              var alive = !!grid[nk];
-
-                              var neighbors = countNeighbors(nx, ny);
-
-                              if (alive && survivalSet[neighbors]) {
-
-                                newGrid[nk] = 1;
-
-                                newAgeGrid[nk] = (ageGrid[nk] || 1) + 1;
-
-                              } else if (!alive && birthSet[neighbors]) {
-
-                                newGrid[nk] = 1;
-
-                                newAgeGrid[nk] = 1;
-
-                              }
-
-                            }
-
-                          }
-
-                        });
-
-                        grid = newGrid;
-
-                        ageGrid = newAgeGrid;
-
-                        generation++;
-
-                        var pop = Object.keys(grid).length;
-
-                        popHistory.push(pop);
-
-                        if (popHistory.length > 300) popHistory.shift();
-
-                        if (pop > maxPopSeen) maxPopSeen = pop;
-
-                        upd('lifeGrid', Object.assign({}, grid));
-
-                        upd('lifeGen', generation);
-
-                        upd('lifePop', pop);
-
-                        upd('lifeMaxPop', maxPopSeen);
-
-
-
-                        // ─── Challenge detection ───
-
-                        var challenge = canvas.getAttribute('data-challenge');
-
-                        var cStatus = canvas.getAttribute('data-challengestatus');
-
-                        if (challenge && cStatus === 'active') {
-
-                          if (!challengeInitGridStr) {
-
-                            // Capture initial state (this is actually 1 gen after start, but close enough for still-life)
-
-                          }
-
-                          if (challenge === 'still' && generation === 1) {
-
-                            // For still life: we need to compare gen-0 with gen-1
-
-                            // We captured challengeInitGridStr before the first step
-
-                            var currentStr = gridToString();
-
-                            if (challengeInitGridStr && currentStr === challengeInitGridStr && pop > 0) {
-
-                              upd('lifeChallengeStatus', 'success');
-
-                              upd('lifeChallengeMsg', 'You built a still life! It never changes. +10 XP');
-
-                              upd('lifeRunning', false);
-
-                              if (typeof awardStemXP === 'function') awardStemXP('life', 10, 'still life challenge');
-
-                            } else if (pop > 0) {
-
-                              upd('lifeChallengeStatus', 'fail');
-
-                              upd('lifeChallengeMsg', 'Pattern changed after 1 step \u2014 not a still life. Try a 2\u00D72 block!');
-
-                              upd('lifeRunning', false);
-
-                            } else {
-
-                              upd('lifeChallengeStatus', 'fail');
-
-                              upd('lifeChallengeMsg', 'Pattern died! A still life must survive unchanged.');
-
-                              upd('lifeRunning', false);
-
-                            }
-
-                          }
-
-                          if (challenge === 'oscillator') {
-
-                            var currentStr = gridToString();
-
-                            if (generation >= 2 && challengeInitGridStr && currentStr === challengeInitGridStr && pop > 0) {
-
-                              upd('lifeChallengeStatus', 'success');
-
-                              upd('lifeChallengeMsg', 'Oscillator found! Period ' + generation + '. It repeats forever. +10 XP');
-
-                              upd('lifeRunning', false);
-
-                              if (typeof awardStemXP === 'function') awardStemXP('life', 10, 'oscillator challenge');
-
-                            } else if (generation > 30) {
-
-                              upd('lifeChallengeStatus', 'fail');
-
-                              upd('lifeChallengeMsg', 'No repeat found in 30 steps. Try a Blinker (3 cells in a row)!');
-
-                              upd('lifeRunning', false);
-
-                            }
-
-                          }
-
-                          if (challenge === 'extinction' && pop === 0) {
-
-                            upd('lifeChallengeStatus', 'success');
-
-                            upd('lifeChallengeMsg', 'Total extinction at gen ' + generation + '! Everything died. +10 XP');
-
-                            upd('lifeRunning', false);
-
-                            if (typeof awardStemXP === 'function') awardStemXP('life', 10, 'extinction challenge');
-
-                          }
-
-                          if (challenge === 'extinction' && generation > 200 && pop > 0) {
-
-                            upd('lifeChallengeStatus', 'fail');
-
-                            upd('lifeChallengeMsg', 'Still alive after 200 gens. Try a simpler pattern!');
-
-                            upd('lifeRunning', false);
-
-                          }
-
-                          if (challenge === 'methuselah' && challengeInitPop <= 5 && challengeInitPop > 0 && generation >= 50 && pop > 0) {
-
-                            upd('lifeChallengeStatus', 'success');
-
-                            upd('lifeChallengeMsg', 'Methuselah! ' + challengeInitPop + ' cells survived ' + generation + ' gens (pop: ' + pop + '). +10 XP');
-
-                            upd('lifeRunning', false);
-
-                            if (typeof awardStemXP === 'function') awardStemXP('life', 10, 'methuselah challenge');
-
-                          }
-
-                          if (challenge === 'methuselah' && challengeInitPop > 5) {
-
-                            upd('lifeChallengeStatus', 'fail');
-
-                            upd('lifeChallengeMsg', 'Too many cells! Use \u22645 cells to start.');
-
-                            upd('lifeRunning', false);
-
-                          }
-
-                          if (challenge === 'maxpop' && generation >= 50) {
-
-                            upd('lifeChallengeStatus', 'success');
-
-                            upd('lifeChallengeMsg', 'Started with ' + challengeInitPop + ' cells \u2192 max population reached: ' + maxPopSeen + '! +10 XP');
-
-                            upd('lifeRunning', false);
-
-                            if (typeof awardStemXP === 'function') awardStemXP('life', 10, 'population boom challenge');
-
-                          }
-
-                        }
-
-                      }
-
-
-
-                      function drawGrid() {
-
-                        ctx.fillStyle = '#0a0f0a'; ctx.fillRect(0, 0, W, H);
-
-                        // Grid lines
-
-                        ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
-
-                        if (gridSize <= 80) {
-
-                          for (var gx = 0; gx <= gridSize; gx++) { ctx.beginPath(); ctx.moveTo(gx * cellW, 0); ctx.lineTo(gx * cellW, H); ctx.stroke(); }
-
-                          for (var gy = 0; gy <= gridSize; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * cellH); ctx.lineTo(W, gy * cellH); ctx.stroke(); }
-
-                        }
-
-                        // Cells
-
-                        var keys = Object.keys(grid);
-
-                        keys.forEach(function (key) {
-
-                          var parts = key.split(',');
-
-                          var x = parseInt(parts[0]), y = parseInt(parts[1]);
-
-                          var neighbors = countNeighbors(x, y);
-
-                          var age = ageGrid[key] || 1;
-
-
-
-                          if (vizMode === 'heatmap') {
-
-                            // Heat map: bright yellow for new, deep blue/purple for old
-
-                            var norm = Math.min(age / 50, 1);
-
-                            var r = Math.round(255 * (1 - norm * 0.7));
-
-                            var g = Math.round(255 * (1 - norm));
-
-                            var b = Math.round(80 + norm * 175);
-
-                            ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
-
-                          } else if (vizMode === 'xray') {
-
-                            // X-ray: color by neighbor count
-
-                            var xColors = ['#1e293b','#334155','#ef4444','#f97316','#eab308','#22c55e','#22c55e','#ef4444','#dc2626'];
-
-                            ctx.fillStyle = xColors[neighbors] || '#fff';
-
-                          } else {
-
-                            if (hue === -1) {
-
-                              ctx.fillStyle = 'rgba(240,240,240,' + (0.7 + neighbors * 0.04) + ')';
-
-                            } else {
-
-                              var bright = 45 + neighbors * 5;
-
-                              ctx.fillStyle = 'hsl(' + hue + ',80%,' + bright + '%)';
-
-                            }
-
-                          }
-
-                          ctx.fillRect(x * cellW + 0.5, y * cellH + 0.5, cellW - 1, cellH - 1);
-
-                          // Glow
-
-                          if (vizMode === 'normal' && neighbors >= 2 && neighbors <= 3) {
-
-                            ctx.fillStyle = hue === -1 ? 'rgba(255,255,255,0.08)' : 'hsla(' + hue + ',80%,60%,0.1)';
-
-                            ctx.fillRect(x * cellW - 1, y * cellH - 1, cellW + 2, cellH + 2);
-
-                          }
-
-                        });
-
-
-
-                        // X-ray: draw neighbor counts for dead cells adjacent to live cells
-
-                        if (vizMode === 'xray' && gridSize <= 80) {
-
-                          ctx.font = Math.max(8, Math.floor(cellW * 0.6)) + 'px monospace';
-
-                          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-
-                          var deadChecked = {};
-
-                          keys.forEach(function (key) {
-
-                            var parts = key.split(',');
-
-                            var x = parseInt(parts[0]), y = parseInt(parts[1]);
-
-                            // Draw count on the live cell
-
-                            var n = countNeighbors(x, y);
-
-                            var willSurvive = survivalSet[n];
-
-                            ctx.fillStyle = willSurvive ? '#22ff22' : '#ff4444';
-
-                            ctx.fillText(String(n), x * cellW + cellW / 2, y * cellH + cellH / 2);
-
-                            // Check dead neighbors
-
-                            for (var dy = -1; dy <= 1; dy++) {
-
-                              for (var dx = -1; dx <= 1; dx++) {
-
-                                if (dx === 0 && dy === 0) continue;
-
-                                var nx = x + dx, ny = y + dy;
-
-                                if (wrap) { nx = (nx + gridSize) % gridSize; ny = (ny + gridSize) % gridSize; }
-
-                                else if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) continue;
-
-                                var dk = nx + ',' + ny;
-
-                                if (grid[dk] || deadChecked[dk]) continue;
-
-                                deadChecked[dk] = true;
-
-                                var dn = countNeighbors(nx, ny);
-
-                                if (dn > 0) {
-
-                                  var willBirth = birthSet[dn];
-
-                                  ctx.fillStyle = willBirth ? 'rgba(34,255,34,0.5)' : 'rgba(100,100,100,0.3)';
-
-                                  ctx.fillText(String(dn), nx * cellW + cellW / 2, ny * cellH + cellH / 2);
-
-                                }
-
-                              }
-
-                            }
-
-                          });
-
-                        }
-
-
-
-                        // Heat map legend
-
-                        if (vizMode === 'heatmap') {
-
-                          ctx.fillStyle = 'rgba(0,0,0,0.6)';
-
-                          ctx.fillRect(W - 75, 5, 70, 16);
-
-                          ctx.font = '9px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-
-                          ctx.fillStyle = '#fbbf24'; ctx.fillText('New', W - 72, 8);
-
-                          ctx.fillStyle = '#6366f1'; ctx.fillText('\u2192 Old', W - 42, 8);
-
-                        }
-
-                        // X-ray legend
-
-                        if (vizMode === 'xray') {
-
-                          ctx.fillStyle = 'rgba(0,0,0,0.7)';
-
-                          ctx.fillRect(4, 4, 160, 36);
-
-                          ctx.font = '9px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-
-                          ctx.fillStyle = '#22ff22'; ctx.fillText('\u2714 green = will survive/born', 8, 7);
-
-                          ctx.fillStyle = '#ff4444'; ctx.fillText('\u2718 red = will die', 8, 20);
-
-                        }
-
-                      }
-
-
-
-                      // Drawing interaction
-
-                      var painting = false;
-
-                      function getCell(e) {
-
-                        var rect = canvas.getBoundingClientRect();
-
-                        var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-
-                        var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-
-                        var gx = Math.floor(ex * (W / rect.width) / cellW);
-
-                        var gy = Math.floor(ey * (H / rect.height) / cellH);
-
-                        return { x: gx, y: gy };
-
-                      }
-
-                      function paintCell(e) {
-
-                        var c = getCell(e);
-
-                        if (c.x >= 0 && c.x < gridSize && c.y >= 0 && c.y < gridSize) {
-
-                          var key = c.x + ',' + c.y;
-
-                          if ((d.lifeTool || 'draw') === 'erase') { delete grid[key]; delete ageGrid[key]; }
-
-                          else { grid[key] = 1; ageGrid[key] = 1; }
-
-                          upd('lifeGrid', Object.assign({}, grid));
-
-                          upd('lifePop', Object.keys(grid).length);
-
-                          drawGrid();
-
-                        }
-
-                      }
-
-                      canvas.onmousedown = canvas.ontouchstart = function (e) { e.preventDefault(); painting = true; paintCell(e); };
-
-                      canvas.onmousemove = canvas.ontouchmove = function (e) { if (painting) paintCell(e); };
-
-                      canvas.onmouseup = canvas.ontouchend = function () { painting = false; };
-
-                      canvas.onmouseleave = function () { painting = false; };
-
-
-
-                      // Sparkline drawing
-
-                      function drawSparkline() {
-
-                        var sc = document.getElementById('lifeSparkline');
-
-                        if (!sc) return;
-
-                        var sctx = sc.getContext('2d');
-
-                        var sw = sc.width, sh = sc.height;
-
-                        sctx.fillStyle = '#0d120d'; sctx.fillRect(0, 0, sw, sh);
-
-                        if (popHistory.length < 2) return;
-
-                        var maxP = Math.max.apply(null, popHistory);
-
-                        if (maxP <= 0) maxP = 1;
-
-                        sctx.strokeStyle = '#22c55e'; sctx.lineWidth = 1.5;
-
-                        sctx.beginPath();
-
-                        for (var i = 0; i < popHistory.length; i++) {
-
-                          var px = (i / (popHistory.length - 1)) * sw;
-
-                          var py = sh - (popHistory[i] / maxP) * (sh - 8) - 4;
-
-                          if (i === 0) sctx.moveTo(px, py); else sctx.lineTo(px, py);
-
-                        }
-
-                        sctx.stroke();
-
-                        // Fill under curve
-
-                        sctx.lineTo(sw, sh); sctx.lineTo(0, sh); sctx.closePath();
-
-                        sctx.fillStyle = 'rgba(34,197,94,0.1)'; sctx.fill();
-
-                        // Labels
-
-                        sctx.font = '9px sans-serif'; sctx.textAlign = 'right'; sctx.textBaseline = 'top';
-
-                        sctx.fillStyle = '#4ade80';
-
-                        sctx.fillText(String(maxP), sw - 4, 2);
-
-                        sctx.fillText('Pop', sw - 4, 12);
-
-                      }
-
-
-
-                      // Animation loop
-
-                      function animate(timestamp) {
-
-                        running = canvas.getAttribute('data-running') === '1';
-
-                        speed = parseInt(canvas.getAttribute('data-speed') || '10');
-
-                        wrap = canvas.getAttribute('data-wrap') !== '0';
-
-                        hue = parseInt(canvas.getAttribute('data-hue') || '140');
-
-                        vizMode = canvas.getAttribute('data-vizmode') || 'normal';
-
-                        // Read custom rules
-
-                        var ruleB = canvas.getAttribute('data-ruleb') || '3';
-
-                        var ruleS = canvas.getAttribute('data-rules') || '23';
-
-                        birthSet = parseRuleSet(ruleB);
-
-                        survivalSet = parseRuleSet(ruleS);
-
-                        var doStep = canvas.getAttribute('data-step');
-
-                        // Capture challenge initial state before first step
-
-                        var challenge = canvas.getAttribute('data-challenge');
-
-                        if (challenge && !challengeInitGridStr && (running || (doStep && doStep !== canvas._lastStep))) {
-
-                          challengeInitGridStr = gridToString();
-
-                          challengeInitPop = Object.keys(grid).length;
-
-                        }
-
-                        if (doStep && doStep !== canvas._lastStep) {
-
-                          canvas._lastStep = doStep;
-
-                          step();
-
-                        }
-
-                        var interval = 1000 / speed;
-
-                        if (running && timestamp - lastFrameTime >= interval) {
-
-                          lastFrameTime = timestamp;
-
-                          step();
-
-                        }
-
-                        drawGrid();
-
-                        drawSparkline();
-
-                        if (canvas.isConnected) canvas._lifeAnim = requestAnimationFrame(animate);
-
-                      }
-
-                      // Set initial data attributes
-
-                      canvas.setAttribute('data-running', d.lifeRunning ? '1' : '0');
-
-                      canvas.setAttribute('data-speed', String(typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10));
-
-                      canvas.setAttribute('data-wrap', d.lifeWrap === false ? '0' : '1');
-
-                      canvas.setAttribute('data-hue', String(typeof d.lifeHue === 'number' ? d.lifeHue : 140));
-
-                      canvas.setAttribute('data-step', String(d.lifeStep || 0));
-
-                      canvas.setAttribute('data-vizmode', d.lifeVizMode || 'normal');
-
-                      canvas.setAttribute('data-ruleb', d.lifeRuleB || '3');
-
-                      canvas.setAttribute('data-rules', d.lifeRuleS || '23');
-
-                      canvas.setAttribute('data-challenge', d.lifeChallenge || '');
-
-                      canvas.setAttribute('data-challengestatus', d.lifeChallengeStatus || '');
-
-                      canvas._lastStep = String(d.lifeStep || 0);
-
-                      drawGrid();
-
-                      animate(0);
-
-                    }
-
-                  }),
-
-                  // Population Sparkline
-
-                  React.createElement("canvas", { id: 'lifeSparkline', width: 600, height: 60,
-
-                    key: 'lifeSpark-' + (d.lifeClear || 0),
-
-                    className: "rounded-lg border border-emerald-200 mx-auto block", style: { maxWidth: '100%', background: '#0d120d' }
-
-                  }),
-
-                  React.createElement("p", { className: "text-[11px] text-center text-slate-600" }, __alloT('stem.artstudio.population_over_time', '\uD83D\uDCC8 Population over time'))
-
-                )
-
-              ),
-
-              // Data attribute sync
-
-              React.createElement("div", { ref: function () {
-
-                var c = document.getElementById('lifeCanvas');
-
-                if (c) {
-
-                  c.setAttribute('data-running', d.lifeRunning ? '1' : '0');
-
-                  c.setAttribute('data-speed', String(typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10));
-
-                  c.setAttribute('data-wrap', d.lifeWrap === false ? '0' : '1');
-
-                  c.setAttribute('data-hue', String(typeof d.lifeHue === 'number' ? d.lifeHue : 140));
-
-                  c.setAttribute('data-step', String(d.lifeStep || 0));
-
-                  c.setAttribute('data-vizmode', d.lifeVizMode || 'normal');
-
-                  c.setAttribute('data-ruleb', d.lifeRuleB || '3');
-
-                  c.setAttribute('data-rules', d.lifeRuleS || '23');
-
-                  c.setAttribute('data-challenge', d.lifeChallenge || '');
-
-                  c.setAttribute('data-challengestatus', d.lifeChallengeStatus || '');
-
-                }
-
-              }, style: { display: 'none' } })
-
-            ),
-
-
 
             React.createElement("button", { "aria-label": __alloT('stem.artstudio.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'art-' + Date.now(), tool: 'artStudio', label: __alloT('stem.artstudio.art_studio', 'Art Studio'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Art snapshot saved!', 'success'); }, className: "mt-4 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full hover:from-pink-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.artstudio.snapshot_2', "\uD83D\uDCF8 Snapshot"))
 

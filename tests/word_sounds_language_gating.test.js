@@ -155,3 +155,46 @@ describe('activity picker reflects language capabilities', () => {
     expect(host.innerHTML).not.toContain('Some activities are English-only');
   });
 });
+
+describe('pack compiler gates English pools (source pins — packed boards outrank runtime rebuilds)', () => {
+  it('every English filler pool in word_sounds_setup is packIsEnglish-gated', async () => {
+    const { readFileSync } = await import('node:fs');
+    const src = readFileSync(resolve(process.cwd(), 'word_sounds_setup_source.jsx'), 'utf8');
+    // the flag itself, derived from the session language prop
+    expect(src).toMatch(/const packIsEnglish = !wordSoundsLanguage \|\|/);
+    // word pools
+    expect(src).toMatch(/const commonWords = packIsEnglish/);
+    expect(src).toMatch(/const manipulationFill = packIsEnglish \? \['sit','map','bed','pin','mud','fan'\] : otherWords;/);
+    expect(src).toMatch(/\(packIsEnglish \? \['at', 'on', 'in', 'up', 'it', 'an', 'sit', 'map'\] : \[\]\)/);
+    // grapheme/letter pools
+    expect(src).toMatch(/const isolationPool = packIsEnglish/);
+    expect(src).toMatch(/const chipDistractorPool = packIsEnglish/);
+    expect(src).toMatch(/const letterDistractorPool = packIsEnglish/);
+    // script-agnostic rime for non-Latin scripts
+    expect(src).toMatch(/const packRimeOf = \(w\) =>/);
+    // language-directed generation prompts
+    expect(src).toMatch(/_procPrompt_nonEnglish/);
+    expect(src).toContain('NEVER return English words');
+    expect(src).toMatch(/const prompt = packIsEnglish \? _procPrompt_english : _procPrompt_nonEnglish;/);
+    expect(src).toMatch(/_genIsEnglish/);
+  });
+
+  it('the shell passes wordSoundsLanguage into the generator', async () => {
+    const { readFileSync } = await import('node:fs');
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+    expect(anti).toMatch(/wordSoundsLanguage=\{wordSoundsLanguage\}/);
+  });
+});
+
+describe('setup labels: written-in English fallbacks must actually render', () => {
+  it('no bare two-arg t(key, "fallback") sites remain (host t() has NO fallback semantics — it returns undefined on a miss, which rendered the blank Voice Pack button and blank AAC toggles)', async () => {
+    const { readFileSync } = await import('node:fs');
+    const src = readFileSync(resolve(process.cwd(), 'word_sounds_setup_source.jsx'), 'utf8');
+    const bare = src.match(/\bt\('(?:word_sounds|status)\.[a-z0-9_]+',\s*'/g) || [];
+    expect(bare).toEqual([]);
+    // the fallback helper exists and the converted sites use it
+    expect(src).toMatch(/const tf = \(key, fallback, params\) =>/);
+    expect(src).toMatch(/tf\('word_sounds\.voice_pack_cta', 'Record your own sounds'\)/);
+    expect(src).toMatch(/tf\('word_sounds\.aac_prep_label', 'Prepare AAC symbol images'\)/);
+  });
+});

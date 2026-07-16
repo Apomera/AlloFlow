@@ -18720,7 +18720,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: '13px', color: BD, fontStyle: 'italic', marginBottom: '10px' } }, 'I pledge to...'),
                 h('textarea', { value: pledge, onChange: function(ev) { upd('pledge', ev.target.value); }, 'aria-label': 'Write your upstander pledge',
                   placeholder: band === 'elementary' ? 'When I see someone being bullied, I will...' : 'The kind of person I choose to be when I witness harm...',
-                  style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: _upC('#1f2937'), resize: 'vertical', minHeight: '100px', boxSizing: 'border-box', outline: 'none' }
+                  style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: _upC('#1f2937'), resize: 'vertical', minHeight: '100px', boxSizing: 'border-box' }
                 }),
                 h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '8px' } },
                   h('button', { onClick: function() { if (pledge.trim()) { upd('pledgeSaved', true); tryAwardBadge('pledge_sealed', 20); } }, disabled: !pledge.trim(),
@@ -18815,7 +18815,7 @@ window.SelHub = window.SelHub || {
                       var na = trustedAdults.slice(); na.splice(idx, 1);
                       upd('trustedAdults', na);
                     },
-                    style: { background: 'transparent', border: 'none', color: _upC('#94a3b8'), cursor: 'pointer', fontSize: 20, fontWeight: 700, lineHeight: 1, padding: 0 }
+                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _upC('#94a3b8'), cursor: 'pointer', fontSize: 20, fontWeight: 700, lineHeight: 1, padding: 0 }
                   }, '\u00D7')
                 );
               })
@@ -19188,14 +19188,14 @@ window.SelHub = window.SelHub || {
               )
             ),
             h('div', { style: { display: 'flex', gap: '8px' } },
-              h('input', { type: 'text', value: coachInput, onChange: function(ev) { upd('coachInput', ev.target.value); },
+              h('input', { type: 'text', 'aria-label': 'Share your experience', value: coachInput, onChange: function(ev) { upd('coachInput', ev.target.value); },
                 onKeyDown: function(ev) { if (ev.key === 'Enter' && coachInput.trim() && !coachLoad && callGemini) sendSafeMessage(coachInput.trim()); },
                 disabled: coachLoad || !callGemini,
                 placeholder: coachLoad ? 'Listening...' : 'Share what happened or how you feel...',
-                'aria-label': 'Share your experience',
                 style: { flex: 1, border: '2px solid #bfdbfe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
               }),
               h('button', {
+                'aria-label': coachLoad ? 'Upstander coach is responding' : 'Send message to upstander coach',
                 onClick: function() { if (coachInput.trim() && !coachLoad && callGemini) sendSafeMessage(coachInput.trim()); },
                 disabled: coachLoad || !coachInput.trim() || !callGemini,
                 style: { padding: '10px 16px', background: coachInput.trim() && !coachLoad ? BLUE : _upC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoad ? 'pointer' : 'not-allowed', fontSize: '13px' }
@@ -19821,6 +19821,7 @@ window.SelHub = window.SelHub || {
                   // Input area + send + coach + end
                   !rpEnded && h('div', null,
                     h('textarea', { id: 'us-rp-input', value: rpInput,
+                      'aria-label': 'Your upstander role-play response',
                       onChange: function(e) { upd('rpInput', e.target.value); },
                       placeholder: 'What would you actually say next? Keep it short — the way you would really talk.',
                       rows: 2,

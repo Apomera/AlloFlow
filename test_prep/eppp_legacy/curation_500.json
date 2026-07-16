@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-12T21:42:16.237Z",
+  "generatedAt": "2026-07-14T00:52:35.580Z",
   "target": "Exactly 500 blueprint-weighted native EPPP questions; every slot must pass the existing native QA gate before completion.",
   "summary": {
     "targetSlots": 500,

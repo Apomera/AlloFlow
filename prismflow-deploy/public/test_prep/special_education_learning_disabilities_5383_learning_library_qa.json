@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T15:00:21.419Z",
+  "libraryId": "praxis-special-education-learning-disabilities-5383-learning-library",
+  "packId": "praxis-special-education-learning-disabilities-5383",
+  "standard": {
+    "label": "AlloFlow 5383 source, blueprint, feedback, learning, and linkage QA v1",
+    "limitation": "Not ETS approval; independent learning-disabilities educator, structured-literacy, mathematics-intervention, accessibility, family, legal, cultural-linguistic, and psychometric validation remain pending."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "findings": [],
+    "status": "pass"
+  }
+}

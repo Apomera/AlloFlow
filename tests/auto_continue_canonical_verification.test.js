@@ -51,14 +51,16 @@ describe('auto-continue canonical verification', () => {
     expect(readyForSuccess({ verificationState: 'complete', afterScoreVerified: true, requiresManualReview: false, fidelityLimited: true })).toBe(false);
   });
 
-  it('derives each accepted round from all three fresh engines through the shared policy helper', () => {
+  it('derives each accepted round from current-byte evidence through the shared policy helper', () => {
     expect(src).toContain("typeof _docPipeline.deriveVerificationState === 'function'");
     expect(loop).toMatch(/deriveVerificationState\(\{\s*ai: reVerify,\s*axe: _freshAxe,\s*equalAccess: _freshEa,/);
-    expect(loop).toContain("const _freshAxe = (result.axe && typeof result.axe.score === 'number' && Number.isFinite(result.axe.score)) ? result.axe : null;");
-    expect(loop).toContain("const _freshEa = (_ea && typeof _ea.score === 'number' && Number.isFinite(_ea.score)) ? _ea : null;");
+    expect(loop).toContain("const _freshAxeRaw = (result.axe && typeof result.axe.score === 'number' && Number.isFinite(result.axe.score)) ? result.axe : null;");
+    expect(loop).toContain("const _freshEaRaw = (_ea && typeof _ea.score === 'number' && Number.isFinite(_ea.score)) ? _ea : null;");
+    expect(loop).toContain("const _freshAxe = _freshAxeRaw || ((result._auditOnly && cur.axeAudit");
+    expect(loop).toContain("const _freshEa = _freshEaRaw || ((result._auditOnly && cur.secondEngineAudit");
   });
 
-  it('never carries prior axe or Equal Access objects through a failed fresh audit', () => {
+  it('never carries prior axe or Equal Access objects through a failed rewrite audit', () => {
     expect(loop).toContain('axeAudit: _freshAxe,');
     expect(loop).toContain('secondEngineAudit: _freshEa,');
     expect(loop).toContain('axeScore: _freshAxe ? _freshAxe.score : null,');
@@ -90,7 +92,9 @@ describe('auto-continue canonical verification', () => {
       expect(loop).toContain(field);
     }
     expect(loop).toContain('setPdfFixResult(snapshot);');
-    expect(loop).toContain('_expertReviewBeforeVerification: _requiresManualReview ? _expertBase : null');
+    expect(loop).toContain('const _expertBase = { needed: !!_expertBaseReason, reason: _expertBaseReason };');
+    expect(loop).toContain('_verificationExpertReview: false');
+    expect(loop).toContain('_expertReviewBeforeVerification: null');
   });
 
   it('centrally enforces exact-HTML binding before every raw React state write', () => {
@@ -137,7 +141,8 @@ describe('auto-continue canonical verification', () => {
 
   it('rehydrates loaded projects asynchronously and never trusts a serialized snapshot', () => {
     expect(src).toContain('reader.onload = async (ev) => {');
-    expect(loaderBlock).toContain('const project = await rehydrateVerificationHtmlBinding(_savedProject);');
+    expect(loaderBlock).toContain('const _sanitizedImport = _projectSanitizer(_savedProject);');
+    expect(loaderBlock).toContain('const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);');
     expect(loaderBlock).toContain('const _loadedHtmlBound = isLiveVerificationHtmlBound(project, project.accessibleHtml);');
     expect(loaderBlock).toContain('|| !_loadedHtmlBound');
     expect(loaderBlock).toContain('attachVerificationHtmlProof(_loadedPdfFixResult, project.accessibleHtml);');
@@ -155,7 +160,7 @@ describe('auto-continue canonical verification', () => {
     expect(src).toContain('const pdfProjectLoadEpochRef = useRef(0);');
     expect(projectLoader).toContain('const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;');
     expect(projectLoader.match(/_projectLoadEpoch !== pdfProjectLoadEpochRef\.current/g)).toHaveLength(2);
-    expect(projectLoader.indexOf('const project = await rehydrateVerificationHtmlBinding(_savedProject);')).toBeLessThan(
+    expect(projectLoader.indexOf('const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);')).toBeLessThan(
       projectLoader.lastIndexOf('if (_projectLoadEpoch !== pdfProjectLoadEpochRef.current) return;'),
     );
     expect(projectLoader).toContain('if (_projectLoadEpoch === pdfProjectLoadEpochRef.current) addToast');
@@ -241,7 +246,10 @@ describe('auto-continue canonical verification', () => {
     expect(src).toContain("const _finite = (value) => typeof value === 'number' && Number.isFinite(value);");
     expect(src).toContain("_reasons.push('axe-review-count-unknown')");
     expect(src).toContain('const _eaAggregate = _count(_ea.reviewFindingCount);');
-    expect(src).toContain("(_allUnavailable ? 'unavailable' : 'partial')");
+    // B7 (2026-07-13): precedence now matches the canonical policy — unavailable
+    // beats review evidence — and the EA count uses the same max() the policy uses.
+    expect(src).toContain("_allUnavailable ? 'unavailable' : (_hasReviewEvidence ? 'review-required' : (_allComplete ? 'complete' : 'partial'))");
+    expect(src).toContain('Math.max(_eaAggregate, (_eaPotential || 0) + (_eaManual || 0))');
   });
 
   it('persists canonical verification in the autosave hash/project and derives it for legacy loads', () => {

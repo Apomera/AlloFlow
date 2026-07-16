@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-fe30620a-untitled",
+  "title": "مهربانی حیوانات",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/CMTwAPO28C"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2ffe30620a-bc6c-4176-b737-6420b6d1ad83%2f%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%db%8c+%d8%ad%db%8c%d9%88%d8%a7%d9%86%d8%a7%d8%aa%2f11.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2ffe30620a-bc6c-4176-b737-6420b6d1ad83%2f%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%db%8c+%d8%ad%db%8c%d9%88%d8%a7%d9%86%d8%a7%d8%aa%2f%db%b2.jpg",
+      "text": "در یک جنگل سرسبز حیوانات با هم زندگی می کردند.\nهمه با هم دوست بودند."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "خرس، آهو و فیل با هم بازی می کردند.\nناگهان آهو گُم شد.\nحیوانات به دنبال آهو گشتند، اما آهو را پیدا نکردند.\nناگهان زاغ با عجله آمد و گفت:\nآهو به دام صیاد افتاده!"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2ffe30620a-bc6c-4176-b737-6420b6d1ad83%2f%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%db%8c+%d8%ad%db%8c%d9%88%d8%a7%d9%86%d8%a7%d8%aa%2f%db%b3.jpg",
+      "text": "همه پریشان به طرف آهو دویدند.\nفیل گفت: به دنبال چارۀ باشیم."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "خرس گفت: بروید خرگوش را بیاورید تا دام را جویده و پاره کند.\nزاغ به دنبال خرگوش رفت.\nخرگوش و موش باهم بازی می کردند.\nزاغ با وارخطایی گفت:\nآهو به دام صیاد افتاده، به کمک شما نیاز داریم.\nخرگوش گفت:این کار موش است."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2ffe30620a-bc6c-4176-b737-6420b6d1ad83%2f%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%db%8c+%d8%ad%db%8c%d9%88%d8%a7%d9%86%d8%a7%d8%aa%2f%db%b4.jpg",
+      "text": "آن ها همراه زاغ رفتند تا آهو را نجات بدهند.\nحیوانات از دیدن آن ها خوشحال شدند."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "همه به طرف دام اشاره کردند.\nخرگوش و موش با عجله شروع به جویدن دام کردند.\nحیوانات دیگر اطراف دام ایستاده بودند.\nمی خواستند از آمدن صیاد خبر بدهند."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2ffe30620a-bc6c-4176-b737-6420b6d1ad83%2f%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%db%8c+%d8%ad%db%8c%d9%88%d8%a7%d9%86%d8%a7%d8%aa%2f%db%b5.jpg",
+      "text": "آهو می ترسید که صیاد از راه برسد.\nخرگوش و موش دام را می جویدند."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "زاغ صیاد را دید که به طرف دام می آید.\nاو حیوانات را آگاه کرد.\nهمه وارخطا شدند.\nموش و خرگوش دام را پاره کردند.\nآهو بیرون جَست وهمه فرار کردند.\nآهو از مهربانی و همکاری همۀ حیوانات سپاس گزاری کرد."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 208
+  }
+}

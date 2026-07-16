@@ -1,5 +1,5 @@
 // generate_dispatcher_source.jsx - Phase J of CDN modularization.
-// handleGenerate (2,286 lines) — the resource-generation dispatcher.
+// handleGenerate and curriculum-audit helpers — the resource-generation dispatcher.
 // Switch-on-type router for simplified/glossary/quiz/outline/image/etc.
 
 // ─── Plan O Step 1: Vocabulary fit (deterministic) ──────────────────────
@@ -37,6 +37,306 @@ function gradeBandExpectations(grade) {
   if (grade <= 12) return { tier2: 22, tier3: 15, band: '9-12'   };
   return                 { tier2: 30, tier3: 22, band: 'College' };
 }
+
+const AUDIT_STATUS_VALUES = ['Aligned', 'Partially Aligned', 'Not Aligned', 'Not evaluated', 'Not applicable', 'Compute failed'];
+const AUDIT_STATUS_RANK = { 'Aligned': 0, 'Partially Aligned': 1, 'Not Aligned': 2 };
+
+function normalizeAuditStatus(value, fallback) {
+  const raw = String(value || '').trim().toLowerCase();
+  const match = AUDIT_STATUS_VALUES.find(function (status) { return status.toLowerCase() === raw; });
+  return match || fallback || 'Not evaluated';
+}
+
+function worseAuditStatus(current, reviewed) {
+  const a = normalizeAuditStatus(current);
+  const b = normalizeAuditStatus(reviewed);
+  if (AUDIT_STATUS_RANK[a] === undefined) return a;
+  if (AUDIT_STATUS_RANK[b] === undefined) return a;
+  return AUDIT_STATUS_RANK[b] > AUDIT_STATUS_RANK[a] ? b : a;
+}
+
+function applyAuditReviewStatus(dimension, review) {
+  if (!dimension || !review || dimension.notApplicable || dimension.notEvaluated || dimension.computeFailed) return dimension;
+  const reviewedStatus = normalizeAuditStatus(review.status, null);
+  if (AUDIT_STATUS_RANK[reviewedStatus] === undefined) return dimension;
+  dimension.status = worseAuditStatus(dimension.status, reviewedStatus);
+  dimension.reviewedStatus = reviewedStatus;
+  return dimension;
+}
+
+const AUDIT_LANGUAGE_NAME_TAGS = {
+  english: 'en', spanish: 'es', french: 'fr', german: 'de', italian: 'it', portuguese: 'pt', dutch: 'nl',
+  arabic: 'ar', chinese: 'zh', mandarin: 'zh', cantonese: 'yue', japanese: 'ja', korean: 'ko',
+  hindi: 'hi', bengali: 'bn', urdu: 'ur', punjabi: 'pa', gujarati: 'gu', tamil: 'ta', telugu: 'te',
+  marathi: 'mr', nepali: 'ne', russian: 'ru', ukrainian: 'uk', polish: 'pl', turkish: 'tr',
+  vietnamese: 'vi', thai: 'th', indonesian: 'id', malay: 'ms', swahili: 'sw', somali: 'so',
+  'haitian creole': 'ht', tagalog: 'tl', filipino: 'fil', greek: 'el', hebrew: 'he', persian: 'fa',
+  farsi: 'fa', burmese: 'my', myanmar: 'my', khmer: 'km', lao: 'lo', amharic: 'am', yoruba: 'yo',
+  zulu: 'zu', xhosa: 'xh', afrikaans: 'af', swedish: 'sv', norwegian: 'no', danish: 'da', finnish: 'fi',
+  czech: 'cs', slovak: 'sk', hungarian: 'hu', romanian: 'ro', bulgarian: 'bg', croatian: 'hr',
+  serbian: 'sr', bosnian: 'bs', slovenian: 'sl', albanian: 'sq', lithuanian: 'lt', latvian: 'lv',
+  estonian: 'et', irish: 'ga', welsh: 'cy', 'scottish gaelic': 'gd', 'maay maay': 'ymm',
+  'chin falam': 'cfm', marshallese: 'mh'
+};
+
+function normalizeAuditLanguageTag(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return 'und';
+  const name = raw.toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (/brazil.*portuguese|portuguese.*brazil/.test(name)) return 'pt-BR';
+  if (/european.*portuguese|portuguese.*portugal/.test(name)) return 'pt-PT';
+  if (/traditional.*chinese|chinese.*traditional/.test(name)) return 'zh-Hant';
+  if (/simplified.*chinese|chinese.*simplified/.test(name)) return 'zh-Hans';
+  if (AUDIT_LANGUAGE_NAME_TAGS[name]) return AUDIT_LANGUAGE_NAME_TAGS[name];
+  const languageNames = Object.keys(AUDIT_LANGUAGE_NAME_TAGS).sort(function (a, b) { return b.length - a.length; });
+  for (let i = 0; i < languageNames.length; i++) {
+    const languageName = languageNames[i];
+    if (new RegExp('(?:^|\\b)' + languageName.replace(/ /g, '\\s+') + '(?:\\b|$)', 'i').test(name)) {
+      return AUDIT_LANGUAGE_NAME_TAGS[languageName];
+    }
+  }
+  // Accept compact language tags, but do not mistake arbitrary display names
+  // such as "English" for valid tags merely because they are alphabetic.
+  if (/^(?:[a-z]{2,3})(?:[-_][a-z0-9]{2,8})*$/i.test(raw) || /^und$/i.test(raw)) {
+    const candidate = raw.replace(/_/g, '-');
+    try {
+      if (typeof Intl !== 'undefined' && Intl.getCanonicalLocales) {
+        return Intl.getCanonicalLocales(candidate)[0] || 'und';
+      }
+    } catch (e) { return 'und'; }
+    return candidate;
+  }
+  return 'und';
+}
+
+function _collectAuditStrings(value, out, seen, depth) {
+  if (value === null || value === undefined || depth > 7) return;
+  if (typeof value === 'string') {
+    const clean = value.trim();
+    if (!clean || /^(?:data:|blob:|file:\/\/)/i.test(clean) || /^https?:\/\/\S+$/i.test(clean)) return;
+    out.push(clean);
+    return;
+  }
+  if (typeof value !== 'object' || seen.has(value)) return;
+  seen.add(value);
+  if (Array.isArray(value)) {
+    value.forEach(function (entry) { _collectAuditStrings(entry, out, seen, depth + 1); });
+    return;
+  }
+  Object.keys(value).forEach(function (key) {
+    if (/^(?:audio|audioUrl|audioPath|ttsAudio|karaokeAudio|karaokeStudentAudio|image|imageUrl|thumbnail|thumbnailUrl|blob|base64|bytes|url|path|src|id|mimes|sources|metadata|createdAt|updatedAt)$/i.test(key)) return;
+    _collectAuditStrings(value[key], out, seen, depth + 1);
+  });
+}
+
+function extractAuditArtifactText(artifact) {
+  const chunks = [];
+  if (!artifact) return '';
+  _collectAuditStrings(artifact.originalText, chunks, new Set(), 0);
+  _collectAuditStrings(artifact.data, chunks, new Set(), 0);
+  return chunks.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+const DEDICATED_READ_ALOUD_TYPES = new Set(['adventure', 'dbq', 'faq', 'glossary', 'image', 'persona', 'quiz', 'simplified']);
+const AUDIT_EXCLUDED_TYPES = new Set(['alignment-report', 'remediated', 'audit-remediation']);
+
+function _splitAuditSentences(text, language) {
+  const clean = String(text || '').trim();
+  if (!clean) return [];
+  try {
+    if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+      return Array.from(new Intl.Segmenter(language || 'en', { granularity: 'sentence' }).segment(clean))
+        .map(function (part) { return part.segment.trim(); }).filter(Boolean);
+    }
+  } catch (e) { /* use punctuation fallback */ }
+  return clean.split(/(?<=[.!?\u3002\uff01\uff1f])\s+|[\r\n]+/u).map(function (s) { return s.trim(); }).filter(Boolean);
+}
+
+function _normalizeAuditSentenceKey(sentence) {
+  return String(sentence == null ? '' : sentence).toLowerCase()
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/([a-z0-9À-ÿ])\s*'\s*([a-z0-9À-ÿ])/g, "$1'$2")
+    .replace(/([0-9])\s*\.\s*([0-9])/g, '$1.$2')
+    .replace(/\s+([.,!?;:%)\]}…])/g, '$1')
+    .replace(/([([{])\s+/g, '$1')
+    .replace(/\s*"\s*/g, '"')
+    .replace(/([a-z0-9À-ÿ])\s*-\s*([a-z0-9À-ÿ])/g, '$1-$2')
+    .replace(/\s*—\s*/g, '—')
+    .replace(/\s+/g, ' ').trim();
+}
+
+function _preparedAuditSentenceEvidence(manifest, expectedSentences) {
+  const container = manifest && manifest.sentences;
+  const preparedKeys = new Set();
+  let anonymousEntries = 0;
+  let totalEntries = 0;
+  if (Array.isArray(container)) {
+    container.forEach(function (entry) {
+      if (!entry) return;
+      if (typeof entry === 'string') {
+        totalEntries++;
+        anonymousEntries++;
+        return;
+      }
+      if (typeof entry !== 'object') return;
+      const playable = entry.audioUrl || entry.url || entry.audioPath || entry.b64 || entry.base64 || entry.bytes || entry.data;
+      if (!playable) return;
+      totalEntries++;
+      const sentence = entry.sentence || entry.text || entry.key;
+      const key = sentence ? _normalizeAuditSentenceKey(sentence) : '';
+      if (key) preparedKeys.add(key);
+      else anonymousEntries++;
+    });
+  } else if (container && typeof container === 'object') {
+    Object.keys(container).forEach(function (sentenceKey) {
+      if (!container[sentenceKey]) return;
+      totalEntries++;
+      const key = _normalizeAuditSentenceKey(sentenceKey);
+      if (key) preparedKeys.add(key);
+    });
+  }
+  const expectedKeys = (Array.isArray(expectedSentences) ? expectedSentences : []).map(_normalizeAuditSentenceKey).filter(Boolean);
+  let matchedEntries = expectedKeys.filter(function (key) { return preparedKeys.has(key); }).length;
+  // Older array manifests sometimes omit their sentence text. Credit those
+  // entries conservatively, never beyond the remaining readable denominator.
+  matchedEntries += Math.min(anonymousEntries, Math.max(0, expectedKeys.length - matchedEntries));
+  return { totalEntries: totalEntries, matchedEntries: matchedEntries };
+}
+
+function _artifactAudioEvidence(artifact, language) {
+  const d = artifact && artifact.data && typeof artifact.data === 'object' ? artifact.data : {};
+  const manifestCandidate = artifact && (artifact.karaokeAudio || d.karaokeAudio);
+  const manifest = manifestCandidate && typeof manifestCandidate === 'object' ? manifestCandidate : null;
+  const embedded = !!(d.audioUrl || d.ttsAudio || d.audioPath || (d.audio && (d.audio.url || d.audio.path)) || (artifact && (artifact.audioUrl || artifact.audioPath)));
+  const readableText = extractAuditArtifactText(artifact);
+  const sentenceList = _splitAuditSentences(readableText, language);
+  const preparedEvidence = _preparedAuditSentenceEvidence(manifest, sentenceList);
+  const expectedSentences = sentenceList.length;
+  return {
+    readable: !!readableText,
+    // The app-wide Read This Page reader can synthesize any readable resource.
+    // Dedicated controls are tracked separately because they are more discoverable
+    // and may provide sentence-level highlighting or resource-specific playback.
+    readAloudCapable: !!readableText,
+    pageReaderEligible: !!readableText,
+    dedicatedReadAloudCapable: !!(artifact && DEDICATED_READ_ALOUD_TYPES.has(artifact.type) && readableText),
+    embedded: embedded,
+    preparedSentences: preparedEvidence.matchedEntries,
+    preparedSentenceEntries: preparedEvidence.totalEntries,
+    expectedSentences: expectedSentences,
+    preparedCoveragePct: expectedSentences > 0 ? Math.round((preparedEvidence.matchedEntries / expectedSentences) * 100) : null,
+  };
+}
+
+function computeAudioCoverage(artifacts, language) {
+  const safe = Array.isArray(artifacts) ? artifacts : [];
+  let readableArtifacts = 0, readAloudCapableArtifacts = 0, dedicatedReadAloudArtifacts = 0;
+  let pageReaderEligibleArtifacts = 0, embeddedAudioArtifacts = 0, totalEmbeddedAudioArtifacts = 0;
+  let preparedAudioArtifacts = 0, expectedSentences = 0, preparedSentences = 0;
+  let totalPreparedSentenceEntries = 0, runtimeFallbackArtifacts = 0, unscopedAudioArtifacts = 0;
+  let unscopedEmbeddedAudioArtifacts = 0, unscopedPreparedAudioArtifacts = 0, unscopedPreparedSentences = 0;
+  safe.forEach(function (artifact) {
+    const evidence = _artifactAudioEvidence(artifact, language);
+    if (evidence.readable) readableArtifacts++;
+    if (evidence.readAloudCapable) readAloudCapableArtifacts++;
+    if (evidence.pageReaderEligible) pageReaderEligibleArtifacts++;
+    if (evidence.dedicatedReadAloudCapable) dedicatedReadAloudArtifacts++;
+    if (evidence.embedded) {
+      totalEmbeddedAudioArtifacts++;
+      if (evidence.readable) embeddedAudioArtifacts++;
+      else unscopedEmbeddedAudioArtifacts++;
+    }
+    totalPreparedSentenceEntries += evidence.preparedSentenceEntries;
+    if (evidence.readable) {
+      if (evidence.preparedSentences > 0) preparedAudioArtifacts++;
+      expectedSentences += evidence.expectedSentences;
+      preparedSentences += evidence.preparedSentences;
+      if (evidence.readAloudCapable && evidence.preparedSentences < evidence.expectedSentences) runtimeFallbackArtifacts++;
+    } else if (evidence.preparedSentenceEntries > 0) {
+      unscopedPreparedAudioArtifacts++;
+      unscopedPreparedSentences += evidence.preparedSentenceEntries;
+    }
+    if (!evidence.readable && (evidence.embedded || evidence.preparedSentenceEntries > 0)) unscopedAudioArtifacts++;
+  });
+  return {
+    totalArtifacts: safe.length,
+    readableArtifacts: readableArtifacts,
+    readAloudCapableArtifacts: readAloudCapableArtifacts,
+    readAloudCapabilityPct: readableArtifacts ? Math.round((readAloudCapableArtifacts / readableArtifacts) * 100) : null,
+    pageReaderEligibleArtifacts: pageReaderEligibleArtifacts,
+    dedicatedReadAloudArtifacts: dedicatedReadAloudArtifacts,
+    dedicatedReadAloudPct: readableArtifacts ? Math.round((dedicatedReadAloudArtifacts / readableArtifacts) * 100) : null,
+    embeddedAudioArtifacts: embeddedAudioArtifacts,
+    embeddedAudioPct: readableArtifacts ? Math.round((embeddedAudioArtifacts / readableArtifacts) * 100) : null,
+    totalEmbeddedAudioArtifacts: totalEmbeddedAudioArtifacts,
+    unscopedEmbeddedAudioArtifacts: unscopedEmbeddedAudioArtifacts,
+    preparedAudioArtifacts: preparedAudioArtifacts,
+    totalPreparedSentenceEntries: totalPreparedSentenceEntries,
+    preparedSentences: preparedSentences,
+    expectedSentences: expectedSentences,
+    preparedSentenceCoveragePct: expectedSentences ? Math.round((preparedSentences / expectedSentences) * 100) : null,
+    unscopedAudioArtifacts: unscopedAudioArtifacts,
+    unscopedPreparedAudioArtifacts: unscopedPreparedAudioArtifacts,
+    unscopedPreparedSentences: unscopedPreparedSentences,
+    runtimeFallbackArtifacts: runtimeFallbackArtifacts,
+    runtimeFallbackAvailable: runtimeFallbackArtifacts > 0,
+    notes: 'Read-aloud capability includes the app-wide Read This Page TTS reader for every readable resource. Dedicated in-resource controls, embedded audio files, and prepared synchronized sentence audio are reported separately and are not treated as equivalent evidence.',
+  };
+}
+
+function _artifactCurriculumKey(artifact) {
+  if (!artifact) return null;
+  const d = artifact.data && typeof artifact.data === 'object' ? artifact.data : {};
+  return artifact.curriculumId || artifact.projectId || d.curriculumId || d.projectId || d.auditGroupId || null;
+}
+
+function selectCurriculumArtifacts(history, config) {
+  const safe = (Array.isArray(history) ? history : []).filter(function (artifact) {
+    return artifact && artifact.type && !AUDIT_EXCLUDED_TYPES.has(artifact.type);
+  });
+  const configuredIds = config && (config.artifactIds || config.auditArtifactIds);
+  const requestedIds = Array.isArray(configuredIds) ? configuredIds.map(String) : [];
+  let selected = safe;
+  let selectionMode = 'current eligible history';
+  let curriculumKey = config && (config.curriculumId || config.projectId) || null;
+  if (requestedIds.length) {
+    const idSet = new Set(requestedIds);
+    selected = safe.filter(function (artifact) { return idSet.has(String(artifact.id)); });
+    selectionMode = 'explicit artifact IDs';
+  } else {
+    if (!curriculumKey) {
+      const anchorIndex = safe.reduce(function (latest, artifact, index) { return artifact.type === 'analysis' ? index : latest; }, -1);
+      const anchor = anchorIndex >= 0 ? safe[anchorIndex] : null;
+      curriculumKey = anchor ? _artifactCurriculumKey(anchor) : null;
+      if (!curriculumKey && anchorIndex >= 0) {
+        selected = safe.slice(anchorIndex);
+        selectionMode = 'latest analysis anchor';
+      }
+    }
+    if (curriculumKey) {
+      selected = safe.filter(function (artifact) { return String(_artifactCurriculumKey(artifact) || '') === String(curriculumKey); });
+      selectionMode = 'curriculum identifier';
+    }
+  }
+  const warnings = [];
+  if (!requestedIds.length && !curriculumKey && selectionMode === 'current eligible history') warnings.push('No curriculum identifier or analysis anchor was available; the audit includes all eligible artifacts in the current history.');
+  if (!selected.length) warnings.push('No eligible curriculum artifacts matched the requested audit scope.');
+  return {
+    artifacts: selected,
+    metadata: {
+      selectionMode: selectionMode,
+      curriculumId: curriculumKey || null,
+      requestedArtifactIds: requestedIds,
+      includedArtifactIds: selected.map(function (artifact) { return artifact.id || null; }).filter(Boolean),
+      includedTypes: Array.from(new Set(selected.map(function (artifact) { return artifact.type; }))),
+      excludedArtifactCount: safe.length - selected.length,
+      warnings: warnings,
+      contextTruncated: false,
+    },
+  };
+}
+
 
 // ─── Plan O: In-session LLM-review cache ─────────────────────────────
 // Keyed by (dimension, artifact-fingerprint, gradeLevel). On audit re-run,
@@ -83,10 +383,13 @@ function harvestExistingAuditSignals(artifacts) {
   artifacts.forEach(item => {
     if (!item || !item.type) return;
     out.distinctTypes.add(item.type);
+    const readableText = extractAuditArtifactText(item);
+    if (readableText) out.multimodal.text = true;
+    const audioEvidence = _artifactAudioEvidence(item);
+    if (audioEvidence.readAloudCapable || audioEvidence.embedded || audioEvidence.preparedSentences > 0) out.multimodal.audio = true;
     const d = item.data;
     if (!d) return;
     if (item.type === 'analysis') {
-      out.multimodal.text = true;
       if (d.readingLevel && d.readingLevel.range) {
         out.readingLevels.push({
           range: String(d.readingLevel.range),
@@ -234,7 +537,7 @@ function computeContentAccuracy(harvest) {
   let status = 'Aligned';
   const recommendations = [];
   if (totalAnalyses === 0) {
-    status = 'Aligned';
+    status = 'Not evaluated';
     recommendations.push('No source-text analysis has been run yet. Run "Analyze Source Text" on the lesson source to surface AI-verified facts and any discrepancies.');
   } else {
     if (lowCount > 0) {
@@ -252,6 +555,7 @@ function computeContentAccuracy(harvest) {
   }
   return {
     status,
+    notEvaluated: totalAnalyses === 0,
     totalAnalyses,
     accuracyRatingCounts: { high: highCount, medium: mediumCount, low: lowCount },
     totalVerifiedFacts,
@@ -271,6 +575,7 @@ function computeContentAccessibility(artifacts, harvest, gradeLevel) {
   let colorOnlyCount = 0;
   const colorOnlyExamples = [];
   const implicitImageExamples = [];
+  let implicitImageCount = 0;
   let longestUnbrokenPassage = 0;
 
   // Color-only patterns: phrases that rely solely on color to convey meaning
@@ -281,12 +586,8 @@ function computeContentAccessibility(artifacts, harvest, gradeLevel) {
   artifacts.forEach(function (item) {
     if (!item) return;
     const d = item.data;
-    if (!d) return;
-    const textBlob = typeof d === 'string' ? d
-      : typeof d === 'object' && d.text ? d.text
-      : typeof d === 'object' && d.simplifiedText ? d.simplifiedText
-      : typeof d === 'object' && d.originalText ? d.originalText
-      : '';
+    const textBlob = extractAuditArtifactText(item);
+    if (!d && !textBlob) return;
 
     // Count words in longest unbroken passage (no heading/hr/blank-line break)
     if (textBlob) {
@@ -312,6 +613,7 @@ function computeContentAccessibility(artifacts, harvest, gradeLevel) {
       let m;
       imgRefRe.lastIndex = 0;
       while ((m = imgRefRe.exec(textBlob)) !== null) {
+        implicitImageCount++;
         if (implicitImageExamples.length < 8) implicitImageExamples.push(m[0]);
       }
     }
@@ -319,8 +621,8 @@ function computeContentAccessibility(artifacts, harvest, gradeLevel) {
     // Count images and alt coverage
     if (item.type === 'image' || item.type === 'concept-sort') {
       totalImages++;
-      // If the data has alt text or caption, count as covered
-      if (d && (d.altText || d.caption || d.alt || d.description || d.title)) {
+      // Captions and titles are not substitutes for a programmatic text alternative.
+      if (d && (String(d.altText || d.alt || '').trim() || d.decorative === true)) {
         imagesWithAlt++;
       }
     }
@@ -329,7 +631,7 @@ function computeContentAccessibility(artifacts, harvest, gradeLevel) {
       const imgTags = textBlob.match(/<img\b[^>]*>/gi) || [];
       imgTags.forEach(function (tag) {
         totalImages++;
-        if (/alt\s*=\s*"[^"]+"/i.test(tag) || /alt\s*=\s*'[^']+'/i.test(tag)) {
+        if (/alt\s*=\s*"[^"]*"/i.test(tag) || /alt\s*=\s*'[^']*'/i.test(tag)) {
           imagesWithAlt++;
         }
       });
@@ -348,8 +650,11 @@ function computeContentAccessibility(artifacts, harvest, gradeLevel) {
   }
 
   if (totalImages > 0 && altCoveragePct < 80) {
-    if (status === 'Aligned') status = 'Partially Aligned';
+    status = 'Not Aligned';
     recommendations.push('Only ' + altCoveragePct + '% of images have alt text. Screen-reader users and students on slow connections will miss visual content. Add descriptive alt text to all informational images.');
+  } else if (totalImages > 0 && altCoveragePct < 100) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push('Alt text is present for ' + altCoveragePct + '% of images. Add a text alternative to every remaining informational image, or explicitly mark decorative images.');
   }
 
   // Grade-adjusted passage-length thresholds
@@ -360,20 +665,23 @@ function computeContentAccessibility(artifacts, harvest, gradeLevel) {
     recommendations.push('Longest unbroken passage is ' + longestUnbrokenPassage + ' words (threshold for grade band: ' + maxPassage + '). Break long passages with headings, bullet points, or visual breaks to reduce cognitive load.');
   }
 
-  if (implicitImageExamples.length > 0 && totalImages === 0) {
-    recommendations.push(implicitImageExamples.length + ' reference' + (implicitImageExamples.length === 1 ? '' : 's') + ' to images/figures found but no image artifacts detected. Ensure referenced visuals are present and have alt text.');
+  if (implicitImageCount > 0 && totalImages === 0) {
+    recommendations.push(implicitImageCount + ' reference' + (implicitImageCount === 1 ? '' : 's') + ' to images/figures found but no image artifacts detected. Ensure referenced visuals are present and have alt text.');
   }
 
   return {
     status,
     totalImages,
+    imagesWithAlt,
     altCoveragePct,
     colorOnlyCount,
     longestUnbrokenPassage,
     colorOnlyExamples: colorOnlyExamples.slice(0, 6),
     implicitImageExamples: implicitImageExamples.slice(0, 6),
+    implicitImageCount,
     recommendations,
-    notes: 'Deterministic scan for WCAG-aligned accessibility signals: alt-text coverage, color-only language, passage length. The LLM review adds contextual judgment.',
+    wcagConformanceAssessment: false,
+    notes: 'Deterministic scan for selected accessibility indicators: explicit text alternatives, color-only language, and passage length. This is not a WCAG conformance assessment; manual and rendered-content testing are still required.',
   };
 }
 
@@ -382,8 +690,10 @@ function computeContentAccessibility(artifacts, harvest, gradeLevel) {
 // learners who differ in reading level, language, processing style, or
 // expression mode? Deterministic detection of accommodation TYPES present
 // across the artifact bundle.
-function computeDifferentiationCoverage(artifacts, harvest) {
+function computeDifferentiationCoverage(artifacts, harvest, language) {
   const has = function (type) { return artifacts.some(function (a) { return a && a.type === type; }); };
+  const simplifiedLevels = new Set();
+  const audioCoverage = computeAudioCoverage(artifacts, language);
   const flags = {
     leveledReadingText: false,    // simplified text exists
     multipleReadingLevels: false, // simplified at multiple levels (look at differentiationGrades)
@@ -393,26 +703,26 @@ function computeDifferentiationCoverage(artifacts, harvest) {
     quizScaffold: has('quiz'),
     interactiveOrAdventure: has('adventure') || has('persona'),
     visualOrImage: has('image'),
-    audioPath: false,             // currently rare; may inflate later as TTS hooks proliferate
+    audioPath: audioCoverage.readAloudCapableArtifacts > 0 || audioCoverage.embeddedAudioArtifacts > 0 || audioCoverage.preparedAudioArtifacts > 0,
   };
   artifacts.forEach(function (a) {
     if (a && a.type === 'simplified') {
       flags.leveledReadingText = true;
       var d = a.data || {};
-      // Check if leveled at multiple levels via differentiationGrades or array shape
-      if (Array.isArray(d.versions) && d.versions.length > 1) flags.multipleReadingLevels = true;
-      if (Array.isArray(d.differentiationGrades) && d.differentiationGrades.length > 1) flags.multipleReadingLevels = true;
-    }
-    // Audio detection: any artifact with audioUrl/ttsAudio fields
-    if (a && a.data) {
-      var dd = a.data;
-      if (dd.audioUrl || dd.ttsAudio || dd.audioPath || (dd.audio && (dd.audio.url || dd.audio.path))) flags.audioPath = true;
+      [d.targetGrade, d.grade, a.targetGrade, a.gradeLevel].filter(Boolean).forEach(function (level) { simplifiedLevels.add(String(level).trim().toLowerCase()); });
+      if (Array.isArray(d.versions)) d.versions.forEach(function (version) {
+        var level = version && (version.targetGrade || version.grade || version.level);
+        if (level) simplifiedLevels.add(String(level).trim().toLowerCase());
+      });
+      if (Array.isArray(d.differentiationGrades)) d.differentiationGrades.filter(Boolean).forEach(function (level) {
+        simplifiedLevels.add(String(level).trim().toLowerCase());
+      });
     }
   });
+  flags.multipleReadingLevels = simplifiedLevels.size > 1;
   // Reuse harvest scaffold counts where available
   var sf = harvest && harvest.scaffoldCounts ? harvest.scaffoldCounts : {};
   if ((sf.sentenceFrames || 0) > 0) flags.sentenceFrames = true;
-  if ((sf.simplifiedTexts || 0) > 1) flags.multipleReadingLevels = true;
   if ((sf.leveledGlossary || 0) > 0) flags.glossarySupport = true;
 
   const dims = Object.keys(flags);
@@ -448,6 +758,8 @@ function computeDifferentiationCoverage(artifacts, harvest) {
     coverage,
     presentCount,
     totalAccommodationTypes: dims.length,
+    simplifiedLevels: Array.from(simplifiedLevels),
+    audioCoverage,
     flags,
     missing,
     recommendations,
@@ -580,148 +892,183 @@ function computeReadinessScore(comprehensive) {
   if (!comprehensive) return null;
   let totalScore = 0;
   let dimensionsEvaluated = 0;
+  let dimensionsApplicable = 0;
+  let dimensionsReported = 0;
   const dimensionScores = {};
   const blockingIssues = [];
+  const incompleteIssues = [];
 
-  ALL_DIMENSIONS.forEach(dim => {
+  const representativeIssue = function (data, fallback) {
+    if (!data) return fallback;
+    if (Array.isArray(data.recommendations) && data.recommendations[0]) return data.recommendations[0];
+    if (Array.isArray(data.perStandard) && data.perStandard[0]) {
+      return data.perStandard[0].adminRecommendation || data.perStandard[0].recommendation || fallback;
+    }
+    return data.overallNarrative || data.narrative || data.reason || data.error || fallback;
+  };
+
+  ALL_DIMENSIONS.forEach(function (dim) {
     const data = comprehensive[dim];
-    if (!data) return;
-    // Skip placeholder failures and N/A dimensions from the readiness math
-    // but still surface them in the per-dimension list so the teacher can see them.
-    if (data.computeFailed) {
-      dimensionScores[dim] = { status: 'Compute failed', points: 0, computeFailed: true };
+    const label = DIMENSION_LABELS[dim] || dim;
+    if (!data) {
+      dimensionScores[dim] = { status: 'Not evaluated', points: null, notEvaluated: true };
+      incompleteIssues.push({ dimension: label, issue: 'This required dimension was not returned by the audit.' });
       return;
     }
-    if (data.notApplicable) {
-      dimensionScores[dim] = { status: 'Not applicable', points: 0, notApplicable: true };
+    dimensionsReported++;
+    if (data.notApplicable || normalizeAuditStatus(data.status) === 'Not applicable') {
+      dimensionScores[dim] = { status: 'Not applicable', points: null, notApplicable: true };
+      return;
+    }
+    dimensionsApplicable++;
+    if (data.computeFailed || normalizeAuditStatus(data.status) === 'Compute failed') {
+      dimensionScores[dim] = { status: 'Compute failed', points: null, computeFailed: true };
+      incompleteIssues.push({ dimension: label, issue: representativeIssue(data, 'The dimension could not be computed.') });
+      return;
+    }
+    if (data.notEvaluated || normalizeAuditStatus(data.status) === 'Not evaluated') {
+      dimensionScores[dim] = { status: 'Not evaluated', points: null, notEvaluated: true };
+      incompleteIssues.push({ dimension: label, issue: representativeIssue(data, 'Required evidence was unavailable.') });
+      return;
+    }
+
+    const status = normalizeAuditStatus(data.status, 'Not evaluated');
+    if (STATUS_POINTS[status] === undefined) {
+      dimensionScores[dim] = { status: 'Not evaluated', points: null, notEvaluated: true };
+      incompleteIssues.push({ dimension: label, issue: 'The dimension returned an invalid status and was not scored.' });
       return;
     }
     dimensionsEvaluated++;
-    const status = data.status || 'Partially Aligned';
-    const points = (typeof STATUS_POINTS[status] === 'number') ? STATUS_POINTS[status] : 12;
+    const points = STATUS_POINTS[status];
     totalScore += points;
-    dimensionScores[dim] = { status, points };
+    dimensionScores[dim] = { status: status, points: points };
     if (status === 'Not Aligned') {
-      // Pull a representative issue per blocked dimension
-      let issue = '';
-      if (dim === 'standards' && Array.isArray(data.perStandard) && data.perStandard[0]) {
-        issue = data.perStandard[0].adminRecommendation || ('Standard ' + (data.perStandard[0].standard || 'unknown') + ' did not pass.');
-      }
-      else if (dim === 'vocabulary' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
-      else if (dim === 'engagement' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
-      else if (dim === 'accessibility' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
-      else if (dim === 'udl' && data.overallNarrative) issue = data.overallNarrative;
-      else if (dim === 'accuracy' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
-      blockingIssues.push({ dimension: DIMENSION_LABELS[dim], issue });
+      blockingIssues.push({ dimension: label, issue: representativeIssue(data, 'This dimension did not meet the audit threshold.') });
     }
   });
 
-  // Normalize to 0-100. If only some dimensions evaluated, scale by what's there.
   const maxPossible = dimensionsEvaluated * 20;
-  const normalizedScore = maxPossible > 0 ? Math.round((totalScore / maxPossible) * 100) : 0;
-
-  // Overall status thresholds
+  const provisionalScore = maxPossible > 0 ? Math.round((totalScore / maxPossible) * 100) : null;
+  const isIncomplete = incompleteIssues.length > 0 || dimensionsReported < ALL_DIMENSIONS.length || dimensionsEvaluated < dimensionsApplicable;
   let overallStatus, overallLabel;
   if (blockingIssues.length > 0) {
     overallStatus = 'Revise';
     overallLabel = 'Revise — critical issues';
-  } else if (normalizedScore >= 90) {
+  } else if (isIncomplete) {
+    overallStatus = 'Incomplete';
+    overallLabel = 'Incomplete — required evidence is missing';
+  } else if (provisionalScore >= 90) {
     overallStatus = 'Pass';
     overallLabel = 'Pass — ready to deploy';
-  } else if (normalizedScore >= 70) {
+  } else if (provisionalScore >= 70) {
     overallStatus = 'Pass with notes';
     overallLabel = 'Pass with notes — minor improvements suggested';
-  } else if (normalizedScore >= 50) {
-    overallStatus = 'Revise';
-    overallLabel = 'Revise — multiple dimensions need work';
   } else {
     overallStatus = 'Revise';
-    overallLabel = 'Revise — significant gaps across dimensions';
+    overallLabel = provisionalScore >= 50 ? 'Revise — multiple dimensions need work' : 'Revise — significant gaps across dimensions';
   }
 
   return {
-    score: normalizedScore,
+    score: isIncomplete ? null : provisionalScore,
+    provisionalScore: provisionalScore,
+    incomplete: isIncomplete,
     status: overallStatus,
     label: overallLabel,
-    dimensionsEvaluated,
-    dimensionScores,
-    blockingIssues,
-    perDimensionPercent: Object.keys(dimensionScores).reduce((acc, dim) => {
-      acc[dim] = Math.round((dimensionScores[dim].points / 20) * 100);
+    totalDimensions: ALL_DIMENSIONS.length,
+    dimensionsReported: dimensionsReported,
+    dimensionsApplicable: dimensionsApplicable,
+    dimensionsEvaluated: dimensionsEvaluated,
+    dimensionScores: dimensionScores,
+    blockingIssues: blockingIssues,
+    incompleteIssues: incompleteIssues,
+    perDimensionPercent: Object.keys(dimensionScores).reduce(function (acc, dim) {
+      const points = dimensionScores[dim].points;
+      acc[dim] = typeof points === 'number' ? Math.round((points / 20) * 100) : null;
       return acc;
     }, {}),
-    notes: 'Equal weighting across 5 comprehensive dimensions. Score is a guide; review the per-dimension findings for context. Any "Not Aligned" dimension blocks an automatic Pass regardless of overall score.',
+    scoreBasis: 'Equal weighting across all applicable dimensions. Missing, failed, or unevaluated evidence prevents certification and produces only a provisional score.',
+    notes: 'A Not Aligned dimension blocks Pass. Not evaluated or Compute failed dimensions make the report Incomplete; they are never silently excluded from certification.',
   };
 }
 
 function collectAuditText(artifacts) {
-  // sourceText  = primary lesson text only (analysis.originalText, falls back to simplified).
-  //               Used for the teacher-facing "word count" so it matches their intuition.
-  // text        = bundle of EVERY artifact's content, used for tier classification across
-  //               the whole curriculum (so we catch academic vocab in glossary defs, quiz, etc.).
-  // glossaryTerms = explicit glossary entries (always Tier 3).
   const out = { text: '', sourceText: '', glossaryTerms: [] };
-  let analysisText = '';
   let simplifiedText = '';
-  artifacts.forEach(item => {
+  (Array.isArray(artifacts) ? artifacts : []).forEach(function (item) {
+    if (!item) return;
+    const artifactText = extractAuditArtifactText(item);
+    if (artifactText) out.text += artifactText + '\n';
     const d = item.data;
-    if (!d) return;
     if (item.type === 'analysis') {
-      if (d.originalText) {
-        analysisText = String(d.originalText);
-        out.text += analysisText + ' ';
-      }
-      if (Array.isArray(d.concepts)) out.text += d.concepts.join(' ') + ' ';
-    } else if (item.type === 'glossary' && Array.isArray(d)) {
-      d.forEach(g => {
-        if (g.term)       out.glossaryTerms.push(String(g.term).toLowerCase());
-        if (g.def)        out.text += String(g.def) + ' ';
-        if (g.definition) out.text += String(g.definition) + ' ';
+      const source = item.originalText || (d && d.originalText) || '';
+      if (source) out.sourceText = String(source);
+    }
+    if (item.type === 'simplified') {
+      const simplified = typeof d === 'string' ? d : d && (d.simplifiedText || d.text);
+      if (simplified) simplifiedText = String(simplified);
+    }
+    if (item.type === 'glossary') {
+      const entries = Array.isArray(d) ? d : d && Array.isArray(d.items) ? d.items : [];
+      entries.forEach(function (entry) {
+        const term = entry && (entry.term || entry.word || entry.phrase);
+        if (term) out.glossaryTerms.push(String(term).trim().toLocaleLowerCase());
       });
-    } else if (item.type === 'lesson-plan') {
-      ['directInstruction','guidedPractice','independentPractice','closure','essentialQuestion'].forEach(k => {
-        if (d[k]) out.text += String(d[k]) + ' ';
-      });
-      if (Array.isArray(d.objectives)) out.text += d.objectives.join(' ') + ' ';
-    } else if (item.type === 'quiz' && d.questions) {
-      d.questions.forEach(q => {
-        if (q.question) out.text += String(q.question) + ' ';
-        if (q.text)     out.text += String(q.text) + ' ';
-        if (Array.isArray(q.options)) out.text += q.options.join(' ') + ' ';
-      });
-    } else if (item.type === 'sentence-frames') {
-      if (Array.isArray(d.items)) d.items.forEach(i => i && i.text && (out.text += i.text + ' '));
-      if (typeof d === 'string') out.text += d + ' ';
-      if (d.text) out.text += String(d.text) + ' ';
-    } else if (item.type === 'outline') {
-      if (d.main) out.text += String(d.main) + ' ';
-      if (Array.isArray(d.branches)) d.branches.forEach(b => {
-        if (b && b.title) out.text += String(b.title) + ' ';
-        if (b && Array.isArray(b.items)) out.text += b.items.join(' ') + ' ';
-      });
-    } else if (item.type === 'simplified' && typeof d === 'string') {
-      simplifiedText = d;
-      out.text += d + ' ';
-    } else if (item.type === 'simplified' && d && d.text) {
-      simplifiedText = String(d.text);
-      out.text += simplifiedText + ' ';
     }
   });
-  // Resolve sourceText: prefer the analysis.originalText (true source), else simplified.
-  out.sourceText = analysisText || simplifiedText || '';
+  out.sourceText = out.sourceText || simplifiedText || '';
   return out;
 }
 
-function computeVocabularyFit(artifacts, gradeLevel) {
+function _tokenizeAuditWords(text, language) {
+  const clean = String(text || '');
+  if (!clean) return [];
+  try {
+    if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+      return Array.from(new Intl.Segmenter(language || 'en', { granularity: 'word' }).segment(clean))
+        .filter(function (part) { return part.isWordLike; })
+        .map(function (part) { return part.segment.toLocaleLowerCase(language || undefined); });
+    }
+  } catch (e) { /* use Unicode fallback */ }
+  return (clean.toLocaleLowerCase().match(/[\p{L}\p{M}][\p{L}\p{M}'’\-]*/gu) || []);
+}
+
+function computeVocabularyFit(artifacts, gradeLevel, language) {
   const { text, sourceText, glossaryTerms } = collectAuditText(artifacts);
+  const effectiveLanguage = String(language || 'en');
   // sourceWords: count of words in the primary source text only (matches teacher intuition).
   // auditedTextWords: count across the full bundle (every artifact's content).
-  const sourceWordList = (sourceText.toLowerCase().match(/[a-z]{3,}/g)) || [];
+  const sourceWordList = _tokenizeAuditWords(sourceText, effectiveLanguage);
   const sourceWords = sourceWordList.length;
-  const words = (text.toLowerCase().match(/[a-z]{3,}/g)) || [];
+  const words = _tokenizeAuditWords(text, effectiveLanguage);
   const auditedTextWords = words.length;
   const uniqueSet = new Set(words);
-  const tier3Set = new Set(glossaryTerms);
+  const tier3Set = new Set([].concat.apply([], glossaryTerms.map(function (term) { return _tokenizeAuditWords(term, effectiveLanguage); })));
+
+  const supportsEnglishTierHeuristic = /^(?:en(?:[-_]|$)|english\b)/i.test(effectiveLanguage);
+  if (!supportsEnglishTierHeuristic || auditedTextWords === 0) {
+    const reason = !supportsEnglishTierHeuristic
+      ? 'Tier 1/2/3 classification is currently validated only for English; word counts are provided, but vocabulary fit was not scored.'
+      : 'No readable curriculum text was available for vocabulary scoring.';
+    return {
+      status: 'Not evaluated',
+      notEvaluated: true,
+      language: effectiveLanguage,
+      sourceWords,
+      auditedTextWords,
+      totalWords: auditedTextWords,
+      uniqueWords: uniqueSet.size,
+      tier1Count: null,
+      tier2Count: null,
+      tier3Count: null,
+      glossaryTermsCount: glossaryTerms.length,
+      expected: null,
+      tier2Examples: [],
+      tier3Examples: [],
+      recommendations: [reason],
+      scoreBasis: 'Unicode-aware word counts; English-only tier heuristic withheld for unsupported languages.',
+      notes: reason,
+    };
+  }
 
   let tier1 = 0, tier2 = 0, tier3 = 0;
   const tier2Examples = [];
@@ -776,6 +1123,9 @@ function computeVocabularyFit(artifacts, gradeLevel) {
 
   return {
     status,
+    notEvaluated: false,
+    language: effectiveLanguage,
+    scoreBasis: 'Deterministic English-language length, glossary, and suffix heuristics; teacher review is required.',
     sourceWords,
     auditedTextWords,
     totalWords: auditedTextWords, // legacy alias for backward compat with old saved audits
@@ -791,6 +1141,100 @@ function computeVocabularyFit(artifacts, gradeLevel) {
     notes: 'sourceWords = primary source text only (matches teacher intuition); auditedTextWords = across the full curriculum bundle (used for tier classification). Tier expectations scaled to bundle size (×' + Number(scale.toFixed(2)) + ').',
   };
 }
+function normalizeStandardsDimension(rawReports, configuredStandards) {
+  const expected = (Array.isArray(configuredStandards) ? configuredStandards : []).map(function (standard) {
+    if (typeof standard === 'string') return standard;
+    if (!standard || typeof standard !== 'object') return String(standard || '');
+    return String(standard.code || standard.standard || standard.label || standard.description || '').trim();
+  }).filter(Boolean);
+  if (!expected.length) {
+    return {
+      reports: [],
+      dimension: {
+        status: 'Not applicable',
+        notApplicable: true,
+        reason: 'No target standards entered. Add a standard in the settings panel to include standards alignment in the audit.',
+        perStandard: [],
+      },
+    };
+  }
+  const incoming = Array.isArray(rawReports) ? rawReports : [];
+  let passCount = 0, reviseCount = 0, missingCount = 0;
+  const recommendations = [];
+  const reports = expected.map(function (standard, index) {
+    const raw = incoming[index] && typeof incoming[index] === 'object' ? incoming[index] : null;
+    if (!raw) {
+      missingCount++;
+      return {
+        standard: standard,
+        status: 'Not evaluated',
+        notEvaluated: true,
+        overallDetermination: 'Not evaluated',
+        gaps: ['The AI response did not include a valid report for this configured standard.'],
+        adminRecommendation: 'Regenerate the audit or review this standard manually.',
+      };
+    }
+    const analysis = raw.analysis && typeof raw.analysis === 'object' ? raw.analysis : {};
+    const keys = ['textAlignment', 'activityAlignment', 'assessmentAlignment'];
+    let invalid = false;
+    const normalizedAnalysis = {};
+    const statuses = keys.map(function (key) {
+      const part = analysis[key] && typeof analysis[key] === 'object' ? analysis[key] : {};
+      const status = normalizeAuditStatus(part.status, 'Not evaluated');
+      if (AUDIT_STATUS_RANK[status] === undefined) invalid = true;
+      normalizedAnalysis[key] = {
+        status: status,
+        evidence: typeof part.evidence === 'string' ? part.evidence : '',
+        notes: typeof part.notes === 'string' ? part.notes : '',
+      };
+      return status;
+    });
+    if (invalid) {
+      missingCount++;
+      return Object.assign({}, raw, {
+        standard: standard,
+        analysis: normalizedAnalysis,
+        status: 'Not evaluated',
+        notEvaluated: true,
+        overallDetermination: 'Not evaluated',
+        adminRecommendation: raw.adminRecommendation || 'One or more required alignment components were missing or invalid; review manually.',
+      });
+    }
+    const status = statuses.indexOf('Not Aligned') >= 0 ? 'Not Aligned'
+      : statuses.indexOf('Partially Aligned') >= 0 ? 'Partially Aligned'
+      : 'Aligned';
+    const overallDetermination = status === 'Aligned' ? 'Pass' : 'Revise';
+    if (overallDetermination === 'Pass') passCount++; else reviseCount++;
+    if (raw.adminRecommendation) recommendations.push(String(raw.adminRecommendation));
+    return Object.assign({}, raw, {
+      standard: standard,
+      analysis: normalizedAnalysis,
+      status: status,
+      overallDetermination: overallDetermination,
+      gaps: Array.isArray(raw.gaps) ? raw.gaps.slice(0, 8) : [],
+      adminRecommendation: typeof raw.adminRecommendation === 'string' ? raw.adminRecommendation : '',
+    });
+  });
+  const dimensionStatus = missingCount > 0 ? 'Not evaluated'
+    : reviseCount === 0 ? 'Aligned'
+    : passCount === 0 && reports.every(function (report) { return report.status === 'Not Aligned'; }) ? 'Not Aligned'
+    : 'Partially Aligned';
+  return {
+    reports: reports,
+    dimension: {
+      status: dimensionStatus,
+      notEvaluated: missingCount > 0,
+      perStandard: reports,
+      totalStandards: expected.length,
+      passCount: passCount,
+      reviseCount: reviseCount,
+      missingCount: missingCount,
+      recommendations: recommendations.slice(0, 5),
+      notes: 'One validated report is required for every configured standard. Overall determinations are derived from text, activity, and assessment component statuses rather than accepted from the model.',
+    },
+  };
+}
+
 
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
   const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests, guidedMode, guidedStep, standardsInput, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts, standardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure } = deps;
@@ -2691,7 +3135,8 @@ ${_itemsBlock}`;
                  .map(item => ({
                      title: String((item && item.title) || '').trim(),
                      description: String((item && item.description) || '').trim(),
-                     connection: String((item && item.connection) || '').trim()
+                    connection: String((item && item.connection) || '').trim(),
+                    rubric: null // Optional schema slot; generated only when an educator requests it.
                  }))
                  .filter(item => item.title && item.description);
              if (!content.length) {
@@ -2725,6 +3170,14 @@ ${_itemsBlock}`;
                  else parsed = [];
              }
              content = parsed;
+             content = (Array.isArray(content) ? content : []).slice(0, 8)
+                 .map(item => ({
+                     title: String((item && item.title) || '').trim(),
+                     description: String((item && item.description) || '').trim(),
+                     connection: String((item && item.connection) || '').trim(),
+                     rubric: null // Optional schema slot; generated only when an educator requests it.
+                 }))
+                 .filter(item => item.title && item.description);
              metaInfo = t('meta.engagement_ideas');
          } catch (parseErr) {
              warnLog("Brainstorm Parse Error:", parseErr);
@@ -2825,15 +3278,14 @@ ${_itemsBlock}`;
          // Plan O Step 1.5: ungated. The audit runs even without target standards
          // — the standards-alignment LLM call is skipped (see line 1935 below)
          // and the comprehensive dimensions still produce a meaningful report.
-         const artifactsToAudit = history.filter(h =>
-             h.type !== 'alignment-report' &&
-             h.type !== 'udl-advice' &&
-             h.type !== 'gemini-bridge'
-         );
+         const auditScopeSelection = selectCurriculumArtifacts(history, configOverride || {});
+         const artifactsToAudit = auditScopeSelection.artifacts;
          if (artifactsToAudit.length === 0) {
              throw new Error("No resources found to audit. Please generate a Lesson Plan, Text, or Quiz first.");
          }
          const getAuditText = (item) => {
+             const extractedText = extractAuditArtifactText(item);
+             if (extractedText) return extractedText;
              const d = item.data;
              if (!d) return "No content.";
              if (typeof d === 'string') return d;
@@ -2992,52 +3444,33 @@ ${_itemsBlock}`;
              metaInfo = `Comprehensive audit (no target standards)`;
          }
 
-         // ---- Plan O Steps 1-5: Comprehensive dimensions (PARALLEL) ---------
-         // Deterministic computations run synchronously first (microseconds).
-         // The 5 LLM review calls then run in parallel via Promise.all, cutting
-         // wall-clock from ~30-60s sequential to ~10s.
+         // ---- Comprehensive audit dimensions (parallel where possible) ------
+         // Deterministic computations run synchronously first. Optional AI
+         // reviews for the remaining dimensions are launched together below so
+         // one slow review does not serialize the rest of the audit.
          const auditHarvest = harvestExistingAuditSignals(artifactsToAudit);
          content.comprehensive = content.comprehensive || {};
+         auditScopeSelection.metadata.contextTruncated = contextOverflowed;
+         auditScopeSelection.metadata.serializationFailures = Array.from(new Set(failedTypes));
+         content.comprehensive.auditScope = auditScopeSelection.metadata;
+         const auditLanguage = String(effectiveLanguage || currentUiLanguage || 'en');
+         content.comprehensive.auditLanguage = auditLanguage;
+         content.comprehensive.auditLanguageTag = normalizeAuditLanguageTag(auditLanguage);
+         content.comprehensive.auditMetadata = {
+             schemaVersion: 4,
+             generatedAt: new Date().toISOString(),
+             gradeLevel: String(effectiveGrade || gradeLevel || ''),
+         };
 
-         // ---- Plan R+: Standards alignment as 6th dimension -----------------
+         // ---- Standards alignment normalization -----------------------------
          // Fold the standards-alignment data (already produced by the LLM call
          // above when targetStandards exist) into comprehensive.standards so it
          // counts toward the readiness score and renders in the same dimension
          // framework as the others. content.reports is kept as a back-compat
          // alias but the canonical shape going forward is comprehensive.standards.
-         (function buildStandardsDimension() {
-             const reports = Array.isArray(content.reports) ? content.reports : [];
-             if (reports.length === 0) {
-                 // No standards entered → not applicable, exclude from score math.
-                 content.comprehensive.standards = {
-                     status: 'Not applicable',
-                     notApplicable: true,
-                     reason: 'No target standards entered. Add a standard in the settings panel to include standards alignment in the audit.',
-                     perStandard: [],
-                 };
-                 return;
-             }
-             let passCount = 0; let reviseCount = 0;
-             const recs = [];
-             reports.forEach(function (r) {
-                 if (r && r.overallDetermination === 'Pass') passCount++;
-                 else reviseCount++;
-                 if (r && r.adminRecommendation) recs.push(r.adminRecommendation);
-             });
-             let status;
-             if (reviseCount === 0) status = 'Aligned';
-             else if (passCount === 0) status = 'Not Aligned';
-             else status = 'Partially Aligned';
-             content.comprehensive.standards = {
-                 status,
-                 perStandard: reports,
-                 totalStandards: reports.length,
-                 passCount,
-                 reviseCount,
-                 recommendations: recs.slice(0, 5),
-                 notes: reports.length + ' standard' + (reports.length === 1 ? '' : 's') + ' audited via Holistic Lesson Plan Audit. Each standard evaluated for text-, activity-, and assessment-alignment + cognitive demand.',
-             };
-         })();
+         const normalizedStandards = normalizeStandardsDimension(content.reports, targetStandards);
+         content.reports = normalizedStandards.reports;
+         content.comprehensive.standards = normalizedStandards.dimension;
 
          // ---- Sync deterministic compute (Steps 1, 2, 3, 5 stats) -----------
          // On compute failure, write a placeholder marker so the teacher sees
@@ -3051,7 +3484,7 @@ ${_itemsBlock}`;
 
          let vocabFit = null;
          try {
-             vocabFit = computeVocabularyFit(artifactsToAudit, gradeLevel);
+             vocabFit = computeVocabularyFit(artifactsToAudit, gradeLevel, effectiveLanguage || currentUiLanguage || 'en');
              vocabFit.readingLevels = auditHarvest.readingLevels;
              content.comprehensive.vocabulary = vocabFit;
          } catch (vocabErr) {
@@ -3089,7 +3522,7 @@ ${_itemsBlock}`;
          // ---- Plan R+ new dimensions: differentiation + cognitive load ----
          let differentiation = null;
          try {
-             differentiation = computeDifferentiationCoverage(artifactsToAudit, auditHarvest);
+             differentiation = computeDifferentiationCoverage(artifactsToAudit, auditHarvest, effectiveLanguage || currentUiLanguage || 'en');
              content.comprehensive.differentiation = differentiation;
          } catch (diffErr) {
              warnLog('[Alignment] Differentiation computation failed:', diffErr);
@@ -3115,22 +3548,24 @@ ${_itemsBlock}`;
          // Each task is self-contained: build prompt → call → parse → apply.
          // Tasks return null on any failure; failures are logged but don't
          // block other dimensions or the overall audit.
-         const vocabTask = vocabFit ? (async () => {
+         const vocabTask = (vocabFit && !vocabFit.notEvaluated) ? (async () => {
              const fp = 'vocab:' + _auditFingerprint(artifactsToAudit, gradeLevel);
              const cached = _auditLLMCache.get(fp);
-             if (cached) { content.comprehensive.vocabulary.llmReview = cached; return; }
+             if (cached) { content.comprehensive.vocabulary.llmReview = cached; applyAuditReviewStatus(content.comprehensive.vocabulary, cached); return; }
              try {
                  const contextSnippet = (comprehensiveContext || '').slice(0, 4000);
                  const prompt = `You are a literacy coach reviewing a heuristic vocabulary classification.\n\nThe system classified words from a lesson as:\n- Tier 1 (everyday): ${vocabFit.tier1Count} unique words\n- Tier 2 (academic, cross-disciplinary): ${vocabFit.tier2Count} unique words. Examples flagged by the heuristic: ${(vocabFit.tier2Examples || []).join(', ') || '(none)'}\n- Tier 3 (domain-specific): ${vocabFit.tier3Count} unique words. Examples flagged: ${(vocabFit.tier3Examples || []).join(', ') || '(none)'}\n\nGrade band: ${vocabFit.expected.gradeBand}\nExpected per Beck/McKeown norms: ~${vocabFit.expected.tier2} Tier 2 + ~${vocabFit.expected.tier3} Tier 3 unique words.\n\nSource text excerpt (first 4000 chars):\n"""\n${contextSnippet}\n"""\n\nReview the heuristic classifications and provide:\n1. "corrections": array of words from the Tier 2 examples that the heuristic got WRONG (i.e., they're really Tier 1 everyday words). Common false positives to watch for: long-but-common words like "tomorrow", "remember", "different", "without", "morning".\n2. "missedTier2": array of 2-4 Tier 2 academic words that ARE in the source text but the heuristic likely missed (e.g., shorter words like "claim", "reveal", "trace", "frame" that appear academically).\n3. "recommendations": array of 2-3 specific Tier 2 academic words to ADD to this lesson, contextually appropriate to the topic and grade band. Each recommendation must be one to three words.\n4. "narrative": ONE paragraph (2-3 sentences) summarizing whether the lesson's vocabulary load is appropriate for the grade band, and what the most important next move is.\n\nReturn ONLY a single valid JSON object with exactly these four fields. No prose outside the JSON, no markdown fences.`;
-                 const result = await callGemini(prompt, true);
+                 const result = await callGemini(prompt + '\n\nAlso return a top-level "status" field: "Aligned", "Partially Aligned", or "Not Aligned". Base it on grade appropriateness and scaffolding needs.', true);
                  const review = JSON.parse(cleanJson(result));
                  const reviewShape = {
+                     status: normalizeAuditStatus(review.status, vocabFit.status),
                      corrections: Array.isArray(review.corrections) ? review.corrections.slice(0, 12) : [],
                      missedTier2: Array.isArray(review.missedTier2) ? review.missedTier2.slice(0, 8) : [],
                      recommendations: Array.isArray(review.recommendations) ? review.recommendations.slice(0, 6) : [],
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
                  };
                  content.comprehensive.vocabulary.llmReview = reviewShape;
+                 applyAuditReviewStatus(content.comprehensive.vocabulary, reviewShape);
                  _auditLLMCache.set(fp, reviewShape);
              } catch (e) { warnLog('[Alignment] Vocab LLM review failed:', e); }
          })() : Promise.resolve();
@@ -3138,7 +3573,7 @@ ${_itemsBlock}`;
          const engagementTask = engagement ? (async () => {
              const fp = 'engagement:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
              const cached = _auditLLMCache.get(fp);
-             if (cached) { content.comprehensive.engagement.llmReview = cached; return; }
+             if (cached) { content.comprehensive.engagement.llmReview = cached; applyAuditReviewStatus(content.comprehensive.engagement, cached); return; }
              try {
                  // DOK fallback: when engagement.dokTotal === 0 BUT a quiz exists in the
                  // artifacts (i.e., the quiz generator didn't tag DOK levels), pass the
@@ -3160,9 +3595,10 @@ ${_itemsBlock}`;
                      ? '3. "dokAssessment": ONE sentence on the estimated DOK distribution from the questions above (e.g., "Estimated ~70% L1 recall, ~25% L2, ~5% L3; add 2-3 strategic-thinking items").\n4. "estimatedDokDistribution": object with percentage estimates {"L1": int, "L2": int, "L3": int, "L4": int} based on the questions above (must sum to 100).'
                      : '3. "dokAssessment": ONE sentence on whether the DOK balance is appropriate (e.g., "DOK skews recall-heavy; add 2-3 application-level questions" or "DOK distribution is well-balanced for ' + dimGradeBand + '"). If dokTotal is 0, say "No quiz items present to evaluate DOK."';
                  const prompt = `You are an expert in UDL (Universal Design for Learning) and Webb's Depth of Knowledge framework. Review the engagement-variety profile of this curriculum.\n\nDeterministic stats:\n- Distinct artifact types: ${engagement.distinctTypeCount} (${engagement.distinctTypes.join(', ')})\n- Total artifacts: ${engagement.totalArtifacts}\n- Diversity score: ${engagement.diversityScore} (0=single type, 1=balanced)\n- DOK distribution (% of quiz items, ${engagement.dokTotal} total): L1=${engagement.dokDistribution.L1 || 0}%, L2=${engagement.dokDistribution.L2 || 0}%, L3=${engagement.dokDistribution.L3 || 0}%, L4=${engagement.dokDistribution.L4 || 0}%, unknown=${engagement.dokDistribution.unknown || 0}%\n- Scaffolds: ${engagement.scaffoldCounts.sentenceFrames} sentence-frames sets, ${engagement.scaffoldCounts.simplifiedTexts} simplified texts, ${engagement.scaffoldCounts.leveledGlossary} leveled glossaries\n- Modalities present: ${engagement.multimodalCoverage.present.join(', ') || '(none)'}\n- Modalities missing: ${engagement.multimodalCoverage.missing.join(', ') || '(none)'}\n- Grade band: ${dimGradeBand}${dokFallbackBlock}\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether engagement variety is appropriate for the grade band and what is most needed.\n2. "formatGaps": array of 1-3 specific format additions that would most improve engagement (e.g., "add a Visual Organizer to give visual learners a non-text path through the content", "add a brief Adventure scenario for kinesthetic engagement"). Each entry should be a sentence.\n${dokInstruction}\n\nReturn ONLY a single valid JSON object with exactly these fields.`;
-                 const result = await callGemini(prompt, true);
+                 const result = await callGemini(prompt + '\n\nAlso return a top-level "status" field: "Aligned", "Partially Aligned", or "Not Aligned".', true);
                  const review = JSON.parse(cleanJson(result));
                  const reviewShape = {
+                     status: normalizeAuditStatus(review.status, engagement.status),
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
                      formatGaps: Array.isArray(review.formatGaps) ? review.formatGaps.slice(0, 5) : [],
                      dokAssessment: typeof review.dokAssessment === 'string' ? review.dokAssessment : '',
@@ -3181,8 +3617,12 @@ ${_itemsBlock}`;
                      };
                      content.comprehensive.engagement.dokTotal = quizItem.data.questions.length;
                      content.comprehensive.engagement.dokSource = 'llm-estimated';
+                     if (content.comprehensive.engagement.dokDistribution.L1 > 80) {
+                         content.comprehensive.engagement.status = worseAuditStatus(content.comprehensive.engagement.status, 'Partially Aligned');
+                     }
                  }
                  content.comprehensive.engagement.llmReview = reviewShape;
+                 applyAuditReviewStatus(content.comprehensive.engagement, reviewShape);
                  _auditLLMCache.set(fp, reviewShape);
              } catch (e) { warnLog('[Alignment] Engagement LLM review failed:', e); }
          })() : Promise.resolve();
@@ -3190,17 +3630,19 @@ ${_itemsBlock}`;
          const accessTask = accessibility ? (async () => {
              const fp = 'accessibility:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
              const cached = _auditLLMCache.get(fp);
-             if (cached) { content.comprehensive.accessibility.llmReview = cached; return; }
+             if (cached) { content.comprehensive.accessibility.llmReview = cached; applyAuditReviewStatus(content.comprehensive.accessibility, cached); return; }
              try {
                  const prompt = `You are a school accessibility specialist (school psychologist with assistive-technology expertise). Review the content-level accessibility of this curriculum.\n\nDeterministic findings:\n- Total images: ${accessibility.totalImages} (${accessibility.imagesWithAlt} with alt text${accessibility.altCoveragePct !== null ? ', ' + accessibility.altCoveragePct + '% coverage' : ''})\n- Color-only language hits: ${accessibility.colorOnlyCount}${accessibility.colorOnlyExamples.length > 0 ? ' (examples: ' + accessibility.colorOnlyExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Implicit image references: ${accessibility.implicitImageCount}${accessibility.implicitImageExamples.length > 0 ? ' (examples: ' + accessibility.implicitImageExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Longest unbroken passage: ${accessibility.longestUnbrokenPassage} words\n- Grade band: ${dimGradeBand}\n\nSource text excerpt (first 3000 chars):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accessibility for this grade band. Focus on student impact (what would a student with X experience here?), not WCAG terminology.\n2. "studentImpacts": array of 1-3 specific student-experience callouts. Each entry pairs a student profile with what they would encounter, e.g., "A student using a screen reader would hear 'image' with no description for 3 of the 4 figures, missing the visual evidence for the photosynthesis diagram." Be specific and concrete.\n3. "fixes": array of 2-4 actionable fix suggestions a teacher could apply to THIS content. Each fix should be a sentence, concrete, and tied to the specific findings.\n\nReturn ONLY a single valid JSON object with exactly these three fields.`;
-                 const result = await callGemini(prompt, true);
+                 const result = await callGemini(prompt + '\n\nAlso return a top-level "status" field: "Aligned", "Partially Aligned", or "Not Aligned". Do not call this a WCAG conformance assessment.', true);
                  const review = JSON.parse(cleanJson(result));
                  const reviewShape = {
+                     status: normalizeAuditStatus(review.status, accessibility.status),
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
                      studentImpacts: Array.isArray(review.studentImpacts) ? review.studentImpacts.slice(0, 5) : [],
                      fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 6) : [],
                  };
                  content.comprehensive.accessibility.llmReview = reviewShape;
+                 applyAuditReviewStatus(content.comprehensive.accessibility, reviewShape);
                  _auditLLMCache.set(fp, reviewShape);
              } catch (e) { warnLog('[Alignment] Accessibility LLM review failed:', e); }
          })() : Promise.resolve();
@@ -3229,14 +3671,14 @@ ${_itemsBlock}`;
                  const pillarShape = function (p) {
                      const safe = p && typeof p === 'object' ? p : {};
                      return {
-                         status: typeof safe.status === 'string' ? safe.status : 'Partially Aligned',
+                         status: normalizeAuditStatus(safe.status, 'Partially Aligned'),
                          evidence: typeof safe.evidence === 'string' ? safe.evidence : '',
                          gaps: typeof safe.gaps === 'string' ? safe.gaps : '',
                          recommendation: typeof safe.recommendation === 'string' ? safe.recommendation : '',
                      };
                  };
                  const udlShape = {
-                     status: typeof udl.overallStatus === 'string' ? udl.overallStatus : 'Partially Aligned',
+                     status: normalizeAuditStatus(udl.overallStatus, 'Partially Aligned'),
                      overallNarrative: typeof udl.overallNarrative === 'string' ? udl.overallNarrative : '',
                      representation: pillarShape(udl.representation),
                      engagement: pillarShape(udl.engagement),
@@ -3248,6 +3690,8 @@ ${_itemsBlock}`;
                      },
                      notes: 'Per CAST UDL Guidelines v3.0. Each pillar evaluated against the deterministic curriculum profile + LLM judgment of the source content.',
                  };
+                 udlShape.status = [udlShape.representation.status, udlShape.engagement.status, udlShape.actionExpression.status]
+                     .reduce(function (current, status) { return worseAuditStatus(current, status); }, 'Aligned');
                  content.comprehensive.udl = udlShape;
                  _auditLLMCache.set(fp, udlShape);
              } catch (e) {
@@ -3266,17 +3710,19 @@ ${_itemsBlock}`;
          const accuracyTask = accuracy ? (async () => {
              const fp = 'accuracy:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
              const cached = _auditLLMCache.get(fp);
-             if (cached) { content.comprehensive.accuracy.llmReview = cached; return; }
+             if (cached) { content.comprehensive.accuracy.llmReview = cached; applyAuditReviewStatus(content.comprehensive.accuracy, cached); return; }
              try {
                  const prompt = `You are a fact-checking editor reviewing a curriculum's content accuracy. The lesson's source text was previously analyzed and AI-graded for accuracy.\n\nDeterministic harvest from analysis items:\n- Total analyses run: ${accuracy.totalAnalyses}\n- Accuracy ratings: ${accuracy.accuracyRatingCounts.high} High, ${accuracy.accuracyRatingCounts.medium} Medium, ${accuracy.accuracyRatingCounts.low} Low\n- Total verified facts: ${accuracy.totalVerifiedFacts}\n- Total discrepancies flagged: ${accuracy.totalDiscrepancies}\n- Grade band: ${dimGradeBand}\n\nSample analysis verifications (first 3):\n${accuracy.sampleVerifications.slice(0, 3).map((s, i) => `  ${i+1}. Rating: ${s.rating}, ${s.verifiedFactCount} verified, ${s.discrepancyCount} discrepancies. Reason: "${(s.reason || '').slice(0, 200)}"`).join('\n') || '(no analyses available)'}\n\nFull source excerpt (first 3000 chars):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accuracy. If no analyses have been run, explicitly suggest running "Analyze Source Text" before deploying this curriculum.\n2. "claimsToVerify": array of 1-4 specific factual claims in NON-analysis artifacts (quiz questions, glossary definitions, lesson-plan facts) that a teacher should double-check. Each entry should be the actual claim quoted or paraphrased. Focus on claims with measurable risk (specific dates, numbers, named people/places, scientific assertions).\n3. "fixes": array of 1-3 actionable suggestions for improving accuracy ("add citations to the quiz answers", "verify the dates in the timeline against a primary source", etc.).\n\nReturn ONLY a single valid JSON object with exactly these three fields. No prose outside the JSON.`;
-                 const result = await callGemini(prompt, true);
+                 const result = await callGemini(prompt + '\n\nAlso return a top-level "status" field: "Aligned", "Partially Aligned", or "Not Aligned".', true);
                  const review = JSON.parse(cleanJson(result));
                  const reviewShape = {
+                     status: normalizeAuditStatus(review.status, accuracy.status),
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
                      claimsToVerify: Array.isArray(review.claimsToVerify) ? review.claimsToVerify.slice(0, 6) : [],
                      fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 5) : [],
                  };
                  content.comprehensive.accuracy.llmReview = reviewShape;
+                 applyAuditReviewStatus(content.comprehensive.accuracy, reviewShape);
                  _auditLLMCache.set(fp, reviewShape);
              } catch (e) { warnLog('[Alignment] Accuracy LLM review failed:', e); }
          })() : Promise.resolve();
@@ -3285,20 +3731,22 @@ ${_itemsBlock}`;
          const differentiationTask = (differentiation && !differentiation.computeFailed) ? (async () => {
              const fp = 'differentiation:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
              const cached = _auditLLMCache.get(fp);
-             if (cached) { content.comprehensive.differentiation.llmReview = cached; return; }
+             if (cached) { content.comprehensive.differentiation.llmReview = cached; applyAuditReviewStatus(content.comprehensive.differentiation, cached); return; }
              try {
                  const flags = differentiation.flags || {};
                  const present = Object.keys(flags).filter(function (k) { return flags[k]; });
                  const missing = differentiation.missing || [];
                  const prompt = 'You are a UDL specialist reviewing how a curriculum supports learner variability.\n\nDeterministic scaffold inventory (' + differentiation.coverage + '% coverage):\n- Present: ' + (present.join(', ') || '(none)') + '\n- Missing: ' + (missing.join(', ') || '(none)') + '\n\nGrade band: ' + dimGradeBand + '\n\nSource excerpt (first 2000 chars):\n"""\n' + (comprehensiveContext || '').slice(0, 2000) + '\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether the scaffold mix realistically serves the range of learners typical at this grade band. Name the most impactful missing scaffold for THIS content (some content needs visuals more than text-leveling; some needs audio more than visuals).\n2. "priorityAdditions": array of 1-3 specific scaffold-add suggestions ranked by impact for the grade band and topic. Each entry one short sentence.\n3. "qualityFlags": array of 0-2 sentences flagging any present-but-likely-thin scaffolds (e.g., "glossary present but only 4 terms — consider expanding for ELL support").\n\nReturn ONLY a single valid JSON object with exactly these three fields.';
-                 const result = await callGemini(prompt, true);
+                 const result = await callGemini(prompt + '\n\nAlso return a top-level "status" field: "Aligned", "Partially Aligned", or "Not Aligned".', true);
                  const review = JSON.parse(cleanJson(result));
                  const reviewShape = {
+                     status: normalizeAuditStatus(review.status, differentiation.status),
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
                      priorityAdditions: Array.isArray(review.priorityAdditions) ? review.priorityAdditions.slice(0, 5) : [],
                      qualityFlags: Array.isArray(review.qualityFlags) ? review.qualityFlags.slice(0, 4) : [],
                  };
                  content.comprehensive.differentiation.llmReview = reviewShape;
+                 applyAuditReviewStatus(content.comprehensive.differentiation, reviewShape);
                  _auditLLMCache.set(fp, reviewShape);
              } catch (e) { warnLog('[Alignment] Differentiation LLM review failed:', e); }
          })() : Promise.resolve();
@@ -3307,17 +3755,19 @@ ${_itemsBlock}`;
          const cognitiveLoadTask = (cognitiveLoad && !cognitiveLoad.notApplicable && !cognitiveLoad.computeFailed) ? (async () => {
              const fp = 'cognitiveLoad:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
              const cached = _auditLLMCache.get(fp);
-             if (cached) { content.comprehensive.cognitiveLoad.llmReview = cached; return; }
+             if (cached) { content.comprehensive.cognitiveLoad.llmReview = cached; applyAuditReviewStatus(content.comprehensive.cognitiveLoad, cached); return; }
              try {
                  const segs = (cognitiveLoad.perSegment || []).map(function (s) { return s.label + ': ' + (s.claimedMinutes !== null ? s.claimedMinutes + ' min' : '(no time given)'); }).join('\n - ');
                  const prompt = 'You are an experienced classroom teacher reviewing a lesson plan for realistic pacing.\n\nClaimed segment durations:\n - ' + (segs || '(none)') + '\nClaimed total: ' + cognitiveLoad.claimedTotalMinutes + ' min\n\nDeterministic estimate of actual time required: ' + cognitiveLoad.estimatedTotalMinutes + ' min\n  - Reading: ' + cognitiveLoad.breakdown.reading + ' min (assumes ' + cognitiveLoad.breakdown.wpmAssumption + ' wpm at this grade)\n  - Quiz: ' + cognitiveLoad.breakdown.quiz + ' min\n  - Activities: ' + cognitiveLoad.breakdown.activities + ' min\n\nClaimed-vs-estimated ratio: ' + (cognitiveLoad.ratio || 'n/a') + '\nGrade band: ' + dimGradeBand + '\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether the pacing is realistic and what the most likely failure mode is (running out of time vs. dead time). Be specific about which segment is most likely the squeeze point.\n2. "specificAdjustments": array of 1-3 concrete adjustments ("trim source text to 800 words", "drop one quiz question", "split into 2 days"). Each entry one short sentence.\n\nReturn ONLY a single valid JSON object with exactly these two fields.';
-                 const result = await callGemini(prompt, true);
+                 const result = await callGemini(prompt + '\n\nAlso return a top-level "status" field: "Aligned", "Partially Aligned", or "Not Aligned".', true);
                  const review = JSON.parse(cleanJson(result));
                  const reviewShape = {
+                     status: normalizeAuditStatus(review.status, cognitiveLoad.status),
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
                      specificAdjustments: Array.isArray(review.specificAdjustments) ? review.specificAdjustments.slice(0, 5) : [],
                  };
                  content.comprehensive.cognitiveLoad.llmReview = reviewShape;
+                 applyAuditReviewStatus(content.comprehensive.cognitiveLoad, reviewShape);
                  _auditLLMCache.set(fp, reviewShape);
              } catch (e) { warnLog('[Alignment] Cognitive load LLM review failed:', e); }
          })() : Promise.resolve();
@@ -3343,7 +3793,7 @@ ${_itemsBlock}`;
                      };
                  } else {
                      content.comprehensive.culturalResponsiveness = {
-                         status: typeof review.status === 'string' ? review.status : 'Partially Aligned',
+                         status: normalizeAuditStatus(review.status, 'Partially Aligned'),
                          narrative: typeof review.narrative === 'string' ? review.narrative : '',
                          strengths: Array.isArray(review.strengths) ? review.strengths.slice(0, 5) : [],
                          gaps: Array.isArray(review.gaps) ? review.gaps.slice(0, 5) : [],

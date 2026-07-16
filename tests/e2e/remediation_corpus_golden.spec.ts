@@ -22,6 +22,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TAGGED_PDF_INVARIANTS_JS, PAKO_CDN } from './_tagged_pdf_invariants';
 
+const VERIFICATION_POLICY_PATH = path.resolve(__dirname, '../../verification_policy_module.js');
+const RENDERER_MODULE_PATH = path.resolve(__dirname, '../../doc_builder_renderer_module.js');
 const MODULE_PATH = path.resolve(__dirname, '../../doc_pipeline_module.js');
 const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
 const ASSET = (p: string) => path.resolve(__dirname, '../../test-assets', p);
@@ -98,10 +100,12 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
     // self-load (Item 0) is precisely what this page exercises — by then window.PDFLib exists.
     page = await browser.newPage();
     await page.goto('about:blank');
+    await page.addScriptTag({ path: VERIFICATION_POLICY_PATH });
+    await page.addScriptTag({ path: RENDERER_MODULE_PATH });
     await page.addScriptTag({ path: MODULE_PATH });
     await page.addScriptTag({ url: PAKO_CDN });
     await page.addScriptTag({ content: TAGGED_PDF_INVARIANTS_JS });
-    await page.waitForFunction(() => !!(window as any).AlloModules?.createDocPipeline && !!(window as any).pako, null, { timeout: 20000 });
+    await page.waitForFunction(() => !!(window as any).AlloModules?.VerificationPolicy && !!(window as any).AlloModules?.DocBuilderRenderer && !!(window as any).AlloModules?.createDocPipeline && !!(window as any).pako, null, { timeout: 20000 });
     await page.evaluate(() => {
       const w = window as any;
       w.__calls = [];
@@ -196,6 +200,33 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
     expect(out.clean.findings.length).toBe(0);
   });
 
+  test('clean rebuilt tagged PDF contains no executable source actions or attachments', async () => {
+    const out = await page.evaluate(async () => {
+      const w = window as any;
+      const NS = w.PDFLib;
+      const generated = await w.__pipeline.createTypesetTaggedPdf({
+        accessibleHtml: '<!doctype html><html lang="en"><head><title>Safe copy</title></head><body><h1>Safe copy</h1><p>Remediated classroom content.</p></body></html>',
+      }, { title: 'Safe copy', lang: 'en', subject: 'Clean rebuild test' });
+      const doc = await NS.PDFDocument.load(generated.bytes, { updateMetadata: false });
+      const nm = (name: string) => NS.PDFName.of(name);
+      const resolve = (obj: any) => obj && obj.constructor && obj.constructor.name === 'PDFRef' ? doc.context.lookup(obj) : obj;
+      const names = resolve(doc.catalog.get(nm('Names')));
+      const pageHasAA = doc.getPages().some((p: any) => !!p.node.get(nm('AA')));
+      return {
+        openAction: !!doc.catalog.get(nm('OpenAction')),
+        catalogAA: !!doc.catalog.get(nm('AA')),
+        pageAA: pageHasAA,
+        javascriptTree: !!(names && names.get && names.get(nm('JavaScript'))),
+        embeddedFilesTree: !!(names && names.get && names.get(nm('EmbeddedFiles'))),
+        bytes: generated.bytes.length,
+        roundTripOk: generated.roundTrip && generated.roundTrip.ok,
+      };
+    });
+    expect(out.bytes).toBeGreaterThan(100);
+    expect(out.roundTripOk).toBe(true);
+    expect(out).toMatchObject({ openAction: false, catalogAA: false, pageAA: false, javascriptTree: false, embeddedFilesTree: false });
+  });
+
   test('real committed fixtures audit end-to-end (multi-column sample + scrambled)', async () => {
     const out = await page.evaluate(async (fx: any) => {
       const w = window as any;
@@ -231,6 +262,7 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
       const toBytes = (b64: string) => Uint8Array.from(atob(b64), (c: string) => c.charCodeAt(0));
       const tagged = await w.__pipeline.createTaggedPdf(toBytes(textB64), result, { title: 'Text Fixture', lang: 'en' });
       const bytes = tagged && tagged.bytes ? tagged.bytes : tagged;
+      const roundTrip = tagged && tagged.roundTrip;
       let invariants: any = null;
       if (bytes) {
         const NS = w.PDFLib;
@@ -250,6 +282,14 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
           sweepMcrCount: sweep.mcrCount,
         };
       }
+      let taggedB64 = '';
+      if (bytes) {
+        let binary = '';
+        for (let i = 0; i < bytes.length; i += 0x8000) {
+          binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + 0x8000, bytes.length)));
+        }
+        taggedB64 = btoa(binary);
+      }
       return {
         htmlLen: result.accessibleHtml.length,
         htmlHasSourceText: /Photosynthesis|light energy|chlorophyll/i.test(result.accessibleHtml),
@@ -259,9 +299,24 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
         hasOcrAccuracyKey: 'ocrAccuracy' in result,
         afterScore: result.afterScore,
         invariants,
+        roundTripOk: roundTrip && roundTrip.ok,
+        tagTreeOrder: roundTrip && roundTrip.tagTreeOrder,
+        tagTreeOrderCheck: roundTrip && (roundTrip.checks || []).find((c: any) => c.rule === 'Logical reading order follows saved StructTreeRoot /K'),
+        taggedB64,
       };
     }, fixtures!.textB64);
+
     expect((out as any).error).toBeUndefined();
+    expect(out.taggedB64, 'full remediation must return a nonempty PDF artifact').toMatch(/^JVBER/);
+
+    // Persist this full remediation pair for the optional independent veraPDF
+    // source-to-tagged clause-diff job. Artifact generation is part of the gate:
+    // a missing pair must not let the external validator pass vacuously.
+    const artDir = path.resolve(__dirname, 'artifacts');
+    fs.mkdirSync(artDir, { recursive: true });
+    fs.writeFileSync(path.join(artDir, 'remediation-e2e.source.pdf'), Buffer.from(fixtures!.textB64, 'base64'));
+    fs.writeFileSync(path.join(artDir, 'remediation-e2e.tagged.pdf'), Buffer.from(out.taggedB64, 'base64'));
+
     expect(out.htmlLen).toBeGreaterThan(100);
     expect(out.htmlHasSourceText).toBe(true); // the document's own words survived remediation
     expect(out.htmlHasHeading).toBe(true); // the JSON pipeline rendered real heading structure
@@ -272,6 +327,16 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
     expect(out.invariants.hasStructTreeRoot).toBe(true);
     expect(out.invariants.marked).toBe(true);
     expect(out.invariants.lang).toContain('en');
+    // This is the authoritative assistive-technology order: it comes from
+    // re-parsing the SAVED PDF and walking StructTreeRoot /K, then comparing
+    // every semantic leaf fingerprint with the HTML-derived expected order.
+    expect(out.roundTripOk, 'the shipped bytes must pass all post-save checks').toBe(true);
+    expect(out.tagTreeOrder, 'post-save verifier must report the saved tag-tree order').toBeTruthy();
+    expect(out.tagTreeOrder.exact, JSON.stringify(out.tagTreeOrder)).toBe(true);
+    expect(out.tagTreeOrder.expectedLeafCount).toBeGreaterThan(0);
+    expect(out.tagTreeOrder.savedLeafCount).toBe(out.tagTreeOrder.expectedLeafCount);
+    expect(out.tagTreeOrder.mismatchIndex).toBe(-1);
+    expect(out.tagTreeOrderCheck && out.tagTreeOrderCheck.status).toBe('pass');
     // Shared structural-invariant sweep (2026-07-09): the full dup-claim/dangling-MCR/balance/
     // artifact-StructParents set, on a REAL end-to-end run's bytes.
     expect(out.invariants.sweepViolations, JSON.stringify(out.invariants.sweepViolations)).toEqual([]);

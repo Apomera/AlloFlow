@@ -1,4 +1,4 @@
-// Unit tests for window.AlloModules.AlloCommands (allo_commands_module.js) —
+// Unit tests for window.AlloModules.AlloCommands (allo_commands_module.js) -
 // the natural-language / voice command router that maps a teacher/student
 // utterance to an app action. Misrouting (or running a DESTRUCTIVE command
 // without confirmation) is a real correctness/safety issue, so the scoring,
@@ -9,6 +9,8 @@
 // (scoreCommand / buildAlloCommands / routeUtterance) never touch React.
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 let AC;
@@ -27,6 +29,91 @@ beforeAll(() => {
   if (!AC) throw new Error('AlloCommands failed to register');
 });
 afterAll(() => { vi.unstubAllGlobals(); });
+
+describe('AlloCommandPalette accessibility', () => {
+  it('connects combobox selection and live search feedback for assistive technology', () => {
+    const source = readFileSync(resolve(process.cwd(), 'allo_commands_source.jsx'), 'utf-8');
+    expect(source).toContain('aria-autocomplete="list"');
+    expect(source).toContain('aria-describedby="allo-palette-status"');
+    expect(source).toContain('id="allo-palette-status" role="status" aria-live="polite" aria-atomic="true"');
+    expect(source).toContain("count + ' matching command'");
+    expect(source).toContain("selectedCommand.label + ' selected.'");
+    expect(source).toContain("document.getElementById('allo-cmd-' + selectedCommandId)");
+    expect(source).toContain("scrollIntoView({ block: 'nearest' })");
+    expect(source).toContain("const COMMAND_RECENTS_KEY = 'allo_command_recents_v1'");
+    expect(source).toContain("t('palette.group.recent', 'Recent')");
+    expect(source).toContain('rememberCommand(cmd.id)');
+  });
+});
+
+describe('command coverage drift guards', () => {
+  const readRoot = (name) => readFileSync(resolve(process.cwd(), name), 'utf-8');
+
+  it('keeps host launchers reachable from the command registry', () => {
+    const app = readRoot('AlloFlowANTI.txt');
+    const source = readRoot('allo_commands_source.jsx');
+    const block = app.match(/Nested-tool launchers[\s\S]*?spotlightUiLanguage:/);
+    expect(block).toBeTruthy();
+    const launcherNames = [...new Set([...block[0].matchAll(/\b(open[A-Z][A-Za-z0-9]+):\s*\([^)]*\)\s*=>/g)].map((m) => m[1]))];
+    expect(launcherNames).toEqual(expect.arrayContaining(['openVideoStudio', 'openTimelineStudio', 'openTestPrepHub']));
+    const missing = launcherNames.filter((name) => !source.includes(`c.${name}(`));
+    expect(missing).toEqual([]);
+  });
+
+  it('keeps command opensPanel ids backed by closeOtherPanels closers', () => {
+    const app = readRoot('AlloFlowANTI.txt');
+    const source = readRoot('allo_commands_source.jsx');
+    const panels = [...new Set([...source.matchAll(/opensPanel:\s*'([^']+)'/g)].map((m) => m[1]))];
+    expect(panels).toEqual(expect.arrayContaining(['videoStudio', 'timelineStudio', 'testPrepHub']));
+    const closeBlock = app.match(/closeOtherPanels:\s*\(keep\)\s*=>\s*\{[\s\S]*?Object\.keys\(closers\)/);
+    expect(closeBlock).toBeTruthy();
+    const closers = new Set([...closeBlock[0].matchAll(/\b([A-Za-z][A-Za-z0-9]+):\s*\(\)\s*=>/g)].map((m) => m[1]));
+    const allowedWithoutCloser = new Set(['dashboard']);
+    const missing = panels.filter((panel) => !closers.has(panel) && !allowedWithoutCloser.has(panel));
+    expect(missing).toEqual([]);
+  });
+
+  it('keeps every registry command explicitly grouped for palette browsing', () => {
+    const source = readRoot('allo_commands_source.jsx');
+    const registry = source.match(/const cmds = \[([\s\S]*?)\r?\n\s*\];\r?\n\s*const isStudentish/);
+    const groupBlock = source.match(/const CMD_GROUP = \{([\s\S]*?)\n\};/);
+    expect(registry).toBeTruthy();
+    expect(groupBlock).toBeTruthy();
+    const commandIds = [...new Set([...registry[1].matchAll(/\{ id: '([^']+)'/g)].map((m) => m[1]))];
+    const missing = commandIds.filter((id) => !new RegExp('\\b' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:').test(groupBlock[1]));
+    expect(missing).toEqual([]);
+  });
+
+  it('keeps command context tags backed by active-state flags and labels', () => {
+    const source = readRoot('allo_commands_source.jsx');
+    const contextBlock = source.match(/const CMD_CONTEXT = \{([\s\S]*?)\n\};/);
+    const flagBlock = source.match(/const CTX_FLAG = \{([^\n]+)\};/);
+    const labelBlock = source.match(/const CONTEXT_LABEL_FALLBACK = \{([^\n]+)\};/);
+    expect(contextBlock).toBeTruthy();
+    expect(flagBlock).toBeTruthy();
+    expect(labelBlock).toBeTruthy();
+    const contexts = [...new Set([...contextBlock[1].matchAll(/\[([^\]]+)\]/g)].flatMap((m) => [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1])))];
+    const missingFlags = contexts.filter((name) => !new RegExp('\\b' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:').test(flagBlock[1]));
+    const missingLabels = contexts.filter((name) => !new RegExp('\\b' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:').test(labelBlock[1]));
+    expect(missingFlags).toEqual([]);
+    expect(missingLabels).toEqual([]);
+  });
+
+  it('keeps every command handler dependency exposed by the host context', () => {
+    const app = readRoot('AlloFlowANTI.txt');
+    const source = readRoot('allo_commands_source.jsx');
+    const ctxBlock = app.match(/const ctx = \{([\s\S]*?)\r?\n\s*\};\r?\n\s*_alloCmdCtxRef\.current = ctx/);
+    expect(ctxBlock).toBeTruthy();
+    const ctxSource = ctxBlock[1].replace(/\/\/.*$/gm, '');
+    const explicitKeys = [...ctxSource.matchAll(/(?:^|[,{]\s*)([A-Za-z_$][A-Za-z0-9_$]*)\s*:/gm)].map((m) => m[1]);
+    const shorthandKeys = [...ctxSource.matchAll(/(?:^|[,{]\s*)([A-Za-z_$][A-Za-z0-9_$]*)\s*(?=,)/gm)].map((m) => m[1]);
+    const provided = new Set([...explicitKeys, ...shorthandKeys]);
+    const deps = [...new Set([...source.matchAll(/\bc\.([A-Za-z_$][A-Za-z0-9_$]*)\s*\(/g)].map((m) => m[1]))];
+    const notCtxDeps = new Set(['when']);
+    const missing = deps.filter((name) => !provided.has(name) && !notCtxDeps.has(name));
+    expect(missing).toEqual([]);
+  });
+});
 
 describe('scoreCommand', () => {
   const cmd = { label: 'Open the educator hub', aliases: ['hub'] };
@@ -64,6 +151,18 @@ describe('buildAlloCommands (role + when filtering)', () => {
     expect(ids({})).not.toContain('pipeline_new_doc'); // when: pipelineOpen
     expect(ids({ pipelineOpen: true })).toContain('pipeline_new_doc');
   });
+  it('covers newer studio and practice launchers with the right role visibility', () => {
+    const teacher = ids({});
+    expect(teacher).toEqual(expect.arrayContaining([
+      'open_video_studio', 'open_cinematic_studio', 'open_allo_studio',
+      'open_open_groove', 'open_timeline_studio', 'open_lingua_practice', 'open_test_prep_hub',
+    ]));
+    const student = ids({ isIndependentMode: true });
+    expect(student).not.toContain('open_video_studio');
+    expect(student).not.toContain('open_cinematic_studio');
+    expect(student).not.toContain('open_allo_studio');
+    expect(student).toEqual(expect.arrayContaining(['open_open_groove', 'open_timeline_studio', 'open_lingua_practice', 'open_test_prep_hub']));
+  });
 });
 
 describe('routeUtterance', () => {
@@ -91,14 +190,14 @@ describe('routeUtterance', () => {
     const ctx = { pipelineOpen: true, startNewPdfAudit };
     const r1 = await AC.routeUtterance(ctx, 'start over with a new document');
     expect(r1.commandId).toBe('pipeline_new_doc');
-    expect(startNewPdfAudit).not.toHaveBeenCalled(); // not confirmed → not run
+    expect(startNewPdfAudit).not.toHaveBeenCalled(); // not confirmed -> not run
     await AC.routeUtterance(ctx, 'start over with a new document', { confirmed: true });
-    expect(startNewPdfAudit).toHaveBeenCalled(); // confirmed → run
+    expect(startNewPdfAudit).toHaveBeenCalled(); // confirmed -> run
   });
 });
 
 // The bot CHAT routes every message through the router first. If it EXECUTES on a
-// match, a stray "bot"/"hi" opener runs toggle_bot → the bot hides and the chat
+// match, a stray "bot"/"hi" opener runs toggle_bot -> the bot hides and the chat
 // closes. Preview mode must MATCH-without-running so the chat can confirm first.
 describe('routeUtterance preview mode (bot chat safety)', () => {
   it('excludes chatSkip commands (toggle_bot) from chat proposals', async () => {
@@ -125,7 +224,7 @@ describe('routeUtterance preview mode (bot chat safety)', () => {
   });
 
   it('does NOT match a short opener like "hi" (would only be noise)', async () => {
-    // 'hi' scores 80 via "hide bot".startsWith("hi") but is < 3 chars → rejected in
+    // 'hi' scores 80 via "hide bot".startsWith("hi") but is < 3 chars -> rejected in
     // preview. allowAi:false so it cannot fall through to the AI classifier.
     const handleToggleIsBotVisible = vi.fn();
     const r = await AC.routeUtterance({ handleToggleIsBotVisible }, 'hi', { preview: true, allowAi: false });
@@ -240,6 +339,14 @@ describe('runCommandById (executes a confirmed, previewed command)', () => {
 
   it('returns null for an unknown id', () => {
     expect(AC.runCommandById({}, 'no_such_command')).toBeNull();
+  });
+  it('opens newer studio launchers through one host handler and closes peer panels', () => {
+    const closeOtherPanels = vi.fn();
+    const openTimelineStudio = vi.fn();
+    const r = AC.runCommandById({ closeOtherPanels, openTimelineStudio }, 'open_timeline_studio', {});
+    expect(r).toMatchObject({ handled: true, commandId: 'open_timeline_studio' });
+    expect(closeOtherPanels).toHaveBeenCalledWith('timelineStudio');
+    expect(openTimelineStudio).toHaveBeenCalledTimes(1);
   });
 
   it('still gates a destructive command until confirmed:true', () => {

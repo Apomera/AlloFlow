@@ -151,14 +151,14 @@
     "ink":           ["#0f172a", "#e8eef7", "#ffff00"],
     "ink-2":         ["#334155", "#cbd5e1", "#ffff00"],
     "ink-3":         ["#475569", "#b0bece", "#ffff00"],
-    "muted":         ["#64748b", "#94a3b8", "#ffff00"],
+    "muted":         ["#5c6675", "#94a3b8", "#ffff00"],
     "faint":         ["#94a3b8", "#7e8ca0", "#ffff00"],
     "border":        ["#e2e8f0", "#334155", "#ffff00"],
     "border-2":      ["#cbd5e1", "#46586e", "#ffff00"],
     "on-accent":     ["#ffffff", "#ffffff", "#000000"],
     "accent":        ["#1e3a8a", "#2563eb", "#ffff00"],
     "accent-text":   ["#1e3a8a", "#93c5fd", "#ffff00"],
-    "accent-2":      ["#3b82f6", "#60a5fa", "#ffff00"],
+    "accent-2":      ["#2563eb", "#60a5fa", "#ffff00"],
     "focus":         ["#b45309", "#fbbf24", "#ffff00"],
     "blue-tint":     ["#eff6ff", "rgba(59,130,246,0.14)", "#000000"],
     "blue-tint-2":   ["#dbeafe", "rgba(59,130,246,0.22)", "#000000"],
@@ -240,7 +240,7 @@
     "btn-rose":      ["#9d174d", "#be185d", "#ffff00"],
     "btn-amber":     ["#92400e", "#b45309", "#ffff00"],
     "btn-violet":    ["#6d28d9", "#7c3aed", "#ffff00"],
-    "btn-green":     ["#16a34a", "#15803d", "#ffff00"]
+    "btn-green":     ["#15803d", "#15803d", "#ffff00"]
   };
   function daBuildTokenCss(idx) {
     var decls = [];
@@ -5180,14 +5180,14 @@
     // SVG presentation attributes (fill/stroke) and hex+alpha string concats
     // (e.g. idxColor + "11"). Light values match the original palette.
     var DA_TONES = {
-      light: { ink: "#0f172a", muted: "#64748b", faint: "#94a3b8", slate: "#475569", border: "#cbd5e1", grid: "#e2e8f0", surface: "#ffffff",
-        blue: "#1e3a8a", blueMid: "#3b82f6", sky: "#0284c7", green: "#16a34a", greenStrong: "#15803d", amber: "#a16207", amberMid: "#d97706",
+      light: { ink: "#0f172a", muted: "#5c6675", faint: "#94a3b8", slate: "#475569", border: "#cbd5e1", grid: "#e2e8f0", surface: "#ffffff",
+        blue: "#1e3a8a", blueMid: "#2563eb", sky: "#0284c7", green: "#16a34a", greenStrong: "#15803d", amber: "#a16207", amberMid: "#d97706", orange: "#c2410c",
         red: "#b91c1c", redMid: "#dc2626", violet: "#6d28d9", orangeDeep: "#7c2d12", roseDeep: "#9d174d", redDeep: "#7f1d1d" },
       dark: { ink: "#e8eef7", muted: "#94a3b8", faint: "#7e8ca0", slate: "#b0bece", border: "#46586e", grid: "#334155", surface: "#1e293b",
-        blue: "#93c5fd", blueMid: "#60a5fa", sky: "#38bdf8", green: "#4ade80", greenStrong: "#86efac", amber: "#fbbf24", amberMid: "#fbbf24",
+        blue: "#93c5fd", blueMid: "#60a5fa", sky: "#38bdf8", green: "#4ade80", greenStrong: "#86efac", amber: "#fbbf24", amberMid: "#fbbf24", orange: "#fb923c",
         red: "#f87171", redMid: "#f87171", violet: "#a78bfa", orangeDeep: "#fdba74", roseDeep: "#f9a8d4", redDeep: "#fca5a5" },
       contrast: { ink: "#ffff00", muted: "#ffff00", faint: "#ffff00", slate: "#ffff00", border: "#ffff00", grid: "#ffff00", surface: "#000000",
-        blue: "#ffff00", blueMid: "#ffff00", sky: "#ffff00", green: "#00ff00", greenStrong: "#00ff00", amber: "#ffff00", amberMid: "#ffff00",
+        blue: "#ffff00", blueMid: "#ffff00", sky: "#ffff00", green: "#00ff00", greenStrong: "#00ff00", amber: "#ffff00", amberMid: "#ffff00", orange: "#ffff00",
         red: "#ffff00", redMid: "#ffff00", violet: "#ffff00", orangeDeep: "#ffff00", roseDeep: "#ffff00", redDeep: "#ffff00" }
     };
     var daTone = DA_TONES[daTheme] || DA_TONES.light;
@@ -5195,7 +5195,7 @@
     // hex) to the current theme's tone so text stays readable on dark surfaces.
     var DA_HEX_TONE = {
       "#16a34a": "green", "#15803d": "greenStrong", "#a16207": "amber", "#d97706": "amberMid",
-      "#b91c1c": "red", "#dc2626": "redMid", "#ea580c": "amberMid", "#64748b": "muted",
+      "#b91c1c": "red", "#dc2626": "redMid", "#ea580c": "orange", "#64748b": "muted",
       "#475569": "slate", "#1e3a8a": "blue", "#0f172a": "ink", "#7f1d1d": "redDeep",
       "#7c2d12": "orangeDeep", "#9d174d": "roseDeep", "#92400e": "amber",
       "#6d28d9": "violet", "#5b21b6": "violet", "#7c3aed": "violet",
@@ -12477,6 +12477,12 @@
             style: { background: "transparent", border: "1px solid var(--da-border-2)", color: "var(--da-ink-3)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
           }, "↩ Reopen last item") : null
         ),
+
+        // Bridge the h1 → h3 heading jump: every result card below is an h3,
+        // so a single sr-only h2 keeps the outline valid (WCAG 1.3.1 / 2.4.10)
+        // without changing anything visually.
+        h("h2", { style: { position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 } },
+          "Detailed results"),
 
         // Headline modifiability card
         h("div", {

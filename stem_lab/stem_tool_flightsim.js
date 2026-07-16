@@ -8946,6 +8946,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       });
       var controlsRef = useRef({ throttle: 0, pitch: 0, bank: 0 });
       var hudRef = useRef({});
+      // Per-frame gradient cache (Chromebook alloc sweep): the sky, ground,
+      // dashboard, and vignette gradients were re-created ~60×/s with stable
+      // (or quantized-stable) parameters. CanvasGradient objects survive the
+      // per-frame canvas.width reset, so reuse is safe. Capped Map.
+      var gradCacheRef = useRef(new Map());
+      var cachedGrad = function(key, make) {
+        var gm = gradCacheRef.current;
+        var gg = gm.get(key);
+        if (!gg) {
+          if (gm.size > 200) gm.clear();
+          gg = make();
+          gm.set(key, gg);
+        }
+        return gg;
+      };
       var flyingRef = useRef(false);
       var timeRef = useRef(0);
       var pausedRef = useRef(false);
@@ -10951,15 +10966,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // for visibility. Strong motion cue when moving. Each road also
         // gets a couple of small moving "car" dots that scroll along it.
         if (aglAlt < 2500) {
+          // WORLD-GRID ANCHORED (same pattern as fields/lakes/turbines): each
+          // 1/8° cell owns its roads, anchored to the CELL CENTER. Previously
+          // the endpoints were state.lat/lon + offsets — the road was glued to
+          // the aircraft and never scrolled past, defeating the whole point of
+          // a motion cue. 3×3 neighbor cells so roads slide in/out of view.
+          var RSTEP = 8; // cells per degree (matches the seed quantization)
+          var rCellI0 = Math.floor(state.lat * RSTEP);
+          var rCellJ0 = Math.floor(state.lon * RSTEP);
+          for (var rci = -1; rci <= 1; rci++) {
+          for (var rcj = -1; rcj <= 1; rcj++) {
           for (var ri = 0; ri < 2; ri++) {
-            var rSeed = terrainHash(Math.floor(state.lat * 8) + ri * 13, Math.floor(state.lon * 8) + ri * 7);
+            var rCellI = rCellI0 + rci, rCellJ = rCellJ0 + rcj;
+            var rSeed = terrainHash(rCellI + ri * 13, rCellJ + ri * 7);
             if (rSeed < 0.4) continue;
-            // Road runs at a random bearing; pick start/end nm offsets.
+            // Road runs at a seeded bearing THROUGH the cell center.
             var rBearing = rSeed * Math.PI * 2;
-            var rLat0 = state.lat + Math.cos(rBearing) * 0.05;
-            var rLon0 = state.lon + Math.sin(rBearing) * 0.05;
-            var rLat1 = state.lat + Math.cos(rBearing) * 0.12;
-            var rLon1 = state.lon + Math.sin(rBearing) * 0.12;
+            var rAnchLat = (rCellI + 0.5) / RSTEP;
+            var rAnchLon = (rCellJ + 0.5) / RSTEP;
+            var rLat0 = rAnchLat - Math.cos(rBearing) * 0.045;
+            var rLon0 = rAnchLon - Math.sin(rBearing) * 0.045;
+            var rLat1 = rAnchLat + Math.cos(rBearing) * 0.045;
+            var rLon1 = rAnchLon + Math.sin(rBearing) * 0.045;
             var p0 = projectLatLon(rLat0, rLon0);
             var p1 = projectLatLon(rLat1, rLon1);
             if (!p0 || !p1) continue;
@@ -10984,6 +11012,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.fillRect(carX - carSize / 2, carY - carSize / 2, carSize, carSize);
             }
           }
+          }
+          }
         }
 
         // ── Highway / interstate: a wider, divided road with two lanes
@@ -10991,13 +11021,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // a thick gray strip with a yellow center divider, white lane
         // dashes, and 4-6 cars in each direction. Major motion landmark.
         if (aglAlt < 2500) {
-          var hwSeed = terrainHash(Math.floor(state.lat * 6) + 31, Math.floor(state.lon * 6) + 47);
+          // World-grid anchored (see roads note): the interstate belongs to its
+          // 1/6° cell and scrolls past like real infrastructure.
+          var HWSTEP = 6;
+          var hwCellI0 = Math.floor(state.lat * HWSTEP);
+          var hwCellJ0 = Math.floor(state.lon * HWSTEP);
+          for (var hwci = -1; hwci <= 1; hwci++) {
+          for (var hwcj = -1; hwcj <= 1; hwcj++) {
+          var hwCellI = hwCellI0 + hwci, hwCellJ = hwCellJ0 + hwcj;
+          var hwSeed = terrainHash(hwCellI + 31, hwCellJ + 47);
           if (hwSeed > 0.6) {
             var hwBearing = (hwSeed + 0.15) * Math.PI * 2;
-            var hwLat0 = state.lat + Math.cos(hwBearing) * 0.04;
-            var hwLon0 = state.lon + Math.sin(hwBearing) * 0.04;
-            var hwLat1 = state.lat + Math.cos(hwBearing) * 0.16;
-            var hwLon1 = state.lon + Math.sin(hwBearing) * 0.16;
+            var hwAnchLat = (hwCellI + 0.5) / HWSTEP;
+            var hwAnchLon = (hwCellJ + 0.5) / HWSTEP;
+            var hwLat0 = hwAnchLat - Math.cos(hwBearing) * 0.08;
+            var hwLon0 = hwAnchLon - Math.sin(hwBearing) * 0.08;
+            var hwLat1 = hwAnchLat + Math.cos(hwBearing) * 0.08;
+            var hwLon1 = hwAnchLon + Math.sin(hwBearing) * 0.08;
             var phw0 = projectLatLon(hwLat0, hwLon0);
             var phw1 = projectLatLon(hwLat1, hwLon1);
             if (phw0 && phw1) {
@@ -11054,6 +11094,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               }
             }
           }
+          }
+          }
         }
 
         // ── Rivers: meandering blue lines threading through the landscape.
@@ -11061,20 +11103,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // segments computed as a sine-modulated path along a fixed bearing.
         // Visible up to ~4500 ft AGL — strong motion cue at cruise.
         if (aglAlt < 4500) {
-          var rivSeed = terrainHash(Math.floor(state.lat * 5), Math.floor(state.lon * 5));
+          // World-grid anchored (see roads note). Each 1/5° cell owns its river;
+          // the polyline threads the CELL CENTER so it scrolls past instead of
+          // traveling with the aircraft. Bridges + dams are drawn HERE, pinned
+          // to actual polyline points — the old separate bridge block re-derived
+          // the position without the meander term, so bridges floated beside
+          // their meandering rivers.
+          var RIVSTEP = 5;
+          var rivCellI0 = Math.floor(state.lat * RIVSTEP);
+          var rivCellJ0 = Math.floor(state.lon * RIVSTEP);
+          for (var rvci = -1; rvci <= 1; rvci++) {
+          for (var rvcj = -1; rvcj <= 1; rvcj++) {
+          var rivCellI = rivCellI0 + rvci, rivCellJ = rivCellJ0 + rvcj;
+          var rivSeed = terrainHash(rivCellI, rivCellJ);
           if (rivSeed > 0.55) {
             // River bearing — perpendicular-ish to the slope of terrain
             var rivBearing = rivSeed * Math.PI * 2;
             var rivCosB = Math.cos(rivBearing);
             var rivSinB = Math.sin(rivBearing);
-            // Build a 9-point polyline that meanders ±0.012° perpendicular
-            // to the bearing as it travels along it.
+            var rivAnchLat = (rivCellI + 0.5) / RIVSTEP;
+            var rivAnchLon = (rivCellJ + 0.5) / RIVSTEP;
+            // Build a 9-point polyline that meanders ±0.015° perpendicular
+            // to the bearing as it travels along it, centered on the cell.
             var rivPts = [];
             for (var rp = 0; rp < 9; rp++) {
-              var rT = -0.04 + rp * 0.025; // -0.04 to 0.16 along bearing
+              var rT = -0.1 + rp * 0.025; // -0.1 to +0.1 along bearing
               var meander = Math.sin(rp * 0.9 + rivSeed * 10) * 0.015;
-              var rivLat = state.lat + rivCosB * rT + (-rivSinB) * meander;
-              var rivLon = state.lon + rivSinB * rT + rivCosB * meander;
+              var rivLat = rivAnchLat + rivCosB * rT + (-rivSinB) * meander;
+              var rivLon = rivAnchLon + rivSinB * rT + rivCosB * meander;
               var pp = projectLatLon(rivLat, rivLon);
               if (pp) rivPts.push(pp);
             }
@@ -11099,7 +11155,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 gfx.lineTo(rivPts[rpj].x, rivPts[rpj].y);
               }
               gfx.stroke();
+              // ── Bridge ON the river (every river cell) ──
+              if (aglAlt < 2500 && rivPts.length >= 5) {
+                var pbg = rivPts[Math.floor(rivPts.length / 2)];
+                var bgLen = Math.max(8, 22 * pbg.t);
+                var perpAng = rivBearing + Math.PI / 2;
+                var bgDx = Math.cos(perpAng) * bgLen / 2;
+                var bgDy = Math.sin(perpAng) * bgLen / 2 * 0.4; // foreshorten in y
+                // Bridge deck
+                gfx.strokeStyle = 'rgba(80,75,70,' + (0.8 * fade) + ')';
+                gfx.lineWidth = Math.max(2, 3.5 * pbg.t);
+                gfx.beginPath();
+                gfx.moveTo(pbg.x - bgDx, pbg.y - bgDy);
+                gfx.lineTo(pbg.x + bgDx, pbg.y + bgDy);
+                gfx.stroke();
+                // Suspension cables / arch — thin curve over the deck
+                gfx.strokeStyle = 'rgba(140,135,130,' + (0.6 * fade) + ')';
+                gfx.lineWidth = Math.max(0.5, 0.7 * pbg.t);
+                gfx.beginPath();
+                gfx.moveTo(pbg.x - bgDx, pbg.y - bgDy);
+                gfx.quadraticCurveTo(pbg.x, pbg.y - 6 * pbg.t, pbg.x + bgDx, pbg.y + bgDy);
+                gfx.stroke();
+                // ── Dam + reservoir upstream (top-tier seeds only) ──
+                if (rivSeed > 0.85 && rivPts.length >= 8) {
+                  var pdam = rivPts[rivPts.length - 2];
+                  var damLen = Math.max(10, 26 * pdam.t);
+                  var damDx = Math.cos(perpAng) * damLen / 2;
+                  var damDy = Math.sin(perpAng) * damLen / 2 * 0.4;
+                  var pres = rivPts[rivPts.length - 1];
+                  gfx.fillStyle = 'rgba(95,140,170,' + (0.7 * fade) + ')';
+                  gfx.beginPath();
+                  gfx.ellipse(pres.x, pres.y, damLen * 0.7, damLen * 0.32, perpAng, 0, Math.PI * 2);
+                  gfx.fill();
+                  // Dam wall (concrete)
+                  gfx.strokeStyle = 'rgba(180,178,172,' + (0.9 * fade) + ')';
+                  gfx.lineWidth = Math.max(2.5, 4 * pdam.t);
+                  gfx.beginPath();
+                  gfx.moveTo(pdam.x - damDx, pdam.y - damDy);
+                  gfx.lineTo(pdam.x + damDx, pdam.y + damDy);
+                  gfx.stroke();
+                  // Spillway: a darker stripe in the middle
+                  gfx.strokeStyle = 'rgba(60,75,95,' + (0.8 * fade) + ')';
+                  gfx.lineWidth = Math.max(1, 1.6 * pdam.t);
+                  gfx.beginPath();
+                  gfx.moveTo(pdam.x - damDx * 0.15, pdam.y - damDy * 0.15);
+                  gfx.lineTo(pdam.x + damDx * 0.15, pdam.y + damDy * 0.15);
+                  gfx.stroke();
+                }
+              }
             }
+          }
+          }
           }
         }
 
@@ -11250,15 +11356,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // train slides along the track at a phase-driven position so
         // it visibly moves. Strong landmark + motion cue.
         if (aglAlt < 2500) {
-          var trSeed = terrainHash(Math.floor(state.lat * 6) + 23, Math.floor(state.lon * 6) + 41);
+          // World-grid anchored (see roads note): tracks cross their 1/6° cell.
+          var TRSTEP = 6;
+          var trCellI0 = Math.floor(state.lat * TRSTEP);
+          var trCellJ0 = Math.floor(state.lon * TRSTEP);
+          for (var trci = -1; trci <= 1; trci++) {
+          for (var trcj = -1; trcj <= 1; trcj++) {
+          var trCellI = trCellI0 + trci, trCellJ = trCellJ0 + trcj;
+          var trSeed = terrainHash(trCellI + 23, trCellJ + 41);
           if (trSeed > 0.62) {
             var trBearing = (trSeed + 0.6) * Math.PI * 2;
             var trCos = Math.cos(trBearing);
             var trSin = Math.sin(trBearing);
+            var trAnchLat = (trCellI + 0.5) / TRSTEP;
+            var trAnchLon = (trCellJ + 0.5) / TRSTEP;
             var trPts = [];
             for (var trp = 0; trp < 9; trp++) {
-              var trT = -0.05 + trp * 0.022;
-              var ptr = projectLatLon(state.lat + trCos * trT, state.lon + trSin * trT);
+              var trT = -0.088 + trp * 0.022;
+              var ptr = projectLatLon(trAnchLat + trCos * trT, trAnchLon + trSin * trT);
               if (ptr) trPts.push({ p: ptr, fwdT: trT });
             }
             if (trPts.length >= 3) {
@@ -11329,98 +11444,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               }
             }
           }
-        }
-
-        // ── Bridges across rivers ──
-        // When a river-region cell ALSO has a road bearing close to
-        // perpendicular to the river bearing, draw a small horizontal
-        // bridge structure across the river midpoint. Very satisfying
-        // when the eye spots a road becoming a bridge.
-        if (aglAlt < 2500) {
-          var bgSeed = terrainHash(Math.floor(state.lat * 5), Math.floor(state.lon * 5));
-          if (bgSeed > 0.55) { // matches river-render threshold
-            // River midpoint (around the visible center of the river polyline)
-            var bgRivBearing = bgSeed * Math.PI * 2;
-            var bgMidLat = state.lat + Math.cos(bgRivBearing) * 0.06;
-            var bgMidLon = state.lon + Math.sin(bgRivBearing) * 0.06;
-            var pbg = projectLatLon(bgMidLat, bgMidLon);
-            if (pbg) {
-              // Bridge spans perpendicular to river bearing
-              var bgLen = Math.max(8, 22 * pbg.t);
-              var perpAng = bgRivBearing + Math.PI / 2;
-              var bgDx = Math.cos(perpAng) * bgLen / 2;
-              var bgDy = Math.sin(perpAng) * bgLen / 2 * 0.4; // foreshorten in y
-              // Bridge deck
-              gfx.strokeStyle = 'rgba(80,75,70,' + (0.8 * fade) + ')';
-              gfx.lineWidth = Math.max(2, 3.5 * pbg.t);
-              gfx.beginPath();
-              gfx.moveTo(pbg.x - bgDx, pbg.y - bgDy);
-              gfx.lineTo(pbg.x + bgDx, pbg.y + bgDy);
-              gfx.stroke();
-              // Suspension cables / arch — two thin diagonal lines
-              gfx.strokeStyle = 'rgba(140,135,130,' + (0.6 * fade) + ')';
-              gfx.lineWidth = Math.max(0.5, 0.7 * pbg.t);
-              gfx.beginPath();
-              gfx.moveTo(pbg.x - bgDx, pbg.y - bgDy);
-              gfx.quadraticCurveTo(pbg.x, pbg.y - 6 * pbg.t, pbg.x + bgDx, pbg.y + bgDy);
-              gfx.stroke();
-
-              // Dam upstream of the bridge — only when the river-region
-              // seed is in the top tier. A concrete wall perpendicular
-              // to the river bearing, with a small reservoir (lighter blue
-              // ellipse) immediately behind it. Hydroelectric infrastructure.
-              if (bgSeed > 0.85) {
-                var damLat = state.lat + Math.cos(bgRivBearing) * 0.10;
-                var damLon = state.lon + Math.sin(bgRivBearing) * 0.10;
-                var pdam = projectLatLon(damLat, damLon);
-                if (pdam) {
-                  var damLen = Math.max(10, 26 * pdam.t);
-                  var damDx = Math.cos(perpAng) * damLen / 2;
-                  var damDy = Math.sin(perpAng) * damLen / 2 * 0.4;
-                  // Reservoir behind dam (slightly upstream)
-                  var resLat = state.lat + Math.cos(bgRivBearing) * 0.115;
-                  var resLon = state.lon + Math.sin(bgRivBearing) * 0.115;
-                  var pres = projectLatLon(resLat, resLon);
-                  if (pres) {
-                    gfx.fillStyle = 'rgba(95,140,170,' + (0.7 * fade) + ')';
-                    gfx.beginPath();
-                    gfx.ellipse(pres.x, pres.y, damLen * 0.7, damLen * 0.32, perpAng, 0, Math.PI * 2);
-                    gfx.fill();
-                  }
-                  // Dam wall (concrete)
-                  gfx.strokeStyle = 'rgba(180,178,172,' + (0.9 * fade) + ')';
-                  gfx.lineWidth = Math.max(2.5, 4 * pdam.t);
-                  gfx.beginPath();
-                  gfx.moveTo(pdam.x - damDx, pdam.y - damDy);
-                  gfx.lineTo(pdam.x + damDx, pdam.y + damDy);
-                  gfx.stroke();
-                  // Spillway: a darker stripe in the middle
-                  gfx.strokeStyle = 'rgba(60,75,95,' + (0.8 * fade) + ')';
-                  gfx.lineWidth = Math.max(1, 1.6 * pdam.t);
-                  gfx.beginPath();
-                  gfx.moveTo(pdam.x - damDx * 0.15, pdam.y - damDy * 0.15);
-                  gfx.lineTo(pdam.x + damDx * 0.15, pdam.y + damDy * 0.15);
-                  gfx.stroke();
-                }
-              }
-            }
+          }
           }
         }
+
+        // (Bridges + dams moved INTO the river loop above — they're now pinned
+        // to actual polyline points, so a bridge always crosses the water it
+        // belongs to, and both scroll with the world instead of the aircraft.)
 
         // ── Power transmission lines: long straight lines with periodic
         // lattice towers, traveling at a deterministic bearing across the
         // landscape. Visible to ~2500 ft AGL. Strong infrastructure cue
         // and a clear motion reference along its length.
         if (aglAlt < 2500) {
-          var plSeed = terrainHash(Math.floor(state.lat * 4) + 7, Math.floor(state.lon * 4) + 11);
+          // World-grid anchored (see roads note): the transmission line crosses
+          // its 1/4° cell and scrolls past — the drone powerline-inspection
+          // mission finally flies along something that holds still.
+          var PLSTEP = 4;
+          var plCellI0 = Math.floor(state.lat * PLSTEP);
+          var plCellJ0 = Math.floor(state.lon * PLSTEP);
+          for (var plci = -1; plci <= 1; plci++) {
+          for (var plcj = -1; plcj <= 1; plcj++) {
+          var plCellI = plCellI0 + plci, plCellJ = plCellJ0 + plcj;
+          var plSeed = terrainHash(plCellI + 7, plCellJ + 11);
           if (plSeed > 0.5) {
             var plBearing = (plSeed + 0.3) * Math.PI * 2;
+            var plAnchLat = (plCellI + 0.5) / PLSTEP;
+            var plAnchLon = (plCellJ + 0.5) / PLSTEP;
             var plPts = [];
             // 6 segments along bearing, ~0.025° each step → 1.5nm spacing
             for (var pp = 0; pp < 7; pp++) {
-              var pT = -0.05 + pp * 0.025;
-              var plLat = state.lat + Math.cos(plBearing) * pT;
-              var plLon = state.lon + Math.sin(plBearing) * pT;
+              var pT = -0.075 + pp * 0.025;
+              var plLat = plAnchLat + Math.cos(plBearing) * pT;
+              var plLon = plAnchLon + Math.sin(plBearing) * pT;
               var pp2 = projectLatLon(plLat, plLon);
               if (pp2) plPts.push(pp2);
             }
@@ -11454,6 +11510,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               }
             }
           }
+          }
+          }
         }
 
         // ── Coastal harbors: when one of the cells in the lake grid is
@@ -11464,19 +11522,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var hbStep = 0.04;
           var hblatC = Math.round(state.lat / hbStep) * hbStep;
           var hblonC = Math.round(state.lon / hbStep) * hbStep;
+          // Hoisted out of the 25-cell loop (alloc sweep)
+          var hbNb = [[0, -hbStep], [0, hbStep], [-hbStep, 0], [hbStep, 0]];
           for (var hbi = -2; hbi <= 2; hbi++) {
             for (var hbj = -2; hbj <= 2; hbj++) {
               var hbLat = hblatC + hbi * hbStep;
               var hbLon = hblonC + hbj * hbStep;
-              // Adjacent ocean check: noisy isWater, NOT the regional guard,
-              // so it can fire over coastal areas where the cell is land but
-              // a neighbor is water.
-              var hbAdjW = terrainHash(hbLat * 2, (hbLon - 0.04) * 2) > 0.45
-                        || terrainHash(hbLat * 2, (hbLon + 0.04) * 2) > 0.45
-                        || terrainHash((hbLat - 0.04) * 2, hbLon * 2) > 0.45;
-              if (!hbAdjW) continue;
+              // VISIBLE-water adjacency. The old check sampled the raw noise
+              // fallback of isWater — which never runs inside the continental
+              // boxes — so docks + sailboats appeared over dry mid-continent
+              // land ("harbors in Kansas"). A dock must sit beside water the
+              // sim actually DRAWS: a rendered lake cell (same 0.04° lattice
+              // + seed formula the lake layer uses) or true ocean per
+              // isWater(). The harbor cell itself must be land.
+              var hbAdjW = false;
+              for (var hbn = 0; hbn < 4; hbn++) {
+                var hbNLat = hbLat + hbNb[hbn][0];
+                var hbNLon = hbLon + hbNb[hbn][1];
+                if (terrainHash(hbNLat * 173, hbNLon * 89) > 0.90 || isWater(hbNLat, hbNLon)) { hbAdjW = true; break; }
+              }
+              if (!hbAdjW || isWater(hbLat, hbLon)) continue;
               var hbSeed = terrainHash(hbLat * 251, hbLon * 191);
-              if (hbSeed < 0.85) continue; // 15% of qualifying cells host a harbor
+              if (hbSeed < 0.75) continue; // lakeside/coastal cells host docks fairly often now that adjacency is strict
               var phb = projectLatLon(hbLat, hbLon);
               if (!phb) continue;
               // Dock structure — a thin gray bar
@@ -11765,8 +11832,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // (cross or arrow shape depending on perspective). At higher
       // altitudes they trail a contrail (white streak). Visible at all
       // altitudes — strong "you're sharing airspace" cue.
+      // ── Converging traffic (see-and-avoid) ──
+      // ONE world-positioned aircraft that actually crosses the player's path:
+      // spawns ahead-and-abeam every ~2 minutes, flies a converging track at
+      // its own speed, triggers a TCAS-style "TRAFFIC — N o'clock" callout at
+      // 4 nm (teaches clock positions + scanning), and despawns when clear.
+      // The decorative screen-space sweeps in drawOtherAircraft never converge
+      // by construction — this is the one that makes students look outside.
+      // State lives on hudRef.current._xtraffic; ADVANCED in the RAF loop
+      // (which owns dt), only DRAWN here.
+      var drawCrossTraffic = function(gfx, W, H, horizonY, state, time) {
+        var xt = hudRef.current._xtraffic;
+        if (!xt) return;
+        var xtBrgD = bearing(state.lat, state.lon, xt.lat, xt.lon);
+        var xtRelB = ((xtBrgD - state.heading + 540) % 360) - 180;
+        var xtDistD = haversineNm(state.lat, state.lon, xt.lat, xt.lon);
+        if (Math.abs(xtRelB) <= 80) {
+          var xtX = W / 2 + (xtRelB / 80) * (W / 2);
+          // Sits near the horizon, nudged by relative altitude (ft → px)
+          var xtY = horizonY - Math.max(-40, Math.min(40, (xt.alt - state.altitude) * 0.04));
+          var xtS = Math.max(5, Math.min(20, 24 - xtDistD * 2.2)); // grows as it closes
+          gfx.save();
+          gfx.translate(xtX, xtY);
+          // Rotate the silhouette to its track relative to ours
+          gfx.rotate(((xt.heading - state.heading) * Math.PI / 180));
+          gfx.fillStyle = 'rgba(40,45,55,0.9)';
+          gfx.fillRect(-xtS * 0.5, -xtS * 0.08, xtS, xtS * 0.16);           // fuselage
+          gfx.fillRect(-xtS * 0.1, -xtS * 0.45, xtS * 0.2, xtS * 0.9);      // wings
+          gfx.fillRect(-xtS * 0.48, -xtS * 0.28, xtS * 0.12, xtS * 0.56);   // tail
+          // Wing strobes blink alternately
+          if (Math.floor(time * 3) % 2 === 0) {
+            gfx.fillStyle = 'rgba(255,60,60,0.95)';
+            gfx.fillRect(-xtS * 0.06, -xtS * 0.48, xtS * 0.12, xtS * 0.12);
+          } else {
+            gfx.fillStyle = 'rgba(120,220,120,0.95)';
+            gfx.fillRect(-xtS * 0.06, xtS * 0.36, xtS * 0.12, xtS * 0.12);
+          }
+          gfx.restore();
+        }
+        // TCAS-style callout pill (shows ~6s after the 4 nm advisory fires)
+        if (xt.callTxt && time - xt.calledAt < 6) {
+          var xtFade = Math.max(0, 1 - (time - xt.calledAt) / 6);
+          gfx.save();
+          gfx.globalAlpha = xtFade;
+          gfx.font = 'bold 13px system-ui';
+          var xtW2 = gfx.measureText(xt.callTxt).width + 26;
+          gfx.fillStyle = 'rgba(120,53,15,0.92)';
+          gfx.beginPath(); gfx.roundRect((W - xtW2) / 2, 96, xtW2, 26, 6); gfx.fill();
+          gfx.strokeStyle = '#f59e0b'; gfx.lineWidth = 1.5;
+          gfx.beginPath(); gfx.roundRect((W - xtW2) / 2, 96, xtW2, 26, 6); gfx.stroke();
+          gfx.fillStyle = '#fde68a'; gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+          gfx.fillText(xt.callTxt, W / 2, 109);
+          gfx.restore();
+        }
+      };
+
       var drawOtherAircraft = function(gfx, W, H, horizonY, state, time, dayNight2) {
-        if (dayNight2 && dayNight2.isNight) return; // navigation lights handled separately
+        // At night the sky sweeps render as MOVING NAV LIGHTS instead of
+        // vanishing. (An old comment claimed night lights were "handled
+        // separately" — nothing else drew these three aircraft after dark, so
+        // the night sky was dead. Real night skies are full of blinking
+        // traffic; it's also a natural see-and-avoid moment.)
+        var acNight = !!(dayNight2 && dayNight2.isNight);
         for (var ac = 0; ac < 3; ac++) {
           // Each aircraft cycles across the sky over ~120s with a different speed.
           var period = 90 + ac * 35;
@@ -11783,6 +11910,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Aircraft type: high-altitude jet (contrail), mid-altitude commercial,
           // low Cessna-style (no contrail).
           var isHigh = ac === 2;
+          if (acNight) {
+            // Red (port) + green (starboard) steady lights a couple px apart,
+            // oriented by direction of travel, with a white anti-collision
+            // strobe that flashes ~once a second. No body, no contrail.
+            var portX = ax + (goingRight ? -2.4 : 2.4);
+            var stbdX = ax + (goingRight ? 2.4 : -2.4);
+            gfx.fillStyle = 'rgba(255,70,70,0.9)';
+            gfx.fillRect(portX - 0.8, ay - 0.8, 1.6, 1.6);
+            gfx.fillStyle = 'rgba(80,230,110,0.9)';
+            gfx.fillRect(stbdX - 0.8, ay - 0.8, 1.6, 1.6);
+            if (Math.sin(time * 6.3 + ac * 2.1) > 0.82) {
+              gfx.fillStyle = 'rgba(255,255,255,0.95)';
+              gfx.fillRect(ax - 1.1, ay - 1.1, 2.2, 2.2);
+            }
+            continue;
+          }
           var bodyAlpha = 0.55 + 0.35 * (1 - Math.abs(phase - 0.5) * 2); // brighter mid-pass
           gfx.fillStyle = 'rgba(45,55,70,' + bodyAlpha + ')';
           // Silhouette — a small horizontal capsule with a vertical tail tab
@@ -15301,10 +15444,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var crosswind = wx.wind * Math.sin((state.heading - wx.windDir) * Math.PI / 180) * 0.001;
           ctrl.bank += crosswind * dt * 10; // wind pushes the plane
         }
-        // Turbulence (random pitch/bank bumps)
+        // Turbulence — coherent gusts, not white noise. The old
+        // (random-0.5)*turb*2*dt averaged to ±0.02°/frame of self-cancelling
+        // jitter: even STORM turbulence was imperceptible (a punchlist item).
+        // Two incommensurate sines + a small random component read as real
+        // bumps; the sine integrals are bounded so the persistent controls
+        // ref can't random-walk away.
         if (wx.turbulence > 0 && !state.onGround) {
-          ctrl.pitch += (Math.random() - 0.5) * wx.turbulence * 2 * dt;
-          ctrl.bank += (Math.random() - 0.5) * wx.turbulence * 3 * dt;
+          wx._gustPhase = (wx._gustPhase || 0) + dt;
+          var gp = wx._gustPhase;
+          ctrl.pitch += (Math.sin(gp * 1.7) * 0.6 + Math.sin(gp * 4.3) * 0.4 + (Math.random() - 0.5) * 0.6) * wx.turbulence * 8 * dt;
+          ctrl.bank += (Math.sin(gp * 1.3 + 2) * 0.6 + Math.sin(gp * 3.7) * 0.4 + (Math.random() - 0.5) * 0.6) * wx.turbulence * 14 * dt;
         }
       };
 
@@ -15466,10 +15616,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Two-stop vertical gradient (brighter near the viewer, darker at the horizon)
         // + deterministic grass tufts so the field doesn't read as a flat slab.
         var groundTop = horizonY;
-        var groundGrad = gfx.createLinearGradient(0, groundTop, 0, H);
-        var grassTint = dayNight.isNight ? ['#1f3024', '#16241a'] : ['#3f6e3a', '#4a8a45'];
-        groundGrad.addColorStop(0, grassTint[0]);
-        groundGrad.addColorStop(1, grassTint[1]);
+        // Cached per (px-rounded horizon, height, day/night) — the damped
+        // horizon is stable most frames, so this is a near-100% hit rate.
+        var groundGrad = cachedGrad('gnd|' + Math.round(groundTop) + '|' + H + '|' + (dayNight.isNight ? 1 : 0), function() {
+          var gg2 = gfx.createLinearGradient(0, groundTop, 0, H);
+          var grassTint = dayNight.isNight ? ['#1f3024', '#16241a'] : ['#3f6e3a', '#4a8a45'];
+          gg2.addColorStop(0, grassTint[0]);
+          gg2.addColorStop(1, grassTint[1]);
+          return gg2;
+        });
         gfx.fillStyle = groundGrad;
         gfx.fillRect(0, groundTop, W, H - groundTop);
         // Grass tufts — seeded so they don't crawl every frame. Near the
@@ -17808,16 +17963,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var goldenSide = dawnProx > duskProx ? 'east' : 'west'; // east = left, west = right
 
           // Sky gradient — biased warmer at the horizon during golden hour.
-          var skyGrad = gfx.createLinearGradient(0, 0, 0, H * 0.6);
+          // Cached on quantized params (1/40 steps ≈ <2 RGB units per bucket:
+          // invisible), rebuilt only when altitude band / golden proximity /
+          // canvas height actually change.
           var altFactor = Math.min(1, state.altitude / 40000);
-          var topR = 10 + altFactor * 5;
-          var topG = 10 + altFactor * 20 + goldenProx * 10;
-          var topB = 40 + altFactor * 60 - goldenProx * 10;
-          var botR = 80 - altFactor * 40 + goldenProx * 120;
-          var botG = 140 - altFactor * 40 + goldenProx * 30;
-          var botB = 220 - altFactor * 20 - goldenProx * 80;
-          skyGrad.addColorStop(0, 'rgb(' + Math.round(topR) + ',' + Math.round(topG) + ',' + Math.round(topB) + ')');
-          skyGrad.addColorStop(1, 'rgb(' + Math.round(botR) + ',' + Math.round(botG) + ',' + Math.round(botB) + ')');
+          var skyGrad = cachedGrad('sky|' + H + '|' + Math.round(altFactor * 40) + '|' + Math.round(goldenProx * 40), function() {
+            var sg = gfx.createLinearGradient(0, 0, 0, H * 0.6);
+            var topR = 10 + altFactor * 5;
+            var topG = 10 + altFactor * 20 + goldenProx * 10;
+            var topB = 40 + altFactor * 60 - goldenProx * 10;
+            var botR = 80 - altFactor * 40 + goldenProx * 120;
+            var botG = 140 - altFactor * 40 + goldenProx * 30;
+            var botB = 220 - altFactor * 20 - goldenProx * 80;
+            sg.addColorStop(0, 'rgb(' + Math.round(topR) + ',' + Math.round(topG) + ',' + Math.round(topB) + ')');
+            sg.addColorStop(1, 'rgb(' + Math.round(botR) + ',' + Math.round(botG) + ',' + Math.round(botB) + ')');
+            return sg;
+          });
           if (threeLoaded) {
             gfx.clearRect(0, 0, W, H);
             renderWebGLFlight(state, ctrl, W, H, dayNight);
@@ -17868,6 +18029,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // sky at different altitudes and bearings. Strong "shared airspace"
             // cue, visible at any altitude.
             drawOtherAircraft(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+            // ── Converging traffic: spawn/advance in the loop (owns dt), draw pure ──
+            var xtNow = hudRef.current._xtraffic;
+            var xtAgl = state.altitude - (state.fieldElev || 0);
+            if (!xtNow && !state.onGround && xtAgl > 800 && timeRef.current > 60
+                && (timeRef.current % 120) < dt * 2) {
+              var xtHdgRad = state.heading * Math.PI / 180;
+              var xtCosLat = Math.max(0.05, Math.cos(state.lat * Math.PI / 180));
+              var xtSide = (Math.floor(timeRef.current / 120) % 2 === 0) ? 1 : -1;
+              // Convergence point ~4 nm ahead on OUR track; spawn 3 nm abeam of it
+              var xtCpLat = state.lat + Math.cos(xtHdgRad) * (4 / 60);
+              var xtCpLon = state.lon + Math.sin(xtHdgRad) * (4 / 60) / xtCosLat;
+              var xtPerp = xtHdgRad + xtSide * Math.PI / 2;
+              hudRef.current._xtraffic = {
+                lat: xtCpLat + Math.cos(xtPerp) * (3 / 60),
+                lon: xtCpLon + Math.sin(xtPerp) * (3 / 60) / xtCosLat,
+                heading: (((xtPerp + Math.PI) * 180 / Math.PI) % 360 + 360) % 360, // toward the convergence point
+                speedKts: 140,
+                alt: state.altitude + (xtSide > 0 ? 200 : -200),
+                spawnedAt: timeRef.current, called: false, callTxt: null, calledAt: 0,
+              };
+            } else if (xtNow) {
+              var xtRad2 = xtNow.heading * Math.PI / 180;
+              var xtNmSec = xtNow.speedKts / 3600;
+              xtNow.lat += Math.cos(xtRad2) * (xtNmSec / 60) * dt;
+              xtNow.lon += Math.sin(xtRad2) * (xtNmSec / 60) / Math.max(0.05, Math.cos(xtNow.lat * Math.PI / 180)) * dt;
+              var xtDist2 = haversineNm(state.lat, state.lon, xtNow.lat, xtNow.lon);
+              if (!xtNow.called && xtDist2 < 4) {
+                xtNow.called = true;
+                var xtB2 = bearing(state.lat, state.lon, xtNow.lat, xtNow.lon);
+                var xtRel2 = ((xtB2 - state.heading + 540) % 360) - 180;
+                var xtClock = ((Math.round(xtRel2 / 30) + 12 - 1) % 12) + 1;
+                xtNow.callTxt = 'TRAFFIC — ' + xtClock + " o'clock, " + Math.max(1, Math.round(xtDist2)) + ' miles, similar altitude';
+                xtNow.calledAt = timeRef.current;
+                if (typeof skyAnnounce === 'function') skyAnnounce('Traffic, ' + xtClock + " o'clock, " + Math.max(1, Math.round(xtDist2)) + ' miles, similar altitude. Look outside.');
+              }
+              if (xtDist2 > 12 || timeRef.current - xtNow.spawnedAt > 240) hudRef.current._xtraffic = null;
+            }
+            drawCrossTraffic(gfx, W, H, horizonY, state, timeRef.current);
 
             // Hot air balloons drifting at low-mid altitude.
             drawHotAirBalloons(gfx, W, H, horizonY, state, timeRef.current, dayNight);
@@ -19546,7 +19746,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // ── Sun rays through clouds ──
           if (!dayNight.isNight && state.altitude > 2000 && state.altitude < 20000 && weatherRef.current.type !== 'clear') {
-            var sunRayX = W * 0.8; var sunRayY = Math.max(20, horizonY * 0.2);
+            // Emanate from the ACTUAL sun position (same formula as the sun
+            // disk: x = W*(0.12 + sunT*0.76)). The old hardcoded W*0.8 put
+            // morning rays in the top-right while the sun sat bottom-left.
+            var srSunT = Math.max(0, Math.min(1, ((dayNight.solarHour != null ? dayNight.solarHour : 12) - 6) / 12));
+            var sunRayX = W * (0.12 + srSunT * 0.76); var sunRayY = Math.max(20, horizonY * 0.2);
             gfx.save();
             gfx.globalAlpha = 0.06;
             gfx.strokeStyle = '#ffe4a0';
@@ -19905,9 +20109,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // yoke silhouette so the student feels their hands on something.
             var dashH = 58;
             var dashTop = H - dashH;
-            var dashGrad = gfx.createLinearGradient(0, dashTop, 0, H);
-            dashGrad.addColorStop(0, 'rgba(18,22,28,0.92)');
-            dashGrad.addColorStop(1, 'rgba(6,8,12,0.98)');
+            // Cached per height — constant otherwise (alloc sweep)
+            var dashGrad = cachedGrad('dash|' + H, function() {
+              var dg = gfx.createLinearGradient(0, dashTop, 0, H);
+              dg.addColorStop(0, 'rgba(18,22,28,0.92)');
+              dg.addColorStop(1, 'rgba(6,8,12,0.98)');
+              return dg;
+            });
             gfx.fillStyle = dashGrad;
             gfx.fillRect(0, dashTop, W, dashH);
             // Glareshield top edge highlight (thin light line for shape)
@@ -19962,9 +20170,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
 
           // ── Vignette (darkened edges for depth) ──
-          var vigGrad = gfx.createRadialGradient(W/2, H/2, W * 0.3, W/2, H/2, W * 0.7);
-          vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
-          vigGrad.addColorStop(1, 'rgba(0,0,0,0.25)');
+          // Cached per canvas size — constant otherwise (alloc sweep)
+          var vigGrad = cachedGrad('vig|' + W + 'x' + H, function() {
+            var vg = gfx.createRadialGradient(W/2, H/2, W * 0.3, W/2, H/2, W * 0.7);
+            vg.addColorStop(0, 'rgba(0,0,0,0)');
+            vg.addColorStop(1, 'rgba(0,0,0,0.25)');
+            return vg;
+          });
           gfx.fillStyle = vigGrad;
           gfx.fillRect(0, 0, W, H);
 

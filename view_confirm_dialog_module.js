@@ -83,7 +83,7 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
     "div",
     {
       role: "presentation",
-      className: "fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200",
+      className: "fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none",
       onClick: (e) => {
         if (e.target === e.currentTarget) handleCancel();
       }
@@ -96,19 +96,19 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
         role: "alertdialog",
         "aria-modal": "true",
         "aria-labelledby": "alloflow-confirm-title",
-        "aria-describedby": "alloflow-confirm-message",
-        className: "bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 border-2 border-slate-200 focus:outline-none"
+        "aria-describedby": confirmDialog.detail ? "alloflow-confirm-message alloflow-confirm-detail" : "alloflow-confirm-message",
+        className: "bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-6 animate-in zoom-in-95 duration-200 motion-reduce:animate-none border-2 border-slate-200"
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: `w-10 h-10 rounded-full ${palette.iconBg} flex items-center justify-center shrink-0` }, /* @__PURE__ */ React.createElement(Icon, { size: 20, className: palette.iconText, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h3", { id: "alloflow-confirm-title", className: "text-lg font-bold text-slate-800" }, confirmDialog.title || t("common.confirm") || "Confirm")),
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: `w-10 h-10 rounded-full ${palette.iconBg} flex items-center justify-center shrink-0` }, /* @__PURE__ */ React.createElement(Icon, { size: 20, className: palette.iconText, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h2", { id: "alloflow-confirm-title", className: "text-lg font-bold text-slate-800" }, confirmDialog.title || t("common.confirm") || "Confirm")),
       /* @__PURE__ */ React.createElement("p", { id: "alloflow-confirm-message", className: "text-sm text-slate-700 leading-relaxed mb-2 whitespace-pre-wrap" }, confirmDialog.message),
-      confirmDialog.detail ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-6 whitespace-pre-wrap" }, confirmDialog.detail) : /* @__PURE__ */ React.createElement("div", { className: "mb-6" }),
-      /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-end" }, /* @__PURE__ */ React.createElement(
+      confirmDialog.detail ? /* @__PURE__ */ React.createElement("p", { id: "alloflow-confirm-detail", className: "text-xs text-slate-600 leading-relaxed mb-6 whitespace-pre-wrap" }, confirmDialog.detail) : /* @__PURE__ */ React.createElement("div", { className: "mb-6" }),
+      /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-3 justify-end" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           ref: cancelBtnRef,
           type: "button",
           onClick: handleCancel,
-          className: "px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-300"
+          className: "px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-600"
         },
         confirmDialog.cancelText || t("common.cancel") || "Cancel"
       ), /* @__PURE__ */ React.createElement(
@@ -116,7 +116,7 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
         {
           type: "button",
           onClick: handleConfirm,
-          className: `px-5 py-2.5 ${palette.btn} text-white font-semibold rounded-xl transition-colors shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-red-300`
+          className: `px-5 py-2.5 ${palette.btn} text-white font-semibold rounded-xl transition-colors shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-700`
         },
         confirmDialog.confirmText || t("common.confirm_action") || "Confirm"
       ))

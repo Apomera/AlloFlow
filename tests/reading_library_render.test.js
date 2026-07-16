@@ -8,7 +8,13 @@
 //   browse grid → narrated-only filter → open an RTL book → reader dir/lang
 //   → 🌐 AI-translate (stubbed Gemini) → caveat banner → ✨ Use as source text.
 
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
+
+// The catalog is 3k+ entries and every mount() renders the full browse grid
+// in jsdom; when this suite runs alongside the data-contract suite on a
+// OneDrive-synced tree, the 5s default flakes on whichever test lands on a
+// busy worker. These are integration-weight tests; give them real headroom.
+vi.setConfig({ testTimeout: 30000 });
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -127,7 +133,8 @@ describe('browse view', () => {
     expect(textOf(host)).toContain('Reading Collections');
     expect(textOf(host)).toContain('Science & nonfiction');
     expect(textOf(host)).toContain('Frontiers for Young Minds');
-    const storyEntries = index.books.filter((b) => (b.sourceId || 'storyweaver') === 'storyweaver');
+    // The Stories shelf carries both picture-book sources.
+    const storyEntries = index.books.filter((b) => ['storyweaver', 'bloom'].includes(b.sourceId || 'storyweaver'));
     await chooseStories();
     // the grid defaults to the English language filter
     const langSelect = host.querySelector('select[aria-label="Language"]');
@@ -203,12 +210,15 @@ describe('browse view', () => {
     clickByText(host, 'button', 'Readable in app');
     await flush();
     expect(textOf(host)).toContain(readable.length + ' ');
-    // Stories shelf has no cards, so the toggle stays hidden there
+    // The toggle only appears on shelves that actually mix in cards
+    // (data-driven: Bloom NC link-out cards put cards on Stories too).
     clickByText(host, 'button', 'Collections');
     await flush();
     await chooseStories();
+    const storiesHasCards = index.books.some((b) =>
+      ['storyweaver', 'bloom'].includes(b.sourceId || 'storyweaver') && /card/.test(b.contentType || ''));
     const btns = Array.from(host.querySelectorAll('button')).map(textOf);
-    expect(btns.some((t) => t.includes('Readable in app'))).toBe(false);
+    expect(btns.some((t) => t.includes('Readable in app'))).toBe(storiesHasCards);
   });
 
   it('teacher searches Project Gutenberg (Gutendex) and queues an import request', async () => {
@@ -248,11 +258,12 @@ describe('browse view', () => {
   it('sorts by reading level (easiest first) by default', async () => {
     await mount();
     await chooseStories();
-    // filter controls: language, level, sort
-    const selects = host.querySelectorAll('select');
-    expect(selects[2].value).toBe('level');
+    // Find controls by aria-label — the Stories shelf gained a conditional
+    // source <select> (StoryWeaver + Bloom), so positional indexes shift.
+    const sortSel = host.querySelector('select[aria-label="Sort by"]');
+    expect(sortSel.value).toBe('level');
     // narrow to one language to keep the grid light; ordering still applies
-    act(() => { selects[0].value = 'English'; selects[0].dispatchEvent(new window.Event('change', { bubbles: true })); });
+    selectLang('English');
     await flush();
     const levels = Array.from(host.querySelectorAll('button'))
       .map((b) => { const m = /Level\s+(\d)/.exec(textOf(b)); return m ? Number(m[1]) : 0; })
@@ -264,9 +275,9 @@ describe('browse view', () => {
   it('re-sorts to Title A–Z when chosen', async () => {
     await mount();
     await chooseStories();
-    const selects = host.querySelectorAll('select');
-    act(() => { selects[0].value = 'English'; selects[0].dispatchEvent(new window.Event('change', { bubbles: true })); });
-    act(() => { selects[2].value = 'title'; selects[2].dispatchEvent(new window.Event('change', { bubbles: true })); });
+    selectLang('English');
+    const sortSel = host.querySelector('select[aria-label="Sort by"]');
+    act(() => { sortSel.value = 'title'; sortSel.dispatchEvent(new window.Event('change', { bubbles: true })); });
     await flush();
     // card buttons carry a "Level N" badge; the title is the .font-bold node
     const cards = Array.from(host.querySelectorAll('button')).filter((b) => /Level\s+\d/.test(textOf(b)));
@@ -470,6 +481,56 @@ describe('browse view', () => {
     expect(textOf(host)).toContain(frontiersEntry.title);
     expect(textOf(host)).toContain('Frontiers for Young Minds');
     expect(textOf(host)).toContain('CC BY 4.0');
+  });
+});
+
+describe('reader view (Bloom book)', () => {
+  it('opens a mirrored Bloom picture book with page text, source label, and license', async () => {
+    // Deterministic fixture: first mirrored (non-card) Bloom book whose first
+    // page carries text, so the opening spread has an assertable string.
+    let bloomEntry = null, bloomBook = null;
+    for (const b of index.books) {
+      if (b.sourceId !== 'bloom' || /card/.test(b.contentType || '')) continue;
+      const data = JSON.parse(fs.readFileSync(path.join(LIB_DIR, b.file), 'utf8'));
+      if (data.pages[0] && (data.pages[0].text || '').trim().length > 10) { bloomEntry = b; bloomBook = data; break; }
+    }
+    expect(bloomEntry).toBeTruthy();
+    await mount();
+    await chooseStories();
+    selectLang(bloomEntry.language); await flush();
+    clickByText(host, 'button', bloomEntry.title.slice(0, 12));
+    await flush();
+    expect(textOf(host)).toContain(bloomBook.title);
+    expect(textOf(host)).toContain(bloomBook.pages[0].text.split('\n')[0].slice(0, 40));
+    expect(textOf(host)).toContain('Bloom Library');
+    expect(textOf(host)).toContain(bloomBook.license);
+  });
+
+  it('a talking book offers human narration through the per-page clip queue', async () => {
+    // Fixture: a mirrored Bloom book with perPage audio (skip cleanly if the
+    // catalog has none — narration depends on what Bloom hosts).
+    let entry = null, book = null;
+    for (const b of index.books) {
+      if (b.sourceId !== 'bloom' || /card/.test(b.contentType || '') || !b.hasAudio) continue;
+      const data = JSON.parse(fs.readFileSync(path.join(LIB_DIR, b.file), 'utf8'));
+      if (data.audio && data.audio.mode === 'perPage') { entry = b; book = data; break; }
+    }
+    if (!entry) return; // no talking books in the mirrored set
+    await mount();
+    await chooseStories();
+    selectLang(entry.language); await flush();
+    clickByText(host, 'button', entry.title.slice(0, 12));
+    await flush();
+    // The human-narration button renders (not the TTS "Read this page" one),
+    // with the no-word-sync tooltip, and the clip <audio> element exists.
+    const readBtn = Array.from(host.querySelectorAll('button')).find((b) => textOf(b).includes('Read to me'));
+    expect(readBtn).toBeTruthy();
+    expect(readBtn.getAttribute('title')).toMatch(/no word-by-word/);
+    expect(host.querySelector('audio')).toBeTruthy();
+    // clip queue helper sees the narrated pages the file promises
+    const narratedPages = book.pages.filter((p) => p.audio && p.audio.length);
+    expect(narratedPages.length).toBeGreaterThan(0);
+    expect(window.AlloModules.ReadingLibrary._pageAudioClips(narratedPages[0]).length).toBeGreaterThan(0);
   });
 });
 

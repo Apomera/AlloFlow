@@ -14,6 +14,10 @@ describe('water cycle canvas animation loop', () => {
       expect(source).toContain('var detachedCanvas = _lastWcCanvas;');
       expect(source).toContain('if (detachedCanvas && !detachedCanvas.isConnected && detachedCanvas._wcCleanup) {');
       expect(source).toContain("var journey = { state: canvasEl.dataset.journeyState || 'idle'");
+      expect(source).toContain('function advanceJourneyFrame()');
+      expect(source).toContain("if (canvasEl.dataset.renderMode === 'state-only')");
+      expect(source).toContain('canvasEl.dataset.journeyProgress = String');
+      expect(source).toContain('"data-render-mode": journeyView === \'2d\' ? \'visual\' : \'state-only\'');
       expect(source).toContain("\"data-journey-state\": d.journeyActive ? (d.journeyState || 'ocean') : 'idle'");
       expect(source).toContain("canvasEl._onJourneyTransition('ground_choice')");
       expect(source).toContain('var current = prev.waterCycle || {};');

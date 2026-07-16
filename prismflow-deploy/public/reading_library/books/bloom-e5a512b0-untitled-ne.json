@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e5a512b0-untitled-ne",
+  "title": "डोमाको कुखुरा",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/aeboyHdACq"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fAOR_1B-K.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fUntitled-sun.png",
+      "text": "डोमाको घर मुगु जिल्‍लामा छ। उनको घरबाट हिमाल देखिन्छ। घाम लाग्दा हिमाल टलक्‍क टल्किन्छ। उनको एउटा कुखुरा छ। कुखुराको नाम तिर्के हो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fAOR_7B.png",
+      "text": "उनको एकजना दाइ हुनुहुन्छ।\nदाइको नाम छिरिङ हो। छिरिङले डोमालाई निकै माया गर्नहुन्छ। दुवैजना दाजु बहिनी सँगै स्कुल जान्छन्।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fAOR_pmm035m.png",
+      "text": "उनीहरू बौद्ध धर्म मान्छन्।\nल्होसार, बुद्ध जयन्ती मनाउँछन्।\nएकदिन उनीहरूको गाँउमा सहरबाट मान्छेहरू आए।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fimage.jpg",
+      "text": "स्कुल छुट्टी भएपछि, तिर्केसँगै घुम्न जान्छन्। उनीहरूको घरमाथि एउटा गुम्बा छ। गुम्बा जाने बाटो अलि उकालो छ।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fAOR_E-1-58.png",
+      "text": "उनीहरू गाँउ घुम्न आएका थिए। छिरिङले उनीहरूलाई गाउँ घुम्न मद्दत गरे। उनीहरूले रारा ताल घुम्ने रहर गरे। छिरिङले राराताल घुम्न मद्दत गरे।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fAOR_LIT11.png",
+      "text": "ती मान्छेहरू बाल संस्थाबाट आएका थिए। छिरिङको सहयोगी बानी उनीहरूलाई मन पर्‍यो। छिरिङदेखि उनीहरू निकै खुसी भए।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fAOR_PRI-197.png",
+      "text": "उनीहरूले छिरिङलाई सहर लैजान खोजे। बाबाआमाले छिरिङलाई सहर पठाउनु भयो।\nछिरिङ ठुलो मान्छे बन्न सहर गए।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fAOR_Pa04021.png",
+      "text": "डोमा एक्लै भइन्। उसको साथी तिर्के मात्रै भयो। तिर्केले डोमालाई कहिले पनि छोडेन। तिर्के सधैँ डोमासँगै हिँड्न लाग्यो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fAOR_CMB0304.png",
+      "text": "एकदिन गाँउमा ठुलो भोज हुने भयो। गाउँमा टाढा टाढाबाट मानिसहरू आए। कोही त काठमाण्डौंबाट पनि आएका रहेछन्।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fimage1.jpg",
+      "text": "गाउँलेहरूले डोमाको बुबाआमासँग कुखुरालाई काट्न भने। कुखुरा काटेर भोज खाने निर्णय गरे। यो सुनेर डोमालाई दुःख लाग्यो।"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fAOR_E-1-180.png",
+      "text": "त्यो कुराले डोमा डराइन् पनि। भोलिपल्ट बिहानै सबेरै डोमा उठिन्। तिर्केलाई एउटा कपडामा बेरिन्। त्यसलाई काखिमा च्यापेर डोमा घरबाट निस्किन्।"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fhen.png",
+      "text": "तिर्केलाई लिएर उनी घरमाथिको गुम्बामा पुगिन्। डोमा र तिर्के दिनभर त्यहीँ बसे। उनी तिर्केलाई धेरै माया गर्थिन्। गाउँबाट खोज्दै आउलान भन्ने डर थियो।"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fis+(5).jpg",
+      "text": "घरका मान्छे उनलाई खोज्दै गुम्बामा आइपुगे। पहिला त उनी डराइन्। डोमा कुखुरालाई काखमा च्यापेर बसिरहेकी थिइन्। उनले रूँदै भनिन्, तिर्केलाई केही पनि नगर्नुहोस्।"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fe5a512b0-63f1-4959-939a-48ff88634471%2f%e0%a4%a1%e0%a5%8b%e0%a4%ae%e0%a4%be%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a5%81%e0%a4%96%e0%a5%81%e0%a4%b0%e0%a4%be%2fAOR_E-1-226.png",
+      "text": "तिर्के मेरो दाइको कुखुरा हो। दाइ नआएसम्म यो मेरो जिम्मा हो। उनको कुरा सुनेर सबैजनाको आखाँ रसाए। कुखुरा नकाट्ने सल्‍लाह भयो। डोमालाई लिएर सबैजना त्यहाँबाट घर फर्के।"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 272
+  }
+}

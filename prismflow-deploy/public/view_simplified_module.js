@@ -358,6 +358,9 @@ function SimplifiedView(props) {
   var savingAudioKeys_state = React.useState({});
   var savingAudioKeys = savingAudioKeys_state[0];
   var setSavingAudioKeys = savingAudioKeys_state[1];
+  var captureAudioErrors_state = React.useState({});
+  var captureAudioErrors = captureAudioErrors_state[0];
+  var setCaptureAudioErrors = captureAudioErrors_state[1];
   var regenAudioKey_state = React.useState(null);
   var regenAudioKey = regenAudioKey_state[0];
   var setRegenAudioKey = regenAudioKey_state[1];
@@ -395,6 +398,10 @@ function SimplifiedView(props) {
   var immersiveDialogRef = React.useRef(null);
   var phonicsDialogRef = React.useRef(null);
   var phonicsCloseRef = React.useRef(null);
+  var definitionDialogRef = React.useRef(null);
+  var definitionCloseRef = React.useRef(null);
+  var revisionDialogRef = React.useRef(null);
+  var revisionCloseRef = React.useRef(null);
   var stopEditAudioPlayback = function () {
     editAudioPlayTokenRef.current += 1;
     try {
@@ -440,12 +447,33 @@ function SimplifiedView(props) {
             [key]: true
           });
         });
+        setCaptureAudioErrors(function (prev) {
+          var next = Object.assign({}, prev);
+          delete next[key];
+          return next;
+        });
       } else {
         setSavingAudioKeys(function (prev) {
           var next = Object.assign({}, prev);
           delete next[key];
           return next;
         });
+        setCaptureAudioErrors(function (prev) {
+          var next = Object.assign({}, prev);
+          if (detail.status === 'error' || detail.status === 'limit') {
+            next[key] = {
+              status: detail.status,
+              code: detail.code || 'capture-failed',
+              reason: detail.reason || 'Played TTS could not be saved.'
+            };
+          } else {
+            delete next[key];
+          }
+          return next;
+        });
+        if (detail.status === 'error' || detail.status === 'limit') {
+          setEditAudioNotice(detail.reason || 'Played TTS could not be saved. Generate that sentence again to retry.');
+        }
         setAudioStatusTick(function (n) {
           return n + 1;
         });
@@ -460,6 +488,7 @@ function SimplifiedView(props) {
   }, [generatedContent && generatedContent.id]);
   React.useEffect(function () {
     setSavingAudioKeys({});
+    setCaptureAudioErrors({});
   }, [generatedContent && generatedContent.id]);
   React.useEffect(function () {
     if (isEditingLeveledText) return;
@@ -540,24 +569,42 @@ function SimplifiedView(props) {
   var getReadAloudAudioProvenance = function (sentence) {
     var st = getReadAloudStore();
     var source = null;
+    var metadata = null;
     try {
       if (st && typeof st.sourceOf === 'function') source = st.sourceOf(sentence);
+      if (st && typeof st.metadataOf === 'function') metadata = st.metadataOf(sentence);
     } catch (_) {}
     if (source === 'human-teacher') return {
       source: source,
-      label: 'Teacher recording'
+      label: 'Teacher recording',
+      metadata: metadata,
+      stale: false
     };
     if (source === 'human-student') return {
       source: source,
-      label: 'Student recording'
+      label: 'Student recording',
+      metadata: metadata,
+      stale: false
     };
     if (source && String(source).indexOf('human') === 0) return {
       source: source,
-      label: 'Human recording'
+      label: 'Human recording',
+      metadata: metadata,
+      stale: false
     };
+    var currentVoice = selectedVoice || typeof window !== 'undefined' && window.__alloSelectedVoice || 'Puck';
+    var currentSpeed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
+    var currentLanguage = leveledTextLanguage || 'English';
+    var stale = !!(metadata && (metadata.voice && String(metadata.voice).toLowerCase() !== String(currentVoice).toLowerCase() || metadata.speed && Math.abs(Number(metadata.speed) - currentSpeed) > 0.001 || metadata.language && String(metadata.language).toLowerCase() !== String(currentLanguage).toLowerCase()));
+    var details = ['AI voice'];
+    if (metadata && metadata.voice) details.push(metadata.voice);
+    if (metadata && metadata.speed) details.push(Number(metadata.speed) + '×');
+    if (metadata && metadata.language) details.push(metadata.language);
     return {
       source: source || 'ai',
-      label: 'AI voice'
+      label: details.join(' · '),
+      metadata: metadata,
+      stale: stale
     };
   };
   var hasStoredReadAloudAudio = function (sentence) {
@@ -573,9 +620,18 @@ function SimplifiedView(props) {
     var saved = list.reduce(function (n, sentence) {
       return n + (hasStoredReadAloudAudio(sentence) ? 1 : 0);
     }, 0);
+    var bytes = 0;
+    var maxBytes = 0;
+    try {
+      var st = getReadAloudStore();
+      if (st && typeof st.estimateBytes === 'function') bytes = st.estimateBytes();
+      if (st && typeof st.limits === 'function') maxBytes = st.limits().maxBytes || 0;
+    } catch (_) {}
     return {
       saved: saved,
-      total: list.length
+      total: list.length,
+      bytes: bytes,
+      maxBytes: maxBytes
     };
   };
   var getReadAloudSentencesForText = function (rawText) {
@@ -583,16 +639,26 @@ function SimplifiedView(props) {
     var isTableText = function (p) {
       return p.trim().startsWith('|') || p.indexOf('\n|') !== -1;
     };
+    var splitForReadAloud = function (part) {
+      try {
+        var KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+        if (KS && typeof KS.splitSentences === 'function') return KS.splitSentences(part);
+      } catch (_) {}
+      return splitTextToSentences(part);
+    };
     var parts = getSideBySideContent(text);
     var list = parts ? parts.source.concat(parts.target).flatMap(function (p) {
-      return isTableText(p) ? [] : splitTextToSentences(p);
+      return isTableText(p) ? [] : splitForReadAloud(p);
     }) : text.split(/\n{2,}/).flatMap(function (p) {
-      return isTableText(p) ? [] : splitTextToSentences(p);
+      return isTableText(p) ? [] : splitForReadAloud(p);
     });
     return list.map(cleanSentenceForAudio).filter(function (s) {
       return s && s.trim().length > 0;
     });
   };
+  var karaokeReaderSentences = React.useMemo(function () {
+    return getReadAloudSentencesForText(generatedContent && generatedContent.data);
+  }, [generatedContent && generatedContent.data]);
   var handlePrepareReadAloudAudio = async function () {
     if (ttsPrepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
     var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
@@ -606,13 +672,18 @@ function SimplifiedView(props) {
       total: sentences.length
     });
     try {
-      await window.__alloPrepareReadAloud(sentences, function (done, total) {
+      var result = await window.__alloPrepareReadAloud(sentences, function (done, total) {
         setTtsPrepState({
           busy: true,
           done: done,
           total: total || sentences.length
         });
       });
+      if (result && result.remaining) {
+        setEditAudioNotice(result.failure && result.failure.reason || result.remaining + ' sentence audio clips remain. Run Save TTS again to retry only missing clips.');
+      } else if (result && result.ok) {
+        setEditAudioNotice('Read-aloud audio is ready for all sentences.');
+      }
     } finally {
       setTtsPrepState({
         busy: false,
@@ -916,12 +987,35 @@ function SimplifiedView(props) {
       if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [!!phonicsData]);
+  React.useEffect(function () {
+    if (!definitionData) return undefined;
+    var previouslyFocused = document.activeElement;
+    var timer = setTimeout(function () {
+      if (definitionCloseRef.current) definitionCloseRef.current.focus();
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function' && document.contains(previouslyFocused)) previouslyFocused.focus();
+    };
+  }, [!!definitionData]);
+  React.useEffect(function () {
+    if (!revisionData) return undefined;
+    var previouslyFocused = document.activeElement;
+    var timer = setTimeout(function () {
+      if (revisionCloseRef.current) revisionCloseRef.current.focus();
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function' && document.contains(previouslyFocused)) previouslyFocused.focus();
+    };
+  }, [!!revisionData]);
   var renderEditAudioSentenceTools = function () {
     if (!isTeacherMode || !isEditingLeveledText) return null;
     var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
     if (!sentences.length) return null;
     var summary = getReadAloudAudioSummary(sentences);
     var savingCount = Object.keys(savingAudioKeys || {}).length;
+    var captureErrorCount = Object.keys(captureAudioErrors || {}).length;
     var panelId = 'allo-edit-audio-' + String(generatedContent && generatedContent.id || 'current').replace(/[^a-z0-9_-]/gi, '-');
     var anyRecordingWork = !!editAudioMicRequestKey || !!editAudioRecordingKey || !!editAudioRecordingSaveKey;
     return /*#__PURE__*/React.createElement("div", {
@@ -939,7 +1033,7 @@ function SimplifiedView(props) {
       size: 14
     }), /*#__PURE__*/React.createElement("span", null, "Edit audio"), /*#__PURE__*/React.createElement("span", {
       className: "rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 normal-case"
-    }, summary.saved, "/", summary.total, " saved"), editAudioOpen ? /*#__PURE__*/React.createElement(ChevronUp, {
+    }, summary.saved, "/", summary.total, " saved", summary.maxBytes ? ` · ${Math.round(summary.bytes / 104857.6) / 10}/${Math.round(summary.maxBytes / 104857.6) / 10} MB` : ''), editAudioOpen ? /*#__PURE__*/React.createElement(ChevronUp, {
       size: 14
     }) : /*#__PURE__*/React.createElement(ChevronDown, {
       size: 14
@@ -949,8 +1043,13 @@ function SimplifiedView(props) {
       className: "inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-1"
     }, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 10,
-      className: "animate-spin"
-    }), " Saving ", savingCount), /*#__PURE__*/React.createElement("label", {
+      className: "animate-spin motion-reduce:animate-none"
+    }), " Saving ", savingCount), captureErrorCount > 0 && /*#__PURE__*/React.createElement("span", {
+      role: "alert",
+      className: "inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-1"
+    }, /*#__PURE__*/React.createElement(AlertCircle, {
+      size: 10
+    }), " ", captureErrorCount, " save ", captureErrorCount === 1 ? 'issue' : 'issues'), /*#__PURE__*/React.createElement("label", {
       className: "inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
@@ -984,8 +1083,11 @@ function SimplifiedView(props) {
       var isSaved = hasStoredReadAloudAudio(sentence);
       var provenance = isSaved ? getReadAloudAudioProvenance(sentence) : {
         source: null,
-        label: 'No saved source'
+        label: 'No saved source',
+        stale: false
       };
+      var captureIssue = captureAudioErrors[audioKey];
+      var needsRebuild = !!(isSaved && provenance.stale);
       var isGenerating = regenAudioKey === key;
       var isLoading = editAudioLoadingKey === key;
       var isPlayingSentence = editAudioPlayingKey === key;
@@ -993,8 +1095,8 @@ function SimplifiedView(props) {
       var isRecording = editAudioRecordingKey === key;
       var isRecordingSave = editAudioRecordingSaveKey === key;
       var isRemoving = removeAudioKey === key;
-      var statusLabel = isMicRequest ? 'Opening microphone' : isRecording ? 'Recording' : isRecordingSave ? 'Saving recording' : isGenerating ? isSaved ? 'Regenerating' : 'Generating' : isRemoving ? 'Removing' : isSaving ? 'Caching played TTS' : isSaved ? 'Ready' : 'Missing audio';
-      var statusClass = isRecording ? 'bg-red-50 text-red-700 border-red-200' : isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200';
+      var statusLabel = isMicRequest ? 'Opening microphone' : isRecording ? 'Recording' : isRecordingSave ? 'Saving recording' : isGenerating ? isSaved ? 'Regenerating' : 'Generating' : isRemoving ? 'Removing' : isSaving ? 'Caching played TTS' : captureIssue ? captureIssue.status === 'limit' ? 'Storage limit' : 'Save failed' : needsRebuild ? 'Ready · settings changed' : isSaved ? 'Ready' : 'Missing audio';
+      var statusClass = isRecording ? 'bg-red-50 text-red-700 border-red-200' : isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : captureIssue ? captureIssue.status === 'limit' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-red-50 text-red-700 border-red-200' : needsRebuild ? 'bg-amber-50 text-amber-800 border-amber-200' : isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200';
       var controlsBlocked = isSaving || isGenerating || isRemoving || ttsPrepState.busy;
       var recordDisabled = !isRecording && (anyRecordingWork || !!regenAudioKey || !!removeAudioKey || isSaving || ttsPrepState.busy);
       var actionClass = 'inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed';
@@ -1018,9 +1120,11 @@ function SimplifiedView(props) {
         className: `inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`
       }, isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 9,
-        className: "animate-spin"
+        className: "animate-spin motion-reduce:animate-none"
       }) : isRecording ? /*#__PURE__*/React.createElement("span", {
-        className: "h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"
+        className: "h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none"
+      }) : captureIssue || needsRebuild ? /*#__PURE__*/React.createElement(AlertCircle, {
+        size: 9
       }) : isSaved ? /*#__PURE__*/React.createElement(CheckCircle2, {
         size: 9
       }) : /*#__PURE__*/React.createElement(AlertCircle, {
@@ -1043,7 +1147,7 @@ function SimplifiedView(props) {
         className: `${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`
       }, isLoading ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
-        className: "animate-spin"
+        className: "animate-spin motion-reduce:animate-none"
       }) : isPlayingSentence ? /*#__PURE__*/React.createElement(Pause, {
         size: 12
       }) : /*#__PURE__*/React.createElement(Play, {
@@ -1054,14 +1158,15 @@ function SimplifiedView(props) {
           handleRegenerateReadAloudSentence(sentence, key, sentenceNumber);
         },
         disabled: !!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy,
-        "aria-label": `${isSaved ? 'Regenerate' : 'Generate'} audio for sentence ${sentenceNumber}`,
+        "aria-label": `${needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate'} audio for sentence ${sentenceNumber}`,
+        title: needsRebuild ? 'Rebuild this clip with the currently selected voice, speed, and language.' : isSaved ? 'Replace this saved clip with current voice settings.' : 'Generate audio with current voice settings.',
         className: `${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`
       }, isGenerating ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
-        className: "animate-spin"
+        className: "animate-spin motion-reduce:animate-none"
       }) : /*#__PURE__*/React.createElement(Volume2, {
         size: 12
-      }), /*#__PURE__*/React.createElement("span", null, isGenerating ? isSaved ? 'Regenerating' : 'Generating' : isSaved ? 'Regenerate' : 'Generate')), /*#__PURE__*/React.createElement("button", {
+      }), /*#__PURE__*/React.createElement("span", null, isGenerating ? isSaved ? 'Regenerating' : 'Generating' : needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate')), /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: function () {
           handleRecordEditAudioSentence(sentence, key, sentenceNumber);
@@ -1073,7 +1178,7 @@ function SimplifiedView(props) {
         className: `${actionClass} ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`
       }, isMicRequest || isRecordingSave ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
-        className: "animate-spin"
+        className: "animate-spin motion-reduce:animate-none"
       }) : isRecording ? /*#__PURE__*/React.createElement(StopCircle, {
         size: 12
       }) : /*#__PURE__*/React.createElement(Mic, {
@@ -1088,7 +1193,7 @@ function SimplifiedView(props) {
         className: `${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`
       }, isRemoving ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
-        className: "animate-spin"
+        className: "animate-spin motion-reduce:animate-none"
       }) : /*#__PURE__*/React.createElement(Trash2, {
         size: 12
       }), /*#__PURE__*/React.createElement("span", null, isRemoving ? 'Removing' : 'Remove'))));
@@ -1103,7 +1208,7 @@ function SimplifiedView(props) {
     "aria-label": t('immersive.title') || 'Immersive Reader',
     tabIndex: -1,
     onKeyDown: e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader),
-    className: "fixed inset-0 z-[200] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans",
+    className: "fixed inset-0 z-[200] overflow-y-auto animate-in motion-reduce:animate-none fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans",
     style: {
       backgroundColor: immersiveSettings.bgColor || '#fdfbf7'
     },
@@ -1187,6 +1292,9 @@ function SimplifiedView(props) {
     isTeacher: isTeacherMode,
     onClose: () => setIsKaraokeOverlayActive(false),
     getAudioUrl: getKaraokeAudioUrl,
+    sentenceList: karaokeReaderSentences,
+    captureOn: saveTtsAsPlayed,
+    onCaptureChange: setSaveTtsAsPlayedEnabled,
     text: (generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')
   })), immersiveSettings.lineFocus && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out",
@@ -1326,11 +1434,12 @@ function SimplifiedView(props) {
     });
   })()))), interactionMode === 'cloze' && isClozeComplete && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 pointer-events-none z-[100] flex items-center justify-center",
+    "data-a11y-overlay": "nonmodal-status",
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true"
   }, /*#__PURE__*/React.createElement(ConfettiExplosion, null), /*#__PURE__*/React.createElement("div", {
-    className: "mt-40 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border-4 border-white shadow-xl animate-in zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none flex items-center gap-2"
+    className: "mt-40 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border-4 border-white shadow-xl animate-in motion-reduce:animate-none zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Trophy, {
     size: 24,
     className: "text-yellow-500 fill-current",
@@ -1371,6 +1480,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap justify-center bg-white rounded-2xl sm:rounded-full p-1 border border-indigo-200 shadow-sm sm:flex-nowrap gap-y-1"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setInteractionMode('read');
       stopPlayback();
@@ -1386,6 +1496,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(Volume2, {
     size: 12
   }), " ", t('simplified.read_mode')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setIsFluencyMode(true);
       stopPlayback();
@@ -1399,6 +1510,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(Mic, {
     size: 12
   }), " ", t('simplified.read_along')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setInteractionMode('define');
       stopPlayback();
@@ -1414,6 +1526,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(Search, {
     size: 12
   }), " ", t('simplified.define_mode')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setInteractionMode('phonics');
       stopPlayback();
@@ -1428,6 +1541,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(Ear, {
     size: 12
   }), " ", t('simplified.phonics_mode')), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setInteractionMode('add-glossary');
       stopPlayback();
@@ -1443,6 +1557,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 12
   }), " ", t('simplified.add_term')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setInteractionMode('explain');
       stopPlayback();
@@ -1456,6 +1571,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(HelpCircle, {
     size: 12
   }), " ", t('simplified.explain_mode')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setInteractionMode('cloze');
       stopPlayback();
@@ -1469,6 +1585,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(PenTool, {
     size: 12
   }), " ", t('simplified.cloze_mode')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleSetIsSyntaxGameToTrue,
     className: "px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all bg-orange-100 text-orange-800 hover:bg-orange-200 shadow-sm",
     title: t('simplified.tip_scramble'),
@@ -1477,6 +1594,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 12
   }), " ", t('simplified.scramble_game')), isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setInteractionMode('revise');
       stopPlayback();
@@ -1489,6 +1607,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(Pencil, {
     size: 12
   }), " ", t('simplified.revise_mode')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "data-help-key": "simplified_compare_mode",
     onClick: () => {
       setIsCompareMode(!isCompareMode);
@@ -1502,6 +1621,7 @@ function SimplifiedView(props) {
   }), " ", t('simplified.compare_mode')))), !isZenMode && /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.refresh'),
     "data-help-key": "simplified_immersive_reader",
     onClick: () => {
@@ -1516,7 +1636,7 @@ function SimplifiedView(props) {
     title: t('simplified.tip_immersive_btn')
   }, isAnalyzingPos ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(BookOpen, {
     size: 14
   }), isAnalyzingPos ? t('simplified.loading_reader') : t('simplified.immersive_reader')), /*#__PURE__*/React.createElement("select", {
@@ -1545,6 +1665,7 @@ function SimplifiedView(props) {
   }, "🔤 Easy Read")), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center mr-2"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.settings'),
     "data-help-key": "simplified_teacher_tools",
     onClick: handleToggleIsTeacherToolbarExpanded,
@@ -1561,6 +1682,7 @@ function SimplifiedView(props) {
   })), /*#__PURE__*/React.createElement("div", {
     className: `flex items-center gap-2 overflow-hidden transition-all duration-300 ease-in-out flex-wrap ${isTeacherToolbarExpanded ? 'max-w-[920px] opacity-100 ml-2' : 'max-w-0 opacity-0'}`
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleDuplicateResource,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap",
     title: t('simplified.tip_duplicate_btn'),
@@ -1569,6 +1691,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(Copy, {
     size: 14
   }), " ", t('common.duplicate')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleCheckLevel,
     disabled: isCheckingLevel,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap",
@@ -1577,10 +1700,11 @@ function SimplifiedView(props) {
     "data-help-key": "simplified_check_level"
   }, isCheckingLevel ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Search, {
     size: 14
   }), isCheckingLevel ? t('simplified.checking') : t('simplified.check_level')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleCheckAlignment,
     disabled: isCheckingAlignment || !standardsInput,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${!standardsInput ? 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-600 border-slate-300' : 'bg-white text-indigo-600 hover:bg-indigo-50 border-slate-300'}`,
@@ -1589,10 +1713,11 @@ function SimplifiedView(props) {
     "data-help-key": "simplified_rigor_report"
   }, isCheckingAlignment ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(ShieldCheck, {
     size: 14
   }), isCheckingAlignment ? t('simplified.checking') : t('simplified.rigor_report')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => copyToClipboard(generatedContent?.data),
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap",
     title: t('simplified.tip_copy_btn'),
@@ -1601,16 +1726,18 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(Copy, {
     size: 14
   }), " ", t('common.copy_text')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main'),
     disabled: downloadingContentId === 'dl-simplified-main',
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap",
     "data-help-key": "simplified_download_audio"
   }, downloadingContentId === 'dl-simplified-main' ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Download, {
     size: 14
   }), downloadingContentId === 'dl-simplified-main' ? t('common.downloading') : t('common.download_audio')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: function () {
       if (ttsPrepState.busy) {
         window.__alloPrepareReadAloudCancel = true;
@@ -1624,10 +1751,11 @@ function SimplifiedView(props) {
     "data-help-key": "simplified_save_tts"
   }, ttsPrepState.busy ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Volume2, {
     size: 14
   }), ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'} ✕` : 'Save TTS'))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.toggle_edit_text'),
     onClick: handleToggleIsEditingLeveledText,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`,
@@ -1637,7 +1765,13 @@ function SimplifiedView(props) {
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
   }), isEditingLeveledText ? t('common.done_editing') : t('common.edit'))))), definitionData && /*#__PURE__*/React.createElement("div", {
-    className: `fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-75 duration-300 ease-out`,
+    ref: definitionDialogRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "simplified-definition-title",
+    tabIndex: -1,
+    onKeyDown: e => containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition),
+    className: `fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none fade-in zoom-in-75 duration-300 ease-out motion-reduce:animate-none motion-reduce:transition-none`,
     style: {
       top: Math.min(window.innerHeight - 300, definitionData.y + 10) + 'px',
       left: Math.min(window.innerWidth - 280, definitionData.x - 20) + 'px'
@@ -1645,10 +1779,13 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-start mb-2"
   }, /*#__PURE__*/React.createElement("h5", {
+    id: "simplified-definition-title",
     className: "font-bold text-indigo-900 text-lg capitalize"
   }, definitionData.word), /*#__PURE__*/React.createElement("button", {
+    ref: definitionCloseRef,
+    type: "button",
     onClick: closeDefinition,
-    className: "text-slate-600 hover:text-slate-600",
+    className: "min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
@@ -1656,7 +1793,7 @@ function SimplifiedView(props) {
     className: "flex items-center gap-2 text-xs text-indigo-500"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }), " ", t('glossary.popups.finding')), definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t), definitionData.text && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 pt-3 border-t border-slate-100"
   }, definitionData.imageUrl ? /*#__PURE__*/React.createElement("img", {
@@ -1667,10 +1804,11 @@ function SimplifiedView(props) {
     className: "flex items-center justify-center gap-2 text-xs text-indigo-500 h-20 bg-slate-50 rounded-lg border border-slate-400 border-dashed"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }), " ", t('common.loading') || 'Loading picture...') : definitionData.imageError ? /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-500 italic text-center py-2"
   }, t('glossary.popups.image_error') || 'Could not load picture.') : /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFetchWordImage(definitionData.word),
     className: "w-full flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-3 py-2 transition-colors",
     "aria-label": t('glossary.popups.show_picture') || 'Show picture for this word'
@@ -1679,11 +1817,7 @@ function SimplifiedView(props) {
   }), " ", t('glossary.popups.show_picture') || 'Show picture')), /*#__PURE__*/React.createElement("div", {
     className: "absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45"
   })), definitionData && /*#__PURE__*/React.createElement("div", {
-    role: "button",
-    tabIndex: 0,
-    onKeyDown: e => {
-      if (e.key === 'Escape') e.currentTarget.click();
-    },
+    "aria-hidden": "true",
     className: `fixed inset-0 ${_popupBackdropZ}`,
     onClick: closeDefinition
   }), phonicsData && /*#__PURE__*/React.createElement("div", {
@@ -1693,7 +1827,7 @@ function SimplifiedView(props) {
     "aria-labelledby": "phonics-popup-title",
     tabIndex: -1,
     onKeyDown: e => containSimplifiedModalFocus(e, phonicsDialogRef.current, closePhonics),
-    className: `fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`,
+    className: `fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`,
     style: {
       top: Math.min(window.innerHeight - 300, phonicsData.y + 10) + 'px',
       left: Math.min(window.innerWidth - 300, phonicsData.x - 20) + 'px'
@@ -1728,6 +1862,7 @@ function SimplifiedView(props) {
   }, t('glossary.phonetic_spelling')), /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-serif italic text-slate-700"
   }, "/", phonicsData.data.phoneticSpelling, "/")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.volume'),
     onClick: () => {
       if (phonicsData.audioUrl) {
@@ -1769,7 +1904,7 @@ function SimplifiedView(props) {
     className: `fixed inset-0 ${_popupBackdropZ}`,
     onClick: closePhonics
   }), selectionMenu && /*#__PURE__*/React.createElement("div", {
-    className: `fixed ${_popupZ} flex flex-col gap-1 items-center animate-in fade-in slide-in-from-bottom-2 duration-200`,
+    className: `fixed ${_popupZ} flex flex-col gap-1 items-center animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-200`,
     style: {
       top: selectionMenu.y - 50 + 'px',
       left: selectionMenu.x + 'px',
@@ -1780,7 +1915,7 @@ function SimplifiedView(props) {
   }, "\"", selectionMenu.text.length > 20 ? selectionMenu.text.substring(0, 20) + '...' : selectionMenu.text, "\""), /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-800 text-white rounded-full shadow-xl p-1 flex items-center gap-1"
   }, isCustomReviseOpen ? /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-1 px-1 animate-in slide-in-from-right-2 duration-200"
+    className: "flex items-center gap-1 px-1 animate-in motion-reduce:animate-none slide-in-from-right-2 duration-200"
   }, /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_custom_revise_instruction'),
     autoFocus: true,
@@ -1794,6 +1929,7 @@ function SimplifiedView(props) {
     placeholder: t('text_tools.menu_placeholder'),
     className: "text-xs bg-slate-700 border-none rounded-full px-3 py-1.5 focus:ring-1 focus:ring-indigo-400 outline-none text-white w-48 placeholder:text-slate-600"
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.continue'),
     onClick: () => handleReviseSelection('custom', customReviseInstruction),
     className: "p-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-full text-white transition-colors",
@@ -1801,12 +1937,14 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(ArrowRight, {
     size: 12
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.close_revision_panel'),
     onClick: handleSetIsCustomReviseOpenToFalse,
     className: "p-1.5 text-slate-600 hover:text-white rounded-full transition-colors"
   }, /*#__PURE__*/React.createElement(X, {
     size: 12
   }))) : /*#__PURE__*/React.createElement(React.Fragment, null, interactionMode === 'explain' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.help'),
     onClick: () => handleReviseSelection('explain'),
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
@@ -1814,6 +1952,7 @@ function SimplifiedView(props) {
     size: 12,
     className: "text-teal-700"
   }), " ", t('text_tools.explain')), interactionMode === 'revise' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.generate'),
     onClick: () => handleReviseSelection('simplify'),
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
@@ -1823,12 +1962,14 @@ function SimplifiedView(props) {
   }), " ", t('text_tools.simplify')), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-3 bg-slate-600"
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleReviseSelection('custom-input'),
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(PenTool, {
     size: 12,
     className: "text-indigo-600"
   }), " ", t('text_tools.custom'))), interactionMode === 'define' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.search'),
     onClick: handleDefineSelection,
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
@@ -1836,6 +1977,7 @@ function SimplifiedView(props) {
     size: 12,
     className: "text-yellow-700"
   }), " ", t('text_tools.define')), interactionMode === 'add-glossary' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.add'),
     onClick: () => {
       handleQuickAddGlossary(selectionMenu.text, true);
@@ -1854,7 +1996,13 @@ function SimplifiedView(props) {
       setIsCustomReviseOpen(false);
     }
   }), revisionData && /*#__PURE__*/React.createElement("div", {
-    className: `fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in zoom-in-95 duration-200`,
+    ref: revisionDialogRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "simplified-revision-title",
+    tabIndex: -1,
+    onKeyDown: e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision),
+    className: `fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`,
     style: {
       top: Math.min(window.innerHeight - 300, revisionData.y + 20) + 'px',
       left: Math.min(window.innerWidth - 300, Math.max(20, revisionData.x - 140)) + 'px'
@@ -1862,6 +2010,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center mb-3 pb-2 border-b border-slate-100"
   }, /*#__PURE__*/React.createElement("h5", {
+    id: "simplified-revision-title",
     className: "font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2"
   }, revisionData.type === 'simplify' ? /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
@@ -1873,32 +2022,31 @@ function SimplifiedView(props) {
     size: 14,
     className: "text-teal-500"
   }), revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')), /*#__PURE__*/React.createElement("button", {
+    ref: revisionCloseRef,
+    type: "button",
     onClick: closeRevision,
-    className: "text-slate-600 hover:text-slate-600",
+    className: "min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
   }))), revisionData.result ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3"
   }, renderFormattedText(revisionData.result, false)), (revisionData.type === 'simplify' || revisionData.type === 'custom') && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.apply_text_revision'),
     onClick: applyTextRevision,
-    className: "w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+    className: "min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12
   }), " ", t('simplified.revision.replace_btn'))) : /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center justify-center py-4 gap-2 text-slate-600"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 20,
-    className: "animate-spin text-indigo-500"
+    className: "animate-spin motion-reduce:animate-none text-indigo-500"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs"
   }, t('simplified.revision.working')))), revisionData && /*#__PURE__*/React.createElement("div", {
-    role: "button",
-    tabIndex: 0,
-    onKeyDown: e => {
-      if (e.key === 'Escape') e.currentTarget.click();
-    },
+    "aria-hidden": "true",
     className: `fixed inset-0 ${_popupBackdropZ} bg-black/5`,
     onClick: closeRevision
   }), isTeacherMode && !isCompareMode && !isZenMode && generatedContent && ['simplified', 'quiz', 'sentence-frames', 'glossary'].includes(generatedContent.type) && /*#__PURE__*/React.createElement("div", {
@@ -1936,9 +2084,9 @@ function SimplifiedView(props) {
   })), /*#__PURE__*/React.createElement("div", {
     className: "text-center mt-2 text-xs font-medium h-4"
   }, complexityLevel < 5 && /*#__PURE__*/React.createElement("span", {
-    className: "text-green-600 animate-pulse"
+    className: "text-green-600 animate-pulse motion-reduce:animate-none"
   }, t('status.adjusting'), "..."), complexityLevel > 5 && /*#__PURE__*/React.createElement("span", {
-    className: "text-indigo-600 animate-pulse"
+    className: "text-indigo-600 animate-pulse motion-reduce:animate-none"
   }, t('status.adjusting'), "..."), complexityLevel === 5 && /*#__PURE__*/React.createElement("span", {
     className: "text-slate-600"
   }, t('simplified.complexity_controls.drag_hint'))), /*#__PURE__*/React.createElement("div", {
@@ -1958,7 +2106,7 @@ function SimplifiedView(props) {
   }) : /*#__PURE__*/React.createElement(Copy, {
     size: 16
   }), /*#__PURE__*/React.createElement("span", null, saveOriginalOnAdjust ? t('common.keep_original') : t('common.overwrite_version'))))), generatedContent.levelCheck && /*#__PURE__*/React.createElement("div", {
-    className: "mb-6 bg-indigo-50 border border-indigo-100 p-4 rounded-lg animate-in slide-in-from-top-2"
+    className: "mb-6 bg-indigo-50 border border-indigo-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2014,6 +2162,7 @@ function SimplifiedView(props) {
   }, generatedContent.levelCheck.alignment)), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700 leading-relaxed mt-2 p-2 bg-indigo-50/50 rounded italic border border-indigo-100/50"
   }, "\"", generatedContent.levelCheck.nuanceSummary || generatedContent.levelCheck.feedback, "\"")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.close_fluency_session'),
     onClick: () => {
       const updated = {
@@ -2026,7 +2175,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
   })))), generatedContent.alignmentCheck && /*#__PURE__*/React.createElement("div", {
-    className: "mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-lg animate-in slide-in-from-top-2"
+    className: "mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2068,6 +2217,7 @@ function SimplifiedView(props) {
   }), " ", t('simplified.suggestion_label')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 italic mb-2"
   }, "\"", generatedContent.alignmentCheck.improvement, "\""), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.regenerate_with_rigor'),
     onClick: handleRegenerateWithRigor,
     disabled: isProcessing,
@@ -2075,8 +2225,9 @@ function SimplifiedView(props) {
     className: "text-xs font-bold bg-emerald-700 text-white px-3 py-1.5 rounded-full hover:bg-emerald-700 transition-colors flex items-center gap-1 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: isProcessing ? "animate-spin" : ""
+    className: isProcessing ? "animate-spin motion-reduce:animate-none" : ""
   }), " ", t('simplified.apply_regenerate')))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.close_fluency_results'),
     onClick: () => {
       const updated = {
@@ -2089,7 +2240,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
   })))), isCompareMode ? /*#__PURE__*/React.createElement("div", {
-    className: "w-full h-full min-h-[500px] animate-in fade-in duration-300"
+    className: "w-full h-full min-h-[500px] animate-in motion-reduce:animate-none fade-in duration-300"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 border-b border-slate-200 p-4 mb-4 flex justify-between items-center rounded-t-lg"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2161,6 +2312,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFormatText('bold'),
     className: "p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors",
     title: t('formatting.bold')
@@ -2168,12 +2320,14 @@ function SimplifiedView(props) {
     size: 16,
     strokeWidth: 3
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFormatText('italic'),
     className: "p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors",
     title: t('formatting.italic')
   }, /*#__PURE__*/React.createElement(Italic, {
     size: 16
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFormatText('highlight'),
     className: "p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors",
     title: t('formatting.highlight')
@@ -2182,26 +2336,31 @@ function SimplifiedView(props) {
   })), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-4 bg-orange-200 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFormatText('h1'),
     className: "p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs",
     title: t('formatting.h1')
   }, "H1"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFormatText('h2'),
     className: "p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs",
     title: t('formatting.h2')
   }, "H2"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFormatText('h3'),
     className: "p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs",
     title: t('formatting.h3') || 'Heading 3'
   }, "H3"), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-4 bg-orange-200 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFormatText('list'),
     className: "p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors",
     title: t('formatting.list')
   }, /*#__PURE__*/React.createElement(List, {
     size: 16
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFormatText('numlist'),
     className: "p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors",
     title: t('formatting.numlist') || 'Numbered List'
@@ -2300,7 +2459,7 @@ function SimplifiedView(props) {
             tabIndex: "0",
             role: "button",
             "aria-label": interactionMode === 'phonics' ? `Hear phonics for ${cleanWord}` : `Define ${cleanWord}`,
-            className: `cursor-help hover:bg-emerald-100 text-slate-800 hover:text-emerald-800 rounded px-0.5 transition-colors duration-200 inline-block border-b border-transparent hover:border-emerald-200 focus:bg-yellow-200 focus:outline-none`,
+            className: `cursor-help hover:bg-emerald-100 text-slate-800 hover:text-emerald-800 rounded px-0.5 transition-colors duration-200 inline-block border-b border-transparent hover:border-emerald-200 focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1`,
             title: interactionMode === 'phonics' ? t('text_tools.click_to_phonics') : t('text_tools.click_to_define')
           }, cleanWord);
         });
@@ -2368,10 +2527,10 @@ function SimplifiedView(props) {
       }, renderTextContent(targetParaSentences, rowTargetStartIdx, false))));
     }));
   })(), isProcessing && /*#__PURE__*/React.createElement("div", {
-    className: "mt-6 flex items-center justify-center gap-2 text-indigo-500 text-xs font-bold uppercase tracking-wider animate-pulse opacity-80"
+    className: "mt-6 flex items-center justify-center gap-2 text-indigo-500 text-xs font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none opacity-80"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }), " Generating more...")) : /*#__PURE__*/React.createElement("div", {
     className: `w-full min-h-[500px] text-lg font-medium leading-relaxed font-sans prose prose-p:my-2 max-w-none ${cursorStyles[interactionMode]} transition-all duration-500 ease-in-out ${isLineFocusMode ? 'bg-slate-950 text-slate-600 p-8 rounded-2xl shadow-inner prose-invert' : 'text-slate-800 prose-headings:text-orange-900 prose-strong:text-orange-900'} ${getContentDirection(generatedContent?.config?.language || leveledTextLanguage) === 'rtl' ? 'text-right' : 'text-left'}`,
     style: {
@@ -2433,11 +2592,16 @@ function SimplifiedView(props) {
           const isDimmed = isLineFocusMode && !shouldFocus;
           if (interactionMode === 'explain' || interactionMode === 'revise') {
             const cleanText = para.replace(/\*\*|\*/g, '');
+            // focusedParagraphIndex is compared against paragraphId
+            // (`${keyPrefix}-${pIdx}`) in this side-by-side branch, so
+            // hover must set the same string — setting bare pIdx left
+            // the hovered paragraph permanently dimmed/blurred in
+            // line-focus mode.
             return /*#__PURE__*/React.createElement("p", {
               key: pIdx,
               className: `mb-4 leading-relaxed cursor-text selection:text-teal-900 transition-all duration-500 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'} ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 rounded-xl shadow-lg text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`,
               onMouseUp: handleTextMouseUp,
-              onMouseEnter: () => setFocusedParagraphIndex(pIdx),
+              onMouseEnter: () => setFocusedParagraphIndex(paragraphId),
               onMouseLeave: () => setFocusedParagraphIndex(null)
             }, cleanText);
           }
@@ -2445,7 +2609,7 @@ function SimplifiedView(props) {
           return /*#__PURE__*/React.createElement("p", {
             key: pIdx,
             className: `mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`,
-            onMouseEnter: () => setFocusedParagraphIndex(pIdx),
+            onMouseEnter: () => setFocusedParagraphIndex(paragraphId),
             onMouseLeave: () => setFocusedParagraphIndex(null)
           }, interactionMode === 'add-glossary' ? (() => {
             const cleanPara = para.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '');
@@ -2500,7 +2664,7 @@ function SimplifiedView(props) {
               },
               tabIndex: 0,
               role: "button",
-              className: `cursor-help hover:bg-yellow-200 rounded px-0.5 transition-colors duration-200 focus:bg-yellow-200 focus:outline-none ${isHeader ? isEnglish ? 'font-bold text-indigo-900' : 'font-bold text-orange-900' : ''}`
+              className: `cursor-help hover:bg-yellow-200 rounded px-0.5 transition-colors duration-200 focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isHeader ? isEnglish ? 'font-bold text-indigo-900' : 'font-bold text-orange-900' : ''}`
             }, displayPart);
           }) : interactionMode === 'phonics' ? para.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '').split(/(\s+)/).map((part, i) => {
             if (part.match(/^\s+$/)) return /*#__PURE__*/React.createElement("span", {
@@ -2522,7 +2686,7 @@ function SimplifiedView(props) {
               },
               tabIndex: 0,
               role: "button",
-              className: `cursor-help hover:bg-emerald-100 text-slate-800 hover:text-emerald-800 rounded px-0.5 transition-colors duration-200 border-b border-transparent hover:border-emerald-200 inline-block focus:bg-yellow-200 focus:outline-none ${isHeader ? isEnglish ? 'font-bold text-indigo-900' : 'font-bold text-orange-900' : ''}`,
+              className: `cursor-help hover:bg-emerald-100 text-slate-800 hover:text-emerald-800 rounded px-0.5 transition-colors duration-200 border-b border-transparent hover:border-emerald-200 inline-block focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isHeader ? isEnglish ? 'font-bold text-indigo-900' : 'font-bold text-orange-900' : ''}`,
               title: t('common.click_hear_phonics')
             }, displayPart);
           }) : sentencesInPara.map((sentence, sIdx) => {
@@ -2619,7 +2783,7 @@ function SimplifiedView(props) {
               tabIndex: "0",
               role: "button",
               "aria-label": interactionMode === 'phonics' ? `Hear phonics for ${displayPart}` : `Define ${displayPart}`,
-              className: `cursor-help hover:bg-emerald-100 text-slate-800 hover:text-emerald-800 rounded px-0.5 transition-colors duration-200 border-b border-transparent hover:border-emerald-200 inline-block focus:bg-yellow-200 focus:outline-none ${isHeader ? 'font-bold text-orange-900' : ''}`,
+              className: `cursor-help hover:bg-emerald-100 text-slate-800 hover:text-emerald-800 rounded px-0.5 transition-colors duration-200 border-b border-transparent hover:border-emerald-200 inline-block focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isHeader ? 'font-bold text-orange-900' : ''}`,
               title: interactionMode === 'phonics' ? t('text_tools.click_to_phonics') : t('text_tools.click_to_define')
             }, displayPart);
           }) : sentencesInPara.map((sentence, sIdx) => {
@@ -2750,7 +2914,7 @@ function SimplifiedView(props) {
               tabIndex: "0",
               role: "button",
               "aria-label": interactionMode === 'phonics' ? `Hear phonics for ${displayPart3}` : `Define ${displayPart3}`,
-              className: `cursor-help hover:bg-indigo-100 text-slate-700 hover:text-indigo-800 rounded px-0.5 transition-colors duration-200 border-b border-transparent hover:border-indigo-200 inline-block focus:bg-yellow-200 focus:outline-none ${isHeader3 ? 'font-bold text-indigo-900' : ''}`,
+              className: `cursor-help hover:bg-indigo-100 text-slate-700 hover:text-indigo-800 rounded px-0.5 transition-colors duration-200 border-b border-transparent hover:border-indigo-200 inline-block focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isHeader3 ? 'font-bold text-indigo-900' : ''}`,
               title: interactionMode === 'phonics' ? t('text_tools.click_to_phonics') : t('text_tools.click_to_define')
             }, displayPart3);
           }));
@@ -2792,10 +2956,10 @@ function SimplifiedView(props) {
       referencesText: _references
     }));
   })()) : null, isProcessing && /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 flex items-center gap-2 text-indigo-500 text-xs font-bold uppercase tracking-wider animate-pulse opacity-80"
+    className: "mt-4 flex items-center gap-2 text-indigo-500 text-xs font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none opacity-80"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }), " Generating more..."))));
 }
 

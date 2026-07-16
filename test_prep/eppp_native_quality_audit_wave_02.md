@@ -1,0 +1,130 @@
+# EPPP native quality repair - wave 02
+
+Reviewed: 2026-07-15
+
+## Result
+
+- All 113 mechanically padded choice sets received content-specific rewrites.
+- All incorrect choices retain option-specific explanatory feedback.
+- 19 prompts were reframed to reduce duplication or correct scope.
+- 25 rationales received substantive accuracy or scope revisions.
+- 6 source records were repaired or upgraded.
+- 0 mechanical-padding or parallel-choice findings remain in this wave.
+
+> Editorial and source review is not psychometric calibration or independent licensed-psychologist validation.
+
+## Rewritten items
+
+- eppp-v3-assessment-054
+- eppp-v3-assessment-055
+- eppp-v3-assessment-056
+- eppp-v3-assessment-057
+- eppp-v3-assessment-058
+- eppp-v3-assessment-060
+- eppp-v3-assessment-061
+- eppp-v3-assessment-062
+- eppp-v3-assessment-063
+- eppp-v3-assessment-064
+- eppp-v3-assessment-065
+- eppp-v3-assessment-066
+- eppp-v3-assessment-067
+- eppp-v3-assessment-069
+- eppp-v3-assessment-071
+- eppp-v3-assessment-073
+- eppp-v3-assessment-074
+- eppp-v3-assessment-075
+- eppp-v3-assessment-076
+- eppp-v3-assessment-077
+- eppp-v3-assessment-078
+- eppp-v3-assessment-080
+- eppp-v3-cognitive-affective-046
+- eppp-v3-cognitive-affective-047
+- eppp-v3-cognitive-affective-048
+- eppp-v3-cognitive-affective-049
+- eppp-v3-cognitive-affective-050
+- eppp-v3-cognitive-affective-051
+- eppp-v3-cognitive-affective-052
+- eppp-v3-cognitive-affective-053
+- eppp-v3-cognitive-affective-054
+- eppp-v3-cognitive-affective-055
+- eppp-v3-cognitive-affective-056
+- eppp-v3-cognitive-affective-057
+- eppp-v3-cognitive-affective-058
+- eppp-v3-cognitive-affective-059
+- eppp-v3-cognitive-affective-060
+- eppp-v3-cognitive-affective-061
+- eppp-v3-cognitive-affective-062
+- eppp-v3-cognitive-affective-063
+- eppp-v3-cognitive-affective-064
+- eppp-v3-cognitive-affective-065
+- eppp-v3-intervention-059
+- eppp-v3-intervention-060
+- eppp-v3-intervention-061
+- eppp-v3-intervention-062
+- eppp-v3-intervention-064
+- eppp-v3-intervention-065
+- eppp-v3-intervention-067
+- eppp-v3-intervention-069
+- eppp-v3-intervention-071
+- eppp-v3-intervention-072
+- eppp-v3-intervention-074
+- eppp-v3-lifespan-047
+- eppp-v3-lifespan-050
+- eppp-v3-lifespan-051
+- eppp-v3-lifespan-052
+- eppp-v3-lifespan-053
+- eppp-v3-lifespan-054
+- eppp-v3-lifespan-055
+- eppp-v3-lifespan-056
+- eppp-v3-lifespan-058
+- eppp-v3-lifespan-059
+- eppp-v3-lifespan-060
+- eppp-v3-professional-001
+- eppp-v3-professional-002
+- eppp-v3-professional-004
+- eppp-v3-professional-005
+- eppp-v3-professional-006
+- eppp-v3-professional-007
+- eppp-v3-professional-008
+- eppp-v3-professional-009
+- eppp-v3-professional-010
+- eppp-v3-professional-013
+- eppp-v3-professional-014
+- eppp-v3-professional-015
+- eppp-v3-professional-016
+- eppp-v3-professional-019
+- eppp-v3-professional-020
+- eppp-v3-professional-021
+- eppp-v3-professional-025
+- eppp-v3-professional-026
+- eppp-v3-professional-027
+- eppp-v3-professional-028
+- eppp-v3-professional-030
+- eppp-v3-professional-031
+- eppp-v3-professional-033
+- eppp-v3-professional-034
+- eppp-v3-professional-037
+- eppp-v3-professional-038
+- eppp-v3-professional-040
+- eppp-v3-professional-041
+- eppp-v3-professional-043
+- eppp-v3-professional-048
+- eppp-v3-professional-049
+- eppp-v3-professional-050
+- eppp-v3-professional-051
+- eppp-v3-professional-053
+- eppp-v3-professional-055
+- eppp-v3-professional-057
+- eppp-v3-professional-058
+- eppp-v3-professional-060
+- eppp-v3-social-cultural-045
+- eppp-v3-social-cultural-046
+- eppp-v3-social-cultural-047
+- eppp-v3-social-cultural-048
+- eppp-v3-social-cultural-049
+- eppp-v3-social-cultural-050
+- eppp-v3-social-cultural-051
+- eppp-v3-social-cultural-052
+- eppp-v3-social-cultural-053
+- eppp-v3-social-cultural-054
+- eppp-v3-social-cultural-055

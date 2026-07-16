@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-d6624351-untitled",
+  "title": "ໄຂ່",
+  "description": "Whose egg is this? The crocodile, the turtle, the penguin, the chicken and the emu all check to see if the egg belongs to them.",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "SIL"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/sffveq9OAa"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sffveq9OAa%2f1752120247132%2f%e0%bb%84%e0%ba%82%e0%bb%88%2fegg_en_20201023_cover+(Large).jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ໄຂ່\" (Lao). Whose egg is this? The crocodile, the turtle, the penguin, the chicken and the emu all check to see if the egg belongs to them."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 81
+  }
+}

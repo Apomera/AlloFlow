@@ -1,0 +1,65 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-b9c961e3-untitled",
+  "title": "मेरो विद्यालय",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/zW0MeqqMm9"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2fb9c961e3-c72d-455c-89d4-dc414a688a27%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%b5%e0%a4%bf%e0%a4%a6%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%b2%e0%a4%af%2fAOR_EAG000951211.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2fb9c961e3-c72d-455c-89d4-dc414a688a27%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%b5%e0%a4%bf%e0%a4%a6%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%b2%e0%a4%af%2fimage.png",
+      "text": "यो मेरो विद्यालय हो। चुनिदेवी यसको नाम हो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2fb9c961e3-c72d-455c-89d4-dc414a688a27%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%b5%e0%a4%bf%e0%a4%a6%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%b2%e0%a4%af%2fschool-1.png",
+      "text": "चुनिखेल ललितपुरमा छ। यो कक्षा ८ सम्म छ।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2fb9c961e3-c72d-455c-89d4-dc414a688a27%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%b5%e0%a4%bf%e0%a4%a6%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%b2%e0%a4%af%2fclassroom.png",
+      "text": "मलाई मेरो विद्यालय मनपर्छ।\nशिक्षकहरू मलाई माया गर्नुहुन्छ।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2fb9c961e3-c72d-455c-89d4-dc414a688a27%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%b5%e0%a4%bf%e0%a4%a6%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%b2%e0%a4%af%2fAOR_th01090b.png",
+      "text": "हामी विद्यालयमा खेल खेल्छौँ।\nकहिलेकाहिँ नाँच्छौँ।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2fb9c961e3-c72d-455c-89d4-dc414a688a27%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%b5%e0%a4%bf%e0%a4%a6%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%b2%e0%a4%af%2fPLAYING_.png",
+      "text": "आज खेल खेल्ने पालो।\nखेल खेल्दा रमाइलो लाग्छ।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2fb9c961e3-c72d-455c-89d4-dc414a688a27%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%b5%e0%a4%bf%e0%a4%a6%e0%a5%8d%e0%a4%af%e0%a4%be%e0%a4%b2%e0%a4%af%2fAOR_EAG000951.png",
+      "text": "म नियमित विद्यालय जान्छु।\nराम्रो पढेपछि ठुलो भइन्छ।"
+    }
+  ],
+  "stats": {
+    "pages": 6,
+    "words": 46
+  }
+}

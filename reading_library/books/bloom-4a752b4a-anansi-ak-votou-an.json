@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4a752b4a-anansi-ak-votou-an",
+  "title": "Anansi ak votou an",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "African Storybook Initiative"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "African Storybook Initiative",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/dcEnBAq7tT"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_02_Image_0001.png",
+      "text": "Anansi zarenyen an ak lapen an te zanmi. Yo te rete nan yon vilaj lapè nan mòn yo. Lapen an posede yon gwo fèm ak anpil legim ak fwi. Menm si lapen an pataje san gad dèyè ak zanmi l', Anansi pat kontan et te fè jalouzi."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_03_Image_0001.png",
+      "text": "Se konsa, Anansi te panse ak yon plan entelijan pou fèm lapen an. Byento lapen an te rete pòv ak san kay. Anansi te vini mèt kay tout lapen yo, ak legim yo, ak fwi yo."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_04_Image_0001.png",
+      "text": "Anansi te ale nan mache a pou l' te vann fwi yo ak legim yo. Li te fè anpil lajan ke li te mete nan yon gwo panyen! Ak kèk nan lajan an, li te achte mayi pou fanmi l', et te mete yo sou lajan ki te nan panyen an sou tèt li."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_05_Image_0001.png",
+      "text": "Anansi san pwoblèm tap dirije li pou lakay li ak panyen l 'sou tèt li, pandan li tap chante. Li ta p' panse ak tout bagay ke li ta pral achte ak lajan l' yo."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_06_Image_0001.png",
+      "text": "Sou tout wout la, li te kòmanse farinen. Se konsa farinen a tounen yon deluj. Anansi zareyen la kite panyen l' yo sou kote wout la anba yon pye bwa. Men, kote li te ye an li ta p' jete yon zye sou panyen ki koute chè."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_07_Image_0001.png",
+      "text": "Li te kòmanse fè yon sèl lapli pi lou, e Anansi te vini frèt ak mouye. Se konsa, li pran kouri ale nan yon twou. « Mwen ap rete nan twou sa a jouk lapli a sispann ,››te di Anansi nan kè l'. « O mwen lajan m' nan ap pwoteje pa mayi a mwen mete sou tèt li an. ››\n››"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_08_Image_0001.png",
+      "text": "Yon ti kras apre, votou te vole alantou panyen an la a bò wout la. Li vin konnen te gen lajan ak mayi nan panyen an. Se konsa, li kouvri panyen an ak zèl li, li tann pou lapli a sispann."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_09_Image_0001.png",
+      "text": "Anansi wè votou a ki chita sou panyen l' yo. «O mèsi, zanmi m', paske ou pwoteje panyen mwen an, » li di votou a. «Eskize mwen, Anansi, ès ke mwen byen tande sa ou di a? »mande votou. « Panyen ou? Panyen sa a se pou mwen ! Mwen te jwenn li isit la sou bò wout ! » Anansi pa t' kapab kwè zòrèy li ! «Se pou mw li ye mwen di w' ! »"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_10_Image_0001.png",
+      "text": "An kòlè, Anansi ale, li te mete chèf la okouran de vòl la. Men, votou pale ak chèf yo ak chèf fanmi l 'yo, « Ki jan yon moun ka kite yon panyen plen ak lajan ak mayi konsa sou wout la? » «Men, mwen te ap gade panyen mwen, » te di Anansi . «Se lajan m 'ak mayi mwen! » « Mwen te ap siveye panyen an lè ou pwoche an, lè ou vini ou te di ke se pou ou li ye! » : reponn votou lan."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_11_Image_0001.png",
+      "text": "Lè chèf yo te finn koute ak anpil atansyon tou de kote yo, yo voye Anansi ak votou an ale nan yon kwen. Yo diskite istwa a pandan yon bon tan. Evantyèlman yo rive ak yon desizyon."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_12_Image_0001.png",
+      "text": "Yo rele Anansi ak votou la ankò. ‹‹ Nou kwè istwa votou a, ›› yo te di. ‹‹ Li pa vòlè. Ou t ap eseye fè reklamasyon yon bagay ki pa t' pou ou. ›› Anansi pa t' kapab kwè zòrèy li ! Li pete nan dlo nan je."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4a752b4a-abbd-4119-b648-ebced1db582e%2fAnansi+ak+votou+an%2fASP_194_Anansi_and_Vulture_Page_13_Image_0001.png",
+      "text": "Nouvèl la te gaye kijan jijman an te ale kont Anansi. Kòm li tap mache, li te tande lapen an kap ri. Lapen an tounen al nan jaden l' e te grandi fwi ak legim yo. Men, Anansi te pòv ankò, e pa t' gen okenn zanmi."
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 623
+  }
+}

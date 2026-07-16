@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-691cbfe0-untitled",
+  "title": "ໃຫຍ່",
+  "description": "Learn the names of things in our world that are BIG",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "Bloom Lao"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Lao",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/vGzGQBpOgo"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/vGzGQBpOgo%2f1753066020751%2f%e0%bb%83%e0%ba%ab%e0%ba%8d%e0%bb%88%2fBigC1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ໃຫຍ່\" (Lao). Learn the names of things in our world that are BIG"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 67
+  }
+}

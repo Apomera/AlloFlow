@@ -24,9 +24,14 @@ describe('Optics Lab refinements', () => {
     const html = renderTool('opticsLab', state());
 
     expect(html).toContain('role="tablist"');
-    expect(html).toMatch(/role="tab" aria-selected="true" tabindex="0"/);
-    expect(html).toMatch(/role="tab" aria-selected="false" tabindex="-1"/);
+    expect(html).toMatch(/role="tab"[^>]*aria-selected="true"[^>]*tabindex="0"/);
+    expect(html).toMatch(/role="tab"[^>]*aria-selected="false"[^>]*tabindex="-1"/);
     expect(html).toContain('data-op-tab-value="home"');
+    expect(html).toContain('id="op-tab-home"');
+    expect(html).toContain('aria-controls="op-panel-home"');
+    expect(html).toContain('id="op-panel-home"');
+    expect(html).toContain('role="tabpanel"');
+    expect(html).toContain('aria-labelledby="op-tab-home"');
   });
 
   it('supports arrow, Home, and End keys across every tab system', () => {
@@ -46,5 +51,26 @@ describe('Optics Lab refinements', () => {
     expect(source).toContain('outline:3px solid Highlight!important');
     expect(source).not.toContain('outline: none');
     expect(source.match(/h\('th', \{ scope: 'col'/g)).toHaveLength(7);
+    expect(source).toContain("'aria-label': 'Photon wavelength'" );
+    expect(source).toContain('Lens ray tracer showing object and image formation.');
+    expect(source).toContain('Comparison of coherent and incoherent light waves.');
+  });
+  it('tracks simulation milestones from effects instead of render timers', () => {
+    const source = readFileSync('stem_lab/stem_tool_optics.js', 'utf8');
+
+    expect(source).toContain('Award simulation milestones from effects, never from render paths.');
+    expect(source).toContain("}, [d.refrN1, d.refrN2, d.refrTheta1, d.tirTriggered]);");
+    expect(source).toContain("}, [d.mode, d.lensType, d.lensFocal, d.lensDo, d.realImageFormed, d.virtualImageFormed]);");
+    expect(source).not.toContain('Quest auto-tracking on the calc render');
+    expect(source).not.toContain('Set later via upd to avoid re-render storm');
+  });
+  it('runs visualizer clocks through cancellable lifecycle effects', () => {
+    const source = readFileSync('stem_lab/stem_tool_optics.js', 'utf8');
+
+    expect(source).toContain("}, [d.phenoAfterPhase, d.phenoAfterStartedAt, d.phenoAfterTick]);");
+    expect(source).toContain("}, [d.phenoQuantumPlaying, d.phenoQuantumRate, d.phenoQuantumDots, d.phenoQuantumCount]);");
+    expect(source.match(/return function\(\) \{ clearTimeout\(timer\); \};/g).length).toBeGreaterThanOrEqual(2);
+    expect(source).not.toContain('Schedule a per-second re-render so the countdown updates');
+    expect(source).not.toContain('Auto-fire scheduling (mirrors after-image timer pattern)');
   });
 });

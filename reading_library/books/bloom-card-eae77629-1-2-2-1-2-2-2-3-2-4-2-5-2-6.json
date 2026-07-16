@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-eae77629-1-2-2-1-2-2-2-3-2-4-2-5-2-6",
+  "title": "Доброго дня!1.2 Граматика2.1 Запитання, 2.2 Відмінювання дієслова, 2.3 Привітання, 2.4 Попрощатися, 2.5 Ім'я та Прізвище, 2.6 Походження",
+  "description": "A Ukrainian picture book, readable free at Bloom Library.",
+  "language": "Ukrainian",
+  "langCode": "uk",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Primer"
+  ],
+  "authors": [
+    "Anatolii Khyliuk"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Anatolii Khyliuk",
+  "license": "CC BY-NC-ND",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/20ZWswORF7"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/20ZWswORF7%2f1781704041595%2f1+1+%d0%94%d0%be%d0%b1%d1%80%d0%be%d0%b3%d0%be+%d0%b4%d0%bd%d1%8f!+1.2+%d0%93%d1%80%d0%b0%d0%bc%d0%b0%d1%82%d0%b8%d0%ba%d0%b0+2.1+%d0%97%d0%b0%d0%bf%d0%b8%d1%82%d0%b0%d0%bd%d0%bd%d1%8f++2.2%2ffile_0000000014c071f48dfd86f611469585+(2)2.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"Доброго дня!1.2 Граматика2.1 Запитання, 2.2 Відмінювання дієслова, 2.3 Привітання, 2.4 Попрощатися, 2.5 Ім'я та Прізвище, 2.6 Походження\" (Ukrainian)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-ND) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 72
+  }
+}

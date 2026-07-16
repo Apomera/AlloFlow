@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-ab95c77c-untitled-ne",
+  "title": "जोड घटाउ",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/E5XK8aW0uI"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fab95c77c-4339-4ec8-815a-cf9642e80b31%2f%e0%a4%9c%e0%a5%8b%e0%a4%a1+%e0%a4%98%e0%a4%9f%e0%a4%be%e0%a4%89%2fimage161.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fab95c77c-4339-4ec8-815a-cf9642e80b31%2f%e0%a4%9c%e0%a5%8b%e0%a4%a1+%e0%a4%98%e0%a4%9f%e0%a4%be%e0%a4%89%2fAOR_1I-G1.png",
+      "text": "आऊ आऊ साथी हो!\nआज हामी गन्ती गरौं।\nआज हामी जोड गरौं।\nआज हामी घटाउ गरौं।\nआज हामी रमाइलो गरौं!!!!"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fab95c77c-4339-4ec8-815a-cf9642e80b31%2f%e0%a4%9c%e0%a5%8b%e0%a4%a1+%e0%a4%98%e0%a4%9f%e0%a4%be%e0%a4%89%2fAOR_1I-G1.png",
+      "text": "२\nवटा\nर\n२\nवटा\n४ वटा\n२ वटा कमिला आउँदै थिए।\n२ वटा कमिला भेट भए।\nभन अब कति भए?\nजम्मा ४ वटा भए।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fab95c77c-4339-4ec8-815a-cf9642e80b31%2f%e0%a4%9c%e0%a5%8b%e0%a4%a1+%e0%a4%98%e0%a4%9f%e0%a4%be%e0%a4%89%2fAOR_1I-G.png",
+      "text": "३\nवटा\nर\n२\nवटा\n५\nवटा\n३ वटा कमिला आउँदै थिए।\n२ वटा कमिला भेट भए।\nभन अब कति भए?\nजम्मा ५ वटा भए।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fab95c77c-4339-4ec8-815a-cf9642e80b31%2f%e0%a4%9c%e0%a5%8b%e0%a4%a1+%e0%a4%98%e0%a4%9f%e0%a4%be%e0%a4%89%2fAOR_Ind0009112.png",
+      "text": "४ वटा\nथिए ।\n४ वटा\nआए\n४ वटा चरा गीत गाउँदै थिए।\nअरू ४ वटा उडेर आए।\nभनभन साथी हो...\nअब कति भए?\n४ मा ४ जोड्दा\nजम्मा ८ भए।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fab95c77c-4339-4ec8-815a-cf9642e80b31%2f%e0%a4%9c%e0%a5%8b%e0%a4%a1+%e0%a4%98%e0%a4%9f%e0%a4%be%e0%a4%89%2fAOR_1I-G.png",
+      "text": "४ वटा\nर\n३ वटा\n७ वटा\n४ वटा कमिला आउँदै थिए।\n३ वटा कमिला भेट भए।\nभन त अब कति भए?\nजम्मा ७ वटा भए।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fab95c77c-4339-4ec8-815a-cf9642e80b31%2f%e0%a4%9c%e0%a5%8b%e0%a4%a1+%e0%a4%98%e0%a4%9f%e0%a4%be%e0%a4%89%2fimage8.png",
+      "text": "रामसँग भएको आँप\nहरिसँग भएको आँप\nजम्मा आँप\nरामसँग थिए पाँचवटा आँप।\nहरिसँग थिए छवटा आँप।\nभनभन साथि हो...\nकति भए जम्मा आँप?\nजम्मा जम्मी गरेर\nएघार दाना आँप।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fab95c77c-4339-4ec8-815a-cf9642e80b31%2f%e0%a4%9c%e0%a5%8b%e0%a4%a1+%e0%a4%98%e0%a4%9f%e0%a4%be%e0%a4%89%2fimage10.png",
+      "text": "७ वटा चरा रुखमा थिए।\n५ वटा चरा भुर्र उडी गए।\nरुखमा कति बाँकी छन् ?\nअब २ बाँकी छन्।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fab95c77c-4339-4ec8-815a-cf9642e80b31%2f%e0%a4%9c%e0%a5%8b%e0%a4%a1+%e0%a4%98%e0%a4%9f%e0%a4%be%e0%a4%89%2fimage.png",
+      "text": "दश वटा चरा बसेका थिए।\nनौ वटा चरा भुर्र उडी गए।\nभन त अब कति बाँकि भयो?\nअब एउटा चरा बाँकी भयो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fab95c77c-4339-4ec8-815a-cf9642e80b31%2f%e0%a4%9c%e0%a5%8b%e0%a4%a1+%e0%a4%98%e0%a4%9f%e0%a4%be%e0%a4%89%2fimage.jpg",
+      "text": "तीनवटा काला खरायो।\nछवटा थोप्ले खरायो।\nजम्मा कति खरायो?\nजम्मा नौवटा खरायो।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fab95c77c-4339-4ec8-815a-cf9642e80b31%2f%e0%a4%9c%e0%a5%8b%e0%a4%a1+%e0%a4%98%e0%a4%9f%e0%a4%be%e0%a4%89%2fimage1.jpg",
+      "text": "तीन वटा काला खरायो।\nछ वटा थोप्ले खरायो।\nतीन वटा सेता खरायो।\nजम्मा बाह्र वटा खरायो।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 226
+  }
+}

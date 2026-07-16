@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-da2ff06c-genge-la-mama-yangu",
+  "title": "Genge la Mama Yangu",
+  "description": "Juliana talks about her mother and her successful business of growing and selling fruits and vegetables.",
+  "language": "Kiswahili",
+  "langCode": "sw",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Culture"
+  ],
+  "authors": [
+    "Aminga Tata"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Aminga Tata",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ky5rZAnOPS"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fda2ff06c-001d-43e6-a008-b0e78694a09d%2fMy+Mother's+Grocery%2fASP_35_my_mothers_grocery_Page_01_Image_0001.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fda2ff06c-001d-43e6-a008-b0e78694a09d%2fMy+Mother's+Grocery%2fASP_35_my_mothers_grocery_Page_02_Image_0001.jpg",
+      "text": "Mimi ni Juliana. Mama yangu anaitwa Maria. Yeye anamiliki genge hili. Bwana Popo anamwandeshea mama yangu genge hili."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fda2ff06c-001d-43e6-a008-b0e78694a09d%2fMy+Mother's+Grocery%2fASP_35_my_mothers_grocery_Page_03_Image_0001.jpg",
+      "text": "Mara nyingi mimi humsindikiza mama anapotembelea gengeni. Genge la mama yangu lipo katika Soko la Kioge."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fda2ff06c-001d-43e6-a008-b0e78694a09d%2fMy+Mother's+Grocery%2fASP_35_my_mothers_grocery_Page_02_Image_0001.jpg",
+      "text": "Mama yangu anauza machungwa zaidi gengeni kwake. Wakati mwingine anaongeza maembe, ndizi na mboga za majani katika mauzo yake."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fda2ff06c-001d-43e6-a008-b0e78694a09d%2fMy+Mother's+Grocery%2fASP_35_my_mothers_grocery_Page_05_Image_0001.jpg",
+      "text": "Hili ni shamba la mama yangu. Yeye huchuma baadhi ya mboga za majani ambazo huuza katika Soko la Kioge. Mara nyingi Mama hunuchukua na kwenda naye shambani ili kumsaidia kuchuma na kuchukua kumbukumba ya idadi ya mboga za majani."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fda2ff06c-001d-43e6-a008-b0e78694a09d%2fMy+Mother's+Grocery%2fASP_35_my_mothers_grocery_Page_06_Image_0001.jpg",
+      "text": "Mama yangu ananifundisha namna ya kuchuma mazao. Huwa ninafurahi kuwa na mama yangu shambani."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fda2ff06c-001d-43e6-a008-b0e78694a09d%2fMy+Mother's+Grocery%2fASP_35_my_mothers_grocery_Page_07_Image_0001.jpg",
+      "text": "Mwishowe mama yangu ameweza kutanua genge lake na kuwa biashara kubwa. Ameajiri watu watatu zaidi wa kumfanyia kazi."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fda2ff06c-001d-43e6-a008-b0e78694a09d%2fMy+Mother's+Grocery%2fASP_35_my_mothers_grocery_Page_08_Image_0001.jpg",
+      "text": "Hili ni soko kubwa la Kioge. Limegawanyika kutegemea ni nini kinauzwa katika sehemu hiyo. Mama yangu anatafuta sehemu ambayo inauza wanyama wafugwao kama vile mbuzi, kondoo na ng'ombe."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fda2ff06c-001d-43e6-a008-b0e78694a09d%2fMy+Mother's+Grocery%2fASP_35_my_mothers_grocery_Page_10_Image_0001.jpg",
+      "text": "Huyu ni mbuzi ambaye mama yangu alimnunua. Ni mzuri. Kaka yangu hajawahi kuwapenda mbuzi lakini anajaribu kuwapenda."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fda2ff06c-001d-43e6-a008-b0e78694a09d%2fMy+Mother's+Grocery%2fASP_35_my_mothers_grocery_Page_11_Image_0001.jpg",
+      "text": "Mbuzi mdogo alikua haraka na kuwa mbuzi mkubwa. Mbuzi huyo tulimwita Aki. Mbuzi Aki alizaa mbuzi wawili wadogo. Ninapenda kuwalisha pamoja na kaka yangu."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fda2ff06c-001d-43e6-a008-b0e78694a09d%2fMy+Mother's+Grocery%2fASP_35_my_mothers_grocery_Page_12_Image_0001.jpg",
+      "text": "Mama yangu aliwauza mbuzi wadogo wawili ambao Mbuzi Aki aliwazaa na kumwacha Aki peke yake. Pesa hizo alitumia kutununulia sare za shule."
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 215
+  }
+}

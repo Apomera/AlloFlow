@@ -24,7 +24,7 @@ describe('leveled-text definition source presentation', () => {
   });
 
   it('shows the reading-level explanation before the sourced dictionary panel', () => {
-    const popupStart = simplifiedView.indexOf('{definitionData && <div className={`fixed');
+    const popupStart = simplifiedView.indexOf('{definitionData && <div ref={definitionDialogRef}');
     expect(popupStart).toBeGreaterThan(-1);
 
     const popup = simplifiedView.slice(popupStart);
@@ -41,7 +41,7 @@ describe('leveled-text definition source presentation', () => {
   });
 
   it('keeps the linked dictionary-source presentation', () => {
-  });
-});
     expect(simplifiedView).toContain("href: sourceUrl");
     expect(simplifiedView).toContain("'Source: ' + (dict.source || 'Wiktionary')");
+  });
+});

@@ -6,7 +6,10 @@ const app = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
 
 describe('timeline dragging alternative', () => {
   it('provides single-click move controls for every draggable row', () => {
-    expect(view).toContain('draggable={true} role="group"');
+    expect(view).toContain('draggable={true} data-keyboard-alternative="move-buttons" role="group"');
+    expect(view).toContain('aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"');
+    expect(view).toContain("e.key === 'ArrowUp'");
+    expect(view).toContain("e.key === 'ArrowDown'");
     expect(view).toContain('handleTimelineMove(idx, idx - 1)');
     expect(view).toContain('handleTimelineMove(idx, idx + 1)');
     expect(view).toContain('Move timeline item');

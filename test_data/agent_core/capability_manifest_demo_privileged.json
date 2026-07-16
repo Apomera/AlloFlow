@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0",
+  "deploymentMode": "demo",
+  "text": { "available": true, "providers": ["gemini"] },
+  "catalog": { "read": true, "stage": true },
+  "permissions": ["artifact:read", "artifact:draft", "artifact:execute", "catalog:publish"]
+}

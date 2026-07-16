@@ -42,10 +42,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for cellularLab 1`] = `
 {
-  "buttons": 22,
-  "inputs": 1,
-  "lengthBucket": 64,
-  "sha": "2a9ac91a885482ba",
+  "buttons": 52,
+  "inputs": 3,
+  "lengthBucket": 131,
+  "sha": "97520eb34b866735",
   "svgs": 1,
 }
 `;
@@ -54,8 +54,8 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 39,
   "inputs": 0,
-  "lengthBucket": 166,
-  "sha": "696fdd3f1eed883f",
+  "lengthBucket": 169,
+  "sha": "12540ec95ee86cc2",
   "svgs": 0,
 }
 `;
@@ -114,8 +114,8 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 34,
   "inputs": 0,
-  "lengthBucket": 103,
-  "sha": "7c6acc929fd45b85",
+  "lengthBucket": 106,
+  "sha": "c1448eb28cb7f67d",
   "svgs": 0,
 }
 `;

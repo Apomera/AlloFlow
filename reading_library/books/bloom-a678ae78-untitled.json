@@ -1,0 +1,107 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-a678ae78-untitled",
+  "title": "सानो बिरालो",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Hwi14AlXdc"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fAOR_ACC031M.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fAOR_CMB0432.png",
+      "text": "सुमनको घर गाँउमा छ। उसको घरमा बाबाआमा र बहिनी छन्। उनको घरमा एउटा भैंसी छ। दुईवटा गोरु छन्।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fAOR_cat-12.png",
+      "text": "सुमनको घरमा सानो बिरालो पनि छ। सुमनको बाबाले सानो बिरालो मामाघरबाट ल्याइदिएको।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fimage1.jpg",
+      "text": "सुमनको घर ल्याउँदा बिरालो सानो थियो। सानो बिरालोलाई सुमन धेरै माया गर्थे। सानो बिरालो साह्रै चकचके थियो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fAOR_ACC028M.png",
+      "text": "ऊ म्याँउम्याँउ गर्दै धेरै कराउँथ्यो। ऊ कराउँदा कहिलेकाहीँ सुमनलाई रिस उठ्थ्यो। तर उनले बिरालोलाई पिट्दैनथे।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fcat+and+book.png",
+      "text": "पढ्दै गर्दा बिरालो सुमनको नजिकै जान्थ्यो। उनको खुट्टाको औंला दाँतले टोक्थ्यो। सुमनलाई काउकुती लाग्थ्यो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fimage8.png",
+      "text": "कहिलेकाहिँ कानमा कोतर्थ्यो। टाउकोमा चढ्थ्यो। उसले लगाएको जाकेटभित्र पस्थ्यो। यसो गर्दा सुमन रमाइलो मान्थे।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fimage.png",
+      "text": "समुनको बाबा बाहिरबाट आउनुहुन्थ्यो। सानो बिरालो म्याउँम्याउँ गर्दै बाबातिर जान्थ्यो। बाबाले ल्याएको सामान झम्टिन खोज्थ्यो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fAOR_cat-10.png",
+      "text": "उसले मासुको गन्ध टाढैबाट थाहा पाइहाल्थ्यो। मुसालाई देख्ने बितिक्‍कै लखेट्थ्यो। एकदिन त उसले सानो मुसानै समातेछ।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fimage1.png",
+      "text": "एकदिन बिरालो भान्छा छिर्‍यो। भान्छामा कराईमा तातो दुध थियो। ऊसले दुध भएको भाँडो देख्यो।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fimage2.png",
+      "text": "दुधको भाँडो काठको टुक्रामा राखेको थियो। बिरालो दुधको भाडो देखेर लोभियो। ऊ हतार हतार दुध भएतिर गयो।"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fimage3.png",
+      "text": "दुध खान खोज्दा काठको टुक्रामा टेक्यो। काठको टुक्रा हल्‍लियो। काठ हल्‍लिदा दुधको भाँडो उछिट्टियो।"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fimage5.png",
+      "text": "दुधको भाँडो बिरालोको शरीरमा खनियो। बिरालो म्याउँम्याउँ गर्दै आँगनतिर दौडियो। तातो दुधले बिरालोलाई पोल्यो।"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fimage6.png",
+      "text": "सुमनले भान्छाबाट आवाज आएको सुने। सुमन भान्छातिर गए। त्यहाँ त भुइँभरि दुध पोखिएको थियो।"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa678ae78-2774-4392-8e35-1c70ebbf3052%2f%e0%a4%b8%e0%a4%be%e0%a4%a8%e0%a5%8b+%e0%a4%ac%e0%a4%bf%e0%a4%b0%e0%a4%be%e0%a4%b2%e0%a5%8b%2fimage7.png",
+      "text": "सुमन बिरालो भएतिर गए। बिचरा बिरालो आँगनको छेउमा म्याउँम्याउँ गर्दैथियो। सुमानलाई देखेर बिरालो डरायो। तर सुमनले बिरालोलाई अँगालोमा बाँधे।"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 213
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-8360b75e-untitled-km",
+  "title": "១១ ទោកមៃម៝សឆៃ",
+  "description": "Monkey, what do you see? (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/FhIDSoC6ib"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage2.png",
+      "text": "ស្វាឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage3.png",
+      "text": "ខ្ញុំបានឃើញទន្សាយ។\nទន្សាយឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage4.png",
+      "text": "ខ្ញុំបានឃើញសំពោច។\nសំពោចឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage.png",
+      "text": "ខ្ញុំបានឃើញកំប្រុក។\nកង្ហែនឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage5.png",
+      "text": "ខ្ញុំបានឃើញខ្យង។\nខ្យងឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage6.png",
+      "text": "ខ្ញុំបានឃើញឈ្លូស។\nឈ្លូសឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage7.png",
+      "text": "ខ្ញុំបានឃើញប្រើស។\nប្រែសឯងបានឃើញអ្វី?​"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage8.png",
+      "text": "ខ្ញុំបានឃើញទន្សោង។\nទន្សោងឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage9.png",
+      "text": "ខ្ញុំបានឃើញខ្ទីង។\nខ្ទីងឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage10.png",
+      "text": "ខ្ញុំបានឃើញដំរី។\nដំរីឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage11.png",
+      "text": "ខ្ញុំបានឃើញសត្វទាវ។\nសត្វទាវឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage12.png",
+      "text": "ខ្ញុំបានឃើញកង្កែប។\nកង្កែបឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage13.png",
+      "text": "ខ្ញុំបានឃើញត្រី។\nត្រីឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage14.png",
+      "text": "ខ្ញុំបានឃើញក្ដាម។\nក្ដាមឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage15.png",
+      "text": "ខ្ញុំបានឃើញពស់វែក។\nពស់វែកឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage16.png",
+      "text": "ពស់វែកឯងបានឃើញអ្វី?\nក្រពើឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage17.png",
+      "text": "ខ្ញុំបានឃើញក្រពើ។\nក្រពើឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage18.png",
+      "text": "ខ្ញុំបានឃើញកន្ធាយ។\nកន្ធាយឯងបានឃើញអ្វី?"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f8360b75e-89a8-419d-8961-05fb9d2f6713%2f%e1%9f%a1%e1%9f%a1+%e1%9e%91%e1%9f%84%e1%9e%80%e1%9e%98%e1%9f%83%e1%9e%98%e1%9f%9d%e1%9e%9f%e1%9e%86%e1%9f%83%2fimage19.png",
+      "text": "ឥឡូវនេះយប់ហើយ... ខ្ញុំមើលមិនឃើញអ្វីទេ៕"
+    }
+  ],
+  "stats": {
+    "pages": 19,
+    "words": 37
+  }
+}

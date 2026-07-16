@@ -441,7 +441,7 @@ const InteractiveBlueprintCard = React.memo(({
     "aria-label": t('blueprint.move_down_aria', {
       position: idx + 1
     }) || `Move plan step ${idx + 1} down`
-  }, /*#__PURE__*/React.createElement(ChevronUp, {
+  }, /*#__PURE__*/React.createElement(ChevronDown, {
     size: 16,
     "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("div", {

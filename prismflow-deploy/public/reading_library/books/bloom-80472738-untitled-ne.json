@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-80472738-untitled-ne",
+  "title": "पानी",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/BxvM8gZqvY"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80472738-a515-4a1f-a722-5ffa0f023164%2f%e0%a4%aa%e0%a4%be%e0%a4%a8%e0%a5%80%2fAOR_E-1-12.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80472738-a515-4a1f-a722-5ffa0f023164%2f%e0%a4%aa%e0%a4%be%e0%a4%a8%e0%a5%80%2fAOR_E-1-38.png",
+      "text": "दिउसै आकाश कालो भयो\nअनि गड्गडायो।\nघरबाहिर भएको भाइ\nसाह्रै डरायो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80472738-a515-4a1f-a722-5ffa0f023164%2f%e0%a4%aa%e0%a4%be%e0%a4%a8%e0%a5%80%2fAOR_E-1-57.png",
+      "text": "भित्र गई झ्यालबाट\nबाहिर तिर हेरे।\nउसले त आँगनमा\nपानी परेको देखे।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80472738-a515-4a1f-a722-5ffa0f023164%2f%e0%a4%aa%e0%a4%be%e0%a4%a8%e0%a5%80%2fimage.png",
+      "text": "छानाबाट आँगनतिर\nपानी बग्न थाल्यो।\nभलहरू मिलिमिलि\nठुलो ठुलो भयो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80472738-a515-4a1f-a722-5ffa0f023164%2f%e0%a4%aa%e0%a4%be%e0%a4%a8%e0%a5%80%2fAOR_E-1-125.png",
+      "text": "ठुलो भई खोला बन्यो\nउर्लिएर बग्यो।\nसमुन्द्रलाई भेट गर्न\nहतार उसलाई भयो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80472738-a515-4a1f-a722-5ffa0f023164%2f%e0%a4%aa%e0%a4%be%e0%a4%a8%e0%a5%80%2fAOR_th01028b.png",
+      "text": "समुन्द्रमा पग्दासम्म\nनदी शान्त भयो।\nसाह्रै गाह्रो भएकाले\nआराम गर्न थाल्यो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80472738-a515-4a1f-a722-5ffa0f023164%2f%e0%a4%aa%e0%a4%be%e0%a4%a8%e0%a5%80%2fevaporation.png",
+      "text": "घाम लाग्यो न्यानो भयो\nपछि गर्मी बढ्यो।\nसाह्रै पोल्दा खप्न नसकेर\nपानी बाफ भयो।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80472738-a515-4a1f-a722-5ffa0f023164%2f%e0%a4%aa%e0%a4%be%e0%a4%a8%e0%a5%80%2fAOR_CMB0508.png",
+      "text": "गर्मी छल्नलाई बाफ\nमाथि माथि गयो।\nमाथि पुग्दा चिसिएर\nबाफ बादल भयो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80472738-a515-4a1f-a722-5ffa0f023164%2f%e0%a4%aa%e0%a4%be%e0%a4%a8%e0%a5%80%2fAOR_th01034b.png",
+      "text": "हावासँगै बादल उड्यो\nडाँडाकाँडा घुम्दै।\nउड्दा उड्दै चिसिएर\nथोपा गह्रौ भयो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80472738-a515-4a1f-a722-5ffa0f023164%2f%e0%a4%aa%e0%a4%be%e0%a4%a8%e0%a5%80%2fAOR_Raincld.png",
+      "text": "अब उसलाई गाह्रो भयो\nसम्हालिन पनि।\nछाडिदियो आफ्नो शरीर\nसकिएन भनी।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f80472738-a515-4a1f-a722-5ffa0f023164%2f%e0%a4%aa%e0%a4%be%e0%a4%a8%e0%a5%80%2fAOR_E-1-228.png",
+      "text": "झर्‍यो वर्षा भई तल\nचिसो पानी बनी।\nभाइ त साह्रै खुसी भयो\nपानी पर्‍यो भनी।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 119
+  }
+}

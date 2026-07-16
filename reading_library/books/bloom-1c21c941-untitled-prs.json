@@ -1,0 +1,201 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1c21c941-untitled-prs",
+  "title": "اعتماد به نفس",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/APvu1PYd4C"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2f1.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2f%db%b2.jpg",
+      "text": "در قریۀ مردمان مهربانی زندگی می کردند.\nدختران و پسران با والدین خود همکار بودند.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi4b0107f3-2916-4477-8632-63bc31838c7e.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi82350d68-d496-4709-8e82-7f21a548e523.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "دختران از چشمه آب می آوردند.\nپسران گوسفندان را به چراگاه می بردند.\nهمه آرزوی مکتب داشتند تا خواندن و نوشتن را یاد بگیرند.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi11465fe6-5229-49e3-95b5-bb2bb3dffb6a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi1f52d94f-5283-4f94-993b-c495b88dbb14.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2ff570283c-a0c2-4113-a94f-5c471ba6d9b7.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2f%db%b3.jpg",
+      "text": "روزی همه مصروف کاری بودند.\nناگهان متوجه آمدن کاکا احمد شدند.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi53920abf-e60c-4dda-97fe-d345f0b61815.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi3732799b-bb21-4faf-a7ab-2795b2257271.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "مردم قریه از دیدن کاکا احمد خوشحال شدند.\nکاکا احمد معلم مهربان و خیرخواهی بود.\nدختران و پسران قریه دورش جمع شدند.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2ffd856d13-f41e-49b0-8df7-27b1d969ba87.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi2424cf73-cf43-400c-96a0-03f6254a2980.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi4a0cb94d-cec5-431f-963c-984b0a03df28.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2f%db%b4.jpg",
+      "text": "مرجان گفت: من می خواهمدر آینده معلم خوبی باشم.\nمصطفی گفت: من هم می خواهم در آینده خدمت گزار خوبی به مردمم باشم.\nشما می توانید ما را رهنمایی کنید؟",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fe58831de-ed73-497a-b87f-838629ebcc92.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi00448484-e45b-445a-8f74-8a5e0d903670.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi4585b033-f488-40e7-b60e-c1a28b3e90fc.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "کاکا احمد گفت: بلی، شما با توکُل به خداوند می توانید به آرزوی خود برسید.\nاما باید بدانید که:\nنابرده رنج گنج میسر نمی شود.\nهمه به فکر رسیدن به آرزوی شان رفتند.\nکاکا احمد با همکاری مردم مکتبی ساخت.\nشاگردان زیادی شامل مکتب شدند.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fb1988909-5d13-4521-9ffe-994c1628ce17.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi3cda76ba-6b3f-4594-988f-2bcb9f054f5a.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi95552cf7-ac2b-4985-ba6c-5ef9f4a51479.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fde39ebf3-caa0-48f8-add5-1f3287ee7a01.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi6f8d7a16-db38-4e59-93da-d552d1b8b09f.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi05b9b05d-6773-483e-8978-f33bb4f06974.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2f%db%b511.jpg",
+      "text": "پسران و دختران با علاقه مندی درس می خواندند.\nروز به روز استعداد های شان شگوفا می شد.\nآن ها به خود بیشتر باورمند می شدند.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi4b790717-2f19-4c5e-9d9a-8f28b7805c5f.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi3ccf8f02-f84f-453e-92b1-d21f8d051c0e.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi1dded553-cb20-4e5c-a13c-0f5101c5d0e3.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "تلاش آن ها سبب تغییرات زیادی در قریه شد.\nسر انجام مرجان مسئول مکتب و مصطفی مسئول کلنیک قریه شدند.\nبلی!\nبا توکُل به خدا واعتماد به خود،\nمیتوان پله های موفقیت را پیمود.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fae9ae855-db20-4061-be4f-f5a908931dd1.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi5252e1fd-ce62-4784-9b8b-25630e1723ab.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi038ff590-7e87-4ad5-b0a5-d5b1a49fc8cc.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi07f8b363-753d-4e14-972a-10e424fa7a79.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1c21c941-0476-4d3f-8e81-4818a02f22b9%2f%d8%a7%d8%b9%d8%aa%d9%85%d8%a7%d8%af+%d8%a8%d9%87+%d9%86%d9%81%d8%b3%2faudio%2fi64a63070-9be2-4f33-8dfd-08184ae47be7.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 207
+  }
+}

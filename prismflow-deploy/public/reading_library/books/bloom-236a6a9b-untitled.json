@@ -1,0 +1,132 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-236a6a9b-untitled",
+  "title": "៤៦ក នអើន ក៝នឆែដាសក្រាយ្ស",
+  "description": "A story of a child and a squirrel (Easy Reader - Level 2)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/fpFu1xuXG4"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage1.png",
+      "text": "មានកេ្មង​ពីរនាក់ឈ្មោះតូង និងតុនត្រូវ​ជាបង​ប្អូន​បង្កើតនឹង​គ្នា។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage2.png",
+      "text": "ដល់​រដូវ​ខែ​ពោត​ទុំ ពួកគេទាំងពីរនាក់ត្រូវបានឪពុក ម្ដាយប្រើឲ្យទៅចាំចំការ​។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage3.png",
+      "text": "ពួកគេបានធ្វើសម្រាស់ជុំវិញ​ចំការ ដើម្បី​ការពារ​កុំ​ឲ្យ​សត្វ​ព្រៃចូលមកស៊ីពោត​ ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage4.png",
+      "text": "មានថ្ងៃមួយបងប្អូនទាំងពីរនាក់បានឃើញសត្វ​​កំប្រុកមួយក្បាលកំពុងតែស៊ីពោតក្នុងចំការរបស់​ពួក​គេ​។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage5.png",
+      "text": "ឃើញដូច្នេះ ពួកគេក៏ចាប់ផ្តើម​មានគំនិតនាំគ្នា​ធ្វើអន្ទាក់។ ពេលតូងនិងតុនកំពុងតែធ្វើអន្ទាក់នៅលើឈើងាប់កៀនចំការ ស្រាប់តែពេលនោះសត្វកំប្រុកក៏បានឃើញពួក​គេ​ធ្វើដែរ។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage6.png",
+      "text": "បន្ទាប់មក​វា​ក៏​​​ទៅប្រាប់គ្នីគ្នាឲ្យបានដឹង​ពីទីកន្លែង​អន្ទាក់នោះដែរ​។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage7.png",
+      "text": "ពេលពួកគេទៅមើលអន្ទាក់​ក៏ឃើញជាប់សត្វស្ការមួយ ដែល​កំពុង​បម្រះ​ខ្លួន​នៅលើឈើ​ងាប់​។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage8.png",
+      "text": "ពួកគេនាំគ្នា​ចាប់សត្វស្ការនោះហែកមាត់មើល​ធេ្មញ តែមិនឃើញ​ធ្មេញ​​សោះ រួចក៏លែងទៅ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage9.png",
+      "text": "រាល់ថ្ងៃពួកគេទៅចំការ តែង​តែ​ឃើញ​ស្នាម​ធ្មេញ​សត្វកំ​ប្រុក​ស៊ីផែ្លពោត ចំណែកអន្ទាក់វិញ​​បែរជាមិនឃើញជាប់សោះ ។​"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage10.png",
+      "text": "ដោយមើលអន្ទាក់មិនឃើញជាប់សត្វកំប្រុកសោះ តូង​\nនិងតុនក៏រិះរក​វីធីកំចាត់​វា​​ ដោយទៅ​ពឹង​ជីតាអោយ​ធ្វើ​ស្នាមួយ​ទុក​សំរាប់​បាញ់​កំប្រុក​​។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage11.png",
+      "text": "ក្រោយ​ពីជីតា​ធ្វើ​ស្នារួចរាល់ហើយ ពួកវា​នាំ​គ្នា​កាប់​ឈើ​ធ្វើ​ទ្រើង​អង្គុយ​​ចាំបាញ់សត្វកំប្រុកកែ្បរ​ចំការ​ ។​"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage12.png",
+      "text": "ពួកគេលបចាំបាញ់សត្វកំប្រុក រហូត​​បាញ់បានកំប្រុកមួយ​ក្បាលត្រូវចំគល់ភ្លៅរបស់វា។​"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage13.png",
+      "text": "ពួកគេដេញចាប់​សត្វកំប្រុកនោះយកមកកាត់ធ្មេញ រួច​លែងទៅវិញ​ ទុក​ជា​ការព្រមាន​។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage14.png",
+      "text": "សត្វកំប្រុកនោះរត់ទៅប្រាប់គ្នីគ្នារបស់វាថា ​មនុស្សមាន​ស្នា​។​"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage15.png",
+      "text": "ក្រោយ​មក​សត្វ​កំប្រុក​នៅ​តែ​នាំ​គ្នា​លួចស៊ី​ពោតរបស់​ពួកគេ​​នៅពេលព្រឹក និងពេលល្ងាចបន្តិច​បន្តួចដែរ ។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage16.png",
+      "text": "ពេលសត្វកំប្រុកឃើញមនុស្សកាន់ស្នា វាភ័យខ្លាចខ្លាំង\nណាស់ ដោយ​ព្រោះក្មេង​ទាំង​ពីរ​នោះ​បានបាញ់​ប្រមាន​។"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage17.png",
+      "text": "ពេលសត្វកំប្រុកឃើញអន្ទាក់ក៏ភ័យខ្លាច​ខ្លាំង​ណាស់ដែរ។"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage18.png",
+      "text": "ពួកគេដឹងថាសត្វកំប្រុកភ័យខ្លាចនឹងអន្ទាក់ ក៏នាំគ្នាធ្វើ\nសម្រាស់​​ព័ទ្ឋជុំវិញចំការនោះ​តទៅទៀត។"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f236a6a9b-0faa-428e-ae9b-dcac6e0dedb6%2f%e1%9f%a4%e1%9f%a6%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%2fimage19.png",
+      "text": "ដូច្នេះ​ចំការពោតរបស់ពួកគេ នៅគង់​រហូតដល់​បានទទួល​ផលបរិបូរ​ណ៌៕"
+    }
+  ],
+  "stats": {
+    "pages": 19,
+    "words": 50
+  }
+}

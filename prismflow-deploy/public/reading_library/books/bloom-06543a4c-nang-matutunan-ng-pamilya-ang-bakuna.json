@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-06543a4c-nang-matutunan-ng-pamilya-ang-bakuna",
+  "title": "Nang Matutunan ng Pamilya ang Bakuna",
+  "description": "A community health worker visits a village and explains to a mother how immunisations will protect her children from some kinds of diseases.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Health"
+  ],
+  "authors": [
+    "Marites D. Antonio"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Marites D. Antonio",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Cnk0xo6Vjv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+13.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+1.jpg",
+      "text": "Naglalaro sina Nelli at Mattu sa kanilang bakuran.\"Nelli!\" tawag ni Mama. \"Isama mo ang kapatid mo at pumunta kayo sa poso, kailangan ko ng tubig para mahugasan si bunso.\""
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+2.jpg",
+      "text": "Naglakad sina Nelli at kapatid nito papuntang poso dala ang lalagyan ng tubig. Nakakita sila ng dayo sa lugar nila. Nakatayo malapit sa poso. Nakikipag usap ito sa mga tao doon."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+3.jpg",
+      "text": "Nagsimula na si Nelli na mag-igib ng tubig nang biglang kinausap sya ng babaeng dayo, \"Kumusta kayo, ako si Nurse Kerol mula sa klinika ng barangay. Ano ang pangalan ninyo?"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+4.jpg",
+      "text": "\"Ako po si Nelli at ang kapatid ko, si Mattu. Nag iigib kami ng tubig para sa aming nanay para pampaligo sa aming bunsong kapatid.\"\n\"Napakasipag naman ninyo, maari ko ba kayong tulungang magbuhat ng tubig? Gusto ko ring makausap ang nanay ninyo."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+7.jpg",
+      "text": "Sabay sabay silang naglakad, at nang malapit na sila sa bahay ay sumigaw si Nelli, \" Mama, Mama! May tao po na gusto kang makita.\""
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+8.jpg",
+      "text": "Lumapit sa pinto si Mama, buhat si bunso.\n\"Kumusta! Nelli, kilala ko ang bago mong kaibigan. Taga kabilang barangay siya. Maligayang pagdating sa aming bahay, Kerol.\""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+9.jpg",
+      "text": "Habang umiinom sila ng tsaa, nabanggit ni Kerol, \"Bilang isang nurse, nag aalala ako sa mga bata sa ating barangay. Kailangan nilang mabakunahan para makaiwas sa mga sakit na pwede nilang ikamatay.\"\nSumagot si Mama, \"kapag nagkasakit sila, daldahin din naman sila sa klinika para mabakunahan, iiyak din sila.\""
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+10.jpg",
+      "text": "\" Ang bakuna ay hindi para pagalingin ang maysakit kung hindi para mabigyan ng proteksyon upang hindi magkasakit.\"\n\"Paano tayong mapo-proteksyunan ng bakuna? Akala ko ang bakuna ay malakas na gamot na nakagagaling ng sakit?\""
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fnew+papua+10.jpg",
+      "text": "\"Ang bakuna ay parang bakod. Naglalagay tayo ng bakod para maproteksyunan ang ating mga panamin laban sa mga hayop na posiblem manira rito. At ngayon marami ka nang mga pananim gaya ng kamote, sitaw, kalabasa at iba pang mga gulay.\""
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+12.jpg",
+      "text": "\"Tama ka,\" sagot ni Mama kay Nurse Kerol. May bakod laban sa mga baboy ramo at iba pang hayop na maninira ng aming pananim.\"\n\"Kagaya ng bakod, ang bakuna ay ibinibigay para ma proteksyunan ang mga bata laban sa mga sakit,\" sagot ni Kerol."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+14.jpg",
+      "text": "\"Kapag walang bakuna, ang iyong anak ay walang proteksyon. Maaari silang magkaroon gn malubhang sakit gaya ng tigdas, TB, polio at tetanus.\""
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f06543a4c-213d-4397-b6e3-b276972d53e8%2fNang+Matutunan+ng+Pamilya+ang+Bakuna%2fpage+15.jpg",
+      "text": "Ibig mo bang sabihin, kaya kong pigilan ang pagkakasakit ng aking mga anak?\" sabi ni Mama. \"Kailan sila pwedeng pabakunahan?\"\nSUmagot si Kerol, \"mag iikot kami sa barangay sa loob ng tatlong linggo para magbigay ng bakuna sa mga bata, pero pwede rin kayong pumunta sa klinika para magpa bakuna.\"\n\"Kailangan nila ng matibay na bakod para sa proteksyon ngayon!\" sagot ni Mama."
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 437
+  }
+}

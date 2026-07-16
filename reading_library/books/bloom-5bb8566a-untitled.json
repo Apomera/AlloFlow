@@ -1,0 +1,107 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-5bb8566a-untitled",
+  "title": "चलाख काग र मूर्ख बाँदर",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/m7JiAARGSy"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2fimage1.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2fimage2.png",
+      "text": "म एउटा काग हुँ। मलाई सबैले चलाख चरा भन्छन्। म चलाख पनि छु। मेरो एउटा बाँदर साथी छ। तर साथी भने धेरै मूर्ख छ।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2fimage9.png",
+      "text": "एक पटक हामीलाई घुम्न मन लाग्यो। हामी वन भन्दा बाहिर गयौँ। बाटोमा एउटा सानो गाउँ आयो। किसानहरू खेतमा आँए। आलीमा खाजा राखेर काम गर्न थाले।",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2faudio%2fi9586f160-c239-4348-854f-3f57f3a37eb0.mp3",
+          "dur": 3.400227
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2faudio%2fc8f9b146-70ae-40b5-b729-236d386dcb28.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2faudio%2fi7f3baf41-85e9-43fb-81d0-9ad58f94dd0e.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2faudio%2fi127f6577-b30b-474d-8dbc-139b84c251fe.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2fimage10.png",
+      "text": "मेरो साथी अलि लोभी पनि छ। उसलाई त्यो खाजा खान मन लागेछ। ऊ लुकेर खाजा भएतिर पो गयो। मैले उसलाई चोरी नगर्न संझाए। तर उसले मलाई नडराऊन भन्यो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2fimage12.png",
+      "text": "मलाई पनि खाजा ल्याइदिन्छु भनेर गयो। बाँदरले सजाय पाउँछ भन्ने मलाई लाग्यो। म परको रुखमा बसेर हेरी रहेँ। बाँदर लुकी लुकी त्यहाँ गयो। खाजाको भाँडो नजिक पुग्यो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2fimage.png",
+      "text": "भाँडोको बिर्को खोल्यो। भाँडोमा हात पसायो। हातभरी खाजा भेटेर बाँदर खुसी भयो। भाँडोको मुख सानो थियो। बाँदरले खाजा समाएर मुट्ठी बनायो। भाँडोबाट हात निकाल्न खोज्यो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2fimage13.png",
+      "text": "हात खोल्दा सजिलै भित्र पसेको थियो। मुट्ठी पार्दा हात बाहिर नै आएन। अब के गर्ने? बाँदरको हात त भाँडो भित्रै अड्कियो। पर किसानहरूले काम सकाए। उनीहरूको खाजा खाने बेला भएछ।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2fimage4.png",
+      "text": "उनीहरू खाजा भएतिर लागे। मैले साथीलाई हात खोलेर भाग भने। लोभी बाँदरले मानेन। उसको हात भाँडोमा फस्यो। किसानले छिटो-छिटो आएर बाँदरलाई समाए।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2fimage18.png",
+      "text": "किसानले बाँदरलाई डोरीले कसे। लामो लठ्ठी लिएर आए। अनी बाँदरलाई पिट्न थाले। बाँदर बेसरी रोयो। उसको जीउमा धेरै घाउ लाग्यो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2fimage19.png",
+      "text": "बाँदर रोएर म तिर आयो । मैले साथीलाई कुरा बुझाए। “हेर साथी मूर्ख नबन। झन लोभी त कहिले पनि नबन।” मेरो साथीले कुरा बुझ्यो।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f5bb8566a-14a0-4ad6-ad74-258438cbbdf6%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a4%be%e0%a4%97+%e0%a4%b0+%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%2fimage20.png",
+      "text": "केही दिनपछि बाँदरको घाऊ निको भयो। हामी घुम्दै त्यहीँ खेतमा पुग्यौँ। किसानहरू काम गर्दै थिए। आलीमा त्यही भाँडोमा खाजा िथयाे। यसपाली बाँदरले खाजा खाने अाँट गरेन।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 251
+  }
+}

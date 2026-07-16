@@ -1,0 +1,106 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-51d67549-si-chisay",
+  "title": "Si Chisay",
+  "description": "Chisay, a cute dog is Ashley's favorite playmate.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Resources for the Blind, Inc."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Resources for the Blind, Inc.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/G7v5VqmsLr"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_adb047m.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_adb047m1.png",
+      "text": "Ito si Chisay. Siya ay isang aso.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faudio%2fi8a91dd60-97f9-44a1-ae8d-b63d102d6089.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faudio%2fi8688fb2b-f53f-4dc3-8409-6c9f36c4df7a.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_Pc015.png",
+      "text": "Ito naman si Ashley. Magkaibigan sila Ashley at Chisay.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faudio%2fi5f1d0998-3d7c-4186-85ea-2a1cce7ad2ed.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faudio%2fi554ffd34-b780-4510-8b74-9b78704037f5.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_Pa024.png",
+      "text": "Paborito ni Ashley na maglaro kasama si Chisay.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faudio%2fi2b0293e5-77ea-4d0d-850d-5dc6ba56e978.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_Pa032.png",
+      "text": "Araw-araw silang masayang naglalaro.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faudio%2febe887a1-46aa-440f-890e-6b18a35b49eb.mp3",
+          "dur": 0
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_Pa0271.png",
+      "text": "Maging ang kanyang pinsan na may alagang aso ay masayang nakikipaglaro sa kanila.\nWAKAS",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faudio%2fi1584d570-2788-49f4-8c5f-744b1f9cd212.mp3",
+          "dur": 0
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faudio%2fe8fa039e-6cbc-40c7-a4e9-9be0544a683a.mp3",
+          "dur": 0
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 5,
+    "words": 42
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-526615cd-untitled",
+  "title": "نیکی",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Vvkkqtj0an"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f526615cd-8cfd-4471-9142-e82c33e638b2%2f%d9%86%db%8c%da%a9%db%8c%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f526615cd-8cfd-4471-9142-e82c33e638b2%2f%d9%86%db%8c%da%a9%db%8c%2f11.jpg",
+      "text": "در جنگلی، موش خرمای با چوچه هایش زنده گی می کرد.\nروزی موش خرما مریض شد.\nاو در خانه برای خوردن چیزی نداشت."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "پشک خبر شد و مقداری غذا با خود گرفت. خانۀ موش خرما رفت.\nچوچه های موش خرما در، را باز کردند."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f526615cd-8cfd-4471-9142-e82c33e638b2%2f%d9%86%db%8c%da%a9%db%8c%2f2.jpg",
+      "text": "چوچه ها، خیلی خوش شدند.\nموش خرما از پشک تشکر کرد.\nروزی از روزها چوچه های موش خرما بازی می کردند."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "ناگهان صدای فریادی را شنیدند.\nکمک، کمک! دیدند؛ چوچۀ پشک در جوی گِل آلود افتاده است.\nچوچه موش خرما صدا زد:\nپشک جان! ما ترا کمک می کنیم.\nدست به دست هم دادند و پشک را نجات دادند."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f526615cd-8cfd-4471-9142-e82c33e638b2%2f%d9%86%db%8c%da%a9%db%8c%2f3.jpg",
+      "text": "موش خرما ها پشک را با آب شستند.\nپشک پاک و تمیز شد. به خانه برگشت.\nپشک همه قصه را به مادرش گفت.\nمادرش خیلی خوشحال شد و گفت:\nنیکی آنها را نباید فراموش کنیم."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "فردای آن روز پشک چهارمغز و سیب گرفت. خانه موش خرما رفت.\nبا چوچه های موش خرما دوست شد.\nپشک ها تعهد کردند که همیشه نیکی کنند.\nنیکی، نیکی آرد ببار\nاثـراتش بود مانـدگار"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f526615cd-8cfd-4471-9142-e82c33e638b2%2f%d9%86%db%8c%da%a9%db%8c%2f4.jpg",
+      "text": "تو نیکی کن و مباش برحذر\nکه نیکی بود ترا چون سپـر"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "نیکویی بود کار صاحب دلان\nتوهرگز مجویش نزد جاهلان\nنیکی کردن نیست کار هر کس\nتو نیکی مخواه زهر خار و خس"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 206
+  }
+}

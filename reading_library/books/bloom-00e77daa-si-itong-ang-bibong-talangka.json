@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-00e77daa-si-itong-ang-bibong-talangka",
+  "title": "Si Itong Ang Bibong Talangka",
+  "description": "This story is about bravery and courage of the main character, Itong the  Crab. This book is also ideal for developing mastery in pronouncing Tagalog words with \"ng\" ending sounds.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Marites Del Prado Antonio"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Marites Del Prado Antonio",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/WFgAPv81aQ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f00e77daa-f23e-40e2-ba68-6c9084fc1473%2fSi+Itong+Ang+Bibong+Talangka%2faor_ELK-267.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f00e77daa-f23e-40e2-ba68-6c9084fc1473%2fSi+Itong+Ang+Bibong+Talangka%2faor_crab-5.png",
+      "text": "Tong, tong, tong, tong!\nPakitong, kitong!\nIto si Itong Talangka."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f00e77daa-f23e-40e2-ba68-6c9084fc1473%2fSi+Itong+Ang+Bibong+Talangka%2faor_3-1-1s.png",
+      "text": "Higit siyang maliit kaysa sa alimango.\nNgunit kahit maliit, matapang siya at bibo!"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f00e77daa-f23e-40e2-ba68-6c9084fc1473%2fSi+Itong+Ang+Bibong+Talangka%2faor_crab-3.png",
+      "text": "Sa pampang ng ilog si Itong ay naglakbay.\nKay Lisang Kulisap, siya kasi ay dadalaw."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f00e77daa-f23e-40e2-ba68-6c9084fc1473%2fSi+Itong+Ang+Bibong+Talangka%2faor_Nab76.png",
+      "text": "Ngunit alam niyang\nmga talangkang umalis ay di na nakabalik.\nDahil sa Haring Ibon na sa daan nag-aabang."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f00e77daa-f23e-40e2-ba68-6c9084fc1473%2fSi+Itong+Ang+Bibong+Talangka%2faor_ELK-264.png",
+      "text": "Dahan-dahang gumapang,\nsi Itong matapang.\nSumiksik sa kabibeng nakahambalang sa daan."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f00e77daa-f23e-40e2-ba68-6c9084fc1473%2fSi+Itong+Ang+Bibong+Talangka%2faor_crab-1.png",
+      "text": "Linga dito, linga doon.\nHabang si Itong ay pumaparoon. Aniya,\n\"Ilang gapang na lang ang pagod at hirap,\nmararating ko rin ang pupuntahan.\""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f00e77daa-f23e-40e2-ba68-6c9084fc1473%2fSi+Itong+Ang+Bibong+Talangka%2faor_A-1-94.png",
+      "text": "Nagulat si Itong at agad namutla!\nAng naunang talangka, marahas na tinuka!\nKatawan ni Itong ay nanigas na bigla!"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f00e77daa-f23e-40e2-ba68-6c9084fc1473%2fSi+Itong+Ang+Bibong+Talangka%2faor_abbi25.png",
+      "text": "At dahil si Itong ay nag balatkayo,\nang Haring Ibon ay lumipad na palayo.\nNag-abang ng talangka sa iba pang dako."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f00e77daa-f23e-40e2-ba68-6c9084fc1473%2fSi+Itong+Ang+Bibong+Talangka%2faor_V442.png",
+      "text": "Di nagtagal ay narating ni Itong ang lugar.\nNaroon si Lisa nag-aabang sa pampang.\nHanda na ang inumin para sa kaibigan."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2f00e77daa-f23e-40e2-ba68-6c9084fc1473%2fSi+Itong+Ang+Bibong+Talangka%2faor_afa28.png",
+      "text": "Ang matapang at bibong si Itong Talangka,\nnapakasaya't palundag-lundag pa sa tuwa!"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 163
+  }
+}

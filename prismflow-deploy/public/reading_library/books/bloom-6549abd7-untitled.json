@@ -1,0 +1,226 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-6549abd7-untitled",
+  "title": "ခလေဲပ်စာနှာည်း",
+  "description": "လော်င်နှာည်း ဂီအိအီုမ်ပါဝ်းလာ်ဒါး ဟြာ်ည်ႇဒီအိအီးပေန်အန်း။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RBTT & NTC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/gRlM6J8R2K"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_01_Image_0001.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_02_Image_0001.jpg",
+      "text": "နှာည်းစီဂီဟြာ်ည်ႇ ခလေဲပ်တမာည်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi855c8328-0f0d-4352-8492-818d29da6310.mp3",
+          "dur": 3.13464
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_03_Image_0001.jpg",
+      "text": "ခလေဲပ်နီး တံန်နှေးလာ်ပေါႇ တာ့်ခလေဲပ်တမာည်း ဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi6201e8eb-9635-43ac-9e12-ecfa42429c53.mp3",
+          "dur": 4.036984
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_04_Image_0001.jpg",
+      "text": "ပီဒါင်းဆံဝ်းဒီး စီဒါ်ႈလာ် တာ့်နှာည်း “မည်းဘိူန်းအူန်း ဒေဲႈအိတံန်တောႇ တာ့်အံဝ်းနာ်ႏ။” နှာည်းစီႎီးဒါ်ႈလာ် ပေါႇ “ကေးစူးဒါင်းပေါႇအခည်းနာ်ႏ ပီဒါင်းဆံဝ်း။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi1de543fe-77a3-4987-a3b7-80195f8a90d5.mp3",
+          "dur": 11.429637
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_05_Image_0001.jpg",
+      "text": "အီးမိုႈဆေဲမ်းဒီး နှာည်းစီဂီပေန်လာ်အိအီုမ်ပါဝ်း ချူက် ချာက်ပေါႇအခည်းဟာ့်။ တံင်ခေဲင်းအိအီုမ်ပါဝ်အန်းဒီး ဂီအိအီုမ်ပါဝ်းဒါ်ႈလာ် အန်းကတူႈႎဲန်ဇိုည်ႇ ႎဲန်ဇိုည်ႇ ဘာည်းဇေဲန်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi842c176d-2b89-494d-8a37-57e0f6b36c4d.mp3",
+          "dur": 12.93039
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_06_Image_0001.jpg",
+      "text": "ပီဒါင်းဆီမ်းအချေဝ် စီဒါ်ႈလာ်ပေါႇ တာ့်နှာည်းဒီး “မည်း ဘိူန်းအူန်း ဒေဲႈအိတံန်တောႇ တာ့်အံဝ်းနာ်ႏ။” နှာည်းဒီး စီႎီးဒါ်ႈ “ကေးစူးဒါင်းပေါႇအခည်းနာ်ႏ ပီဒါင်းအချေဝ် အိူည်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi458c8e08-7841-4f7f-b1c3-83a28943286a.mp3",
+          "dur": 11.743106
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_07_Image_0001.jpg",
+      "text": "အီးမိုႈပံင်ဂီအိအီုမ်ပါဝ်းနှာည်း တံင်ဆေဲမ်းဒီး မအေဲႈ\nကနမ့်တဒိတဒီုင်းပေါႇအခည်းဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi1148619a-9da6-4f36-98c7-3783ee9ef2ca.mp3",
+          "dur": 6.92233
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_08_Image_0001.jpg",
+      "text": "ပီဒါင်းကားမာ် စီဒါ်ႈလာ် တာ့်နှာည်းဒီး “မည်းဘိူန်းအူန်း ဒေဲႈအိတံန်တောႇ တာ့်အံဝ်ႈနာ်ႏ။” နှာည်းဒီး စီႎီးဒါ်ႈလာ် “ကေးစူးဒါင်းပေါႇအခည်းနာ်ႏ ပီးဒါင်းကားအိူည်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi78f54069-5e63-4c24-a0af-25e3f9a3b8f0.mp3",
+          "dur": 11.415314
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_09_Image_0001.jpg",
+      "text": "ဆေဲမ်းဒီး တံင်အိအီုမ်ပါဝ်းနှာည်း စီဒါ်ႈဘိုး “အေဲမ်း ဘီုတ်ယာဝ်း မအေဲႈကာ်ႇခည်းဟာ့်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi74ee7554-66d9-4ccd-a3c2-8dd14afb5ba7.mp3",
+          "dur": 6.817842
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_10_Image_0001.jpg",
+      "text": "နှာည်း စီဆီင်ဘိူန်းဘိုးခလေဲပ် အန်းအီးခေါႈ အန်းအီး လအူန်းချှီႇအန်းဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fcae24b13-efb5-4b57-8d09-8b49c7c9aefe.mp3",
+          "dur": 5.839433
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_11_Image_0001.png",
+      "text": "နှာည်းဒီးစီႎါႇဖာ်ႈလာ်ဒါးငည်း ရီမ်းဂူႇငည်း စာနံင်လ အူန်းတိုးအန်း။ အန်းစီတဂေန်း စာနံင်ဘိူန်းခလေဲပ်လ အူန်းချှီႇဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi46d32f2d-97ac-48d9-aeaa-16fcf298cd6f.mp3",
+          "dur": 9.53453
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_12_Image_0001.jpg",
+      "text": "အန်းစီယေဲဝ်း အီုန်ယာင်းပံပ်ဘေဲႇအူလှေ အန်းအီး ဂေါ်ည်း ပါ့်ရီမ်းဂူႇငည်းဒီး။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi0d048aef-b0aa-4d76-9a47-b3d8297381b0.mp3",
+          "dur": 6.112548
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fASP_108_a_house_for_mouse_1_Page_13_Image_0001.jpg",
+      "text": "အီးမိုႈဆေဲမ်းဒီး နှာည်းမာ် ဟည်ဘိူန်းလာ်အိလအူန်း စီဘိူန်းလာ်ဘိုးအိအီုမ်ပါဝ်းပံင်အိအီုမ်ပါဝ်းအန်းအီးချဲမ်း\nဟာ့်။ နှာည်းအိူည် ဒဲႈ အန်းပေန်ဆေဲမ်းအီးချဲမ်းနာ်ႏ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi02d47499-7308-40b6-b193-fc7dd104d741.mp3",
+          "dur": 12.448412
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fSWPB_222-amazing-ants_Page_1_Image_0001.png",
+      "text": "ဘျူန်းဒဲ့ကဲအီးမှေဲမ်အာမ်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi988efca0-8f84-4cc3-972f-52e96c280e7d.mp3",
+          "dur": 2.835351
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fSWPB_222-amazing-ants_Page_2_Image_0001.png",
+      "text": "အန်းမိုႈရာမူဟာ့်။ ယာမ်းဂီဟိုမ်းအန်းတာ် ပ္လါ်ည်းကငါမ် ဘာည်းဇေဲန်း အီးမိုႈမူန်ပ္လါ်ည်းကငါမ် ပံင်ဟိုမ်းအန်းဒီး စီဇောႈလေႈ တံင်တေဲင်းလမေဲႈဟာ့်။ ႎါည်းဒီးအူတည် အန်းစီယေဲဝ်းလာ်ပေါႇ အီးမိုႈထဲဝ်းႎံင်းဒါင်း အူထဲဝ်း ဟာ့်။ ဂေါႇမိုႈအန်းဆီင်နာ်ႇ အီးမိုႈထဲဝ်းဒီး မိုႈဆီ အန်းစီ ဟာဝ်းတိူဝ်ႈလာ်ဒါး စံမ်စံမ်ဟာ့်။ ဘိူဝ်တိူဝ်ႈအန်း၊ အန်းစီ နာ်ႇမိုႈတာ် ထဲဝ်းဒီး မိုႈ ဘျူန်းအီးဒေဲႈ စာနံင်ဟိုမ်း မူန် ပ္လါ်ည်းကငါမ် အီးဇောႈလေႈ ကဲကဲဒီးဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2faf5e0313-28cd-4e44-8c14-fc520269864e.mp3",
+          "dur": 31.047596
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fSWPB_222-amazing-ants_Page_3_Image_0001.png",
+      "text": "ဘျူန်းကဲကဲဒီး စီတေဲႈကောႇဟာဝ်းလာ် မူန်ပ္လါ်ည်း ကငါမ်ဒီး တံင်တေဲင်းကဒုကဲဟာ့်။ ကဲစီကရော်မ်းလာ် ဒါး စာကဲနံင်ဒေါ်ဟာဝ်း အီးမိုႈမူန်ပ္လါ်ည်းကငါမ်ကဲကဲဒီး ဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi60475d46-7d68-40d0-8e51-def214bbec83.mp3",
+          "dur": 12.825902
+        }
+      ]
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fSWPB_222-amazing-ants_Page_4_Image_0001.png",
+      "text": "ရာမူမာ် ဟည်ယေဲဝ်းလာ်ဘိုး ဘျူန်းကဲကဲဒီး တံန် တောႇႎီးဟာဝ်းဒို့ဘိုးဟာ့်။ တံင်ဆေဲမ်းဒီး ဘျူန်းကဲကဲ\nဒီး စီပ္လေႈဖာ်ႈလာ်ဒါး ပဒေဲန်းဒါင်းကဲ စီဟိုမ်းလာ်ပ္လါ်ည်း\nကငါမ်ပံင်ဒေါ်ဒေဲႈကဲဒီးဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fba60b521-f18e-4047-bed3-891bd98d2de7.mp3",
+          "dur": 15.139024
+        }
+      ]
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2fSWPB_222-amazing-ants_Page_5_Image_0001.png",
+      "text": "မည်းယေဲဝ်းလာ့် ဘျူန်းကဲကဲဒီး ဂီလည်ကဆာင်းဟိုမ်း ပံင်ဟိုမ်း ကဲခနားကဲဘာည်းဇေဲန်း။ မည်းလည်၊ မည်း\nကဆာင်းဒဲႈလာ့် တာ့်ကဲအီးဟည်း ဟိုမ်းပံင်ဟိုမ်းမည်း ဘာည်းကဲ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f6549abd7-71e6-4e62-a077-56178b1308fa%2f%e1%80%81%e1%80%9c%e1%80%b1%e1%80%b2%e1%80%95%e1%80%ba%e1%80%85%e1%80%ac%e1%80%94%e1%80%be%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi82d57a01-4ae9-4ee1-97d7-365eab405803.mp3",
+          "dur": 11.62429
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 17,
+    "words": 146
+  }
+}

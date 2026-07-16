@@ -1,0 +1,237 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-bc8ce736-untitled",
+  "title": "៤៤ នអើន ងគូសជេងឆ៝គឹតនាវ",
+  "description": "N'gous is a clever dog (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4Rqqmu4fRI"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage1.png",
+      "text": "កូសជាឆ្កែឈ្មោលហើយ​ឆ្លាត​។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage2.png",
+      "text": "កូសរស់នៅជាមួយ​ពូក្រា។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage3.png",
+      "text": "កូសដើរតាមពូក្រាទៅចំការ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage4.png",
+      "text": "កូសដេញខាំបានកំប្រុកមួយក្បែរ​ចំការ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage5.png",
+      "text": "កូសពាំកំប្រុកមួយ​យកទៅឲ្យពូក្រា។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage6.png",
+      "text": "កូសកំពុងតែដេញសត្វលលកក្នុងចំការ។​"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage7.png",
+      "text": "កូស​កំពុងឈរមើលពូក្រាស្ទូចត្រីក្នុងអូរ។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage8.png",
+      "text": "កូសកំពុង​តែរើសបាយពូក្រាជ្រុះនៅលើដីមកស៊ី។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage9.png",
+      "text": "ពូក្រាបណ្ដើរឆ្កែរបស់គាត់​ទេ​​ក្នុងព្រៃ។​"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage10.png",
+      "text": "កូសឃើញកាំប្រមា រួចហើយក៏​ដេញខាំ។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage11.png",
+      "text": "ពេលកូសកំពុងតែដេញ វាត្រូវមុត​នឹង​កាំប្រមា។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage12.png",
+      "text": "កូសមិនហ៊ានដេញកាំប្រមាដែលបានចូលក្នុងរន្ធដីនោះទេ។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage13.png",
+      "text": "ពូក្រាខឹងនឹងឆ្កែរបស់គាត់ខ្លាំងណាស់។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage14.png",
+      "text": "បន្ទាប់មកកូសដេញខាំបានឈ្លូសមួយក្បាល​។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage15.png",
+      "text": "ពូក្រាស្ពាយឈ្លូសនឹងសាសយកមកផ្ទះ។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage16.png",
+      "text": "កូសឃើញពូក្រាហូបសាច់ឈ្លូស​ វាក៏​ចង់ស៊ីដែរ។"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage17.png",
+      "text": "ពូក្រាបោះឆ្អឹងឲ្យទៅកូសស៊ី។"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage18.png",
+      "text": "កូសអង្គាម​ឆ្អឹង​នៅក្រោមដើមឈើមួយ។"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage19.png",
+      "text": "កូសឃើញឆ្កែញីមួយក្បាល​កំពុងស៊ីបាយជ្រូក។"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage20.png",
+      "text": "កូសដេញខាំ​ឆ្កែញីនោះ​អោយរត់ចេញពីផ្ទះ។​"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage21.png",
+      "text": "ពូក្រាមើលបាយជ្រូកក្នុងឆ្នាំង ឃើញ​អស់ក៏​ខឹង​។"
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage22.png",
+      "text": "​គាត់ក៏ដេញវាយឆ្កែរបស់គាត់តែ​ម្ដង។"
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage23.png",
+      "text": "កូសស្វែងរកចាប់​សត្វនៅក្នុងព្រៃ។"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage24.png",
+      "text": "កូសប្រទះឃើញត្រីកំពុងស៊ី​ចំណី​ក្នុងត្រពាំង​។"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage25.png",
+      "text": "កូសចាប់បានត្រីមួយ​ពីត្រពាំង​។​"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage26.png",
+      "text": "កូសពាំត្រីនោះ​ទៅអោយ​​ពូក្រា។"
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage27.png",
+      "text": "កូសនិងពូ​ក្រាមកដល់ត្រពាំង​ដែលមានត្រី​នោះ​។"
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage28.png",
+      "text": "ពូក្រាកំពុងចាប់ត្រីដាក់ក្នុងប៉ោត។"
+    },
+    {
+      "n": 29,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage29.png",
+      "text": "ឆ្កែញីលួចស៊ីត្រីឆ្អើរពូក្រានៅលើចង្ក្រាន។​"
+    },
+    {
+      "n": 30,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage30.png",
+      "text": "កូសរើសស៊ីឆ្អឹងត្រីដែលសល់ពីឆ្កែញីស៊ី។"
+    },
+    {
+      "n": 31,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage31.png",
+      "text": "កូសឈឺ​ខ្លួន​ដោយសារឆ្កែញីម្ដងទៀត។"
+    },
+    {
+      "n": 32,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage32.png",
+      "text": "ពូក្រាបង្អត់បាយ​ឆ្កែរបស់គាត់។"
+    },
+    {
+      "n": 33,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage33.png",
+      "text": "កូសឃ្លានយ៉ាង​ខ្លាំង ក៏ទៅ​ដេកក្បែរ​គល់ចេកមួយ។"
+    },
+    {
+      "n": 34,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage34.png",
+      "text": "កូស​ដើរ​តាម​ដាន​ជើង​ប្រើសទៅ​ក្នុង​ព្រៃ។"
+    },
+    {
+      "n": 35,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage35.png",
+      "text": "កូសខាំបានប្រើសឈ្មោលមួយក្បាលដ៏ធំ​។"
+    },
+    {
+      "n": 36,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage36.png",
+      "text": "កូស​ពាំជើង​ប្រើស​យក​ទៅឲ្យពូក្រានៅឯផ្ទះ​។"
+    },
+    {
+      "n": 37,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage37.png",
+      "text": "ពូក្រាដាក់បាយឲ្យឆ្កែស៊ី ​ដើម្បីលួងចិត្តឆ្កែ​។"
+    },
+    {
+      "n": 38,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage38.png",
+      "text": "ឆ្កែនាំអ្នក​ភូមិ​សំដៅទៅកន្លែង​ប្រើស​ដែល​​ងាប់នោះ។"
+    },
+    {
+      "n": 39,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage39.png",
+      "text": "ពួកគេកំពុងពន្លះសាច់ប្រើសក្នុងព្រៃ។"
+    },
+    {
+      "n": 40,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fbc8ce736-7fc9-45a1-9127-f6ed4c9e99ba%2f%e1%9f%a4%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9e%82%e1%9e%bc%e1%9e%9f%e2%80%8b%e1%9e%87%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%86%e1%9f%9d%e2%80%8b%e1%9e%82%e1%9e%b9%e1%9e%8f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%2fimage40.png",
+      "text": "ពូក្រាស្រលាញ់កូសខ្លាំងណាស់​\nព្រោះដឹងថាវា​ឆ្លាត​វៃ​៕"
+    }
+  ],
+  "stats": {
+    "pages": 40,
+    "words": 47
+  }
+}

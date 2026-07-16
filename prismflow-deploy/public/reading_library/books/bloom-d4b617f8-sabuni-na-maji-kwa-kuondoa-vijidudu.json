@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d4b617f8-sabuni-na-maji-kwa-kuondoa-vijidudu",
+  "title": "SABUNI NA MAJI KWA KUONDOA VIJIDUDU",
+  "description": "Soap and Water for Chasing Away Germs",
+  "language": "Kiswahili",
+  "langCode": "sw",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Health"
+  ],
+  "authors": [
+    "Lantana Hake"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Lantana Hake",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/o6l8jKbOmF"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd4b617f8-c21b-48c2-aaa0-063ef6ce79ff%2fSABUNI+NA+MAJI+KWA+KUONDOA+VIJIDUDU%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd4b617f8-c21b-48c2-aaa0-063ef6ce79ff%2fSABUNI+NA+MAJI+KWA+KUONDOA+VIJIDUDU%2fimage1.jpg",
+      "text": "Kato, Ronald na Teddy wanapenda kucheza. Wanafurahi kucheza mpira wa miguu, mpira wa mikono na mchezo wa kujificha na kutafutana kila siku."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd4b617f8-c21b-48c2-aaa0-063ef6ce79ff%2fSABUNI+NA+MAJI+KWA+KUONDOA+VIJIDUDU%2fimage2.jpg",
+      "text": "Kato, Ronald na Teddy huweka nguo na miili yao safi, lakini hawajui kuhusu vijidudu amba vyo havioneka ni."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd4b617f8-c21b-48c2-aaa0-063ef6ce79ff%2fSABUNI+NA+MAJI+KWA+KUONDOA+VIJIDUDU%2fimage3.jpg",
+      "text": "Siku moja Kato alitoka chooni. Wakati anarudi darasani alisimama bombani na kuosha mikono yake kwa sabuni na maji. Alijaribu kufanya usafi. Alipofika darasani, mwalimu alisema \"Mpigieni Kato makofi!\""
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd4b617f8-c21b-48c2-aaa0-063ef6ce79ff%2fSABUNI+NA+MAJI+KWA+KUONDOA+VIJIDUDU%2fimage4.jpg",
+      "text": "Baadaye siku hiyo Ronald alitoka chooni lakini alikimbia na kulipita bomba na kurudi kucheza tena. \"Sina muda wa kuosha mikono,\" alisema Ronald na kwenda kucheza huku amebeba vijidudu."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd4b617f8-c21b-48c2-aaa0-063ef6ce79ff%2fSABUNI+NA+MAJI+KWA+KUONDOA+VIJIDUDU%2fimage5.jpg",
+      "text": "Baada ya kucheza, Kato aliosha mikono yake kabla ya kwenda kula. Ronald na Teddy walikuwa na njaa sana na hawakuwa na muda wa kuosha mikono yao. Walichukua chakula na kwenda moja kwa moja kukaa kwa ajili ya kula."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd4b617f8-c21b-48c2-aaa0-063ef6ce79ff%2fSABUNI+NA+MAJI+KWA+KUONDOA+VIJIDUDU%2fimage6.jpg",
+      "text": "Siku iliyofuata, Kato mwenye afya njema alitaka kucheza mpira lakini marafiki zake wawili Ronald na Teddy walikuwa wanaumwa sana, hawakuweza kutoka vitandani mwao kabisa."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd4b617f8-c21b-48c2-aaa0-063ef6ce79ff%2fSABUNI+NA+MAJI+KWA+KUONDOA+VIJIDUDU%2fimage7.jpg",
+      "text": "Watoto walijifunza kutumia sabuni na maji kuosha mikono kabla ya kula na baada ya kutoka chooni. Ni vizuri vijana wa kike na wakiume kufuata mfumo wa usafi."
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 185
+  }
+}

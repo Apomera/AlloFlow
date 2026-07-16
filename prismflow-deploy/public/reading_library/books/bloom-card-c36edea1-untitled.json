@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-c36edea1-untitled",
+  "title": "የጠፋው በግ ምሳሌ",
+  "description": "A Amharic picture book, readable free at Bloom Library.",
+  "language": "Amharic",
+  "langCode": "am",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Spiritual"
+  ],
+  "authors": [
+    "SIL Cameroon"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL Cameroon",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/fPyUif1FpJ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/musie_menna%40sil.org%2fc36edea1-0859-4f73-8365-4790135c35b6%2f%e1%8b%a8%e1%8c%a0%e1%8d%8b%e1%8b%8d+%e1%89%a0%e1%8c%8d+%e1%88%9d%e1%88%b3%e1%88%8c%2fncsgc1gt.bsl.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"የጠፋው በግ ምሳሌ\" (Amharic)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

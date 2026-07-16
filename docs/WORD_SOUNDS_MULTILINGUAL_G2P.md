@@ -95,12 +95,32 @@ Pinned by `tests/word_sounds_language_gating.test.js` (6).
    teacher or aide records the language's sounds once, exports/imports the pack.
 2. **Per-language mini-benchmarks** like the English 32/32 set, so each language
    earns its way in with evidence.
-3. **Student-pack compile** (`word_sounds_setup`) currently packs TTS audio for
-   the words themselves in any language; per-language instruction speech is a
-   separate feature (runtime instructions are English constants everywhere).
-   The setup's board compiler also still uses English letter pools for
-   isolation/chip distractors — non-English packs lean on the module's runtime
-   same-language rebuilds until the compiler is language-aware.
+3. **Per-language instruction speech** — runtime spoken instructions are
+   English constants everywhere; localizing them is its own feature (module
+   strings + per-language TTS + bank clips).
+
+## Stage 2b — language-aware pack compiler (SHIPPED 2026-07-13)
+
+Correction to an earlier claim: packed boards OUTRANK the module's runtime
+rebuilds, so the stage-2 runtime gates alone did NOT protect the student-pack
+path. `word_sounds_setup_source.jsx` is now language-aware end to end
+(`packIsEnglish`, from the `wordSoundsLanguage` prop the shell already passes):
+
+- English filler pools join boards ONLY for English packs: common-word pool,
+  manipulation fillers (both compile-time and the fallback task), isolation/
+  segmentation grapheme pools, missing-letter a–z distractors. Non-English
+  packs pad from the pack's own words, own phoneme inventory, and own letters.
+- Rime comparisons (`[aeiou]` regex) fall back to a script-agnostic trailing
+  match for non-English so rhyme/family boards don't misfilter.
+- The per-word Gemini analysis prompt has a language-directed variant (same
+  JSON shape; all returned words must be real words of the content language;
+  English-phonics notation rules apply only to the English prompt, which is
+  string-identical to before).
+- The AI topic word-list generator asks for words in the content language and
+  no longer strips non-ASCII letters ("niño" survives); the English cleanup
+  regex is unchanged for English.
+
+Pinned by the compiler source-pins in `tests/word_sounds_language_gating.test.js`.
 
 ## Test/verification surface
 

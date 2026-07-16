@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-2cf4db1c-elongi",
+  "title": "Elongi",
+  "description": "Can you name all the parts of the face?",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/pSDQhr4m5w"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+1+eyes.jpg",
+      "text": "Misu"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+2+ears.jpg",
+      "text": "Matoyi"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+3+mouth.jpg",
+      "text": "Munoko"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+4+nose.jpg",
+      "text": "Nzolo"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+5+cheeks.jpg",
+      "text": "Matama"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+6+chin.jpg",
+      "text": "Mbanga"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+7+teeth.jpg",
+      "text": "Mino"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+8+tongue.jpg",
+      "text": "Lolemo"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+9+eyebrows.jpg",
+      "text": "Suki ya misu"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+10+hair.jpg",
+      "text": "Suki"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 12
+  }
+}

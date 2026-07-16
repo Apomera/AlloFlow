@@ -8,6 +8,7 @@
 // plannable before content exists (the #1 regression, fixed 2026-07-10).
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { loadAlloModule } from './setup.js';
 
 let AC;
@@ -93,18 +94,18 @@ describe('planUtterance', () => {
     expect(await AC.planUtterance(single.ctx, 'a then b')).toBeNull();
   });
 
-  // Regression (2026-07-10): the planner menu must include when-gated
-  // commands — before this fix, generate_quiz was invisible with no content
-  // loaded, so "create a lesson then quiz it" could never be planned.
-  it('plans steps whose commands only unlock AFTER an earlier step (gated menu)', async () => {
+  // Contract hardening (2026-07-13): gated commands stay visible to the
+  // planner, but a wizard cannot pretend it produced source content.
+  it('rejects a false create-lesson → quiz dependency while exposing requirements', async () => {
     const { ctx } = mkCtx({
-      hasSourceOrAnalysis: false, // generate_quiz is when-gated OFF right now
+      hasSourceOrAnalysis: false,
       startLessonFlow: () => {},
       callGemini: async (prompt) => {
-        // The menu shown to the model must still contain the gated command,
-        // annotated as not-yet-available.
         expect(prompt).toContain('generate_quiz');
-        expect(prompt).toContain('[not available yet');
+        expect(prompt).toContain('not available in the live state');
+        expect(prompt).toContain('requires source');
+        expect(prompt).toContain('create_lesson');
+        expect(prompt).toContain('must be final');
         return JSON.stringify({
           steps: [
             { commandId: 'create_lesson', params: { topic: 'volcanoes', grade: '5' }, why: 'make content' },
@@ -114,9 +115,7 @@ describe('planUtterance', () => {
         });
       },
     });
-    const steps = await AC.planUtterance(ctx, 'create a lesson about volcanoes then make a quiz');
-    expect(steps).toHaveLength(2);
-    expect(steps[1].commandId).toBe('generate_quiz');
+    expect(await AC.planUtterance(ctx, 'create a lesson about volcanoes then make a quiz')).toBeNull();
   });
 
   // Hardening (2026-07-10): destructive commands are excluded from plans
@@ -159,6 +158,56 @@ describe('planUtterance', () => {
 });
 
 describe('runPlan', () => {
+
+describe('command contracts and plan validation', () => {
+  it('marks the lesson wizard as interactive, terminal, and unsafe for automatic demos', () => {
+    expect(AC.getCommandContract('create_lesson')).toMatchObject({
+      demoSafe: false, interaction: 'guided', terminal: true, params: ['topic', 'grade'],
+    });
+  });
+
+  it('blocks missing prerequisites and privacy-sensitive demo commands', () => {
+    const { ctx } = mkCtx({ hasSourceOrAnalysis: false, startLessonFlow: () => {} });
+    const missing = AC.validatePlan(ctx, [{ commandId: 'generate_quiz', params: {} }], { demoSafeOnly: true });
+    expect(missing.ok).toBe(false);
+    expect(missing.items[0].detail).toContain('Needs source');
+    const unsafe = AC.validatePlan(ctx, [{ commandId: 'open_ai_settings', params: {} }], { demoSafeOnly: true });
+    expect(unsafe.ok).toBe(false);
+    expect(unsafe.items[0].status).toBe('block');
+  });
+
+  it('accepts a safe generation chain when source already exists', () => {
+    const { ctx } = mkCtx({ hasSourceOrAnalysis: true });
+    const report = AC.validatePlan(ctx, [
+      { commandId: 'generate_simplified', params: { grade: '3' } },
+      { commandId: 'generate_quiz', params: {} },
+    ], { demoSafeOnly: true });
+    expect(report.ok).toBe(true);
+    expect(report.blockingCount).toBe(0);
+  });
+  it('keeps the recorder launch out of automatic demos while allowing safe launcher demos', () => {
+    const { ctx } = mkCtx();
+    const recorder = AC.validatePlan(ctx, [{ commandId: 'open_video_studio', params: {} }], { demoSafeOnly: true });
+    expect(recorder.ok).toBe(false);
+    expect(recorder.items[0].detail).toContain('recorder/editor');
+    const timeline = AC.validatePlan(ctx, [{ commandId: 'open_timeline_studio', params: {} }], { demoSafeOnly: true });
+    expect(timeline.ok).toBe(true);
+  });
+
+  it('removes demo-blocked commands from the AI planner menu', async () => {
+    const { ctx } = mkCtx({
+      callGemini: async (prompt) => {
+        expect(prompt).not.toContain('create_lesson:');
+        expect(prompt).not.toContain('open_ai_settings:');
+        return JSON.stringify({ steps: [
+          { commandId: 'generate_simplified', params: { grade: '3' } },
+          { commandId: 'generate_quiz', params: {} },
+        ], confidence: 0.9 });
+      },
+    });
+    expect(await AC.planUtterance(ctx, 'simplify then quiz', { demoSafeOnly: true })).toHaveLength(2);
+  });
+});
   it('executes sequentially and AWAITS each async step to completion', async () => {
     const { ctx, log } = mkCtx();
     const events = [];
@@ -205,6 +254,7 @@ describe('runPlan', () => {
     expect(pr.timedOut).toBe(true);
     expect(pr.failedStep).toBe(0);
     expect(pr.results).toHaveLength(1); // quiz step never started
+    expect(pr.remainingSteps.map((step) => step.commandId)).toEqual(['generate_quiz']);
     expect(log).not.toContain('quiz-finished');
   });
 
@@ -218,9 +268,30 @@ describe('runPlan', () => {
     expect(pr.ok).toBe(false);
     expect(pr.stopped).toBe(true);
     expect(pr.results).toHaveLength(1);
+    expect(pr.remainingSteps.map((step) => step.commandId)).toEqual(['generate_quiz']);
+  });
+
+  it('preserves the failed step at the front of a resumable remainder', async () => {
+    const { ctx } = mkCtx({ hasSourceOrAnalysis: false });
+    const steps = [
+      { commandId: 'generate_quiz', params: {} },
+      { commandId: 'open_learning_hub', params: {} },
+    ];
+    const pr = await AC.runPlan(ctx, steps);
+    expect(pr.ok).toBe(false);
+    expect(pr.remainingSteps).toEqual(steps);
   });
 });
 
+describe('AlloBot plan recovery wiring', () => {
+  it('offers the exact remaining sequence while preserving the original undo point', () => {
+    const app = readFileSync('AlloFlowANTI.txt', 'utf-8');
+    expect(app).toContain('_pendingBotPlanRef.current = { steps: _remaining, originalText: _pendingPlan.originalText, resume: true }');
+    expect(app).toContain("value: '__allo_plan_run'");
+    expect(app).toContain('if (!_pendingPlan.resume || !_planUndoRef.current)');
+    expect(app).toContain('_pendingBotPlanRef.current = null;');
+  });
+});
 describe('runCommandById awaitCompletion isolation', () => {
   it('keeps the sync path synchronous for existing surfaces', () => {
     const { ctx } = mkCtx();

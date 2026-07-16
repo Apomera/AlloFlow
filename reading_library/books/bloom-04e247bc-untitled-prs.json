@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-04e247bc-untitled-prs",
+  "title": "دختر کم جرأت",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/I8kByhnmxf"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f04e247bc-7266-45dd-9456-8a848d17a1cc%2f%d8%af%d8%ae%d8%aa%d8%b1+%da%a9%d9%85+%d8%ac%d8%b1%d8%a3%d8%aa%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f04e247bc-7266-45dd-9456-8a848d17a1cc%2f%d8%af%d8%ae%d8%aa%d8%b1+%da%a9%d9%85+%d8%ac%d8%b1%d8%a3%d8%aa%2f%db%b2.jpg",
+      "text": "روز تولد طاهره بود.\nمهمانان آمده بودند، طاهره از اتاق خود بیرون نشد."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "چون طاهره کم جرأت بود.\nمادر طاهره او را صدا کرد.\nطاهره آمد، اما به گوشه ای ایستاد.\nاو به کسی توجه نکرد.\nهمه ناراحت شدند."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f04e247bc-7266-45dd-9456-8a848d17a1cc%2f%d8%af%d8%ae%d8%aa%d8%b1+%da%a9%d9%85+%d8%ac%d8%b1%d8%a3%d8%aa%2f%db%b3.jpg",
+      "text": "فردای آن روز طاهره به مکتب رفت.\nاستاد درس را می پرسید."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "همه شاگردان دست شان را بلند کرده بودند.\nاما دست طاهره پایین بود.\nگرچه درس را بَلَد بود اما جرأت نداشت.\nاستاد کنار طاهره آمد و گفت:\nشما بخوانید طاهره!"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f04e247bc-7266-45dd-9456-8a848d17a1cc%2f%d8%af%d8%ae%d8%aa%d8%b1+%da%a9%d9%85+%d8%ac%d8%b1%d8%a3%d8%aa%2f%db%b4.jpg",
+      "text": "طاهره درس را خواند.\nاستاد گفت: آفرین.\nهمه او را تشویق کردند."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "طاهره در تمام ساعات درسی دستش را بلند می کرد.\nاو دیگر خجالت نمی کشید.\nطاهره خوشحال شد.\nتصمیم گرفت که همیشه سهیم باشد.\nاو با خوشحالی به خانه رفت."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f04e247bc-7266-45dd-9456-8a848d17a1cc%2f%d8%af%d8%ae%d8%aa%d8%b1+%da%a9%d9%85+%d8%ac%d8%b1%d8%a3%d8%aa%2f%db%b52.jpg",
+      "text": "در خانه مهمان بود.\nطاهره سلام داد و احوال پرسی کرد.\nمادر از این کار طاهره تعجُب کرد."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "او از جریان امروز در مکتب تعریف کرد.\nمادر خوشحال شد.\nطاهره دیگر آن دختر کم جرأت نبود.\nچون متوجه شد که کم جرأتی مانع پیشرفت می گردد."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 169
+  }
+}

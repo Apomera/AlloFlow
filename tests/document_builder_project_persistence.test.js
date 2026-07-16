@@ -79,8 +79,10 @@ describe('Document Builder project draft loading', () => {
     const source = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 
     expect(source).toContain('const BUILDER_PROJECT_DRAFT_MAX_BYTES = 32 * 1024 * 1024');
-    expect(source).toContain("candidate.version === 1 && candidate.source === 'history'");
-    expect(source).toContain('candidate.historySignature === signature');
+    expect(source).toContain("if (candidate.version === 1) return typeof candidate.html === 'string' ? candidate.html : null;");
+    expect(source).toContain('if (candidate.version !== 2) return null;');
+    expect(source).toContain("encoding: 'deflate-raw-base64'");
+    expect(source).toContain('candidate.historySignature !== historySignature');
     expect(source).toContain("querySelectorAll('script,iframe,frame,frameset,object,embed,base,link,meta[http-equiv]')");
     expect(source).toContain("name.startsWith('on') || name === 'srcdoc'");
     expect(source).toContain("builderDraft: saveType === 'teacher' ? _getBuilderDraftForProject() : null");

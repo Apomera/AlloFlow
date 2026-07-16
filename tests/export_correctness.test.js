@@ -13,7 +13,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8')
+  + '\n' + readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
 
 // Faithful mirror of the M9 inline pipeline (escape first, then anchored emphasis).
 const mdInline = (content) => {

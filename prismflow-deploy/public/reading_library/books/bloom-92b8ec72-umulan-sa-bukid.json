@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-92b8ec72-umulan-sa-bukid",
+  "title": "Umulan sa Bukid",
+  "description": "Inday and her mother are at the farm and it rains. The mother gathers banana leaves. They go home, and a spider has gone with them.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Environment"
+  ],
+  "authors": [
+    "© Ingle Trust Foundation of Davao, Inc"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "© Ingle Trust Foundation of Davao, Inc",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tf4RDZsx1D"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ninaingle%40fastmail.fm%2f92b8ec72-4d7f-49fe-94fa-2a129ae692f3%2fUmulan+sa+Bukid%2fI-18.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ninaingle%40fastmail.fm%2f92b8ec72-4d7f-49fe-94fa-2a129ae692f3%2fUmulan+sa+Bukid%2fI-3.jpg",
+      "text": "Sa palayan sina Inday at ang kanyang ina, tinitingnan ang mga tanim."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ninaingle%40fastmail.fm%2f92b8ec72-4d7f-49fe-94fa-2a129ae692f3%2fUmulan+sa+Bukid%2fI-4.jpg",
+      "text": "Dumilim ang paligid. Itim ang mga ulap."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ninaingle%40fastmail.fm%2f92b8ec72-4d7f-49fe-94fa-2a129ae692f3%2fUmulan+sa+Bukid%2fI-5.jpg",
+      "text": "Tumakbo sila sa kamalig."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ninaingle%40fastmail.fm%2f92b8ec72-4d7f-49fe-94fa-2a129ae692f3%2fUmulan+sa+Bukid%2fI-6.jpg",
+      "text": "Biglang umulan ng malakas."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ninaingle%40fastmail.fm%2f92b8ec72-4d7f-49fe-94fa-2a129ae692f3%2fUmulan+sa+Bukid%2fI-17.jpg",
+      "text": "Kumuha si Nanay ng dahon ng saging."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ninaingle%40fastmail.fm%2f92b8ec72-4d7f-49fe-94fa-2a129ae692f3%2fUmulan+sa+Bukid%2fI-10.jpg",
+      "text": "Umuwi sila sa bahay."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ninaingle%40fastmail.fm%2f92b8ec72-4d7f-49fe-94fa-2a129ae692f3%2fUmulan+sa+Bukid%2fI-15.jpg",
+      "text": "May kasama pala sila. Isang gagamba!"
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 44
+  }
+}

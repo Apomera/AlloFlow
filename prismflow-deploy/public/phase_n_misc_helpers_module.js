@@ -345,7 +345,6 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps) =>
     if (part.startsWith("[") && part.includes("](") && part.endsWith(")")) {
       const match = part.match(/^\[(.*?)\]\((.*?)\)$/);
       if (match) {
-        const isCitation = match[1].startsWith("\u207D") && match[1].endsWith("\u207E");
         return /* @__PURE__ */ React.createElement(
           "a",
           {
@@ -353,7 +352,7 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps) =>
             href: match[2],
             target: "_blank",
             rel: "noopener noreferrer",
-            className: `text-blue-600 ${isCitation ? "no-underline" : "underline"} hover:text-blue-800 z-20 relative font-medium cursor-pointer`,
+            className: `${isDarkBg ? "text-sky-300 hover:text-sky-200 focus-visible:ring-sky-300 focus-visible:ring-offset-slate-900" : "text-blue-700 hover:text-blue-900 focus-visible:ring-blue-700 focus-visible:ring-offset-white"} z-20 relative font-medium underline decoration-2 underline-offset-2 cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`,
             onClick: (e) => e.stopPropagation(),
             title: match[2]
           },
@@ -374,7 +373,6 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps) =>
       if (subPart.startsWith("[") && subPart.includes("](") && subPart.endsWith(")")) {
         const match = subPart.match(/^\[(.*?)\]\((.*?)\)$/);
         if (match) {
-          const isCitation = match[1].startsWith("\u207D") && match[1].endsWith("\u207E");
           return /* @__PURE__ */ React.createElement(
             "a",
             {
@@ -382,10 +380,9 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps) =>
               href: match[2],
               target: "_blank",
               rel: "noopener noreferrer",
-              className: `text-blue-600 ${isCitation ? "no-underline" : "underline"} hover:text-blue-800 z-20 relative font-medium cursor-pointer`,
-              role: "dialog",
-              "aria-modal": "true",
-              onClick: (e) => e.stopPropagation()
+              className: `${isDarkBg ? "text-sky-300 hover:text-sky-200 focus-visible:ring-sky-300 focus-visible:ring-offset-slate-900" : "text-blue-700 hover:text-blue-900 focus-visible:ring-blue-700 focus-visible:ring-offset-white"} z-20 relative font-medium underline decoration-2 underline-offset-2 cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`,
+              onClick: (e) => e.stopPropagation(),
+              title: match[2]
             },
             match[1]
           );

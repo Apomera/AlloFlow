@@ -8401,6 +8401,16 @@ const d = labToolData.solarSystem || {};
 
                     "data-drone-canvas": "true",
 
+                    "data-drone-vehicle-mode": (sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant')) ? 'atmospheric-probe' : (sel && sel.terrainType === 'earthlike') ? 'deep-sea-submersible' : 'surface-rover',
+
+                    role: "application",
+
+                    tabIndex: 0,
+
+                    "aria-label": ((sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant')) ? 'Atmospheric probe' : (sel && sel.terrainType === 'earthlike') ? 'Deep-sea submersible' : 'Surface rover') + ' simulation on ' + (sel ? sel.name : 'the selected world') + '. Use W A S D or arrow keys to move. Use the action controls to scan, collect evidence, take photos, review the mission and journal, or start navigation.',
+
+                    "aria-describedby": "hud-science-focus",
+
                     style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair' },
 
                     ref: function (canvasEl) {
@@ -10308,6 +10318,10 @@ const d = labToolData.solarSystem || {};
 
                         var modeLabel = isOcean ? '\uD83D\uDEA4 DEEP-SEA SUBMERSIBLE' : isGas ? '\uD83D\uDEF8 ATMOSPHERIC PROBE' : '\uD83D\uDE97 SURFACE ROVER';
 
+                        var scienceQuestion = isOcean ? 'How do pressure and light change as depth increases?' : isGas ? 'How do pressure, temperature, and wind change below the clouds?' : 'How do slope and elevation affect rover travel?';
+
+                        var scienceInitialReading = isOcean ? 'Depth 0 m \u2022 compare pressure and light' : isGas ? 'Relative altitude 0 m \u2022 compare atmospheric layers' : 'Elevation 0 m \u2022 slope 0\u00B0 \u2022 speed 0 m/s';
+
                         var atmosLabel = sel.atmosphere || 'No data';
 
                         var gravLabel = sel.gravity || '?';
@@ -10448,6 +10462,12 @@ const d = labToolData.solarSystem || {};
 
                           '</div>' +
 
+                          '<div id="hud-science-focus" role="note" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:5px;margin-bottom:5px">' +
+                          '<div style="color:#7dd3fc;font-weight:bold;font-size:11px;margin-bottom:2px">\uD83D\uDD2C SCIENCE FOCUS</div>' +
+                          '<div style="color:#cbd5e1;font-size:11px;line-height:1.35">' + scienceQuestion + '</div>' +
+                          '<div id="hud-science-reading" style="color:#fbbf24;font-size:11px;line-height:1.35;margin-top:2px">' + scienceInitialReading + '</div>' +
+                          '</div>' +
+
                           '<div id="hud-standard-rows" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:none;grid-template-columns:auto 1fr;gap:2px 8px">' +
 
                           '<span style="color:#64748b" title="Compass heading: 0=N, 90=E, 180=S, 270=W">\uD83E\uDDED Hdg</span><span id="hud-hdg" style="color:#67e8f9">N 0\u00B0</span>' +
@@ -10501,6 +10521,24 @@ const d = labToolData.solarSystem || {};
                         hud.innerHTML = hudStaticHTML;
 
                         canvasEl.parentElement.appendChild(hud);
+
+                        var scienceReadingEl = hud.querySelector('#hud-science-reading');
+                        function updateDroneScienceFocus(altitude) {
+                          if (!scienceReadingEl) return;
+                          if (isOcean && oceanAtmo) {
+                            var oceanScienceZone = oceanAtmo.getZone(playerPos.y);
+                            var lightPercent = Math.round((oceanScienceZone.lightLevel || 0) * 100);
+                            scienceReadingEl.textContent = 'Depth ' + Math.abs(playerPos.y * scaleFactor).toFixed(0) + ' m \u2022 ' + oceanScienceZone.pressure + ' \u2022 light ' + lightPercent + '%';
+                            return;
+                          }
+                          if (isGas && gasAtmo) {
+                            var gasScienceZone = gasAtmo.getZone(playerPos.y);
+                            scienceReadingEl.textContent = 'Relative altitude ' + altitude + ' m \u2022 ' + gasScienceZone.pressure + ' \u2022 ' + gasScienceZone.temp + ' \u2022 wind ' + gasScienceZone.windSpeed + ' km/h';
+                            return;
+                          }
+                          var slopeDegrees = roverGroup ? Math.max(Math.abs(roverGroup.rotation.x), Math.abs(roverGroup.rotation.z)) * 180 / Math.PI : 0;
+                          scienceReadingEl.textContent = 'Elevation ' + altitude + ' m \u2022 slope ' + slopeDegrees.toFixed(1) + '\u00B0 \u2022 speed ' + (lastSpeed || 0).toFixed(1) + ' m/s';
+                        }
 
                         // ── Gas Sample Inventory Panel (Tab to toggle) ──
                         if (isGas) {
@@ -10903,7 +10941,8 @@ const d = labToolData.solarSystem || {};
 
                         var missionVisible = false;
 
-                        var missionStats = { scanned: false, photographed: false, sampled: false, nav: false, route: false, journaled: false };
+                        var missionStats = { scanned: false, compared: false, photographed: false, sampled: false, nav: false, route: false, journaled: false };
+                        var completedScanComparisons = 0;
                         var droneJournalEntries = (journalEntries || []).filter(function (entry) {
                           return entry && entry.planet === sel.name && entry.source === 'drone';
                         }).slice(-8).reverse();
@@ -11034,9 +11073,10 @@ const d = labToolData.solarSystem || {};
                           var routeTotal = (typeof plotterWaypoints !== 'undefined' && plotterWaypoints) ? plotterWaypoints.length : 0;
                           var routeReached = typeof plotterActiveWP !== 'undefined' ? Math.min(plotterActiveWP || 0, routeTotal) : 0;
                           var routeDone = missionStats.route || (routeTotal >= 2 && routeReached >= routeTotal);
+                          var scanMissionDetail = missionStats.compared ? completedScanComparisons + ' comparison' + (completedScanComparisons === 1 ? '' : 's') + ' saved as evidence' : missionStats.scanned ? 'Baseline saved; move to a different site or layer and press G again' : 'Press G to save a baseline sensor reading';
                           var taskStates = [
                             discoveredCount >= requiredDiscoveries,
-                            missionStats.scanned,
+                            missionStats.compared,
                             missionStats.photographed,
                             missionStats.sampled || sampleCount > 0,
                             missionStats.nav || navDone > 0,
@@ -11058,7 +11098,7 @@ const d = labToolData.solarSystem || {};
                             '<div style="background:rgba(15,23,42,0.52);border-radius:12px;padding:8px 12px;margin-bottom:10px;border:1px solid rgba(148,163,184,0.14)">' +
                             '<div style="font-weight:800;color:#fbbf24;margin-bottom:4px">\uD83C\uDFAF Objectives</div>' +
                             missionTaskRow(taskStates[0], 'Discover ' + requiredDiscoveries + ' landmark' + (requiredDiscoveries === 1 ? '' : 's'), discoveredCount + '/' + totalPOIs + ' points of interest found') +
-                            missionTaskRow(taskStates[1], 'Run an environment scan', 'Press G to collect sensor evidence and a CER note') +
+                            missionTaskRow(taskStates[1], 'Compare two environment scans', scanMissionDetail) +
                             missionTaskRow(taskStates[2], 'Capture photo evidence', 'Press C to save a visual observation to the log') +
                             missionTaskRow(taskStates[3], isOcean ? 'Collect a marine specimen' : isGas ? 'Collect an atmospheric sample' : 'Collect a geology sample', sampleCount + ' sample' + (sampleCount === 1 ? '' : 's') + ' collected') +
                             missionTaskRow(taskStates[4], 'Complete a navigation challenge', navDone + ' challenge' + (navDone === 1 ? '' : 's') + ' completed with N') +
@@ -11243,17 +11283,139 @@ const d = labToolData.solarSystem || {};
                         // ── Environment Scanner (G key) ──
                         var scannerActive = false;
                         var scannerCooldown = 0;
+                        var previousScanSnapshot = null;
+                        var scanHistory = [];
+                        var scanSequence = 0;
+                        var scanDismissTimer = null;
+                        var scanAnnounceTimer = null;
+                        var scanActionButton = null;
+                        var scanActionLabel = null;
                         var scannerOverlay = document.createElement('div');
                         scannerOverlay.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:20;opacity:0;transition:opacity 0.3s';
                         scannerOverlay.innerHTML =
                           // Scanning sweep line
                           '<div id="scan-sweep" style="position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(to right,transparent,rgba(56,189,248,0.6),transparent);transition:left 1.5s linear"></div>' +
                           // Scan result card
-                          '<div id="scan-result" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,10,20,0.92);backdrop-filter:blur(12px);border:1px solid rgba(56,189,248,0.4);border-radius:14px;padding:16px 20px;max-width:340px;width:85%;color:#e2e8f0;font-family:system-ui;text-align:center;opacity:0;transition:opacity 0.5s 0.8s">' +
+                          '<div id="scan-result" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,10,20,0.92);backdrop-filter:blur(12px);border:1px solid rgba(56,189,248,0.4);border-radius:14px;padding:16px 20px;max-width:340px;width:85%;max-height:82%;overflow-y:auto;pointer-events:auto;scrollbar-width:thin;color:#e2e8f0;font-family:system-ui;text-align:center;opacity:0;transition:opacity 0.5s 0.8s">' +
                             '<div style="font-weight:bold;font-size:14px;color:#38bdf8;margin-bottom:6px;letter-spacing:1px">\uD83D\uDD2C ENVIRONMENT SCAN</div>' +
                             '<div id="scan-body" style="font-size:11px;line-height:1.6"></div>' +
                           '</div>';
                         canvasEl.parentElement.appendChild(scannerOverlay);
+
+                        function buildScanComparison(previous, current) {
+                          if (!current) return 'No sensor reading was available.';
+                          if (!previous || previous.mode !== current.mode) {
+                            var nextStep = current.mode === 'ocean'
+                              ? 'Move to a different depth and scan again to compare pressure and light.'
+                              : current.mode === 'gas'
+                                ? 'Move to a different atmospheric layer and scan again to compare conditions.'
+                                : 'Drive to a different terrain site and scan again to compare elevation and slope.';
+                            return 'Baseline saved. ' + nextStep;
+                          }
+                          if (current.mode === 'ocean') {
+                            var depthDelta = Math.round(current.level - previous.level);
+                            var depthText = Math.abs(depthDelta) < 10 ? 'depth changed less than 10 m' : Math.abs(depthDelta) + ' m ' + (depthDelta > 0 ? 'deeper' : 'shallower');
+                            var lightText = current.light === previous.light
+                              ? 'light held at ' + current.light + '%'
+                              : 'light ' + (current.light > previous.light ? 'rose' : 'fell') + ' from ' + previous.light + '% to ' + current.light + '%';
+                            return 'Compared with ' + previous.zone + ': ' + depthText + '; ' + lightText + '; pressure ' + previous.pressure + ' \u2192 ' + current.pressure + '.';
+                          }
+                          if (current.mode === 'gas') {
+                            var altitudeDelta = Math.round(current.level - previous.level);
+                            var altitudeText = Math.abs(altitudeDelta) < 10 ? 'altitude changed less than 10 m' : Math.abs(altitudeDelta) + ' m ' + (altitudeDelta > 0 ? 'higher' : 'lower');
+                            var windDelta = Math.round(current.wind - previous.wind);
+                            var windText = Math.abs(windDelta) < 1 ? 'wind held at ' + current.wind + ' km/h' : 'wind ' + (windDelta > 0 ? 'increased' : 'decreased') + ' by ' + Math.abs(windDelta) + ' km/h';
+                            return 'Compared with ' + previous.zone + ': ' + altitudeText + '; pressure ' + previous.pressure + ' \u2192 ' + current.pressure + '; temperature ' + previous.temp + ' \u2192 ' + current.temp + '; ' + windText + '.';
+                          }
+                          var elevationDelta = Math.round(current.level - previous.level);
+                          var elevationText = Math.abs(elevationDelta) < 1 ? 'elevation was nearly unchanged' : Math.abs(elevationDelta) + ' m ' + (elevationDelta > 0 ? 'higher' : 'lower');
+                          var slopeDelta = current.slope - previous.slope;
+                          var slopeText = Math.abs(slopeDelta) < 0.2 ? 'slope held near ' + current.slope.toFixed(1) + '\u00B0' : 'slope ' + (slopeDelta > 0 ? 'increased' : 'decreased') + ' from ' + previous.slope.toFixed(1) + '\u00B0 to ' + current.slope.toFixed(1) + '\u00B0';
+                          return 'Compared with the prior terrain site: ' + elevationText + '; ' + slopeText + '; nearest landmark ' + previous.nearest + ' \u2192 ' + current.nearest + '.';
+                        }
+
+                        function buildScanHistoryHTML(history) {
+                          if (!history || !history.length) return '';
+                          var mode = history[0].mode;
+                          var headings = mode === 'ocean'
+                            ? ['Scan', 'Depth', 'Pressure', 'Light']
+                            : mode === 'gas'
+                              ? ['Scan', 'Altitude', 'Pressure', 'Wind']
+                              : ['Scan', 'Elevation', 'Slope', 'Landmark'];
+                          var caption = mode === 'ocean' ? 'Recent submersible scan evidence' : mode === 'gas' ? 'Recent atmospheric probe scan evidence' : 'Recent rover scan evidence';
+                          var headingHTML = headings.map(function (heading) {
+                            return '<th scope="col" style="padding:3px 4px;color:#94a3b8;font-size:11px;font-weight:700;border-bottom:1px solid rgba(148,163,184,0.22);text-align:left">' + heading + '</th>';
+                          }).join('');
+                          var rowHTML = history.map(function (snapshot) {
+                            var values = snapshot.mode === 'ocean'
+                              ? ['#' + snapshot.scanNumber, snapshot.level + ' m', snapshot.pressure, snapshot.light + '%']
+                              : snapshot.mode === 'gas'
+                                ? ['#' + snapshot.scanNumber, snapshot.level + ' m', snapshot.pressure, snapshot.wind + ' km/h']
+                                : ['#' + snapshot.scanNumber, snapshot.level + ' m', snapshot.slope.toFixed(1) + '\u00B0', snapshot.nearest];
+                            return '<tr>' + values.map(function (value, valueIndex) {
+                              var overflowStyle = valueIndex === values.length - 1 ? ';overflow:hidden;text-overflow:ellipsis' : '';
+                              return '<td style="padding:3px 4px;color:#e2e8f0;font-size:11px;border-bottom:1px solid rgba(148,163,184,0.10);text-align:left;white-space:nowrap' + overflowStyle + '">' + droneEscapeHtml(value) + '</td>';
+                            }).join('') + '</tr>';
+                          }).join('');
+                          return '<div data-scan-evidence-trail="true" style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(52,211,153,0.22);text-align:left">' +
+                            '<div style="color:#86efac;font-weight:800;font-size:11px;margin-bottom:3px">Evidence trail \u2022 last ' + history.length + ' reading' + (history.length === 1 ? '' : 's') + '</div>' +
+                            '<table aria-label="' + caption + '" style="width:100%;table-layout:fixed;border-collapse:collapse"><thead><tr>' + headingHTML + '</tr></thead><tbody>' + rowHTML + '</tbody></table>' +
+                            '</div>';
+                        }
+
+                        function scanMeasurementDirection(startValue, endValue, tolerance) {
+                          var start = parseFloat(startValue);
+                          var end = parseFloat(endValue);
+                          if (!isFinite(start) || !isFinite(end)) return 'changed';
+                          var delta = end - start;
+                          if (Math.abs(delta) <= tolerance) return 'stayed nearly steady';
+                          return delta > 0 ? 'increased' : 'decreased';
+                        }
+
+                        function buildScanPattern(history) {
+                          if (!history || history.length < 3) return null;
+                          var mode = history[0].mode;
+                          var matching = history.filter(function (snapshot) { return snapshot.mode === mode; });
+                          if (matching.length < 3) return null;
+
+                          if (mode === 'ocean' || mode === 'gas') {
+                            var ordered = matching.slice().sort(function (a, b) { return a.level - b.level; });
+                            var low = ordered[0];
+                            var high = ordered[ordered.length - 1];
+                            if (Math.abs(high.level - low.level) < 10) return null;
+                            if (mode === 'ocean') {
+                              return {
+                                title: 'Depth pattern',
+                                summary: 'Across ' + matching.length + ' readings, from ' + low.level + ' m to ' + high.level + ' m deep, pressure ' + scanMeasurementDirection(low.pressure, high.pressure, 0.01) + ' (' + low.pressure + ' \u2192 ' + high.pressure + ') and available light ' + scanMeasurementDirection(low.light, high.light, 1) + ' (' + low.light + '% \u2192 ' + high.light + '%).'
+                              };
+                            }
+                            return {
+                              title: 'Atmosphere pattern',
+                              summary: 'Across ' + matching.length + ' readings, from ' + low.level + ' m to ' + high.level + ' m altitude, pressure ' + scanMeasurementDirection(low.pressure, high.pressure, 0.01) + ' (' + low.pressure + ' \u2192 ' + high.pressure + '), temperature ' + scanMeasurementDirection(low.temp, high.temp, 0.5) + ' (' + low.temp + ' \u2192 ' + high.temp + '), and wind ' + scanMeasurementDirection(low.wind, high.wind, 1) + ' (' + low.wind + ' \u2192 ' + high.wind + ' km/h).'
+                            };
+                          }
+
+                          var first = matching[0];
+                          var last = matching[matching.length - 1];
+                          var landmarks = matching.map(function (snapshot) { return snapshot.nearest; }).filter(function (name, index, names) {
+                            return name && name !== 'none' && names.indexOf(name) === index;
+                          });
+                          var terrainChanged = Math.abs(last.level - first.level) >= 1 || Math.abs(last.slope - first.slope) >= 0.2;
+                          if (!terrainChanged && landmarks.length < 2) return null;
+                          return {
+                            title: 'Terrain pattern',
+                            summary: 'Across scans #' + first.scanNumber + '\u2013#' + last.scanNumber + ', elevation ' + scanMeasurementDirection(first.level, last.level, 1) + ' (' + first.level + ' m \u2192 ' + last.level + ' m), slope ' + scanMeasurementDirection(first.slope, last.slope, 0.2) + ' (' + first.slope.toFixed(1) + '\u00B0 \u2192 ' + last.slope.toFixed(1) + '\u00B0), and ' + landmarks.length + ' landmark region' + (landmarks.length === 1 ? ' was' : 's were') + ' sampled.'
+                          };
+                        }
+
+                        function buildScanPatternHTML(pattern) {
+                          if (!pattern) return '';
+                          return '<div data-scan-pattern="true" role="note" aria-label="Pattern analysis" style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(251,191,36,0.24);text-align:left">' +
+                            '<div style="color:#fde68a;font-weight:800;font-size:11px;margin-bottom:3px">' + droneEscapeHtml(pattern.title) + '</div>' +
+                            '<div style="color:#e2e8f0;font-size:11px;line-height:1.4">' + droneEscapeHtml(pattern.summary) + '</div>' +
+                            '<div style="color:#94a3b8;font-size:11px;line-height:1.35;margin-top:3px">This describes the sampled readings; it does not by itself prove cause.</div>' +
+                            '</div>';
+                        }
 
                         function doEnvironmentScan() {
                           if (scannerCooldown > 0) return;
@@ -11269,11 +11431,13 @@ const d = labToolData.solarSystem || {};
                           var scanTitle = '';
                           var scanEvidence = '';
                           var scanDetail = '';
+                          var scanSnapshot = null;
                           if (isOcean && oceanAtmo) {
                             var oz = oceanAtmo.getZone(playerPos.y);
                             scanTitle = oz.name;
                             scanEvidence = oz.temp + ', ' + oz.pressure + ', life signs: ' + (oz.life || []).join(', ');
                             scanDetail = oz.science;
+                            scanSnapshot = { mode: 'ocean', zone: oz.name, level: Math.round(Math.abs(playerPos.y * scaleFactor)), light: Math.round((oz.lightLevel || 0) * 100), pressure: oz.pressure, temp: oz.temp };
                             scanHTML = '<div style="color:#00b4ff;font-weight:bold;margin-bottom:4px">' + oz.name + '</div>' +
                               '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px">' +
                               '<div>\uD83C\uDF21 ' + oz.temp + '</div><div>\uD83D\uDCA8 ' + oz.pressure + '</div>' +
@@ -11285,6 +11449,7 @@ const d = labToolData.solarSystem || {};
                             scanTitle = gz.name;
                             scanEvidence = gz.temp + ', ' + gz.pressure + ', winds ' + gz.windSpeed + ' km/h, gases: ' + (gz.gases || []).join(', ');
                             scanDetail = gz.science;
+                            scanSnapshot = { mode: 'gas', zone: gz.name, level: Math.round(playerPos.y * scaleFactor), pressure: gz.pressure, temp: gz.temp, wind: Number(gz.windSpeed) || 0 };
                             scanHTML = '<div style="color:#fbbf24;font-weight:bold;margin-bottom:4px">' + gz.name + '</div>' +
                               '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px">' +
                               '<div>\uD83C\uDF21 ' + gz.temp + '</div><div>\uD83D\uDCA8 ' + gz.pressure + '</div>' +
@@ -11303,6 +11468,8 @@ const d = labToolData.solarSystem || {};
                             scanTitle = sel.name + ' Surface Analysis';
                             scanEvidence = 'Elevation ' + elev + 'm, nearest landmark ' + nearestPOIName + ' at ' + Math.round(nearestPOIDist2) + 'm, gravity ' + (sel.gravity || '?') + '.';
                             scanDetail = sel.surfaceDesc || sel.fact;
+                            var scanSlope = roverGroup ? Math.max(Math.abs(roverGroup.rotation.x), Math.abs(roverGroup.rotation.z)) * 180 / Math.PI : 0;
+                            scanSnapshot = { mode: 'surface', zone: scanTitle, level: parseFloat(elev) || 0, slope: scanSlope, nearest: nearestPOIName || 'none' };
                             scanHTML = '<div style="color:#67e8f9;font-weight:bold;margin-bottom:4px">' + sel.name + ' Surface Analysis</div>' +
                               '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px">' +
                               '<div>\u2696\uFE0F ' + (sel.gravity || '?') + '</div><div>\uD83C\uDF21 ' + sel.temp + '</div>' +
@@ -11311,6 +11478,41 @@ const d = labToolData.solarSystem || {};
                               '<div style="color:#fbbf24;font-size:10px;margin-bottom:4px">\uD83D\uDD2D Nearest landmark: ' + nearestPOIName + '</div>' +
                               '<div style="color:#94a3b8;font-size:10px;font-style:italic">' + (sel.surfaceDesc || sel.fact) + '</div>';
                           }
+
+                          var hasComparableBaseline = !!(previousScanSnapshot && scanSnapshot && previousScanSnapshot.mode === scanSnapshot.mode);
+                          scanSequence += 1;
+                          scanSnapshot.scanNumber = scanSequence;
+                          scanHistory.push(Object.assign({}, scanSnapshot));
+                          if (scanHistory.length > 4) scanHistory.shift();
+                          var scanPattern = buildScanPattern(scanHistory);
+
+                          var hasDistinctScanSite = hasComparableBaseline && (
+                            scanSnapshot.mode === 'surface'
+                              ? Math.abs(scanSnapshot.level - previousScanSnapshot.level) >= 1 ||
+                                Math.abs(scanSnapshot.slope - previousScanSnapshot.slope) >= 0.2 ||
+                                scanSnapshot.nearest !== previousScanSnapshot.nearest
+                              : Math.abs(scanSnapshot.level - previousScanSnapshot.level) >= 10 ||
+                                scanSnapshot.zone !== previousScanSnapshot.zone
+                          );
+                          var scanComparison = buildScanComparison(previousScanSnapshot, scanSnapshot);
+                          scanEvidence += (scanEvidence ? ' Comparison: ' : '') + scanComparison;
+                          scanHTML += '<div style="margin-top:7px;padding:6px 7px;border-radius:8px;background:rgba(56,189,248,0.10);border:1px solid rgba(56,189,248,0.20);text-align:left">' +
+                            '<div style="color:#7dd3fc;font-weight:800;font-size:11px;margin-bottom:3px">Comparison evidence</div>' +
+                            '<div style="color:#cbd5e1;font-size:11px;line-height:1.4">' + droneEscapeHtml(scanComparison) + '</div>' +
+                            '</div>';
+                          scanHTML += buildScanHistoryHTML(scanHistory);
+                          scanHTML += buildScanPatternHTML(scanPattern);
+                          if (scanPattern) scanEvidence += ' Pattern analysis: ' + scanPattern.summary;
+                          previousScanSnapshot = scanSnapshot;
+                          if (scanActionLabel) scanActionLabel.textContent = 'Compare';
+                          if (scanActionButton) {
+                            scanActionButton.setAttribute('aria-label', 'Compare with previous scan, keyboard shortcut G');
+                          }
+                          if (scanAnnounceTimer) clearTimeout(scanAnnounceTimer);
+                          scanAnnounceTimer = setTimeout(function () {
+                            if (typeof announceToSR === 'function') announceToSR('Scan complete. ' + scanComparison + (scanPattern ? ' ' + scanPattern.summary : ''));
+                            scanAnnounceTimer = null;
+                          }, 700);
 
                           var beaconSignals = (typeof getBeaconSignals === 'function') ? getBeaconSignals().sort(function (a, b) { return b.signal - a.signal; }) : [];
                           if (beaconSignals.length) {
@@ -11338,14 +11540,26 @@ const d = labToolData.solarSystem || {};
                           if (scanResult) scanResult.style.opacity = '1';
 
                           markMissionStat('scanned');
+                          if (hasDistinctScanSite) {
+                            completedScanComparisons += 1;
+                            var firstCompletedComparison = !missionStats.compared;
+                            markMissionStat('compared');
+                            if (firstCompletedComparison) {
+                              addMissionEntry('\uD83D\uDD2C Comparative scan completed: ' + scanTitle);
+                              if (typeof addToast === 'function') addToast('\u2705 Mission objective complete: two environments compared', 'success');
+                            }
+                            refreshMissionPanel();
+                          }
                           recordDroneJournal('Scan', scanTitle, scanDetail, scanCer, true);
 
-                          // Auto-dismiss after 5 seconds
-                          setTimeout(function() {
+                          // Auto-dismiss after 7 seconds so students can review the evidence trail
+                          if (scanDismissTimer) clearTimeout(scanDismissTimer);
+                          scanDismissTimer = setTimeout(function() {
                             scannerOverlay.style.opacity = '0';
                             if (scanResult) scanResult.style.opacity = '0';
                             if (sweep) sweep.style.left = '0';
-                          }, 5000);
+                            scanDismissTimer = null;
+                          }, 7000);
                         }
 
                         // â"€â"€ 3rd-person camera toggle (V key) + Mission card (M key) â"€â"€
@@ -11356,7 +11570,7 @@ const d = labToolData.solarSystem || {};
                         var currentHeadingLabel = 'N';
                         var currentHeadingDeg = 0;
 
-                        canvasEl.addEventListener('keydown', function (e) {
+                        var onDroneShortcutKeydown = function (e) {
 
                           if (e.key === 'v' || e.key === 'V') {
 
@@ -11478,7 +11692,68 @@ const d = labToolData.solarSystem || {};
                             recordDroneJournal('Photo', 'Photo evidence: ' + sel.name, photoLabel + ' at heading ' + currentHeadingLabel + ' ' + Math.round(currentHeadingDeg) + '\u00B0.', buildDroneCER('photo', sel.name + ' photo', 'Image captured at ' + photoLabel + ' while facing ' + currentHeadingLabel + '.', 'A timestamped image gives students evidence they can cite later.'), true);
                           }
 
+                        };
+
+                        canvasEl.addEventListener('keydown', onDroneShortcutKeydown);
+
+
+
+                        // Compact action dock: makes the core science workflow available
+                        // to pointer and touch users while preserving every keyboard shortcut.
+                        var actionDock = document.createElement('div');
+                        actionDock.setAttribute('data-drone-action-dock', 'true');
+                        actionDock.setAttribute('role', 'group');
+                        actionDock.setAttribute('aria-label', 'Exploration vehicle actions');
+                        actionDock.style.cssText = 'position:absolute;top:62px;right:48px;z-index:14;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:min(204px,calc(100% - 64px));pointer-events:auto;font-family:system-ui';
+
+                        var droneCommandTimers = [];
+                        function dispatchDroneCommand(action) {
+                          var keyDown = new KeyboardEvent('keydown', { key: action.key, bubbles: true, cancelable: true });
+                          canvasEl.dispatchEvent(keyDown);
+                          if (typeof announceToSR === 'function') announceToSR(action.announcement);
+
+                          var timerId = setTimeout(function () {
+                            canvasEl.dispatchEvent(new KeyboardEvent('keyup', { key: action.key, bubbles: true, cancelable: true }));
+                            var timerIndex = droneCommandTimers.indexOf(timerId);
+                            if (timerIndex >= 0) droneCommandTimers.splice(timerIndex, 1);
+                          }, action.hold || 40);
+                          droneCommandTimers.push(timerId);
+                        }
+
+                        var droneActions = [
+                          { key: 'g', label: 'Scan', announcement: 'Environment scan started.' },
+                          { key: 'f', label: isFluid ? 'Sample' : 'Collect', hold: 280, announcement: 'Collection command active. Move near a specimen to collect it.' },
+                          { key: 'c', label: 'Photo', announcement: 'Photo capture requested.' },
+                          { key: 'm', label: 'Mission', announcement: 'Mission progress toggled.' },
+                          { key: 'j', label: 'Journal', announcement: 'Evidence journal toggled.' },
+                          { key: 'n', label: 'Navigate', announcement: 'Navigation challenge toggled.' }
+                        ];
+
+                        droneActions.forEach(function (action) {
+                          var button = document.createElement('button');
+                          button.type = 'button';
+                          button.setAttribute('data-drone-command', action.key);
+                          button.setAttribute('aria-keyshortcuts', action.key.toUpperCase());
+                          button.setAttribute('aria-label', action.label + ', keyboard shortcut ' + action.key.toUpperCase());
+                          button.style.cssText = 'min-height:34px;padding:6px 8px;border:1px solid rgba(148,163,184,0.45);border-radius:8px;background:rgba(2,6,23,0.84);color:#e2e8f0;font:600 11px system-ui;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;backdrop-filter:blur(6px)';
+
+                          var buttonLabel = document.createElement('span');
+                          buttonLabel.textContent = action.label;
+                          if (action.key === 'g') {
+                            scanActionButton = button;
+                            scanActionLabel = buttonLabel;
+                          }
+                          var shortcut = document.createElement('kbd');
+                          shortcut.setAttribute('aria-hidden', 'true');
+                          shortcut.textContent = action.key.toUpperCase();
+                          shortcut.style.cssText = 'min-width:18px;padding:1px 4px;border-radius:4px;background:rgba(148,163,184,0.2);color:#bae6fd;text-align:center;font:700 11px ui-monospace,monospace';
+                          button.appendChild(buttonLabel);
+                          button.appendChild(shortcut);
+                          button.addEventListener('click', function () { dispatchDroneCommand(action); });
+                          actionDock.appendChild(button);
                         });
+
+                        canvasEl.parentElement.appendChild(actionDock);
 
 
 
@@ -12582,7 +12857,11 @@ const d = labToolData.solarSystem || {};
                             var curOceanZone = oZone.name;
                             if (!oceanAtmo.zonesVisited[curOceanZone]) {
                               oceanAtmo.zonesVisited[curOceanZone] = true;
-                              if (typeof addToast === 'function' && Object.keys(oceanAtmo.zonesVisited).length > 1) addToast('\uD83C\uDF0A Entered: ' + curOceanZone, 'info');
+                              var oceanZoneCount = Object.keys(oceanAtmo.zonesVisited).length;
+                              if (typeof addToast === 'function' && oceanZoneCount > 1) addToast('\uD83C\uDF0A Entered: ' + curOceanZone, 'info');
+                              if (typeof announceToSR === 'function' && oceanZoneCount > 1) {
+                                announceToSR('Entered ' + curOceanZone + '. Pressure ' + oZone.pressure + '. Temperature ' + oZone.temp + '.');
+                              }
                             }
 
                             // Bioluminescent creatures pulse and drift
@@ -12878,12 +13157,14 @@ const d = labToolData.solarSystem || {};
                               gasAtmo.deepestY = playerPos.y;
                               gasAtmo.depthRecord = Math.abs(playerPos.y * scaleFactor);
                             }
-                            var curZoneName = gasAtmo.getZone(playerPos.y).name;
+                            var enteredGasZone = gasAtmo.getZone(playerPos.y);
+                            var curZoneName = enteredGasZone.name;
                             if (!gasAtmo.zonesVisited[curZoneName]) {
                               gasAtmo.zonesVisited[curZoneName] = true;
                               var zoneCount = Object.keys(gasAtmo.zonesVisited).length;
                               if (zoneCount >= 3) { checkChallenges(); }
                               if (addToast && zoneCount > 1) addToast('\uD83C\uDF0A Entered: ' + curZoneName, 'info');
+                              if (typeof announceToSR === 'function' && zoneCount > 1) announceToSR('Entered ' + curZoneName + '. Pressure ' + enteredGasZone.pressure + '. Temperature ' + enteredGasZone.temp + '. Wind ' + enteredGasZone.windSpeed + ' kilometers per hour.');
                             }
 
                             // Spectrometer bar chart update (every 15 frames)
@@ -13085,6 +13366,8 @@ const d = labToolData.solarSystem || {};
                             var altitude = isOcean ? (Math.abs(playerPos.y) * scaleFactor).toFixed(0) : ((playerPos.y - (isGas ? 0 : 1.6)) * scaleFactor).toFixed(0);
 
                             if (altEl) altEl.textContent = altitude + ' m';
+
+                            updateDroneScienceFocus(altitude);
 
                             if (spdEl) spdEl.textContent = lastSpeed.toFixed(1) + ' m/s';
 
@@ -13544,6 +13827,11 @@ const d = labToolData.solarSystem || {};
 
                           document.removeEventListener('mousemove', onMouseMove);
 
+                          canvasEl.removeEventListener('keydown', onDroneShortcutKeydown);
+
+                          droneCommandTimers.forEach(function (timerId) { clearTimeout(timerId); });
+                          droneCommandTimers.length = 0;
+
                           // Memory-leak fix: detach every drone listener tracked on
                           // canvasEl._droneHandlers / canvasEl._droneDocHandlers and
                           // disconnect the drone-canvas ResizeObserver, none of which
@@ -13582,6 +13870,8 @@ const d = labToolData.solarSystem || {};
 
                           if (journalPanel.parentElement) journalPanel.parentElement.removeChild(journalPanel);
 
+                          if (actionDock.parentElement) actionDock.parentElement.removeChild(actionDock);
+
                           if (discTimeout) clearTimeout(discTimeout);
 
                           if (navCard.parentElement) navCard.parentElement.removeChild(navCard);
@@ -13618,6 +13908,8 @@ const d = labToolData.solarSystem || {};
                           if (scannerOverlay && scannerOverlay.parentElement) scannerOverlay.parentElement.removeChild(scannerOverlay);
                           if (descentOverlay && descentOverlay.parentElement) descentOverlay.parentElement.removeChild(descentOverlay);
                           clearInterval(soundTimer);
+                          if (scanDismissTimer) clearTimeout(scanDismissTimer);
+                          if (scanAnnounceTimer) clearTimeout(scanAnnounceTimer);
 
                         };
 

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-a81a67ab-untitled-prs",
+  "title": "همسایۀ خوب",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ImD1bTMInr"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa81a67ab-2734-448e-8c2a-76d8a8ce4f87%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d8%ae%d9%88%d8%a8%2f12.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa81a67ab-2734-448e-8c2a-76d8a8ce4f87%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d8%ae%d9%88%d8%a8%2f2.jpg",
+      "text": "سمیرا و سُهیل بازی می کردند.\nصدای دروازه شنیده شد."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa81a67ab-2734-448e-8c2a-76d8a8ce4f87%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d8%ae%d9%88%d8%a8%2f3.jpg",
+      "text": "سُهیل دروازه را بازکرد.\nخاله طوبا بود.\nاو پریشان بود."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa81a67ab-2734-448e-8c2a-76d8a8ce4f87%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d8%ae%d9%88%d8%a8%2f4.jpg",
+      "text": "خاله طوبا داخل خانه شد.\nبه مادر سمیرا سلام داد و گفت:\nخواهرم! مهمان دارم، نان نداریم."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa81a67ab-2734-448e-8c2a-76d8a8ce4f87%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d8%ae%d9%88%d8%a8%2f5.jpg",
+      "text": "مادر سمیرا گفت:\nمن با تو کمک می کنم."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa81a67ab-2734-448e-8c2a-76d8a8ce4f87%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d8%ae%d9%88%d8%a8%2f6.jpg",
+      "text": "مادر سمیرا به خاله طوبا نان داد."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa81a67ab-2734-448e-8c2a-76d8a8ce4f87%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d8%ae%d9%88%d8%a8%2f7.jpg",
+      "text": "خاله طوبا گفت:\nتَشکُر خواهرم."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa81a67ab-2734-448e-8c2a-76d8a8ce4f87%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d8%ae%d9%88%d8%a8%2f82.jpg",
+      "text": "سمیرا و سُهیل پرسیدند:\nمادر! چرا به خاله طوبا نان دادی؟"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa81a67ab-2734-448e-8c2a-76d8a8ce4f87%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d8%ae%d9%88%d8%a8%2f92.jpg",
+      "text": "مادر به آنها گفت:\nخاله طوبا همسایۀ ما است.\nهمسایه بالای ما حق دارد.\nکمک به همسایه ثواب دارد."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 88
+  }
+}

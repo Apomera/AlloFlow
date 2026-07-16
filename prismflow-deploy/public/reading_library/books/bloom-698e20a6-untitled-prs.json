@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-698e20a6-untitled-prs",
+  "title": "منبع ویتامین ها",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/CK695r0Tmf"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f698e20a6-522e-4a7e-aa9a-04fe3e14adad%2f%d9%85%d9%86%d8%a8%d8%b9+%d9%88%db%8c%d8%aa%d8%a7%d9%85%db%8c%d9%86+%d9%87%d8%a7%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f698e20a6-522e-4a7e-aa9a-04fe3e14adad%2f%d9%85%d9%86%d8%a8%d8%b9+%d9%88%db%8c%d8%aa%d8%a7%d9%85%db%8c%d9%86+%d9%87%d8%a7%2f2+(2).jpg",
+      "text": "ما میوه های زیبا\nبا شماییم به هرجا\nسرشار از ویتامینیم\nما دوست بهـتـرینیم"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "من انار عزیزم\nخوشمزه و لذیذم\nپوست کن مرا همیشه\nبا پوست نخور نمیشه"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f698e20a6-522e-4a7e-aa9a-04fe3e14adad%2f%d9%85%d9%86%d8%a8%d8%b9+%d9%88%db%8c%d8%aa%d8%a7%d9%85%db%8c%d9%86+%d9%87%d8%a7%2f3+(2).jpg",
+      "text": "سیب سرخ و شیرینم\nاز هــمه بهـترینــم\nمـنبع ویتامـین ها\nپیدا شوم به هرجا"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "مرا بــشویید تــمیز\nتا که نشوید مریض\nسرشار از ویتامینم\nمن دوست بهترینم"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f698e20a6-522e-4a7e-aa9a-04fe3e14adad%2f%d9%85%d9%86%d8%a8%d8%b9+%d9%88%db%8c%d8%aa%d8%a7%d9%85%db%8c%d9%86+%d9%87%d8%a7%2f4.jpg",
+      "text": "من کینو استم ای دوست\nمـرا هـمیشه کن پوست\nبــخور همیشه مـرا\nدوست خوب با صفا"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "تا که شوید صحتمند\nشــاگردان تـوانمند\nقــدر مرا بـدانید\nتا صحتمند بمانید"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f698e20a6-522e-4a7e-aa9a-04fe3e14adad%2f%d9%85%d9%86%d8%a8%d8%b9+%d9%88%db%8c%d8%aa%d8%a7%d9%85%db%8c%d9%86+%d9%87%d8%a7%2f5.jpg",
+      "text": "مـن تربوز جـانانه\nدرپالیز و در خانه\nمـن میوۀ تابستان\nآبــم باشد فـراوان"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "ما میوه های زیـبا\nبا شماییم به هرجا\nقدر ما را بـدانید\nتا صحتمند بمانید"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 111
+  }
+}

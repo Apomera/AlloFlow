@@ -769,58 +769,618 @@ const ATLAS_HUBS = [
 ];
 /* ATLAS_DATA_END */
 
-// One hub: icon + name + total count, with its categories and tools. The big
-// hubs (STEM, SEL) start collapsed so the tab opens scannable, not as a wall.
-function AtlasHubCard({ hub, defaultOpen }) {
-  const catCount = hub.categories ? hub.categories.length : 0;
+// The visual layer stays hand-authored while the directory data above remains
+// generated. These short routes describe each hub without pretending every tool
+// has a strict prerequisite relationship.
+const ATLAS_HUB_VISUALS = {
+  'Documents & Literacy': { eyebrow: 'Learning-resource flow', description: 'Turn source material into clear, supported, accessible resources.', route: ['Source', 'Adapt', 'Support', 'Share'], surface: 'from-indigo-50 to-violet-50', border: 'border-indigo-200', accent: 'bg-indigo-600', text: 'text-indigo-900' },
+  'STEM Lab': { eyebrow: 'Exploration constellation', description: 'Move among mathematical, scientific, engineering, and technology experiences.', route: ['Math', 'Science', 'Engineering', 'Technology'], surface: 'from-sky-50 to-cyan-50', border: 'border-sky-200', accent: 'bg-sky-600', text: 'text-sky-900' },
+  'SEL Hub': { eyebrow: 'Growth map', description: 'Connect understanding yourself with caring for others and community.', route: ['Self', 'Regulate', 'Relate', 'Contribute'], surface: 'from-rose-50 to-orange-50', border: 'border-rose-200', accent: 'bg-rose-600', text: 'text-rose-900' },
+  'Research Hub': { eyebrow: 'Inquiry cycle', description: 'Follow an idea from a strong question to evidence-based communication.', route: ['Question', 'Investigate', 'Make sense', 'Share'], surface: 'from-amber-50 to-yellow-50', border: 'border-amber-200', accent: 'bg-amber-600', text: 'text-amber-900' },
+  'Studios & Surfaces': { eyebrow: 'Creative toolkit', description: 'Open flexible spaces for making, organizing, presenting, and reflecting.', route: ['Create', 'Organize', 'Present', 'Reflect'], surface: 'from-fuchsia-50 to-purple-50', border: 'border-fuchsia-200', accent: 'bg-fuchsia-600', text: 'text-fuchsia-900' },
+};
+
+const ATLAS_DEFAULT_VISUAL = {
+  eyebrow: 'Explore this hub',
+  description: 'Browse the connected areas and tools in this part of AlloFlow.',
+  route: ['Discover', 'Explore', 'Create', 'Share'],
+  surface: 'from-slate-50 to-indigo-50',
+  border: 'border-slate-200',
+  accent: 'bg-slate-600',
+  text: 'text-slate-900',
+};
+
+function getAtlasAreaDescription(areaName, toolCount) {
+  const area = String(areaName || '').toLowerCase();
+  const descriptions = [
+    ['core literacy', 'Read, adapt, scaffold, and publish classroom-ready material.'],
+    ['math fundamentals', 'Make number sense and foundational mathematics visible.'],
+    ['advanced math', 'Explore patterns, proofs, models, and complex mathematical systems.'],
+    ['life & earth', 'Investigate living systems, Earth, and the wider universe.'],
+    ['physics & chemistry', 'Experiment with matter, energy, forces, waves, and reactions.'],
+    ['computer science', 'Practice coding, computation, logic, and digital systems.'],
+    ['arts & music', 'Compose, perform, design, and learn through creative expression.'],
+    ['behavioral science', 'Examine behavior, cognition, learning, and human development.'],
+    ['social studies', 'Model civic, historical, geographic, and economic systems.'],
+    ['strategy games', 'Strengthen planning, reasoning, and adaptive problem solving.'],
+    ['biology & life', 'Explore organisms, anatomy, heredity, and ecosystems.'],
+    ['geography & earth', 'Study place, planetary processes, and spatial relationships.'],
+    ['sound, speech', 'Investigate sound while practicing voice, speech, and music.'],
+    ['history & engineering', 'Connect designed systems with their historical contexts.'],
+    ['ecology & migration', 'Trace organisms through habitats, food webs, and movement.'],
+    ['technology & ai', 'Work with data, simulations, media, and emerging technology.'],
+    ['self-awareness', 'Notice emotions, strengths, identity, and personal needs.'],
+    ['self-regulation', 'Build practical strategies for stress, energy, and big feelings.'],
+    ['inner work', 'Pause, reflect, and practice flexible patterns of thought.'],
+    ['care of self', 'Map support, identity, wellbeing, and lived experience.'],
+    ['self-direction', 'Turn values and strengths into goals and next steps.'],
+    ['social awareness', 'Practice perspective-taking, culture, voice, and civic care.'],
+    ['relationship skills', 'Develop communication, collaboration, repair, and belonging.'],
+    ['responsible decision', 'Weigh choices, boundaries, safety, and ethical consequences.'],
+    ['stewardship', 'Connect care for place with hopeful community action.'],
+    ['inquiry lanes', 'Choose a research pathway shaped for the question and discipline.'],
+    ['open from anywhere', 'Launch flexible studios and supports from across the app.'],
+  ];
+  const match = descriptions.find(([keyword]) => area.includes(keyword));
+  return match ? match[1] : 'Explore ' + toolCount + ' tools and learning experiences in this area.';
+}
+
+function getAtlasAreaLens(areaName) {
+  const area = String(areaName || '').toLowerCase();
+  const lenses = [
+    ['core literacy', ['Read', 'Understand', 'Adapt', 'Publish']],
+    ['math fundamentals', ['Model', 'Practice', 'Explain', 'Apply']],
+    ['advanced math', ['Explore', 'Prove', 'Visualize', 'Generalize']],
+    ['life & earth', ['Observe', 'Model', 'Connect', 'Explain']],
+    ['physics & chemistry', ['Predict', 'Experiment', 'Measure', 'Explain']],
+    ['computer science', ['Design', 'Code', 'Test', 'Debug']],
+    ['arts & music', ['Imagine', 'Compose', 'Perform', 'Reflect']],
+    ['behavioral science', ['Observe', 'Interpret', 'Connect', 'Apply']],
+    ['social studies', ['Context', 'Perspective', 'Systems', 'Action']],
+    ['strategy games', ['Plan', 'Test', 'Adapt', 'Reflect']],
+    ['biology & life', ['Structure', 'Function', 'Change', 'Interdependence']],
+    ['geography & earth', ['Place', 'Pattern', 'Process', 'Connection']],
+    ['sound, speech', ['Listen', 'Model', 'Practice', 'Perform']],
+    ['history & engineering', ['Context', 'Design', 'Build', 'Evaluate']],
+    ['ecology & migration', ['Habitat', 'Movement', 'Systems', 'Stewardship']],
+    ['technology & ai', ['Data', 'Model', 'Make', 'Evaluate']],
+    ['self-awareness', ['Notice', 'Name', 'Understand', 'Advocate']],
+    ['self-regulation', ['Notice', 'Choose', 'Practice', 'Recover']],
+    ['inner work', ['Pause', 'Reframe', 'Practice', 'Reflect']],
+    ['care of self', ['Listen', 'Map', 'Support', 'Sustain']],
+    ['self-direction', ['Values', 'Goals', 'Plan', 'Act']],
+    ['social awareness', ['Notice', 'Perspective', 'Culture', 'Care']],
+    ['relationship skills', ['Listen', 'Communicate', 'Repair', 'Belong']],
+    ['responsible decision', ['Pause', 'Weigh', 'Choose', 'Reflect']],
+    ['stewardship', ['Place', 'Care', 'Collaborate', 'Act']],
+    ['inquiry lanes', ['Question', 'Gather', 'Analyze', 'Share']],
+    ['open from anywhere', ['Create', 'Organize', 'Present', 'Reflect']],
+  ];
+  const match = lenses.find(([keyword]) => area.includes(keyword));
+  return match ? match[1] : ['Discover', 'Explore', 'Create', 'Share'];
+}
+
+function atlasHubId(hubName) {
+  return 'atlas-hub-' + String(hubName || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+function AtlasHubRoute({ hub, visual }) {
   return (
-    <details open={defaultOpen} className="bg-white rounded-xl border border-slate-200 shadow-sm group">
-      <summary className="cursor-pointer select-none p-4 flex items-center gap-2 hover:bg-slate-50 rounded-xl">
-        <span className="text-xl leading-none" aria-hidden="true">{hub.icon}</span>
-        <span className="font-bold text-slate-800 text-sm flex-1">{hub.hub}</span>
-        <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-nowrap">
-          {hub.total}{catCount > 1 ? ` · ${catCount} areas` : ''}
-        </span>
-        <span aria-hidden="true" className="text-slate-400 group-open:rotate-90 transition-transform text-xs">▸</span>
-      </summary>
-      <div className="px-4 pb-4 pt-0 space-y-3">
-        {(hub.categories || []).map((cat) => (
-          <div key={cat.name}>
-            <h6 className="font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-1.5">{cat.name} <span className="text-slate-400">· {cat.tools.length}</span></h6>
-            <div className="flex flex-wrap gap-1.5">
-              {cat.tools.map((tool, i) => (
-                <span key={tool + i} className="text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
-                  {tool}
-                </span>
-              ))}
-            </div>
-          </div>
+    <div className={'rounded-xl border ' + visual.border + ' bg-gradient-to-r ' + visual.surface + ' p-3'}>
+      <div className="flex flex-wrap items-baseline justify-between gap-1 mb-2">
+        <p className={'text-[10px] font-black uppercase tracking-widest ' + visual.text}>{visual.eyebrow}</p>
+        <p className="text-[10px] text-slate-500">A guide, not a required sequence</p>
+      </div>
+      <p className="sr-only">{hub.hub} overview: {visual.route.join(', ')}.</p>
+      <div aria-hidden="true" className="flex items-center gap-1.5">
+        {visual.route.map((step, index) => (
+          <React.Fragment key={step}>
+            {index > 0 && <span className="h-px min-w-2 flex-1 bg-slate-300" />}
+            <span className="min-w-0 flex-1 rounded-lg border border-white/90 bg-white/80 px-2 py-1.5 text-center text-[10px] font-bold text-slate-700 shadow-sm">
+              {step}
+            </span>
+          </React.Fragment>
         ))}
+      </div>
+    </div>
+  );
+}
+
+
+// Search is intentionally derived from the generated catalog so new tools become
+// discoverable without maintaining a second index.
+function filterAtlasHubs(query) {
+  const normalized = String(query || '').trim().toLowerCase();
+  if (!normalized) return ATLAS_HUBS;
+
+  return ATLAS_HUBS.map((hub) => {
+    const hubMatches = hub.hub.toLowerCase().includes(normalized);
+    const categories = (hub.categories || []).map((cat, atlasIndex) => {
+      const originalTools = cat.tools || [];
+      const areaText = cat.name + ' ' + getAtlasAreaDescription(cat.name, originalTools.length);
+      const areaMatches = areaText.toLowerCase().includes(normalized);
+      const tools = hubMatches || areaMatches
+        ? originalTools
+        : originalTools.filter((tool) => tool.toLowerCase().includes(normalized));
+      if (!tools.length) return null;
+      return { ...cat, tools, atlasIndex, originalTotal: originalTools.length };
+    }).filter(Boolean);
+
+    if (!categories.length) return null;
+    return {
+      ...hub,
+      categories,
+      total: categories.reduce((sum, cat) => sum + cat.tools.length, 0),
+      originalTotal: hub.total,
+    };
+  }).filter(Boolean);
+}
+
+function AtlasHighlight({ text, query }) {
+  const value = String(text || '');
+  const needle = String(query || '').trim().toLowerCase();
+  const matchIndex = needle ? value.toLowerCase().indexOf(needle) : -1;
+  if (matchIndex < 0) return value;
+  return (
+    <>
+      {value.slice(0, matchIndex)}
+      <mark className="rounded-sm bg-amber-200 px-0.5 text-inherit">{value.slice(matchIndex, matchIndex + needle.length)}</mark>
+      {value.slice(matchIndex + needle.length)}
+    </>
+  );
+}
+
+function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
+  const sampleTools = cat.tools.slice(0, 3);
+  const originalTotal = cat.originalTotal || cat.tools.length;
+  const countText = originalTotal > cat.tools.length
+    ? cat.tools.length + ' of ' + originalTotal
+    : String(cat.tools.length);
+  const areaDescription = getAtlasAreaDescription(cat.name, originalTotal);
+  const areaLens = getAtlasAreaLens(cat.name);
+
+  return (
+    <details open={forceOpen || undefined} className="rounded-xl border border-slate-200 bg-slate-50/70 shadow-sm">
+      <summary className="min-h-11 cursor-pointer p-3 hover:bg-white/70 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
+        <span className="flex items-start gap-2.5">
+          <span aria-hidden="true" className={'w-7 h-7 shrink-0 rounded-lg ' + visual.accent + ' text-white flex items-center justify-center text-[11px] font-black shadow-sm'}>
+            {index + 1}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="font-bold text-xs leading-tight text-slate-800 block"><AtlasHighlight text={cat.name} query={query} /></span>
+            <span className="text-[10px] leading-relaxed text-slate-500 block mt-0.5"><AtlasHighlight text={areaDescription} query={query} /></span>
+            <span className="block mt-2">
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-1">Area focus</span>
+              <span role="list" aria-label={cat.name + ' focus'} className="flex flex-wrap gap-1">
+                {areaLens.map((focus) => (
+                  <span role="listitem" key={focus} className={'inline-flex items-center gap-1 rounded-full border ' + visual.border + ' bg-white px-1.5 py-0.5 text-[9px] font-bold text-slate-600'}>
+                    <span aria-hidden="true" className={'w-1.5 h-1.5 rounded-full ' + visual.accent} />
+                    {focus}
+                  </span>
+                ))}
+              </span>
+            </span>
+            <span className="text-[9px] leading-relaxed text-slate-500 block mt-1.5">
+              <span className="font-black uppercase tracking-wider text-slate-400">Examples: </span>
+              {sampleTools.join(' / ')}
+            </span>
+          </span>
+          <span className="shrink-0 text-[10px] font-bold text-slate-500 bg-white border border-slate-200 rounded-full px-1.5 py-0.5">
+            {countText}
+          </span>
+        </span>
+      </summary>
+      <div className="px-3 pb-3 pt-1 border-t border-slate-200/80">
+        <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-2">Tools in this area</p>
+        <div role="list" className="flex flex-wrap gap-1.5" aria-label={cat.name + ' tools'}>
+          {cat.tools.map((tool, i) => (
+            <span role="listitem" key={tool + i} className="text-[10px] font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2 py-0.5">
+              <AtlasHighlight text={tool} query={query} />
+            </span>
+          ))}
+        </div>
       </div>
     </details>
   );
 }
 
-// The Atlas tab: a browsable directory of the whole app, by domain.
+// One hub: its semantic route followed by richer area cards and the complete
+// generated tool directory. Large hubs remain collapsed until requested.
+function AtlasHubCard({ hub, isOpen, onToggle, cardRef, isFiltered, query }) {
+  const catCount = hub.categories ? hub.categories.length : 0;
+  const visual = ATLAS_HUB_VISUALS[hub.hub] || ATLAS_DEFAULT_VISUAL;
+  const resultLabel = hub.total + (hub.total === 1 ? ' match' : ' matches');
+  return (
+    <details
+      id={atlasHubId(hub.hub)}
+      ref={cardRef}
+      open={isOpen}
+      onToggle={(event) => onToggle(hub.hub, event.currentTarget.open)}
+      className={'scroll-mt-4 bg-white rounded-xl border ' + visual.border + ' shadow-sm group'}
+    >
+      <summary className="min-h-11 cursor-pointer select-none p-4 flex items-center gap-2 hover:bg-slate-50 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
+        <span className={'w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br ' + visual.surface + ' border ' + visual.border + ' flex items-center justify-center text-xl leading-none'} aria-hidden="true">{hub.icon}</span>
+        <span className="min-w-0 flex-1">
+          <span className="font-bold text-slate-800 text-sm block"><AtlasHighlight text={hub.hub} query={query} /></span>
+          <span className="text-[11px] text-slate-500 font-normal leading-snug block mt-0.5"><AtlasHighlight text={visual.description} query={query} /></span>
+        </span>
+        <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-nowrap">
+          {isFiltered ? resultLabel : hub.total + (catCount > 1 ? ' / ' + catCount + ' areas' : '')}
+        </span>
+        <span aria-hidden="true" className="text-slate-400 group-open:rotate-90 transition-transform text-xs">&gt;</span>
+      </summary>
+      <div className="px-4 pb-4 pt-0 space-y-4">
+        <AtlasHubRoute hub={hub} visual={visual} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {(hub.categories || []).map((cat, index) => {
+            const areaIndex = Number.isInteger(cat.atlasIndex) ? cat.atlasIndex : index;
+            return (
+              <AtlasAreaCard
+                key={hub.hub + '-' + cat.name + '-' + areaIndex}
+                cat={cat}
+                index={areaIndex}
+                visual={visual}
+                forceOpen={isFiltered}
+                query={query}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </details>
+  );
+}
+
+function AtlasLandscape({ hubs, onChooseHub }) {
+  return (
+    <section aria-labelledby="atlas-landscape-title" className="relative overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-4">
+      <div className="relative z-10 text-center">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Whole-app overview</p>
+        <h5 id="atlas-landscape-title" className="text-sm font-black text-slate-900 mt-0.5">Choose a region of AlloFlow</h5>
+        <p className="text-[11px] text-slate-500 mt-1">Each region opens into areas, then the complete tool directory.</p>
+        <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 text-white px-3 py-1.5 mt-3 shadow-sm">
+          <span aria-hidden="true">+</span>
+          <span className="text-xs font-black tracking-wide">AlloFlow</span>
+        </div>
+      </div>
+
+      <svg aria-hidden="true" focusable="false" className="hidden sm:block absolute inset-x-4 top-20 w-[calc(100%-2rem)] h-[calc(100%-5.5rem)] text-indigo-200" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="M50 0 L25 30 M50 0 L75 30 M50 0 L25 70 M50 0 L75 70 M50 0 L50 96" fill="none" stroke="currentColor" strokeWidth="0.7" strokeDasharray="2 2" />
+      </svg>
+
+      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4">
+        {hubs.map((hub, index) => {
+          const visual = ATLAS_HUB_VISUALS[hub.hub] || ATLAS_DEFAULT_VISUAL;
+          const catCount = (hub.categories || []).length;
+          const isLastOdd = index === hubs.length - 1 && hubs.length % 2 === 1;
+          return (
+            <button
+              key={hub.hub}
+              type="button"
+              aria-controls={atlasHubId(hub.hub)}
+              aria-label={hub.hub + ': ' + hub.total + ' tools across ' + catCount + ' ' + (catCount === 1 ? 'area' : 'areas') + '. Open directory.'}
+              onClick={() => onChooseHub(hub.hub)}
+              className={'min-h-11 text-left rounded-xl border ' + visual.border + ' bg-gradient-to-br ' + visual.surface + ' p-3 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + (isLastOdd ? 'sm:col-span-2 sm:w-[calc(50%-0.3125rem)] sm:justify-self-center' : '')}
+            >
+              <span className="flex items-start gap-2.5">
+                <span className="text-xl leading-none" aria-hidden="true">{hub.icon}</span>
+                <span className="min-w-0 flex-1">
+                  <span className={'block text-xs font-black ' + visual.text}>{hub.hub}</span>
+                  <span className="block text-[10px] leading-snug text-slate-600 mt-0.5">{visual.eyebrow}</span>
+                </span>
+                <span className="shrink-0 text-[10px] font-black text-slate-600 bg-white/80 rounded-full px-1.5 py-0.5 border border-white">{hub.total}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+const ATLAS_JOURNEYS = [
+  {
+    title: 'Build an accessible resource',
+    description: 'Shape the content, then move into a flexible studio to organize and publish it.',
+    stops: ['Documents & Literacy', 'Studios & Surfaces'],
+  },
+  {
+    title: 'Investigate a phenomenon',
+    description: 'Frame the inquiry, explore a model or simulation, then communicate what you found.',
+    stops: ['Research Hub', 'STEM Lab', 'Studios & Surfaces'],
+  },
+  {
+    title: 'Support the whole learner',
+    description: 'Connect wellbeing and self-direction with accessible learning materials and creative expression.',
+    stops: ['SEL Hub', 'Documents & Literacy', 'Studios & Surfaces'],
+  },
+];
+
+function AtlasJourneys({ onChooseHub }) {
+  return (
+    <section aria-labelledby="atlas-journeys-title" className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Cross-hub connections</p>
+          <h5 id="atlas-journeys-title" className="text-sm font-black text-slate-900 mt-0.5">Common routes through AlloFlow</h5>
+        </div>
+        <p className="text-[10px] text-slate-500">Examples only - mix and match freely.</p>
+      </div>
+      <div className="grid grid-cols-1 gap-2.5">
+        {ATLAS_JOURNEYS.map((journey) => (
+          <article key={journey.title} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <h6 className="text-xs font-black text-slate-800">{journey.title}</h6>
+            <p className="text-[10px] leading-relaxed text-slate-500 mt-0.5">{journey.description}</p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 mt-2.5" aria-label={journey.title + ' route'}>
+              {journey.stops.map((stop, index) => {
+                const visual = ATLAS_HUB_VISUALS[stop] || ATLAS_DEFAULT_VISUAL;
+                return (
+                  <React.Fragment key={stop}>
+                    {index > 0 && (
+                      <span aria-hidden="true" className="shrink-0 text-center font-bold text-slate-300">
+                        <span className="hidden sm:inline">&rarr;</span>
+                        <span className="sm:hidden">&darr;</span>
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onChooseHub(stop)}
+                      className={'min-h-11 flex-1 rounded-lg border ' + visual.border + ' bg-gradient-to-r ' + visual.surface + ' px-3 py-2 text-[10px] font-black ' + visual.text + ' hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2'}
+                    >
+                      {stop}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// The Atlas tab combines a compact visual landscape with the canonical,
+// generated directory. The map never becomes the only way to reach content.
 function AtlasTab({ t }) {
+  const firstHub = ATLAS_HUBS[0]?.hub;
+  const [openHubs, setOpenHubs] = React.useState(() => new Set(firstHub ? [firstHub] : []));
+  const [atlasQuery, setAtlasQuery] = React.useState('');
+  const [atlasView, setAtlasView] = React.useState('overview');
+  const hubRefs = React.useRef({});
+  const normalizedQuery = atlasQuery.trim();
+  const isSearching = normalizedQuery.length > 0;
+  const visibleHubs = React.useMemo(() => filterAtlasHubs(normalizedQuery), [normalizedQuery]);
+  const totalTools = React.useMemo(() => ATLAS_HUBS.reduce((sum, hub) => sum + hub.total, 0), []);
+  const totalAreas = React.useMemo(() => ATLAS_HUBS.reduce((sum, hub) => sum + (hub.categories || []).length, 0), []);
+  const resultStats = React.useMemo(() => ({
+    tools: visibleHubs.reduce((sum, hub) => sum + hub.total, 0),
+    areas: visibleHubs.reduce((sum, hub) => sum + (hub.categories || []).length, 0),
+  }), [visibleHubs]);
+
+  React.useEffect(() => {
+    if (!isSearching || !visibleHubs.length) return;
+    setOpenHubs((current) => {
+      const next = new Set(current);
+      let changed = false;
+      visibleHubs.forEach((hub) => {
+        if (!next.has(hub.hub)) {
+          next.add(hub.hub);
+          changed = true;
+        }
+      });
+      return changed ? next : current;
+    });
+  }, [isSearching, visibleHubs]);
+
+  const handleHubToggle = (hubName, isOpen) => {
+    setOpenHubs((current) => {
+      if (current.has(hubName) === isOpen) return current;
+      const next = new Set(current);
+      if (isOpen) next.add(hubName);
+      else next.delete(hubName);
+      return next;
+    });
+  };
+
+  const chooseHub = (hubName) => {
+    setAtlasView('directory');
+    setAtlasQuery('');
+    setOpenHubs((current) => {
+      if (current.has(hubName)) return current;
+      const next = new Set(current);
+      next.add(hubName);
+      return next;
+    });
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const target = hubRefs.current[hubName];
+        if (!target) return;
+        const motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+        target.scrollIntoView?.({ behavior: motionQuery?.matches ? 'auto' : 'smooth', block: 'start' });
+        target.querySelector('summary')?.focus();
+      });
+    });
+  };
+
+  const openDirectory = () => {
+    setAtlasView('directory');
+    window.requestAnimationFrame(() => {
+      document.getElementById('atlas-search-input')?.focus();
+    });
+  };
+
+  const clearSearch = () => setAtlasQuery('');
+
+  const expandVisibleHubs = () => {
+    setOpenHubs((current) => {
+      const next = new Set(current);
+      visibleHubs.forEach((hub) => next.add(hub.hub));
+      return next;
+    });
+  };
+
+  const collapseVisibleHubs = () => {
+    setOpenHubs((current) => {
+      const next = new Set(current);
+      visibleHubs.forEach((hub) => next.delete(hub.hub));
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-5 text-slate-700">
       <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
         <h4 className="font-bold text-indigo-900 mb-1 flex items-center gap-2">
-          <span aria-hidden="true">🗺️</span>
+          <span aria-hidden="true">&#x1F5FA;&#xFE0F;</span>
           {t('about.atlas_title') || 'The AlloFlow Atlas'}
         </h4>
         <p className="text-sm leading-relaxed text-slate-700">
-          {t('about.atlas_intro') || 'A map of everything inside AlloFlow, by hub. Expand any hub to see its full set of tools — open the tool menu or a hub to launch them. This page is here to help you see the whole landscape at a glance.'}
+          {t('about.atlas_intro') || 'A map of everything inside AlloFlow, by hub. Choose a region for its visual guide, areas, and complete tool directory.'}
         </p>
       </div>
-      <div className="space-y-2.5">
-        {ATLAS_HUBS.map((hub, idx) => (
-          <AtlasHubCard key={hub.hub} hub={hub} defaultOpen={idx < 1} />
-        ))}
+
+      <div role="group" aria-label="Atlas view" className="grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-100 p-1">
+        <button
+          type="button"
+          aria-pressed={atlasView === 'overview'}
+          onClick={() => setAtlasView('overview')}
+          className={'min-h-11 rounded-lg px-3 py-2 text-xs font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (atlasView === 'overview' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900')}
+        >
+          Visual overview
+        </button>
+        <button
+          type="button"
+          aria-pressed={atlasView === 'directory'}
+          onClick={() => setAtlasView('directory')}
+          className={'min-h-11 rounded-lg px-3 py-2 text-xs font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (atlasView === 'directory' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900')}
+        >
+          Search directory
+        </button>
       </div>
+
+      {atlasView === 'overview' ? (
+        <>
+          <AtlasLandscape hubs={ATLAS_HUBS} onChooseHub={chooseHub} />
+          <AtlasJourneys onChooseHub={chooseHub} />
+          <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 text-center">
+            <p className="text-xs text-slate-600">Ready to find a specific area or tool?</p>
+            <button
+              type="button"
+              onClick={openDirectory}
+              className="min-h-11 mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-black text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+            >
+              Browse and search the directory
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <section aria-labelledby="atlas-search-label" className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="flex flex-wrap items-end justify-between gap-2 mb-2">
+              <div>
+                <label id="atlas-search-label" htmlFor="atlas-search-input" className="block text-xs font-black text-slate-800">Find a tool or area</label>
+                <p className="text-[10px] text-slate-500 mt-0.5">Search hub names, area purposes, or individual tools.</p>
+              </div>
+              <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">
+                {totalTools} tools / {totalAreas} areas
+              </span>
+            </div>
+            <div className="relative">
+              <span aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">&#x1F50E;</span>
+              <input
+                id="atlas-search-input"
+                type="search"
+                value={atlasQuery}
+                onChange={(event) => setAtlasQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape' && atlasQuery) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    clearSearch();
+                  }
+                }}
+                aria-describedby="atlas-search-status"
+                placeholder="Try 'fractions', 'self-regulation', or 'research'..."
+                className="w-full min-h-11 appearance-none rounded-lg border border-slate-300 bg-slate-50 pl-9 pr-12 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:border-indigo-600"
+              />
+              {atlasQuery && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  aria-label="Clear Atlas search"
+                  className="absolute right-0 top-0 min-h-11 min-w-11 flex items-center justify-center rounded-r-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              )}
+            </div>
+            <p id="atlas-search-status" role="status" aria-live="polite" className="text-[10px] text-slate-500 mt-2">
+              {isSearching
+                ? (resultStats.tools
+                  ? resultStats.tools + (resultStats.tools === 1 ? ' matching tool' : ' matching tools') + ' across ' + resultStats.areas + (resultStats.areas === 1 ? ' area.' : ' areas.')
+                  : 'No Atlas matches found.')
+                : 'Browse the full directory or search to narrow it.'}
+            </p>
+          </section>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+            <h5 id="atlas-directory-title" className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Complete directory</h5>
+            <div role="group" aria-label="Atlas hub visibility" className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={expandVisibleHubs}
+                aria-controls="atlas-directory-hubs"
+                className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+              >
+                Expand hubs
+              </button>
+              <button
+                type="button"
+                onClick={collapseVisibleHubs}
+                aria-controls="atlas-directory-hubs"
+                className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+              >
+                Collapse hubs
+              </button>
+            </div>
+          </div>
+
+          <section id="atlas-directory-hubs" aria-labelledby="atlas-directory-title">
+            {visibleHubs.length ? (
+              <div className="space-y-2.5">
+                {visibleHubs.map((hub) => (
+                  <AtlasHubCard
+                    key={hub.hub}
+                    hub={hub}
+                    isOpen={openHubs.has(hub.hub)}
+                    onToggle={handleHubToggle}
+                    cardRef={(node) => { hubRefs.current[hub.hub] = node; }}
+                    isFiltered={isSearching}
+                    query={normalizedQuery}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                <span aria-hidden="true" className="text-2xl">&#x1F9ED;</span>
+                <h6 className="font-bold text-sm text-slate-800 mt-2">No matching region</h6>
+                <p className="text-xs text-slate-500 mt-1">Try a broader subject, purpose, or tool name.</p>
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="min-h-11 mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                >
+                  Clear search
+                </button>
+              </div>
+            )}
+          </section>
+        </>
+      )}
+
       <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
-        {t('about.atlas_footer') || 'This directory is generated from AlloFlow’s live tool catalogs, so counts and names stay current. New tools appear here automatically as they ship.'}
+        {t('about.atlas_footer') || 'This directory is generated from AlloFlow\'s live tool catalogs, so counts and names stay current. New tools appear here automatically as they ship.'}
       </p>
     </div>
   );
@@ -1014,10 +1574,35 @@ function InfoModal({
 
   const [activeVideo, setActiveVideo] = React.useState('teacher');
   const [selectedFeature, setSelectedFeature] = React.useState(null);
+  const featureBackRef = React.useRef(null);
+  const featureReturnFocusRef = React.useRef(null);
+  const featureDetailsWereOpenRef = React.useRef(false);
 
   React.useEffect(() => {
     setSelectedFeature(null);
   }, [infoModalTab]);
+
+  const openFeatureDetails = (feature, categoryName, trigger) => {
+    featureReturnFocusRef.current = trigger;
+    setSelectedFeature({ ...feature, categoryName });
+  };
+
+  const closeFeatureDetails = () => setSelectedFeature(null);
+
+  React.useEffect(() => {
+    if (selectedFeature) {
+      featureDetailsWereOpenRef.current = true;
+      const frame = window.requestAnimationFrame(() => featureBackRef.current?.focus());
+      return () => window.cancelAnimationFrame(frame);
+    }
+    if (!featureDetailsWereOpenRef.current) return undefined;
+    featureDetailsWereOpenRef.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      const trigger = featureReturnFocusRef.current;
+      if (trigger?.isConnected && typeof trigger.focus === 'function') trigger.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [selectedFeature]);
 
   const dialogRef = React.useRef(null);
   React.useEffect(() => {
@@ -1322,10 +1907,12 @@ function InfoModal({
             <div className="space-y-6 animate-in fade-in slide-in-from-left duration-200 text-slate-700">
               {/* Back Button */}
               <button
-                onClick={() => setSelectedFeature(null)}
-                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded p-1 cursor-pointer"
+                ref={featureBackRef}
+                type="button"
+                onClick={closeFeatureDetails}
+                className="min-h-11 flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 rounded px-3 py-2 cursor-pointer"
               >
-                <ArrowLeft size={16}/> Back to Feature Guide
+                <ArrowLeft size={16} aria-hidden="true"/> Back to Feature Guide
               </button>
 
               {/* Header Info */}
@@ -1467,19 +2054,17 @@ function InfoModal({
                         }[feature.icon] || Sparkles;
                         const colorClass = colorMap[feature.color || 'slate'];
                         return (
-                          <div
+                          <button
+                            type="button"
                             key={idx}
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => setSelectedFeature({ ...feature, categoryName: categoryTitle })}
-                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedFeature({ ...feature, categoryName: categoryTitle }); } }}
-                            className={`p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 ${colorClass}`}
+                            onClick={(event) => openFeatureDetails(feature, categoryTitle, event.currentTarget)}
+                            className={`w-full min-h-11 p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${colorClass}`}
                           >
-                            <h5 className="font-bold flex items-center gap-2 mb-1 text-sm">
-                              <IconComponent size={16}/> {feature.title}
-                            </h5>
-                            <p className="text-xs opacity-90 leading-snug">{feature.desc}</p>
-                          </div>
+                            <span className="font-bold flex items-center gap-2 mb-1 text-sm">
+                              <IconComponent size={16} aria-hidden="true"/> {feature.title}
+                            </span>
+                            <span className="block text-xs opacity-90 leading-snug">{feature.desc}</span>
+                          </button>
                         );
                       })}
                     </div>

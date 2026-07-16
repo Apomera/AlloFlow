@@ -1,6 +1,6 @@
-# Lumen — Reactive Research Canvas
+# Lumen — Evidence Workspace and Reactive Research Canvas
 
-> Educator / clinician / researcher instrument · `registerTool` id `lumen` · `category: 'data'` · a CDN module that **extends** `stem_lab/stem_tool_dataplot.js`, not a third chart engine · design draft 2026-06-02 · **NOT built** · house style: adversarially honest, critic findings folded directly into the design (per `arc_city_design.md`).
+> Implemented and expanding · `registerTool` id `lumen` · Study Sources + Analyze Data modes · quantitative design below remains the honesty contract for Data mode · source-study architecture: `docs/lumen_evidence_workspace.md`.
 
 ## Executive Summary
 

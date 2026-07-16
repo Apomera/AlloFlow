@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-619c6bf0-21-miv-thiab-dev-thiab-cov-hnub-qub",
+  "title": "21 - miv thiab dev thiab cov hnub qub",
+  "description": "A Hmong picture book from Bloom Library.",
+  "language": "Hmong",
+  "langCode": "mww",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "SIL-PNG Education for Life"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL-PNG Education for Life",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/9GBLoxBk95"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f619c6bf0-c93a-4ab1-b0d4-0beb6351d8a1%2f21+-+Cat+and+Dog+and+the+Stars%2fcoverImagecurved.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"21 - miv thiab dev thiab cov hnub qub\" (Hmong). A Hmong picture book from Bloom Library."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 71
+  }
+}

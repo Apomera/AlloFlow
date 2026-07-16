@@ -93,9 +93,15 @@ function TimelineView(props) {
   var ErrorBoundary = props.ErrorBoundary;
   var TimelineGame = props.TimelineGame;
   var playSound = props.playSound;
+  var reducedMotion = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, isRevisingTimeline ? t('timeline.revising') : isAutoFixingTimeline ? t('timeline.validation.fixing') || 'Fixing timeline' : isVerifyingTimeline ? t('timeline.validation.verifying') || 'Verifying timeline accuracy' : Object.values(isGeneratingTimelineImage || {}).some(Boolean) ? t('timeline.visuals.generating') || 'Generating timeline image' : ''), /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-indigo-800"
@@ -149,7 +155,8 @@ function TimelineView(props) {
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
   }, isRevisingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
     size: 14,
-    className: "animate-spin"
+    className: reducedMotion ? '' : 'animate-spin',
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 14
   }), isRevisingTimeline ? t('timeline.revising') : t('timeline.revise_button'))), isTeacherMode && !Array.isArray(generatedContent?.data) && Array.isArray(generatedContent?.data?.validationIssues) && generatedContent.data.validationIssues.length > 0 && /*#__PURE__*/React.createElement("details", {
@@ -172,7 +179,8 @@ function TimelineView(props) {
     "aria-busy": isAutoFixingTimeline
   }, isAutoFixingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
     size: 12,
-    className: "animate-spin"
+    className: reducedMotion ? '' : 'animate-spin',
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 12
   }), isAutoFixingTimeline ? t('timeline.validation.fixing') || 'Fixing…' : t('timeline.validation.auto_fix') || 'Auto-fix')), /*#__PURE__*/React.createElement("ul", {
@@ -189,7 +197,8 @@ function TimelineView(props) {
     title: t('timeline.validation.verify_tooltip') || 'Run AI accuracy check on each item'
   }, isVerifyingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
     size: 14,
-    className: "animate-spin"
+    className: reducedMotion ? '' : 'animate-spin',
+    "aria-hidden": "true"
   }) : '🔍', isVerifyingTimeline ? t('timeline.validation.verifying') || 'Verifying…' : t('timeline.validation.verify') || 'Verify accuracy')), /*#__PURE__*/React.createElement("div", {
     className: "relative pl-12 sm:pl-16 border-l-2 border-indigo-200 space-y-8 my-8"
   }, /*#__PURE__*/React.createElement("div", {
@@ -220,13 +229,26 @@ function TimelineView(props) {
     key: idx,
     "data-timeline-row": true,
     draggable: true,
+    "data-keyboard-alternative": "move-buttons",
     role: "group",
     "aria-label": t('timeline.item_position_aria', {
       position: idx + 1,
       total: (Array.isArray(generatedContent?.data) ? generatedContent.data : generatedContent?.data?.items || []).length
     }) || `Timeline item ${idx + 1}`,
     "aria-describedby": "timeline-reorder-instructions",
+    tabIndex: 0,
+    "aria-keyshortcuts": "Alt+ArrowUp Alt+ArrowDown",
     onDragStart: e => handleTimelineDragStart(e, idx),
+    onKeyDown: e => {
+      if (!e.altKey) return;
+      if (e.key === 'ArrowUp' && idx > 0) {
+        e.preventDefault();
+        handleTimelineMove(idx, idx - 1);
+      } else if (e.key === 'ArrowDown' && idx < (Array.isArray(generatedContent?.data) ? generatedContent.data : generatedContent?.data?.items || []).length - 1) {
+        e.preventDefault();
+        handleTimelineMove(idx, idx + 1);
+      }
+    },
     onDragOver: e => handleTimelineDragOver(e, idx),
     onDragEnd: handleTimelineDragEnd,
     className: `relative flex items-start gap-2 p-3 rounded-xl border-2 transition-all ${draggedTimelineIndex === idx ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50' : 'bg-white border-slate-200 shadow-sm'}`
@@ -306,11 +328,12 @@ function TimelineView(props) {
     title: t('common.regenerate') || 'Regenerate'
   }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: reducedMotion ? '' : 'animate-spin',
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14
   })), isEditingTimeline && /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-full mt-1 left-0 w-44 bg-white border border-slate-400 rounded shadow-lg p-1.5 z-10 animate-in slide-in-from-top-2"
+    className: "absolute top-full mt-1 left-0 w-44 bg-white border border-slate-400 rounded shadow-lg p-1.5 z-10 motion-safe:animate-in motion-safe:slide-in-from-top-2"
   }, /*#__PURE__*/React.createElement("button", {
     "aria-label": t('timeline.visuals.remove_text_btn') || 'Remove text from image',
     onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
@@ -319,12 +342,14 @@ function TimelineView(props) {
     title: t('timeline.visuals.remove_text_tooltip') || 'Remove text/labels from this image'
   }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 10,
-    className: "animate-spin"
+    className: reducedMotion ? '' : 'animate-spin',
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Ban, {
     size: 10
   }), " ", t('timeline.visuals.remove_text_btn') || 'Remove Text'), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1"
   }, /*#__PURE__*/React.createElement("input", {
+    "aria-label": t('timeline.visuals.refine_placeholder') || 'Describe image changes',
     type: "text",
     value: timelineRefinementInputs[idx] || '',
     onChange: e => setTimelineRefinementInputs(prev => ({
@@ -345,7 +370,8 @@ function TimelineView(props) {
     "aria-label": t('common.apply_edit') || 'Apply edit'
   }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 10,
-    className: "animate-spin"
+    className: reducedMotion ? '' : 'animate-spin',
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Send, {
     size: 10
   }))))) : /*#__PURE__*/React.createElement("button", {
@@ -357,7 +383,8 @@ function TimelineView(props) {
     title: t('timeline.visuals.regen_button_aria') || 'Generate image'
   }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: reducedMotion ? '' : 'animate-spin',
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(ImageIcon, {
     size: 14
   }))), /*#__PURE__*/React.createElement("button", {
@@ -375,7 +402,7 @@ function TimelineView(props) {
     size: 16
   }), " ", t('timeline.add_step'))) : isTeacherMode || isIndependentMode ? (Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => /*#__PURE__*/React.createElement("div", {
     key: idx,
-    className: "relative animate-in slide-in-from-bottom-2 duration-300",
+    className: "relative motion-safe:animate-in motion-safe:slide-in-from-bottom-2 duration-300",
     style: {
       animationDelay: `${idx * 100}ms`
     }
@@ -448,7 +475,7 @@ function TimelineView(props) {
   }), " ", t('timeline.validation.verified') || 'Verified')))))) : /*#__PURE__*/React.createElement("div", {
     className: "relative -ml-12 sm:-ml-16"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col items-center justify-center p-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center animate-in fade-in zoom-in duration-300"
+    className: "flex flex-col items-center justify-center p-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in duration-300"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-100 p-4 rounded-full mb-4"
   }, /*#__PURE__*/React.createElement(ListOrdered, {

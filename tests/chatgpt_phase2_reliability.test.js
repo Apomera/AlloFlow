@@ -105,7 +105,10 @@ describe('finding 7 — Equal Access joins the loop it governs', () => {
 
 describe('finding 15 — success telemetry requires KNOWN-clean verifiers', () => {
   it('a NULL axe audit (checker never ran) can no longer enter the success numerator', () => {
-    expect(anti).toContain('const _outcome = (cur.afterScore >= pdfTargetScore && _resid === 0 && !cur._aiVerificationIncomplete) ? \'success\' : \'incomplete\';');
+    expect(dp).toContain("var residual = r.axeAudit && typeof r.axeAudit.totalViolations === 'number' && Number.isFinite(r.axeAudit.totalViolations)");
+    expect(dp).toContain("var state = reachedTarget && residual === 0 && aiCompleted ? 'success' : 'incomplete';");
+    expect(anti).toContain("_docPipeline.remediationOutcome(cur, { targetScore: pdfTargetScore })");
+    expect(anti).toContain('outcome: _remediationOutcome.state,');
     expect(anti).not.toContain('(_resid === 0 || _resid == null)');
   });
 });

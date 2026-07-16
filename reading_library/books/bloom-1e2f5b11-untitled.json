@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1e2f5b11-untitled",
+  "title": "روزهای انتظار",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tgHkmE7PVl"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1e2f5b11-c3c4-41a9-9e49-0eeeaa990256%2f%d8%b1%d9%88%d8%b2%d9%87%d8%a7%db%8c+%d8%a7%d9%86%d8%aa%d8%b8%d8%a7%d8%b1%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1e2f5b11-c3c4-41a9-9e49-0eeeaa990256%2f%d8%b1%d9%88%d8%b2%d9%87%d8%a7%db%8c+%d8%a7%d9%86%d8%aa%d8%b8%d8%a7%d8%b1%2f1.jpg",
+      "text": "روزهای قرنطین بود.\nهمه در خانه منتظر واکسین کرونا بود.\nعثمان و مهسا از پدرشان پرسیدند:"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "پدرجان!\nاین روزهای سخت چه وقت تمام می شود؟\nپدرشان گفت: فرزندان قندم!\nتشویش نکنید.\nاین روزها به خیر می گذرد."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1e2f5b11-c3c4-41a9-9e49-0eeeaa990256%2f%d8%b1%d9%88%d8%b2%d9%87%d8%a7%db%8c+%d8%a7%d9%86%d8%aa%d8%b8%d8%a7%d8%b1%2f4.jpg",
+      "text": "اگر ما تشویش کنیم، مریض می شویم.\nبعد از این، من برای تان قصه می گویم\nوشما به دقت گوش کنید.\nامروز قصۀ خرگوش و سنگ پشت را برای تان می گویم."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "یک خرگوش و سنگ پشت، به خاطر\nباریدن باران دو شبانه روز بیرون نرفته بودند.\nآن ها خیلی گرسنه بودند.\nخرگوش به سنگ پشت گفت:\nدوست خوبم!\nامروز باید به خاطر آوردن غذا به جنگل برویم.\nسنگ پشت قبول کرد و هر دو راه افتادند."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1e2f5b11-c3c4-41a9-9e49-0eeeaa990256%2f%d8%b1%d9%88%d8%b2%d9%87%d8%a7%db%8c+%d8%a7%d9%86%d8%aa%d8%b8%d8%a7%d8%b1%2f5.jpg",
+      "text": "سنگ پشت بسیار آهسته آهسته راه می رفت.\nخرگوش خسته شد و گفت:\nسنگ پشت جان! من زود زود می روم و\nخوردنی ها را آماده می کنم:"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "وقتی تو رسیدی، خوردنی ها را به پشتت\nمی گذارم و بر می گردیم.\nخرگوش زود زود رفت و خوردنی های زیادی آماده کرد.\nوقتی سنگ پشت رسید، خرگوش همۀ\nخوردنی ها را به پشت او گذاشت.\nهر دو به طرف خانه روان شدند."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f1e2f5b11-c3c4-41a9-9e49-0eeeaa990256%2f%d8%b1%d9%88%d8%b2%d9%87%d8%a7%db%8c+%d8%a7%d9%86%d8%aa%d8%b8%d8%a7%d8%b1%2f6.jpg",
+      "text": "پدرشان پرسید: دختر و پسر قندم!\nقصه خوش تان آمد؟\nهر دو گفتند: بلی، بسیار قصۀ شیرین بود.\nپدرشان پرسید: چی یاد گرفتید از این قصه."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "عثمان گفت:\nهم کاری، کمک و صمیمیت را یاد گرفتم.\nمهسا گفت:\nیاد گرفتم که باید با دوستان و خانواده ام کمک کنم.\nپدرشان گفت:\nآفرین فرزندان دل بندم!\nهر دو گفتند:\nتشکر پدرجان!\nدیگر تشویش از دل شان دور شده بود.\nآن ها هم درس می خواندند وهم، با یک دیگر کمک می کردند."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 267
+  }
+}

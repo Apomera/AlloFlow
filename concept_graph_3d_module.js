@@ -222,7 +222,7 @@
   }
 
   // ── Accessible outline DOM (the source of truth across every mode) ──
-  function buildOutlineDom(scene, t, visible) {
+  function buildOutlineDom(scene, t, visible, onSelect) {
     var wrap = document.createElement('div');
     wrap.style.cssText = visible ? 'color:#e2e8f0;padding:8px 16px;max-height:100%;overflow:auto;' : SR_ONLY;
     var heading = document.createElement('div');
@@ -232,10 +232,23 @@
     var ol = document.createElement('ol');
     ol.setAttribute('aria-label', t('cg3d.outline_aria') || 'Concept map reading order');
     ol.style.cssText = visible ? 'font-size:13px;line-height:1.6;padding-left:22px;margin:0;' : 'margin:0;';
-    scene.outline.order.forEach(function (id) {
+    scene.outline.order.forEach(function (id, index) {
       var n = null; for (var i = 0; i < scene.nodes.length; i++) { if (scene.nodes[i].id === id) { n = scene.nodes[i]; break; } }
       var li = document.createElement('li');
-      li.textContent = n ? accessibleName(n) : id;
+      var name = n ? accessibleName(n) : id;
+      if (visible && typeof onSelect === 'function') {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = name;
+        button.setAttribute('data-concept-id', id);
+        button.setAttribute('data-outline-index', String(index));
+        button.setAttribute('aria-label', 'Concept ' + (index + 1) + ' of ' + scene.outline.order.length + '. ' + name);
+        button.style.cssText = 'display:block;width:100%;min-height:44px;margin:4px 0;padding:8px 10px;text-align:left;color:#e2e8f0;background:#1e293b;border:1px solid #475569;border-radius:8px;cursor:pointer;font:inherit;line-height:1.45;';
+        button.onclick = function () { onSelect(id, index); };
+        li.appendChild(button);
+      } else {
+        li.textContent = name;
+      }
       ol.appendChild(li);
     });
     wrap.appendChild(ol);
@@ -752,9 +765,20 @@
     var selectedId = null;
     var panel = document.createElement('div');
     panel.style.cssText = 'position:absolute;top:12px;right:12px;z-index:6;width:230px;max-height:72%;overflow:auto;background:rgba(2,6,23,0.92);border:1px solid #334155;border-radius:10px;padding:12px;color:#e2e8f0;font-size:12px;display:none;box-shadow:0 10px 28px rgba(0,0,0,0.5);';
+    panel.setAttribute('role', 'region');
+    panel.setAttribute('aria-label', _tr(t, 'cg3d.details', 'Selected concept details'));
     holder.appendChild(panel);
     function selectNode(id) {
       selectedId = id || null;
+      if (selectedId && outlineVisible) {
+        outlineVisible = false;
+        if (outlinePanel) outlinePanel.hidden = true;
+        if (outlineBtn) {
+          outlineBtn.setAttribute('aria-pressed', 'false');
+          outlineBtn.setAttribute('aria-expanded', 'false');
+        }
+      }
+
       applyHighlight(hoveredId || selectedId);
       if (focusRing) {
         if (selectedId && nodeById3d[selectedId]) {
@@ -776,11 +800,14 @@
           } : null);
         } catch (e) {}
       }
+      var outlinePos = (scene.outline.order || []).indexOf(selectedId);
+      if (routeProgress) routeProgress.textContent = outlinePos >= 0 ? ('Concept ' + (outlinePos + 1) + ' of ' + scene.outline.order.length) : (scene.outline.order.length + ' concepts');
+      if (routeProgress) routeProgress.setAttribute('aria-label', routeProgress.textContent);
       if (!selectedId || !nodeById3d[selectedId]) { panel.style.display = 'none'; return; }
       var n = nodeById3d[selectedId].node;
       panel.innerHTML = '';
       var close = document.createElement('button'); close.textContent = '✕'; close.setAttribute('aria-label', t('common.close') || 'Close');
-      close.style.cssText = 'float:right;border:none;background:transparent;color:#94a3b8;cursor:pointer;font-size:15px;line-height:1;';
+      close.style.cssText = 'float:right;border:1px solid transparent;background:transparent;color:#cbd5e1;cursor:pointer;font-size:15px;line-height:1;min-width:44px;min-height:44px;border-radius:8px;';
       close.onclick = function () { selectNode(null); };
       panel.appendChild(close);
       var ti = document.createElement('div'); ti.style.cssText = 'font-weight:800;font-size:13px;margin-bottom:4px;padding-right:18px;'; ti.textContent = n.label; panel.appendChild(ti);
@@ -792,7 +819,7 @@
         neigh.forEach(function (nid) {
           if (!nodeById3d[nid]) return;
           var b = document.createElement('button'); b.textContent = '• ' + nodeById3d[nid].node.label;
-          b.style.cssText = 'display:block;width:100%;text-align:left;border:none;background:transparent;color:#a5b4fc;cursor:pointer;padding:2px 0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+          b.style.cssText = 'display:block;width:100%;min-height:44px;text-align:left;border:none;background:transparent;color:#a5b4fc;cursor:pointer;padding:8px 4px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
           b.onclick = function () { var tn = nodeById3d[nid].node; tTarget.set(tn.sx, tn.sy, tn.sz); selectNode(nid); };
           panel.appendChild(b);
         });
@@ -847,6 +874,9 @@
         panel.appendChild(jb);
       }
       panel.style.display = 'block';
+      Array.prototype.forEach.call(panel.querySelectorAll('button'), function (button) {
+        button.style.minHeight = '44px';
+      });
     }
 
     // ── Constrained editing (opts.editable): semantics first, geometry derived ──
@@ -1048,6 +1078,10 @@
     legHeader.appendChild(legTitle); legHeader.appendChild(legChevron);
     var legBody = document.createElement('div'); legBody.style.cssText = 'padding:0 11px 9px;';
     legend.appendChild(legHeader); legend.appendChild(legBody);
+    legBody.id = 'cg3d-legend-body-' + (window.__cg3dLegendSeq = (window.__cg3dLegendSeq || 0) + 1);
+    legHeader.setAttribute('aria-controls', legBody.id);
+    legHeader.setAttribute('aria-expanded', 'true');
+    legHeader.style.minHeight = '44px';
     var legCollapsed = false;
     legHeader.onclick = function () { legCollapsed = !legCollapsed; legBody.style.display = legCollapsed ? 'none' : 'block'; legChevron.textContent = legCollapsed ? '▸' : '▾'; legHeader.setAttribute('aria-expanded', legCollapsed ? 'false' : 'true'); };
     (function () {
@@ -1083,10 +1117,63 @@
     // ── Reset / fit-view button ──
     var resetBtn = document.createElement('button');
     resetBtn.textContent = '⊙ ' + (t('cg3d.reset') || 'Reset view');
-    resetBtn.style.cssText = 'position:absolute;top:12px;left:12px;z-index:6;background:rgba(2,6,23,0.8);border:1px solid #334155;color:#cbd5e1;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;';
+    resetBtn.style.cssText = 'position:absolute;top:12px;left:12px;z-index:6;background:rgba(2,6,23,0.88);border:1px solid #475569;color:#e2e8f0;border-radius:8px;min-height:44px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;';
     resetBtn.onclick = function () { tTarget.set(0, 0, 0); tTheta = Math.PI * 0.25; tPhi = Math.PI * 0.34; tRadius = finalR; selectNode(null); };
     holder.appendChild(resetBtn);
+    var outlineVisible = false;
+    var outlinePanel = buildOutlineDom(scene, t, true, function (id) {
+      kbFocus(id);
+      try { el.focus(); } catch (e) {}
+    });
+    outlinePanel.id = 'cg3d-outline-panel-' + (window.__cg3dOutlineSeq = (window.__cg3dOutlineSeq || 0) + 1);
+    outlinePanel.hidden = true;
+    outlinePanel.style.cssText = 'position:absolute;right:12px;top:12px;bottom:12px;z-index:7;width:min(360px,calc(100% - 24px));color:#e2e8f0;padding:14px 18px;overflow:auto;background:rgba(2,6,23,0.95);border:1px solid #475569;border-radius:12px;box-sizing:border-box;';
+    outlinePanel.setAttribute('role', 'region');
+    outlinePanel.setAttribute('aria-label', _tr(t, 'cg3d.outline_title', 'Reading order'));
+    holder.appendChild(outlinePanel);
+    var outlineBtn = document.createElement('button');
+    outlineBtn.textContent = _tr(t, 'cg3d.outline_title', 'Reading order');
+    outlineBtn.setAttribute('aria-controls', outlinePanel.id);
+    outlineBtn.setAttribute('aria-pressed', 'false');
+    outlineBtn.setAttribute('aria-expanded', 'false');
+    outlineBtn.style.cssText = 'position:absolute;top:12px;left:126px;z-index:6;background:rgba(2,6,23,0.88);border:1px solid #475569;color:#e2e8f0;border-radius:8px;min-height:44px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;';
+    function setOutlineVisible(visible, moveFocus) {
+      outlineVisible = !!visible;
+      outlinePanel.hidden = !outlineVisible;
+      outlineBtn.setAttribute('aria-pressed', outlineVisible ? 'true' : 'false');
+      outlineBtn.setAttribute('aria-expanded', outlineVisible ? 'true' : 'false');
+      if (outlineVisible) selectNode(null);
+      var buttons = outlinePanel.querySelectorAll('[data-outline-index]');
+      var currentIndex = (scene.outline.order || []).indexOf(kbFocusId);
+      if (currentIndex < 0) currentIndex = 0;
+      Array.prototype.forEach.call(buttons, function (button) {
+        var current = Number(button.getAttribute('data-outline-index')) === currentIndex;
+        if (current) button.setAttribute('aria-current', 'step'); else button.removeAttribute('aria-current');
+        button.style.backgroundColor = current ? '#3730a3' : '#1e293b';
+        button.style.borderColor = current ? '#a5b4fc' : '#475569';
+      });
+      if (moveFocus) {
+        if (outlineVisible && buttons.length) buttons[currentIndex].focus();
+        else if (!outlineVisible) outlineBtn.focus();
+      }
+      if (live) live.textContent = outlineVisible ? 'Reading-order outline shown.' : 'Reading-order outline hidden.';
+    }
+    outlineBtn.onclick = function () {
+      setOutlineVisible(!outlineVisible, true);
+    };
+    function onOutlineKeyDown(e) {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      setOutlineVisible(false, true);
+    }
+    outlinePanel.addEventListener('keydown', onOutlineKeyDown);
+    holder.appendChild(outlineBtn);
 
+    var controlsHint = document.createElement('div');
+    controlsHint.setAttribute('aria-hidden', 'true');
+    controlsHint.style.cssText = 'position:absolute;top:64px;left:12px;z-index:5;max-width:280px;background:rgba(2,6,23,0.82);border:1px solid #334155;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:12px;line-height:1.35;pointer-events:none;';
+    controlsHint.textContent = _tr(t, 'cg3d.controls_hint', 'Drag to orbit ? scroll to zoom ? arrow keys step through concepts'); holder.appendChild(controlsHint);
     // ── Orientation gizmo (corner xyz, drawn as a 2nd scissor viewport) ──
     var cw = w, ch = hgt, gizmoScene = null, gizmoCam = null;
     try {
@@ -1123,8 +1210,13 @@
     var live = document.createElement('div'); live.setAttribute('aria-live', 'polite'); live.setAttribute('role', 'status'); live.style.cssText = SR_ONLY;
     holder.appendChild(instr); holder.appendChild(live);
     el.setAttribute('aria-describedby', instrId);
+    var routeProgress = document.createElement('div');
+    routeProgress.setAttribute('aria-hidden', 'true');
+    routeProgress.style.cssText = 'position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(2,6,23,0.86);border:1px solid #475569;border-radius:999px;padding:8px 12px;color:#e2e8f0;font-size:12px;font-weight:800;pointer-events:none;';
+    routeProgress.textContent = (scene.outline.order || []).length + ' concepts';
+    holder.appendChild(routeProgress);
     // visual chrome is conveyed via the live region + the linear outline — hide from AT to avoid double-speak
-    [legend, panel, tip, resetBtn].forEach(function (nd) { try { nd.setAttribute('aria-hidden', 'true'); } catch (e) {} });
+    tip.setAttribute('aria-hidden', 'true');
     var kbFocusId = null;
     function kbFocus(id) {
       if (!id || !nodeById3d[id]) return;
@@ -1184,6 +1276,7 @@
       el.removeEventListener('pointerdown', onDown); window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp); el.removeEventListener('wheel', onWheel);
       el.removeEventListener('keydown', onKeyDown);
+      outlinePanel.removeEventListener('keydown', onOutlineKeyDown);
       try { if (tip.parentNode) tip.parentNode.removeChild(tip); } catch (e) {}
       try { if (legend.parentNode) legend.parentNode.removeChild(legend); } catch (e) {}
       try { if (panel.parentNode) panel.parentNode.removeChild(panel); } catch (e) {}
@@ -1191,7 +1284,11 @@
       try { if (instr.parentNode) instr.parentNode.removeChild(instr); } catch (e) {}
       try { if (live.parentNode) live.parentNode.removeChild(live); } catch (e) {}
       try { if (vignette.parentNode) vignette.parentNode.removeChild(vignette); } catch (e) {}
+      try { if (controlsHint.parentNode) controlsHint.parentNode.removeChild(controlsHint); } catch (e) {}
+      try { if (routeProgress.parentNode) routeProgress.parentNode.removeChild(routeProgress); } catch (e) {}
       try { if (composer && composer.dispose) composer.dispose(); } catch (e) {}
+      try { if (outlineBtn.parentNode) outlineBtn.parentNode.removeChild(outlineBtn); } catch (e) {}
+      try { if (outlinePanel.parentNode) outlinePanel.parentNode.removeChild(outlinePanel); } catch (e) {}
       // Dispose every geometry/material/texture in BOTH scenes (main graph + the
       // corner gizmo) — renderer.dispose() alone doesn't free these, so repeated
       // open/close would climb GPU memory until the context is lost. SKIP the

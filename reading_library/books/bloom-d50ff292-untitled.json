@@ -1,0 +1,246 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d50ff292-untitled",
+  "title": "ဘီင်တူကာည်းဘီင်ဂို",
+  "description": "လော်င်ဘီင်တူ ကာည်း ဘီင်ဂို ဂီကတားပံင်ဆမားဆိပံင်ဆမားအန်း။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RBTT & NTC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/uq8ZiyQTAb"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fimage.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fcover%26pg+2111.png",
+      "text": "အံဝ်းဇီုဝ်ဘီင်တူ၊ အန်းအခည်း မိုႈ ဆံဝ်းဒဲ့ဘင်ဂို အီးမိုႈဘံဝ်ဖီုင်းအံဝ်းဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fbf9a9aa3-abd3-488e-8d8e-c5124b1b0636.mp3",
+          "dur": 6.440249
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fgirl.png",
+      "text": "အံဝ်းမအေဲႈယပေါႇအခည်း ညျံက်ဘီင်ဂို ကော်။ အံဝ်းစီကလာင်းနှဲ တာ့်အန်း၊ ဘည်ဘာည်း အံဝ်းကံတ်မှယ် ခူအန်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi292595a3-d96c-41f2-a4d4-08416b199c71.mp3",
+          "dur": 7.641882
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fpage3.png",
+      "text": "ဘီင်ဂို စီအာဝ်ကျိူက်မ အီးဒီး ကော်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi19c37162-47ae-4601-9acf-77d404f46e35.mp3",
+          "dur": 2.939841
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture4.png",
+      "text": "အံဝ်းဒါ်ႈ တာ့်အန်း “တိူဝ်ႈဟံင်း ပါ့်နီး၊ တီင်အံဝ်း\nမေဲႈကဒုင်မူႈ ကော်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fa9e2f7b9-ab98-4b01-aff4-ec3973639e68.mp3",
+          "dur": 4.53331
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture5.png",
+      "text": "ဘီင်ဂို စီႎီးဒါ်ႈ “ႎိုက်...ႎိုက်... တီင်အံဝ်းမာ် မေဲႈကဒုင်မူႈဘာည်းဇေဲန်း။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi4536a67f-f516-4238-9393-47de71f2a96b.mp3",
+          "dur": 5.447596
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture6.png",
+      "text": "ဘီင်တူ စီႎီးဒါ်ႈ တာ့်အန်း “တိူဝ်ႈဟံင်း ပါ့်နီး၊ တီင်အံဝ်း မေဲႈစံမ့်ချှိုက် ကော်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi02329902-9f3a-4fd9-860c-37252b92fabe.mp3",
+          "dur": 5.537864
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture7.png",
+      "text": "ဘီင်ဂို စီႎီးဒါ်ႈ “ႎိုက်...ႎိုက်... တီင်အံဝ်းမာ် မေဲႈချှိုက်ဘာည်းဇေဲန်း။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fa506fd2c-4efa-42db-931d-8460a330883b.mp3",
+          "dur": 4.623594
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture8.png",
+      "text": "ဘီင်တူ စီႎီးဒါ်ႈ တာ့်အန်း “တိူဝ်ႈဟံင်း ပါ့်နီး၊ တီင်အံဝ်း မေဲႈစံမ့်ငါည်းကော်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi24e244cc-a5e5-4957-b4ba-254a9f671ee9.mp3",
+          "dur": 4.623594
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture9.png",
+      "text": "ဘီင်ဂို စီႎီးဒါ်ႈ “ႎိုက်...ႎိုက်... တီင်အံဝ်းမာ် မေဲႈငါည်းဘာည်းဇေဲန်း။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi4462db7a-4a64-4cec-8047-2bd762cdf444.mp3",
+          "dur": 4.414618
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture10.png",
+      "text": "ဘီင်တူ စီႎီးဒါ်ႈ တာ့်အန်း “တိူဝ်ႈဟံင်း ပါ့်နီး၊ တီင်အံဝ်း မေဲႈစံမ့်ဆတာႇ ကော်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi846975fd-0413-48a0-9639-952541595e3a.mp3",
+          "dur": 5.029637
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture11.png",
+      "text": "ဘီင်ဂို စီႎီးဒါ်ႈ “ႎိုက်...ႎိုက်... တီင်အံဝ်းမာ် မေဲႈဆတာႇဘာည်းဇေဲန်း။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi78124b26-3f7c-4277-b7ae-5a9301d498a2.mp3",
+          "dur": 4.937058
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture12.png",
+      "text": "ဘီင်တူ စီႎီးဒါ်ႈ တာ့်အန်း “တိူဝ်ႈဟံင်း ပါ့်နီး၊ အံဝ်းဘိူန်းစံမ့်ဒါး ဇာ်န်းအံဝ်းႎဲန် ကော်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi3573de46-fd67-4e88-8fb5-6a37ab992cf9.mp3",
+          "dur": 5.328888
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture13.png",
+      "text": "ဘီင်ဂို စီႎီးဒါ်ႈ “ႎိုက်...ႎိုက်..ႎိုက်...ႎိုက်... အံဝ်းမာ် စီဘိူန်းဒါး ဇာ်န်းအံဝ်းႎဲန်ဘာည်းဇေဲန်း။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi4adfc8f7-74b2-457e-a5cb-0f4b3bc1bf3f.mp3",
+          "dur": 6.217036
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture14.png",
+      "text": "ဘီင်တူ စီႎီးဒါ်ႈ တာ့်အန်း “တိူဝ်ႈဟံင်း ပါ့်နီး၊ အံဝ်းဆမားစံမ့် တဂေန်း ကော်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fd8e11d46-89bd-40c3-9819-76e9d57cfafc.mp3",
+          "dur": 4.42882
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture15.png",
+      "text": "ဘီင်ဂို စီႎီးဒါ်ႈ “ႎိုက်...ႎိုက်.. အံဝ်းမာ် စီဆမားတဂေန်းဘာည်းဇေဲန်း။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi5a8f846f-af83-43ba-bcca-5c04dd682ae2.mp3",
+          "dur": 4.623594
+        }
+      ]
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture16.png",
+      "text": "ဘီင်တူ စီႎီးဒါ်ႈ တာ့်အန်း “တိူဝ်ႈဟံင်း ပါ့်နီး၊ တီင်အံဝ်း မေဲႈစံမ့်တည်း ကော်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi5eb7f41d-0213-4931-9057-c7da70a66d71.mp3",
+          "dur": 4.623594
+        }
+      ]
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture17.png",
+      "text": "ဘီင်ဂို စီကႎီင်ဖာ်ႈကူက်အန်း စီဒါ်ႈလာ် “ဂါး..” စီႎီုတ်ႎါင်နှဲဒဲႈပေါႇ အံဝ်းတိူဝ်ႈဆတားအန်းဟာ့်။ အန်းရေဲန်းဘာည်းဇေဲန်း မိုႈ အန်းဆီင်ဒါ်ႈတာ် အန်းမေဲႈဆတား အံဝ်းဆံမ်အာဝ်မေဲႈဆတား ဘာည်းအန်း ကော်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fd309db59-45c7-486f-92c7-0cdb7b8f6fd5.mp3",
+          "dur": 15.725444
+        }
+      ]
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture18.png",
+      "text": "ဆံမ်ဒါ်ႈစံမ့်ဘာည်းမှေဲ့မာ် အံဝ်းကမေဲႈအူန်း ဘီင်ဂို၊ ဘီင်ဂိုမာ် ကမေဲႈအူန်းအံဝ်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi469d6ba0-c78b-4bfc-98a3-2a939649525f.mp3",
+          "dur": 5.734943
+        }
+      ]
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2fPicture19.jpg",
+      "text": "မည်းဆမားလာ်တေဲႇဇီုဝ် ဂါဆီင်မိုႈ ကဲအီးတံက်တောႇ တံင်တိုးပိုင်းမည်း ကဲကဲဒီးပါ်ဒို့ဒို့။\nကျောႈပံင်ကအာ်မ်း ။ ။ အဲမေဲႈဘာည်းမှေဲ့မာ်\nခိုည်းတောႇဟာဝ်းလိူည် တောႇဘာည်းမေဲႈအဲဒီးနာ်ႏ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fd50ff292-ee83-4e9d-a56d-e0717c8f1f45%2f%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%90%e1%80%b0%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%98%e1%80%ae%e1%80%84%e1%80%ba%e1%80%82%e1%80%ad%e1%80%af%2faudio%2fi7d8ad6f4-65bf-4508-81f2-cb755e19e380.mp3",
+          "dur": 12.840249
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 19,
+    "words": 131
+  }
+}

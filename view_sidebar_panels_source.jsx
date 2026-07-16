@@ -26,21 +26,23 @@ function AdventurePanel(props) {
     t, useLowQualityVisuals
   } = props;
   if (!expandedTools || !expandedTools.includes('adventure')) return null;
+  const adventurePermissions = studentProjectSettings.adventurePermissions || {};
+  const lockAllAdventureSettings = !isTeacherMode && !!adventurePermissions.lockAllSettings;
   return (
-              <div className="animate-in slide-in-from-top-2 duration-200">
+              <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 <div className="p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3">
                     {hasSavedAdventure && (
-                        <button aria-label={t('common.resume_saved_adventure')}
+                        <button type="button" aria-label={t('common.resume_saved_adventure')}
                             data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
                             disabled={isResumingAdventure}
-                            className="w-full bg-white border-2 border-purple-600 text-purple-700 text-sm font-bold py-2 rounded-md hover:bg-purple-50 transition-colors flex items-center justify-center gap-2 shadow-sm mb-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-white border-2 border-purple-600 text-purple-700 text-sm font-bold py-2 rounded-md hover:bg-purple-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 shadow-sm mb-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isResumingAdventure ? <RefreshCw size={16} className="animate-spin" /> : <History size={16} />}
+                            {isResumingAdventure ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none" /> : <History size={16} />}
                             {isResumingAdventure ? t('adventure.loading_save') : t('adventure.resume')}
                         </button>
                     )}
                     {globalPoints < studentProjectSettings.adventureUnlockXP ? (
-                        <div className="bg-slate-800 text-white p-4 rounded-xl text-center shadow-md border border-slate-600 animate-in zoom-in">
+                        <div className="bg-slate-800 text-white p-4 rounded-xl text-center shadow-md border border-slate-600 animate-in motion-reduce:animate-none zoom-in">
                             <Lock size={32} className="mx-auto mb-2 text-yellow-400"/>
                             <h4 className="font-bold text-lg mb-1">{t('adventure.locked_title')}</h4>
                             <p className="text-sm text-slate-300 mb-3">
@@ -48,7 +50,7 @@ function AdventurePanel(props) {
                             </p>
                             <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden border border-slate-600">
                                 <div
-                                    className="h-full bg-yellow-400 transition-all duration-500"
+                                    className="h-full bg-yellow-400 transition-all motion-reduce:transition-none duration-500"
                                     style={{ width: `${Math.min(100, (globalPoints / studentProjectSettings.adventureUnlockXP) * 100)}%` }}
                                 ></div>
                             </div>
@@ -62,7 +64,8 @@ function AdventurePanel(props) {
                                 <select aria-label={t('common.selection')}
                                     data-help-key="adventure_setup_input_mode" value={adventureInputMode}
                                     onChange={(e) => setAdventureInputMode(e.target.value)}
-                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-shadow duration-300 p-1"
+                                    disabled={!isTeacherMode && (!adventurePermissions.allowModeSwitch || adventurePermissions.lockAllSettings)}
+                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
                                 >
                                     <option value="choice">{t('adventure.mode_choice')}</option>
                                     <option value="debate">{t('adventure.mode_debate')}</option>
@@ -79,7 +82,8 @@ function AdventurePanel(props) {
                                 <select aria-label={t('common.selection')}
                                     data-help-key="adventure_setup_difficulty" value={adventureDifficulty}
                                     onChange={(e) => setAdventureDifficulty(e.target.value)}
-                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-shadow duration-300 p-1"
+                                    disabled={!isTeacherMode && (!adventurePermissions.allowDifficultySwitch || adventurePermissions.lockAllSettings)}
+                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
                                 >
                                     <option value="Story">{t('adventure.diff_story_option')}</option>
                                     <option value="Normal">{t('adventure.diff_normal_option')}</option>
@@ -98,8 +102,8 @@ function AdventurePanel(props) {
                                 <select aria-label={t('common.selection')}
                                     data-help-key="adventure_setup_language" value={adventureLanguageMode}
                                     onChange={(e) => setAdventureLanguageMode(e.target.value)}
-                                    disabled={!isTeacherMode && !studentProjectSettings.adventurePermissions?.allowLanguageSwitch}
-                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-shadow duration-300 p-1"
+                                    disabled={!isTeacherMode && (!adventurePermissions.allowLanguageSwitch || adventurePermissions.lockAllSettings)}
+                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
                                 >
                                     <option value="English">{t('adventure.lang_options.english_only')}</option>
                                     {selectedLanguages.map(lang => (
@@ -129,7 +133,8 @@ function AdventurePanel(props) {
                                     value={adventureCustomInstructions}
                                     onChange={(e) => setAdventureCustomInstructions(e.target.value)}
                                     placeholder={t('common.adventure_instructions_placeholder')}
-                                    className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none resize-none h-16 transition-shadow duration-300"
+                                    disabled={!isTeacherMode && (!adventurePermissions.allowCustomInstructions || adventurePermissions.lockAllSettings)}
+                                    className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 resize-none h-16 transition-shadow motion-reduce:transition-none duration-300"
                                 />
                             </div>
                             <div className="flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200" data-help-key="adventure_free_response">
@@ -138,6 +143,7 @@ function AdventurePanel(props) {
                                     type="checkbox"
                                     data-help-key="adventure_setup_chk_freeresponse" checked={adventureFreeResponseEnabled}
                                     onChange={(e) => setAdventureFreeResponseEnabled(e.target.checked)}
+                                    disabled={!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || adventurePermissions.lockAllSettings)}
                                     className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
                                 />
                                 <label htmlFor="freeResponseMode" className="text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2">
@@ -150,6 +156,7 @@ function AdventurePanel(props) {
                                     type="checkbox"
                                     data-help-key="adventure_setup_chk_chance" checked={adventureChanceMode}
                                     onChange={(e) => setAdventureChanceMode(e.target.checked)}
+                                    disabled={lockAllAdventureSettings}
                                     className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
                                 />
                                 <label htmlFor="chanceMode" className="text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2">
@@ -163,6 +170,7 @@ function AdventurePanel(props) {
                                         type="checkbox"
                                         checked={isSocialStoryMode}
                                         onChange={(e) => setIsSocialStoryMode(e.target.checked)}
+                                        disabled={lockAllAdventureSettings}
                                         className="w-4 h-4 text-pink-600 border-slate-300 rounded focus:ring-pink-500 cursor-pointer"
                                     />
                                     <label htmlFor="socialStoryMode" className="text-xs font-bold text-pink-800 cursor-pointer select-none flex items-center gap-2">
@@ -171,14 +179,15 @@ function AdventurePanel(props) {
                                     </label>
                                 </div>
                                 {isSocialStoryMode && (
-                                    <div className="pl-6 animate-in slide-in-from-top-1">
+                                    <div className="pl-6 animate-in motion-reduce:animate-none slide-in-from-top-1">
                                         <label className="block text-[11px] text-pink-700 font-bold mb-1 uppercase opacity-80">{t('adventure.social_story_focus_label') || "Target Social Skill / Focus:"}</label>
                                         <input aria-label={t('common.adventure_social_story_focus_placeholder')}
                                             type="text"
                                             value={socialStoryFocus}
                                             onChange={(e) => setSocialStoryFocus(e.target.value)}
                                             placeholder={t('adventure.social_story_focus_placeholder') || "e.g., Sharing toys, Dealing with frustration"}
-                                            className="w-full text-xs p-1.5 border border-pink-300 rounded focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none text-pink-900 placeholder:text-pink-300"
+                                            disabled={lockAllAdventureSettings}
+                                            className="w-full text-xs p-1.5 border border-pink-300 rounded focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-pink-900 placeholder:text-pink-300"
                                         />
                                     </div>
                                 )}
@@ -191,6 +200,7 @@ function AdventurePanel(props) {
                                             type="checkbox"
                                             checked={enableFactionResources}
                                             onChange={(e) => setEnableFactionResources(e.target.checked)}
+                                            disabled={lockAllAdventureSettings}
                                             className="w-4 h-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500 cursor-pointer"
                                         />
                                         <label htmlFor="enableFactionResources" className="text-xs font-bold text-amber-800 cursor-pointer select-none flex items-center gap-2">
@@ -201,11 +211,12 @@ function AdventurePanel(props) {
                                     {enableFactionResources && (
                                         <div className="pl-6 space-y-2">
                                             <div className="flex items-center gap-3">
-                                                <label className="text-xs text-amber-700 font-medium">{t('adventure.system_state_mode_label')}:</label>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={handleSetFactionResourceModeToAi}
-                                                        className={`px-2 py-1 text-xs rounded-full font-medium transition-all ${
+                                                <span id="adventure-system-state-mode-label" className="text-xs text-amber-700 font-medium">{t('adventure.system_state_mode_label')}:</span>
+                                                <div role="group" aria-labelledby="adventure-system-state-mode-label" className="flex gap-2">
+                                                    <button type="button"
+                                                        aria-pressed={factionResourceMode === 'ai'} onClick={handleSetFactionResourceModeToAi}
+                                                        disabled={lockAllAdventureSettings}
+                                                        className={`px-2 py-1 text-xs rounded-full font-medium transition-all motion-reduce:transition-none ${
                                                             factionResourceMode === 'ai'
                                                                 ? 'bg-amber-700 text-white'
                                                                 : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
@@ -213,9 +224,10 @@ function AdventurePanel(props) {
                                                     >
                                                         🤖 {t('adventure.system_state_ai_decides')}
                                                     </button>
-                                                    <button
-                                                        onClick={handleSetFactionResourceModeToManual}
-                                                        className={`px-2 py-1 text-xs rounded-full font-medium transition-all ${
+                                                    <button type="button"
+                                                        aria-pressed={factionResourceMode === 'manual'} onClick={handleSetFactionResourceModeToManual}
+                                                        disabled={lockAllAdventureSettings}
+                                                        className={`px-2 py-1 text-xs rounded-full font-medium transition-all motion-reduce:transition-none ${
                                                             factionResourceMode === 'manual'
                                                                 ? 'bg-amber-700 text-white'
                                                                 : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
@@ -238,6 +250,7 @@ function AdventurePanel(props) {
                                                             <input aria-label={t('common.enter_resource')}
                                                                 type="text"
                                                                 value={resource.icon}
+                                                                disabled={lockAllAdventureSettings}
                                                                 onChange={(e) => {
                                                                     const updated = [...(adventureState.systemResources || [])];
                                                                     updated[idx] = { ...updated[idx], icon: e.target.value };
@@ -249,6 +262,7 @@ function AdventurePanel(props) {
                                                             <input aria-label="🔹"
                                                                 type="text"
                                                                 value={resource.name}
+                                                                disabled={lockAllAdventureSettings}
                                                                 onChange={(e) => {
                                                                     const updated = [...(adventureState.systemResources || [])];
                                                                     updated[idx] = { ...updated[idx], name: e.target.value };
@@ -260,6 +274,7 @@ function AdventurePanel(props) {
                                                             <input aria-label={t('common.state_variable')}
                                                                 type="number"
                                                                 value={resource.quantity}
+                                                                disabled={lockAllAdventureSettings}
                                                                 onChange={(e) => {
                                                                     const updated = [...(adventureState.systemResources || [])];
                                                                     updated[idx] = { ...updated[idx], quantity: parseInt(e.target.value) || 0 };
@@ -271,6 +286,7 @@ function AdventurePanel(props) {
                                                             <input aria-label={t('common.enter_resource')}
                                                                 type="text"
                                                                 value={resource.unit || ''}
+                                                                disabled={lockAllAdventureSettings}
                                                                 onChange={(e) => {
                                                                     const updated = [...(adventureState.systemResources || [])];
                                                                     updated[idx] = { ...updated[idx], unit: e.target.value };
@@ -280,8 +296,9 @@ function AdventurePanel(props) {
                                                                 placeholder="%"
                                                                 title={t('common.unit_e_g_people_days')}
                                                             />
-                                                            <button
+                                                            <button type="button"
                                                                 aria-label={t('common.remove')}
+                                                                disabled={lockAllAdventureSettings}
                                                                 onClick={() => {
                                                                     const updated = (adventureState.systemResources || []).filter((_, i) => i !== idx);
                                                                     setAdventureState(prev => ({ ...prev, systemResources: updated }));
@@ -293,8 +310,9 @@ function AdventurePanel(props) {
                                                             </button>
                                                         </div>
                                                     ))}
-                                                    <button
+                                                    <button type="button"
                                                         aria-label={t('common.add')}
+                                                        disabled={lockAllAdventureSettings}
                                                         onClick={() => {
                                                             const updated = [...(adventureState.systemResources || []), { name: '', icon: '🔹', quantity: 50, unit: '%', type: 'strategic' }];
                                                             setAdventureState(prev => ({ ...prev, systemResources: updated }));
@@ -315,6 +333,7 @@ function AdventurePanel(props) {
                                     type="checkbox"
                                     data-help-key="adventure_setup_chk_story" checked={isAdventureStoryMode}
                                     onChange={(e) => setIsAdventureStoryMode(e.target.checked)}
+                                    disabled={lockAllAdventureSettings}
                                     className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
                                 />
 <label htmlFor="storyMode" className="text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2">
@@ -328,7 +347,7 @@ function AdventurePanel(props) {
                                     type="checkbox"
                                     data-help-key="adventure_setup_chk_consistent_characters" checked={adventureConsistentCharacters}
                                     onChange={(e) => setAdventureConsistentCharacters(e.target.checked)}
-                                    disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+                                    disabled={lockAllAdventureSettings}
                                     className="w-4 h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
                                 />
                                 <label htmlFor="advConsistentChars" className="text-xs font-bold text-violet-800 cursor-pointer select-none flex items-center gap-2">
@@ -337,17 +356,17 @@ function AdventurePanel(props) {
                                 </label>
                             </div>
                             <details className="group/adv-settings">
-                                <summary className="flex items-center gap-2 bg-slate-100/50 p-2 rounded border border-slate-400 cursor-pointer select-none hover:bg-slate-100 transition-colors list-none">
+                                <summary className="flex items-center gap-2 bg-slate-100/50 p-2 rounded border border-slate-400 cursor-pointer select-none hover:bg-slate-100 transition-colors motion-reduce:transition-none list-none">
                                     <Settings size={14} className="text-slate-600"/>
                                     <span className="text-xs font-bold text-slate-600">⚙️ {t('adventure.advanced_settings') || 'Advanced Settings'}</span>
-                                    <ChevronDown size={12} className="text-slate-600 ml-auto transition-transform group-open/adv-settings:rotate-180"/>
+                                    <ChevronDown size={12} className="text-slate-600 ml-auto transition-transform motion-reduce:transition-none group-open/adv-settings:rotate-180"/>
                                 </summary>
-                                <div className="mt-1.5 space-y-1.5 pl-1 animate-in slide-in-from-top-2 duration-200">
+                                <div className="mt-1.5 space-y-1.5 pl-1 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                                     <div className="flex items-center gap-2 bg-indigo-100/50 p-2 rounded border border-indigo-200" data-help-key="adventure_art_style">
                                         <label htmlFor="advArtStyle" className="text-xs font-bold text-indigo-800 cursor-pointer select-none flex items-center gap-2 whitespace-nowrap">
                                             🎨 {t('adventure.art_style_label') || 'Art Style'}
                                         </label>
-                                        <select id="advArtStyle" value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} className="flex-1 text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none cursor-pointer">
+                                        <select id="advArtStyle" value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} disabled={lockAllAdventureSettings || (!isTeacherMode && adventurePermissions.allowVisualsToggle === false)} className="flex-1 text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 cursor-pointer">
                                             <option value="auto">🎨 {t('adventure.art_auto') || 'Auto (default)'}</option>
                                             <option value="storybook">📚 {t('adventure.art_storybook') || 'Storybook'}</option>
                                             <option value="pixel">🎮 {t('adventure.art_pixel') || 'Pixel Art'}</option>
@@ -358,7 +377,7 @@ function AdventurePanel(props) {
                                         </select>
                                     </div>
                                     {adventureArtStyle === 'custom' && (
-                                        <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} className="w-full text-xs px-3 py-1.5 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+                                        <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} disabled={lockAllAdventureSettings || (!isTeacherMode && adventurePermissions.allowVisualsToggle === false)} className="w-full text-xs px-3 py-1.5 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400"/>
                                     )}
                                     <div className="flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200" data-help-key="adventure_low_quality">
                                         <input aria-label={t('common.toggle_use_low_quality_visuals')}
@@ -366,6 +385,7 @@ function AdventurePanel(props) {
                                             type="checkbox"
                                             data-help-key="adventure_setup_chk_lowqual" checked={useLowQualityVisuals}
                                             onChange={(e) => setUseLowQualityVisuals(e.target.checked)}
+                                            disabled={lockAllAdventureSettings || (!isTeacherMode && adventurePermissions.allowVisualsToggle === false)}
                                             className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
                                         />
                                         <label htmlFor="advLowQuality" className="text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2">
@@ -452,7 +472,7 @@ function AdventurePanel(props) {
                                         <Flag size={12} /> {t('adventure.climax.settings_header')}
                                     </h4>
                                     {adventureState.climax?.isActive && (
-                                        <span className="bg-red-100 text-red-600 text-[11px] font-black px-2 py-0.5 rounded border border-red-200 animate-pulse">
+                                        <span className="bg-red-100 text-red-600 text-[11px] font-black px-2 py-0.5 rounded border border-red-200 animate-pulse motion-reduce:animate-none">
                                             {t('adventure.climax.status_active')}
                                         </span>
                                     )}
@@ -477,7 +497,7 @@ function AdventurePanel(props) {
                                         max="50"
                                         value={adventureState.climaxMinTurns || 20}
                                         onChange={(e) => setAdventureState(prev => ({ ...prev, climaxMinTurns: Math.max(1, parseInt(e.target.value) || 20) }))}
-                                        className="w-14 text-xs border border-purple-600 rounded p-1 text-center focus:ring-purple-500 outline-none font-bold text-purple-900"
+                                        className="w-14 text-xs border border-purple-600 rounded p-1 text-center focus:ring-purple-500 font-bold text-purple-900"
                                     />
                                 </div>
                                 <div className="bg-slate-50 p-2 rounded border border-slate-100 flex flex-col gap-2">
@@ -496,7 +516,7 @@ function AdventurePanel(props) {
                                             </span>
                                         </div>
                                     </div>
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             const minTurns = adventureState.climaxMinTurns || 20;
                                             if ((adventureState.turnCount || 0) < minTurns) {
@@ -519,7 +539,7 @@ function AdventurePanel(props) {
                                             addToast(t('adventure.climax.toast_initiated'), "success");
                                         }}
                                         disabled={adventureState.climax?.isActive}
-                                        className={`w-full py-1.5 rounded text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                                        className={`w-full py-1.5 rounded text-[11px] font-bold uppercase tracking-wider transition-colors motion-reduce:transition-none ${
                                             adventureState.climax?.isActive
                                             ? 'bg-slate-100 text-slate-600 cursor-not-allowed'
                                             : 'bg-white border border-purple-200 text-purple-600 hover:bg-purple-50'
@@ -529,12 +549,12 @@ function AdventurePanel(props) {
                                     </button>
                                 </div>
                             </div>
-                            <button aria-label={t('common.next')}
+                            <button type="button" aria-label={t('common.next')}
                                 data-help-key="adventure_start_btn" onClick={handleStartAdventure}
                                 disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                                 className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors flex items-center gap-2">{t('adventure.start')} <Sparkles size={14} className="text-yellow-600"/></span>
+                                <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('adventure.start')} <Sparkles size={14} className="text-yellow-600"/></span>
                                 <ArrowRight size={16} className="text-slate-600 group-hover:text-purple-600" />
                             </button>
                         </>
@@ -562,7 +582,7 @@ function SimplifiedPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('simplified')) return null;
   return (
-              <div className="animate-in slide-in-from-top-2 duration-200">
+              <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 <div id="tour-level-settings" data-help-key="tour-simplified-settings" className="p-3 border-b border-slate-100 space-y-3">
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                         <div>
@@ -571,7 +591,7 @@ function SimplifiedPanel(props) {
                                 data-help-key="simplified_grade_level"
                                 value={gradeLevel}
                                 onChange={(e) => setGradeLevel(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 p-1.5"
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
                             >
                                 <option value="Kindergarten">{t('grades.k')}</option>
                                 <option value="1st Grade">{t('grades.g1')}</option>
@@ -596,7 +616,7 @@ function SimplifiedPanel(props) {
                                 data-help-key="simplified_differentiation"
                                 value={differentiationRange}
                                 onChange={(e) => setDifferentiationRange(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 p-1.5"
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
                             >
                                 <option value="None">{t('simplified.diff_options.none')}</option>
                                 <option value="1">{t('simplified.diff_options.one')}</option>
@@ -610,7 +630,7 @@ function SimplifiedPanel(props) {
                                 data-help-key="simplified_format"
                                 value={textFormat}
                                 onChange={(e) => setTextFormat(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 p-1.5"
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
                             >
                                 <option value="Standard Text">{t('simplified.formats.standard')}</option>
                                 <option value="Dialogue Script">{t('simplified.formats.dialogue')}</option>
@@ -628,7 +648,7 @@ function SimplifiedPanel(props) {
                                 data-help-key="simplified_length"
                                 value={leveledTextLength}
                                 onChange={(e) => setLeveledTextLength(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 p-1.5"
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
                             >
                                 <option value="Same as Source">{t('simplified.length_options.same')}</option>
                                 <option value="Condense (50%)">{t('simplified.length_options.condense')}</option>
@@ -644,7 +664,7 @@ function SimplifiedPanel(props) {
                                 data-help-key="simplified_language"
                                 value={leveledTextLanguage}
                                 onChange={(e) => setLeveledTextLanguage(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 p-1.5"
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
                             >
                                 <option value="English">{t('languages.english')}</option>
                                 {selectedLanguages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
@@ -660,7 +680,7 @@ function SimplifiedPanel(props) {
                                 data-help-key="simplified_dok"
                                 value={dokLevel}
                                 onChange={(e) => setDokLevel(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 p-1.5"
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
                             >
                                 <option value="">{t('wizard.dok_levels.none')}</option>
                                 <option value="Level 1: Recall & Reproduction">{t('wizard.dok_levels.l1')}</option>
@@ -673,26 +693,26 @@ function SimplifiedPanel(props) {
                     <div>
                         <div className="bg-slate-50 p-2 rounded-lg border border-slate-400" data-help-key="simplified_standards">
                             <div className="flex justify-between items-center mb-2">
-                                <label className="text-xs text-slate-600 font-bold flex items-center gap-1">
+                                <span id="simplified-standard-mode-label" className="text-xs text-slate-600 font-bold flex items-center gap-1">
                                     <CheckCircle size={12} className="text-indigo-600"/> Target Standard
-                                </label>
-                                <div className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
-                                    <button
-                                        onClick={handleSetStandardModeToAi}
-                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
+                                </span>
+                                <div role="group" aria-labelledby="simplified-standard-mode-label" className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
+                                    <button type="button"
+                                        aria-pressed={standardMode === 'ai'} onClick={handleSetStandardModeToAi}
+                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
                                     >
                                         AI Match
                                     </button>
-                                    <button
-                                        onClick={handleSetStandardModeToManual}
-                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
+                                    <button type="button"
+                                        aria-pressed={standardMode === 'manual'} onClick={handleSetStandardModeToManual}
+                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
                                     >
                                         Manual
                                     </button>
                                 </div>
                             </div>
                             {standardMode === 'ai' ? (
-                                <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                <div className="space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">
                                     <div className="flex gap-2">
                                         <input aria-label={t('common.enter_ai_standard_query')}
                                             type="text"
@@ -700,22 +720,22 @@ function SimplifiedPanel(props) {
                                             onChange={(e) => setAiStandardQuery(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(gradeLevel)}
                                             placeholder={`Describe skill (e.g. "identify main idea") for ${gradeLevel}...`}
-                                            className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                            className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
                                         />
-                                        <button
+                                        <button type="button"
                                             aria-label={t('common.refresh')}
                                             onClick={() => handleFindStandards(gradeLevel)}
                                             disabled={!aiStandardQuery.trim() || isFindingStandards}
-                                            className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
                                             title={t('common.find_relevant_standards')}
                                         >
-                                            {isFindingStandards ? <RefreshCw size={14} className="animate-spin"/> : <Search size={14}/>}
+                                            {isFindingStandards ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Search size={14}/>}
                                         </button>
                                     </div>
                                     {suggestedStandards.length > 0 && (
                                         <div className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100">
                                             {suggestedStandards.map((std, idx) => (
-                                                <button
+                                                <button type="button"
                                                     key={idx}
                                                     onClick={() => {
                                                         const val = `${std.code}: ${std.description}`;
@@ -726,7 +746,7 @@ function SimplifiedPanel(props) {
                                                             addToast(t('standards.toast_max_limit'), "error");
                                                         }
                                                     }}
-                                                    className="w-full text-left p-2 hover:bg-indigo-50 transition-colors group"
+                                                    className="w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
                                                 >
                                                     <div className="flex justify-between items-start gap-1">
                                                         <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">{std.code}</span>
@@ -753,12 +773,12 @@ function SimplifiedPanel(props) {
                                         onChange={(e) => setStandardInputValue(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
                                         placeholder={t('standards.manual_placeholder')}
-                                        className="flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 p-1.5"
+                                        className="flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
                                     />
-                                    <button aria-label={t('common.add')}
+                                    <button type="button" aria-label={t('common.add')}
                                         onClick={handleAddStandard}
                                         disabled={!standardInputValue.trim() || targetStandards.length >= 3}
-                                        className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                                         title={t('standards.add_button')}
                                     >
                                         <Plus size={16} />
@@ -769,9 +789,9 @@ function SimplifiedPanel(props) {
                         {targetStandards.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-2 mb-2">
                                 {targetStandards.map((std, idx) => (
-                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in slide-in-from-left-1 max-w-full">
+                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full">
                                         <span className="truncate" title={std}>{std}</span>
-                                        <button
+                                        <button type="button"
                                             aria-label={t('common.close')}
                                             onClick={() => handleRemoveStandard(idx)}
                                             className="hover:text-indigo-900 ml-1 shrink-0"
@@ -794,12 +814,12 @@ function SimplifiedPanel(props) {
                                     onChange={(e) => setInterestInput(e.target.value)}
                                     onKeyDown={handleInterestKeyDown}
                                     placeholder={t('common.interest_placeholder')}
-                                    className="flex-grow text-sm px-2 py-1.5 border border-slate-400 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                    className="flex-grow text-sm px-2 py-1.5 border border-slate-400 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
                                 />
-                                <button aria-label={t('common.add')}
+                                <button type="button" aria-label={t('common.add')}
                                     onClick={addInterest}
                                     disabled={!interestInput.trim() || studentInterests.length >= 5}
-                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
                                 >
                                     <Plus size={16} />
                                 </button>
@@ -808,7 +828,7 @@ function SimplifiedPanel(props) {
                                 {studentInterests.map((interest, idx) => (
                                     <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
                                         {interest}
-                                        <button onClick={() => removeInterest(interest)} className="hover:text-indigo-900" aria-label={t('common.remove')}><X size={12} /></button>
+                                        <button type="button" onClick={() => removeInterest(interest)} className="hover:text-indigo-900" aria-label={t('common.remove')}><X size={12} /></button>
                                     </span>
                                 ))}
                                 {studentInterests.length === 0 && <span className="text-xs text-slate-600 italic">{t('input.no_interests')}</span>}
@@ -823,7 +843,7 @@ function SimplifiedPanel(props) {
                             value={leveledTextCustomInstructions}
                             onChange={(e) => setLeveledTextCustomInstructions(e.target.value)}
                             placeholder={t('common.custom_instructions_placeholder')}
-                            className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 p-1.5 h-16 resize-none transition-shadow duration-300 outline-none"
+                            className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 p-1.5 h-16 resize-none transition-shadow motion-reduce:transition-none duration-300"
                             />
                         </div>
                         <div className="flex items-center gap-2 mt-2" data-help-key="simplified_emojis">
@@ -864,13 +884,13 @@ function SimplifiedPanel(props) {
                         </div>
                         </div>
                 </div>
-                <button
+                <button type="button"
                     aria-label={t('common.generate')}
                     onClick={() => handleGenerate('simplified')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('simplified.rewrite')} <Sparkles size={14} className="text-yellow-600"/></span>
+                    <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('simplified.rewrite')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
                 </button>
               </div>
@@ -896,7 +916,7 @@ function MathPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('math')) return null;
   return (
-                <div className="animate-in slide-in-from-top-2 duration-200">
+                <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-blue-50/50 flex flex-col gap-3">
                         <div className="grid grid-cols-2 gap-3">
                             <div>
@@ -909,7 +929,7 @@ function MathPanel(props) {
                                         data-help-key="math_subject"
                                         value={mathSubject}
                                         onChange={(e) => setMathSubject(e.target.value)}
-                                        className="w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 outline-none transition-shadow duration-300 p-1.5"
+                                        className="w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
                                     >
                                         <option value="General Math">{t('math.subjects.general')}</option>
                                         <option value="Algebra">{t('math.subjects.algebra')}</option>
@@ -934,7 +954,7 @@ function MathPanel(props) {
                                         data-help-key="math_mode"
                                         value={mathMode}
                                         onChange={(e) => setMathMode(e.target.value)}
-                                        className="w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 outline-none transition-shadow duration-300 p-1.5"
+                                        className="w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
                                     >
                                         <option value="Problem Set Generator">{t('math.modes.problem_set')}</option>
                                         <option value="Step-by-Step">{t('math.modes.step_by_step')}</option>
@@ -988,9 +1008,9 @@ function MathPanel(props) {
                                     <p className="text-xs text-amber-800 mb-3 leading-relaxed">
                                         {t('fluency_maze.description') || 'Navigate a torchlit dungeon. Each gate is locked by a math fact — solve it to pass. Find the golden key to unlock the exit.'}
                                     </p>
-                                    <button
+                                    <button type="button"
                                         onClick={launchMaze}
-                                        className="w-full px-4 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-sm font-bold rounded-lg transition-all shadow-md flex items-center justify-center gap-2"
+                                        className="w-full px-4 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-sm font-bold rounded-lg transition-all motion-reduce:transition-none shadow-md flex items-center justify-center gap-2"
                                         aria-label={t('fluency_maze.open_aria') || 'Open Fluency Maze in main view'}
                                     >
                                         {t('fluency_maze.open_button') || '🚪 Open Maze (full view)'}
@@ -1021,7 +1041,7 @@ function MathPanel(props) {
                                         max="10"
                                         value={mathQuantity}
                                         onChange={(e) => setMathQuantity(parseInt(e.target.value) || 5)}
-                                        className="w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 outline-none transition-shadow duration-300 p-1.5"
+                                        className="w-full pl-7 text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
                                     />
                                 </div>
                             </div>
@@ -1049,7 +1069,7 @@ function MathPanel(props) {
                                         mathMode === 'Word Problems from Source' ? t('math.placeholder_focus') :
                                         t('math.placeholder_eq')
                                     }
-                                    className="w-full pl-8 text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 outline-none resize-none h-24 font-mono transition-shadow duration-300"
+                                    className="w-full pl-8 text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 resize-none h-24 font-mono transition-shadow motion-reduce:transition-none duration-300"
                                 />
                             </div>
                         </div>
@@ -1093,7 +1113,7 @@ function MathPanel(props) {
                             </label>
                         </div>
                     </div>
-                    <button
+                    <button type="button"
                         aria-label={t('common.generate_math_problems')}
                         data-help-key="math_generate_button"
                         onClick={handleGenerateMath}
@@ -1117,21 +1137,21 @@ function DbqPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('dbq')) return null;
   return (
-                <div className="animate-in slide-in-from-top-2 duration-200">
+                <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-rose-50 space-y-3">
                         <p className="text-xs text-slate-600">{t('dbq.desc') || 'Generate a complete Document-Based Question activity from your source text — with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric.'}</p>
                         {/* DBQ Mode Selector */}
                         <div>
-                            <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">{t('dbq.analysis_mode') || 'Analysis Mode'}</div>
-                            <div className="flex gap-1">
+                            <div id="dbq-analysis-mode-label" className="text-[11px] font-bold text-slate-600 uppercase mb-1">{t('dbq.analysis_mode') || 'Analysis Mode'}</div>
+                            <div role="group" aria-labelledby="dbq-analysis-mode-label" className="flex gap-1">
                                 {[['standard', t('dbq.mode_standard_label') || '📄 Standard DBQ', t('dbq.mode_standard_desc') || 'Extract documents from your source text'],
                                   ['perspectives', t('dbq.mode_perspectives_label') || '⚔️ Competing Perspectives', t('dbq.mode_perspectives_desc') || 'AI finds 2+ viewpoints that agree and disagree'],
                                   ['search', t('dbq.mode_search_label') || '🔍 Web-Enhanced', t('dbq.mode_search_desc') || 'Find real primary sources from archives (LOC, NARA, etc.)'],
                                   ['links', t('dbq.mode_links_label') || '🔗 Teacher Links', t('dbq.mode_links_desc') || 'Paste URLs to articles — AI builds DBQ around them'],
                                   ['custom', t('dbq.mode_custom_label') || '✏️ Teacher Docs', t('dbq.mode_custom_desc') || 'Paste your own document text directly']
                                 ].map(([mode, label, desc]) => (
-                                    <button key={mode} onClick={() => { window._dbqMode = mode; setExpandedTools(prev => [...prev]); }}
-                                        className={`flex-1 text-left p-2 rounded-lg text-[11px] font-bold transition-all border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-rose-50'}`}>
+                                    <button type="button" key={mode} aria-pressed={(window._dbqMode || 'standard') === mode} onClick={() => { window._dbqMode = mode; setExpandedTools(prev => [...prev]); }}
+                                        className={`flex-1 text-left p-2 rounded-lg text-[11px] font-bold transition-all motion-reduce:transition-none border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-rose-50'}`}>
                                         <div>{label}</div>
                                         <div className="font-normal mt-0.5 opacity-70">{desc}</div>
                                     </button>
@@ -1146,7 +1166,7 @@ function DbqPanel(props) {
                                 </label>
                                 <input type="text" placeholder={window._dbqMode === 'search' ? (t('dbq.focus_placeholder_search') || 'e.g. "Japanese internment primary sources"') : window._dbqMode === 'links' ? (t('dbq.focus_placeholder_links') || 'e.g. "Civil Rights Movement"') : (t('dbq.focus_placeholder_perspectives') || 'e.g. "Federalists vs Anti-Federalists"')}
                                     aria-label={window._dbqMode === 'search' ? (t('dbq.focus_aria_search') || 'Search topic for primary source hunting') : window._dbqMode === 'links' ? (t('dbq.focus_aria_links') || 'Topic context for AI link analysis') : (t('dbq.focus_aria_perspectives') || 'Perspectives to compare for DBQ')}
-                                    className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
+                                    className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300"
                                     id="dbq-focus-topic" />
                             </div>
                         )}
@@ -1157,7 +1177,7 @@ function DbqPanel(props) {
                                 <textarea
                                     id="dbq-teacher-links"
                                     placeholder={"https://www.loc.gov/item/example-document/\nhttps://founders.archives.gov/documents/...\nhttps://www.archives.gov/milestone-documents/..."}
-                                    className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none h-20 font-mono"
+                                    className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 h-20 font-mono"
                                     aria-label={t('dbq.urls_aria') || 'Document URLs for DBQ'} />
                                 <p className="text-[11px] text-slate-600 mt-1">{t('dbq.urls_help') || 'Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.'}</p>
                             </div>
@@ -1176,10 +1196,10 @@ function DbqPanel(props) {
                                         <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">{t('dbq.import_from_url_label') || 'Import from URL'}</label>
                                         <div className="flex gap-1">
                                             <input type="text" id="dbq-import-url"
-                                                className="flex-1 text-xs border border-indigo-600 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-300 outline-none"
+                                                className="flex-1 text-xs border border-indigo-600 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-300"
                                                 placeholder={t('dbq.import_url_placeholder') || 'https://... (article, speech, primary source)'}
                                                 aria-label={t('dbq.import_url_aria') || 'URL to import as document'} />
-                                            <button onClick={async () => {
+                                            <button type="button" onClick={async () => {
                                                 const urlInput = document.getElementById('dbq-import-url');
                                                 const docArea = document.getElementById('dbq-custom-docs');
                                                 const url = urlInput?.value?.trim();
@@ -1194,12 +1214,12 @@ function DbqPanel(props) {
                                                         addToast && addToast(t("toasts.document_imported"), 'success');
                                                     }
                                                 } catch (e) { addToast && addToast(t("errors.import_failed_prefix") + e.message, 'error'); }
-                                            }} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-lg transition-all shrink-0"
+                                            }} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none shrink-0"
                                                 aria-label={t('dbq.fetch_url_aria') || 'Fetch URL'}>{t('dbq.fetch_url_button') || '🔗 Fetch'}</button>
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">{t('dbq.upload_image_label') || 'Upload Document Image'}</label>
+                                        <label htmlFor="dbq-import-image" className="text-[11px] font-bold text-slate-600 uppercase block mb-1">{t('dbq.upload_image_label') || 'Upload Document Image'}</label>
                                         <div className="flex gap-1">
                                             <input type="file" id="dbq-import-image" accept="image/*,.pdf" className="hidden"
                                                 onChange={async (e) => {
@@ -1228,10 +1248,10 @@ function DbqPanel(props) {
                                                     } catch (err) { addToast && addToast(t("errors.file_read_failed") + err.message, 'error'); }
                                                     e.target.value = '';
                                                 }} />
-                                            <button onClick={() => document.getElementById('dbq-import-image')?.click()}
-                                                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1"
+                                            <button type="button" onClick={() => document.getElementById('dbq-import-image')?.click()}
+                                                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1"
                                                 aria-label={t('dbq.upload_image_aria') || 'Upload document image'}>{t('dbq.upload_image_button') || '📷 Upload Image'}</button>
-                                            <button onClick={async () => {
+                                            <button type="button" onClick={async () => {
                                                 const docArea = document.getElementById('dbq-custom-docs');
                                                 if (!docArea || !callGeminiVision) return;
                                                 try {
@@ -1259,17 +1279,17 @@ function DbqPanel(props) {
                                                     }
                                                     addToast && addToast(t("toasts.no_clipboard_image"), 'info');
                                                 } catch (err) { addToast && addToast(t("toasts.clipboard_access_failed"), 'info'); }
-                                            }} className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1"
+                                            }} className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1"
                                                 aria-label={t('dbq.paste_clipboard_aria') || 'Paste image from clipboard'}>{t('dbq.paste_clipboard_button') || '📋 Paste Image'}</button>
                                         </div>
                                     </div>
                                 </div>
                                 <textarea id="dbq-custom-docs"
-                                    className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none font-mono"
+                                    className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 font-mono"
                                     rows={8} placeholder={t('dbq.custom_docs_placeholder') || 'Paste your documents here, separated by --- on its own line...'}
                                     aria-label={t('dbq.custom_docs_aria') || 'Custom documents for DBQ'} />
                                 <input type="text" id="dbq-custom-essay-focus"
-                                    className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
+                                    className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300"
                                     placeholder={t('dbq.custom_essay_placeholder') || "Essay focus question (optional) — e.g. 'How did different groups define liberty in 1776?'"}
                                     aria-label={t('dbq.custom_essay_aria') || 'Custom essay focus question'} />
                             </div>
@@ -1293,14 +1313,14 @@ function DbqPanel(props) {
                             <p className="text-[11px] text-rose-700 italic flex items-center gap-1">{t('dbq.need_source_hint') || '⬆️ Paste a source text above first — the DBQ will be built from it.'}</p>
                         </div>
                     )}
-                    <button
+                    <button type="button"
                         aria-label={t('dbq.generate_aria') || 'Generate DBQ'}
                         data-help-key="dbq_generate_button"
                         onClick={() => handleGenerate('dbq')}
                         disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <span className="text-sm text-slate-600 group-hover:text-rose-700 transition-colors flex items-center gap-2">{t('dbq.generate') || 'Generate DBQ Packet'} <Sparkles size={14} className="text-yellow-600"/></span>
+                        <span className="text-sm text-slate-600 group-hover:text-rose-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('dbq.generate') || 'Generate DBQ Packet'} <Sparkles size={14} className="text-yellow-600"/></span>
                         <ArrowRight size={16} className="text-slate-600 group-hover:text-rose-600" />
                     </button>
                 </div>
@@ -1329,25 +1349,25 @@ function SourceInputPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('source-input')) return null;
   return (
-            <div className="animate-in slide-in-from-top-2 duration-200">
+            <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 {showUrlInput && (
-                  <div className="p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in slide-in-from-top-2 space-y-3">
+                  <div className="p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in motion-reduce:animate-none slide-in-from-top-2 space-y-3">
                       <div className="flex justify-center bg-white p-1 rounded-lg border border-indigo-100 mb-2 shadow-sm">
-                          <button
-                              onClick={handleSetIsUrlSearchModeToFalse}
-                              className={`flex-1 text-xs font-bold py-1.5 rounded-md transition-all ${!isUrlSearchMode ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
+                          <button type="button"
+                              aria-pressed={!isUrlSearchMode} onClick={handleSetIsUrlSearchModeToFalse}
+                              className={`flex-1 text-xs font-bold py-1.5 rounded-md transition-all motion-reduce:transition-none ${!isUrlSearchMode ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                           >
                               {t('wizard.paste_link_label')}
                           </button>
-                          <button
-                              onClick={handleSetIsUrlSearchModeToTrue}
-                              className={`flex-1 text-xs font-bold py-1.5 rounded-md transition-all ${isUrlSearchMode ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
+                          <button type="button"
+                              aria-pressed={isUrlSearchMode} onClick={handleSetIsUrlSearchModeToTrue}
+                              className={`flex-1 text-xs font-bold py-1.5 rounded-md transition-all motion-reduce:transition-none ${isUrlSearchMode ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                           >
                               {t('wizard.find_ai_label')}
                           </button>
                       </div>
                       {isUrlSearchMode ? (
-                          <div className="animate-in fade-in slide-in-from-right-2">
+                          <div className="animate-in motion-reduce:animate-none fade-in slide-in-from-right-2">
                               <label className="block text-xs font-medium text-indigo-900 mb-1">{t('wizard.topic_find_label')}</label>
                               <div className="flex gap-2 mb-2">
                                   <input aria-label={t('common.enter_url_search_query')}
@@ -1355,27 +1375,27 @@ function SourceInputPanel(props) {
                                       value={urlSearchQuery}
                                       onChange={(e) => setUrlSearchQuery(e.target.value)}
                                       placeholder={`e.g. Photosynthesis for ${gradeLevel}...`}
-                                      className="flex-grow text-sm p-2 border border-indigo-600 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none"
+                                      className="flex-grow text-sm p-2 border border-indigo-600 rounded-md focus:ring-2 focus:ring-indigo-200"
                                       onKeyDown={(e) => e.key === 'Enter' && handleAiUrlSearch()}
                                       autoFocus
                                   />
-                                  <button aria-label={t('common.search_by_url')}
+                                  <button type="button" aria-label={t('common.search_by_url')}
                                       onClick={handleAiUrlSearch}
                                       disabled={!urlSearchQuery.trim() || isExtracting}
-                                      className="bg-teal-700 text-white text-sm font-medium px-4 rounded-md hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
+                                      className="bg-teal-700 text-white text-sm font-medium px-4 rounded-md hover:bg-teal-700 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
                                   >
-                                      {isExtracting ? <RefreshCw className="animate-spin" size={14} /> : <Search size={14} />}
+                                      {isExtracting ? <RefreshCw className="animate-spin motion-reduce:animate-none" size={14} /> : <Search size={14} />}
                                       {t('wizard.find_action')}
                                   </button>
                               </div>
                               {!isExtracting && searchOptions.length > 0 && (
-                                  <div className="space-y-2 mt-3 animate-in slide-in-from-bottom-2">
+                                  <div className="space-y-2 mt-3 animate-in motion-reduce:animate-none slide-in-from-bottom-2">
                                       <h4 className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">{t('wizard.select_resource')}</h4>
                                       {searchOptions.map((opt, idx) => (
                                           <div key={idx} className="relative group">
-                                            <button
+                                            <button type="button"
                                                 onClick={() => handleSelectMainSearchOption(opt)}
-                                                className="w-full text-left p-3 pr-10 rounded-lg border border-indigo-100 hover:border-teal-500 hover:bg-teal-50 transition-all bg-white shadow-sm"
+                                                className="w-full text-left p-3 pr-10 rounded-lg border border-indigo-100 hover:border-teal-500 hover:bg-teal-50 transition-all motion-reduce:transition-none bg-white shadow-sm"
                                             >
                                                 <div className="font-bold text-slate-700 group-hover:text-teal-800 mb-0.5 text-xs">{opt.title || "Untitled Resource"}</div>
                                                 <div className="text-[11px] text-slate-600 group-hover:text-teal-600 line-clamp-2 leading-snug">{opt.description || "No description available."}</div>
@@ -1392,7 +1412,7 @@ function SourceInputPanel(props) {
                                                     setUrlToFetch('');
                                                     addToast(t('common.link_opened_copy_paste'), "info");
                                                 }}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors z-20"
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20"
                                                 title={t('common.open_link_paste_mode')}
                                             >
                                                 <ExternalLink size={14} />
@@ -1404,7 +1424,7 @@ function SourceInputPanel(props) {
                               <p className="text-[11px] text-indigo-600 mt-2">{t('wizard.ai_search_note')}</p>
                           </div>
                       ) : (
-                          <div className="animate-in fade-in slide-in-from-left-2">
+                          <div className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-2">
                             <label className="block text-xs font-medium text-indigo-900 mb-1">{t('wizard.article_url_label')}</label>
                             <div className="flex gap-2">
                                 <input aria-label={t('common.common_url_placeholder')}
@@ -1413,17 +1433,17 @@ function SourceInputPanel(props) {
                                   value={urlToFetch}
                                   onChange={(e) => setUrlToFetch(e.target.value)}
                                   placeholder={t('common.url_placeholder')}
-                                  className="flex-grow text-sm p-2 border border-indigo-600 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none"
+                                  className="flex-grow text-sm p-2 border border-indigo-600 rounded-md focus:ring-2 focus:ring-indigo-200"
                                   onKeyDown={(e) => e.key === 'Enter' && handleUrlFetch()}
                                   autoFocus
                                 />
-                                <button
+                                <button type="button"
                                     aria-label={t('common.download')}
                                     onClick={() => handleUrlFetch()}
                                     disabled={!urlToFetch.trim() || isExtracting}
-                                    className="bg-indigo-600 text-white text-sm font-medium px-4 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
+                                    className="bg-indigo-600 text-white text-sm font-medium px-4 rounded-md hover:bg-indigo-700 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
                                 >
-                                    {isExtracting ? <RefreshCw className="animate-spin" size={14} /> : <Download size={14} />}
+                                    {isExtracting ? <RefreshCw className="animate-spin motion-reduce:animate-none" size={14} /> : <Download size={14} />}
                                     {t('wizard.fetch_action')}
                                 </button>
                             </div>
@@ -1483,13 +1503,13 @@ function SourceInputPanel(props) {
                     }}
                     placeholder={isGeneratingSource ? t('common.writing_content') : isExtracting ? t('common.scanning_document') : t('input.placeholder')}
                     disabled={isGeneratingSource || isExtracting} aria-busy={isGeneratingSource}
-                    className={`w-full h-48 p-3 text-sm border border-slate-400 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none resize-none transition-all duration-300 ${(isGeneratingSource || isExtracting) ? 'bg-slate-50 text-slate-600' : ''}`}
+                    className={`w-full h-48 p-3 text-sm border border-slate-400 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 resize-none transition-all motion-reduce:transition-none duration-300 ${(isGeneratingSource || isExtracting) ? 'bg-slate-50 text-slate-600' : ''}`}
                     aria-label={t('common.source_material_aria')}
                     data-help-key="input_area"
                   />
                   <div className="absolute bottom-2 right-4 text-[11px] font-medium transition-opacity duration-500 text-slate-600 pointer-events-none flex items-center gap-1">
                       {isDraftSaving ? (
-                          <span className="flex items-center gap-1"><RefreshCw size={8} className="animate-spin"/> {t('status.saving_draft')}</span>
+                          <span className="flex items-center gap-1"><RefreshCw size={8} className="animate-spin motion-reduce:animate-none"/> {t('status.saving_draft')}</span>
                       ) : inputText && !isCanvas ? (
                           <span className="flex items-center gap-1 text-green-700"><CheckCircle2 size={8}/> {t('status.saved_device')}</span>
                       ) : null}
@@ -1497,7 +1517,7 @@ function SourceInputPanel(props) {
                   {(isGeneratingSource || isExtracting) && (
                     <div className="absolute inset-0 hidden md:flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-b-xl">
                         <div className="flex flex-col items-center gap-2">
-                            <RefreshCw className="animate-spin text-indigo-600" size={24} />
+                            <RefreshCw className="animate-spin motion-reduce:animate-none text-indigo-600" size={24} />
                             <span className="text-xs font-medium text-indigo-600">{generationStep}</span>
                         </div>
                     </div>
@@ -1520,7 +1540,7 @@ function GlossaryPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('glossary')) return null;
   return (
-              <div className="animate-in slide-in-from-top-2 duration-200">
+              <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 <div className="p-3 border-b border-slate-100" data-help-key="tour-glossary-settings">
                     <div className="grid grid-cols-3 gap-2 mb-3">
                         <div data-help-key="glossary_tier2_count">
@@ -1600,7 +1620,7 @@ function GlossaryPanel(props) {
                             value={glossaryCustomInstructions}
                             onChange={(e) => setGlossaryCustomInstructions(e.target.value)}
                             placeholder={t('glossary.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-sky-200 outline-none resize-none h-16"
+                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-sky-200 resize-none h-16"
                         />
                     </div>
                     <p className="text-xs text-slate-600 mb-2">{t('glossary.add_languages_label')}</p>
@@ -1611,13 +1631,13 @@ function GlossaryPanel(props) {
                         onChange={(e) => setLanguageInput(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder={t('glossary.language_placeholder')}
-                        className="flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:ring-2 focus:ring-sky-200 outline-none"
+                        className="flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:ring-2 focus:ring-sky-200"
                         aria-label={t('common.target_language_aria')}
                     />
-                    <button
+                    <button type="button"
                         onClick={addLanguage}
                         disabled={!languageInput.trim() || selectedLanguages.length >= 4}
-                        className="bg-sky-100 text-sky-700 p-1.5 rounded-md hover:bg-sky-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="bg-sky-100 text-sky-700 p-1.5 rounded-md hover:bg-sky-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
                         aria-label={t('common.add')}
                     >
                         <Plus size={16} />
@@ -1627,7 +1647,7 @@ function GlossaryPanel(props) {
                     {selectedLanguages.map(lang => (
                         <span key={lang} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100">
                         {lang}
-                        <button onClick={() => removeLanguage(lang)} className="hover:text-sky-900" aria-label={"Remove " + lang}><X size={12} /></button>
+                        <button type="button" onClick={() => removeLanguage(lang)} className="hover:text-sky-900" aria-label={"Remove " + lang}><X size={12} /></button>
                         </span>
                     ))}
                     {selectedLanguages.length === 0 && <span className="text-xs text-slate-600 italic">{t('glossary.no_languages')}</span>}
@@ -1642,7 +1662,7 @@ function GlossaryPanel(props) {
                                 value={glossaryImageStyle}
                                 onChange={(e) => setGlossaryImageStyle(e.target.value)}
                                 placeholder={t('glossary.style_placeholder')}
-                                className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 outline-none"
+                                className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
                             />
                             <p className="text-[11px] text-slate-600 mt-1">{t('glossary.image_style_hint')}</p>
                         </div>
@@ -1659,13 +1679,13 @@ function GlossaryPanel(props) {
                         </label>
                     </div>
                 </div>
-                <button
+                <button type="button"
                     aria-label={t('common.generate')}
                     onClick={() => handleGenerate('glossary')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <span className="text-sm text-slate-600 group-hover:text-sky-700 transition-colors flex items-center gap-2">{t('glossary.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
+                    <span className="text-sm text-slate-600 group-hover:text-sky-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('glossary.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
                 </button>
               </div>
@@ -1721,7 +1741,7 @@ function QuizPanel(props) {
   const extraTotal = visibleTypes.reduce((sum, et) => sum + ((effectiveMix[et.key]) || 0), 0);
   if (!expandedTools || !expandedTools.includes('quiz')) return null;
   return (
-                 <div className="animate-in slide-in-from-top-2 duration-200">
+                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-teal-50/50 space-y-3">
                         <div className="flex gap-4">
                          <div className="flex-1">
@@ -1776,7 +1796,7 @@ function QuizPanel(props) {
                              value={quizCustomInstructions}
                              onChange={(e) => setQuizCustomInstructions(e.target.value)}
                              placeholder={t('quiz.custom_placeholder')}
-                             className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none resize-none h-16"
+                             className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 resize-none h-16"
                          />
                          </div>
  {(generatedContent?.data?.analysis || history.some(h => h && h.type === 'analysis')) && (
@@ -1795,8 +1815,9 @@ function QuizPanel(props) {
                            type="button"
                            onClick={() => setItemMixOpen(!itemMixOpen)}
                            aria-expanded={itemMixOpen}
+                           aria-controls="quiz-item-mix-panel"
                            data-help-key="quiz_item_mix_toggle"
-                           className="w-full px-3 py-2 flex items-center justify-between text-xs font-bold text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/50 transition-colors"
+                           className="w-full px-3 py-2 flex items-center justify-between text-xs font-bold text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/50 transition-colors motion-reduce:transition-none"
                          >
                            <span className="flex items-center gap-1.5">
                              <Settings2 size={12} />
@@ -1805,10 +1826,10 @@ function QuizPanel(props) {
                                <span className="ml-1 text-[10px] font-medium bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">+{extraTotal} extra</span>
                              )}
                            </span>
-                           <ChevronDown size={14} className={'transition-transform duration-200' + (itemMixOpen ? ' rotate-180' : '')} />
+                           <ChevronDown size={14} className={'transition-transform motion-reduce:transition-none duration-200' + (itemMixOpen ? ' rotate-180' : '')} />
                          </button>
                          {itemMixOpen && (
-                           <div className="px-3 pb-3 pt-1 space-y-2 animate-in slide-in-from-top-1 duration-150 bg-slate-50/50">
+                           <div id="quiz-item-mix-panel" className="px-3 pb-3 pt-1 space-y-2 animate-in motion-reduce:animate-none slide-in-from-top-1 duration-150 bg-slate-50/50">
                              <p className="text-[11px] text-slate-500 leading-snug">{t('quiz.item_mix_help') || 'Control how many of each question type are generated. MCQ and Reflections are set above.'}</p>
                              {visibleTypes.map(et => {
                                const count = effectiveMix[et.key] || 0;
@@ -1835,7 +1856,7 @@ function QuizPanel(props) {
                                <button
                                  type="button"
                                  onClick={handleResetMix}
-                                 className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium mt-1 transition-colors"
+                                 className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium mt-1 transition-colors motion-reduce:transition-none"
                                >{t('quiz.reset_mix') || '↩ Reset to mode defaults'}</button>
                              )}
                            </div>
@@ -1850,7 +1871,7 @@ function QuizPanel(props) {
                          onChange={(ev) => setQuizMode(ev.target.value)}
                          disabled={isProcessing}
                          data-help-key="quiz_pedagogical_mode_select"
-                         className="flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50"
+                         className="flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all motion-reduce:transition-none disabled:opacity-50"
                          aria-label={t('quiz.mode_aria') || 'Quiz mode'}
                          title={t('quiz.mode_tooltip') || "Quiz mode: choose what this quiz is for. Pre-check probes prerequisites; Exit Ticket assesses today's content; Formative is a quick mid-lesson pulse; Spaced Review re-tests prior content."}
                        >
@@ -1868,7 +1889,7 @@ function QuizPanel(props) {
                          onChange={(ev) => setMcqVisualMode(ev.target.value)}
                          disabled={isProcessing}
                          data-help-key="quiz_visual_mode_select"
-                         className="flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50"
+                         className="flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all motion-reduce:transition-none disabled:opacity-50"
                          aria-label={t('quiz.visuals_aria') || 'MCQ visual mode'}
                          title={t('quiz.visuals_tooltip') || "Visuals (MCQ items only): None = text-only (free, fastest). Question = generate one image per question stem. Options = generate 4 images per question (one per option). Both = question + options. Image gen takes ~3-5s per image and uses Imagen credits."}
                        >
@@ -1892,20 +1913,20 @@ function QuizPanel(props) {
                          data-help-key="quiz_image_style_input"
                          placeholder={t('quiz.style_placeholder') || 'e.g. watercolor, flat vector, photorealistic, line drawing'}
                          maxLength={120}
-                         className="flex-1 min-w-0 text-xs px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50 placeholder:italic placeholder:text-slate-400"
+                         className="flex-1 min-w-0 text-xs px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all motion-reduce:transition-none disabled:opacity-50 placeholder:italic placeholder:text-slate-400"
                          aria-label={t('quiz.style_aria') || 'Image style hint'}
                          title={t('quiz.style_tooltip') || 'Optional. Applied to every image in the quiz (question + options). Empty = default style. Persisted with the quiz so refine actions stay on-brand.'}
                        />
                      </div>
                      )}
-                     <button
+                     <button type="button"
                          aria-label={t('common.generate')}
                      onClick={() => handleGenerate('quiz', null, false, null, { quizMode, mcqVisualMode, imageStyle })}
                      data-help-key="quiz_generate_button"
                      disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                      className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                      >
-                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{quizMode === 'exit-ticket' ? t('quiz.generate') : (quizMode === 'pre-check' ? (t('quiz.generate_pre_check') || 'Generate Pre-Check') : quizMode === 'formative' ? (t('quiz.generate_formative') || 'Generate Formative Check') : (t('quiz.generate_review') || 'Generate Spaced Review'))} <Sparkles size={14} className="text-yellow-600"/></span>
+                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{quizMode === 'exit-ticket' ? t('quiz.generate') : (quizMode === 'pre-check' ? (t('quiz.generate_pre_check') || 'Generate Pre-Check') : quizMode === 'formative' ? (t('quiz.generate_formative') || 'Generate Formative Check') : (t('quiz.generate_review') || 'Generate Spaced Review'))} <Sparkles size={14} className="text-yellow-600"/></span>
                      <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
                      </button>
                   </div>
@@ -1922,7 +1943,7 @@ function TimelinePanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('timeline')) return null;
   return (
-                <div className="animate-in slide-in-from-top-2 duration-200">
+                <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-teal-50 flex flex-col gap-3">
                         <div>
                             <label className="block text-xs font-medium text-slate-700 mb-1">{t('timeline.topic')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span></label>
@@ -1932,7 +1953,7 @@ function TimelinePanel(props) {
                                 value={timelineTopic}
                                 onChange={(e) => setTimelineTopic(e.target.value)}
                                 placeholder={t('timeline.topic_placeholder')}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 p-1.5 outline-none"
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 p-1.5"
                             />
                         </div>
                         <div>
@@ -1951,7 +1972,7 @@ function TimelinePanel(props) {
                                     setTimelineItemCount(String(Math.min(20, Math.max(3, n))));
                                 }}
                                 placeholder={t('timeline.placeholder_count')}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5 outline-none"
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5"
                             />
                         </div>
                         <div data-help-key="timeline_mode_info">
@@ -1962,7 +1983,7 @@ function TimelinePanel(props) {
                                 aria-label={t('timeline.settings.mode_label') || 'Ordering mode'}
                                 value={timelineMode}
                                 onChange={(e) => setTimelineMode(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5 outline-none"
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5"
                             >
                                 <option value="auto">{t('timeline.settings.mode_auto') || '✨ Auto-detect (AI picks best)'}</option>
                                 <option value="chronological">{t('timeline.modes.chronological') || 'Chronological — dates, events'}</option>
@@ -2005,20 +2026,20 @@ function TimelinePanel(props) {
                                 value={timelineImageStyle}
                                 onChange={(e) => setTimelineImageStyle(e.target.value)}
                                 placeholder={t('timeline.settings.style_placeholder') || "e.g. cartoon, pixel art, watercolor"}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5 outline-none"
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5"
                             />
                             <p className="text-[11px] text-slate-500 italic mt-1">{t('timeline.settings.image_style_hint') || 'Applied to all AI-generated sequence visuals.'}</p>
                         </div>
                         )}
                     </div>
-                    <button
+                    <button type="button"
                         aria-label={t('common.generate')}
                         onClick={() => handleGenerate('timeline')}
                         disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                         data-help-key="timeline_generate_button"
                     >
-                        <span className="text-sm font-bold text-slate-700 group-hover:text-indigo-700 transition-colors flex items-center gap-2">
+                        <span className="text-sm font-bold text-slate-700 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">
                         <Sparkles size={14} className="text-yellow-600"/> {t('timeline.generate')}
                         </span>
                         <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
@@ -2038,7 +2059,7 @@ function ConceptSortPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('concept-sort')) return null;
   return (
-                <div className="animate-in slide-in-from-top-2 duration-200">
+                <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-amber-50 flex flex-col gap-3">
                         <div>
                             <label className="block text-xs text-slate-600 mb-1 font-medium">{t('concept_sort.categories')} {t('concept_sort.max_categories')} <span className="text-amber-600 font-normal">{t('common.optional')}</span></label>
@@ -2050,12 +2071,12 @@ function ConceptSortPanel(props) {
                                     onChange={(e) => setConceptInput(e.target.value)}
                                     onKeyDown={handleConceptKeyDown}
                                     placeholder={t('concept_sort.placeholder_categories')}
-                                    className="flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none"
+                                    className="flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200"
                                 />
-                                <button aria-label={t('common.add')}
+                                <button type="button" aria-label={t('common.add')}
                                     onClick={addConcept}
                                     disabled={!conceptInput.trim() || selectedConcepts.length >= 5}
-                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
                                 >
                                     <Plus size={16} />
                                 </button>
@@ -2064,7 +2085,7 @@ function ConceptSortPanel(props) {
                                 {selectedConcepts.map(c => (
                                     <span key={c} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 border border-indigo-200">
                                         {c}
-                                        <button onClick={() => removeConcept(c)} className="hover:text-indigo-900" aria-label={t('common.remove')}><X size={12} /></button>
+                                        <button type="button" onClick={() => removeConcept(c)} className="hover:text-indigo-900" aria-label={t('common.remove')}><X size={12} /></button>
                                     </span>
                                 ))}
                                 {selectedConcepts.length === 0 && <span className="text-xs text-slate-600 italic">{t('concept_sort.auto_detect')}</span>}
@@ -2120,14 +2141,14 @@ function ConceptSortPanel(props) {
                         </div>
                         )}
                     </div>
-                    <button
+                    <button type="button"
                         aria-label={t('common.generate')}
                         data-help-key="concept_sort_generate_button"
                         onClick={() => handleGenerate('concept-sort')}
                         disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('concept_sort.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
+                        <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('concept_sort.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                         <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
                     </button>
                 </div>
@@ -2144,7 +2165,7 @@ function BrainstormPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('brainstorm')) return null;
   return (
-                <div className="animate-in slide-in-from-top-2 duration-200">
+                <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-yellow-50/50 flex flex-col gap-3">
                         <div>
                         <label className="block text-xs font-medium text-slate-700 mb-1">{t('brainstorm.instructions')}</label>
@@ -2154,17 +2175,17 @@ function BrainstormPanel(props) {
                             value={brainstormCustomInstructions}
                             onChange={(e) => setBrainstormCustomInstructions(e.target.value)}
                             placeholder={t('brainstorm.placeholder_input')}
-                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-yellow-200 outline-none resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500"
+                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-yellow-200 resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500"
                         />
                         </div>
                     </div>
-                    <button
+                    <button type="button"
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('brainstorm')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                    <span className="text-sm text-slate-700 group-hover:text-violet-700 transition-colors flex items-center gap-2 font-semibold">{t('brainstorm.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
+                    <span className="text-sm text-slate-700 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2 font-semibold">{t('brainstorm.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-700 group-hover:text-violet-600" />
                     </button>
                     <div className="px-3 pb-3">
@@ -2182,7 +2203,7 @@ function BrainstormPanel(props) {
                                     data-help-key="brainstorm_simulation_type"
                                     value={bridgeSimType}
                                     onChange={(e) => setBridgeSimType(e.target.value)}
-                                    className="w-full text-xs border border-violet-600 rounded p-1.5 focus:ring-2 focus:ring-violet-500 outline-none text-violet-800"
+                                    className="w-full text-xs border border-violet-600 rounded p-1.5 focus:ring-2 focus:ring-violet-500 text-violet-800"
                                 >
                                     {BRIDGE_MODES.map(mode => (
                                         <option key={mode.id} value={mode.id}>
@@ -2218,14 +2239,14 @@ function BrainstormPanel(props) {
                                 </p>
                              </div>
                         </div>
-                        <button
+                        <button type="button"
                             aria-label={t('common.refresh')}
                             data-help-key="brainstorm_generate_button"
                             onClick={() => handleGenerate('gemini-bridge')}
                             disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                            className="w-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                            className="w-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-2 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         >
-                            {isProcessing ? <RefreshCw size={14} className="animate-spin"/> : <Terminal size={14}/>}
+                            {isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Terminal size={14}/>}
                             {t('brainstorm.canvas_prompt')}
                         </button>
                     </div>
@@ -2244,7 +2265,7 @@ function ImagePanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('image')) return null;
   return (
-                <div className="animate-in slide-in-from-top-2 duration-200">
+                <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3" data-help-key="tour-visual-settings">
                         <div className="flex flex-col gap-2">
                             <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none">
@@ -2318,16 +2339,16 @@ function ImagePanel(props) {
                         </div>
                         <div>
                         <label className="block text-xs font-medium text-slate-700 mb-1">{t('input.custom_instructions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span></label>
-                        <textarea aria-label={t('input.custom_instructions') || 'Custom instructions for visuals'} data-help-key="visuals_custom_instructions" value={visualCustomInstructions} onChange={(e) => setVisualCustomInstructions(e.target.value)} placeholder={t('visuals.placeholder_instructions')} className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 outline-none resize-none h-16"/>
+                        <textarea aria-label={t('input.custom_instructions') || 'Custom instructions for visuals'} data-help-key="visuals_custom_instructions" value={visualCustomInstructions} onChange={(e) => setVisualCustomInstructions(e.target.value)} placeholder={t('visuals.placeholder_instructions')} className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 resize-none h-16"/>
                         </div>
                     </div>
-                    <button
+                    <button type="button"
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('image')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                    <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">{t('visuals.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
+                    <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('visuals.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-cyan-600" />
                     </button>
                 </div>
@@ -2345,7 +2366,7 @@ function PersonaPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('persona')) return null;
   return (
-                <div className="animate-in slide-in-from-top-2 duration-200">
+                <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-indigo-50/50 flex flex-col gap-3">
                          <div data-help-key="persona_custom_instructions">
                             <label className="block text-xs font-medium text-slate-700 mb-1">
@@ -2356,7 +2377,7 @@ function PersonaPanel(props) {
                                 value={personaCustomInstructions}
                                 onChange={(e) => setPersonaCustomInstructions(e.target.value)}
                                 placeholder={t('persona.custom_placeholder')}
-                                className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none resize-none h-16 transition-shadow duration-300"
+                                className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 resize-none h-16 transition-shadow motion-reduce:transition-none duration-300"
                             />
                         </div>
                         <div className="flex items-center gap-2 bg-indigo-100/50 p-2 rounded border border-indigo-200" data-help-key="persona_free_response">
@@ -2377,19 +2398,20 @@ function PersonaPanel(props) {
                         </div>
                     </div>
                     {(personaState.options.length > 0 || (generatedContent && generatedContent.type === 'persona')) && (
-                        <button
+                        <button type="button"
                             aria-label={t('common.ask_question')}
+                             aria-current={activeView === 'persona' ? 'page' : undefined}
                             onClick={handleSetActiveViewToPersona}
                             className={`w-full p-3 text-left hover:bg-indigo-50 flex justify-between items-center group border-b border-slate-100 ${activeView === 'persona' ? 'bg-indigo-50 text-indigo-900 font-bold' : 'text-slate-600'}`}
                         >
-                            <span className="text-sm transition-colors flex items-center gap-2">
+                            <span className="text-sm transition-colors motion-reduce:transition-none flex items-center gap-2">
                                 <MessageCircleQuestion size={14} className="text-indigo-600"/>
                                 {personaState.selectedCharacter ? t('persona.resume') : t('persona.view_candidates')}
                             </span>
                             <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
                         </button>
                     )}
-                    <button
+                    <button type="button"
                         aria-label={t('common.refresh')}
                         data-help-key="persona_generate_button"
                         onClick={() => {
@@ -2399,8 +2421,8 @@ function PersonaPanel(props) {
                         disabled={!hasSourceOrAnalysis || isGeneratingPersona || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors flex items-center gap-2">
-                            {isGeneratingPersona ? <RefreshCw size={14} className="animate-spin"/> : <Sparkles size={14} className="text-yellow-600"/>}
+                        <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors motion-reduce:transition-none flex items-center gap-2">
+                            {isGeneratingPersona ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={14} className="text-yellow-600"/>}
                             {isGeneratingPersona ? t('persona.identifying') : (personaState.options.length > 0 ? t('persona.regenerate') : t('persona.find'))}
                         </span>
                         <ArrowRight size={16} className="text-slate-600 group-hover:text-purple-600" />
@@ -2418,7 +2440,7 @@ function OutlinePanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('outline')) return null;
   return (
-              <div className="animate-in slide-in-from-top-2 duration-200">
+              <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 <div className="p-3 border-b border-slate-100 bg-orange-50/50 flex flex-col gap-3">
                     <div>
                         <label className="block text-xs text-slate-600 mb-1 font-medium">{t('outline.structure_label')}</label>
@@ -2453,18 +2475,18 @@ function OutlinePanel(props) {
                             value={outlineCustomInstructions}
                             onChange={(e) => setOutlineCustomInstructions(e.target.value)}
                             placeholder={t('outline.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 outline-none resize-none h-16"
+                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 resize-none h-16"
                         />
                     </div>
                 </div>
-                <button
+                <button type="button"
                     aria-label={t('common.generate')}
                     data-help-key="outline_generate_button"
                     onClick={() => handleGenerate('outline')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">{t('outline.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
+                    <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('outline.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-cyan-600" />
                 </button>
               </div>
@@ -2482,7 +2504,7 @@ function NoteTakingPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('note-taking')) return null;
   return (
-    <div className="animate-in slide-in-from-top-2 duration-200">
+    <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
       <div className="p-3 border-b border-slate-100 bg-violet-50/50 flex flex-col gap-3">
         <div>
           <label className="block text-xs text-slate-600 mb-1 font-medium">{t('note_taking.template_label') || 'Template type'}</label>
@@ -2505,7 +2527,7 @@ function NoteTakingPanel(props) {
           {t('note_taking.help') || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons."}
         </p>
       </div>
-      <button
+      <button type="button"
         aria-label={t('common.generate') || 'Generate'}
         data-help-key="note_taking_generate_button"
         onClick={() => handleGenerate('note-taking')}
@@ -2513,7 +2535,7 @@ function NoteTakingPanel(props) {
         aria-busy={isProcessing}
         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors flex items-center gap-2">{t('note_taking.generate') || 'Generate template'} <Sparkles size={14} className="text-yellow-600"/></span>
+        <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('note_taking.generate') || 'Generate template'} <Sparkles size={14} className="text-yellow-600"/></span>
         <ArrowRight size={16} className="text-slate-600 group-hover:text-violet-600"/>
       </button>
     </div>
@@ -2532,7 +2554,7 @@ function AnchorChartPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('anchor-chart')) return null;
   return (
-    <div className="animate-in slide-in-from-top-2 duration-200">
+    <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
       <div className="p-3 border-b border-slate-100 bg-amber-50/50 flex flex-col gap-3">
         <div>
           <label className="block text-xs text-slate-600 mb-1 font-medium">{t('anchor_chart.type_label') || 'Chart type'}</label>
@@ -2561,7 +2583,7 @@ function AnchorChartPanel(props) {
           {t('anchor_chart.help') || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it."}
         </p>
       </div>
-      <button
+      <button type="button"
         aria-label={t('common.generate') || 'Generate'}
         data-help-key="anchor_chart_generate_button"
         onClick={() => handleGenerate('anchor-chart')}
@@ -2569,7 +2591,7 @@ function AnchorChartPanel(props) {
         aria-busy={isProcessing}
         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <span className="text-sm text-slate-600 group-hover:text-amber-700 transition-colors flex items-center gap-2">{t('anchor_chart.generate') || 'Generate anchor chart'} <Sparkles size={14} className="text-yellow-600"/></span>
+        <span className="text-sm text-slate-600 group-hover:text-amber-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('anchor_chart.generate') || 'Generate anchor chart'} <Sparkles size={14} className="text-yellow-600"/></span>
         <ArrowRight size={16} className="text-slate-600 group-hover:text-amber-600"/>
       </button>
     </div>
@@ -2585,7 +2607,7 @@ function FaqPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('faq')) return null;
   return (
-                <div className="animate-in slide-in-from-top-2 duration-200">
+                <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-cyan-50/50 flex flex-col gap-3" data-help-key="tour-faq-settings">
                         <div>
                         <label className="block text-xs text-slate-600 mb-1 font-medium">{t('faq.count')}</label>
@@ -2609,17 +2631,17 @@ function FaqPanel(props) {
                             value={faqCustomInstructions}
                             onChange={(e) => setFaqCustomInstructions(e.target.value)}
                             placeholder={t('faq.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none resize-none h-16"
+                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 resize-none h-16"
                         />
                         </div>
                     </div>
-                    <button
+                    <button type="button"
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('faq')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                    <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('faq.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
+                    <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('faq.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
                     </button>
                 </div>
@@ -2635,7 +2657,7 @@ function SentenceFramesPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('sentence-frames')) return null;
   return (
-                <div className="animate-in slide-in-from-top-2 duration-200">
+                <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-rose-50/50 flex flex-col gap-3" data-help-key="tour-scaffolds-settings">
                         <div>
                         <label className="block text-xs text-slate-600 mb-1 font-medium">{t('scaffolds.type')}</label>
@@ -2658,17 +2680,17 @@ function SentenceFramesPanel(props) {
                             value={frameCustomInstructions}
                             onChange={(e) => setFrameCustomInstructions(e.target.value)}
                             placeholder={t('scaffolds.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 outline-none resize-none h-16"
+                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 resize-none h-16"
                         />
                         </div>
                     </div>
-                    <button
+                    <button type="button"
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('sentence-frames')}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                    <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">{t('scaffolds.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
+                    <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('scaffolds.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-cyan-600" />
                     </button>
                 </div>
@@ -2683,7 +2705,7 @@ function LessonPlanPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('lesson-plan')) return null;
   return (
-                 <div className="animate-in slide-in-from-top-2 duration-200">
+                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                      <div className="p-3 border-b border-slate-100 bg-indigo-50/50 flex flex-col gap-3">
                          <div>
                              <label className="block text-xs font-bold text-slate-600 mb-1">
@@ -2695,19 +2717,19 @@ function LessonPlanPanel(props) {
                                  value={lessonCustomAdditions}
                                  onChange={(e) => setLessonCustomAdditions(e.target.value)}
                                 placeholder={t('lesson_plan.placeholder_additions')}
-                                className="w-full text-xs p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none resize-none h-16 bg-white"
+                                className="w-full text-xs p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 resize-none h-16 bg-white"
                             />
                         </div>
                     </div>
-                    <button
+                    <button type="button"
                         aria-label={t('common.generate_lesson_plan')}
                         onClick={handleGenerateLessonPlan}
                         disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">
+                        <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">
                             {isProcessing && activeView === 'lesson-plan' ? t('lesson_plan.drafting') : t('lesson_plan.generate')}
-                            {isProcessing && activeView === 'lesson-plan' ? <RefreshCw size={14} className="animate-spin"/> : <Sparkles size={14} className="text-yellow-600"/>}
+                            {isProcessing && activeView === 'lesson-plan' ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={14} className="text-yellow-600"/>}
                         </span>
                         <ArrowRight size={16} className="text-slate-600 group-hover:text-cyan-600" />
                     </button>
@@ -2723,7 +2745,7 @@ function AnalysisPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('analysis')) return null;
   return (
-                <div className="animate-in slide-in-from-top-2 duration-200">
+                <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-violet-50/50" data-help-key="tour-analysis-settings">
                         <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none" data-help-key="analysis_check_accuracy">
                             <input aria-label={t('common.toggle_check_accuracy_with_search')}
@@ -2738,14 +2760,14 @@ function AnalysisPanel(props) {
                         </label>
                         <p className="text-[11px] text-slate-600 mt-1 ml-6 mb-2">{t('analysis.grounding_desc')}</p>
                     </div>
-                    <button
+                    <button type="button"
                         aria-label={t('common.generate')}
                         data-help-key="analysis_generate_button"
                         onClick={() => handleGenerate('analysis')}
                         disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors flex items-center gap-2">{t('analysis.run')} <Sparkles size={14} className="text-yellow-600"/></span>
+                        <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('analysis.run')} <Sparkles size={14} className="text-yellow-600"/></span>
                         <ArrowRight size={16} className="text-slate-600 group-hover:text-violet-600" />
                     </button>
                 </div>
@@ -2759,15 +2781,15 @@ function UiToolWordsoundsPanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes('ui-tool-wordsounds')) return null;
   return (
-                    <div className="p-4 bg-white animate-in slide-in-from-top-2" data-help-key="tour-wordsounds-panel">
+                    <div className="p-4 bg-white animate-in motion-reduce:animate-none slide-in-from-top-2" data-help-key="tour-wordsounds-panel">
                         <p className="text-xs text-slate-600 mb-3 leading-relaxed">
                             Generate phonics activities from any word list. Includes automatic segmentation, rhyming, and image generation.
                         </p>
-                        <button
+                        <button type="button"
                             aria-label={t('common.generate')}
                             data-help-key="wordsounds_open_btn"
                             onClick={handleOpenWordSounds}
-                            className="w-full py-2 bg-pink-600 text-white rounded-lg font-bold text-sm shadow-md hover:bg-pink-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+                            className="w-full py-2 bg-pink-600 text-white rounded-lg font-bold text-sm shadow-md hover:bg-pink-700 active:scale-95 transition-all motion-reduce:transition-none flex items-center justify-center gap-2"
                         >
                             <Sparkles size={14} className="text-yellow-700"/> Open Generator
                         </button>

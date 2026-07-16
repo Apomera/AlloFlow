@@ -139,7 +139,8 @@ describe('#6 — content fidelity is re-measured after html mutations', () => {
 describe('#15 — run identity + honest outcome + honest counters', () => {
   it('every fix run gets a runId; the success outcome states EVIDENCE, not hope', () => {
     expect(dp).toContain("const _runId = 'run-' + _startTime.toString(36)");
-    expect(dp).toContain("outcome: _verificationState.verificationState === 'complete' ? 'success' : 'incomplete',");
+    expect(dp).toContain('const _remediationOutcome = _alloRemediationOutcome({');
+    expect(dp).toContain('outcome: _remediationOutcome.state,');
     expect(dp).not.toMatch(/outcome: 'success',\n/); // the hard-coded literal is gone
   });
   it('the counters finally measure what their names say', () => {

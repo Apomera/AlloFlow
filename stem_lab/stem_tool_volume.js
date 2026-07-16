@@ -15,7 +15,8 @@
 //   corner. World transform negates z to render up (screen coords are y-down).
 //
 // Modes: 'slider' (parametric prism), 'freeform' (build cube-by-cube),
-//   'word' (slider with story context). 'word' is a slider variant for layout.
+//   'word' (slider with story context), and 'displacement' (graduated-cylinder
+//   measurement lab). 'word' is a slider variant for layout.
 //
 // Pointer interaction: a unified pointer handler (handlePointerDown) covers
 //   mouse + touch + pen via the Pointer Events API; pinch-to-zoom uses two
@@ -81,6 +82,7 @@ window.StemLab = window.StemLab || {
       '.allo-vol-bg-slider   { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(5,150,105,0.10) 0%, rgba(5,150,105,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
       '.allo-vol-bg-freeform { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(79,70,229,0.10) 0%, rgba(79,70,229,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
       '.allo-vol-bg-word     { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(217,119,6,0.10) 0%, rgba(217,119,6,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-vol-bg-displacement { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(2,132,199,0.13) 0%, rgba(14,116,144,0.05) 38%, rgba(255,255,255,0) 72%), linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%); border-radius: 16px; padding: 10px; }',
       '@media (prefers-reduced-motion: reduce) { .allo-vol-cube { animation: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
@@ -89,6 +91,7 @@ window.StemLab = window.StemLab || {
 
   // ── Sound effects ──
   var _audioCtx = null;
+  var _volumeDeleteReturnEl = null;
   function getAudioCtx() {
     if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     return _audioCtx;
@@ -182,6 +185,162 @@ window.StemLab = window.StemLab || {
     { id: 'truck',     label: 'Truck bed', icon: '🚚', story: 'A truck bed is {l} units long, {w} units wide, and {h} units tall. How many unit-cube boxes can it carry?', unit: 'boxes', defaults: { l: 6, w: 3, h: 2 } }
   ];
 
+
+  // Specimens for the displacement lab. Introductory specimens are denser
+  // than water so they can be fully submerged without a sinker correction.
+  var DISPLACEMENT_OBJECTS = [
+    { id: 'stone', label: 'River stone', icon: '\uD83E\uDEA8', volume: 18, mass: 47, initial: 42, note: 'An irregular solid with no useful length x width x height formula.' },
+    { id: 'key', label: 'Brass key', icon: '\uD83D\uDD11', volume: 8, mass: 67, initial: 36, note: 'Small and irregular; displacement is easier than modeling every notch.' },
+    { id: 'eraser', label: 'Rubber eraser', icon: '\u25B0', volume: 12, mass: 15, initial: 50, note: 'A compact classroom object that sinks when fully submerged.' },
+    { id: 'clay', label: 'Clay figure', icon: '\uD83D\uDDFF', volume: 26, mass: 49, initial: 31, note: 'Its shape can change while its amount of material stays the same.' },
+    { id: 'block', label: 'Acrylic block', icon: '\uD83E\uDDCA', volume: 24, mass: 29, initial: 45, formula: '4 x 3 x 2 = 24 cm\u00B3', note: 'A regular solid: compare displacement with the geometric formula.' },
+    { id: 'cork', label: 'Cork stopper', icon: '\uD83E\uDEB5', volume: 20, mass: 5, initial: 38, floats: true, sinkerVolume: 6, middleOnly: true, note: 'Less dense than water, so it floats unless a sinker holds it below the surface.' }
+  ];
+
+  var CLAY_SHAPES = [
+    { id: 'lump', label: 'Rounded lump', description: 'a rounded lump' },
+    { id: 'patty', label: 'Flat patty', description: 'a flat patty' },
+    { id: 'column', label: 'Tall column', description: 'a tall column' }
+  ];
+
+  function nextClayShapeId(currentId) {
+    var currentIndex = CLAY_SHAPES.findIndex(function(shape) { return shape.id === currentId; });
+    if (currentIndex < 0) currentIndex = 0;
+    return CLAY_SHAPES[(currentIndex + 1) % CLAY_SHAPES.length].id;
+  }
+
+
+
+  var DISPLACEMENT_CONDITIONS = {
+    careful: { label: 'Careful setup', short: 'Accurate trial', explanation: 'Eye level, no trapped air, and the object is fully submerged.' },
+    bubble: { label: 'Air bubble attached', short: '+3 mL bias', explanation: 'The trapped bubble displaces water too, so the measured volume is too large.' },
+    partial: { label: 'Only partly submerged', short: '60% submerged', explanation: 'Only the submerged part displaces water, so the measured volume is too small.' },
+    parallax: { label: 'Eye above the meniscus', short: '+2 mL reading bias', explanation: 'Reading from an angle shifts the apparent liquid level. Read at eye level.' }
+  };
+
+  function displacementOffset(condition, objectVolume) {
+    if (condition === 'bubble') return 3;
+    if (condition === 'partial') return -Math.max(1, Math.round(objectVolume * 0.4));
+    if (condition === 'parallax') return 2;
+    return 0;
+  }
+
+  function calculateDisplacementTrial(initial, objectVolume, condition) {
+    var offset = displacementOffset(condition, objectVolume);
+    var measuredVolume = Math.max(0, objectVolume + offset);
+    return {
+      initial: initial,
+      final: initial + measuredVolume,
+      measuredVolume: measuredVolume,
+      acceptedVolume: objectVolume,
+      error: measuredVolume - objectVolume
+    };
+  }
+
+
+  function calculateSinkerCorrectionTrial(initial, objectVolume, sinkerVolume) {
+    var safeInitial = Number.isFinite(Number(initial)) ? Math.max(0, Number(initial)) : 0;
+    var safeObjectVolume = Number.isFinite(Number(objectVolume)) ? Math.max(0, Number(objectVolume)) : 0;
+    var safeSinkerVolume = Number.isFinite(Number(sinkerVolume)) ? Math.max(0, Number(sinkerVolume)) : 0;
+    var sinkerOnly = safeInitial + safeSinkerVolume;
+    var final = sinkerOnly + safeObjectVolume;
+    return {
+      initial: safeInitial,
+      sinkerOnly: sinkerOnly,
+      final: final,
+      measuredVolume: final - sinkerOnly,
+      acceptedVolume: safeObjectVolume,
+      error: final - sinkerOnly - safeObjectVolume,
+      totalDisplacement: safeSinkerVolume + safeObjectVolume
+    };
+  }
+
+
+  function assessCylinderCapacity(initial, displacedVolume, capacity) {
+    var numericCapacity = Number(capacity);
+    var numericInitial = Number(initial);
+    var numericDisplaced = Number(displacedVolume);
+    var safeCapacity = Number.isFinite(numericCapacity) && numericCapacity > 0 ? numericCapacity : 100;
+    var safeInitial = Number.isFinite(numericInitial) ? Math.max(0, numericInitial) : 0;
+    var safeDisplaced = Number.isFinite(numericDisplaced) ? Math.max(0, numericDisplaced) : 0;
+    var final = Math.round((safeInitial + safeDisplaced) * 100) / 100;
+    var headroom = Math.round(Math.max(0, safeCapacity - safeInitial) * 100) / 100;
+    var overflowAmount = Math.round(Math.max(0, final - safeCapacity) * 100) / 100;
+    return {
+      capacity: safeCapacity,
+      initial: safeInitial,
+      displacedVolume: safeDisplaced,
+      final: final,
+      headroom: headroom,
+      overflow: overflowAmount > 0,
+      overflowAmount: overflowAmount,
+      readableFinal: overflowAmount > 0 ? null : final
+    };
+  }
+
+
+  function summarizeDisplacementTrials(trials) {
+    var valid = (Array.isArray(trials) ? trials : []).map(function(trial) {
+      if (!trial || trial.measured == null || trial.accepted == null) return null;
+      var measured = Number(trial.measured);
+      var accepted = Number(trial.accepted);
+      if (!Number.isFinite(measured) || !Number.isFinite(accepted)) return null;
+      var storedError = trial.error == null ? NaN : Number(trial.error);
+      var error = Number.isFinite(storedError) ? storedError : measured - accepted;
+      error = Math.round(error * 100) / 100;
+      return {
+        error: error,
+        absoluteError: Math.round(Math.abs(error) * 100) / 100
+      };
+    }).filter(Boolean);
+
+    var count = valid.length;
+    var accurate = valid.filter(function(item) { return item.absoluteError < 0.001; }).length;
+    var over = valid.filter(function(item) { return item.error > 0.001; }).length;
+    var under = valid.filter(function(item) { return item.error < -0.001; }).length;
+    var meanError = count
+      ? Math.round((valid.reduce(function(sum, item) { return sum + item.error; }, 0) / count) * 100) / 100
+      : 0;
+    var meanAbsoluteError = count
+      ? Math.round((valid.reduce(function(sum, item) { return sum + item.absoluteError; }, 0) / count) * 100) / 100
+      : 0;
+    var largestAbsoluteError = count
+      ? Math.max.apply(null, valid.map(function(item) { return item.absoluteError; }))
+      : 0;
+    var conclusion = 'Record a completed trial to compare measurement accuracy.';
+    if (count && accurate === count) {
+      conclusion = 'All recorded trials matched the accepted volume.';
+    } else if (over && under) {
+      conclusion = 'The record includes both overestimates and underestimates. Setup choices changed the direction of the error.';
+    } else if (over) {
+      conclusion = 'The biased trials overestimated volume. Look for trapped air or a reading taken above eye level.';
+    } else if (under) {
+      conclusion = 'The biased trials underestimated volume. Check whether the object was fully submerged.';
+    }
+
+    return {
+      count: count,
+      accurate: accurate,
+      over: over,
+      under: under,
+      meanError: meanError,
+      meanAbsoluteError: meanAbsoluteError,
+      largestAbsoluteError: largestAbsoluteError,
+      conclusion: conclusion
+    };
+  }
+
+  // Deterministic seams for focused science tests.
+  window.__alloVolumePure = {
+    displacementOffset: displacementOffset,
+    calculateDisplacementTrial: calculateDisplacementTrial,
+    calculateSinkerCorrectionTrial: calculateSinkerCorrectionTrial,
+    assessCylinderCapacity: assessCylinderCapacity,
+    summarizeDisplacementTrials: summarizeDisplacementTrials,
+    displacementObjects: DISPLACEMENT_OBJECTS,
+    clayShapes: CLAY_SHAPES,
+    nextClayShapeId: nextClayShapeId
+  };
   // ── Badge definitions ──
   var BADGES = [
     { id: 'firstVolume',     icon: '\u2B50',       label: 'First Volume',      desc: 'Calculate your first volume correctly' },
@@ -197,16 +356,18 @@ window.StemLab = window.StemLab || {
     { id: 'wordWizard',      icon: '\uD83D\uDCDD', label: 'Word Wizard',       desc: 'Solve 5 word problems correctly' },
     { id: 'realWorldExpl',   icon: '\uD83C\uDF0D', label: 'Real-World Expl',   desc: 'Try all 8 word problem contexts' },
     { id: 'netArchitect',    icon: '\uD83D\uDDFA', label: 'Net Architect',    desc: 'Unfold a prism into its net' },
-    { id: 'shapeEfficient',  icon: '\u2696\uFE0F', label: 'Shape Efficient',  desc: 'Discover same-volume comparison (square-cube law)' }
+    { id: 'shapeEfficient',  icon: '\u2696\uFE0F', label: 'Shape Efficient',  desc: 'Discover same-volume comparison (square-cube law)' },
+    { id: 'displacementScientist', icon: '\uD83E\uDDEA', label: 'Displacement Scientist', desc: 'Complete 3 water-displacement trials' }
   ];
 
   window.StemLab.registerTool('volume', {
     icon: '\uD83D\uDCE6', label: '3D Volume Explorer',
-    desc: '3D cube building with volume, surface area, badges & AI tutor.',
+    desc: 'Build 3D solids, solve volume challenges, and measure irregular objects with water displacement.',
     color: 'emerald', category: 'math',
     questHooks: [
       { id: 'solve_5', label: 'Solve 5 volume challenges', icon: '📦', check: function(d) { return ((d.score && d.score.correct) || 0) >= 5; }, progress: function(d) { return ((d.score && d.score.correct) || 0) + '/5 solved'; } },
       { id: 'word_3', label: 'Solve 3 word problems', icon: '📖', check: function(d) { return (d.wpSolved || 0) >= 3; }, progress: function(d) { return (d.wpSolved || 0) + '/3 word problems'; } },
+      { id: 'displacement_3', label: 'Complete 3 displacement trials', icon: '\uD83E\uDDEA', check: function(d) { return (d.dispSolved || 0) >= 3; }, progress: function(d) { return (d.dispSolved || 0) + '/3 trials'; } },
       { id: 'build_10', label: 'Place 10 cubes in the freeform builder', icon: '🧱', check: function(d) { return (d.totalPlaced || 0) >= 10; }, progress: function(d) { return (d.totalPlaced || 0) + '/10 cubes'; } }
     ],
     render: function(ctx) {
@@ -221,6 +382,7 @@ window.StemLab = window.StemLab || {
       var t = ctx.t;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var callGemini = ctx.callGemini;
+      var reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       // ── State via toolData ──
       var ld = ctx.toolData || {};
@@ -271,6 +433,47 @@ window.StemLab = window.StemLab || {
       var showNet = _v.showNet || false;          // unfolded-net view (slider + word modes)
       var showCompare = _v.showCompare || false;  // square-cube-law comparison panel
 
+      // Water-displacement lab state.
+      var dispLevel = _v.dispLevel || 'elementary';
+      var availableDisplacementObjects = DISPLACEMENT_OBJECTS.filter(function(object) {
+        return dispLevel === 'middle' || !object.middleOnly;
+      });
+      var requestedDispObjectId = _v.dispObjectId || 'stone';
+      var dispObject = availableDisplacementObjects.find(function(o) { return o.id === requestedDispObjectId; }) || availableDisplacementObjects[0];
+      var requestedClayShapeId = _v.dispClayShape || 'lump';
+      var dispClayShapeIndex = CLAY_SHAPES.findIndex(function(shape) { return shape.id === requestedClayShapeId; });
+      var dispClayShapeMeta = CLAY_SHAPES[dispClayShapeIndex < 0 ? 0 : dispClayShapeIndex];
+      var dispClayReshaped = !!_v.dispClayReshaped;
+
+      var dispObjectId = dispObject.id;
+      var dispUsesSinker = !!dispObject.floats;
+      var dispCondition = dispLevel === 'middle' && !dispUsesSinker ? (_v.dispCondition || 'careful') : 'careful';
+      var dispConditionMeta = DISPLACEMENT_CONDITIONS[dispCondition] || DISPLACEMENT_CONDITIONS.careful;
+      var dispCapacity = 100;
+      var storedDispInitial = Number(_v.dispInitial);
+      var dispInitial = dispLevel === 'middle' && Number.isFinite(storedDispInitial)
+        ? Math.max(10, Math.min(90, storedDispInitial))
+        : dispObject.initial;
+      var dispTrial = dispUsesSinker
+        ? calculateSinkerCorrectionTrial(dispInitial, dispObject.volume, dispObject.sinkerVolume)
+        : calculateDisplacementTrial(dispInitial, dispObject.volume, dispCondition);
+      var dispCapacityAssessment = assessCylinderCapacity(dispTrial.initial, dispTrial.final - dispTrial.initial, dispCapacity);
+      var dispOverflow = dispCapacityAssessment.overflow;
+      var dispBaselineReading = dispUsesSinker ? dispTrial.sinkerOnly : dispTrial.initial;
+      var dispReferenceTrial = dispUsesSinker
+        ? calculateSinkerCorrectionTrial(dispObject.initial, dispObject.volume, dispObject.sinkerVolume)
+        : calculateDisplacementTrial(dispObject.initial, dispObject.volume, dispCondition);
+      var dispReferenceBaseline = dispUsesSinker ? dispReferenceTrial.sinkerOnly : dispReferenceTrial.initial;
+      var dispInitialAdjusted = dispLevel === 'middle' && Math.abs(dispTrial.initial - dispObject.initial) > 0.001;
+
+      var dispSubmerged = !!_v.dispSubmerged;
+      var dispPrediction = _v.dispPrediction || '';
+      var dispAnswer = _v.dispAnswer || '';
+      var dispFeedback = _v.dispFeedback || null;
+      var dispSolved = _v.dispSolved || 0;
+      var dispTrials = _v.dispTrials || [];
+      var dispExplanation = _v.dispExplanation || '';
+
       // v4 additions ─────────────────────────────────────────────
       // Undo stack: capped at 30 entries to prevent unbounded state growth.
       // Each entry is the previous freeform `positions` array, snapshotted
@@ -296,6 +499,8 @@ window.StemLab = window.StemLab || {
       // Lets students save "my house" and reload it later. Persists across sessions.
       var saved = _v.saved || {};
       var showSaved = _v.showSaved || false;
+      var pendingDeleteName = _v.pendingDeleteName || null;
+      var formulasPaused = !!_v.formulasPaused;
       var saveCurrent = function(name) {
         if (!name) return;
         var trimmed = String(name).trim().slice(0, 40);
@@ -329,6 +534,62 @@ window.StemLab = window.StemLab || {
         var next = Object.assign({}, saved);
         delete next[name];
         upd({ saved: next });
+      };
+      var requestDeleteSaved = function(name) {
+        if (typeof document !== 'undefined') _volumeDeleteReturnEl = document.activeElement;
+        upd({ pendingDeleteName: name });
+        setTimeout(function() {
+          if (typeof document === 'undefined') return;
+          var cancel = document.getElementById('volume-delete-cancel');
+          if (cancel) cancel.focus();
+        }, 0);
+      };
+      var cancelDeleteSaved = function() {
+        upd({ pendingDeleteName: null });
+        setTimeout(function() {
+          if (_volumeDeleteReturnEl && typeof _volumeDeleteReturnEl.focus === 'function') _volumeDeleteReturnEl.focus();
+          _volumeDeleteReturnEl = null;
+        }, 0);
+      };
+      var confirmDeleteSaved = function() {
+        var name = pendingDeleteName;
+        if (!name) return;
+        deleteSaved(name);
+        upd({ pendingDeleteName: null });
+        announceToSR('Deleted saved construction ' + name);
+        setTimeout(function() {
+          if (typeof document !== 'undefined') {
+            var toggle = document.getElementById('volume-saved-toggle');
+            if (toggle) toggle.focus();
+          }
+          _volumeDeleteReturnEl = null;
+        }, 0);
+      };
+      var handleDeleteDialogKeyDown = function(e) {
+        if (e.key === 'Escape') { e.preventDefault(); cancelDeleteSaved(); return; }
+        if (e.key !== 'Tab' || typeof document === 'undefined') return;
+        var cancel = document.getElementById('volume-delete-cancel');
+        var confirm = document.getElementById('volume-delete-confirm');
+        if (!cancel || !confirm) return;
+        if (e.shiftKey && document.activeElement === cancel) { e.preventDefault(); confirm.focus(); }
+        else if (!e.shiftKey && document.activeElement === confirm) { e.preventDefault(); cancel.focus(); }
+      };
+      var renderDeleteDialog = function() {
+        return h('div', {
+            onClick: function(e) { if (e.target === e.currentTarget) cancelDeleteSaved(); },
+            className: 'fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/80 p-5'
+          },
+          h('div', { id: 'volume-delete-dialog', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'volume-delete-title', 'aria-describedby': 'volume-delete-description',
+              onKeyDown: handleDeleteDialogKeyDown,
+              className: 'w-full max-w-md rounded-2xl border-2 border-rose-400 bg-white p-5 shadow-2xl' },
+            h('h2', { id: 'volume-delete-title', className: 'text-xl font-black text-rose-900' }, 'Delete saved construction?'),
+            h('p', { id: 'volume-delete-description', className: 'mt-2 text-sm leading-relaxed text-slate-700' },
+              '"' + pendingDeleteName + '" will be permanently removed from your saved constructions.'),
+            h('div', { className: 'mt-5 flex flex-wrap justify-end gap-2' },
+              h('button', { id: 'volume-delete-cancel', type: 'button', onClick: cancelDeleteSaved,
+                className: 'min-h-11 rounded-lg border-2 border-slate-400 bg-white px-4 py-2 font-bold text-slate-800' }, 'Keep construction'),
+              h('button', { id: 'volume-delete-confirm', type: 'button', onClick: confirmDeleteSaved,
+                className: 'min-h-11 rounded-lg bg-rose-700 px-4 py-2 font-black text-white' }, 'Delete construction'))));
       };
 
       // Real-world unit mapping: lets students see "8 cubic feet" instead of
@@ -471,12 +732,14 @@ window.StemLab = window.StemLab || {
 
       // Treat word mode as a slider variant (same 3D prism viewport)
       var isWord = mode === 'word';
+      var isDisplacement = mode === 'displacement';
       var isSlider = mode === 'slider' || isWord;
       var isFreeform = mode === 'freeform';
-      var volume = isSlider ? dims.l * dims.w * dims.h : posSet.size;
-      var surfaceArea = isSlider
+      var volume = isDisplacement ? (dispSubmerged ? dispTrial.measuredVolume : 0)
+        : (isSlider ? dims.l * dims.w * dims.h : posSet.size);
+      var surfaceArea = isDisplacement ? 0 : (isSlider
         ? 2 * (dims.l * dims.w + dims.l * dims.h + dims.w * dims.h)
-        : getSA(posSet);
+        : getSA(posSet));
       var cubeUnit = isSlider
         ? Math.max(18, Math.min(36, 240 / Math.max(dims.l, dims.w, dims.h)))
         : 30;
@@ -874,7 +1137,7 @@ window.StemLab = window.StemLab || {
             checkBadges({ firstVolume: true, streak5: newStreak >= 5, streak10: newStreak >= 10 });
           }
         }
-        if (!isSlider && builderChallenge) {
+        if (isFreeform && builderChallenge) {
           var vol = posSet.size;
           if (builderChallenge.type === 'prism') {
             var tgtP = builderChallenge.target;
@@ -930,8 +1193,17 @@ window.StemLab = window.StemLab || {
       function askAI() {
         if (aiLoading) return;
         upd({ showAI: true, aiLoading: true, aiResponse: '' });
-        var prompt = 'You are a friendly math tutor helping a student explore 3D volume and surface area. ';
-        if (isSlider) {
+        var prompt = 'You are a friendly STEM tutor helping a student understand volume. ';
+        if (isDisplacement) {
+          if (dispUsesSinker) {
+            prompt += 'They are measuring a floating ' + dispObject.label + ' by sinker correction. Sinker-only reading ' + dispTrial.sinkerOnly + ' mL; sinker-plus-object reading ' + dispTrial.final + ' mL. ';
+            prompt += 'Explain why combined minus sinker-only isolates the object volume, and connect density below 1 g/cm3 with floating. ';
+          } else {
+            prompt += 'They are measuring a ' + dispObject.label + ' by water displacement. Initial reading ' + dispTrial.initial + ' mL; recorded final reading ' + dispTrial.final + ' mL. ';
+            prompt += 'Explain final minus initial and that 1 mL equals 1 cubic centimeter. ';
+          }
+          if (dispCondition !== 'careful') prompt += 'The trial includes this measurement issue: ' + dispConditionMeta.explanation + ' ';
+        } else if (isSlider) {
           prompt += 'They are looking at a ' + dims.l + '\u00d7' + dims.w + '\u00d7' + dims.h + ' rectangular prism. ';
           prompt += 'Volume = ' + volume + ', Surface Area = ' + surfaceArea + '. ';
           if (challenge && feedback && !feedback.correct) {
@@ -976,6 +1248,7 @@ window.StemLab = window.StemLab || {
           var ctx3 = WORD_CONTEXTS[wpCtxIdx % WORD_CONTEXTS.length];
           upd({ mode: 'word', dims: ctx3.defaults, challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, wpFeedback: null });
         }
+        if (key === 'd' && !isDisplacement) { e.preventDefault(); upd({ mode: 'displacement', challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, showBuildLibrary: false }); }
         if (key === 'n') {
           e.preventDefault();
           if (isSlider) {
@@ -1048,12 +1321,11 @@ window.StemLab = window.StemLab || {
           ),
           // Fold slider
           h('div', { className: 'flex items-center gap-2' },
-            h('span', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.volume.flat', 'Flat')),
-            h('input', {
+            h('label', { htmlFor: 'volume-net-fold', className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.volume.flat', 'Flat')),
+            h('input', { id: 'volume-net-fold', 'aria-label': __alloT('stem.volume.fold_the_net_from_flat_0_to_fully_fold', 'Fold the net from flat (0) to fully folded (1)'),
               type: 'range', min: '0', max: '1', step: '0.02',
               value: netFold,
               onChange: function(e) { upd({ netFold: parseFloat(e.target.value) }); },
-              'aria-label': __alloT('stem.volume.fold_the_net_from_flat_0_to_fully_fold', 'Fold the net from flat (0) to fully folded (1)'),
               className: 'flex-1 h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600'
             }),
             h('span', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.volume.folded', 'Folded')),
@@ -1287,20 +1559,657 @@ window.StemLab = window.StemLab || {
         );
       };
 
+      function renderDisplacementCylinder(label, reading, objectMode, waiting, overflowing) {
+        var safeReading = Math.max(0, Math.min(100, Number(reading) || 0));
+        var waterY = 310 - safeReading * 2.5;
+        var ticks = [];
+        for (var mark = 0; mark <= 100; mark += 5) {
+          var tickY = 310 - mark * 2.5;
+          var major = mark % 10 === 0;
+          ticks.push(h('line', {
+            key: 'tick-' + mark,
+            x1: major ? 48 : 55, y1: tickY, x2: 68, y2: tickY,
+            stroke: major ? '#0f172a' : '#64748b', strokeWidth: major ? 1.6 : 1
+          }));
+          if (major) ticks.push(h('text', {
+            key: 'label-' + mark,
+            x: 42, y: tickY + 4, textAnchor: 'end',
+            fontSize: 10, fontFamily: 'monospace', fill: '#334155'
+          }, String(mark)));
+        }
+        var showObject = objectMode === true || objectMode === 'object' || objectMode === 'combined';
+        var showSinker = objectMode === 'sinker' || objectMode === 'combined';
+        var partialImmersion = showObject && !showSinker && dispCondition === 'partial';
+        var objectY = partialImmersion ? waterY + 3 : (showSinker ? 260 : 286);
+        var immersionText = partialImmersion ? ' only partly submerged.' : ' fully submerged.';
+        var specimenDescription = dispObject.id === 'clay' ? dispObject.label + ' shaped as ' + dispClayShapeMeta.description : dispObject.label;
+        var contentsText = '.';
+        if (showSinker && showObject) contentsText = ', with the metal sinker and ' + specimenDescription + ' fully submerged.';
+        else if (showSinker) contentsText = ', with the metal sinker submerged.';
+        else if (showObject) contentsText = ', with the ' + specimenDescription + immersionText;
+        var cylinderAria = waiting
+          ? label + '. Final reading is hidden until the object is lowered into the water.'
+          : overflowing
+            ? label + '. Water overflowed past the 100 milliliter cylinder capacity, so no valid final reading is available.'
+            : label + '. Bottom of the water meniscus reads ' + safeReading + ' milliliters' + contentsText;
+        return h('figure', { className: 'm-0 min-w-0 text-center' },
+          h('svg', {
+            viewBox: '0 0 220 350',
+            role: 'img',
+            tabIndex: 0,
+            'aria-label': cylinderAria,
+            className: 'mx-auto h-auto w-full max-w-[220px] rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-sky-500'
+          },
+            h('rect', { x: 1, y: 1, width: 218, height: 348, rx: 16, fill: '#ffffff', stroke: '#bae6fd', strokeWidth: 2 }),
+            h('text', { x: 110, y: 25, textAnchor: 'middle', fontSize: 13, fontWeight: 800, fill: '#0c4a6e' }, label),
+            h('path', { d: 'M46 45 L46 315 Q46 325 56 325 L164 325 Q174 325 174 315 L174 45', fill: 'none', stroke: '#334155', strokeWidth: 4, strokeLinecap: 'round' }),
+            h('ellipse', { cx: 110, cy: 45, rx: 64, ry: 10, fill: '#f8fafc', stroke: '#334155', strokeWidth: 3 }),
+            h('rect', { x: 48, y: waterY, width: 124, height: Math.max(0, 315 - waterY), fill: waiting ? '#dbeafe' : '#7dd3fc', opacity: waiting ? 0.55 : 0.8 }),
+            h('path', {
+              d: 'M48 ' + (waterY - 5) + ' Q79 ' + waterY + ' 110 ' + waterY + ' Q141 ' + waterY + ' 172 ' + (waterY - 5),
+              fill: 'none', stroke: waiting ? '#93c5fd' : '#0284c7', strokeWidth: 3
+            }),
+            ticks,
+            showSinker && h('g', { 'aria-hidden': 'true', 'data-sinker-state': showObject ? 'combined' : 'alone' },
+              h('line', { x1: 138, y1: 44, x2: 138, y2: 286, stroke: '#64748b', strokeWidth: 2 }),
+              h('rect', { x: 126, y: 284, width: 24, height: 22, rx: 4, fill: '#64748b', stroke: '#0f172a', strokeWidth: 2 }),
+              h('text', { x: 138, y: 299, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#ffffff' }, 'S')
+            ),
+
+            showObject && h('g', { 'aria-hidden': 'true', 'data-immersion': partialImmersion ? 'partial' : 'full', 'data-clay-shape': dispObject.id === 'clay' ? dispClayShapeMeta.id : undefined },
+              dispObject.id === 'clay' && dispClayShapeMeta.id === 'lump' && h('ellipse', { cx: 110, cy: objectY, rx: 27, ry: 16, fill: '#a16207', stroke: '#713f12', strokeWidth: 2 }),
+              dispObject.id === 'clay' && dispClayShapeMeta.id === 'patty' && h('rect', { x: 70, y: objectY - 9, width: 80, height: 18, rx: 9, fill: '#a16207', stroke: '#713f12', strokeWidth: 2 }),
+              dispObject.id === 'clay' && dispClayShapeMeta.id === 'column' && h('rect', { x: 98, y: objectY - 30, width: 24, height: 60, rx: 10, fill: '#a16207', stroke: '#713f12', strokeWidth: 2 }),
+              dispObject.id !== 'clay' && h('ellipse', { cx: 110, cy: objectY, rx: 24, ry: 16, fill: '#475569', stroke: '#0f172a', strokeWidth: 2 }),
+              dispObject.id !== 'clay' && h('text', { x: 110, y: objectY + 5, textAnchor: 'middle', fontSize: 20 }, dispObject.icon)
+            ),
+            !waiting && !overflowing && h('line', { x1: 174, y1: waterY, x2: 204, y2: waterY, stroke: '#0369a1', strokeWidth: 2 }),
+            !waiting && !overflowing && h('text', { x: 207, y: waterY + 4, textAnchor: 'end', fontSize: 12, fontWeight: 900, fill: '#075985' }, safeReading + ' mL'),
+            overflowing && h('g', { 'aria-hidden': 'true', 'data-cylinder-overflow': 'true' },
+              h('path', { d: 'M38 48 Q54 34 70 48 T102 48 T134 48 T182 48', fill: 'none', stroke: '#dc2626', strokeWidth: 5, strokeLinecap: 'round' }),
+              h('text', { x: 110, y: 82, textAnchor: 'middle', fontSize: 16, fontWeight: 900, fill: '#991b1b' }, 'OVERFLOW')
+            ),
+
+            waiting && h('text', { x: 110, y: 175, textAnchor: 'middle', fontSize: 52, fontWeight: 900, fill: '#94a3b8' }, '?'),
+            h('text', { x: 110, y: 342, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, 'Read the bottom of the meniscus')
+          ),
+          h('figcaption', { className: 'mt-1 text-xs font-bold text-sky-900' },
+            waiting
+              ? 'Reading hidden until measurement'
+              : (overflowing ? 'Overflow - final reading unavailable' : safeReading + ' mL')
+          )
+        );
+      }
+
+      function renderDisplacementLab() {
+        function resetDisplacementTrial(patch) {
+          upd(Object.assign({
+            dispSubmerged: false,
+            dispPrediction: '',
+            dispAnswer: '',
+            dispFeedback: null,
+            dispExplanation: ''
+          }, patch || {}));
+        }
+
+        function chooseSpecimen(id) {
+          var next = availableDisplacementObjects.find(function(o) { return o.id === id; }) || availableDisplacementObjects[0];
+          resetDisplacementTrial({
+            dispObjectId: next.id,
+            dispInitial: next.initial,
+            dispCondition: 'careful',
+            dispClayShape: 'lump',
+            dispClayReshaped: false
+          });
+          announceToSR(next.floats ? next.label + ' selected. It floats, so use the metal sinker correction method.' : next.label + ' selected. Initial water reading ' + next.initial + ' milliliters.');
+        }
+
+        function reshapeClay() {
+          if (dispObject.id !== 'clay') return;
+          var nextId = nextClayShapeId(dispClayShapeMeta.id);
+          var nextMeta = CLAY_SHAPES.find(function(shape) { return shape.id === nextId; });
+          upd({ dispClayShape: nextId, dispClayReshaped: true });
+          announceToSR('Clay reshaped as ' + nextMeta.description + '. No clay was added or removed, so its volume stays ' + dispObject.volume + ' cubic centimeters.');
+        }
+
+
+        function lowerSpecimen() {
+          upd({ dispSubmerged: true, dispAnswer: '', dispFeedback: null });
+          playSound('place');
+          if (dispOverflow) {
+            announceToSR('The water overflowed past the 100 milliliter cylinder capacity. There is no valid final reading. Lower the initial water level and repeat the trial.');
+          } else {
+            if (dispUsesSinker) {
+              announceToSR('Sinker-only reading ' + dispTrial.sinkerOnly + ' milliliters. Sinker plus ' + dispObject.label + ' reading ' + dispTrial.final + ' milliliters. Subtract the sinker-only reading.');
+            } else {
+              announceToSR(dispObject.label + (dispCondition === 'partial' ? ' partly submerged. ' : ' fully submerged. ') + 'Final reading ' + dispTrial.final + ' milliliters. Subtract the initial reading of ' + dispTrial.initial + ' milliliters.');
+            }
+          }
+        }
+
+        function checkDisplacementAnswer() {
+          if (!dispSubmerged || dispOverflow || (dispFeedback && dispFeedback.correct)) return;
+          var parsed = Number(dispAnswer);
+          if (!Number.isFinite(parsed)) {
+            upd({ dispFeedback: { correct: false, msg: 'Enter a number for the final reading minus the subtraction baseline.' } });
+            announceToSR('Enter a number first.');
+            return;
+          }
+          var ok = Math.abs(parsed - dispTrial.measuredVolume) < 0.001;
+          var newStreak = ok ? streak + 1 : 0;
+          var patch = {
+            dispFeedback: ok
+              ? { correct: true, msg: 'Correct: ' + dispTrial.final + ' - ' + dispBaselineReading + ' = ' + dispTrial.measuredVolume + ' mL, so the observed displaced volume is ' + dispTrial.measuredVolume + ' cm\u00B3.' }
+              : { correct: false, msg: 'Use the change in water level: final (' + dispTrial.final + ' mL) - ' + (dispUsesSinker ? 'sinker-only' : 'initial') + ' (' + dispBaselineReading + ' mL). Do not use the final reading by itself.' },
+            score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
+            streak: newStreak,
+            attemptHist: (_v.attemptHist || []).concat([ok ? 1 : 0]).slice(-24)
+          };
+          if (ok) {
+            var nextSolved = dispSolved + 1;
+            patch.dispSolved = nextSolved;
+            patch.dispTrials = dispTrials.concat([{
+              id: Date.now(),
+              object: dispObject.label + (dispObject.id === 'clay' ? ' - ' + dispClayShapeMeta.label : ''),
+              initial: dispTrial.initial,
+              baseline: dispBaselineReading,
+              method: dispUsesSinker ? 'Sinker correction' : 'Direct displacement',
+              final: dispTrial.final,
+              measured: dispTrial.measuredVolume,
+              accepted: dispTrial.acceptedVolume,
+              error: dispTrial.error,
+              condition: dispUsesSinker ? 'Sinker correction (careful setup)' : dispConditionMeta.label
+            }]).slice(-6);
+            playSound('correct');
+            if (typeof awardStemXP === 'function') awardStemXP('volume', 5, 'water displacement');
+            checkBadges({ firstVolume: true, displacementScientist: nextSolved >= 3, streak5: newStreak >= 5, streak10: newStreak >= 10 });
+            announceToSR('Correct. Observed displaced volume ' + dispTrial.measuredVolume + ' cubic centimeters.');
+          } else {
+            playSound('wrong');
+            announceToSR(dispUsesSinker ? 'Try again. Subtract the sinker-only reading from the combined reading.' : 'Try again. Subtract the initial reading from the final reading.');
+          }
+          upd(patch);
+        }
+
+        function nextSpecimen() {
+          var currentIndex = availableDisplacementObjects.findIndex(function(o) { return o.id === dispObject.id; });
+          chooseSpecimen(availableDisplacementObjects[(currentIndex + 1) % availableDisplacementObjects.length].id);
+        }
+
+        var density = Math.round((dispObject.mass / dispObject.volume) * 100) / 100;
+        var predictionNumber = Number(dispPrediction);
+        var predictionReady = dispPrediction !== '' && Number.isFinite(predictionNumber);
+        var predictionDifference = predictionReady ? Math.abs(predictionNumber - dispTrial.measuredVolume) : null;
+
+        var startingLevelComparison = '';
+        if (dispInitialAdjusted) {
+          if (!dispSubmerged) {
+            startingLevelComparison = 'Starting water changed from ' + dispObject.initial + ' to ' + dispTrial.initial + ' mL. Predict whether ' + (dispUsesSinker ? 'combined - sinker-only' : 'final - initial') + ' will change.';
+          } else if (dispOverflow) {
+            startingLevelComparison = 'Overflow: water passed the 100 mL mark. Starting water changed from ' + dispObject.initial + ' to ' + dispTrial.initial + ' mL, so this trial cannot test the difference. Lower the initial water level and repeat.';
+          } else if (dispUsesSinker) {
+            startingLevelComparison = 'Reference sinker-only ' + dispReferenceBaseline + ' \u2192 combined ' + dispReferenceTrial.final + '; adjusted sinker-only ' + dispBaselineReading + ' \u2192 combined ' + dispTrial.final + '. Both change by ' + dispTrial.measuredVolume + ' mL. Starting water changes the readings, not their difference.';
+          } else {
+            startingLevelComparison = dispReferenceBaseline + ' \u2192 ' + dispReferenceTrial.final + ' and ' + dispBaselineReading + ' \u2192 ' + dispTrial.final + ' both change by ' + dispTrial.measuredVolume + ' mL. Starting level changes the readings, not their difference.';
+          }
+        }
+
+
+        var trialSummary = summarizeDisplacementTrials(dispTrials);
+
+        function formatDisplacementError(value) {
+          var number = Number(value);
+          if (!Number.isFinite(number) || Math.abs(number) < 0.001) return '0';
+          return (number > 0 ? '+' : '') + number;
+        }
+
+        function renderTrialErrorPlot() {
+          var comparable = dispTrials.slice(-6).map(function(trial) {
+            if (!trial || trial.measured == null || trial.accepted == null) return null;
+            var measured = Number(trial.measured);
+            var accepted = Number(trial.accepted);
+            if (!Number.isFinite(measured) || !Number.isFinite(accepted)) return null;
+            var storedError = trial.error == null ? NaN : Number(trial.error);
+            return {
+              id: trial.id,
+              object: trial.object || 'Specimen',
+              condition: trial.condition || 'Unknown condition',
+              error: Number.isFinite(storedError) ? storedError : measured - accepted
+            };
+          }).filter(Boolean);
+          if (!comparable.length) return null;
+
+          var rowHeight = 46;
+          var chartHeight = 38 + comparable.length * rowHeight;
+          var centerX = 410;
+          var maxBarWidth = 155;
+          var maxError = Math.max(3, trialSummary.largestAbsoluteError);
+          var aria = 'Measurement error plot. ' + comparable.map(function(trial) {
+            return trial.object + ', ' + trial.condition + ', error ' + formatDisplacementError(trial.error) + ' cubic centimeters.';
+          }).join(' ');
+
+          return h('figure', { className: 'mt-3', 'data-trial-error-plot': 'true' },
+            h('svg', {
+              viewBox: '0 0 720 ' + chartHeight,
+              role: 'img',
+              'aria-label': aria,
+              className: 'h-auto w-full rounded-lg border border-violet-200 bg-white'
+            },
+              h('line', { x1: centerX, y1: 24, x2: centerX, y2: chartHeight - 12, stroke: '#475569', strokeWidth: 2 }),
+              h('text', { x: centerX, y: 16, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#334155' }, '0 cm\u00B3 error'),
+              comparable.map(function(trial, index) {
+                var y = 42 + index * rowHeight;
+                var barWidth = Math.abs(trial.error) / maxError * maxBarWidth;
+                var isAccurate = Math.abs(trial.error) < 0.001;
+                var fill = isAccurate ? '#059669' : (trial.error > 0 ? '#d97706' : '#4f46e5');
+                return h('g', { key: trial.id || index, 'data-error-direction': isAccurate ? 'accurate' : (trial.error > 0 ? 'over' : 'under') },
+                  h('line', { x1: 218, y1: y + 9, x2: 602, y2: y + 9, stroke: '#e2e8f0', strokeWidth: 1 }),
+                  h('text', { x: 12, y: y, fontSize: 12, fontWeight: 700, fill: '#0f172a' }, String(trial.object).slice(0, 24)),
+                  h('text', { x: 12, y: y + 15, fontSize: 10, fill: '#475569' }, String(trial.condition).slice(0, 32)),
+                  isAccurate
+                    ? h('circle', { cx: centerX, cy: y + 7, r: 7, fill: fill })
+                    : h('rect', {
+                        x: trial.error < 0 ? centerX - barWidth : centerX,
+                        y: y,
+                        width: barWidth,
+                        height: 14,
+                        rx: 4,
+                        fill: fill
+                      }),
+                  h('text', { x: 620, y: y + 11, fontSize: 12, fontWeight: 800, fill: '#0f172a' }, formatDisplacementError(trial.error) + ' cm\u00B3')
+                );
+              })
+            ),
+            h('figcaption', { className: 'mt-1 text-[11px] text-slate-600' }, 'Bars left of zero underestimate volume; bars right of zero overestimate it. A dot on zero matches the accepted volume.')
+          );
+        }
+
+        return h('section', {
+          'data-displacement-lab': 'true',
+          className: 'space-y-4 rounded-2xl border-2 border-sky-200 bg-gradient-to-br from-white via-sky-50 to-teal-50 p-3 shadow-sm sm:p-4',
+          'aria-labelledby': 'volume-displacement-heading'
+        },
+          h('div', { className: 'flex flex-col gap-3 rounded-xl border border-sky-200 bg-white p-3 lg:flex-row lg:items-end lg:justify-between' },
+            h('div', { className: 'min-w-0 flex-1' },
+              h('h3', { id: 'volume-displacement-heading', className: 'text-lg font-black text-sky-900' }, '\uD83E\uDDEA Water Displacement Lab'),
+              h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-700' }, dispUsesSinker
+                ? 'Measure a floating object by comparing the sinker-only reading with the sinker-plus-object reading.'
+                : 'Measure an object that is hard to describe with a formula. With careful setup and full submersion, the rise in water level equals the object volume.'),
+              h('p', { className: 'mt-2 inline-flex rounded-full border border-teal-300 bg-teal-50 px-3 py-1 text-xs font-black text-teal-900' }, '1 milliliter (mL) = 1 cubic centimeter (cm\u00B3)')
+            ),
+            h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:w-[28rem]' },
+              h('label', { className: 'text-xs font-bold text-slate-700' },
+                h('span', { className: 'mb-1 block' }, 'Specimen'),
+                h('select', {
+                  value: dispObject.id,
+                  onChange: function(e) { chooseSpecimen(e.target.value); },
+                  'aria-label': 'Choose an object to measure',
+                  className: 'min-h-[2.75rem] w-full rounded-lg border-2 border-sky-300 bg-white px-3 py-2 text-sm font-bold text-sky-900'
+                }, availableDisplacementObjects.map(function(o) {
+                  return h('option', { key: o.id, value: o.id }, o.label);
+                }))
+              ),
+              h('fieldset', { className: 'm-0 rounded-lg border border-slate-200 p-2' },
+                h('legend', { className: 'px-1 text-[11px] font-bold text-slate-700' }, 'Learning level'),
+                h('div', { className: 'grid grid-cols-2 gap-1' },
+                  [
+                    { id: 'elementary', label: 'Grades 3-5' },
+                    { id: 'middle', label: 'Grades 6-8' }
+                  ].map(function(level) {
+                    var active = dispLevel === level.id;
+                    return h('button', {
+                      key: level.id,
+                      type: 'button',
+                      onClick: function() {
+                        var levelPatch = { dispLevel: level.id, dispCondition: 'careful' };
+                        if (level.id === 'elementary' && dispUsesSinker) {
+                          levelPatch.dispObjectId = DISPLACEMENT_OBJECTS[0].id;
+                          levelPatch.dispInitial = DISPLACEMENT_OBJECTS[0].initial;
+                        }
+                        resetDisplacementTrial(levelPatch);
+                        announceToSR(level.label + ' learning level selected.');
+                      },
+                      'aria-pressed': active,
+                      className: 'min-h-[2.5rem] rounded-md px-2 py-1 text-[11px] font-bold ' + (active ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
+                    }, level.label);
+                  })
+                )
+              )
+            )
+          ),
+
+          dispLevel === 'middle' && !dispUsesSinker && h('fieldset', { className: 'm-0 rounded-xl border border-violet-200 bg-white p-3' },
+            h('legend', { className: 'px-1 text-xs font-black text-violet-900' }, 'Measurement conditions'),
+            h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
+              Object.keys(DISPLACEMENT_CONDITIONS).map(function(key) {
+                var condition = DISPLACEMENT_CONDITIONS[key];
+                var active = dispCondition === key;
+                return h('button', {
+                  key: key,
+                  type: 'button',
+                  onClick: function() {
+                    resetDisplacementTrial({ dispCondition: key });
+                    announceToSR(condition.label + '. ' + condition.explanation);
+                  },
+                  'aria-pressed': active,
+                  className: 'min-h-[3.75rem] rounded-lg border p-2 text-left text-xs transition ' + (active ? 'border-violet-600 bg-violet-100 text-violet-950 ring-2 ring-violet-200' : 'border-slate-200 bg-white text-slate-700 hover:border-violet-300')
+                },
+                  h('strong', { className: 'block' }, condition.label),
+                  h('span', { className: 'mt-0.5 block text-[10px]' }, condition.short)
+                );
+              })
+            ),
+            h('p', { className: 'mt-2 text-xs leading-relaxed text-violet-900', role: 'note' }, dispConditionMeta.explanation)
+          ),
+
+          dispLevel === 'middle' && dispUsesSinker && h('section', {
+            className: 'rounded-xl border border-indigo-200 bg-indigo-50 p-3',
+            'data-sinker-method': 'true',
+            'aria-labelledby': 'volume-sinker-method-heading'
+          },
+            h('h4', { id: 'volume-sinker-method-heading', className: 'text-sm font-black text-indigo-950' }, 'Floating object: sinker correction'),
+            h('p', { className: 'mt-1 text-xs leading-relaxed text-indigo-950' }, 'The cork floats, so a metal sinker holds it fully underwater. Subtract the sinker\'s own displacement so only the cork volume remains.'),
+            h('ol', { className: 'mt-2 grid gap-2 text-xs sm:grid-cols-3' },
+              h('li', { className: 'rounded-lg bg-white p-2' }, h('strong', null, '1. Sinker alone: '), dispTrial.sinkerOnly + ' mL'),
+              h('li', { className: 'rounded-lg bg-white p-2' }, h('strong', null, '2. Sinker + cork: '), dispSubmerged && !dispOverflow ? dispTrial.final + ' mL' : 'hidden until measured'),
+              h('li', { className: 'rounded-lg bg-white p-2' }, h('strong', null, '3. Subtract: '), 'combined - sinker-only')
+            )
+          ),
+
+
+          dispLevel === 'middle' && h('section', {
+            className: 'rounded-xl border border-cyan-200 bg-white p-3',
+            'data-cylinder-setup': 'true',
+            'aria-labelledby': 'volume-cylinder-setup-heading'
+          },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('h4', { id: 'volume-cylinder-setup-heading', className: 'text-sm font-black text-cyan-950' }, 'Experimental setup'),
+              h('span', { className: 'rounded-full bg-cyan-50 px-2 py-1 text-xs font-black text-cyan-900' }, dispTrial.initial + ' mL starting water')
+            ),
+            h('label', { htmlFor: 'volume-initial-water', className: 'mt-2 block text-xs font-bold text-slate-700' }, 'Adjust the initial water level'),
+            h('input', {
+              id: 'volume-initial-water',
+              type: 'range',
+              min: 10,
+              max: 90,
+              step: 1,
+              value: dispTrial.initial,
+              onChange: function(e) { resetDisplacementTrial({ dispInitial: Number(e.target.value) }); },
+              'aria-label': 'Initial water level in milliliters',
+              'aria-describedby': 'volume-cylinder-capacity-note' + (dispInitialAdjusted ? ' volume-starting-level-comparison' : ''),
+              className: 'mt-2 w-full accent-cyan-700'
+            }),
+            h('p', { id: 'volume-cylinder-capacity-note', className: 'mt-1 text-xs text-cyan-950' },
+              'Cylinder capacity: 100 mL. Empty space above the water: ', h('strong', null, dispCapacityAssessment.headroom + ' mL'), '.'
+            ),
+            dispInitialAdjusted && h('p', {
+              id: 'volume-starting-level-comparison',
+              className: 'mt-2 rounded-lg border p-2 text-xs font-bold leading-relaxed ' + (dispSubmerged && dispOverflow ? 'border-rose-300 bg-rose-50 text-rose-900' : 'border-cyan-300 bg-cyan-50 text-cyan-950'),
+              role: dispSubmerged && dispOverflow ? 'alert' : 'status',
+              'aria-live': dispSubmerged && dispOverflow ? undefined : 'polite',
+              'data-starting-level-comparison': 'true',
+              'data-comparison-state': !dispSubmerged ? 'prediction' : (dispOverflow ? 'overflow' : 'observed'),
+              'data-overflow-feedback': dispSubmerged && dispOverflow ? 'true' : undefined
+            }, startingLevelComparison),
+            dispSubmerged && dispOverflow && !dispInitialAdjusted && h('p', {
+              className: 'mt-2 rounded-lg border border-rose-300 bg-rose-50 p-2 text-xs font-bold text-rose-900',
+              role: 'alert',
+              'data-overflow-feedback': 'true'
+            }, 'Overflow: water passed the 100 mL mark, so the final reading is unavailable. Lower the initial water level and repeat the trial.')
+          ),
+
+
+          h('div', { className: 'grid gap-4 xl:grid-cols-[1.15fr_0.85fr]' },
+            h('div', { className: 'rounded-xl border border-sky-200 bg-white p-3' },
+              h('div', { className: 'mb-3 flex flex-wrap items-center justify-between gap-2' },
+                h('div', null,
+                  h('p', { className: 'text-base font-black text-slate-900' }, dispObject.icon + ' ' + dispObject.label),
+                  h('p', { className: 'mt-0.5 text-xs text-slate-600' }, dispObject.note)
+                ),
+                h('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700' }, dispSubmerged ? (dispUsesSinker ? 'Sinker + object submerged' : (dispCondition === 'partial' ? 'Partly submerged' : 'Fully submerged')) : 'Ready to measure')
+              ),
+              dispObject.id === 'clay' && h('div', { className: 'mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2', 'data-clay-conservation': 'true' },
+                h('div', { className: 'min-w-0 flex-1' },
+                  h('p', { className: 'text-xs font-black text-amber-950' }, 'Same clay, different shape: ' + dispClayShapeMeta.label),
+                  h('p', { className: 'mt-0.5 text-xs leading-relaxed text-amber-900', role: dispClayReshaped ? 'status' : undefined, 'aria-live': 'polite' }, dispClayReshaped
+                    ? (dispSubmerged && dispOverflow
+                      ? 'No clay was added or removed, so its volume should stay the same. Overflow prevents a valid comparison; lower the initial water level and repeat.'
+                      : (dispSubmerged ? 'No clay was added or removed. The shape changed, but accepted volume stays ' + dispObject.volume + ' cm\u00B3 and the final reading stays ' + dispTrial.final + ' mL.' : 'No clay was added or removed. The shape changed, but its volume should stay the same. Lower it to test your prediction.'))
+                    : 'Reshape the same clay. Predict whether the water-level change will stay the same.')
+                ),
+                h('button', { type: 'button', onClick: reshapeClay, 'aria-label': 'Reshape clay; current shape ' + dispClayShapeMeta.label, className: 'min-h-[2.5rem] rounded-lg border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-950 hover:bg-amber-100' }, 'Reshape clay')
+              ),
+
+              h('div', { className: 'grid gap-2 ' + (dispUsesSinker ? 'grid-cols-3' : 'grid-cols-2') },
+                renderDisplacementCylinder('Initial reading', dispTrial.initial, false, false, false),
+                dispUsesSinker && renderDisplacementCylinder('Sinker only', dispTrial.sinkerOnly, 'sinker', false, false),
+                renderDisplacementCylinder(dispUsesSinker ? 'Sinker + object' : 'Final reading', dispSubmerged ? dispTrial.final : dispBaselineReading, dispUsesSinker ? 'combined' : 'object', !dispSubmerged, dispSubmerged && dispOverflow)
+              ),
+              dispSubmerged && h('div', {
+                className: 'mt-3 rounded-xl border p-3 text-center ' + (dispOverflow ? 'border-rose-300 bg-rose-50' : 'border-sky-300 bg-sky-50'),
+                role: 'status',
+                'aria-live': 'polite'
+              },
+                h('div', { className: 'font-mono text-lg font-black ' + (dispOverflow ? 'text-rose-950' : 'text-sky-950') },
+                  dispOverflow ? 'Final reading unavailable - revise the setup' : dispTrial.final + ' mL - ' + dispBaselineReading + ' mL = ?'
+                ),
+                h('p', { className: 'mt-1 text-xs ' + (dispOverflow ? 'text-rose-900' : 'text-sky-800') },
+                  dispOverflow
+                    ? 'Liquid left the cylinder, so the required subtraction cannot be calculated from this trial.'
+                    : (dispUsesSinker
+                      ? 'The sinker appears in both readings, so subtraction removes its displacement and leaves the object volume.'
+                      : (dispTrial.error === 0 ? 'With careful setup, the change in liquid volume is the object volume.' : 'This setup changes the reading. Calculate the observed change, then compare it with the accepted volume.'))
+                )
+              )
+            ),
+
+            h('div', { className: 'space-y-3' },
+              h('div', { className: 'rounded-xl border border-amber-200 bg-white p-3' },
+                h('label', { className: 'block text-sm font-black text-amber-900' },
+                  '1. Predict the object volume',
+                  h('span', { className: 'mt-1 block text-[11px] font-normal text-slate-600' }, 'Estimate before you see the final reading.'),
+                  h('div', { className: 'mt-2 flex items-center gap-2' },
+                    h('input', { 'aria-label': 'Predicted object volume in cubic centimeters',
+                      type: 'number', min: 0, max: 100, step: 1,
+                      value: dispPrediction,
+                      onChange: function(e) { upd({ dispPrediction: e.target.value }); },
+                      className: 'min-h-[2.75rem] min-w-0 flex-1 rounded-lg border-2 border-amber-300 px-3 py-2 font-mono text-base'
+                    }),
+                    h('span', { className: 'text-xs font-bold text-amber-900' }, 'cm\u00B3')
+                  )
+                )
+              ),
+
+              h('div', { className: 'rounded-xl border border-sky-200 bg-white p-3' },
+                h('p', { className: 'text-sm font-black text-sky-900' }, '2. Observe the water level'),
+                h('button', {
+                  type: 'button',
+                  onClick: lowerSpecimen,
+                  disabled: dispSubmerged,
+                  className: 'mt-2 min-h-[2.75rem] w-full rounded-lg bg-sky-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-sky-800 disabled:cursor-default disabled:bg-sky-200 disabled:text-sky-700'
+                }, dispUsesSinker ? (dispSubmerged ? '\u2713 Sinker and cork submerged' : '\u2193 Lower cork with sinker') : (dispSubmerged ? (dispCondition === 'partial' ? '\u2713 Object partly submerged' : '\u2713 Object submerged') : (dispCondition === 'partial' ? '\u2193 Lower object partway into water' : '\u2193 Lower object into water'))),
+                dispSubmerged && !dispOverflow && predictionReady && h('p', { className: 'mt-2 text-xs text-slate-700' },
+                  'Your prediction: ', h('strong', null, predictionNumber + ' cm\u00B3'), '. Difference from this reading: ', h('strong', null, predictionDifference + ' cm\u00B3'), '.'
+                )
+              ),
+
+              h('div', { className: 'rounded-xl border border-teal-200 bg-white p-3' },
+                h('label', { className: 'block text-sm font-black text-teal-900' },
+                  dispUsesSinker ? '3. Calculate combined - sinker-only' : '3. Calculate final - initial',
+                  h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+                    h('input', { 'aria-label': 'Calculated displaced volume in cubic centimeters',
+                      type: 'number', min: 0, max: 100, step: 1,
+                      value: dispAnswer,
+                      disabled: !dispSubmerged || dispOverflow || !!(dispFeedback && dispFeedback.correct),
+                      onChange: function(e) { upd({ dispAnswer: e.target.value, dispFeedback: null }); },
+                      onKeyDown: function(e) { if (e.key === 'Enter') checkDisplacementAnswer(); },
+                      className: 'min-h-[2.75rem] min-w-0 flex-1 rounded-lg border-2 border-teal-300 px-3 py-2 font-mono text-base disabled:bg-slate-100'
+                    }),
+                    h('span', { className: 'text-xs font-bold text-teal-900' }, 'cm\u00B3'),
+                    h('button', {
+                      type: 'button',
+                      onClick: checkDisplacementAnswer,
+                      disabled: !dispSubmerged || dispOverflow || dispAnswer === '' || !!(dispFeedback && dispFeedback.correct),
+                      className: 'min-h-[2.75rem] rounded-lg bg-teal-700 px-4 py-2 text-sm font-black text-white hover:bg-teal-800 disabled:opacity-40'
+                    }, 'Check')
+                  )
+                ),
+                dispFeedback && h('p', {
+                  className: 'mt-2 rounded-lg border p-2 text-xs font-bold leading-relaxed ' + (dispFeedback.correct ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-rose-300 bg-rose-50 text-rose-900'),
+                  role: 'status', 'aria-live': 'polite'
+                }, dispFeedback.msg),
+                dispFeedback && dispFeedback.correct && dispObject.formula && h('p', { className: 'mt-2 rounded-lg bg-indigo-50 p-2 text-xs text-indigo-900' },
+                  h('strong', null, 'Formula check: '), dispObject.formula, '. ',
+                  dispTrial.error === 0
+                    ? 'Both methods agree.'
+                    : 'The displacement result is ' + dispTrial.measuredVolume + ' cm\u00B3 (difference: ' +
+                      (dispTrial.error > 0 ? '+' : '') + dispTrial.error + ' cm\u00B3). ' +
+                      'This condition introduced measurement error.'
+                )
+              ),
+
+              dispLevel === 'middle' && dispFeedback && dispFeedback.correct && h('div', { className: 'rounded-xl border border-violet-200 bg-violet-50 p-3' },
+                h('h4', { className: 'text-sm font-black text-violet-950' }, 'Middle school extension: accuracy and density'),
+                h('dl', { className: 'mt-2 grid grid-cols-2 gap-2 text-xs' },
+                  h('div', { className: 'rounded-lg bg-white p-2' }, h('dt', { className: 'font-bold text-slate-600' }, 'Accepted volume'), h('dd', { className: 'font-mono font-black text-slate-900' }, dispTrial.acceptedVolume + ' cm\u00B3')),
+                  h('div', { className: 'rounded-lg bg-white p-2' }, h('dt', { className: 'font-bold text-slate-600' }, 'Measurement error'), h('dd', { className: 'font-mono font-black text-slate-900' }, (dispTrial.error > 0 ? '+' : '') + dispTrial.error + ' cm\u00B3')),
+                  h('div', { className: 'col-span-2 rounded-lg bg-white p-2' }, h('dt', { className: 'font-bold text-slate-600' }, 'Density = mass / accepted volume'), h('dd', { className: 'font-mono font-black text-slate-900' }, dispObject.mass + ' g / ' + dispObject.volume + ' cm\u00B3 = ' + density + ' g/cm\u00B3'))
+                ),
+                h('p', { className: 'mt-2 text-xs text-violet-900' }, density < 1
+                  ? density + ' g/cm\u00B3 is less than water\'s density (about 1 g/cm\u00B3), so this specimen floats. The sinker holds it fully underwater without counting the sinker as part of its volume.'
+                  : density + ' g/cm\u00B3 is greater than water\'s density (about 1 g/cm\u00B3), so this specimen tends to sink.')
+              ),
+
+              h('div', { className: 'flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: nextSpecimen, className: 'min-h-[2.5rem] flex-1 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-black text-white hover:bg-indigo-800' }, 'Next specimen'),
+                h('button', { type: 'button', onClick: function() { resetDisplacementTrial({}); announceToSR('Trial reset.'); }, className: 'min-h-[2.5rem] rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100' }, 'Reset trial')
+              )
+            )
+          ),
+
+          h('div', { className: 'grid gap-3 lg:grid-cols-2' },
+            h('div', { className: 'rounded-xl border border-emerald-200 bg-white p-3' },
+              h('label', { className: 'block text-sm font-black text-emerald-900' },
+                'Explain what the water showed',
+                h('span', { className: 'mt-1 block text-[11px] font-normal text-slate-600' }, 'Sentence starter: The object\'s volume is ___ because...'),
+                h('textarea', { 'aria-label': 'Explain the displacement evidence in your own words',
+                  rows: 3,
+                  maxLength: 600,
+                  value: dispExplanation,
+                  onChange: function(e) { upd({ dispExplanation: e.target.value }); },
+                  placeholder: 'The object\'s volume is ... because the water level changed from ... to ...',
+                  className: 'mt-2 w-full rounded-lg border-2 border-emerald-200 p-2 text-sm leading-relaxed',
+                })
+              )
+            ),
+            h('aside', { className: 'rounded-xl border border-cyan-200 bg-cyan-50 p-3', 'aria-label': 'Water displacement reminders' },
+              h('h4', { className: 'text-sm font-black text-cyan-950' }, 'Measurement reminders'),
+              h('ul', { className: 'mt-2 list-disc space-y-1 pl-5 text-xs leading-relaxed text-cyan-950' },
+                h('li', null, dispUsesSinker ? 'Use combined - sinker-only, not combined - initial.' : 'Use final - initial, not the final reading alone.'),
+                h('li', null, 'Read water at the bottom of its curved meniscus and at eye level.'),
+                h('li', null, 'The object must be fully submerged without trapping air.'),
+                h('li', null, 'Use this method only when the object does not dissolve or absorb water.')
+              )
+            )
+          ),
+
+          dispLevel === 'middle' && trialSummary.count > 0 && h('section', {
+            className: 'rounded-xl border border-violet-200 bg-violet-50 p-3',
+            'aria-labelledby': 'volume-accuracy-evidence-heading'
+          },
+            h('h4', { id: 'volume-accuracy-evidence-heading', className: 'text-sm font-black text-violet-950' }, 'Accuracy evidence across trials'),
+            h('p', { className: 'mt-1 text-xs leading-relaxed text-violet-950', role: 'status' }, trialSummary.conclusion),
+            h('dl', { className: 'mt-2 grid gap-2 text-xs sm:grid-cols-3' },
+              h('div', { className: 'rounded-lg bg-white p-2' },
+                h('dt', { className: 'font-bold text-slate-600' }, 'Mean signed error'),
+                h('dd', { className: 'font-mono font-black text-slate-900' }, formatDisplacementError(trialSummary.meanError) + ' cm\u00B3')
+              ),
+              h('div', { className: 'rounded-lg bg-white p-2' },
+                h('dt', { className: 'font-bold text-slate-600' }, 'Mean absolute error'),
+                h('dd', { className: 'font-mono font-black text-slate-900' }, trialSummary.meanAbsoluteError + ' cm\u00B3')
+              ),
+              h('div', { className: 'rounded-lg bg-white p-2' },
+                h('dt', { className: 'font-bold text-slate-600' }, 'Matched accepted volume'),
+                h('dd', { className: 'font-mono font-black text-slate-900' }, trialSummary.accurate + ' of ' + trialSummary.count)
+              )
+            ),
+            renderTrialErrorPlot()
+          ),
+
+
+          dispTrials.length > 0 && h('div', { className: 'rounded-xl border border-slate-200 bg-white p-3' },
+            h('div', { className: 'flex items-center justify-between gap-2' },
+              h('h4', { className: 'text-sm font-black text-slate-900' }, 'Trial record'),
+              h('span', { className: 'text-xs font-bold text-sky-800' }, dispSolved + ' completed')
+            ),
+            h('div', { className: 'mt-2 overflow-x-auto' },
+              h('table', { className: 'w-full min-w-[780px] border-collapse text-left text-xs' },
+                h('thead', null, h('tr', { className: 'bg-slate-100 text-slate-700' },
+                  ['Specimen', 'Baseline reading', 'Final', 'Measured volume', 'Accepted volume', 'Error', 'Condition'].map(function(head) {
+                    return h('th', { key: head, scope: 'col', className: 'border border-slate-200 px-2 py-1.5 font-black' }, head);
+                  })
+                )),
+                h('tbody', null, dispTrials.slice().reverse().map(function(trial) {
+
+                  var accepted = trial.accepted == null ? NaN : Number(trial.accepted);
+                  var baseline = trial.baseline == null ? Number(trial.initial) : Number(trial.baseline);
+                  var measured = trial.measured == null ? NaN : Number(trial.measured);
+                  var storedError = trial.error == null ? NaN : Number(trial.error);
+                  var error = Number.isFinite(storedError)
+                    ? storedError
+                    : (Number.isFinite(measured) && Number.isFinite(accepted) ? measured - accepted : NaN);
+                  return h('tr', { key: trial.id },
+                    h('th', { scope: 'row', className: 'border border-slate-200 px-2 py-1.5 font-bold text-slate-900' }, trial.object),
+                    h('td', { className: 'border border-slate-200 px-2 py-1.5 font-mono' }, Number.isFinite(baseline) ? baseline + ' mL' : '\u2014'),
+                    h('td', { className: 'border border-slate-200 px-2 py-1.5 font-mono' }, trial.final + ' mL'),
+                    h('td', { className: 'border border-slate-200 px-2 py-1.5 font-mono font-bold' }, trial.measured + ' cm\u00B3'),
+                    h('td', { className: 'border border-slate-200 px-2 py-1.5 font-mono' }, Number.isFinite(accepted) ? accepted + ' cm\u00B3' : '\u2014'),
+                    h('td', { className: 'border border-slate-200 px-2 py-1.5 font-mono font-bold' }, Number.isFinite(error) ? formatDisplacementError(error) + ' cm\u00B3' : '\u2014'),
+                    h('td', { className: 'border border-slate-200 px-2 py-1.5' }, trial.condition)
+                  );
+                }))
+              )
+            )
+          )
+        );
+      }
+
       // ── Earned badges count ──
       var earnedBadges = BADGES.filter(function(b) { return badges[b.id]; });
       var earnedCount = earnedBadges.length;
 
       // ══════════ RENDER ══════════
-      var bgClass = isWord ? 'allo-vol-bg-word' : (isFreeform ? 'allo-vol-bg-freeform' : 'allo-vol-bg-slider');
-      var volumeModeLabel = isWord ? 'Word problem' : (isFreeform ? 'Freeform' : 'Dimensions');
-      var volumeNext = isFreeform && positions.length === 0
+      var bgClass = isDisplacement ? 'allo-vol-bg-displacement' : (isWord ? 'allo-vol-bg-word' : (isFreeform ? 'allo-vol-bg-freeform' : 'allo-vol-bg-slider'));
+      var volumeModeLabel = isDisplacement ? 'Displacement' : (isWord ? 'Word problem' : (isFreeform ? 'Freeform' : 'Dimensions'));
+      var volumeNext = isDisplacement
+        ? (dispSubmerged && dispOverflow
+          ? 'Lower the initial water level and repeat so the final reading stays within the cylinder.'
+          : (dispObject.id === 'clay' && !dispClayReshaped
+            ? 'Reshape the clay without adding or removing material, then predict whether its volume will change.'
+            : (dispInitialAdjusted && !dispSubmerged
+              ? 'Predict whether changing the starting water level will change the displacement difference.'
+              : (dispUsesSinker
+                ? (dispSubmerged ? 'Subtract the sinker-only reading from the sinker-plus-object reading, then explain why the sinker cancels out.' : 'Predict the cork volume, then record the sinker-only reading before lowering both together.')
+                : (dispSubmerged ? 'Subtract the initial reading from the final reading, then explain what the change represents.' : (dispCondition === 'partial' ? 'Predict the specimen volume, then lower it only partway to observe the resulting error.' : 'Predict the specimen volume, then lower it fully into the water.'))))))
+        : isFreeform && positions.length === 0
         ? 'Place unit cubes, count one layer, then predict the total before finishing.'
         : isWord
           ? 'Identify length, width, and height in the context before multiplying.'
           : score.total === 0
             ? 'Predict the volume, then use layers to verify length × width × height.'
             : 'Change one dimension and explain how volume and surface area respond.';
+      var headerDescription = isDisplacement
+        ? 'Measure irregular solids with water, connect milliliters to cubic centimeters, and reason from experimental evidence.'
+        : 'Build solids from unit cubes, connect layers to multiplication, and justify volume with spatial evidence.';
+      var volumePathway = isDisplacement ? [
+        { n: '1', title: 'Predict', detail: 'Estimate before measuring.' },
+        { n: '2', title: 'Measure', detail: 'Read initial and final levels.' },
+        { n: '3', title: 'Explain', detail: 'Use the change as evidence.' }
+      ] : [
+        { n: '1', title: 'Build', detail: 'Set dimensions or place cubes.' },
+        { n: '2', title: 'Count', detail: 'Find cubes per layer and layers.' },
+        { n: '3', title: 'Generalize', detail: 'Connect the model to a formula.' }
+      ];
 
       return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200 ' + bgClass },
         // Header
@@ -1310,10 +2219,10 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'flex items-center gap-2' },
                   h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-300', 'aria-label': __alloT('stem.volume.back', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-                  h('span', { className: 'rounded-full bg-emerald-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-100 ring-1 ring-emerald-200/30' }, 'Volume design brief')
+                  h('span', { className: 'rounded-full bg-emerald-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-100 ring-1 ring-emerald-200/30' }, isDisplacement ? 'Measurement lab' : 'Volume design brief')
                 ),
                 h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, __alloT('stem.volume.3d_volume_explorer', '\uD83D\uDCE6 3D Volume Explorer')),
-                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-emerald-100' }, 'Build solids from unit cubes, connect layers to multiplication, and justify volume with spatial evidence.'),
+                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-emerald-100' }, headerDescription),
                 h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
                   h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-emerald-200' }, 'Recommended next move'),
                   h('p', { className: 'mt-1 text-sm font-semibold text-white' }, volumeNext)
@@ -1322,7 +2231,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
                 [
                   { label: 'Mode', value: volumeModeLabel },
-                  { label: 'Volume', value: String(Math.round(volume * 100) / 100) },
+                  { label: 'Volume', value: isDisplacement ? (dispSubmerged ? dispTrial.measuredVolume + ' mL' : '?') : String(Math.round(volume * 100) / 100) },
                   { label: 'Solved', value: String(score.correct) }
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
@@ -1332,12 +2241,8 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Volume reasoning pathway' },
-              [
-                { n: '1', title: 'Build', detail: 'Set dimensions or place cubes.' },
-                { n: '2', title: 'Count', detail: 'Find cubes per layer and layers.' },
-                { n: '3', title: 'Generalize', detail: 'Connect the model to a formula.' }
-              ].map(function(step) {
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': isDisplacement ? 'Displacement investigation pathway' : 'Volume reasoning pathway' },
+              volumePathway.map(function(step) {
                 return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
                   h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-300 font-black text-slate-950' }, step.n),
                   h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-emerald-200' }, step.detail))
@@ -1352,7 +2257,7 @@ window.StemLab = window.StemLab || {
             (_v.attemptHist && _v.attemptHist.length > 1) && h('div', { className: 'flex items-center gap-px', title: __alloT('stem.volume.recent_attempts_newest_at_right', 'Recent attempts (newest at right)'), role: 'img', 'aria-label': _v.attemptHist.slice(-12).filter(function (x) { return x; }).length + ' correct of your last ' + Math.min(12, _v.attemptHist.length) + ' attempts' },
               _v.attemptHist.slice(-12).map(function (v, i) { return h('span', { key: i, className: 'inline-block w-1 h-3.5 rounded-sm ' + (v ? 'bg-emerald-500' : 'bg-rose-400') }); })),
             streak >= 2 && h('div', {
-              className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
+              className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full' + (reducedMotion ? '' : ' animate-pulse')
             }, '\uD83D\uDD25 ' + streak + ' streak!'),
             earnedCount > 0 && h('button', { onClick: function() { upd({ showBadges: !showBadges }); },
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
@@ -1364,7 +2269,7 @@ window.StemLab = window.StemLab || {
             }, __alloT('stem.volume.ai', '\uD83E\uDDE0 AI'))
           ),
           h('div', { className: 'flex-1' }),
-          // Mode toggle (now 3 options: Slider / Freeform / Word Problems)
+          // Mode toggle: dimensions, freeform, word problems, and displacement.
           h('div', { className: 'flex items-center gap-1 overflow-x-auto bg-emerald-50 rounded-lg p-1 border border-emerald-200', role: 'tablist', 'aria-label': __alloT('stem.volume.volume_modes', 'Volume modes') },
             h('button', { 'aria-label': __alloT('stem.volume.slider_mode', 'Slider mode'),
               onClick: function() { upd({ mode: 'slider', builderChallenge: null, builderFeedback: null }); },
@@ -1386,7 +2291,13 @@ window.StemLab = window.StemLab || {
               role: 'tab', 'aria-selected': isWord,
               className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ' + (isWord ? 'bg-white text-amber-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
               title: __alloT('stem.volume.word_problems_mode_w', 'Word Problems mode (W)')
-            }, __alloT('stem.volume.word', '\uD83D\uDCDD Word'))),
+            }, __alloT('stem.volume.word', '\uD83D\uDCDD Word')),
+            h('button', { 'aria-label': 'Water Displacement Lab mode',
+              onClick: function() { upd({ mode: 'displacement', challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, showBuildLibrary: false }); announceToSR('Water Displacement Lab opened.'); },
+              role: 'tab', 'aria-selected': isDisplacement,
+              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-sky-400 ' + (isDisplacement ? 'bg-white text-sky-800 shadow-sm' : 'text-emerald-500 hover:text-sky-700'),
+              title: 'Water Displacement Lab mode (D)'
+            }, '\uD83E\uDDEA Displacement')),
           // Mute toggle
           h('button', {
             onClick: function() {
@@ -1412,6 +2323,8 @@ window.StemLab = window.StemLab || {
                 builderChallenge: null, builderFeedback: null,
                 paintSurfaceArea: false,
                 wpAnswer: '', wpFeedback: null, wpCtxIdx: 0,
+                dispObjectId: 'stone', dispLevel: 'elementary', dispCondition: 'careful', dispSubmerged: false, dispPrediction: '', dispAnswer: '', dispFeedback: null, dispExplanation: '',
+                dispClayShape: 'lump', dispClayReshaped: false,
                 shape: 'prism', showCrossSection: false, showNet: false, showCompare: false, netFold: 0
               });
               announceToSR('Volume explorer reset');
@@ -1421,7 +2334,7 @@ window.StemLab = window.StemLab || {
             className: 'text-[11px] font-bold px-2 py-0.5 ml-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
           }, __alloT('stem.volume.reset_2', '\u21BA Reset')),
           // Paint toggle
-          h('button', { 'aria-label': __alloT('stem.volume.toggle_paint_p', 'Toggle paint (P)'),
+          !isDisplacement && h('button', { 'aria-label': __alloT('stem.volume.toggle_paint_p', 'Toggle paint (P)'),
             onClick: function() {
               upd({ paintSurfaceArea: !paintSurfaceArea });
               if (!badges.surfaceExplorer) checkBadges({ surfaceExplorer: true });
@@ -1430,7 +2343,7 @@ window.StemLab = window.StemLab || {
             title: __alloT('stem.volume.toggle_paint_p_2', 'Toggle paint (P)')
           }, paintSurfaceArea ? '\uD83E\uDDFC Wash Paint' : '\uD83C\uDFA8 Paint Surface'),
           // Zoom
-          h('div', { className: 'flex items-center gap-1' },
+          !isDisplacement && h('div', { className: 'flex items-center gap-1' },
             h('button', { 'aria-label': __alloT('stem.volume.zoom_out', 'Zoom out'), onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-600 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
             h('span', { className: 'text-[11px] text-emerald-600 font-mono w-10 text-center' }, Math.round(scale*100)+'%'),
             h('button', { 'aria-label': __alloT('stem.volume.zoom_in', 'Zoom in'), onClick: function() { upd({ scale: Math.min(2.5, scale + 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-600 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '+'),
@@ -1467,7 +2380,7 @@ window.StemLab = window.StemLab || {
           ),
           aiLoading
             ? h('div', { className: 'flex items-center gap-2' },
-                h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
+                h('div', { 'aria-hidden': 'true', className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full' + (reducedMotion ? '' : ' animate-spin') }),
                 h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
               )
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, aiResponse),
@@ -1482,9 +2395,10 @@ window.StemLab = window.StemLab || {
           var MODE_META = {
             slider:   { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83C\uDF9A', title: __alloT('stem.volume.slider_v_l_w_h_watch_it_grow', 'Slider \u2014 V = l \u00d7 w \u00d7 h, watch it grow'),     hint: __alloT('stem.volume.sliders_snap_to_integer_dimensions_gre', 'Sliders snap to integer dimensions \u2014 great for the early visual: doubling each side multiplies volume by 8 (2\u00b3). Surface area scales as 2\u00b2; volume as 2\u00b3. The square-cube law explains why elephants have thick legs and shrews can fall safely.') },
             freeform: { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83E\uDDF1', title: __alloT('stem.volume.freeform_build_any_shape_count_cubes', 'Freeform \u2014 build any shape, count cubes'),         hint: __alloT('stem.volume.l_blocks_hollow_shapes_irregular_prism', 'L-blocks, hollow shapes, irregular prisms. Volume = total cubes regardless of arrangement. CCSS 5.MD.5: relate volume of a right rectangular prism to multiplication and addition (V = b\u00d7h or as the sum of partial volumes).') },
-            word:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDCDD', title: __alloT('stem.volume.word_problems_volume_in_the_real_world', 'Word Problems \u2014 volume in the real world'),        hint: __alloT('stem.volume.a_fish_tank_with_5_3_4_60_cubes_of_wat', 'A fish tank with 5\u00d73\u00d74 = 60 cubes of water. A lunchbox of 4\u00d73\u00d72 = 24 sandwich cubes. Every multiplication of three dimensions is a real container with a real capacity. CCSS 5.MD.5b: solve real-world problems involving volume.') }
+            word:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDCDD', title: __alloT('stem.volume.word_problems_volume_in_the_real_world', 'Word Problems \u2014 volume in the real world'),        hint: __alloT('stem.volume.a_fish_tank_with_5_3_4_60_cubes_of_wat', 'A fish tank with 5\u00d73\u00d74 = 60 cubes of water. A lunchbox of 4\u00d73\u00d72 = 24 sandwich cubes. Every multiplication of three dimensions is a real container with a real capacity. CCSS 5.MD.5b: solve real-world problems involving volume.') },
+            displacement: { accent: '#0369a1', soft: 'rgba(2,132,199,0.12)', icon: '\uD83E\uDDEA', title: 'Displacement Lab - measure volume with water', hint: dispUsesSinker ? 'Predict, record the sinker-only reading, fully submerge the cork with the sinker, and use combined minus sinker-only. The change in milliliters equals the cork volume in cubic centimeters.' : 'Predict, read the bottom of the meniscus, fully submerge the specimen, and use final minus initial. The change in milliliters equals the object volume in cubic centimeters.' }
           };
-          var modeKey = isWord ? 'word' : (isFreeform ? 'freeform' : 'slider');
+          var modeKey = isDisplacement ? 'displacement' : (isWord ? 'word' : (isFreeform ? 'freeform' : 'slider'));
           var meta = MODE_META[modeKey];
           return h('div', {
             style: {
@@ -1505,6 +2419,8 @@ window.StemLab = window.StemLab || {
           );
         })(),
 
+        // Dedicated inquiry surface for water displacement.
+        isDisplacement && renderDisplacementLab(),
         // Word problem story panel (when in word mode)
         isWord && (function() {
           var ctx2 = WORD_CONTEXTS[wpCtxIdx % WORD_CONTEXTS.length];
@@ -1536,7 +2452,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
               h('p', { className: 'text-base font-bold text-amber-900 leading-relaxed mb-3' }, '📖 ' + story),
               h('div', { className: 'flex gap-2 items-center' },
-                h('input', {
+                h('input', { 'aria-label': __alloT('stem.volume.volume_answer_for_word_problem', 'Volume answer for word problem'),
                   type: 'number', value: wpAnswer,
                   onChange: function(e) { upd({ wpAnswer: e.target.value }); },
                   onKeyDown: function(e) {
@@ -1562,7 +2478,6 @@ window.StemLab = window.StemLab || {
                     }
                   },
                   placeholder: __alloT('stem.volume.v', 'V = ?'),
-                  'aria-label': __alloT('stem.volume.volume_answer_for_word_problem', 'Volume answer for word problem'),
                   className: 'flex-1 px-3 py-2 border-2 border-amber-600 rounded-lg text-base font-mono'
                 }),
                 h('span', { className: 'text-xs font-bold text-amber-700' }, ctx2.unit),
@@ -1612,8 +2527,8 @@ window.StemLab = window.StemLab || {
           ['l','w','h'].map(function(dim) {
             var label = dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height';
             return h('div', { key: dim, className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-100' },
-              h('label', { className: 'block text-xs text-emerald-700 mb-1 font-bold uppercase' }, label),
-              h('input', {
+              h('label', { htmlFor: 'volume-dimension-' + dim, className: 'block text-xs text-emerald-700 mb-1 font-bold uppercase' }, label),
+              h('input', { id: 'volume-dimension-' + dim,
                 type: 'range',
                 min: _v.allowFractional ? '0.5' : '1',
                 max: '10',
@@ -1643,7 +2558,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // Freeform instructions
-        !isSlider && h('div', { className: 'flex items-center gap-2 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
+        isFreeform && h('div', { className: 'flex items-center gap-2 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
           h('p', { className: 'text-xs text-indigo-600 flex-1' }, __alloT('stem.volume.click_grid_to_place_cubes_click_cube_t', '\uD83D\uDC49 Click grid to place cubes \u2022 Click cube to remove \u2022 Click above to stack')),
           h('button', { 'aria-label': __alloT('stem.volume.undo_last_placement_u', 'Undo last placement (U)'),
             onClick: doUndo,
@@ -1659,7 +2574,7 @@ window.StemLab = window.StemLab || {
 
         // 3D viewport — pointer events (mouse + touch + pen), pinch-to-zoom,
         // keyboard rotation. tabIndex=0 makes it focusable for keyboard users.
-        h('div', {
+        !isDisplacement && h('div', {
           className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none focus:outline-none focus:ring-2 focus:ring-emerald-400',
           style: { minHeight: '350px', perspective: '900px', touchAction: 'none' },
           tabIndex: 0,
@@ -1682,9 +2597,9 @@ window.StemLab = window.StemLab || {
 
         // Layer slider (slider mode)
         isSlider && h('div', { className: 'flex items-center gap-2 bg-emerald-50 rounded-lg p-2 border border-emerald-100' },
-          h('span', { className: 'text-xs font-bold text-emerald-700' }, 'Layers:'),
-          h('input', {
-            type: 'range', 'aria-label': __alloT('stem.volume.volume_slider', 'Volume slider'), min: '1', max: dims.h,
+          h('label', { htmlFor: 'volume-visible-layers', className: 'text-xs font-bold text-emerald-700' }, 'Layers:'),
+          h('input', { id: 'volume-visible-layers',
+            type: 'range', min: '1', max: dims.h,
             value: showLayers != null ? showLayers : dims.h,
             onChange: function(e) {
               var lv = parseInt(e.target.value);
@@ -1808,8 +2723,8 @@ window.StemLab = window.StemLab || {
         // Cross-section slice slider
         isSlider && showCrossSection && h('div', { className: 'bg-rose-50 rounded-lg p-2 border border-rose-200' },
           h('div', { className: 'flex items-center gap-2' },
-            h('span', { className: 'text-[11px] font-bold text-rose-700' }, __alloT('stem.volume.cut_at_layer', '✂ Cut at layer:')),
-            h('input', {
+            h('label', { htmlFor: 'volume-cross-section-layer', className: 'text-[11px] font-bold text-rose-700' }, __alloT('stem.volume.cut_at_layer', '✂ Cut at layer:')),
+            h('input', { id: 'volume-cross-section-layer',
               type: 'range', min: '0', max: Math.max(0, Math.ceil(dims.h) - 1),
               value: Math.min(crossSectionLayer, Math.ceil(dims.h) - 1),
               onChange: function(e) {
@@ -1847,7 +2762,7 @@ window.StemLab = window.StemLab || {
         isSlider && shape === 'prism' && showCompare && renderCompare(),
 
         // Stats
-        h('div', { className: 'grid grid-cols-2 gap-3' },
+        !isDisplacement && h('div', { className: 'grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-100 text-center flex flex-col items-center justify-center' },
             h('div', { className: 'text-xs font-bold text-emerald-600 uppercase mb-1' }, __alloT('stem.volume.volume', 'Volume')),
             h('div', { className: 'text-xl font-bold text-emerald-800' },
@@ -1860,10 +2775,10 @@ window.StemLab = window.StemLab || {
               ) : h('span', null,
                 h('span', { className: 'text-2xl text-emerald-600' },
                   (isSlider && challenge && !feedback) ? '?' :
-                  (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? '?' : volume))
+                  (isFreeform && builderChallenge && builderChallenge.type === 'volume') ? '?' : volume))
             ),
             (isSlider && challenge && !feedback) ? null :
-            (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? null :
+            (isFreeform && builderChallenge && builderChallenge.type === 'volume') ? null :
             h('div', { className: 'text-xs text-slate-600' }, volume + ' unit cube' + (volume !== 1 ? 's' : ''))
           ),
           h('div', { className: 'bg-white rounded-xl p-3 border border-teal-100 text-center' },
@@ -1871,14 +2786,14 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xl font-bold text-teal-800' },
               __alloT('stem.volume.sa', 'SA = '), h('span', { className: 'text-2xl text-teal-600' },
                 (isSlider && challenge && !feedback) ? '?' :
-                (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? '?' : surfaceArea)),
+                (isFreeform && builderChallenge && builderChallenge.type === 'volume') ? '?' : surfaceArea)),
             isSlider && !challenge && h('div', { className: 'text-xs text-slate-600' },
               '2('+dims.l+'\u00d7'+dims.w+' + '+dims.l+'\u00d7'+dims.h+' + '+dims.w+'\u00d7'+dims.h+')')
           )
         ),
 
         // === H7b'' inquiry widget: volume predictor ===
-        (function() {
+        !isDisplacement && (function() {
           var iq = _v._volPred || { lpred: 3, wpred: 3, hpred: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
           function setIQ(patch) { upd({ _volPred: Object.assign({}, iq, patch) }); }
           var predicted = iq.lpred * iq.wpred * iq.hpred;
@@ -1911,7 +2826,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() { setIQ({ lpred: 3, wpred: 3, hpred: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.volume.reset_3', '↺ Reset')),
               (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.volume.hypothesis_how_do_you_build_intuition_', 'Hypothesis: How do you build intuition for predicting volume?'),
+            h('textarea', { id: 'volume-predictor-hypothesis', 'aria-label': 'Volume prediction hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.volume.hypothesis_how_do_you_build_intuition_', 'Hypothesis: How do you build intuition for predicting volume?'),
               className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' }, __alloT('stem.volume.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700 leading-relaxed mb-2' },
@@ -1922,14 +2837,14 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
               __alloT('stem.volume.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.volume.explain_how_each_dimension_contributes', 'Explain how each dimension contributes to total volume.'),
+            iq.understood && h('textarea', { id: 'volume-predictor-explanation', 'aria-label': 'Explain how each dimension contributes to total volume', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.volume.explain_how_each_dimension_contributes', 'Explain how each dimension contributes to total volume.'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
             h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.volume.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no exact-volume score; no reveal — by design.'))
           );
         })(),
 
         // Challenge buttons (skip in word mode — it has its own challenge built in)
-        !isWord && h('div', { className: 'flex gap-2 flex-wrap' },
+        !isWord && !isDisplacement && h('div', { className: 'flex gap-2 flex-wrap' },
           mode === 'slider' ? h(React.Fragment, null,
             h('button', { 'aria-label': __alloT('stem.volume.random_challenge', 'Random Challenge'),
               onClick: function() {
@@ -1975,7 +2890,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // \u2500\u2500 Buildable challenge library panel \u2500\u2500
-        !isWord && showBuildLibrary && h('div', { className: 'bg-gradient-to-br from-pink-50 to-fuchsia-50 rounded-xl p-3 border-2 border-pink-200 space-y-2' },
+        isFreeform && showBuildLibrary && h('div', { className: 'bg-gradient-to-br from-pink-50 to-fuchsia-50 rounded-xl p-3 border-2 border-pink-200 space-y-2' },
           h('div', { className: 'flex items-center justify-between' },
             h('p', { className: 'text-sm font-bold text-pink-800' }, __alloT('stem.volume.buildable_challenges_pick_a_structure_', '\uD83D\uDCDA Buildable challenges \u2014 pick a structure to try')),
             h('button', { onClick: function() { upd({ showBuildLibrary: false }); }, 'aria-label': __alloT('stem.volume.close_library', 'Close library'), className: 'text-xs text-pink-600 hover:text-pink-800' }, '\u00D7')
@@ -2017,7 +2932,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // Show library-challenge hint when one is active
-        !isSlider && builderChallenge && builderChallenge.library && h('div', { className: 'bg-pink-50 rounded-lg p-2 border border-pink-200' },
+        isFreeform && builderChallenge && builderChallenge.library && h('div', { className: 'bg-pink-50 rounded-lg p-2 border border-pink-200' },
           h('p', { className: 'text-[11px] text-pink-800' },
             __alloT('stem.volume.building', '\uD83D\uDCDA Building: '), h('b', null, builderChallenge.shape),
             __alloT('stem.volume.target_v', ' \u00B7 Target V = '), h('b', null, builderChallenge.answer),
@@ -2039,11 +2954,11 @@ window.StemLab = window.StemLab || {
         isSlider && challenge && h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
           h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, __alloT('stem.volume.what_is_the_volume', '\uD83E\uDD14 What is the volume?')),
           h('div', { className: 'flex gap-2 items-center' },
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.volume.volume_answer', 'Volume answer'),
               type: 'number', value: answer,
               onChange: function(e) { upd({ answer: e.target.value }); },
               onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
-              placeholder: __alloT('stem.volume.v_2', 'V = ?'), 'aria-label': __alloT('stem.volume.volume_answer', 'Volume answer'), className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono'
+              placeholder: __alloT('stem.volume.v_2', 'V = ?'), className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono'
             }),
             h('button', { 'aria-label': __alloT('stem.volume.check_2', 'Check'),
               onClick: checkChallenge, disabled: !answer,
@@ -2058,7 +2973,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // Builder challenge (freeform mode)
-        !isSlider && builderChallenge && h('div', { className: 'bg-indigo-50 rounded-lg p-3 border border-indigo-200' },
+        isFreeform && builderChallenge && h('div', { className: 'bg-indigo-50 rounded-lg p-3 border border-indigo-200' },
           h('p', { className: 'text-sm font-bold text-indigo-800 mb-2' },
             builderChallenge.type === 'prism'
               ? '\uD83C\uDFD7\uFE0F Build a '+builderChallenge.target.l+'\u00d7'+builderChallenge.target.w+'\u00d7'+builderChallenge.target.h+' rectangular prism'
@@ -2079,7 +2994,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── v4: Tools row — units, fractional, save/load, export ──
-        h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-200 space-y-2' },
+        !isDisplacement && h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-200 space-y-2' },
           h('div', { className: 'flex flex-wrap items-center gap-2' },
             // Real-world unit selector
             h('label', { className: 'text-[11px] font-bold text-emerald-700 mr-1' }, __alloT('stem.volume.display_as', '📏 Display as:')),
@@ -2124,6 +3039,7 @@ window.StemLab = window.StemLab || {
             }, __alloT('stem.volume.save', '💾 Save')),
             // Toggle saved-list panel
             h('button', {
+              id: 'volume-saved-toggle',
               onClick: function() { upd({ showSaved: !showSaved }); },
               'aria-expanded': showSaved,
               'aria-label': __alloT('stem.volume.show_saved_constructions', 'Show saved constructions'),
@@ -2170,11 +3086,7 @@ window.StemLab = window.StemLab || {
                         className: 'px-2 py-0.5 rounded text-[10px] font-bold bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100'
                       }, __alloT('stem.volume.load', 'Load')),
                       h('button', {
-                        onClick: function() {
-                          if (typeof window !== 'undefined' && window.confirm && window.confirm('Delete "' + name + '"?')) {
-                            deleteSaved(name);
-                          }
-                        },
+                        onClick: function() { requestDeleteSaved(name); },
                         'aria-label': 'Delete ' + name,
                         title: __alloT('stem.volume.delete_this_construction', 'Delete this construction'),
                         className: 'px-2 py-0.5 rounded text-[10px] font-bold bg-white text-rose-700 border border-rose-300 hover:bg-rose-100'
@@ -2186,10 +3098,11 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Keyboard shortcuts legend ──
-        h('div', { className: 'text-[11px] text-slate-600 text-center space-x-3' },
+        !isDisplacement && h('div', { className: 'text-[11px] text-slate-600 text-center space-x-3' },
           h('span', null, __alloT('stem.volume.s_slider', 'S Slider')),
           h('span', null, __alloT('stem.volume.f_freeform', 'F Freeform')),
           h('span', null, __alloT('stem.volume.w_word', 'W Word')),
+          h('span', null, 'D Displacement'),
           h('span', null, __alloT('stem.volume.n_challenge', 'N Challenge')),
           h('span', null, __alloT('stem.volume.p_paint', 'P Paint')),
           h('span', null, __alloT('stem.volume.b_badges', 'B Badges')),
@@ -2203,29 +3116,43 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════════════════
         // VOLUME FORMULAS — interactive reference panel
         // ═══════════════════════════════════════════════════════
-        h('div', { className: 'mt-5 rounded-2xl border border-cyan-300 bg-white p-3 shadow-sm' },
-          h('div', { className: 'flex items-center justify-between mb-2' },
+        !isDisplacement && h('div', { className: 'mt-5 rounded-2xl border border-cyan-300 bg-white p-3 shadow-sm' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
             h('div', { className: 'flex items-center gap-2' },
-              h('span', { className: 'text-lg' }, '📐'),
+              h('span', { className: 'text-lg', 'aria-hidden': 'true' }, '📐'),
               h('h4', { className: 'text-sm font-bold text-cyan-700' }, __alloT('stem.volume.volume_formulas_in_motion', 'Volume Formulas in Motion'))
             ),
-            h('span', { className: 'text-[10px] italic text-slate-600' }, __alloT('stem.volume.6_solids_rotating_with_live_formulas', '6 solids rotating with live formulas'))
+            h('div', { className: 'flex items-center gap-2' },
+              h('span', { className: 'text-[10px] italic text-slate-600' }, __alloT('stem.volume.6_solids_rotating_with_live_formulas', '6 solids rotating with live formulas')),
+              h('button', { type: 'button', disabled: reducedMotion, 'aria-pressed': (formulasPaused || reducedMotion) ? 'true' : 'false',
+                onClick: function() { upd({ formulasPaused: !formulasPaused }); },
+                'aria-label': reducedMotion ? 'Formula animation disabled by reduced motion preference' : formulasPaused ? 'Resume formula animation' : 'Pause formula animation',
+                className: 'min-h-8 rounded-lg border border-cyan-500 bg-white px-2 py-1 text-[10px] font-bold text-cyan-800 disabled:cursor-not-allowed disabled:opacity-70' },
+                reducedMotion ? 'Motion off (system)' : formulasPaused ? '▶ Resume' : '⏸ Pause'))
           ),
+          h('p', { id: 'volume-formulas-description', className: 'sr-only' },
+            'Cube: V equals s cubed. Sphere: V equals four thirds pi r cubed. Cylinder: V equals pi r squared h. Cone: V equals one third pi r squared h. Pyramid: V equals one third base area times height. Prism: V equals base area times height.'),
           h('div', { className: 'rounded-xl overflow-hidden border border-cyan-200', style: { background: '#020210', aspectRatio: '16/6' } },
             h('canvas', {
-              role: 'img', tabIndex: 0, 'aria-label': 'Volume and 3D shape visualization.',
+              role: 'img', tabIndex: 0, 'aria-label': 'Volume and 3D shape visualization.', 'aria-describedby': 'volume-formulas-description',
               ref: function(cvEl) {
                 if (!cvEl) return;
+                cvEl._volPaused = formulasPaused || reducedMotion;
                 if (cvEl._volAnim) return;
                 var c2 = cvEl.getContext('2d');
                 var W = cvEl.offsetWidth || 600;
                 var H = cvEl.offsetHeight || 220;
                 cvEl.width = W * 2; cvEl.height = H * 2;
                 c2.scale(2, 2);
-                var start = performance.now();
+                cvEl._volTime = 0;
+                cvEl._volLastFrame = performance.now();
                 function drawVol() {
                   if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._volAnim); if (cvEl._volRO) cvEl._volRO.disconnect(); return; }
-                  var t = (performance.now() - start) / 1000;
+                  var frameNow = performance.now();
+                  var frameDelta = Math.max(0, (frameNow - cvEl._volLastFrame) / 1000);
+                  cvEl._volLastFrame = frameNow;
+                  if (!cvEl._volPaused) cvEl._volTime += frameDelta;
+                  var t = cvEl._volTime;
                   c2.fillStyle = '#020210';
                   c2.fillRect(0, 0, W, H);
                   var solids = [
@@ -2369,7 +3296,8 @@ window.StemLab = window.StemLab || {
               style: { width: '100%', height: '100%', display: 'block' }
             })
           )
-        )
+        ),
+        pendingDeleteName ? renderDeleteDialog() : null
       );
     }
   });
@@ -2474,6 +3402,10 @@ window.StemLab = window.StemLab || {
     var img = new Image();
     img.onload = function() {
       var canvas = document.createElement('canvas');
+      // Export-only detached canvas; it is never inserted into the accessibility tree.
+      canvas.setAttribute('role', 'presentation');
+      canvas.setAttribute('aria-label', 'Export-only image conversion canvas');
+      canvas.setAttribute('aria-hidden', 'true');
       canvas.width = w;
       canvas.height = h2;
       var c2d = canvas.getContext('2d');

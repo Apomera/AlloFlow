@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-624bc5a4-untitled",
+  "title": "मूर्ख बाँदर चलाख भयो",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/NbmotlgMBF"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f624bc5a4-587c-4379-b278-ee33fa44ad2a%2f%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%ad%e0%a4%af%e0%a5%8b%2fimage1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f624bc5a4-587c-4379-b278-ee33fa44ad2a%2f%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%ad%e0%a4%af%e0%a5%8b%2fimage2.png",
+      "text": "एक दिन फेरि हामी घुम्न गयौँ। त्यस दिन हामी खोला नजिक गयौँ। खोलामा पानी थोरै मात्र देखियो। त्यही भएर बाँदर रमायो। ऊ पानीमा खेल्न गयो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f624bc5a4-587c-4379-b278-ee33fa44ad2a%2f%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%ad%e0%a4%af%e0%a5%8b%2fmonkey+swimming.jpg",
+      "text": "मैले बाँदरलाई खोलाको बीचमा नजाउ भने। किनारमै खेल्न भने तर मानेन। नभन्दै ऊ खोलाको बीचमा पुग्यो। मैले किनारमा बसेर मरेको माछा खाएँ।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f624bc5a4-587c-4379-b278-ee33fa44ad2a%2f%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%ad%e0%a4%af%e0%a5%8b%2fmonkey+and+crocodile.jpg",
+      "text": "बाँदर त केही पनि नहेरी खेल्यो। मैले गोही जस्तै केही देखेँ। त्यो त गोही नै पो रहेछ। साथी बाँदर फेरि खतरामा पर्‍यो। उसलाई गोहीले समायो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f624bc5a4-587c-4379-b278-ee33fa44ad2a%2f%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%ad%e0%a4%af%e0%a5%8b%2fmonkey+drowning.jpg",
+      "text": "गोहीले बाँदरलाई तानेर खोला भित्र लग्यो। बाँदर पहिला त डरले रोयो। मैले पनि केही मद्धत गर्न सकिन। त्यसपछि मेरो साथीले जुक्ति लगायो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f624bc5a4-587c-4379-b278-ee33fa44ad2a%2f%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%ad%e0%a4%af%e0%a5%8b%2fmonkey+44.png",
+      "text": "गोहीले आफूलाई निकै भोक लागेको बतायो। बाँदरले गोहीलाई सोधेछ। “गोही दाइ, अब मलाई खानुहुन्छ हो? गोहीले आफ्नो टाउको हल्‍लायो। मेरो कुन भाग पहिला खानुहुन्छ?”"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f624bc5a4-587c-4379-b278-ee33fa44ad2a%2f%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%ad%e0%a4%af%e0%a5%8b%2fmonkey+441.png",
+      "text": "गोहीले उत्तर दियो। “पहिला म तिम्रो मुटु खान्छु। मलाई जनावरको मुटु मिठो लाग्छ। तिम्रो त स्वर पनि मिठो रहेछ। मुटु त झन कति मिठो होला।”"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f624bc5a4-587c-4379-b278-ee33fa44ad2a%2f%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%ad%e0%a4%af%e0%a5%8b%2fimage.jpg",
+      "text": "बाँदरले जुक्ति लगाएर भनेछ । “गोही दाइ, त्यो त हो। तर मसँग आज मुटु छैन। मुटु रूखमा छाडेको छु। मलाई खोला किनारमा लगिदिनुस्। म मुटु लिएर आउँछु।”"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f624bc5a4-587c-4379-b278-ee33fa44ad2a%2f%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%ad%e0%a4%af%e0%a5%8b%2fimage5.png",
+      "text": "गोहीले कुरा मान्यो र भन्यो। “खोई कहाँ छ तिम्रो मुटु?” चराको गुँड देखाउँदै बाँदरले भन्यो। “ऊ त्यो रुखमाथि छ मेरो मुटु। ”"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f624bc5a4-587c-4379-b278-ee33fa44ad2a%2f%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%ad%e0%a4%af%e0%a5%8b%2fimage1.jpg",
+      "text": "गोहीले बाँदरलाई खोला किनारतिर छाडीदियो। अनि मेरो साथी रूखमाथि आयो। बाँदर मजाले हाँस्यो र भन्यो। “मूर्ख गोही, मुटु पनि रुखमाथि हुन्छ? ”"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f624bc5a4-587c-4379-b278-ee33fa44ad2a%2f%e0%a4%ae%e0%a5%82%e0%a4%b0%e0%a5%8d%e0%a4%96+%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%ad%e0%a4%af%e0%a5%8b%2fimage6.png",
+      "text": "मेरो मुटु त मसँगै छ। त्यो त चराको गुँड हो। यति भनेर बाँदर भाग्यो। गोही त जिल्‍ल पर्‍यो। मेरो साथी बल्‍ल चलाख भयो। अब ऊ निडर पनि भयो।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 242
+  }
+}

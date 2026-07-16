@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T15:00:23.206Z",
+  "packId": "praxis-special-education-behavior-emotional-5372",
+  "standard": {
+    "label": "AlloFlow 5372 source, blueprint, feedback, learning, safety, and linkage QA v1",
+    "limitation": "Not ETS approval; independent EBD educator, behavior analyst, school mental-health, trauma-aware practice, family, legal, cultural-linguistic, crisis-safety, and psychometric validation remain pending."
+  },
+  "summary": {
+    "totalItems": 200,
+    "passedItems": 200,
+    "findings": [],
+    "status": "pass"
+  }
+}

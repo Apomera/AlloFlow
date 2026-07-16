@@ -1,0 +1,107 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4f5efdcd-b-t-fouye-twou-byen",
+  "title": "Bèt fouye twou byen",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Little Zebra Books,"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books,",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/g6Qp80Vxiz"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_02_Image_0001.png",
+      "text": "Sa rive yon ane ke lapli pat' tonbe. Pyebwa yo fin sèch nèt e yo te mouri. Rivyè yo disparèt e dlo yo evapore. Moun ak bèt t kòmanse mouri grangou ak swaf dlo.\nIl arriva une année où la pluie ne tomba pas. Les arbres desséchés sont morts. Les rivières ont disparu et l'eau s'est évaporée. Les gens et les animaux ont commencé à mourir de faim et de soif."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_03_Image_0001.png",
+      "text": "Lyon ak elefan ki se bèt an chèf yo te reyini ansanm pou yo diskite sou sitiyasyon an. Lyon an di « nap fini pa mouri swaf dlo. Se pou nou rele tout moun ansanm epi diskite sou lide poun fouye yon pi. » Elefan te dakò, lal gaye nouvèl la bay tout bèt yo.\nLe lion et l'éléphant les chef des animaux, se sont réunis pour discuter la situation. Le lion a dit « nous allons finir par mourir de soif appelons tout le monde ensemble et discutons de l'idée de creuser un puits. » L'éléphant était d'accord et est parti pour étendre la nouvelle à tous les animaux."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_04_Image_0001.png",
+      "text": "Tout bèt yo eksepte lyèv lan, te reyini ansanm pou diskite sou sitiyasyon an. Lyon di konsa « Gade, frè ak sè m yo, ane sa a, lapli a pa tonbe. Tout moun ap mouri grangou ak swaf dlo. Kounye a, annou fè yon plan pou nou fouye yon pi pou nou tout kapab bwè. »\nTous les animaux sauf le lièvre se sont réunis pour discuter de la situation. Le lion a dit « regardez, mes frères et soeurs, cette année, la pluie n'est pas tombée. Tout le monde meurt de faim et de soif. Mettons-nous ensemble pour creuser un puits pour que nous puissions tous boire de l'eau. »"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_05_Image_0001.png",
+      "text": "Tout bèt yo te dakò e imedyatman yo pran wou, pèl ak pik e kòmanse fouye. Yo fouye, yo fouye. Yo fouye anpil. Finalman, yo frape dlo a. Lyon an di konsa « poukisa lyèv lan pa vini fouye pi a? Li sanble pap janm bwè nan dlo sa a! »\nTous les animaux ont accepté et immédiatement attrapé des houes, des pelles et des pioches et ont commencé à creuser. Ils ont creusé et creusé. Et ils ont creusé un peu plus. Enfin, ils ont frappé l'eau. Le lion a dit « pourquoi le lièvre n'est-il pas venu pour creuser ce puits? Il ne boira certainement pas de cette eau! »"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_06_Image_0001.png",
+      "text": "Aprè sa lyèv lan vini, li wè sous la. Se konsa, li antre nan pi a li bwè yon ti dlo, e li jwe nan dlo a pou yon ti tan.\nPlus tard, le lièvre est venu et a vu le puits. Il entra donc, but un peu d'eau et joua à l'intérieur pour un petit moment."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_07_Image_0001.png",
+      "text": "Nan denmen, lè bèt yo vini yo wè te gen gwo dezòd nan pi. Pat gen dlo sèl labou ki te rete. Yo mande l ki moun ki fè yon bagay konsa? « Yon moun te di mwen parye e te lyèv la. Lè nou te fouye pi a, li pat okenn kote yo dwe jwenn. »\nLe lendemain, lorsque les animaux sont venus, ils ont vu un grand désordre. L'eau était devenue de la boue. Ils ont demandé qui ferait une telle chose? « Quelqu'un a dit je parie que c'étai le lièvre. Lorsque nous creusions le puits il était introuvable. »"
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Se konsa, bèt yo deside kite yon gad nan sous la. Yo chwazi babwen voye je sou bagay yo. Babwen te nan pi an lè lyèv rive nan mitan lannwit lan. Se konsa, lyèv lan rive bò kote babwen, epi li salye li « Mwen t vini, zanmi m, epi mwen pote yon bon manje pou ou! » Babwen reponn li « Vini non, montrem saw t pote a. »\nEt les animaux donc décidé de laisser un garde au puits. Ils ont choisi Babouin pour garder un oeil sur les choses. Le Babouin était au puits lorsque lièvre est venu pendant la nuit. Alors le lièvre est venu et a salué Babouin « Je suis venu, mon ami, et je vous apporte de la nourriture! » Baboon répondit « Venez donc et montrez moi ce que vous avez apporté. »"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_09_Image_0001.png",
+      "text": "Lyèv lan te gen yon ti siwo myèl. Li ale kote babwen, « Wi, zanmi m, eseye sa a! » Lyèv lan te ba l siwo myèl lan. Lè sa a, li rale ti dlo nan pi a, li bwè li. Menm jan lyèv lan tap prale, lyènn lan te rive e li wè lyèv lan.\nLe lièvre avait un peu de miel. Il se dirigea vers Babouin, « Oui, mon ami, essayez cela! » Lièvre lui a donné un peu de miel. Puis il tira un peu d'eau du puits et le but. Lorsque le lièvre partait, l'hyène est arrivé et il a vu lièvre."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_10_Image_0001.png",
+      "text": "Nan demen, lyènn lan te avèti tout bèt yo ke lyèv lan t pran dlo nan pi a. Se konsa, yo te chwazi tòti a veye pi a. Lyèv lan te rive nan mitan lannwit, « Mwen se lyèv lan! Mwen te vini bwè dlo. »\nLe lendemain, l'hyènne alla dire à tous les animaux que le lievre avait pris de l'eau du puits. Donc, ils ont choisi la tortue pour garder le puits. Lièvre est arrivé dans la nuit, en disant « Je suis le livre! Je suis venu pour boire de l'eau. »"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_11_Image_0001.png",
+      "text": "Lè tòti a te rive nan pi a pi bonè, li te kache tèt li nan mitan wòch yo. Lè lyèv lan te kòmanse ale nan dlo a, toti a te pran lyèv la nan janm. Tòti pa te di yon mo, li jis chita li kenbe lyèv la jouk nan maten lè solèy leve.\nLorsque la tortue était arrivé au puits plus tôt ce soir-là, elle s'etait cachée dans les rochers. Dès que le lièvre a commencé à aller dans l'eau, la tortue l'a attrapé par la jambe. la tortue n'a pas dit un mot, elle est restée assise là jusqu'au matin."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_12_Image_0001.png",
+      "text": "Lè bèt yo te rive, yo wè tòti a te pran lyèv lan. Yo rele rès bèt yo deside ki sa yap fe ak lyèv lan. Lè tout bèt yo te reyini, lyon mande yo ki sa pou nou fè ak lyèv lan.\nLorsque les animaux sont arrivés, ils ont vu que la tortue avait capturé le lièvre. Ils ont appelé le reste des animaux pour décider quoi faire avec le lièvre."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_13_Image_0001.png",
+      "text": "Tòti di a konsa, « Elefan ta dwe pran l' ak twonp li pou bat li sou woch yo. » Tout lòt bèt yo te dakò. Lè sa a, lyèv lan di « O Lyon, ou konnen ke lyèv lan pap mouri siw frapel sou wòch yo. Lyèv lan ap sèlman mouri si yo jete li nan dife. » Se konsa, lyon te di Elefan an jete lyèv lan nan dife.\nLa tortue dit « l'éléphant devrait l'attraper avec sa trompe et le battre sur les rochers. » Tous les autres animaux etait d'accord. Puis le lievre a dit « O Grand Lion, vous savez que les lièvres ne meurent pas si vous les frapper sur les rochers. Le lièvre mourra seulement s'il est jeté dans le feu. » Alors le lion dit á éléphant de jeter le lièvre dans le feu."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_14_Image_0001.png",
+      "text": "Aprè lyèv lan te konplètman kouvri ak sann dife, elefan te ranmase li epi jete l'. Lè lyèv lan te ateri, li te fè yon gwo nwaj pousyè. Pousyè a te toupatou.\nAprès que le lièvre est été entièrement recouvert de cendres, éléphant l'a ramassé et l'a jeté. Quand le lievre est atterri, il a fait un gros nuage de poussière. La poussière était partout."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_15_Image_0001.png",
+      "text": "Lè pousyè a te diminye, bèt yo te pomenen toupatou men yo pa wè lyèv lan. Yo reyalize ke lyèv lan te twonpe yo ankò.\nLorsque la poussière est retombée, les animaux ont regardé autour d'eux mais ne voyait pas le lièvre. Ils ont réalisé que le lièvre les avait trompés à nouveau."
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 1341
+  }
+}

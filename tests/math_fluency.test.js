@@ -16,6 +16,7 @@
 
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
@@ -161,5 +162,19 @@ describe('analyzeErrors', () => {
     expect(r.errors).toBe(0);
     expect(r.skips).toBe(0);
     expect(r.patterns).toHaveLength(0);
+  });
+});
+
+describe('3D math maze canvas accessibility contract', () => {
+  it('provides a focusable, described keyboard interaction surface with visible focus', () => {
+    const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
+    expect(source).toContain('cnv.tabIndex = 0');
+    expect(source).toContain("cnv.setAttribute('role', 'application')");
+    expect(source).toContain("cnv.setAttribute('aria-roledescription'");
+    expect(source).toContain("cnv.setAttribute('aria-label'");
+    expect(source).toContain("cnv.setAttribute('aria-keyshortcuts'");
+    expect(source).toContain('[data-math-maze-canvas]:focus-visible');
+    expect(source).toContain('try { cnv.focus(); }');
+    expect(source).toContain('Nearby movement buttons provide an alternative.');
   });
 });

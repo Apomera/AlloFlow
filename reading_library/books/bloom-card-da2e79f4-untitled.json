@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-da2e79f4-untitled",
+  "title": "جاده قدیم",
+  "description": "A Farsi picture book, readable free at Bloom Library.",
+  "language": "Farsi",
+  "langCode": "fa",
+  "isRtl": true,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Spiritual"
+  ],
+  "authors": [
+    "Live Global"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Live Global",
+  "license": "CC BY-NC-ND",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/40cwL8UBwV"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/thedoc%40wadizaytoon.org%2fda2e79f4-b55b-4609-9dde-395c72c92bcf%2f%e2%80%8b%d8%ac%d8%a7%d8%af%d9%87+%d9%82%d8%af%db%8c%d9%85%2fCover2.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"جاده قدیم\" (Farsi)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-ND) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

@@ -7,21 +7,22 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
 // Mirror of the shipped fingerprint + resume validity check.
-const chunkFp = (s) => { const n = String(s || '').replace(/\s+/g, ' ').trim(); return n.length + ':' + n.slice(0, 80) + ':' + n.slice(-80); };
+const chunkDigest = (s) => 'sha256:' + createHash('sha256').update(String(s || '').replace(/\s+/g, ' ').trim()).digest('hex');
 const resumeValid = (savedChunks, currentBody) => {
   for (let i = 0; i < savedChunks.length; i++) {
-    if (!savedChunks[i] || savedChunks[i].srcFp !== chunkFp(currentBody[i])) return false;
+    if (!savedChunks[i] || savedChunks[i].srcDigest !== chunkDigest(currentBody[i])) return false;
   }
   return true;
 };
 
 describe('chunk-resume only carries chunks whose SOURCE still matches', () => {
   const body = ['Chapter one. The committee met to review the annual budget.', 'Chapter two. The findings were presented to the school board.'];
-  const savedFor = (b) => b.map((c, i) => ({ index: i, html: '<p>fixed ' + i + '</p>', srcFp: chunkFp(c) }));
+  const savedFor = (b) => b.map((c, i) => ({ index: i, html: '<p>fixed ' + i + '</p>', srcDigest: chunkDigest(c) }));
 
   it('accepts resume when every carried chunk fingerprint matches', () => {
     expect(resumeValid(savedFor(body).slice(0, 1), body)).toBe(true);
@@ -31,14 +32,16 @@ describe('chunk-resume only carries chunks whose SOURCE still matches', () => {
     const changedBody = ['Chapter one. The committee met to review the QUARTERLY budget instead.', body[1]];
     expect(resumeValid(savedFor(body).slice(0, 1), changedBody)).toBe(false);
   });
-  it('REJECTS a pre-fix save that has no srcFp (cannot verify → fail-safe)', () => {
-    const legacy = [{ index: 0, html: '<p>fixed</p>' }]; // no srcFp
+  it('REJECTS a legacy save that has no exact source digest (cannot verify → fail-safe)', () => {
+    const legacy = [{ index: 0, html: '<p>fixed</p>' }];
     expect(resumeValid(legacy, body)).toBe(false);
   });
 
-  it('anti-drift: save stores srcFp and resume verifies every carried chunk', () => {
-    expect(src).toContain('srcFp: _chunkFp(bodyChunks[i])');
-    expect(src).toContain('saved.chunkResults[_vi].srcFp !== _chunkFp(bodyChunks[_vi])');
+  it('anti-drift: save stores full SHA-256 chunk/document identities and verifies both', () => {
+    expect(src).toContain('srcDigest: _chunkSourceDigests[i]');
+    expect(src).toContain('saved.chunkResults[_vi].srcDigest !== _chunkSourceDigests[_vi]');
+    expect(src).toContain('saved.documentDigest === _currentDocKey');
+    expect(src).toContain("return 'chunk_v2_' + digest.slice(7)");
     expect(src).toContain('await clearChunkProgress(_sessionId);');
   });
 });

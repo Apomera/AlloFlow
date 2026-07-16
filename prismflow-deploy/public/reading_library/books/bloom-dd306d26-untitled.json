@@ -1,0 +1,147 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-dd306d26-untitled",
+  "title": "២៩ក នអើន ក៝ននអើយ",
+  "description": "The story of an orphan boy (Easy Reader - Level 3)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Traditional Story"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/oAJPgRBzHt"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage2.png",
+      "text": "នៅក្នុង​​គ្រួ​សារ​មួយ ​មានតែ​កូន​ប្រុស​ចំនួន​ពីរនាក់​ ម្ដាយ​ពុក​របស់​ពួក​គេ​ឈ្មោះ​ថាប៉ាត់ ​និង​មីង​គើញ ​កូន​របស់​ពួក​គាត់​ឈ្មោះ​លូក ​និង​ឈ្មោះ​វត់។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage3.png",
+      "text": "ហើយ​មីង​គើញ​ ​គាត់​មាន​ជំងឺ​ប្រចាំ​កាយ ​យូរ​ៗ​ទៅ​មីង​គើញ​ក៏​ទទួល​អានិច្ចកម្មទៅ ​ឪពុក​និង​កូន​បី​នាក់​នាំគ្នា​យកសាក់​សប់​មីង​គើញ​ទៅកប់។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage4.png",
+      "text": "កូនៗ​ទាំង​ពីរ​នាក់​ក៏​រស់​នៅ​ជាមួយ​នឹង​ឪពុក​ ​លោក​ពូ​ប៉ាត់​អង្គុយ​ត្បាញ ​សាស ​ចង្អេរ ​ឈ្នៀង ​និង​វិញខ្សែ​ដើម្បី​យក​ទៅលក់​។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage5.png",
+      "text": "កូន​ឈ្មោះ​វត់​តាម​ឪពុក​ត្បាញ​សាស ​ចង្អេរ ​ឈ្នៀង ​ចំនែក​កូន​ឈ្មោះ​លូក​គេមិន​តាម​ឪពុក​ត្បាញ​ទេ ​វាគឹត​តែ​ពី​ដើរ​ទៅបរបាញ់​សត្វ​នៅ​ក្នុង​ព្រៃ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage6.png",
+      "text": "កូនប្រុស​ឈ្មោះវត់ដើរ​លក់​ ​ចង្អេរ ​ឈ្នៀង​អោយ​ប្រជាជន​ដើម្បី​យក​ប្រាក់​អោយ​ឪពុក​ទិញ​អង្ករ​ហូប ​កូនប្រុស​ឈ្មោះ​លូក​ត្រឡប់​ពី​បរបាញ់​សត្វវិញ ​សុំ​ប្រាក់​របស់​លោក​ឪពុក ​ដើម្បី​យកទៅ​ទិញ​ស្នា។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage7.png",
+      "text": "លុះ​រស់​នៅ​យូរ​ៗ​ទៅ​លោក​ពូ​ប៉ាត់​ក៏​កាន់​តែ​ចាស់​ជរាទៅ ​សក់​កាន់​តែ​ស្កូវ​ ​អង្គុយ​បិត​ផ្ដៅ​នៅ​ខាង​មុខ​ផ្ទះ ​លោក​ពូ​ប៉ាត់​ក៏​យក​ចង្កឹះ​មួយ​បាច់ ​ហុច​អោយ​កូន​លូក​ជាកូន​ច្បង​ ​លូក​ក៏​យក​ចង្កឹះ​មួយ​បាច់​នោះ​កាច់ ​តែ​កាច់​ចង្កឹះ​មួយ​បាច់​នោះ​មិន​បាក់​ឡើយ​។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage8.png",
+      "text": "បន្ទាប់​មក​លោក​ពូ​ប៉ាត់​ក៏​យក​ចង្កឹះ​ដដែល​នោះ ​ហុច​អោយ​កូន​ប្រុស​របស់​គាត់​ឈ្មោះ​វត់​កាច់ ​កូន​ឈ្មោះ​វត់​នោះយក​ចង្កឹះ​នោះ​កាច់ ​វាហូត​កាច់​ម្ដង​មួយៗ ​រហូត​ទាល់​តែ​អស់។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage9.png",
+      "text": "លោក​ពូប៉ាត់​គាត់​ផ្ដាំផ្ញើ​អោយ​កូន​របស់​គាត់​ឈ្មោះ​វត់ថា៖ ​សូម​កូន​ជួយ​មើល​បង​ប្រុស​ឯង​ផង​ក្រោយ​មក​លោក​ពូ​ប៉ាត់​កាន់​តែ​ចាស់​ហើយ​ក៏ស្លាប់ទៅ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage10.png",
+      "text": "ពីរ​នាក់​បងបង្អូន​ក៏​រស់​នៅ​តែ​ពីរ​នាក់​នៅក្នុង​ព្រៃ ​មាន​ថ្ងៃមួយ​ពួក​គេ​បាន​បបួលគ្នាទៅដាក់​អន្ទាក់​ ​ពេល​ទៅ​ដល់​ក្នុង​ព្រៃ​បង​ជាអ្នក​ដាក់​អន្ទាក់​នៅ​លើ​ចុង​ឈើ ​ចំនែក​ប្អូន​វិញ​ដាក់​អន្ទាក់​នៅ​ដី។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage11.png",
+      "text": "ពីរ​បីថ្ងៃ​ក្រោយ​មក​ពួក​គេ​នាំ​គ្នាទៅមើល​អន្ទាក់ ​អន្ទាក់​របស់​ប្អូន​ជាប់​បាន​សត្វ​ឈ្លូស​មួយ​ពួក​គេ​នាំ​គ្នា​សែង​ឈ្លូស​នោះ​ទៅដល់​ផ្ទះ ស្រាប់តែ​ឃើញ​មាន​បាយ​និង​សម្ល​​នៅ​ក្នុងឆ្នាំង​។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage12.png",
+      "text": "ពួក​គេ​នាំ​គ្នា​ប៉ន្លាស់​សាច់​នោះ​អាំង​ដុត​ស្ងោរ​តាម​តម្រូវ​ការ​ ​ហើយ​នាំ​គ្នា​យក​បាយ​ដែល​គេ​ដាំ​អោយ​នោះ​ហូប​ជាមួយ។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage13.png",
+      "text": "រាល់​ថ្ងៃ​ពេល​ដែល​ទៅ​មើល​អន្ទាក់​ ​បងប្រុស​ឈ្មោះលូក​នោះ​ឃើញ​អន្ទាក់​របស់​ប្អូន​ជាប់​សត្វ​រហូត​ ​គាត់​មាន​ចិត្ត​ច្រណែន​និង​ប្អូន​របស់​ខ្លួន ​ដេក​គឹត​រក​មធ្យោបាយ​ តើ​ធ្វើ​យ៉ាង​មិច​អោយ​អន្ទាក់​របស់​ខ្លួន​ជាប់​សត្វ​ដែរ​?។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage14.png",
+      "text": "ដល់​ស្អែក​ឡើង​លូក​ក្រោក​ពី​ងងឹត​ទៅមើល​អន្ទាក់​តែ​ម្នាក់​ឯង ​ប្អូន​នៅ​ដេក​នៅឡើយ​។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage15.png",
+      "text": "ទៅដល់​ក្នុង​ព្រៃ​លូក​​ឃើញ​អន្ទាក់​របស់​ប្អូន​ជាប់​សត្វ​ខ្យង ​ទៅមើល​អន្ទាក់​របស់​ខ្លួន​មិន​ឃើញ​មាន​ជាប់​សត្វ​អ្វីសោះ ​គាត់​ដោះ​សត្វ​ខ្យង​ពី​អន្ទាក់​របស់​ប្អូន​នោះ ​ទៅ​ដាក់​ជាប់​អន្ទាក់​របស់​ខ្លួន​នៅលើ​ចុង​ឈើ​នោះ។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage16.png",
+      "text": "ហើយ​គាត់​ត្រឡប់​មក​ផ្ទះវិញ ​ធ្វើ​ជា​បង្កាត់​ភ្លើង​ដាំ​បាយ​ធ្វើសម្ល ​រួច​ហើយ​ហូប​បាយ​ពេល​ព្រឹក ​លូក​ក៏​បបួល​ប្អូន​របស់​គាត់​ទៅ​មើល​អន្ទាក់​។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage17.png",
+      "text": "ពេល​ទៅ​ដល់​ក្នុង​ព្រៃ ​វត់​ឃើញ​អន្ទាក់​របស់​បង​នៅ​លើចុង​ឈើ ​ជាប់​សត្វ​ខ្យង​ ​វត់​ក៏​មិន​និយាយ​ស្តី​ជាមួយបង​ដែរ ​វាដឹង​ថា​បង​ប្រុស​បាន​ដោះ​សត្វ​ខ្យង​នោះ​ពី​អន្ទាក់​របស់​ខ្លួន​ហើយ​។"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage18.png",
+      "text": "ក្រោយមក​ពួក​គេ​យក​សត្វ​ខ្យង​នោះ​ទៅ​ផ្ទះ ​ពេល​ទៅ​ដល់​ឃើញ​មាន​បាយ​សម្ល​គេ​ដាំ​អោយ​ដូច​ពី​មុន​ទៀត។"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage19.png",
+      "text": "មាន​ថ្ងៃ​មួយ​នោះ​ពួក​គេ​នាំ​គ្នា​លប​មើល​ពី​ក្រោយ​ផ្ទះ ​ដើម្បី​ចង់​ដឹង​ថា​តើ​អ្នក​ណា​ជាអ្នក​ដាំ​បាយ​ធ្វើ​សម្ល​រាល់​ថ្ងៃ ​ក្រោយ​មក​ពួក​គេ​បាន​ឃើញ​មាន​ស្រី​ក្រមុំ​ពីរ​នាក់ ​ចេញ​មក​ពី​ជង្គ្រុក​ស្រូវ​ ​ចុះ​មក​ដាំបាយ​ធ្វើ​សម្ល។"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage20.png",
+      "text": "បាយ​សម្ល​ជិត​ឆ្អិន ​ពីរ​នាក់​បង​ប្អូន​នោះ​ក៏​បញ្ញាក់ ​ស្រី​ក្រមុំ​ពីរ​នាក់​នោះ​ក៏​ភ្ញាក់! ​ចង់​ឡើង​ទៅ​កន្លែង​ដើម​វិញ​ក៏​មិន​ទាន់​ដែរ។"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage21.png",
+      "text": "បន្ទាប់​មក​ពួកគេ​ប្រលែង​លេង​គ្នា​ទៅ​វិញ​ទៅ​មក ​ចចែក​គ្នា​ពីនេះ​ពី​នោះ ​ហើយក៏​យក​គ្នា​ជាប្តី​ប្រ​ពន្ធ ​បង​យក​បង​ប្អូន​យក​ប្អូន​។"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage22.png",
+      "text": "ក្រោយ​មក​ពួកគេ​បាន​បែង​ចែក​កន្លែង​រស់​នៅ ​បងប្រុស​ឈ្មោះ​លូក​នោះ​រស់​នៅជាមួយ​ប្រពន្ធ​នៅ​ទិស​ខាង​កើត ​ប្រកប​មុខរបរ​បរបាញ់​សត្វ​នៅក្នុង​ព្រៃ​និង​ប្រកប​មុខរបបរ​ធ្វើ​ចំការ​បាន​ភោគ​ផល​តែ​បន្តិច​បន្តួច​​ដើម្បី​ចិញ្ចឹម​ជីវិត​ប្រចាំ​ថ្ងៃ​បាន​ព្រឹក​ខ្វះ​ល្ងាច​រស់​នៅ​យ៉ាង​ត្រ​ដ៏។"
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fdd306d26-fefa-43fd-8f4e-b1b76a1715e0%2f%e1%9f%a2%e1%9f%a9%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%99%2fimage23.png",
+      "text": "ចំនែក​ប្អូន​ឈ្មោះ​វត់​​រស់​នៅ​ជា​មួយ​ប្រពន្ធ​នៅ​ទិស​ខាង​លិច ​ជាមួយ​អ្នក​ស្រុក​អ្នក​ភូមិ​មាន​ប្រជាជន​ច្រើន​ណាស់ ​ហើយ​ប្រកប​មុខរបរ​ត្បាញ​សាស ​ចង្អេរ ​ឈ្នៀង​និង​ប្រកប​មុខរបរ​ធ្វើ​របស់​ផ្សេង​ៗ​ទៀត​លក់ដូរ​មាន់ ​ជ្រូក ​គោក្របី​គេ ​ហើយ​ក៏​ក្លាយ​ទៅជាអ្នក​មាន​ទ្រព្យ​សម្បត្តិ​ដ៏​ច្រើន​នៅ​ក្នុង​ភូមិនោះ៕"
+    }
+  ],
+  "stats": {
+    "pages": 22,
+    "words": 96
+  }
+}

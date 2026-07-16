@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-ecde6589-untitled",
+  "title": "معادن افغانستان",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/nlCLKDIB0p"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fecde6589-ed9a-4bc1-867d-5d29ee3fdef3%2f%d9%85%d8%b9%d8%a7%d8%af%d9%86+%d8%a7%d9%81%d8%ba%d8%a7%d9%86%d8%b3%d8%aa%d8%a7%d9%86%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fecde6589-ed9a-4bc1-867d-5d29ee3fdef3%2f%d9%85%d8%b9%d8%a7%d8%af%d9%86+%d8%a7%d9%81%d8%ba%d8%a7%d9%86%d8%b3%d8%aa%d8%a7%d9%86%2f%db%b2.jpg",
+      "text": "محمود در صنف به فکر فرو رفته بود.\nمعلم گفت: محمود جان! به چی فکر می کنی؟\nمحمود گفت: به درس امروز فکر می کنم."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "شما گفتید: افغانستان معادن زیادی دارد.\nما دربارۀ معادن افغانستان معلومات نداریم.\nمعلم گفت: آفرین محمود جان! به موضوع خوبی اشاره کردی.\nامروز بعضی از معادن افغانستان را برای شما معرفی می کنم."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fecde6589-ed9a-4bc1-867d-5d29ee3fdef3%2f%d9%85%d8%b9%d8%a7%d8%af%d9%86+%d8%a7%d9%81%d8%ba%d8%a7%d9%86%d8%b3%d8%aa%d8%a7%d9%86%2f%db%b3.jpg",
+      "text": "معلم گفت: از جمله معادن افغانستان، معدن نمک در ولایت هرات است.\nمعدن نمک به نام نمک سار هم یاد می شود.\nنمک بدست آمده تصفیه می شود.\nو قابل استفاده است."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "معادن سنگ مرمردر ولایت هرات قرار دارد.\nاز سنگ مرمر در معماری استفاده می شود.\nافغانستان دارای معادن ذغال سنگ است.\nازذغال سنگ برای سوخت استفاده می شود.\nمعدن مس در منطقۀ \"عینک\"ولایت لوگر موقعیت دارد.\nاز مس برای ساختن ظروف استفاده می کنند."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fecde6589-ed9a-4bc1-867d-5d29ee3fdef3%2f%d9%85%d8%b9%d8%a7%d8%af%d9%86+%d8%a7%d9%81%d8%ba%d8%a7%d9%86%d8%b3%d8%aa%d8%a7%d9%86%2f%db%b4.jpg",
+      "text": "افغانستان دارای معادن سنگ های قیمتی نیز می باشد.\nمانند: لاجورد ، فیروزه، عقیق، یاقوت و زمرد.\nمعادن این سنگ ها بیشتر در ولایت بدخشان قرار دارند."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "این سنگ ها بسیار با ارزش اند.\nبرای ساختن زیورآلات استفاده می شوند.\nمعادن سنگ مرمر، یاقوت و مس در کابل نیز موقعیت دارند.\nافغانستان یک کشور غنی از معادن استفاده نشده است.\nاگر معادن مورد استفاده درست قرار بگیرند، اقتصاد کشور ما رشد می کند."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fecde6589-ed9a-4bc1-867d-5d29ee3fdef3%2f%d9%85%d8%b9%d8%a7%d8%af%d9%86+%d8%a7%d9%81%d8%ba%d8%a7%d9%86%d8%b3%d8%aa%d8%a7%d9%86%2f%db%b5.jpg",
+      "text": "محمود گفت: چرا از معادن افغانستان استفاده نمی شود؟"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "معلم صاحب جواب داد:\nشاگردان عزیز! کمبود امکانات و نداشتن افراد متخصص باعث شده معادن افغانستان دست نخورده بماند.\nمحمود گفت: من درس می خوانم و تلاش می کنم تا درآینده متخصص معدن شوم.\nوقتی متخصص شدم، معادن کشورم را استخراج می کنم.\nاقتصاد کشورم را رشد می دهم.\nمعلم از تصمیم محمود خوشحال شد."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 271
+  }
+}

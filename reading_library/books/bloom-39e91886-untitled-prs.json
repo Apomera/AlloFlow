@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-39e91886-untitled-prs",
+  "title": "تیم برنده",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tuIDc0kV7n"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f39e91886-fb61-4206-994a-a0690da4e2a4%2f%d8%aa%db%8c%d9%85+%d8%a8%d8%b1%d9%86%d8%af%d9%87%2f۱.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f39e91886-fb61-4206-994a-a0690da4e2a4%2f%d8%aa%db%8c%d9%85+%d8%a8%d8%b1%d9%86%d8%af%d9%87%2f%db%b2.jpg",
+      "text": "همۀ شاگردان در صحن مکتب جمع شده بودند.\nشاگردان از چهار مکتب دیگر هم به مکتب سحر آمده بودند."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "آن روز مسابقۀ ریسمان کشی بین شاگردان مکاتب برگزار می شد.\nسحر و دوستانش بسیار هیجانی بودند.\nبازی ریسمان کشی یک نوع ورزش و سرگرمی است."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f39e91886-fb61-4206-994a-a0690da4e2a4%2f%d8%aa%db%8c%d9%85+%d8%a8%d8%b1%d9%86%d8%af%d9%87%2f%db%b3.jpg",
+      "text": "آنها از چند روز پیش برای مسابقه آماده گی گرفته بودند.\nمسابقه با اشارۀ داور شروع شد."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "دو دو مکتب با هم مسابقه داشتند.\nشاگردان تیم سحر اول با یک مکتب مسابقه داشتند.\nآن ها برندۀ دور اول و دوم مسابقه شدند.\nبعد از مسابقه، شاگردان به سر لین جمع شدند."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f39e91886-fb61-4206-994a-a0690da4e2a4%2f%d8%aa%db%8c%d9%85+%d8%a8%d8%b1%d9%86%d8%af%d9%87%2f%db%b4.jpg",
+      "text": "سر معلم صاحب، داور مسابقه و استادان به سر لین آمدند.\nهمه هیجانی بودند که کدام تیم در مسابقه اول شده است."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "داور مسابقه با خوشحالی تیم مکتب سحر را برنده اعلان کرد.\nشاگردان تیم از اینکه برنده شدند خوشحال بودند.\nسرمعلم صاحب از سحر پرسید:\nدخترم! من از اینکه شما برندۀ مسابقه شدید خوشحالم.\nحالا بگو که راز موفقیت تیم شما در چی بود؟"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f39e91886-fb61-4206-994a-a0690da4e2a4%2f%d8%aa%db%8c%d9%85+%d8%a8%d8%b1%d9%86%d8%af%d9%87%2f%db%b5.jpg",
+      "text": "سحر گفت:\nما با هم اتحاد داریم.\nاز همدیگر حمایت می کنیم."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "قبل از مسابقات، زیاد تمرین می کنیم.\nمیوه ها و غذا های مفید می خوریم.\nبا خوردن میوه ها و غذا های مفید، توانستیم قویتر شویم.\nراز موفقیت ما، اتحاد، سلامتی روحی و جسمی ما است."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 209
+  }
+}

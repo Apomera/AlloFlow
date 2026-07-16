@@ -1301,11 +1301,10 @@ window.SelHub = window.SelHub || {
 
             // Input
             h('div', { className: 'flex gap-2' },
-              h('input', { type: 'text', value: d.dialogueInput || '', onChange: function(e) { upd('dialogueInput', e.target.value); },
+              h('input', { 'aria-label': 'Your response to Socratic dialogue', type: 'text', value: d.dialogueInput || '', onChange: function(e) { upd('dialogueInput', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter' && d.dialogueInput && d.dialogueInput.trim()) askSocratic(d.dialogueInput); },
                 placeholder: 'Share your reasoning...', disabled: aiLoading,
-                className: 'flex-1 text-sm p-3 border border-slate-400 rounded-xl outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-40',
-                'aria-label': 'Your response to Socratic dialogue'
+                className: 'flex-1 text-sm p-3 border border-slate-400 rounded-xl outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-40'
               }),
               h('button', { 'aria-label': 'Send response', onClick: function() { if (d.dialogueInput && d.dialogueInput.trim()) askSocratic(d.dialogueInput); }, disabled: aiLoading || !(d.dialogueInput && d.dialogueInput.trim()),
                 className: 'px-4 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-40'
@@ -1697,7 +1696,7 @@ window.SelHub = window.SelHub || {
 
                 // Socratic input
                 h('div', { className: 'flex gap-2' },
-                  h('input', { type: 'text', value: d.caseStudySocraticInput || '', onChange: function(e) { upd('caseStudySocraticInput', e.target.value); },
+                  h('input', { 'aria-label': 'Socratic dialogue input for case study', type: 'text', value: d.caseStudySocraticInput || '', onChange: function(e) { upd('caseStudySocraticInput', e.target.value); },
                     onKeyDown: function(e) {
                       if (e.key === 'Enter' && d.caseStudySocraticInput && d.caseStudySocraticInput.trim() && callGemini) {
                         var userInput = d.caseStudySocraticInput;
@@ -1717,8 +1716,7 @@ window.SelHub = window.SelHub || {
                       }
                     },
                     placeholder: 'Share your reasoning...', disabled: aiLoading,
-                    className: 'flex-1 text-sm p-3 border border-slate-400 rounded-xl outline-none focus:ring-2 focus:ring-teal-300 disabled:opacity-40',
-                    'aria-label': 'Socratic dialogue input for case study'
+                    className: 'flex-1 text-sm p-3 border border-slate-400 rounded-xl outline-none focus:ring-2 focus:ring-teal-300 disabled:opacity-40'
                   }),
                   h('button', { 'aria-label': 'Send Socratic response', disabled: aiLoading || !(d.caseStudySocraticInput && d.caseStudySocraticInput.trim()), onClick: function() {
                     if (d.caseStudySocraticInput && d.caseStudySocraticInput.trim() && callGemini) {

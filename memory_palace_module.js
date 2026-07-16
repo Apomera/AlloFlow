@@ -429,7 +429,7 @@
   }
 
   // ── Accessible route DOM (source of truth; visible on any failure) ──
-  function buildRouteDom(palace, t, visible, recall, decor) {
+  function buildRouteDom(palace, t, visible, recall, decor, onSelect) {
     var wrap = document.createElement('div');
     wrap.style.cssText = visible ? 'color:#e2e8f0;padding:8px 16px;max-height:100%;overflow:auto;' : SR_ONLY;
     var heading = document.createElement('div');
@@ -439,9 +439,21 @@
     var ol = document.createElement('ol');
     ol.setAttribute('aria-label', _tr(t, 'memory_palace.route_aria', 'Memory palace route in walking order'));
     ol.style.cssText = visible ? 'font-size:13px;line-height:1.7;padding-left:22px;margin:0;' : 'margin:0;';
-    (palace.route || []).forEach(function (id) {
+    (palace.route || []).forEach(function (id, index) {
       var li = document.createElement('li');
-      li.textContent = recall ? describeLocusForRecall(palace, id, t, decor) : describeLocusForSR(palace, id, t, decor);
+      var description = recall ? describeLocusForRecall(palace, id, t, decor) : describeLocusForSR(palace, id, t, decor);
+      if (visible && typeof onSelect === 'function') {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = description;
+        button.setAttribute('data-route-index', String(index));
+        button.setAttribute('aria-label', (index === 0 ? 'Entrance. ' : ('Locus ' + index + '. ')) + description);
+        button.style.cssText = 'display:block;width:100%;min-height:44px;margin:4px 0;padding:8px 10px;text-align:left;color:#e2e8f0;background:#1e293b;border:1px solid #475569;border-radius:8px;cursor:pointer;font:inherit;line-height:1.45;';
+        button.onclick = function () { onSelect(index); };
+        li.appendChild(button);
+      } else {
+        li.textContent = description;
+      }
       ol.appendChild(li);
     });
     wrap.appendChild(ol);
@@ -1188,25 +1200,76 @@
 
     // ── DOM chrome: prev/next + progress + overview ──
     var hud = document.createElement('div');
-    hud.style.cssText = 'position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:8px;background:rgba(2,6,23,0.82);border:1px solid #334155;border-radius:999px;padding:6px 10px;color:#e2e8f0;';
+    hud.style.cssText = 'position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:8;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);background:rgba(2,6,23,0.9);border:1px solid #475569;border-radius:999px;padding:6px 10px;color:#e2e8f0;';
     function mkBtn(txt, label, fn) {
       var b = document.createElement('button');
       b.textContent = txt; b.setAttribute('aria-label', label);
-      b.style.cssText = 'border:none;background:#1e293b;color:#e2e8f0;border-radius:999px;padding:6px 13px;font-size:13px;font-weight:800;cursor:pointer;';
+      b.style.cssText = 'border:1px solid #475569;background:#1e293b;color:#e2e8f0;border-radius:999px;min-width:44px;min-height:44px;padding:8px 13px;font-size:13px;font-weight:800;cursor:pointer;';
       b.onclick = fn; return b;
     }
     var prevBtn = mkBtn('◀', _tr(t, 'memory_palace.prev', 'Previous locus'), function () { goTo(curIdx - 1); });
-    var progress = document.createElement('span'); progress.style.cssText = 'font-size:12px;font-weight:800;min-width:52px;text-align:center;';
+    var progress = document.createElement('span'); progress.style.cssText = 'font-size:12px;font-weight:800;min-width:76px;text-align:center;';
     var nextBtn = mkBtn('▶', _tr(t, 'memory_palace.next', 'Next locus'), function () { goTo(curIdx + 1); });
     var ovBtn = mkBtn('🗺', _tr(t, 'memory_palace.overview', 'Overview'), function () {
       overview = !overview;
       if (overview) { applyOverview(); if (reduce) { camPos.copy(camPosT); look.copy(lookT); } } else { goTo(curIdx, true); }
     });
-    hud.appendChild(prevBtn); hud.appendChild(progress); hud.appendChild(nextBtn); hud.appendChild(ovBtn);
+    var routeVisible = false;
+    var routePanel = buildRouteDom(palace, t, true, recall, decor, function (index) {
+      goTo(index);
+      setRouteVisible(false, true);
+    });
+    routePanel.id = 'palace-route-panel-' + (window.__palaceRouteSeq = (window.__palaceRouteSeq || 0) + 1);
+    routePanel.hidden = true;
+    routePanel.style.cssText = 'position:absolute;right:12px;top:12px;bottom:78px;z-index:7;width:min(360px,calc(100% - 24px));color:#e2e8f0;padding:14px 18px;overflow:auto;background:rgba(2,6,23,0.94);border:1px solid #475569;border-radius:12px;box-sizing:border-box;';
+    routePanel.setAttribute('role', 'region');
+    routePanel.setAttribute('aria-label', _tr(t, 'memory_palace.route_title', 'Palace route'));
+    holder.appendChild(routePanel);
+    function setRouteVisible(visible, moveFocus) {
+      routeVisible = !!visible;
+      routePanel.hidden = !routeVisible;
+      routeBtn.setAttribute('aria-pressed', routeVisible ? 'true' : 'false');
+      routeBtn.setAttribute('aria-expanded', routeVisible ? 'true' : 'false');
+      updateHud();
+      if (moveFocus) {
+        if (routeVisible) {
+          var currentRouteButton = routePanel.querySelector('[aria-current="step"]') || routePanel.querySelector('[data-route-index]');
+          if (currentRouteButton) currentRouteButton.focus();
+        } else {
+          routeBtn.focus();
+        }
+      }
+      live.textContent = routeVisible ? 'Walking route shown. Current stop focused.' : 'Walking route hidden.';
+    }
+    var routeBtn = mkBtn('Route', _tr(t, 'memory_palace.route_title', 'Palace route'), function () {
+      setRouteVisible(!routeVisible, true);
+    });
+    routeBtn.setAttribute('aria-pressed', 'false');
+    routeBtn.setAttribute('aria-expanded', 'false');
+    function onRouteKeyDown(e) {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      setRouteVisible(false, true);
+    }
+    routePanel.addEventListener('keydown', onRouteKeyDown);
+    var overviewClick = ovBtn.onclick;
+    ovBtn.onclick = function () { overviewClick(); updateHud(); };
+    routeBtn.setAttribute('aria-controls', routePanel.id);
+    hud.appendChild(prevBtn); hud.appendChild(progress); hud.appendChild(nextBtn); hud.appendChild(ovBtn); hud.appendChild(routeBtn);
     holder.appendChild(hud);
     function updateHud() {
-      progress.textContent = curIdx + '/' + (palace.route.length - 1);
+      var totalStops = Math.max(0, palace.route.length - 1);
+      progress.textContent = curIdx === 0 ? 'Entrance' : (curIdx + ' of ' + totalStops);
+      progress.setAttribute('aria-label', curIdx === 0 ? ('Palace entrance. ' + totalStops + ' loci.') : ('Locus ' + curIdx + ' of ' + totalStops));
+      ovBtn.setAttribute('aria-pressed', overview ? 'true' : 'false');
       prevBtn.disabled = curIdx <= 0; nextBtn.disabled = curIdx >= palace.route.length - 1;
+      Array.prototype.forEach.call(routePanel.querySelectorAll('[data-route-index]'), function (button) {
+        if (Number(button.getAttribute('data-route-index')) === curIdx) button.setAttribute('aria-current', 'step');
+        else button.removeAttribute('aria-current');
+        button.style.backgroundColor = button.hasAttribute('aria-current') ? '#3730a3' : '#1e293b';
+        button.style.borderColor = button.hasAttribute('aria-current') ? '#a5b4fc' : '#475569';
+      });
       prevBtn.style.opacity = prevBtn.disabled ? 0.4 : 1; nextBtn.style.opacity = nextBtn.disabled ? 0.4 : 1;
     }
     updateHud();
@@ -1225,10 +1288,9 @@
     // Visible control hint (fades after a few seconds) — WASD isn't discoverable otherwise.
     var ctrlHint = document.createElement('div');
     ctrlHint.setAttribute('aria-hidden', 'true');
-    ctrlHint.style.cssText = 'position:absolute;left:12px;top:12px;z-index:6;background:rgba(2,6,23,0.72);color:#cbd5e1;border:1px solid #334155;border-radius:8px;padding:5px 10px;font-size:11px;pointer-events:none;transition:opacity 0.8s;';
+    ctrlHint.style.cssText = 'position:absolute;left:12px;top:12px;z-index:6;max-width:calc(100% - 24px);background:rgba(2,6,23,0.82);color:#e2e8f0;border:1px solid #475569;border-radius:8px;padding:7px 10px;font-size:12px;line-height:1.35;pointer-events:none;';
     ctrlHint.textContent = _tr(t, 'memory_palace.controls_hint', 'WASD to walk · drag to look · ◀ ▶ for the guided tour');
     holder.appendChild(ctrlHint);
-    (window.setTimeout || function () {})(function () { try { ctrlHint.style.opacity = '0'; } catch (e) {} }, 6000);
 
     // ── WebXR: optional "Enter VR" (progressive enhancement) ──
     // The button appears ONLY when the browser reports immersive-vr support (a
@@ -1288,7 +1350,8 @@
         }).catch(function () {});
       }
     } catch (e) {}
-    [hud].forEach(function (nd) { try { nd.setAttribute('aria-hidden', 'true'); } catch (e) {} });
+    hud.setAttribute('role', 'toolbar');
+    hud.setAttribute('aria-label', _tr(t, 'memory_palace.controls', 'Memory palace route controls'));
 
     function onKeyDown(e) {
       var k = e.key;
@@ -1364,11 +1427,12 @@
     state.cleanup.push(function () {
       el.removeEventListener('keydown', onKeyDown);
       el.removeEventListener('keyup', onKeyUp);
+      routePanel.removeEventListener('keydown', onRouteKeyDown);
       el.removeEventListener('pointerdown', onDown);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       el.removeEventListener('wheel', onWheel);
-      [hud, live, instr, ctrlHint].forEach(function (nd) { try { if (nd.parentNode) nd.parentNode.removeChild(nd); } catch (e) {} });
+      [hud, live, instr, ctrlHint, routePanel].forEach(function (nd) { try { if (nd.parentNode) nd.parentNode.removeChild(nd); } catch (e) {} });
     });
 
     // ── WebXR Tier 2: controllers — smooth thumbstick locomotion, snap-turn,

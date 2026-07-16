@@ -27884,6 +27884,7 @@ window.SelHub = window.SelHub || {
             !cpRpEnded && h('div', { style: { marginTop: 10 } },
               h('textarea', {
                 id: 'cp-rp-input', value: cpRpInput,
+                'aria-label': 'Your coping role-play response',
                 onChange: function(e) { upd('cpRpInput', e.target.value); },
                 placeholder: 'What would you actually say / do / notice? You can describe an action ("I take a slow breath"), say something out loud, or both. Don\'t share personal info (names, school, etc.).',
                 rows: 2,
@@ -27965,12 +27966,12 @@ window.SelHub = window.SelHub || {
               return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                 h('span', { style: { color: _copFg('#eab308'), fontSize: 14 } }, '\u2022'),
                 h('span', { style: { flex: 1, fontSize: 13, color: _copFg('#e2e8f0') } }, sign),
-                h('button', { 'aria-label': 'Add a warning sign...',
+                h('button', { 'aria-label': 'Remove warning sign: ' + sign,
                   onClick: function() {
                     var newSigns = (plan.warningSigns || []).filter(function(_, j) { return j !== i; });
                     upd('calmPlan', Object.assign({}, plan, { warningSigns: newSigns }));
                   },
-                  style: { padding: '2px 6px', borderRadius: 4, border: 'none', background: _copBg('#334155'), color: _copFg('#94a3b8'), cursor: 'pointer', fontSize: 10 }
+                  style: { minWidth: 24, minHeight: 24, padding: '2px 6px', borderRadius: 4, border: 'none', background: _copBg('#334155'), color: _copFg('#94a3b8'), cursor: 'pointer', fontSize: 10 }
                 }, '\u2715')
               );
             }),
@@ -28004,12 +28005,12 @@ window.SelHub = window.SelHub || {
               return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                 h('span', { style: { width: 24, height: 24, borderRadius: '50%', background: '#14b8a633', color: _copFg('#14b8a6'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 } }, i + 1),
                 h('span', { style: { flex: 1, fontSize: 13, color: _copFg('#e2e8f0') } }, step),
-                h('button', { 'aria-label': 'Add a step...',
+                h('button', { 'aria-label': 'Remove coping step: ' + step,
                   onClick: function() {
                     var newSteps = (plan.steps || []).filter(function(_, j) { return j !== i; });
                     upd('calmPlan', Object.assign({}, plan, { steps: newSteps }));
                   },
-                  style: { padding: '2px 6px', borderRadius: 4, border: 'none', background: _copBg('#334155'), color: _copFg('#94a3b8'), cursor: 'pointer', fontSize: 10 }
+                  style: { minWidth: 24, minHeight: 24, padding: '2px 6px', borderRadius: 4, border: 'none', background: _copBg('#334155'), color: _copFg('#94a3b8'), cursor: 'pointer', fontSize: 10 }
                 }, '\u2715')
               );
             }),
@@ -28062,12 +28063,12 @@ window.SelHub = window.SelHub || {
               return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                 h('span', { style: { fontSize: 16 } }, '\uD83E\uDDD1'),
                 h('span', { style: { flex: 1, fontSize: 13, color: _copFg('#e2e8f0') } }, adult),
-                h('button', { 'aria-label': 'Name and relationship...',
+                h('button', { 'aria-label': 'Remove trusted adult: ' + adult,
                   onClick: function() {
                     var newAdults = (plan.trustedAdults || []).filter(function(_, j) { return j !== i; });
                     upd('calmPlan', Object.assign({}, plan, { trustedAdults: newAdults }));
                   },
-                  style: { padding: '2px 6px', borderRadius: 4, border: 'none', background: _copBg('#334155'), color: _copFg('#94a3b8'), cursor: 'pointer', fontSize: 10 }
+                  style: { minWidth: 24, minHeight: 24, padding: '2px 6px', borderRadius: 4, border: 'none', background: _copBg('#334155'), color: _copFg('#94a3b8'), cursor: 'pointer', fontSize: 10 }
                 }, '\u2715')
               );
             }),
@@ -28541,7 +28542,7 @@ window.SelHub = window.SelHub || {
           })
         );
         var learnSearchBar = h('div', { style: { padding: '0 12px 10px' } },
-          h('input', { type: 'search', placeholder: '🔎 Search...', value: d.learnSearch || '',
+          h('input', { type: 'search', 'aria-label': 'Search coping skills library', placeholder: '🔎 Search...', value: d.learnSearch || '',
             onChange: function(e) { upd({ learnSearch: e.target.value }); },
             style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _copBg('#0f172a'), color: _copFg('#e2e8f0'), fontSize: 13 }
           })
@@ -28773,7 +28774,7 @@ window.SelHub = window.SelHub || {
           })
         );
         var scSearchBar = h('div', { style: { padding: '0 12px 10px' } },
-          h('input', { type: 'search', placeholder: '🔎 Search...', value: d.scSearch || '',
+          h('input', { type: 'search', 'aria-label': 'Search sample plans and guided scripts', placeholder: '🔎 Search...', value: d.scSearch || '',
             onChange: function(e) { upd({ scSearch: e.target.value }); },
             style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _copBg('#0f172a'), color: _copFg('#e2e8f0'), fontSize: 13 }
           })

@@ -1,0 +1,249 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-b1824286-isabukuru-ya-cyusa",
+  "title": "Isabukuru Ya Cyusa",
+  "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru y’isabukuru ya Cyusa.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "Niyonzima Isabelle"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CACTUS PUBLISHERS",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/WJ8PPLDDPQ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru+-+Cover2.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa3.png",
+      "text": ""
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "© 2020 CACTUS PUBLISHERS, P.O.Box 1810, Kigali\nAbantu bose bahawe uburenganzira bukurikira kuri iki gitabo:\nKugisoma yaba mu buryo bw’ikoranabuhanga cyangwa ku mpapuro,\nkugikura kuri murandasi, kugifotoza cyangwa kugicapisha mu mpapuro,\nkugihererekanya yaba ku mpapuro cyangwa ku mbuga z’ikoranabuhanga\n(iziriho cyangwa izizavumburwa nyuma) no kugihindura mu ndimi izo ari\nzo zose. Abagikoresha ntibemerewe kugicuruza cyangwa kukibyazamo\namafaranga mu buryo ubwo ari bwo bwose, batabiherewe uburenganzira\nmu nyandiko n’abagitangaje.\nwww.cactuspublishers.rw\nISBN: 978-99977-54-85-1"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa_Page_05_Image_0001.png",
+      "text": "Cyusa akunda gukina umupira n’abandi bana.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2faudio%2fi3ddf45a9-6106-44e7-82ab-4a95203f813f.mp3",
+          "dur": 5.81331
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa_Page_06_Image_0001.png",
+      "text": "Abana b’inshuti ze baramukunda cyane.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2faudio%2fi35160224-ea37-4601-b761-c5f41ea7ffce.mp3",
+          "dur": 5.343106
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa_Page_07_Image_1.jpg",
+      "text": "Ku isabukuru ye, nyina wa Cyusa aje ku mukangura ngo akarabe.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2faudio%2fi666293fc-8286-482d-9761-fcb7af9df710.mp3",
+          "dur": 7.43
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa_Page_08_Image_0001.png",
+      "text": "Mu kanya gato azana imyenda mishya ngo yambare.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2faudio%2fe07467e0-eff9-4d79-b075-e784492c5bbd.mp3",
+          "dur": 5.96
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa_Page_09_Image_1.jpg",
+      "text": "Cyusa amaze kwambara yibuka ko uyu munsi ari isabakuru ye y’imyaka itatu y’ amavuko.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2faudio%2fi7882388e-cfdf-4be8-bce8-e455ec98ee45.mp3",
+          "dur": 9.65331
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa_Page_10_Image_3.jpg",
+      "text": "Asaba ababyeyi be gutumira inshuti ze kugira ngo basangire umutsima.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2faudio%2fa2f63d79-e988-4a3b-8143-f6f89375742e.mp3",
+          "dur": 7.8
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa_Page_11_Image_0001.png",
+      "text": "Cyusa n’inshuti ze, basangira umutsima banezerewe.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2faudio%2fi24066ca5-a74f-4c6b-be64-69aa390ddf9c.mp3",
+          "dur": 6.649229
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa_Page_12_Image_1.jpg",
+      "text": "Inshuti ze zimuha impano zamugeneye.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2faudio%2fdd8ca8c8-197c-43ac-a3ee-125630a67e86.mp3",
+          "dur": 4.56
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa_Page_13_Image_1.jpg",
+      "text": "Ababyeyi be na bo bamuha impano bamuteguriye.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2faudio%2fi8077ee4d-1c49-4dd5-8814-8747733cf8ac.mp3",
+          "dur": 5.996167
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa_Page_14_Image_1.jpg",
+      "text": "Umunsi mukuru urangiye, Cyusa aherekeza inshuti ze, bishimiye ko isabukuru yagenze neza.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2faudio%2fi97c21435-e49c-45fe-8cb0-e24330eb5516.mp3",
+          "dur": 10.49
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Cyusa akunda gukina umupira n’abandi bana."
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Abana b’inshuti ze baramukunda cyane."
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Ku isabukuru ye, nyina wa Cyusa aje ku mukangura ngo akarabe."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Mu kanya gato azana imyenda mishya ngo yambare."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Cyusa amaze kwambara yibuka ko uyu munsi ari isabakuru ye y’imyaka itatu y’ amavuko."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Asaba ababyeyi be gutumira inshuti ze kugira ngo basangire umutsima."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Cyusa n’inshuti ze, basangira umutsima banezerewe."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Inshuti ze zimuha impano zamugeneye."
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Ababyeyi be na bo bamuha impano bamuteguriye."
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "Umunsi mukuru urangiye, Cyusa aherekeza inshuti ze, bishimiye ko isabukuru yagenze neza."
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nGutumira\nIjambo mu Inkuru"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nImpano\nIjambo mu Inkuru"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nIsabukuru\nIjambo mu inkuru"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nUmutsima\nIjambo mu Inkuru"
+    },
+    {
+      "n": 27,
+      "img": null,
+      "text": "IBIBAZO\n1) Hitamo igisubizo kiri cyo;\nCyusa akunda gukina iki?\na) Umupira\nb) Amakarita\nc) Kwihishanya"
+    },
+    {
+      "n": 28,
+      "img": null,
+      "text": "IBIBAZO\n2) Uzuza iyi nteruro ukoresheje rimwe mu magambo wahawe;\nCyusa amaze kwambara yibuka ko uyu munsi ari isabakuru ye y’imyaka ______\na) itanu\nb) itatu\nc) icumi"
+    },
+    {
+      "n": 29,
+      "img": null,
+      "text": "IBIBAZO\n3) Subiza YEGO cyangwa OYA;\nEse Cyusa nyina yamuzaniye imyenda ishaje?\nYEGO\nOYA"
+    },
+    {
+      "n": 30,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru_ya_Cyusa4.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 30,
+    "words": 321
+  }
+}

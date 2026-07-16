@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-60d273ac-azizi-poupe-a",
+  "title": "Azizi poupe a",
+  "description": "Azizi is my doll. We do a lot together but he never says much.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "African Storybook Initiative"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "African Storybook Initiative",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Ivaw5VLWgv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_02_Image_0001.jpg",
+      "text": "Sa a se Azizi. Azizi se poupe m' nan."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_03_Image_0001.jpg",
+      "text": "Mwen renmen Azizi paske li toujou ap souri."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_04_Image_0001.jpg",
+      "text": "Apre mwen, reveye mwen lave figi m'. Apre sa, mwen gade pou Azizi."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_05_Image_0001.jpg",
+      "text": "Lè m' jwenn Azizi, mwen bwose cheve li."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_06_Image_0001.jpg",
+      "text": "Lè m' manje manje matin, mwen bay Azizi manje."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_07_Image_0001.jpg",
+      "text": "Lè m' manje bagay dous, mwen bay Azizi youn."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_08_Image_0001.jpg",
+      "text": "Men, Azizi pa janm manje bagay dous. Mwen mande m' poukisa !"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_09_Image_0001.jpg",
+      "text": "Mwen mache nan lavironn ansent lan, poum ka keyi flè."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_10_Image_0001.jpg",
+      "text": "Mwen bay Azizi yon flè. Men, li pa janm di, « Mèsi dèske ou ban mwen li. >>"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_11_Image_0001.jpg",
+      "text": "Mwen lave Azizi pwòp anvan manman benyen m'."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_12_Image_0001.png",
+      "text": "Mwen abiye Azizi an wouj paske mwen renmen koulè wouj la."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_13_Image_0001.jpg",
+      "text": "Lè m' ale dòmi, mwen mete Azizi kouche bò kote m'."
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 126
+  }
+}

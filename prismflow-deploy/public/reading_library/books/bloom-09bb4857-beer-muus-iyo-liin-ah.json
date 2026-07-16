@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-09bb4857-beer-muus-iyo-liin-ah",
+  "title": "Beer Muus iyo Liin ah.",
+  "description": "A Somali picture book from Bloom Library.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "RTI International"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RTI International",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/dChoCP6yl5"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil.org%2f09bb4857-3a2c-48f3-8c04-4f389d0d69c1%2f1.1b+Beer+Muus+iyo+Liin+ah%2fAOR_OVT015.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil.org%2f09bb4857-3a2c-48f3-8c04-4f389d0d69c1%2f1.1b+Beer+Muus+iyo+Liin+ah%2fAOR_CMB0448.png",
+      "text": "Dhudi iyo Jamaal\nDhudi iyo Jamaal waa gabadh iyo wiil walaalo ah.\nMaalin ayay dhudi aragtay dhir ku taala daarad."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil.org%2f09bb4857-3a2c-48f3-8c04-4f389d0d69c1%2f1.1b+Beer+Muus+iyo+Liin+ah%2fAOR_MWC16.png",
+      "text": "Markaasay Dhudi aad ugu bogtay.\nKadib, Dhudi waxay aaday gurigoodii."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil.org%2f09bb4857-3a2c-48f3-8c04-4f389d0d69c1%2f1.1b+Beer+Muus+iyo+Liin+ah%2fAOR_sph003m.png",
+      "text": "Dhudi waxay Jamaal u sheegtay dhirtay soo aragtay.\nKolkaasu Jamaalna yidhi, kalay isoo tus."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil.org%2f09bb4857-3a2c-48f3-8c04-4f389d0d69c1%2f1.1b+Beer+Muus+iyo+Liin+ah%2fAOR_Pc041.png",
+      "text": "Dabadeedna Dhudi iyo Jamaal way is raaceen.\nInyar kadibna beertii ayay gaadheen."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil.org%2f09bb4857-3a2c-48f3-8c04-4f389d0d69c1%2f1.1b+Beer+Muus+iyo+Liin+ah%2fAOR_5-1-2h.png",
+      "text": "Dhudi ayaa tidhi, \"Jamaalow waata beertii.\"\nJamaal ayaa ku jawaabay, \"Waa beer cajiib ah.\""
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil.org%2f09bb4857-3a2c-48f3-8c04-4f389d0d69c1%2f1.1b+Beer+Muus+iyo+Liin+ah%2fAOR_OVT0151.png",
+      "text": "Dhudi ayaa tidhi, \"Beertu waa noocma walaal.\"\nJamaal baa ugu jawaabay, \"Waa muus iyo liin.\""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil.org%2f09bb4857-3a2c-48f3-8c04-4f389d0d69c1%2f1.1b+Beer+Muus+iyo+Liin+ah%2fAOR_th01111b.png",
+      "text": "Dhudi waxay tidhi, \"Maan inaguna beerano.\"\nJamaal baa ugu jawaabay, \"Haye kaalay aabaan u sheegnaynaa.\""
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil.org%2f09bb4857-3a2c-48f3-8c04-4f389d0d69c1%2f1.1b+Beer+Muus+iyo+Liin+ah%2fAOR_pg015.png",
+      "text": "Kadib, aabahood ayay u sheegeen.\nAbaahoodna wu aqbalay."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 108
+  }
+}

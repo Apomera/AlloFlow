@@ -1,0 +1,41 @@
+{
+  "text": {
+    "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-fixture-primary:generateContent?key=fixture-key",
+    "body": {
+      "contents": [{ "parts": [{ "text": "Return a grounded JSON fixture." }] }],
+      "generationConfig": {
+        "maxOutputTokens": 512,
+        "responseMimeType": "application/json",
+        "temperature": 0.2
+      },
+      "safetySettings": [
+        { "category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH" },
+        { "category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH" },
+        { "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH" },
+        { "category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH" }
+      ],
+      "tools": [{ "google_search": {} }]
+    }
+  },
+  "imageGeneration": {
+    "url": "https://generativelanguage.googleapis.com/v1beta/models/imagen-fixture:predict?key=fixture-key",
+    "body": {
+      "instances": [{ "prompt": "A labeled-free water-cycle illustration." }],
+      "parameters": { "sampleCount": 1 }
+    }
+  },
+  "imageEditing": {
+    "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-image-fixture:generateContent?key=fixture-key",
+    "body": {
+      "contents": [{
+        "parts": [
+          { "text": "Remove the label while preserving the diagram." },
+          { "inlineData": { "mimeType": "image/png", "data": "c291cmNlLWltYWdl" } },
+          { "text": "Reference portrait to match:" },
+          { "inlineData": { "mimeType": "image/png", "data": "cmVmZXJlbmNlLWltYWdl" } }
+        ]
+      }],
+      "generationConfig": { "responseModalities": ["TEXT", "IMAGE"] }
+    }
+  }
+}

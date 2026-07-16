@@ -1,0 +1,271 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-99f0e3bd-icyari-cya-ntashya-4-urutare",
+  "title": "ICYARI CYA NTASHYA 4 - Urutare",
+  "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru ya intashya yubaka icyari ikagishyire munsi y’urutare.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Nshimyumukiza Eric"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/WQTZtMpbZf"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare3.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare5.png",
+      "text": ""
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Sankofa Creatives LTD\nsankofacr@gmail.com\nwww.sankofacreatives.rw\nInkuru ya © Nshimyumukiza Eric, 2020.\nIki gitabo cyatangajwe bwa mbere na SANKOFA CREATIVES ltd\nku bufatanye n’umushinga READING READY mu mwaka wa 2020.\nAbantu bose bahawe uburenganzira bukurikira kuri iki gitabo: kugisoma yaba mu buryo bw’ikoranabuhanga cyangwa ku mpapuro, kugikura kuri murandasi, kugifotoza cyangwa kugicapisha mu mpapuro, kugihererekanya yaba ku mpapuro cyangwa ku mbuga z’ikoranabuhanga (iziriho cyangwa izizavumburwa nyuma) no kugihindura mu ndimi izo ari zo zose. Abagikoresha ntibemerewe kugicuruza cyangwa kukibyazamo amafaranga mu buryo ubwo ari bwo bwose, batabiherewe uburenganzira mu nyandiko n’abagitangaje.\nGutunganya igitabo byakozwe na © Nshimyumukiza Eric.\nIki gitabo cyashushanyijwe na © Iradukunda Sebastien."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_05_Image_1.jpg",
+      "text": "Ntashya ajya kugama.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi0a49d03f-51cc-4e8c-867f-08cb1a26d3b8.mp3",
+          "dur": 3.18
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_06_Image_1.jpg",
+      "text": "Yugama mu rutare,",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi78482883-ebb8-47d1-9c60-4be56ab1f966.mp3",
+          "dur": 2.84
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_07_Image_3.jpg",
+      "text": "Imvura irahita.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2ff46a2a25-760b-43cc-ad82-9958b0db46be.mp3",
+          "dur": 2.42
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_08_Image_3.jpg",
+      "text": "Yahira utwatsi.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi7266ce6e-f66c-4a6d-9aa7-6dc1f73c5bd0.mp3",
+          "dur": 2.94
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_09_Image_1.jpg",
+      "text": "Atora uduti n’akondo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi399f0034-7fbc-4248-b5e1-dba78bcfaad5.mp3",
+          "dur": 3.21
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_10_Image_1.jpg",
+      "text": "Yubaka mu rutare.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi2602be76-2fd5-4dd5-bfd4-90a9e5e929bd.mp3",
+          "dur": 2.45
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_11_Image_1.jpg",
+      "text": "Yuzuza icyari.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi1dd648c6-8607-4dd3-aea9-6b6c2a1544d1.mp3",
+          "dur": 2.71
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_12_Image_5.jpg",
+      "text": "Umuyaga urahuha.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi95559047-cd56-4d0c-aa74-4e9917612a9b.mp3",
+          "dur": 2.34
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_13_Image_3.jpg",
+      "text": "Inkende zirakina.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi38c8094b-3c01-48b3-a2c6-7c7e5356817d.mp3",
+          "dur": 2.46
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_14_Image_3.jpg",
+      "text": "Imvura iragwa.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi55132e26-b125-4788-85f5-6acbbd7794fa.mp3",
+          "dur": 1.95
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_15_Image_5.jpg",
+      "text": "Icyari nticyasenyuka.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi91e71326-a38d-41d5-b9a1-89eb140a0d57.mp3",
+          "dur": 3.94
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_16_Image_1.jpg",
+      "text": "Ntashya arishima.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fbd18a764-e883-4f18-9206-ce9bf9334355.mp3",
+          "dur": 3.09
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Ntashya ajya kugama."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Yugama mu rutare,"
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Imvura irahita."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Yahira utwatsi."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Atora uduti n’akondo."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Yubaka mu rutare."
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Yuzuza icyari."
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "Umuyaga urahuha."
+    },
+    {
+      "n": 23,
+      "img": null,
+      "text": "Inkende zirakina."
+    },
+    {
+      "n": 24,
+      "img": null,
+      "text": "Imvura iragwa."
+    },
+    {
+      "n": 25,
+      "img": null,
+      "text": "Icyari nticyasenyuka."
+    },
+    {
+      "n": 26,
+      "img": null,
+      "text": "Ntashya arishima."
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nInkende\nIjambo mu Inkuru"
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nUmuyaga\nIjambo mu Inkuru"
+    },
+    {
+      "n": 29,
+      "img": null,
+      "text": "IBIBAZO\n1) Hitamo igisubizo kiri cyo;\nNtashya yugamye mu _______\na) nzu\nb) giti\nc) rutare"
+    },
+    {
+      "n": 30,
+      "img": null,
+      "text": "IBIBAZO\n2) Subiza YEGO cyangwa OYA;\nInkende zafashije Nyashya kubaka icyari?\nYEGO\nOYA"
+    },
+    {
+      "n": 31,
+      "img": null,
+      "text": "IBIBAZO\n3) Uzuza iyi nteruro ukoresheje rimwe mu magambo wahawe;\nImvura iragwa icyari _______\na) kirashya\nb) nticyasenyuka\nc) kiraguruka"
+    },
+    {
+      "n": 32,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Uduti2.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 32,
+    "words": 221
+  }
+}

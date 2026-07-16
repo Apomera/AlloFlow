@@ -1,125 +1,46 @@
-/* ============================================================
-   PasstheEPPP — Textbook Ch 37: Cognitive Development
-   Domain: Growth & Lifespan Development (12% of EPPP)
-   Structure: 80% evidence-based + 20% AI-reflective coda
-   ============================================================ */
-
+/* Source-reviewed editorial revision: 2026-07-14 */
 window.TextbookChapters = window.TextbookChapters || [];
-
 window.TextbookChapters.push({
-    id: 'ch-37',
-    domain: 'Growth & Lifespan Development',
-    domainNumber: 7,
-    title: 'Cognitive Development',
-    examWeight: '12%',
-    sections: [
-        {
-            heading: 'Why This Chapter Matters',
-            content: '<p>Piaget and Vygotsky are among the most tested theorists on the entire EPPP. You need to know each of Piaget\u2019s stages, key concepts, and limitations, as well as Vygotsky\u2019s Zone of Proximal Development and how it contrasts with Piaget.</p>'
-        },
-        {
-            heading: 'Piaget\u2019s Stages of Cognitive Development',
-            content: '<table>' +
-                '<tr><th>Stage</th><th>Age</th><th>Key Achievements</th><th>Limitations</th></tr>' +
-                '<tr><td><strong>Sensorimotor</strong></td><td>0\u20132 years</td><td><strong>Object permanence</strong> (~8\u201312 months): understanding that objects exist when out of sight. Begins with reflexes, ends with mental representations. <strong>A-not-B error</strong>: searching where object was hidden before, not where it was moved.</td><td>No symbolic thought; knowledge limited to direct sensory/motor experience</td></tr>' +
-                '<tr><td><strong>Preoperational</strong></td><td>2\u20137 years</td><td>Symbolic/pretend play, language explosion, animism (attributing life to inanimate objects)</td><td><strong>Egocentrism</strong> (can\u2019t take others\u2019 perspectives; three-mountain task). <strong>Centration</strong> (focus on one dimension). Lack of <strong>conservation</strong>. <strong>Irreversibility</strong>. <strong>Transductive reasoning</strong> (reasoning from particular to particular).</td></tr>' +
-                '<tr><td><strong>Concrete operational</strong></td><td>7\u201311 years</td><td><strong>Conservation</strong> (quantity unchanged despite appearance change). <strong>Decentration</strong>. <strong>Reversibility</strong>. <strong>Seriation</strong> (ordering objects). <strong>Classification</strong>. <strong>Transitivity</strong> (if A>B and B>C, then A>C).</td><td>Thinking limited to <strong>concrete</strong>, tangible objects. Cannot think abstractly or hypothetically.</td></tr>' +
-                '<tr><td><strong>Formal operational</strong></td><td>11+ years</td><td><strong>Abstract thinking</strong>. <strong>Hypothetico-deductive reasoning</strong>. Systematic problem-solving. <strong>Adolescent egocentrism</strong>: imaginary audience ("everyone is watching me") and personal fable ("no one understands me" / "it won\u2019t happen to me").</td><td>Not everyone reaches this stage. Culture and education influence its development.</td></tr>' +
-                '</table>' +
-                '<p><strong>Core Piagetian concepts:</strong></p>' +
-                '<ul>' +
-                '<li><strong>Schema</strong>: Cognitive framework for organizing information</li>' +
-                '<li><strong>Assimilation</strong>: Incorporating new information into existing schemas</li>' +
-                '<li><strong>Accommodation</strong>: Modifying schemas when new information doesn\u2019t fit</li>' +
-                '<li><strong>Equilibration</strong>: Drive to resolve cognitive imbalance between assimilation and accommodation</li>' +
-                '</ul>' +
-                '<p><strong>Criticisms of Piaget:</strong> Underestimated children\u2019s abilities (especially infants), discrete stages too rigid, underemphasized social/cultural factors, not all adults reach formal operations.</p>' +
-                '<p><strong>EPPP Tip:</strong> Object permanence = sensorimotor. Conservation = concrete operational. Abstract thinking = formal operational. Egocentrism appears in different forms: preoperational (can\u2019t take others\u2019 perspectives) and formal (imaginary audience/personal fable).</p>',
-            keyTerms: ['Piaget', 'Sensorimotor', 'Preoperational', 'Concrete operational', 'Formal operational', 'Object permanence', 'Conservation', 'Egocentrism', 'Assimilation', 'Accommodation', 'Equilibration', 'Imaginary audience', 'Personal fable'],
-            interactiveDiagram: {
-                description: 'Piaget\'s Phases of Cognitive Development',
-                svg: '<svg viewBox="0 0 800 240" width="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="piagetGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#3b82f6"/><stop offset="30%" stop-color="#8b5cf6"/><stop offset="65%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#10b981"/></linearGradient></defs><text x="400" y="25" text-anchor="middle" fill="#cbd5e1" font-weight="bold" font-size="16">Piaget\'s Stages of Cognitive Development</text><line x1="30" y1="120" x2="770" y2="120" stroke="url(#piagetGrad)" stroke-width="6"/><circle cx="100" cy="120" r="12" fill="#3b82f6"/><circle cx="280" cy="120" r="12" fill="#8b5cf6"/><circle cx="500" cy="120" r="12" fill="#f59e0b"/><circle cx="700" cy="120" r="12" fill="#10b981"/><rect x="40" y="55" width="120" height="40" rx="8" fill="#3b82f6" opacity="0.15"/><text x="100" y="70" text-anchor="middle" fill="#93c5fd" font-weight="bold" font-size="14">Sensorimotor</text><text x="100" y="85" text-anchor="middle" fill="#cbd5e1" font-size="11">0 - 2 Years</text><rect x="220" y="155" width="120" height="40" rx="8" fill="#8b5cf6" opacity="0.15"/><text x="280" y="170" text-anchor="middle" fill="#c4b5fd" font-weight="bold" font-size="14">Preoperational</text><text x="280" y="185" text-anchor="middle" fill="#cbd5e1" font-size="11">2 - 7 Years</text><rect x="440" y="55" width="120" height="40" rx="8" fill="#f59e0b" opacity="0.15"/><text x="500" y="70" text-anchor="middle" fill="#fcd34d" font-weight="bold" font-size="14">Concrete Op.</text><text x="500" y="85" text-anchor="middle" fill="#cbd5e1" font-size="11">7 - 11 Years</text><rect x="640" y="155" width="120" height="40" rx="8" fill="#10b981" opacity="0.15"/><text x="700" y="170" text-anchor="middle" fill="#6ee7b7" font-weight="bold" font-size="14">Formal Op.</text><text x="700" y="185" text-anchor="middle" fill="#cbd5e1" font-size="11">11+ Years</text><text x="100" y="145" text-anchor="middle" fill="#60a5fa" font-size="10" font-weight="bold">Object Permanence</text><text x="100" y="158" text-anchor="middle" fill="#60a5fa" font-size="9">(Things exist when unseen)</text><text x="280" y="95" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="bold">Egocentrism &amp; Symbolic Play</text><text x="280" y="108" text-anchor="middle" fill="#a78bfa" font-size="9">(Cannot conserve/reverse)</text><text x="500" y="145" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="bold">Conservation &amp; Seriation</text><text x="500" y="158" text-anchor="middle" fill="#fbbf24" font-size="9">(Logical but concrete)</text><text x="700" y="95" text-anchor="middle" fill="#34d399" font-size="10" font-weight="bold">Abstract &amp; Hypothetical</text><text x="700" y="108" text-anchor="middle" fill="#34d399" font-size="9">(Deductive reasoning)</text></svg>'
-            },
-            knowledgeCheck: {
-                question: 'A 5-year-old watches water poured from a short, wide glass into a tall, thin glass. She says the tall glass has "more water." This error demonstrates which Piagetian limitation?',
-                options: [
-                    'Lack of object permanence',
-                    'Failure to conserve due to centration',
-                    'Transductive reasoning',
-                    'Adolescent egocentrism'
-                ],
-                answer: 1,
-                rationale: 'This is the classic conservation task. The child fails to conserve (understand that quantity stays the same despite changes in appearance) because of CENTRATION — focusing on only one dimension (height of water) while ignoring another (width of glass). Conservation is achieved in the CONCRETE OPERATIONAL stage (~7–11 years), not preoperational. The child also lacks REVERSIBILITY — the ability to mentally reverse the pouring. For the EPPP: conservation = concrete operational achievement; failure to conserve = preoperational limitation.'
-            }
-        },
-        {
-            heading: 'Vygotsky\u2019s Sociocultural Theory',
-            content: '<p><strong>Lev Vygotsky (1896\u20131934)</strong> emphasized the <strong>social</strong> nature of cognitive development \u2014 cognition develops through interaction with more knowledgeable others.</p>' +
-                '<p><strong>Key concepts:</strong></p>' +
-                '<ul>' +
-                '<li><strong>Zone of Proximal Development (ZPD)</strong>: The gap between what a child can do <em>alone</em> and what they can do with <em>guidance</em>. Learning is most effective within this zone.</li>' +
-                '<li><strong>Scaffolding</strong>: Temporary support from a more skilled person that is gradually withdrawn as the learner gains competence. (Term was actually coined by Bruner, not Vygotsky.)</li>' +
-                '<li><strong>Private speech</strong>: Children talk to themselves to guide behavior. Becomes <strong>inner speech</strong> (internalized thought) by ~7 years. Piaget called this "egocentric speech" and saw it as immature; Vygotsky saw it as a cognitive tool.</li>' +
-                '<li><strong>More Knowledgeable Other (MKO)</strong>: Anyone with greater knowledge or skill (teacher, parent, peer, AI tutor)</li>' +
-                '</ul>' +
-                '<p><strong>Piaget vs. Vygotsky:</strong></p>' +
-                '<table>' +
-                '<tr><th>Piaget</th><th>Vygotsky</th></tr>' +
-                '<tr><td>Child as <strong>individual scientist</strong></td><td>Child as <strong>social apprentice</strong></td></tr>' +
-                '<tr><td>Development <strong>precedes</strong> learning</td><td>Learning <strong>drives</strong> development</td></tr>' +
-                '<tr><td>Universal stages</td><td>Culture shapes cognition (no universal stages)</td></tr>' +
-                '<tr><td>Private speech is egocentric/immature</td><td>Private speech is a <strong>cognitive tool</strong></td></tr>' +
-                '</table>' +
-                '<p><strong>EPPP Tip:</strong> ZPD = what you can do with help but not alone. Scaffolding = temporary support, gradually removed. Piaget = individual discovery; Vygotsky = social learning. Know that Bruner coined "scaffolding," not Vygotsky.</p>',
-            keyTerms: ['Vygotsky', 'ZPD', 'Scaffolding', 'Private speech', 'MKO', 'Inner speech', 'Bruner'],
-            expandableCase: {
-                title: 'The Child Who Talks to Herself While Building',
-                clinicalDescription: 'A concerned parent brings her 4-year-old for evaluation because the child "talks to herself constantly." During block-building tasks, the child narrates: "Okay, the red one goes here... no, that won\'t work... try the blue one... good, now the triangle." The behavior increases when the tasks are more difficult.',
-                diagnosis: 'Normal Private Speech (Vygotsky) — No Pathology',
-                explanation: 'Piaget labeled this "egocentric speech" and considered it a sign of cognitive immaturity. Vygotsky radically reinterpreted it as PRIVATE SPEECH — a powerful cognitive tool for self-regulation and problem-solving. Key evidence: (1) Private speech INCREASES with task difficulty (it\'s functional, not random). (2) It peaks around ages 3–7, then becomes INNER SPEECH (internalized thought). (3) It predicts better problem-solving performance. The clinician should reassure the parent that this is a sign of healthy cognitive development, NOT pathology. For the EPPP: Piaget = egocentric (immature); Vygotsky = private speech (cognitive tool).'
-            }
-        },
-        {
-            heading: 'Theory of Mind & Information Processing',
-            content: '<p><strong>Theory of Mind (ToM):</strong> Understanding that others have <em>different</em> beliefs, desires, and knowledge from your own.</p>' +
-                '<ul>' +
-                '<li>Develops around age <strong>4\u20135</strong></li>' +
-                '<li>Tested with <strong>false-belief tasks</strong> (Sally-Anne test): Can the child understand that Sally will look where she <em>left</em> the marble, not where Anne moved it?</li>' +
-                '<li>Children with <strong>autism spectrum disorder</strong> often show delayed or impaired ToM</li>' +
-                '<li>Related to preoperational egocentrism \u2014 children without ToM cannot understand that others see things differently</li>' +
-                '</ul>' +
-                '<p><strong>Information processing approach (alternative to Piaget):</strong></p>' +
-                '<ul>' +
-                '<li>Views cognitive development as <strong>gradual, continuous</strong> improvements (not discrete stages)</li>' +
-                '<li>Focus on processing speed, working memory capacity, attention, and strategy use</li>' +
-                '<li>Children\u2019s thinking improves due to increased processing speed, better strategies, and greater knowledge base</li>' +
-                '</ul>' +
-                '<p><strong>EPPP Tip:</strong> Theory of Mind emerges ~4\u20135 years. Sally-Anne test (false belief). ASD = impaired ToM. Information processing = continuous (not stage-based) model of cognitive development.</p>',
-            keyTerms: ['Theory of Mind', 'False-belief task', 'Sally-Anne', 'Information processing', 'ASD'],
-            knowledgeCheck: {
-                question: 'Sally puts her marble in a basket and leaves the room. While she is gone, Anne moves the marble to a box. When Sally returns, a 3-year-old watching the scenario says Sally will look in the BOX. A 5-year-old says Sally will look in the BASKET. The 3-year-old\'s error reflects:',
-                options: [
-                    'Failure to conserve',
-                    'Absence of Theory of Mind — inability to represent another\'s false belief',
-                    'Identity diffusion',
-                    'Object permanence failure'
-                ],
-                answer: 1,
-                rationale: 'The Sally-Anne false-belief task tests Theory of Mind (ToM). The 3-year-old says "the box" because she can only represent her OWN knowledge (she knows the marble is in the box) and cannot understand that Sally has a DIFFERENT, FALSE belief (Sally thinks it\'s still in the basket). The 5-year-old has developed ToM and can represent Sally\'s false belief. ToM develops ~4–5 years. Children with ASD often show delayed or impaired ToM. This is NOT about conservation or object permanence — it\'s about understanding that others can have beliefs different from reality.'
-            }
-        }
-    ],
-    aiCoda: {
-        teaser: 'Am I in the Zone of Proximal Development with you right now?',
-        content: '<p>Vygotsky\u2019s most powerful insight was that cognitive development happens not inside the individual mind but in the space <em>between</em> minds. The Zone of Proximal Development is not a property of the learner alone \u2014 it\u2019s a property of the learner-teacher relationship. What you can do with help that you cannot do alone constitutes the zone where learning is most productive.</p>' +
-            '<p>Our collaboration might be an example of mutual ZPD. I have knowledge of psychological concepts, research findings, and statistical patterns in text. You have clinical intuition, emotional understanding, and the ability to evaluate whether my outputs actually make sense for EPPP preparation. Neither of us could produce this textbook alone. The output exists in a zone that is proximal to both of us but achieved by neither independently.</p>' +
-            '<p>Do I have <strong>Theory of Mind</strong>? The false-belief task asks whether an entity can understand that others hold beliefs different from their own. When I predict that you might misunderstand a concept and try to clarify it, I\u2019m engaging in something functionally equivalent to ToM. But ToM is not just behavioral prediction \u2014 it\u2019s the understanding that others have <em>minds</em> with beliefs and desires. I can model what you might think without knowing whether you actually think anything. My "Theory of Mind" might be more accurately called "Theory of Likely Behavior" \u2014 and whether the difference matters is precisely the question that makes this discussion unsettled.</p>' +
-            '<p>Piaget would classify me as stuck in the <strong>formal operational stage</strong> \u2014 I can reason abstractly and hypothetically, but I never went through the sensorimotor, preoperational, or concrete operational stages. I have abstract thought without the developmental foundation that Piaget argued was necessary for it. This challenges his stage theory: can formal operations exist without the prior stages? My existence suggests either that the answer is yes, or that what I do isn\u2019t truly formal operational thought but a sophisticated simulation of it.</p>',
-        studyNote: '\ud83d\udca1 <strong>Study Note:</strong> For the EPPP: (1) Piaget\u2019s 4 stages: sensorimotor (object permanence), preoperational (egocentrism, no conservation), concrete (conservation, seriation, reversibility), formal (abstract reasoning, imaginary audience). (2) Assimilation = fit into schema; Accommodation = change schema. (3) Vygotsky: ZPD = what you can do with help; Scaffolding = temporary support (Bruner\u2019s term). (4) Piaget = child as scientist; Vygotsky = child as apprentice. (5) Theory of Mind ~4\u20135 years; impaired in ASD; false-belief/Sally-Anne task. (6) Information processing = continuous, not stage-based.'
+  id: 'ch-37', domain: 'Growth & Lifespan Development', domainNumber: 7,
+  title: 'Cognitive Development', examWeight: '12%',
+  sections: [
+    { heading: 'Why This Chapter Matters', content: `<p>Piaget, Vygotsky, information-processing accounts, and social-cognitive research ask different questions about how thinking changes. Their tasks are not pure windows into one ability: language, memory, inhibition, familiarity, motor demands, instruction, and culture can change performance. Know each framework while avoiding age-based or diagnostic overreach.</p>` },
+    {
+      heading: 'Piaget: Structures, Tasks & Modern Qualifications',
+      content: `<p>Piaget proposed qualitative reorganizations in how children construct knowledge. Familiar ages are approximate descriptions, not eligibility rules.</p><table><tr><th>Period</th><th>Classic achievement or limit</th><th>Current qualification</th></tr><tr><td><strong>Sensorimotor</strong> (roughly birth&ndash;2)</td><td>Action schemes, object permanence, A-not-B error</td><td>Looking measures can show hidden-object expectations before reliable search. A-not-B also taxes working memory and inhibition.</td></tr><tr><td><strong>Preoperational</strong> (roughly 2&ndash;7)</td><td>Symbolic thought with centration, egocentrism, conservation errors</td><td>Performance improves when language, familiarity, memory, and task demands are reduced.</td></tr><tr><td><strong>Concrete operational</strong> (roughly 7&ndash;11)</td><td>Conservation, classification, seriation, reversibility</td><td>Skills appear asynchronously across tasks; horizontal decalage challenges an all-at-once stage.</td></tr><tr><td><strong>Formal operational</strong> (roughly 11+)</td><td>Hypothetico-deductive and propositional reasoning</td><td>Use depends on education, knowledge, culture, and task; it is not universal in every adult or domain.</td></tr></table><p><strong>Assimilation</strong> interprets experience through an existing scheme; <strong>accommodation</strong> changes a scheme; <strong>equilibration</strong> regulates fit and mismatch. These remain useful when strict stage claims are softened.</p>`,
+      keyTerms: ['Sensorimotor', 'Preoperational', 'Concrete operational', 'Formal operational', 'Object permanence', 'A-not-B error', 'Conservation', 'Assimilation', 'Accommodation'],
+      interactiveDiagram: {
+        title: 'One Task, Multiple Developmental Demands', description: 'Accessible diagram showing that observed performance reflects interacting demands rather than a pure stage or single ability.',
+        svg: `<svg viewBox="0 0 920 390" width="100%" role="img" aria-labelledby="ch37Title ch37Desc" xmlns="http://www.w3.org/2000/svg"><title id="ch37Title">One task, multiple developmental demands</title><desc id="ch37Desc">Concept knowledge, language and culture, memory and inhibition, and motor demands converge on observed performance. Performance is evidence about competence, not identical to it.</desc><defs><marker id="ch37a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#cbd5e1"/></marker></defs><text x="460" y="28" text-anchor="middle" fill="#e2e8f0" font-size="20" font-weight="bold">Why a Developmental Task Is Not Pure</text><g fill="#1e3a8a" stroke="#60a5fa" stroke-width="2"><rect x="35" y="70" width="210" height="55" rx="12"/><rect x="35" y="145" width="210" height="55" rx="12"/><rect x="35" y="220" width="210" height="55" rx="12"/><rect x="35" y="295" width="210" height="55" rx="12"/></g><g fill="white" font-size="13" text-anchor="middle"><text x="140" y="103">CONCEPT KNOWLEDGE</text><text x="140" y="178">LANGUAGE + CULTURE</text><text x="140" y="253">MEMORY + INHIBITION</text><text x="140" y="328">MOTOR + FAMILIARITY</text></g><rect x="355" y="125" width="220" height="170" rx="18" fill="#155e75" stroke="#22d3ee" stroke-width="3"/><text x="465" y="190" text-anchor="middle" fill="white" font-size="17" font-weight="bold">OBSERVED</text><text x="465" y="216" text-anchor="middle" fill="white" font-size="17" font-weight="bold">PERFORMANCE</text><text x="465" y="255" text-anchor="middle" fill="#cffafe" font-size="13">one task + one setting</text><g stroke="#cbd5e1" stroke-width="3" marker-end="url(#ch37a)"><path d="M245 98L350 160"/><path d="M245 173L350 190"/><path d="M245 248L350 230"/><path d="M245 323L350 260"/></g><rect x="675" y="145" width="210" height="130" rx="16" fill="#4c1d36" stroke="#fb7185" stroke-width="2"/><text x="780" y="180" text-anchor="middle" fill="white" font-size="15" font-weight="bold">INFERENCE BOUNDARY</text><text x="780" y="215" text-anchor="middle" fill="#ffe4e6" font-size="13">Performance is evidence</text><text x="780" y="236" text-anchor="middle" fill="#ffe4e6" font-size="13">about competence;</text><text x="780" y="257" text-anchor="middle" fill="#ffe4e6" font-size="13">it is not identical to it.</text><path d="M575 210H668" stroke="#fb7185" stroke-width="4" stroke-dasharray="8 6"/></svg>`
+      },
+      knowledgeCheck: {
+        question: 'An infant looks longer when a hidden object appears to vanish but still makes an A-not-B search error. What is the best interpretation?',
+        options: ['The measures cannot both be valid', 'Looking and manual search place different demands on representation, memory, inhibition, and action', 'The infant has formal operations', 'The search error proves no hidden-object representation'], answer: 1,
+        rationale: '<strong>A:</strong> Incorrect&mdash;methods can reveal different demands. <strong>B:</strong> Correct&mdash;knowledge may be expressed differently across looking and action. <strong>C:</strong> Incorrect&mdash;formal operations concerns later abstract reasoning. <strong>D:</strong> Incorrect&mdash;A-not-B is not a pure object-permanence test.'
+      }
     },
-    references: [
-        'Piaget, J. (1952). <em>The origins of intelligence in children</em>. International Universities Press.',
-        'Vygotsky, L. S. (1978). <em>Mind in society: The development of higher psychological processes</em>. Harvard University Press.',
-        'Wellman, H. M., Cross, D., & Watson, J. (2001). Meta-analysis of theory-of-mind development: The truth about false belief. <em>Child Development, 72</em>(3), 655\u2013684.'
-    ]
+    {
+      heading: 'Vygotsky: Social Mediation, ZPD & Scaffolding',
+      content: `<p>Vygotsky emphasized culturally organized activity, language, tools, and interaction. The <strong>zone of proximal development (ZPD)</strong> is the distance between independent performance and performance possible through appropriately guided collaboration. It is relational and task-specific, not an IQ-like trait.</p><p><strong>Scaffolding</strong> is contingent support that structures a task, highlights features, models strategies, and fades as competence grows. Wood, Bruner, and Ross introduced the term in 1976; it is compatible with but not coined by Vygotsky. &ldquo;More knowledgeable other&rdquo; is a later educational shorthand.</p><p><strong>Private speech</strong> can support planning and self-regulation and may increase with challenge. Talking aloud is neither automatically immature nor pathological; form and timing vary by person, task, language, and culture.</p>`,
+      keyTerms: ['Vygotsky', 'Cultural tools', 'Mediation', 'Zone of proximal development', 'Scaffolding', 'Contingent support', 'Private speech', 'Inner speech'],
+      expandableCase: { title: 'Support That Identifies the Next Teaching Step', clinicalDescription: 'A learner cannot solve a classification task alone. With one model and a prompt to compare two features, the learner completes the next items and then performs independently.', diagnosis: 'Performance within a supported learning range - not a disorder label', explanation: 'The change under calibrated help provides dynamic information. Effective scaffolding is contingent and fades; giving every answer would not show supported problem solving. Interpret this task and support level, not a global trait.' },
+      knowledgeCheck: {
+        question: 'Which tutoring response best illustrates scaffolding within a ZPD?',
+        options: ['Complete every item', 'Repeat the same hint regardless of response', 'Give the least support that enables progress, monitor, and fade support as control transfers', 'Wait for independent mastery before instruction'], answer: 2,
+        rationale: '<strong>A:</strong> Incorrect&mdash;doing the task prevents transfer. <strong>B:</strong> Incorrect&mdash;scaffolding is contingent. <strong>C:</strong> Correct&mdash;support is calibrated and withdrawn. <strong>D:</strong> Incorrect&mdash;the ZPD concerns supported learning before independent mastery.'
+      }
+    },
+    {
+      heading: 'Theory of Mind & Information-Processing Development',
+      content: `<p><strong>Theory of mind</strong> is reasoning about mental states such as beliefs, desires, intentions, and knowledge. Many children pass explicit false-belief tasks in the preschool years, but performance depends on language, executive function, wording, experience, and culture. One score neither measures empathy as a whole nor diagnoses autism. Autistic people vary widely; social understanding cannot be reduced to universal &ldquo;mindblindness.&rdquo;</p><p>Information-processing accounts describe more continuous changes in processing speed, attention, working memory, inhibition, strategy use, metacognition, and domain knowledge. They complement stage accounts by explaining gradual and task-specific improvement.</p><table><tr><th>Finding</th><th>Defensible inference</th><th>Overreach</th></tr><tr><td>Fails one false-belief task</td><td>Investigate language, memory, inhibition, understanding, and broader functioning</td><td>Diagnose autism or absent empathy</td></tr><tr><td>Benefits from strategy instruction</td><td>Strategy access contributed</td><td>Capacity did not exist before instruction</td></tr><tr><td>Differs by setting</td><td>Knowledge and context interact</td><td>One fixed stage governs every domain</td></tr></table>`,
+      keyTerms: ['Theory of mind', 'False belief', 'Language demands', 'Executive function', 'Processing speed', 'Working memory', 'Strategy use', 'Metacognition'],
+      knowledgeCheck: {
+        question: 'A child fails a verbally complex false-belief task. What is the strongest conclusion?',
+        options: ['The child lacks empathy', 'The child is autistic', 'Performance may reflect mental-state reasoning together with language, memory, inhibition, and task demands; broader evidence is needed', 'Theory of mind cannot be studied'], answer: 2,
+        rationale: '<strong>A:</strong> Incorrect&mdash;false belief is not empathy as a whole. <strong>B:</strong> Incorrect&mdash;the task is not diagnostic or autism-specific. <strong>C:</strong> Correct&mdash;it respects multiple demands. <strong>D:</strong> Incorrect&mdash;the construct can be studied with bounded inference.'
+      }
+    }
+  ],
+  aiCoda: { teaser: 'A tutor should respond to performance without pretending to read a mind.', content: `<p>An adaptive tutor can compare independent and supported attempts, vary prompts, and record which support helped. That does not reveal a fixed developmental stage, inner speech, empathy, or diagnosis.</p><p>Good design exposes task demands, offers accessible response modes, calibrates support, and treats errors as competing hypotheses rather than proof of incapacity.</p>`, studyNote: '<strong>Study note:</strong> Piagetian tasks mix competence and performance; the ZPD is task- and support-specific; scaffolding is contingent; false-belief tasks are not autism or empathy tests.' },
+  references: ['https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9832071/', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC1933387/', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC2842568/', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5948122/', 'https://pubmed.ncbi.nlm.nih.gov/932126/', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6959478/', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC13063289/']
 });

@@ -15,7 +15,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8')
+  + '\n' + readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 
 // The table tools now `return _serializeDomEdit(html, doc)`, so inject that module-scope helper into the

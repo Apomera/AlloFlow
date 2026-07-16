@@ -212,10 +212,10 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     }
   };
   return (
-    <div className={cx('fixed inset-0 z-[300] backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300', styles.overlay)}>
+    <div className={cx('fixed inset-0 z-[300] backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300', styles.overlay)}>
       <div
         ref={dialogRef}
-        className={cx('rounded-2xl p-6 max-w-md w-full relative transform transition-all animate-in zoom-in-95 duration-300', styles.dialog)}
+        className={cx('rounded-2xl p-6 max-w-md w-full relative transform transition-all motion-reduce:transition-none animate-in motion-reduce:animate-none zoom-in-95 duration-300', styles.dialog)}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -226,7 +226,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         <button
             type="button"
             onClick={onClose}
-            className={cx('absolute top-4 right-4 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors', styles.secondary, styles.focusOffset)}
+            className={cx('absolute top-4 right-4 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none', styles.secondary, styles.focusOffset)}
             aria-label={t('common.close')}
         >
             <X size={20} aria-hidden="true" />
@@ -272,7 +272,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                     <button
                         type="button"
                         onClick={randomizeName}
-                        className={cx('p-2 rounded-full hover:scale-110 transition-all shrink-0', styles.secondary)}
+                        className={cx('p-2 rounded-full hover:scale-110 transition-all motion-reduce:transition-none shrink-0', styles.secondary)}
                         title={t('modals.entry.randomize_codename')}
                         aria-label={t('modals.entry.randomize_codename')}
                         data-help-key="entry_randomize_btn"
@@ -312,7 +312,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                 aria-label={submitLabel}
                 onClick={handleSubmit}
                 disabled={!selectedAdj || !selectedAnimal || submitting}
-                className={cx('w-full font-bold py-3 rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center gap-2', styles.primary)}
+                className={cx('w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center gap-2', styles.primary)}
                 data-help-key="submit_confirm_btn"
             >
                 {mailboxDelivery ? <Send size={18} aria-hidden="true" /> : <Download size={18} aria-hidden="true" />} {submitting ? 'Submitting…' : submitLabel}
@@ -325,7 +325,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                 aria-label={t('common.close')}
                 onClick={onClose}
                 disabled={submitting}
-                className={cx('w-full font-bold py-3 rounded-xl transition-all active:scale-95', styles.secondary)}
+                className={cx('w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95', styles.secondary)}
             >
                 {t('common.cancel')}
             </button>
@@ -392,7 +392,7 @@ const DraftFeedbackInterface = React.memo(({
                         <p className={cx('text-xs', styles.headerText)}>{t('mastery.instruction')}</p>
                     </div>
                 </div>
-                <button onClick={onCancel} className={cx('p-2 rounded-full', styles.secondary)} aria-label={t('common.close')}><X size={20}/></button>
+                <button type="button" onClick={onCancel} className={cx('p-2 rounded-full', styles.secondary)} aria-label={t('common.close')}><X size={20}/></button>
             </div>
             <div className="p-6">
                 <textarea
@@ -405,10 +405,10 @@ const DraftFeedbackInterface = React.memo(({
                     data-help-key="mastery_draft_input"
                 />
                 <div className="mt-4 flex justify-end">
-                    <button aria-label={t('common.next')}
+                    <button type="button" aria-label={t('common.next')}
                         onClick={onSubmit}
                         disabled={!draftText.trim()}
-                        className={cx('font-bold py-3 px-8 rounded-full transition-transform hover:scale-105 active:scale-95 disabled:opacity-60 disabled:scale-100 flex items-center gap-2', styles.primary)}
+                        className={cx('font-bold py-3 px-8 rounded-full transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95 disabled:opacity-60 disabled:scale-100 flex items-center gap-2', styles.primary)}
                     >
                         {t('mastery.submit_feedback')} <ArrowRight size={18} />
                     </button>
@@ -420,29 +420,29 @@ const DraftFeedbackInterface = React.memo(({
   }
   if (status === 'grading') {
     return (
-      <div className={cx('flex flex-col items-center justify-center h-96 p-8', styles.panel)} role="status" aria-live="polite" aria-busy="true">
-        <div className="relative">
+      <div className={cx('flex flex-col items-center justify-center h-96 p-8', styles.panel)} role="status" aria-live="polite" aria-atomic="true" aria-busy="true">
+        <div className="relative" aria-hidden="true">
             <div className="w-20 h-20 border-4 border-indigo-100 rounded-full"></div>
-            <div className="w-20 h-20 border-4 border-t-indigo-600 border-r-indigo-600 border-b-transparent border-l-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+            <div className="w-20 h-20 border-4 border-t-indigo-600 border-r-indigo-600 border-b-transparent border-l-transparent rounded-full animate-spin motion-reduce:animate-none absolute top-0 left-0"></div>
             <div className={cx('absolute inset-0 flex items-center justify-center', styles.title)}>
-                <RefreshCw size={24} className="animate-spin" />
+                <RefreshCw size={24} className="animate-spin motion-reduce:animate-none" />
             </div>
         </div>
-        <h3 className={cx('mt-6 text-xl font-bold animate-pulse', styles.title)}>{t('mastery.analyzing')}</h3>
+        <h3 className={cx('mt-6 text-xl font-bold animate-pulse motion-reduce:animate-none', styles.title)}>{t('mastery.analyzing')}</h3>
         <p className={cx('mt-2', styles.text)}>{t('mastery.criteria_check')}</p>
       </div>
     );
   }
   if (status === 'revision') {
     return (
-      <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-8 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-500">
         <div className={cx('flex justify-between items-center p-4 rounded-xl', styles.needsWork)}>
              <div className="flex items-center gap-3">
                  <div className={cx('p-2 rounded-full', styles.iconBubble)}>
                      <RefreshCw size={24} />
                  </div>
                  <div>
-                     <h2 className={cx('text-xl font-black', styles.title)}>{t('mastery.revision_required')}</h2>
+                     <h2 className={cx('text-xl font-black', styles.title)} role="status" aria-live="polite">{t('mastery.revision_required')}</h2>
                      <p className={cx('text-sm', styles.text)}>{t('mastery.revision_desc')}</p>
                  </div>
              </div>
@@ -451,7 +451,7 @@ const DraftFeedbackInterface = React.memo(({
                      <Star size={16} className="text-yellow-500 fill-current" />
                      <span className={cx('text-xs font-bold', styles.text)}>{t('mastery.current_progress')}: {gradingDetails?.rawScore}/100</span>
                  </div>
-                 <button onClick={onCancel} className={cx('p-2 rounded-full', styles.secondary)} aria-label={t('common.close')}><X size={20}/></button>
+                 <button type="button" onClick={onCancel} className={cx('p-2 rounded-full', styles.secondary)} aria-label={t('common.close')}><X size={20}/></button>
              </div>
         </div>
         {renderRubric()}
@@ -483,9 +483,9 @@ const DraftFeedbackInterface = React.memo(({
             </div>
         </div>
         <div className="sticky bottom-6 z-50 flex justify-center">
-            <button aria-label={t('common.next')}
+            <button type="button" aria-label={t('common.next')}
                 onClick={onSubmit}
-                className={cx('font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-3 active:scale-95', styles.primary)}
+                className={cx('font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-3 active:scale-95', styles.primary)}
             >
                 {t('mastery.submit_revision')} <ArrowRight size={20} />
             </button>
@@ -495,15 +495,15 @@ const DraftFeedbackInterface = React.memo(({
   }
   if (status === 'mastery') {
     return (
-      <div className="max-w-4xl mx-auto p-8 text-center animate-in zoom-in duration-500">
+      <div className="max-w-4xl mx-auto p-8 text-center animate-in motion-reduce:animate-none zoom-in duration-500">
         <div className="mb-8 relative inline-block">
-            <div className="absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse"></div>
+            <div className="absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse motion-reduce:animate-none" aria-hidden="true"></div>
             <Trophy size={120} className="text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto" />
             <div className="absolute -top-4 -right-12 bg-white border-2 border-yellow-400 text-yellow-600 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md">
                 {t('mastery.mastery_achieved')}
             </div>
         </div>
-        <h2 className={cx('text-5xl font-black mb-4 tracking-tight', styles.title)}>{t('mastery.excellent_work')}</h2>
+        <h2 className={cx('text-5xl font-black mb-4 tracking-tight', styles.title)} role="status" aria-live="polite">{t('mastery.excellent_work')}</h2>
         <p className={cx('text-xl mb-8 max-w-2xl mx-auto', styles.text)}>
             {t('mastery.mastery_desc')}
         </p>
@@ -529,10 +529,10 @@ const DraftFeedbackInterface = React.memo(({
                  <p className={cx('italic', styles.text)}>"{gradingDetails.feedback.strength}"</p>
              </div>
         )}
-        <button
+        <button type="button"
             aria-label={t('common.cancel')}
             onClick={onCancel}
-            className={cx('font-bold py-3 px-12 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95', styles.primary)}
+            className={cx('font-bold py-3 px-12 rounded-full shadow-lg transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95', styles.primary)}
         >
             {t('mastery.continue')}
         </button>

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T15:00:17.032Z",
+  "packId": "praxis-early-childhood-5025",
+  "standard": {
+    "label": "AlloFlow Early Childhood 5025 source, structure, feedback, and learning-linkage QA v1",
+    "limitation": "Not ETS or standards-organization approval; independent early-childhood, disciplinary, cultural, accessibility, and psychometric validation remain pending."
+  },
+  "summary": {
+    "totalItems": 200,
+    "passedItems": 200,
+    "findings": [],
+    "status": "pass"
+  }
+}

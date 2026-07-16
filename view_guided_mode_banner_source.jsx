@@ -491,20 +491,7 @@ function GuidedModeBanner({
   const [showPicker, setShowPicker] = React.useState(false);
   const [infoTab, setInfoTab] = React.useState(null); // null | 'how' | 'example'
   const [showFullLesson, setShowFullLesson] = React.useState(false);
-  // Tablist keyboard support (tabs pattern): Left/Right move between the two tabs,
-  // Home/End jump to first/last. Selection stays on click/Enter (the tabs toggle their
-  // panel open/closed, so focus ≠ selection here).
-  const _tabHowRef = React.useRef(null);
-  const _tabExampleRef = React.useRef(null);
-  const _onTabKeyDown = (e) => {
-    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
-    e.preventDefault();
-    const target = e.key === 'Home' ? _tabHowRef.current
-      : e.key === 'End' ? _tabExampleRef.current
-      : (document.activeElement === _tabHowRef.current ? _tabExampleRef.current : _tabHowRef.current);
-    try { if (target && target.focus) target.focus(); } catch (_) {}
-  };
-  // SR announce on tab-panel open and on the full-lesson modal opening — the visual
+  // SR announce on detail-panel open and on the full-lesson modal opening — the visual
   // change is otherwise silent to screen-reader users.
   React.useEffect(() => {
     if (!infoTab || typeof window === 'undefined' || !window.alloAnnounce) return;
@@ -633,7 +620,7 @@ function GuidedModeBanner({
   const _gdPre = { margin: '6px 0 0', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '11px', lineHeight: '1.6', color: 'rgba(226,232,240,0.92)', fontFamily: 'inherit', background: 'rgba(15,23,42,0.55)', borderRadius: '8px', padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' };
   return (
     <>
-      <style>{`@keyframes alloGuidedRingPulse{0%,100%{box-shadow:0 0 0 2px rgba(99,102,241,.7),0 0 22px rgba(99,102,241,.45)}50%{box-shadow:0 0 0 3px rgba(129,140,248,.95),0 0 36px rgba(99,102,241,.65)}}@media (prefers-reduced-motion: reduce){.allo-guided-ring{animation:none !important}}`}</style>
+      <style>{`@keyframes alloGuidedRingPulse{0%,100%{box-shadow:0 0 0 2px rgba(99,102,241,.7),0 0 22px rgba(99,102,241,.45)}50%{box-shadow:0 0 0 3px rgba(129,140,248,.95),0 0 36px rgba(99,102,241,.65)}}@media (prefers-reduced-motion: reduce){.allo-guided-ring{animation:none !important}.allo-guided-banner *,.allo-guided-dialog *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}`}</style>
       {guidedRect && guidedRect.width > 0 && !wizardOpen && (
         <div aria-hidden="true" className="allo-guided-ring" style={{
           position: 'fixed', top: guidedRect.top - 6, left: guidedRect.left - 6,
@@ -643,7 +630,7 @@ function GuidedModeBanner({
           animation: 'alloGuidedRingPulse 2s ease-in-out infinite',
         }} />
       )}
-      <div style={{ background: 'linear-gradient(135deg, #312e81, #1e3a5f)', borderRadius: '20px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(99,102,241,0.3)', flexShrink: 0 }}>
+      <div className="allo-guided-banner" role="region" aria-label={t('guided.indicator_title') || 'Guided mode'} style={{ background: 'linear-gradient(135deg, #312e81, #1e3a5f)', borderRadius: '20px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(99,102,241,0.3)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
           <span style={{ fontSize: '13px', fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: '6px' }}>{t('guided.indicator_title')}</span>
           <span style={{ fontSize: '11px', color: '#c7d2fe', fontWeight: 600 }}>{t('guided.step_of').replace('{current}', Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace('{total}', GUIDED_STEPS.length)}</span>
@@ -666,22 +653,22 @@ function GuidedModeBanner({
           </div>
         )}
         {step.id === 'source-input' && !stepDone && typeof setInputText === 'function' && (
-          <button onClick={() => setInputText(GUIDED_SAMPLE_TEXT)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '8px 12px', marginBottom: '10px', fontSize: '11px', fontWeight: 700, color: '#e0e7ff', background: 'rgba(255,255,255,0.06)', border: '1px dashed rgba(165,180,252,0.5)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>
+          <button type="button" onClick={() => setInputText(GUIDED_SAMPLE_TEXT)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '8px 12px', marginBottom: '10px', fontSize: '11px', fontWeight: 700, color: '#e0e7ff', background: 'rgba(255,255,255,0.06)', border: '1px dashed rgba(165,180,252,0.5)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>
             <span aria-hidden="true">✨</span>{t('guided.try_example') || 'New here? Try it with an example passage'}
           </button>
         )}
         {detailEntry && step.id !== 'source-input' && (
           <div style={{ marginBottom: '10px' }}>
-            <div role="tablist" aria-label={t('guided.detail_tablist') || 'Section detail'} onKeyDown={_onTabKeyDown} style={{ display: 'flex', gap: '6px', marginBottom: infoTab ? '8px' : '0' }}>
-              <button role="tab" id="gd-tab-how" ref={_tabHowRef} aria-selected={infoTab === 'how'} aria-controls="gd-panel-how" onClick={() => setInfoTab(infoTab === 'how' ? null : 'how')} style={_gdTab(infoTab === 'how')}>
+            <div role="group" aria-label={t('guided.detail_tablist') || 'Section detail'} style={{ display: 'flex', gap: '6px', marginBottom: infoTab ? '8px' : '0' }}>
+              <button type="button" id="gd-detail-how" aria-expanded={infoTab === 'how'} aria-controls="gd-panel-how" onClick={() => setInfoTab(infoTab === 'how' ? null : 'how')} style={_gdTab(infoTab === 'how')}>
                 <span aria-hidden="true">⚙️</span>{t('guided.tab_how') || 'How it works'}
               </button>
-              <button role="tab" id="gd-tab-example" ref={_tabExampleRef} aria-selected={infoTab === 'example'} aria-controls="gd-panel-example" onClick={() => setInfoTab(infoTab === 'example' ? null : 'example')} style={_gdTab(infoTab === 'example')}>
+              <button type="button" id="gd-detail-example" aria-expanded={infoTab === 'example'} aria-controls="gd-panel-example" onClick={() => setInfoTab(infoTab === 'example' ? null : 'example')} style={_gdTab(infoTab === 'example')}>
                 <span aria-hidden="true">💡</span>{t('guided.tab_example') || 'Worked example'}
               </button>
             </div>
             {infoTab === 'how' && (
-              <div role="tabpanel" id="gd-panel-how" aria-labelledby="gd-tab-how" style={_gdPanel}>
+              <div role="region" id="gd-panel-how" aria-labelledby="gd-detail-how" style={_gdPanel}>
                 {detailEntry.headline && <div style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(199,210,254,0.96)', marginBottom: '2px' }}>{detailEntry.headline}</div>}
                 <div style={_gdIo}>{t('guided.io_inputs') || 'Inputs'}</div>
                 {(detailEntry.inputs || []).map((x, i) => <div key={'in' + i} style={_gdLi}><span aria-hidden="true" style={{ color: '#818cf8' }}>▸</span><span>{x}</span></div>)}
@@ -692,11 +679,11 @@ function GuidedModeBanner({
               </div>
             )}
             {infoTab === 'example' && (
-              <div role="tabpanel" id="gd-panel-example" aria-labelledby="gd-tab-example" style={_gdPanel}>
+              <div role="region" id="gd-panel-example" aria-labelledby="gd-detail-example" style={_gdPanel}>
                 <div style={{ fontSize: '11px', fontWeight: 800, color: '#fde68a', marginBottom: '2px' }}>💡 {t('guided.example_heading') || 'Example output'} · {t('guided.example_lesson') || 'Photosynthesis'}</div>
                 <div style={{ fontSize: '10px', color: 'rgba(148,163,184,0.8)', marginBottom: '2px' }}>{t('guided.example_consistent') || 'The same lesson runs through every step.'}</div>
                 <pre style={_gdPre}>{detailEntry.example}</pre>
-                <button onClick={() => setShowFullLesson(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', marginTop: '8px', padding: '8px 12px', fontSize: '11px', fontWeight: 700, color: '#e0e7ff', background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(129,140,248,0.45)', borderRadius: '10px', cursor: 'pointer' }}>
+                <button type="button" onClick={() => setShowFullLesson(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', marginTop: '8px', padding: '8px 12px', fontSize: '11px', fontWeight: 700, color: '#e0e7ff', background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(129,140,248,0.45)', borderRadius: '10px', cursor: 'pointer' }}>
                   <span aria-hidden="true">📖</span>{t('guided.view_full_lesson') || 'View the full worked lesson'}
                 </button>
               </div>
@@ -725,23 +712,23 @@ function GuidedModeBanner({
           </div>
         )}
         <div style={{ display: 'flex', gap: '8px' }}>
-          {guidedStep > 0 && <button onClick={() => setGuidedStep(s => Math.max(0, s - 1))} aria-label={t('guided.back') || 'Back'} title={t('guided.back') || 'Back'} style={{ padding: '6px 10px', fontSize: '11px', fontWeight: 800, color: '#c7d2fe', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0 }}>← {t('guided.back') || 'Back'}</button>}
+          {guidedStep > 0 && <button type="button" onClick={() => setGuidedStep(s => Math.max(0, s - 1))} aria-label={t('guided.back') || 'Back'} title={t('guided.back') || 'Back'} style={{ padding: '6px 10px', fontSize: '11px', fontWeight: 800, color: '#c7d2fe', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0 }}>← {t('guided.back') || 'Back'}</button>}
           {step.id === 'source-input' && !stepDone && <span style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(199,210,254,0.85)', fontStyle: 'italic', textAlign: 'center' }}>{t('guided.source_prompt')}</span>}
-          {!isLast && stepDone && <button onClick={handleGuidedSkip} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 800, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: '1px solid rgba(129,140,248,0.45)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.next_step') || 'Next step →'}</button>}
-          {!isLast && !stepDone && guidedStep > 0 && <button onClick={handleGuidedSkip} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 800, color: '#c7d2fe', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.skip_step') || t('guided.skip') || 'Skip step'}</button>}
-          {isLast && <button onClick={() => { if (typeof resetGuidedProgress === 'function') resetGuidedProgress(); else setGuidedStep(0); handleExitGuidedMode(); }} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.all_done')}</button>}
-          {toggleGuidedStepId && <button onClick={() => setShowPicker(p => !p)} aria-label={t('guided.customize') || 'Choose which steps to include'} aria-expanded={showPicker} title={t('guided.customize') || 'Choose which steps to include'} style={{ padding: '6px 10px', fontSize: '11px', fontWeight: 700, color: showPicker ? 'white' : '#c7d2fe', background: showPicker ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>⚙</button>}
-          <button onClick={() => setShowGuidedTip(p => !p)} style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: showGuidedTip ? 'white' : '#c7d2fe', background: showGuidedTip ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{showGuidedTip ? '✕' : 'ℹ️'} {t('guided.about')}</button>
-          <button onClick={handleExitGuidedMode} style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(248,113,113,0.9)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.exit') || 'Exit'}</button>
+          {!isLast && stepDone && <button type="button" onClick={handleGuidedSkip} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 800, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: '1px solid rgba(129,140,248,0.45)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.next_step') || 'Next step →'}</button>}
+          {!isLast && !stepDone && guidedStep > 0 && <button type="button" onClick={handleGuidedSkip} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 800, color: '#c7d2fe', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.skip_step') || t('guided.skip') || 'Skip step'}</button>}
+          {isLast && <button type="button" onClick={() => { if (typeof resetGuidedProgress === 'function') resetGuidedProgress(); else setGuidedStep(0); handleExitGuidedMode(); }} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.all_done')}</button>}
+          {toggleGuidedStepId && <button type="button" onClick={() => setShowPicker(p => !p)} aria-label={t('guided.customize') || 'Choose which steps to include'} aria-expanded={showPicker} aria-controls="guided-step-picker" title={t('guided.customize') || 'Choose which steps to include'} style={{ padding: '6px 10px', fontSize: '11px', fontWeight: 700, color: showPicker ? 'white' : '#c7d2fe', background: showPicker ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>⚙</button>}
+          <button type="button" onClick={() => setShowGuidedTip(p => !p)} aria-expanded={showGuidedTip} aria-controls="guided-about-panel" style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: showGuidedTip ? 'white' : '#c7d2fe', background: showGuidedTip ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{showGuidedTip ? '✕' : 'ℹ️'} {t('guided.about')}</button>
+          <button type="button" onClick={handleExitGuidedMode} style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(248,113,113,0.9)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.exit') || 'Exit'}</button>
         </div>
         {showPicker && toggleGuidedStepId && (
-          <div role="group" aria-label={t('guided.choose_steps') || 'Choose which steps to include'} style={{ marginTop: '10px', padding: '10px 12px', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', maxHeight: '220px', overflowY: 'auto', animation: 'fadeIn 0.3s ease-out' }}>
+          <div id="guided-step-picker" role="group" aria-label={t('guided.choose_steps') || 'Choose which steps to include'} style={{ marginTop: '10px', padding: '10px 12px', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', maxHeight: '220px', overflowY: 'auto', animation: 'fadeIn 0.3s ease-out' }}>
             <div style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(165,180,252,0.95)', marginBottom: '8px' }}>{t('guided.choose_steps') || 'Choose which steps to include'} ({allSteps.filter(s => isStepOn(s.id)).length}/{allSteps.length})</div>
             {allSteps.map(s => {
               const on = isStepOn(s.id);
               const locked = s.id === 'source-input';
               return (
-                <button key={s.id} role="checkbox" aria-checked={on} disabled={locked} onClick={() => { if (!locked) toggleGuidedStepId(s.id); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', textAlign: 'left', padding: '5px 6px', marginBottom: '2px', background: on ? 'rgba(99,102,241,0.16)' : 'transparent', border: 'none', borderRadius: '8px', cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.6 : 1 }}>
+                <button type="button" key={s.id} role="checkbox" aria-checked={on} disabled={locked} onClick={() => { if (!locked) toggleGuidedStepId(s.id); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', textAlign: 'left', padding: '5px 6px', marginBottom: '2px', background: on ? 'rgba(99,102,241,0.16)' : 'transparent', border: 'none', borderRadius: '8px', cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.6 : 1 }}>
                   <span aria-hidden="true" style={{ width: '14px', height: '14px', borderRadius: '4px', border: '1.5px solid ' + (on ? '#818cf8' : 'rgba(255,255,255,0.3)'), background: on ? '#6366f1' : 'transparent', color: 'white', fontSize: '10px', lineHeight: '12px', textAlign: 'center', flexShrink: 0 }}>{on ? '✓' : ''}</span>
                   <span style={{ fontSize: '11px', color: on ? 'white' : 'rgba(203,213,225,0.75)', fontWeight: 600 }}>{s.label}{locked ? ' ' + (t('guided.required') || '(required)') : ''}</span>
                 </button>
@@ -754,11 +741,11 @@ function GuidedModeBanner({
           const tourId = stepId ? GUIDED_TOUR_MAP[stepId] : null;
           const tourEntry = tourId ? tourSteps.find(s => s.id === tourId) : null;
           return tourEntry ? (
-            <div style={{ marginTop: '10px', padding: '12px 14px', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
+            <div id="guided-about-panel" role="region" aria-label={(t('guided.about_prefix') || 'About') + ' ' + tourEntry.title} style={{ marginTop: '10px', padding: '12px 14px', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
               <div style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(165,180,252,0.95)', marginBottom: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{t('guided.about_prefix')} {tourEntry.title}</span>
                 {typeof window !== 'undefined' && typeof window.callTTS === 'function' && (
-                  <button
+                  <button type="button"
                     onClick={() => playAbout((tourEntry.title || '') + '. ' + (tourEntry.text || ''))}
                     disabled={ttsState === 'loading'}
                     aria-label={ttsState === 'playing' ? (t('guided.stop_listening') || 'Stop reading aloud') : (t('guided.listen') || 'Read this aloud')}
@@ -803,13 +790,13 @@ function GuidedModeBanner({
       </div>
       {showFullLesson && (
         <div role="presentation" onClick={() => setShowFullLesson(false)} style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(2,6,23,0.82)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div ref={_modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="guided-full-lesson-title" onClick={(e) => e.stopPropagation()} style={{ background: 'linear-gradient(150deg, #0f172a, #1e1b4b)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '20px', width: '100%', maxWidth: '760px', maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 70px rgba(0,0,0,0.55)', outline: 'none' }}>
+          <div className="allo-guided-dialog" ref={_modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="guided-full-lesson-title" aria-describedby="guided-full-lesson-description" onClick={(e) => e.stopPropagation()} style={{ background: 'linear-gradient(150deg, #0f172a, #1e1b4b)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '20px', width: '100%', maxWidth: '760px', maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 70px rgba(0,0,0,0.55)' }}>
             <div style={{ flexShrink: 0, padding: '18px 22px', borderBottom: '1px solid rgba(99,102,241,0.22)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
               <div>
                 <h2 id="guided-full-lesson-title" style={{ fontSize: '16px', fontWeight: 800, color: 'white', margin: 0 }}><span aria-hidden="true">📖</span> {t('guided.full_lesson_title') || 'The full worked lesson'}</h2>
-                <div style={{ fontSize: '11px', color: '#c7d2fe', marginTop: '3px', lineHeight: '1.5' }}>{t('guided.full_lesson_sub') || 'One consistent example — a photosynthesis passage — carried through every Guided step, end to end.'}</div>
+                <div id="guided-full-lesson-description" style={{ fontSize: '11px', color: '#c7d2fe', marginTop: '3px', lineHeight: '1.5' }}>{t('guided.full_lesson_sub') || 'One consistent example — a photosynthesis passage — carried through every Guided step, end to end.'}</div>
               </div>
-              <button onClick={() => setShowFullLesson(false)} aria-label={t('common.close') || 'Close'} style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.08)', color: 'white', fontSize: '16px', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+              <button type="button" onClick={() => setShowFullLesson(false)} aria-label={t('common.close') || 'Close'} style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.08)', color: 'white', fontSize: '16px', cursor: 'pointer', lineHeight: 1 }}>✕</button>
             </div>
             <div tabIndex={0} role="region" aria-label={t('guided.full_lesson_scroll') || 'Worked lesson steps'} style={{ overflowY: 'auto', padding: '16px 22px' }}>
               {(GUIDED_STEPS || []).map((s, i) => {

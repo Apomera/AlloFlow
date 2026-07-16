@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-02d5376d-untitled",
+  "title": "مکتب جدید ما",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/aP2R3jnIo4"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f02d5376d-9d57-4d45-990e-0040cd37fe81%2f%d9%85%da%a9%d8%aa%d8%a8+%d8%ac%d8%af%db%8c%d8%af+%d9%85%d8%a7%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f02d5376d-9d57-4d45-990e-0040cd37fe81%2f%d9%85%da%a9%d8%aa%d8%a8+%d8%ac%d8%af%db%8c%d8%af+%d9%85%d8%a7%2f%db%b2.jpg",
+      "text": "از قریه به شهر آمده بودیم.\nروز اول مکتب جدید ما بود.\nمعلم، من و فهیمه را به صنف بُرد."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "معلم گفت:\nشاگردان! عبدالکریم و فهیمه همصنفی های جدید شما استند.\nمعلم گفت: بنشنید.\nمن کنار عبدالقادر و فهیمه کنار قدسیه نشستیم.\nما احساس تنهایی می کردیم."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f02d5376d-9d57-4d45-990e-0040cd37fe81%2f%d9%85%da%a9%d8%aa%d8%a8+%d8%ac%d8%af%db%8c%d8%af+%d9%85%d8%a7%2f%db%b32.jpg",
+      "text": "ساعت املا شروع شد.\nمعلم بالای شاگردان املا کار می کرد."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "ما املاء را خیلی بلَد نبودیم.\nپایین را نگاه می کردیم.\nشاگرد کنارم متوجه ما شد و گفت:\nمن عبدالقادر استم، به شما کمک می کنم."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f02d5376d-9d57-4d45-990e-0040cd37fe81%2f%d9%85%da%a9%d8%aa%d8%a8+%d8%ac%d8%af%db%8c%d8%af+%d9%85%d8%a7%2f%db%b4.jpg",
+      "text": "ساعت تفریح شد.\nهمه دور ما جمع شدند."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "قدسیه گفت:\nتجزیه کلمات به هجا ها در املاء کمک می کند.\nعبدالقادر گفت:\nمن درشناخت هجا، شما را کمک می کنم.\nاکنون املاء کار می کنیم."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f02d5376d-9d57-4d45-990e-0040cd37fe81%2f%d9%85%da%a9%d8%aa%d8%a8+%d8%ac%d8%af%db%8c%d8%af+%d9%85%d8%a7%2f%db%b5.jpg",
+      "text": "قدسیه گفت:\nدر املاء کلمات به بخش ها تقسیم می شوند.\nهر بخش کلمه را هجا گویند.\nمثلاََ: کلمۀ شاگرد ازدوهجای)شا- گرد( ترکیب شده است."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "همه با ما دوست شدند، دیگراحساس تنهایی نمی کردیم.\nمن و فهیمه با خوشحالی به خانه رفتیم.\nما از داشتن همصنفی های مهربان خوشحال بودیم.\nمکتب جدید برای ما خوشایند بود."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 175
+  }
+}

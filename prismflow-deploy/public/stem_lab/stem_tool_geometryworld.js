@@ -297,9 +297,188 @@
     return vol.toFixed(2);
   }
 
+  // A bounding box only equals a structure's volume when every unit of the box is filled.
+  // Keep this reasoning shared so every surface reports composite structures accurately.
+  function measuredVolume(m) {
+    return m && typeof m.totalVolume === 'number' ? m.totalVolume : (m ? m.boundingVolume : 0);
+  }
+
+  function enrichMeasurement(m) {
+    if (!m) return m;
+    var occupied = measuredVolume(m);
+    var bounding = m.boundingVolume || 0;
+    m.occupiedVolume = occupied;
+    m.missingVolume = Math.max(0, bounding - occupied);
+    m.fillPercent = bounding > 0 ? Math.round((occupied / bounding) * 100) : 0;
+    var hasPartialShapes = Object.keys(m.shapeCounts || {}).some(function(shapeId) { return shapeId !== 'cube'; });
+    if (hasPartialShapes) m.hasFractions = true;
+    m.isSolidPrism = !m.hasFractions && m.missingVolume === 0 && m.count === bounding;
+    m.formattedOccupiedVolume = formatVolume(occupied);
+    if (Array.isArray(m.blocks)) {
+      var exposedFaces = countExposedCubeFaces(m.blocks);
+      m.surfaceAreaExact = !m.hasFractions;
+      m.exposedSurfaceArea = m.surfaceAreaExact ? exposedFaces.surfaceArea : null;
+      m.exposedFaces = m.surfaceAreaExact ? exposedFaces : null;
+    }
+    if (m.isComplete === false) {
+      m.isSolidPrism = false;
+      m.surfaceAreaExact = false;
+      m.exposedSurfaceArea = null;
+      m.exposedFaces = null;
+    }
+    return m;
+  }
+
+  function parseVolumePrediction(value) {
+    var text = String(value == null ? '' : value).trim();
+    if (!text) return null;
+    var mixed = text.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+    var number;
+    if (mixed && Number(mixed[3]) !== 0) {
+      number = Number(mixed[1]) + Number(mixed[2]) / Number(mixed[3]);
+    } else if (/^\d+\/\d+$/.test(text)) {
+      var fraction = text.split('/').map(Number);
+      number = fraction[1] ? fraction[0] / fraction[1] : NaN;
+    } else {
+      number = Number(text);
+    }
+    return Number.isFinite(number) && number > 0 ? number : null;
+  }
+
+  function compareVolumePrediction(value, actualVolume) {
+    var predicted = parseVolumePrediction(value);
+    if (predicted === null || !Number.isFinite(actualVolume) || actualVolume <= 0) return null;
+    var difference = predicted - actualVolume;
+    var absoluteDifference = Math.abs(difference);
+    var percentError = Math.round((absoluteDifference / actualVolume) * 100);
+    var relation = difference === 0 ? 'exact' : (difference > 0 ? 'over' : 'under');
+    var accuracyLabel;
+    if (relation === 'exact') accuracyLabel = 'Exact match!';
+    else if (percentError <= 10) accuracyLabel = 'Very close - within 10%';
+    else if (percentError <= 25) accuracyLabel = 'Close - within 25%';
+    else accuracyLabel = 'Use the dimensions to revise your estimate';
+    return {
+      prediction: predicted,
+      actual: actualVolume,
+      difference: difference,
+      absoluteDifference: absoluteDifference,
+      percentError: percentError,
+      relation: relation,
+      accuracyLabel: accuracyLabel
+    };
+  }
+
   // ── Achievement Badges ──
+
+  // Counts exposed unit faces for a connected structure made entirely from full cubes.
+  function countExposedCubeFaces(blocks) {
+    var occupied = {};
+    (blocks || []).forEach(function(block) {
+      occupied[block.x + ',' + block.y + ',' + block.z] = true;
+    });
+    var directions = [{ x: 1, y: 0, z: 0, axis: 'x' }, { x: -1, y: 0, z: 0, axis: 'x' }, { x: 0, y: 1, z: 0, axis: 'y' }, { x: 0, y: -1, z: 0, axis: 'y' }, { x: 0, y: 0, z: 1, axis: 'z' }, { x: 0, y: 0, z: -1, axis: 'z' }];
+    var byAxis = { x: 0, y: 0, z: 0 };
+    (blocks || []).forEach(function(block) {
+      directions.forEach(function(direction) {
+        var neighbor = (block.x + direction.x) + ',' + (block.y + direction.y) + ',' + (block.z + direction.z);
+        if (!occupied[neighbor]) byAxis[direction.axis] += 1;
+      });
+    });
+    return {
+      xFaces: byAxis.x, yFaces: byAxis.y, zFaces: byAxis.z,
+      surfaceArea: byAxis.x + byAxis.y + byAxis.z
+    };
+  }
+
+  function completeMeasurementRecords(history) {
+    return (history || []).filter(function(record) { return record && record.isComplete !== false; });
+  }
+
+  function summarizePredictionAccuracy(measurements) {
+    var errors = [];
+    (measurements || []).forEach(function(record) {
+      var data = record && record.data ? record.data : record;
+      if (!data) return;
+      var error = typeof data.predictionPercentError === 'number' ? data.predictionPercentError : data.percentError;
+      if (typeof error === 'number' && Number.isFinite(error) && error >= 0) errors.push(error);
+    });
+    var totalError = errors.reduce(function(sum, error) { return sum + error; }, 0);
+    return {
+      predictionsMade: errors.length,
+      exactPredictions: errors.filter(function(error) { return error === 0; }).length,
+      predictionsWithin10Percent: errors.filter(function(error) { return error <= 10; }).length,
+      averagePredictionPercentError: errors.length ? Math.round(totalError / errors.length) : null,
+      measurementsWithoutPrediction: Math.max(0, (measurements || []).length - errors.length)
+    };
+  }
+  function serializeEventDetailValue(value) {
+    if (value == null) return '';
+    if (typeof value === 'object') {
+      try { return JSON.stringify(value); }
+      catch (err) { return String(value); }
+    }
+    return String(value);
+  }
+
+  function formatSessionEventDetails(data) {
+    return Object.keys(data || {}).sort().map(function(key) { return key + '=' + serializeEventDetailValue(data[key]); }).join('; ');
+  }
+  function measurementDetailsForReport(measurements) {
+    return (measurements || []).map(function(record, index) {
+      var data = record && record.data ? record.data : (record || {});
+      var dimensions = [data.L, data.W, data.H].every(function(value) { return typeof value === 'number'; }) ? data.L + '\u00d7' + data.W + '\u00d7' + data.H : '';
+      var materialNames = Object.keys(data.materialCounts || {}).sort();
+      return {
+        sequence: index + 1,
+        elapsed: record && record.elapsed ? record.elapsed : '',
+        dimensions: dimensions,
+        shape: data.isSolidPrism ? 'Rectangular prism' : 'Composite structure',
+        occupiedVolume: typeof data.volume === 'number' ? data.volume : null,
+        prediction: typeof data.prediction === 'number' ? data.prediction : null,
+        predictionPercentError: typeof data.predictionPercentError === 'number' ? data.predictionPercentError : null,
+        surfaceArea: typeof data.surfaceArea === 'number' ? data.surfaceArea : null,
+        blocks: typeof data.blocks === 'number' ? data.blocks : null,
+        materials: materialNames
+      };
+    });
+  }
+
+
+
+  function compareMeasurementRecords(previous, latest) {
+    if (!previous || !latest || previous.isComplete === false || latest.isComplete === false) return null;
+    var previousVolume = typeof previous.occupiedVolume === 'number' ? previous.occupiedVolume : parseVolumePrediction(previous.vol);
+    var latestVolume = typeof latest.occupiedVolume === 'number' ? latest.occupiedVolume : parseVolumePrediction(latest.vol);
+    if (previousVolume === null || latestVolume === null) return null;
+    var previousSurface = typeof previous.surfaceArea === 'number' ? previous.surfaceArea : null;
+    var latestSurface = typeof latest.surfaceArea === 'number' ? latest.surfaceArea : null;
+    var surfaceComparable = previousSurface !== null && latestSurface !== null;
+    var sameVolume = Math.abs(latestVolume - previousVolume) < 0.000001;
+    var surfaceDifference = surfaceComparable ? latestSurface - previousSurface : null;
+    var moreEfficient = sameVolume && surfaceComparable && surfaceDifference !== 0
+      ? (surfaceDifference < 0 ? 'latest' : 'previous') : null;
+    return {
+      previousVolume: previousVolume,
+      latestVolume: latestVolume,
+      volumeDifference: latestVolume - previousVolume,
+      sameVolume: sameVolume,
+      previousSurfaceArea: previousSurface,
+      latestSurfaceArea: latestSurface,
+      surfaceAreaDifference: surfaceDifference,
+      moreSurfaceEfficient: moreEfficient
+    };
+  }
+
+  function measurementLayerFor(blockData) {
+    if (blockData && blockData._measurementLayer) return blockData._measurementLayer;
+    return blockData && blockData._lessonBlock ? 'lesson' : 'student';
+  }
+
+  function belongsToMeasuredComponent(seedData, candidateData) {
+    return !!candidateData && measurementLayerFor(candidateData) === measurementLayerFor(seedData);
+  }
   var ACHIEVEMENTS = [
-    { id: 'first_measure', name: 'First Measurement', icon: '\uD83D\uDCCF', desc: 'Measured your first structure', check: function(log) { return log.some(function(e) { return e.type === 'measurement'; }); } },
+    { id: 'first_measure', name: 'First Measurement', icon: '\uD83D\uDCCF', desc: 'Measured your first structure', check: function(log) { return log.some(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }); } },
     { id: 'first_correct', name: 'Right Answer!', icon: '\u2705', desc: 'Answered your first NPC question correctly', check: function(log) { return log.some(function(e) { return e.type === 'answer_correct'; }); } },
     { id: 'lesson_complete', name: 'Lesson Master', icon: '\uD83C\uDFC6', desc: 'Completed an entire lesson', check: function(log) { return log.some(function(e) { return e.type === 'lesson_complete'; }); } },
     { id: 'builder_10', name: 'Builder', icon: '\uD83E\uDDF1', desc: 'Placed 10 blocks', check: function(log) { return log.filter(function(e) { return e.type === 'block_place'; }).length >= 10; } },
@@ -983,6 +1162,7 @@
 
   var LESSON_ORDER = ['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
   var MAX_BLOCKS = 1500; // Performance safety limit
+  var MEASUREMENT_BLOCK_LIMIT = MAX_BLOCKS;
 
   // Stable chat-key derivation — used by both the read site in engine.loadLesson
   // and the write site in the NPC chat callback. Returning the same key from both
@@ -1157,7 +1337,9 @@
   // ── Physical Manipulative Bridge Card ──
   // Generates a printable "Build This in Your Classroom" card from a measurement
   function generateManipulativeCard(measurement, lessonTitle) {
-    var m = measurement;
+    var m = enrichMeasurement(measurement);
+    var physicalPieces = m.hasFractions ? m.formattedOccupiedVolume + ' cubic units of pieces' : m.count + ' unit cubes';
+    var materialPieces = Object.keys(m.materialCounts || {}).map(function(type) { return m.materialCounts[type] + ' ' + type; }).join(', ');
     var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Build This! \u2014 Physical Manipulative Card</title>'
       + '<style>'
       + 'body{font-family:Arial,sans-serif;max-width:500px;margin:24px auto;color:#1a1a1a}'
@@ -1190,20 +1372,29 @@
     h += '</div></div>';
 
     h += '<div class="steps"><strong>\uD83D\uDCD0 Build Steps:</strong><ol>';
-    h += '<li>Get <strong>' + m.boundingVolume + ' unit cubes</strong> (or snap cubes)</li>';
-    h += '<li>Build the <strong>bottom layer</strong>: ' + m.L + ' blocks long \u00d7 ' + m.W + ' blocks wide = <strong>' + (m.L * m.W) + ' cubes</strong></li>';
-    h += '<li>Stack <strong>' + m.H + ' layers</strong> on top of each other</li>';
+    h += '<li>Get <strong>' + physicalPieces + '</strong> (or snap cubes)</li>';
+    if (Object.keys(m.materialCounts || {}).length > 1) h += '<li>Match the digital color key: <strong>' + materialPieces + '</strong></li>';
+    if (m.isSolidPrism) {
+      h += '<li>Build the <strong>bottom layer</strong>: ' + m.L + ' blocks long \u00d7 ' + m.W + ' blocks wide = <strong>' + (m.L * m.W) + ' cubes</strong></li>';
+      h += '<li>Stack <strong>' + m.H + ' complete layers</strong> on top of each other</li>';
+    } else {
+      h += '<li>Recreate the structure <strong>one layer at a time</strong>, leaving its gaps or cut-away parts empty</li>';
+      h += '<li>Compare its <strong>' + m.formattedOccupiedVolume + ' occupied cubic units</strong> with its ' + m.boundingVolume + '-unit bounding box</li>';
+    }
     h += '<li><strong>Count all the cubes</strong> in your finished structure</li>';
     h += '</ol></div>';
 
     h += '<div class="answer-box">';
     h += '<div class="prompt">How many cubes did you use? <span class="line"></span></div>';
-    h += '<div style="margin-top:8px;font-size:12px;color:#6b7280">Does this match ' + m.L + ' \u00d7 ' + m.W + ' \u00d7 ' + m.H + ' = <span class="line" style="width:60px"></span> ?</div>';
+    h += '<div style="margin-top:8px;font-size:12px;color:#6b7280">' + (m.isSolidPrism
+      ? 'Does this match ' + m.L + ' \u00d7 ' + m.W + ' \u00d7 ' + m.H + ' = <span class="line" style="width:60px"></span> ?'
+      : 'Bounding box: ' + m.boundingVolume + ' \u2212 empty space: ' + formatVolume(m.missingVolume) + ' = <span class="line" style="width:60px"></span>')
+      + '</div>';
     h += '</div>';
 
     h += '<div class="check">';
     h += '\u2705 <strong>Check:</strong> Your physical structure should have the same volume as the digital one. ';
-    h += 'The digital measurement showed <strong>' + m.boundingVolume + ' cubic units</strong>. ';
+    h += 'The digital measurement showed <strong>' + m.formattedOccupiedVolume + ' cubic units</strong>. ';
     h += 'Did your count match?';
     h += '</div>';
 
@@ -1364,7 +1555,9 @@
       var aiRefinePrompt = d.aiRefinePrompt || '';
       var lastGeneratedLesson = d.lastGeneratedLesson || null;
       var activeLesson = d.activeLesson || 'volumeExplorer';
-      var measureResult = d.measureResult || null;
+      var measureResult = d.measureResult ? enrichMeasurement(d.measureResult) : null;
+      var volumePrediction = d.volumePrediction || '';
+      var predictionResult = d.predictionResult || null;
       var npcChatInput = d.npcChatInput || '';
       var npcChatHistory = d.npcChatHistory || {};
       var npcChatLoading = d.npcChatLoading || false;
@@ -1381,6 +1574,8 @@
       var selectedShape = d.selectedShape || 0; // index into BLOCK_SHAPES
       var blockRotation = d.blockRotation || 0; // 0-3 = 0°, 90°, 180°, 270° around Y axis
       var measureHistory = d.measureHistory || []; // past measurements
+      var completedMeasurements = completeMeasurementRecords(measureHistory);
+      var measurementComparison = completedMeasurements.length >= 2 ? compareMeasurementRecords(completedMeasurements[completedMeasurements.length - 2], completedMeasurements[completedMeasurements.length - 1]) : null;
       var actionFeedback = d.actionFeedback || ''; // brief key action text
       var homeLang = d.homeLang || 'en';
       var npcTranslations = d.npcTranslations || {};
@@ -2080,7 +2275,7 @@
           mesh.castShadow = true; mesh.receiveShadow = true;
           addBlockEdges(mesh, shapeId);
           var shapeDef = BLOCK_SHAPES.find(function(s) { return s.id === shapeId; }) || BLOCK_SHAPES[0];
-          mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume, rotation: rot, _lessonBlock: !!engine._placingLessonBlocks };
+          mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume, rotation: rot, _lessonBlock: !!engine._placingLessonBlocks, _measurementLayer: engine._measurementLayer || (engine._placingLessonBlocks ? 'lesson' : 'student') };
           engine.scene.add(mesh);
           engine.blocks[key] = mesh;
           engine._blocksDirty = true; // invalidate cached blocks array so raycasters rebuild
@@ -2287,14 +2482,17 @@
           if (engine.congratsSprite) { engine.scene.remove(engine.congratsSprite); engine.congratsSprite = null; engine.congratsCreated = false; }
           // Place ground and structures as indestructible lesson blocks
           engine._placingLessonBlocks = true;
+          engine._measurementLayer = 'ground';
           if (lesson.ground) {
             var g = lesson.ground;
             engine.fillBlocks(g.xMin, g.y, g.zMin, g.xMax, g.y, g.zMax, g.type || 'grass');
           }
+          engine._measurementLayer = 'lesson';
           if (lesson.structures) lesson.structures.forEach(function(s) {
             if (s.type === 'fill') engine.fillBlocks(s.x1, s.y1, s.z1, s.x2, s.y2, s.z2, s.block);
           });
           engine._placingLessonBlocks = false;
+          engine._measurementLayer = null;
           if (lesson.npcs) lesson.npcs.forEach(function(n) { engine.createNPC(n); });
           // Smooth camera entry — start high above spawn, swoop down
           if (lesson.spawnPoint) {
@@ -2317,48 +2515,74 @@
           // engine.blocksPlaced was reset to 0 at the top of loadLesson — mirror to React state
           // so the HUD + build_10 quest don't display stale counts from a prior session/lesson.
           if (savedProgress && savedProgress.score > 0) {
-            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0 });
+            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, volumePrediction: '', predictionResult: null });
             if (addToast) addToast('\uD83D\uDCBE Progress restored: ' + savedProgress.score + '/' + totalQCount, 'info');
           } else {
-            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0 });
+            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, volumePrediction: '', predictionResult: null });
           }
           engine._progressKey = progressKey;
         };
 
-        // Measure connected blocks
-        engine.measureStructure = function(startX, startY, startZ, blockType) {
-          var visited = {}; var result = []; var queue = [{ x: startX, y: startY, z: startZ }];
+        // Measure all face-connected blocks in the same logical layer, even when
+        // students use multiple materials to color-code one geometric structure.
+        engine.measureStructure = function(startX, startY, startZ) {
+          var seedMesh = engine.blocks[startX + ',' + startY + ',' + startZ];
+          if (!seedMesh || !seedMesh.userData) return null;
+          var seedData = seedMesh.userData;
+          var visited = {}; var result = []; var queue = [{ x: startX, y: startY, z: startZ }]; var queueIndex = 0;
           var totalVolume = 0;
           var shapeCounts = {};
-          while (queue.length > 0 && result.length < 500) {
-            var pos = queue.shift(); var key = pos.x + ',' + pos.y + ',' + pos.z;
+          var materialCounts = {};
+          while (queueIndex < queue.length && result.length < MEASUREMENT_BLOCK_LIMIT) {
+            var pos = queue[queueIndex++]; var key = pos.x + ',' + pos.y + ',' + pos.z;
             if (visited[key]) continue; visited[key] = true;
             var mesh = engine.blocks[key];
-            if (!mesh || mesh.userData.blockType !== blockType) continue;
+            if (!mesh || !belongsToMeasuredComponent(seedData, mesh.userData)) continue;
             result.push(pos);
             var vol = mesh.userData.volume || 1;
             totalVolume += vol;
             var shp = mesh.userData.shape || 'cube';
             shapeCounts[shp] = (shapeCounts[shp] || 0) + 1;
+            var material = mesh.userData.blockType || 'unknown';
+            materialCounts[material] = (materialCounts[material] || 0) + 1;
             [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(function(dir) {
               var nk = (pos.x+dir[0])+','+(pos.y+dir[1])+','+(pos.z+dir[2]);
               if (!visited[nk]) queue.push({ x: pos.x+dir[0], y: pos.y+dir[1], z: pos.z+dir[2] });
             });
           }
+          var measurementTruncated = false;
+          if (result.length >= MEASUREMENT_BLOCK_LIMIT) {
+            for (var remaining = queueIndex; remaining < queue.length; remaining++) {
+              var pending = queue[remaining];
+              var pendingKey = pending.x + ',' + pending.y + ',' + pending.z;
+              if (visited[pendingKey]) continue;
+              var pendingMesh = engine.blocks[pendingKey];
+              if (pendingMesh && belongsToMeasuredComponent(seedData, pendingMesh.userData)) { measurementTruncated = true; break; }
+            }
+          }
+
           if (result.length === 0) return null;
           var mnX=Infinity,mxX=-Infinity,mnY=Infinity,mxY=-Infinity,mnZ=Infinity,mxZ=-Infinity;
           result.forEach(function(b) { mnX=Math.min(mnX,b.x);mxX=Math.max(mxX,b.x);mnY=Math.min(mnY,b.y);mxY=Math.max(mxY,b.y);mnZ=Math.min(mnZ,b.z);mxZ=Math.max(mxZ,b.z); });
-          return {
+          var hasPartialShapes = Object.keys(shapeCounts).some(function(shapeId) { return shapeId !== 'cube'; });
+          var exposedFaces = countExposedCubeFaces(result);
+          return enrichMeasurement({
             count: result.length,
             L: mxX-mnX+1, W: mxZ-mnZ+1, H: mxY-mnY+1,
             minX: mnX, minY: mnY, minZ: mnZ,
             boundingVolume: (mxX-mnX+1)*(mxZ-mnZ+1)*(mxY-mnY+1),
             totalVolume: totalVolume,
-            hasFractions: totalVolume !== Math.floor(totalVolume),
+            hasFractions: hasPartialShapes,
             shapeCounts: shapeCounts,
             formattedVolume: formatVolume(totalVolume),
+            materialCounts: materialCounts,
+            surfaceAreaExact: !hasPartialShapes,
+            exposedSurfaceArea: hasPartialShapes ? null : exposedFaces.surfaceArea,
+            exposedFaces: hasPartialShapes ? null : exposedFaces,
+            isComplete: !measurementTruncated,
+            measurementLimit: MEASUREMENT_BLOCK_LIMIT,
             blocks: result // list of {x,y,z} for selection glow
-          };
+          });
         };
 
         // ── 3D Dimension Lines — show L/W/H around measured structure ──
@@ -2624,27 +2848,41 @@
               var hits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
               if (hits.length > 0 && hits[0].object.userData.gridPos) {
                 var gp = hits[0].object.userData.gridPos;
-                var m = engine.measureStructure(gp.x, gp.y, gp.z, hits[0].object.userData.blockType);
+                var m = engine.measureStructure(gp.x, gp.y, gp.z);
                 if (m) {
                   sfxMeasure();
                   // Save to measurement history (last 10)
-                  var mh = (d.measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.hasFractions ? m.formattedVolume : m.boundingVolume, blocks: m.count, t: Date.now() }]);
+                  var predictionComparison = m.isComplete === false ? null : compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
+                  var mh = (((engine._predictionState || {}).history) || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, t: Date.now() }]);
                   if (mh.length > 10) mh = mh.slice(-10);
-                  upd({ measureResult: m, measureHistory: mh, actionFeedback: '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + (m.hasFractions ? m.formattedVolume : m.boundingVolume) });
-                  announceToSR('Measured: length ' + m.L + ' by width ' + m.W + ' by height ' + m.H + ' equals ' + (m.hasFractions ? m.formattedVolume : m.boundingVolume) + ' cubic units');
+                  var measurementFeedback = m.isComplete === false
+                    ? 'Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
+                    : m.isSolidPrism
+                      ? m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
+                      : m.formattedOccupiedVolume + ' cubic units occupied (' + m.fillPercent + '% of ' + m.boundingVolume + '-unit bounding box)';
+                  upd({ measureResult: m, measureHistory: mh, predictionResult: predictionComparison, actionFeedback: '\uD83D\uDCCF Measured: ' + measurementFeedback + (predictionComparison ? ' \u2022 ' + predictionComparison.accuracyLabel : '') });
+                  announceToSR((m.isComplete === false
+                    ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete'
+                    : m.isSolidPrism
+                    ? 'Measured solid rectangular prism: length ' + m.L + ' by width ' + m.W + ' by height ' + m.H + ' equals ' + m.formattedOccupiedVolume + ' cubic units'
+                    : 'Measured composite structure: ' + m.formattedOccupiedVolume + ' cubic units occupied, ' + formatVolume(m.missingVolume) + ' cubic units empty inside a ' + m.boundingVolume + ' cubic unit bounding box') + (predictionComparison ? '. Your prediction was ' + formatVolume(predictionComparison.prediction) + '. ' + predictionComparison.accuracyLabel : ''));
                   setTimeout(function() { upd('actionFeedback', ''); }, 2500);
                   // Show 3D dimension lines + selection glow around the measured structure
+                  if (m.isComplete !== false) {
                   if (engine._dimTimer) clearTimeout(engine._dimTimer);
                   showDimLines(m, m.minX, m.minY, m.minZ);
                   if (m.blocks) showSelectionGlow(m.blocks);
                   // Measurement sparkle particles at structure center
                   var mcx = m.minX + m.L / 2, mcy = m.minY + m.H / 2 + 0.5, mcz = m.minZ + m.W / 2;
                   for (var sp = 0; sp < 8; sp++) spawnPlaceParticles(engine, mcx + (Math.random() - 0.5) * m.L, mcy + (Math.random() - 0.5) * m.H, mcz + (Math.random() - 0.5) * m.W);
-                  if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.boundingVolume, blocks: m.count });
-                  var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement'; }).length;
+                  }
+                  if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: predictionComparison ? predictionComparison.prediction : null, predictionPercentError: predictionComparison ? predictionComparison.percentError : null, blocks: m.count });
+                  var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }).length;
+                  if (m.isComplete !== false) {
                   if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
                   var ts2 = engine._tutorialState || {}; if (ts2.step === 2 && !ts2.dismissed) upd('tutorialStep', 3);
                   setTimeout(runAchievementCheck, 100);
+                  }
                 }
               }
               break;
@@ -2791,13 +3029,35 @@
                 setTimeout(function() { upd('actionFeedback', ''); }, 1200);
               }
               break;
-            case 'KeyN': // Net unfolding: show the 6 faces of the targeted structure's bounding box flat
+            case 'KeyN': // Net unfolding for prisms; exposed-face analysis for composite structures
               engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
               var nHits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
               if (nHits.length > 0 && nHits[0].object.userData.gridPos) {
                 var ngp = nHits[0].object.userData.gridPos;
-                var nm = engine.measureStructure(ngp.x, ngp.y, ngp.z, nHits[0].object.userData.blockType);
+                var nm = engine.measureStructure(ngp.x, ngp.y, ngp.z);
                 if (nm) {
+                  if (nm.isComplete === false) {
+                    var incompleteSurfaceMessage = 'Measurement limit reached. Surface area and a net are unavailable until the full structure is measured.';
+                    upd('actionFeedback', '\uD83D\uDCCB ' + incompleteSurfaceMessage);
+                    announceToSR(incompleteSurfaceMessage);
+                    if (engine.logEvent) engine.logEvent('surface_analysis', { shape: 'incomplete', surfaceArea: null, blocks: nm.count, measurementLimit: nm.measurementLimit });
+                    setTimeout(function() { upd('actionFeedback', ''); }, 5500);
+                    break;
+                  }
+                  if (!nm.isSolidPrism) {
+                    if (engine._netHelpers) {
+                      engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      engine._netHelpers = [];
+                    }
+                    var compositeSurfaceMessage = nm.surfaceAreaExact
+                      ? 'Composite shape: no six-rectangle net. Count exposed unit faces for surface area = ' + nm.exposedSurfaceArea + ' square units.'
+                      : 'Partial blocks do not use the six-rectangle prism net. Surface area depends on each partial face shape.';
+                    upd('actionFeedback', '\uD83D\uDCCB ' + compositeSurfaceMessage);
+                    announceToSR(compositeSurfaceMessage);
+                    if (engine.logEvent) engine.logEvent('surface_analysis', { shape: nm.surfaceAreaExact ? 'composite_cubes' : 'partial_blocks', surfaceArea: nm.exposedSurfaceArea, blocks: nm.count });
+                    setTimeout(function() { upd('actionFeedback', ''); }, 5500);
+                    break;
+                  }
                   // Clear any prior net helpers.
                   if (engine._netHelpers) {
                     engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
@@ -3894,7 +4154,7 @@
         engine.exportSessionCSV = function() {
           var rows = ['Timestamp_ms,Elapsed,Event_Type,Details'];
           engine.sessionLog.forEach(function(entry) {
-            var details = Object.keys(entry.data).map(function(k) { return k + '=' + entry.data[k]; }).join('; ');
+            var details = formatSessionEventDetails(entry.data);
             rows.push(entry.timestamp + ',' + entry.elapsed + ',' + entry.type + ',"' + details.replace(/"/g, '""') + '"');
           });
           return rows.join('\n');
@@ -3907,7 +4167,8 @@
           var log = engine.sessionLog;
           var correct = log.filter(function(e) { return e.type === 'answer_correct'; });
           var wrong = log.filter(function(e) { return e.type === 'answer_wrong'; });
-          var measurements = log.filter(function(e) { return e.type === 'measurement'; });
+          var allMeasurements = log.filter(function(e) { return e.type === 'measurement'; });
+          var measurements = allMeasurements.filter(function(e) { return !e.data || e.data.isComplete !== false; });
           var blocksPlaced = log.filter(function(e) { return e.type === 'block_place'; });
           var completions = log.filter(function(e) { return e.type === 'lesson_complete'; });
           var lessons = log.filter(function(e) { return e.type === 'lesson_load'; });
@@ -3920,9 +4181,7 @@
           var questionsPerMinute = sessionDuration > 60 ? (correct.length / (sessionDuration / 60)).toFixed(2) : 'N/A (session < 1 min)';
 
           // Measurement accuracy — how many measurements matched expected volumes
-          var correctMeasurements = measurements.filter(function(m) {
-            return m.data.blocks === m.data.volume; // rectangular (blocks = bounding volume)
-          }).length;
+          var predictionSummary = summarizePredictionAccuracy(measurements);
 
           // RTI Tier suggestion based on accuracy
           var rtiTier = accuracy >= 80 ? 'Tier 1 (Benchmark)' : accuracy >= 50 ? 'Tier 2 (Strategic)' : 'Tier 3 (Intensive)';
@@ -3943,7 +4202,14 @@
 
             // Skill indicators
             measurementsTaken: measurements.length,
-            correctMeasurements: correctMeasurements,
+            incompleteMeasurementAttempts: allMeasurements.length - measurements.length,
+            predictionsMade: predictionSummary.predictionsMade,
+            exactPredictions: predictionSummary.exactPredictions,
+            predictionsWithin10Percent: predictionSummary.predictionsWithin10Percent,
+            averagePredictionPercentError: predictionSummary.averagePredictionPercentError,
+            measurementsWithoutPrediction: predictionSummary.measurementsWithoutPrediction,
+            // Backward-compatible field for existing longitudinal exports.
+            correctMeasurements: predictionSummary.predictionsWithin10Percent,
             blocksPlaced: blocksPlaced.length,
 
             // RTI classification
@@ -3964,6 +4230,7 @@
                 answer: e.data.choice || e.data.chosenAnswer || ''
               };
             }),
+            measurementDetails: measurementDetailsForReport(measurements),
 
             // Standards alignment
             standardsAddressed: ['5.MD.C.3', '5.MD.C.4', '5.MD.C.5'],
@@ -4007,6 +4274,9 @@
           h += '<div class="metric"><div class="val">' + r.questionsCorrect + '/' + r.totalAttempts + '</div><div class="lbl">Correct</div></div>';
           h += '<div class="metric"><div class="val">' + r.questionsPerMinute + '</div><div class="lbl">Q/min</div></div>';
           h += '<div class="metric"><div class="val">' + r.measurementsTaken + '</div><div class="lbl">Measurements</div></div>';
+          h += '<div class="metric"><div class="val">' + (r.predictionsMade ? r.predictionsWithin10Percent + '/' + r.predictionsMade : '&mdash;') + '</div><div class="lbl">Predictions within 10%</div></div>';
+          h += '<div class="metric"><div class="val">' + (r.averagePredictionPercentError === null ? '&mdash;' : r.averagePredictionPercentError + '%') + '</div><div class="lbl">Avg prediction error</div></div>';
+          if (r.incompleteMeasurementAttempts > 0) h += '<div class="metric"><div class="val">' + r.incompleteMeasurementAttempts + '</div><div class="lbl">Incomplete scans</div></div>';
           h += '<div class="metric"><div class="val">' + r.blocksPlaced + '</div><div class="lbl">Blocks Placed</div></div>';
           h += '<div class="metric"><div class="val">' + r.lessonsCompleted + '/' + r.lessonsAttempted + '</div><div class="lbl">Lessons Done</div></div>';
           h += '</div>';
@@ -4037,6 +4307,15 @@
             h += '<li><strong>' + s + '</strong> \u2014 ' + desc + '</li>';
           });
           h += '</ul>';
+          if (r.measurementDetails && r.measurementDetails.length > 0) {
+            h += '<h2>Measurement-Level Evidence</h2><table><tr><th>#</th><th>Time</th><th>Structure</th><th>Actual V</th><th>Prediction</th><th>Error</th><th>Surface</th><th>Blocks</th><th>Materials</th></tr>';
+            r.measurementDetails.forEach(function(m) {
+              h += '<tr><td>' + m.sequence + '</td><td>' + (m.elapsed || '&mdash;') + '</td><td>' + m.shape + (m.dimensions ? '<br><small>' + m.dimensions + '</small>' : '') + '</td>';
+              h += '<td>' + (m.occupiedVolume === null ? '&mdash;' : formatVolume(m.occupiedVolume)) + '</td><td>' + (m.prediction === null ? '&mdash;' : formatVolume(m.prediction)) + '</td><td>' + (m.predictionPercentError === null ? '&mdash;' : m.predictionPercentError + '%') + '</td>';
+              h += '<td>' + (m.surfaceArea === null ? '&mdash;' : m.surfaceArea) + '</td><td>' + (m.blocks === null ? '&mdash;' : m.blocks) + '</td><td>' + (m.materials.length ? m.materials.join(', ') : '&mdash;') + '</td></tr>';
+            });
+            h += '</table>';
+          }
 
           if (r.questionDetails && r.questionDetails.length > 0) {
             h += '<h2>Question-Level Detail</h2><table><tr><th>#</th><th>NPC</th><th>Question</th><th>Result</th><th>Time</th></tr>';
@@ -4489,6 +4768,7 @@
         // (attached once in initEngine) so they can't see number-key block switches,
         // shape cycling (Q), rotation (R), or collab-mode toggling.
         engine._placeState = { selectedBlock: selectedBlock, selectedShape: selectedShape, blockRotation: blockRotation, collabMode: collabMode };
+        engine._predictionState = { input: volumePrediction, history: measureHistory };
         // Badges bridge — runAchievementCheck called via setTimeout from stale closures
         // needs to read the LATEST earned-badges object to avoid re-awarding duplicates.
         engine._badgesRef = earnedBadges;
@@ -4561,30 +4841,63 @@
             )
           ),
           // Measure result
-          measureResult && el('div', { style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#22d3ee', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
-            el('div', { style: { fontWeight: 700 } }, '\uD83D\uDCCF Measurement'),
-            el('div', null, 'L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H),
-            el('div', { style: { fontFamily: 'monospace', color: measureResult.hasFractions ? '#fbbf24' : '#4ade80' } },
-              measureResult.hasFractions
-                ? 'Volume = ' + measureResult.formattedVolume + ' cubic units'
-                : 'V = ' + measureResult.L + ' \u00d7 ' + measureResult.W + ' \u00d7 ' + measureResult.H + ' = ' + measureResult.boundingVolume
+          el('div', { role: 'group', 'aria-label': 'Predict volume before measuring', style: { display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 6px' } },
+            el('label', { htmlFor: 'gw-volume-prediction', style: { color: '#fde68a', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap' } }, 'Predict V'),
+            el('input', {
+              id: 'gw-volume-prediction',
+              type: 'text', inputMode: 'decimal', value: volumePrediction,
+              onChange: function(ev) { upd({ volumePrediction: ev.target.value, predictionResult: null }); },
+              placeholder: 'e.g. 24',
+              'aria-label': 'Predicted volume in cubic units',
+              title: 'Enter a prediction before measuring. Decimals and fractions such as 3/4 are supported.',
+              style: { width: '58px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '11px', fontFamily: 'monospace' }
+            }),
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px' } }, 'cu')
+          ),
+          measureResult && el('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
+            el('div', { style: { fontWeight: 700 } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure - incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
+            measureResult.isComplete === false && el('div', { role: 'alert', 'data-geometry-measurement-incomplete': 'true',
+              style: { margin: '2px 0', padding: '4px 6px', borderRadius: '4px', background: '#7f1d1d', color: '#fecaca', fontWeight: 700 } },
+              'Measurement limit reached. At least ' + measureResult.count + ' connected blocks were found; volume, dimensions, and surface area below are partial and not exact.'),
+            measureResult.isComplete !== false && el('div', null, 'L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H),
+            el('div', { style: { fontFamily: 'monospace', color: measureResult.isSolidPrism ? '#4ade80' : '#fbbf24' } },
+              measureResult.isComplete === false
+                ? 'Counted at least ' + measureResult.count + ' cubic units'
+                : measureResult.isSolidPrism
+                ? 'V = ' + measureResult.L + ' \u00d7 ' + measureResult.W + ' \u00d7 ' + measureResult.H + ' = ' + measureResult.formattedOccupiedVolume
+                : 'Occupied volume = ' + measureResult.formattedOccupiedVolume + ' cubic units'
             ),
+            measureResult.isComplete !== false && !measureResult.isSolidPrism && el('div', { style: { fontSize: '10px', color: '#fde68a' } },
+              'Bounding box ' + measureResult.boundingVolume + ' \u2212 empty ' + formatVolume(measureResult.missingVolume) + ' = ' + measureResult.formattedOccupiedVolume + ' (' + measureResult.fillPercent + '% filled)'
+            ),
+            el('div', { 'data-geometry-surface-area': measureResult.surfaceAreaExact ? 'exact' : 'partial', style: { fontSize: '10px', color: measureResult.surfaceAreaExact ? '#86efac' : '#cbd5e1' } },
+              measureResult.isComplete === false
+                ? 'Surface area unavailable until the full structure is measured'
+                : measureResult.surfaceAreaExact ? 'Exposed surface area = ' + measureResult.exposedSurfaceArea + ' square units' : 'Surface area needs partial-face analysis (press N)'),
+            predictionResult && el('div', { 'data-geometry-prediction-result': 'true', style: { marginTop: '2px', padding: '3px 5px', borderRadius: '4px', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)' } },
+              el('div', { style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px' } }, 'Prediction ' + formatVolume(predictionResult.prediction) + ' \u2192 Actual ' + formatVolume(predictionResult.actual)),
+              el('div', { style: { color: predictionResult.percentError <= 10 ? '#86efac' : '#fde68a', fontSize: '10px', fontWeight: 700 } }, predictionResult.accuracyLabel + (predictionResult.relation === 'exact' ? '' : ' (' + predictionResult.percentError + '% ' + predictionResult.relation + 'estimate)'))
+            ),
+
             el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
               measureResult.count + ' blocks' + (measureResult.hasFractions
                 ? ' (' + Object.keys(measureResult.shapeCounts).map(function(s) {
                     var sd = BLOCK_SHAPES.find(function(bs) { return bs.id === s; });
                     return measureResult.shapeCounts[s] + '\u00d7' + (sd ? sd.fraction : '1');
                   }).join(' + ') + ')'
-                : measureResult.count !== measureResult.boundingVolume ? ' (non-rectangular)' : ' \u2713')
+                : measureResult.isSolidPrism ? ' \u2713' : ' (count the occupied cubes)')
             ),
-            el('button', {
+            Object.keys(measureResult.materialCounts || {}).length > 1 && el('div', { 'data-geometry-material-breakdown': 'true', style: { fontSize: '10px', color: '#bfdbfe' } },
+              'Materials: ' + Object.keys(measureResult.materialCounts).map(function(type) { return measureResult.materialCounts[type] + ' ' + type; }).join(', ')
+            ),
+            measureResult.isComplete !== false && el('button', {
               onClick: function() {
                 var card = generateManipulativeCard(measureResult, currentLesson.title);
                 var win = window.open('', '_blank');
                 if (win) { win.document.write(card); win.document.close(); win.print(); }
                 if (addToast) addToast('\uD83E\uDDF1 Build card ready to print!', 'success');
                 var eng = window[engineKey];
-                if (eng && eng.logEvent) eng.logEvent('manipulative_card', { L: measureResult.L, W: measureResult.W, H: measureResult.H, V: measureResult.boundingVolume });
+                if (eng && eng.logEvent) eng.logEvent('manipulative_card', { L: measureResult.L, W: measureResult.W, H: measureResult.H, V: measuredVolume(measureResult), boundingVolume: measureResult.boundingVolume });
               },
               title: __alloT('stem.geometryworld.print_a_card_to_build_this_structure_w', 'Print a card to build this structure with physical cubes'),
               style: { background: '#7c3aed', border: 'none', borderRadius: '4px', padding: '2px 8px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 700, marginTop: '2px' }
@@ -5060,14 +5373,14 @@
                 var done = false;
                 if (/answer|talk|ask|speak/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length >= totalQ;
                 else if (/build|place|construct|create|make|stack/i.test(text)) done = ((engine && engine.blocksPlaced) || 0) >= 1;
-                else if (/measure|ruler|volume/i.test(text)) done = (measureHistory && measureHistory.length > 0);
+                else if (/measure|ruler|volume/i.test(text)) done = completedMeasurements.length > 0;
                 else if (/explore|find|locate|visit/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length > 0;
                 objectives.push({ text: text, done: done });
               });
             } else {
               // 2. Fallback auto-generated objectives from lesson shape
               if (totalQ > 0) objectives.push({ text: 'Answer all ' + totalQ + ' NPC question' + (totalQ === 1 ? '' : 's'), done: Object.keys(answeredNpcs).length >= totalQ });
-              if (currentLesson.structures && currentLesson.structures.length > 0) objectives.push({ text: 'Explore the ' + currentLesson.structures.length + ' structures', done: (measureHistory && measureHistory.length > 0) });
+              if (currentLesson.structures && currentLesson.structures.length > 0) objectives.push({ text: 'Explore the ' + currentLesson.structures.length + ' structures', done: completedMeasurements.length > 0 });
               objectives.push({ text: __alloT('stem.geometryworld.place_at_least_5_blocks', 'Place at least 5 blocks'), done: ((engine && engine.blocksPlaced) || 0) >= 5 });
             }
             var allDone = objectives.length > 0 && objectives.every(function(o) { return o.done; });
@@ -5478,7 +5791,7 @@
             onClick: function() {
               var eng = window[engineKey];
               if (eng) eng.loadLesson(currentLesson);
-              upd({ score: 0, answeredNpcs: {}, measureResult: null });
+              upd({ score: 0, answeredNpcs: {}, measureResult: null, volumePrediction: '', predictionResult: null });
             },
             style: { marginTop: '8px', background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', cursor: 'pointer', width: '100%', fontFamily: 'inherit', transition: 'all 0.15s' }
           }, '\u21BB Reset World')
@@ -5813,8 +6126,22 @@
                 var h2 = engine.raycaster.intersectObjects(Object.values(engine.blocks));
                 if (h2.length > 0 && h2[0].object.userData.gridPos) {
                   var gp = h2[0].object.userData.gridPos;
-                  var m = engine.measureStructure(gp.x, gp.y, gp.z, h2[0].object.userData.blockType);
-                  if (m) { sfxMeasure(); upd('measureResult', m); }
+                  var m = engine.measureStructure(gp.x, gp.y, gp.z);
+                  if (m) {
+                    sfxMeasure();
+                    var mobilePrediction = m.isComplete === false ? null : compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
+                    var mobileHistory = (measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: mobilePrediction ? mobilePrediction.prediction : null, percentError: mobilePrediction ? mobilePrediction.percentError : null, t: Date.now() }]);
+                    if (mobileHistory.length > 10) mobileHistory = mobileHistory.slice(-10);
+                    upd({ measureResult: m, measureHistory: mobileHistory, predictionResult: mobilePrediction, actionFeedback: (m.isComplete === false
+                      ? '\uD83D\uDCCF Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
+                      : m.isSolidPrism
+                      ? '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
+                      : '\uD83D\uDCCF Occupied volume: ' + m.formattedOccupiedVolume + ' (' + m.fillPercent + '% filled)') + (mobilePrediction ? ' \u2022 ' + mobilePrediction.accuracyLabel : '') });
+                    announceToSR(m.isComplete === false ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete.' : 'Measured ' + m.formattedOccupiedVolume + ' cubic units' + (m.isSolidPrism ? ' in a solid rectangular prism' : ' in a composite structure') + (mobilePrediction ? '. Your prediction was ' + formatVolume(mobilePrediction.prediction) + '. ' + mobilePrediction.accuracyLabel : ''));
+                    if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: mobilePrediction ? mobilePrediction.prediction : null, predictionPercentError: mobilePrediction ? mobilePrediction.percentError : null, blocks: m.count, input: 'touch' });
+                    setTimeout(function() { upd('actionFeedback', ''); }, 2500);
+                    if (m.isComplete !== false) setTimeout(runAchievementCheck, 100);
+                  }
                 }
               },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(251,191,36,0.4)', border: '2px solid rgba(251,191,36,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
@@ -5874,13 +6201,21 @@
             background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '8px',
             padding: '6px 8px', fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', maxWidth: '150px' }
         },
-          el('div', { style: { fontWeight: 700, fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '3px', letterSpacing: '0.5px' } }, '\uD83D\uDCCF MEASUREMENTS'),
+          el('div', { style: { fontWeight: 700, fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '3px', letterSpacing: '0.5px' } }, '\uD83D\uDCCF MEASUREMENTS - ' + completedMeasurements.length + '/' + measureHistory.length + ' complete'),
           measureHistory.slice(-5).reverse().map(function(mh, mi) {
             return el('div', { key: mi, style: { display: 'flex', justifyContent: 'space-between', gap: '4px', color: mi === 0 ? '#e2e8f0' : '#94a3b8', fontWeight: mi === 0 ? 600 : 400 } },
-              el('span', null, mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
-              el('span', { style: { color: mi === 0 ? '#fbbf24' : '#94a3b8' } }, '=' + mh.vol)
+              el('span', null, mh.isComplete === false ? 'Incomplete scan' : mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
+              el('span', { style: { color: mh.isComplete === false ? '#fca5a5' : mi === 0 ? '#fbbf24' : '#94a3b8' } }, mh.isComplete === false ? '\u2265' + mh.blocks : '=' + mh.vol),
+              mh.prediction != null && el('span', { title: 'Predicted ' + formatVolume(mh.prediction) + '; ' + mh.percentError + '% off', style: { color: mh.percentError <= 10 ? '#86efac' : '#cbd5e1', fontSize: '8px' } }, 'P:' + formatVolume(mh.prediction) + ' (' + mh.percentError + '%)')
             );
-          })
+          }),
+          measurementComparison && el('div', { role: 'status', 'data-geometry-measurement-comparison': 'true', style: { marginTop: '5px', paddingTop: '5px', borderTop: '1px solid rgba(167,139,250,0.35)', lineHeight: 1.35 } },
+            el('div', { style: { color: '#c4b5fd', fontWeight: 800, fontSize: '8px', letterSpacing: '0.4px' } }, 'COMPARE LATEST TWO COMPLETE'),
+            el('div', { style: { color: '#e2e8f0' } }, 'Volume: ' + formatVolume(measurementComparison.previousVolume) + ' \u2192 ' + formatVolume(measurementComparison.latestVolume) + (measurementComparison.sameVolume ? ' (same)' : ' (change ' + formatVolume(Math.abs(measurementComparison.volumeDifference)) + ')')),
+            measurementComparison.surfaceAreaDifference !== null && el('div', { style: { color: '#86efac' } }, 'Surface area: ' + measurementComparison.previousSurfaceArea + ' \u2192 ' + measurementComparison.latestSurfaceArea + ' square units'),
+            measurementComparison.moreSurfaceEfficient && el('div', { style: { color: '#fde68a', fontWeight: 700 } }, (measurementComparison.moreSurfaceEfficient === 'latest' ? 'Latest' : 'Previous') + ' shape uses ' + Math.abs(measurementComparison.surfaceAreaDifference) + ' fewer square units for the same volume.'),
+            measurementComparison.surfaceAreaDifference === null && el('div', { style: { color: '#94a3b8' } }, 'Surface comparison unavailable for partial blocks.')
+          )
         ),
         // ── Block inventory widget (top-right, shows counts per type) ──
         engine && (engine.blocksPlaced || 0) > 0 && el('div', {
@@ -6060,7 +6395,7 @@
             currentLesson.title + ' \u2014 ' + score + '/' + totalQ + ' questions answered'),
           el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '16px' } },
             (engine ? (engine.blocksPlaced || 0) : 0) + ' blocks placed \u2022 ' +
-            measureHistory.length + ' measurements taken'),
+            completedMeasurements.length + ' complete measurements taken'),
           // Next Lesson button
           (function() {
             var curIdx = LESSON_ORDER.indexOf(activeLesson);
@@ -6096,8 +6431,8 @@
                     el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#fbbf24' } }, String(engine ? engine.blocksPlaced || 0 : 0)),
                     'blocks placed'),
                   el('div', { style: { background: 'rgba(34,197,94,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
-                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#22c55e' } }, String(measureHistory.length)),
-                    'measurements'),
+                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#22c55e' } }, String(completedMeasurements.length)),
+                    'complete measurements'),
                   el('div', { style: { background: 'rgba(59,130,246,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
                     el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#3b82f6' } }, String(score)),
                     'questions answered')
@@ -6395,7 +6730,7 @@
                       var npcPrompt = 'You are ' + data.name + ', a friendly geometry teacher NPC in a 3D block world. '
                         + 'You are standing near structures made of blocks. Each block is 1 cubic unit. '
                         + 'Your specialty: ' + data.dialogue + '\n'
-                        + (measureResult ? 'The student recently measured a structure: L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H + ' Volume=' + measureResult.boundingVolume + '\n' : '')
+                        + (measureResult ? 'The student recently measured a structure: L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H + ' Occupied volume=' + measuredVolume(measureResult) + ' Bounding-box volume=' + measureResult.boundingVolume + '\n' : '')
                         + 'The student asks: "' + userMsg + '"\n\n'
                         + 'Respond in 2-3 sentences. Be warm, encouraging, and age-appropriate. '
                         + 'Use concrete examples with blocks. If they ask about volume, reference L\u00d7W\u00d7H. '
@@ -6429,7 +6764,7 @@
                     upd({ npcChatHistory: newHist, npcChatInput: '', npcChatLoading: true });
                     var npcPrompt = 'You are ' + data.name + ', a friendly geometry teacher in a 3D block world. Each block = 1 cubic unit. '
                       + 'Context: ' + data.dialogue + ' '
-                      + (measureResult ? 'Student measured: L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H + ' V=' + measureResult.boundingVolume + '. ' : '')
+                      + (measureResult ? 'Student measured: L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H + ' occupied V=' + measuredVolume(measureResult) + ', bounding-box V=' + measureResult.boundingVolume + '. ' : '')
                       + 'Student asks: "' + userMsg + '". Respond in 2-3 warm, concrete sentences.';
                     callGemini(npcPrompt, true).then(function(r) {
                       var uh = Object.assign({}, npcChatHistory); uh[dialogNpcIdx] = history.concat([{ role: 'npc', text: r }]);

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-7fd996e5-untitled-prs",
+  "title": "اِحتیاط",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/wKF6HSVhjG"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f7fd996e5-f0b3-4b04-9226-c12f050e3539%2f%d8%a7%d9%90%d8%ad%d8%aa%db%8c%d8%a7%d8%b7%2f0-02.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f7fd996e5-f0b3-4b04-9226-c12f050e3539%2f%d8%a7%d9%90%d8%ad%d8%aa%db%8c%d8%a7%d8%b7%2fw.jpg",
+      "text": "من همیشه اِحتیاط می کنم.\nچون می دانم بی احتیاطی کار خوب نیست."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "من می دانم که دست زدن به وسایل برقی خطرناک است.\nاز همین خاطِر به وسایل برقی مانند:\nاتو، چارجَر، ساکت و لین برق دست نمی زنم."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f7fd996e5-f0b3-4b04-9226-c12f050e3539%2f%d8%a7%d9%90%d8%ad%d8%aa%db%8c%d8%a7%d8%b7%2fp-6.jpg",
+      "text": "من به بالونِ گاز و گوگِرد دست نمی زنم.\nچون دست زدن به این چیزها بسیار خطرناک است."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "من از بازی های موبایل و کامپیوتر کم استفاده می کنم.\nچون مصروف شدن زیاد با موبایل به صحتم خوب نیست.\nمن تلویزیون را از نزدیک تماشا نمی کنم.\nزیرا می دانم که به چشمانم ضرر دارد."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f7fd996e5-f0b3-4b04-9226-c12f050e3539%2f%d8%a7%d9%90%d8%ad%d8%aa%db%8c%d8%a7%d8%b7%2fp2.jpg",
+      "text": "من وقتی مکتب می روم با احتیاط از سرک می گذرم.\nمن اشاره های ترافیکی را می شناسم.\nوقتی اشاره، سرخ باشد در کنار سرک می ایستم."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "وقتی اشاره، زرد باشد آماده گی برای گُذَشتن می گیرَم.\nوقتی اشاره، سبز باشد با بسیار احتیاط از سرک می گذرم.\nمن در وقت گذشتن از سرک نمی دوم."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f7fd996e5-f0b3-4b04-9226-c12f050e3539%2f%d8%a7%d9%90%d8%ad%d8%aa%db%8c%d8%a7%d8%b7%2fwafa6.jpg",
+      "text": "من هیچ گاه کتابم را پاره نمی کنم.\nچون می دانم کتاب، بِهترین دوست من است."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "اگر شما هم می خواهید مانند من باشید،\nبه نصیحت های پدر، مادر، معلم و بزرگان گوش دهید.\nتا مثل من حرف شنو، با احتیاط و دوست داشتنی باشید."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 196
+  }
+}

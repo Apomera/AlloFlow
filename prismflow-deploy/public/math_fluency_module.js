@@ -25,6 +25,7 @@
     mfA11yStyle.textContent = [
       '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
       '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
+      '[data-math-maze-canvas]:focus-visible { outline: 3px solid #a5b4fc !important; outline-offset: -4px !important; }',
       '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }',
       '.fixed.inset-0 .text-slate-400 { color: #64748b !important; }',
       // Gate feedback animations — wrong-answer shake + correct-answer
@@ -2279,6 +2280,12 @@
       // Renderer
       var cnv = document.createElement('canvas');
       cnv.style.width = '100%'; cnv.style.height = '100%'; cnv.style.display = 'block'; cnv.style.borderRadius = '10px';
+      cnv.tabIndex = 0;
+      cnv.setAttribute('data-math-maze-canvas', 'true');
+      cnv.setAttribute('role', 'application');
+      cnv.setAttribute('aria-roledescription', tt('math_fluency.maze_canvas_role', 'Interactive 3D math maze'));
+      cnv.setAttribute('aria-label', tt('math_fluency.maze_canvas_label', '3D math maze. Arrow keys or W A S D move. Q and E turn in Explorer mode. Nearby movement buttons provide an alternative.'));
+      cnv.setAttribute('aria-keyshortcuts', 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D Q E P M F H');
       container.appendChild(cnv);
       eng.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
       eng.renderer.setSize(container.clientWidth, container.clientHeight);
@@ -2293,7 +2300,7 @@
       // mousedown so we never grab pointer events without the user's
       // explicit intent. Cleanup on unmount removes everything.
       var dragging = false, lastX = 0;
-      function _onMouseDown(e) { if (!isExplorerRef.current) return; dragging = true; lastX = e.clientX; }
+      function _onMouseDown(e) { try { cnv.focus(); } catch (_) {} if (!isExplorerRef.current) return; dragging = true; lastX = e.clientX; }
       function _onMouseMove(e) {
         if (!dragging || !isExplorerRef.current) return;
         var delta = (e.clientX - lastX) * 0.005;
@@ -2306,6 +2313,7 @@
       function _onMouseUp() { dragging = false; }
       var touchActive = false, lastTouchX = 0;
       function _onTouchStart(e) {
+        try { cnv.focus(); } catch (_) {}
         if (!isExplorerRef.current || !e.touches || e.touches.length !== 1) return;
         touchActive = true; lastTouchX = e.touches[0].clientX;
       }

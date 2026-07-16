@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-c4a4193d-untitled",
+  "title": "ໝາກັບແມວ ຕາກຝົນ",
+  "description": "A5 Portrait. Cat and Dog are in the rain and getting wet. Their friend Elephant helps them out.",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "SIL"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/dtgZNulU59"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dtgZNulU59%2f1752131111816%2f%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%81%e0%ba%a1%e0%ba%a7+%e0%ba%95%e0%ba%b2%e0%ba%81%e0%ba%9d%e0%ba%bb%e0%ba%99%2fCover2.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ໝາກັບແມວ ຕາກຝົນ\" (Lao). A5 Portrait. Cat and Dog are in the rain and getting wet. Their friend Elephant helps them out."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 75
+  }
+}

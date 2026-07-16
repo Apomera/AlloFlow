@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-833863ee-untitled-ne",
+  "title": "दुध",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/1qBO8MBf7v"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f833863ee-db1a-4d2a-9195-868e8f0ff372%2f%e0%a4%a6%e0%a5%81%e0%a4%a7%2fAOR_Milking.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f833863ee-db1a-4d2a-9195-868e8f0ff372%2f%e0%a4%a6%e0%a5%81%e0%a4%a7%2fimage10.png",
+      "text": "रश्मीको गाउँमा दुधडेरी छ। किसानहरू डेरीमा दुध बेच्न ल्याउँछन्। कसैले गाईको दुध ल्याउँछन्। कसैले भैंसीको दुध ल्याउँछन्।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f833863ee-db1a-4d2a-9195-868e8f0ff372%2f%e0%a4%a6%e0%a5%81%e0%a4%a7%2fimage11.png",
+      "text": "रश्मीको घरमा गाई, भैंसी दुवै छन्। रश्मीको आमा गाई दुहुनु हुन्छ। बाबाले भैंसी दुहुनु हुन्छ।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f833863ee-db1a-4d2a-9195-868e8f0ff372%2f%e0%a4%a6%e0%a5%81%e0%a4%a7%2fimage12.png",
+      "text": "गाई, भैंसीको दुध मिसाएर बेच्न लैजान्छन्। केही दुध घरमा खान राख्छन्। घरमा राखेको दुध कुँडेमा तताउँछन्। उनको परिवारका सदस्यहरू तताएको दुध पिउँछन्।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f833863ee-db1a-4d2a-9195-868e8f0ff372%2f%e0%a4%a6%e0%a5%81%e0%a4%a7%2fimage1.png",
+      "text": "खाएर बाँकी रहेको दुध दही बनाउँछन्। परिवारमा सबैले दुधसँगै दही पनि खान्छन्। दहीले शीतलता दिन्छ।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f833863ee-db1a-4d2a-9195-868e8f0ff372%2f%e0%a4%a6%e0%a5%81%e0%a4%a7%2fimage2.png",
+      "text": "रश्मीको परिवारले दहीबाट घ्यु पनि बनाउँछन्। दही मथेर नौनी तयार गर्छन्। बाँकी मही बनाउँछन्।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f833863ee-db1a-4d2a-9195-868e8f0ff372%2f%e0%a4%a6%e0%a5%81%e0%a4%a7%2fghee1.png",
+      "text": "नौनी खारेर घ्यू तयार गर्छन्।\nगाईको घ्यु पहेंलो रङको हुन्छ। भैंसीको घ्यु खैरो रङको हुन्छ। दुवै घ्युको काम एउटै हुन्छ।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f833863ee-db1a-4d2a-9195-868e8f0ff372%2f%e0%a4%a6%e0%a5%81%e0%a4%a7%2fimage3.png",
+      "text": "रश्मीको जस्तै छिमेकीले पनि दुध बेच्छन्। उनीहरू सबैले दुध बेचेर आम्दानी गर्छन्। उक्त आम्दानीबाट घरको खर्च चलाउँछन्।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f833863ee-db1a-4d2a-9195-868e8f0ff372%2f%e0%a4%a6%e0%a5%81%e0%a4%a7%2fAOR_CMB0712.png",
+      "text": "दुधबाट आएको पैसाबाट पढाई खर्च गर्छन् । औषधी उपचारमा खर्च गर्छन्। अन्य घरायसी काममा खर्च गर्छन्।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f833863ee-db1a-4d2a-9195-868e8f0ff372%2f%e0%a4%a6%e0%a5%81%e0%a4%a7%2fimage.jpg",
+      "text": "गाई, भैंसी नहुनेले डेरीबाट दुध किन्छन्। दही किन्छन्। नौनी र घ्यु पनि किनेर खान्छन्।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f833863ee-db1a-4d2a-9195-868e8f0ff372%2f%e0%a4%a6%e0%a5%81%e0%a4%a7%2fAOR_PRE-NA17.png",
+      "text": "यसरी दुधले हाम्रो शरीर बृद्धि गर्छ। हामीलाई खर्चको स्रोत जुट्छ। हाम्रो आवश्यकता पूरा गर्न सहयोग गर्छ।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 166
+  }
+}

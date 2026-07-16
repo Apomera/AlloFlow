@@ -76,6 +76,15 @@ for (const chapter of chapters) {
 const legacyAudit = JSON.parse(fs.readFileSync(path.join(runtimeRoot, 'content_audit.json'), 'utf8'));
 const nativeQaPath = path.join(root, 'test_prep', 'eppp_native_qa.json');
 const nativeQa = fs.existsSync(nativeQaPath) ? JSON.parse(fs.readFileSync(nativeQaPath, 'utf8')) : null;
+const learningQaPath = path.join(root, 'test_prep', 'eppp_learning_library_qa.json');
+const learningQa = fs.existsSync(learningQaPath) ? JSON.parse(fs.readFileSync(learningQaPath, 'utf8')) : null;
+const learningSummary = learningQa && learningQa.summary ? learningQa.summary : {};
+const reviewedChapters = Number(learningSummary.sourceReviewedChapters || 0);
+const reviewedFlashcards = Number(learningSummary.sourceReviewedFlashcards || 0);
+const reviewedMemoryAids = Number(learningSummary.sourceReviewedMemoryAids || 0);
+const retainedReviewedFlashcards = Number(learningSummary.retainedReviewedFlashcards || 0);
+const retiredRedundantFlashcards = Number(learningSummary.retiredRedundantFlashcards || 0);
+const editorialMemoryAids = Number(learningSummary.editorialReviewedSourcePendingMemoryAids || 0);
 const navigationPages = Array.from(html.matchAll(/class=["'][^"']*nav-item[^"']*["'][^>]*data-page=["']([^"']+)["']/gi), (match) => match[1]);
 const learnerModes = [...new Set(navigationPages)].filter((page) => !['dashboard', 'settings', 'about'].includes(page));
 
@@ -103,7 +112,8 @@ const report = {
   summary: {
     legacyQuestions: legacyAudit.summary.totalItems,
     nativeQaQuestions: nativeQa ? nativeQa.summary.passedItems : 0,
-    nativeOriginalQaQuestions: nativeQa ? nativeQa.items.filter((item) => !item.legacySourceId).length : 0,
+    nativeOriginalQaQuestions: nativeQa ? nativeQa.items.filter((item) => !item.legacySourceId && !item.authoredSourceId).length : 0,
+    sourceAuthoredQaQuestions: nativeQa ? nativeQa.items.filter((item) => item.authoredSourceId).length : 0,
     legacyReviewPassedQuestions: nativeCurrentQuestions,
     nativeTargetQuestions,
     nativeRemainingToTarget: Math.max(0, nativeTargetQuestions - nativeCurrentQuestions),
@@ -117,6 +127,12 @@ const report = {
     termDefinitions: Object.keys(termDefinitions).length,
     chapterReferences,
     aiReflectiveCodas: aiCodas,
+    sourceReviewedChapters: reviewedChapters,
+    sourceReviewedFlashcards: reviewedFlashcards,
+    sourceReviewedMemoryAids: reviewedMemoryAids,
+    retainedReviewedFlashcards,
+    retiredRedundantFlashcards,
+    editorialReviewedSourcePendingMemoryAids: editorialMemoryAids,
     learnerModes: learnerModes.length,
   },
   flashcardsByDomain,
@@ -124,10 +140,10 @@ const report = {
   chaptersByDomain: Object.entries(chapterByDomain).map(([domain, count]) => ({ domain, count })),
   migrationTracks: [
     { contentType: 'legacy questions', count: legacyAudit.summary.totalItems, status: 'active-full-review', nextGate: 're-author or correct, source QA, item-writing QA, accessibility, independent expert validation' },
-    { contentType: 'textbook chapters', count: chapters.length, status: 'legacy-preserved-review-not-started', nextGate: 'claim-level source audit, instructional edit, accessibility and expert review' },
+    { contentType: 'textbook chapters', count: chapters.length, status: reviewedChapters ? 'review-in-progress' : 'legacy-preserved-review-not-started', reviewedCount: reviewedChapters, nextGate: `${chapters.length - reviewedChapters} chapters still need claim-level source audit and editorial review; all chapters still require independent expert review` },
     { contentType: 'interactive diagrams', count: Object.keys(diagrams).length, status: 'legacy-preserved-review-not-started', nextGate: 'concept accuracy, labels, keyboard/screen-reader alternative, reduced-motion review' },
-    { contentType: 'flashcards', count: flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0), status: 'legacy-preserved-review-not-started', nextGate: 'deduplication, atomic-answer review, source support and clue check' },
-    { contentType: 'memory aids', count: memoryAids.length, status: 'legacy-preserved-review-not-started', nextGate: 'oversimplification, outdated clinical guidance, bias and source review' },
+    { contentType: 'flashcards', count: flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0), status: reviewedFlashcards === flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0) ? 'first-pass-complete-expert-pending' : (reviewedFlashcards ? 'review-in-progress' : 'legacy-preserved-review-not-started'), reviewedCount: reviewedFlashcards, retainedCount: retainedReviewedFlashcards, retiredRedundantCount: retiredRedundantFlashcards, nextGate: reviewedFlashcards === flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0) ? 'independent qualified expert validation and release decisions for retained cards; retired duplicate cards remain excluded' : 'remaining cards need deduplication, atomic-answer review, source support and clue checks' },
+    { contentType: 'memory aids', count: memoryAids.length, status: (reviewedMemoryAids || editorialMemoryAids) ? 'review-in-progress' : 'legacy-preserved-review-not-started', reviewedCount: reviewedMemoryAids, editorialSourcePendingCount: editorialMemoryAids, nextGate: 'remaining aids need oversimplification, outdated-guidance, bias, and source review' },
     { contentType: 'term definitions', count: Object.keys(termDefinitions).length, status: 'legacy-preserved-review-not-started', nextGate: 'definition/source/version audit and cross-link review' },
   ],
   learnerModes,

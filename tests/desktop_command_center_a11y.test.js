@@ -23,6 +23,12 @@ describe('desktop command center accessibility', () => {
     expect(js).toContain("event.key === 'Home'");
     expect(js).toContain("tab.setAttribute('aria-selected', String(selected))");
   });
+  it('binds tab collections without crashing initialization', () => {
+    expect(js).toContain("const tabs = $$('.tab')");
+    expect(js).toContain("$$('.pane').forEach");
+    expect(js).not.toContain("\n    $('.tab').forEach");
+    expect(js).not.toContain("const tabs = $('.tab')");
+  });
   it('keeps hidden action buttons out of the accessibility tree', () => {
     expect(css).toMatch(/\[hidden\]\s*\{[^}]*display:\s*none !important/s);
     expect(html).not.toContain('data-act hidden></button>');

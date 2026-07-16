@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1d6c5252-untitled-km",
+  "title": "០៩ នអើន ងោកហាន់ឞ្រោៈឞ្រី",
+  "description": "A story of Ngouk going to the forest (Level 2 Easy Reader)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/AaQWZh8yUG"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1d6c5252-7972-4c8c-ad0b-8809938cb6f5%2f%e1%9f%a0%e1%9f%a9+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9f%84%e1%9e%80%e1%9e%a0%e1%9e%b6%e1%9e%93%e1%9f%8b%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9f%84%e1%9f%88%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9e%b8%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1d6c5252-7972-4c8c-ad0b-8809938cb6f5%2f%e1%9f%a0%e1%9f%a9+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9f%84%e1%9e%80%e1%9e%a0%e1%9e%b6%e1%9e%93%e1%9f%8b%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9f%84%e1%9f%88%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9e%b8%2fimage1.png",
+      "text": "ងោកចេញពីផ្ទះនាំឆ្កែដើម្បីទៅដាក់មងនៅអូរច្បារ។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1d6c5252-7972-4c8c-ad0b-8809938cb6f5%2f%e1%9f%a0%e1%9f%a9+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9f%84%e1%9e%80%e1%9e%a0%e1%9e%b6%e1%9e%93%e1%9f%8b%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9f%84%e1%9f%88%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9e%b8%2fimage2.png",
+      "text": "មកដល់ពាក់កណ្ដាលព្រៃ ឆ្កែងោកវាព្រុះពស់វែក។ ពស់វែកនោះដេញចឹកឆ្កែ ឆ្កែវារត់ខ្លាចពស់វែក។ ឯពស់នោះឃើញងោកក៏ភ័យខ្លាច វាលូនចូលក្នុងព្រៃបាត់ទៅ។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1d6c5252-7972-4c8c-ad0b-8809938cb6f5%2f%e1%9f%a0%e1%9f%a9+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9f%84%e1%9e%80%e1%9e%a0%e1%9e%b6%e1%9e%93%e1%9f%8b%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9f%84%e1%9f%88%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9e%b8%2fimage3.png",
+      "text": "ងោកនាំឆ្កែទៅមុខទៀត ឆ្កែវាដេញព្រុះត្រកួត ត្រគួតនោះក៏រត់ឡើងដើមឈើ។ងោកជាមួយនឹងឆ្កែឈរមើលត្រកួតដែលកំពុងឡើងលើចុងឈើ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1d6c5252-7972-4c8c-ad0b-8809938cb6f5%2f%e1%9f%a0%e1%9f%a9+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9f%84%e1%9e%80%e1%9e%a0%e1%9e%b6%e1%9e%93%e1%9f%8b%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9f%84%e1%9f%88%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9e%b8%2fimage4.png",
+      "text": "បន្ទាប់មកងោកឡើងកាប់វល្លិនៅនឹងដើមឈើផ្សេង ដើម្បីធ្វើជាខ្សែទំពក់ត្រកួតនោះ។ចំណែកឯឆ្កែវិញអង្គុយចាំងោកនៅក្រោមដើមឈើ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1d6c5252-7972-4c8c-ad0b-8809938cb6f5%2f%e1%9f%a0%e1%9f%a9+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9f%84%e1%9e%80%e1%9e%a0%e1%9e%b6%e1%9e%93%e1%9f%8b%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9f%84%e1%9f%88%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9e%b8%2fimage5.png",
+      "text": "ក្រោយពីធ្វើខ្សែទំពក់រួចហើយ ងោកក៏ឡើងថ្ពក់សត្វត្រកួតនោះ។ ដល់ពាក់កណ្ដាលដើមឈើ ឪម៉ាល់ក៏ចេញពីសំបុកក្នុងរន្ធដើមឈើមកទិចងោក។\nងោកឈឺឪម៉ាល់ទិចក៏សំរូតចុះពីលើដើមឈើរត់ចេញពីទីនោះ។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1d6c5252-7972-4c8c-ad0b-8809938cb6f5%2f%e1%9f%a0%e1%9f%a9+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9f%84%e1%9e%80%e1%9e%a0%e1%9e%b6%e1%9e%93%e1%9f%8b%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9f%84%e1%9f%88%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9e%b8%2fimage6.png",
+      "text": "ងោកឡើងលើដើមឈើផ្សេង ដើម្បីថ្ពក់ត្រកួតនោះ ត្រកួតខ្លាចក៏លោតចុះពីលើដើមឈើ។ ឆ្កែក៏ស្ទុះដេញខាំត្រគួតធ្វើអោយត្រកួតសន្លប់។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1d6c5252-7972-4c8c-ad0b-8809938cb6f5%2f%e1%9f%a0%e1%9f%a9+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9f%84%e1%9e%80%e1%9e%a0%e1%9e%b6%e1%9e%93%e1%9f%8b%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9f%84%e1%9f%88%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9e%b8%2fimage7.png",
+      "text": "ងោកយកត្រកួតនោះមកដាក់ក្នុងសាសរបស់ខ្លួន រួចវិលត្រឡប់មកផ្ទះវិញ ដោយចិត្តត្រេកអរយ៉ាងក្រៃលែង។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1d6c5252-7972-4c8c-ad0b-8809938cb6f5%2f%e1%9f%a0%e1%9f%a9+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%84%e1%9f%84%e1%9e%80%e1%9e%a0%e1%9e%b6%e1%9e%93%e1%9f%8b%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9f%84%e1%9f%88%e1%9e%9e%e1%9f%92%e1%9e%9a%e1%9e%b8%2fimage8.png",
+      "text": "ខណៈពេលដែលងោកកំពុងដើរសំដៅមកផ្ទះនោះត្រកួតក៏លោតចេញពីសាស ហើយរត់ចូលក្នុងព្រៃបាត់។ ងោកនិងឆ្កែមកផ្ទះដោយខ្លួនទទេ៕"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 27
+  }
+}

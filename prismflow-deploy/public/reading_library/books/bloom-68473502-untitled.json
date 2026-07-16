@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-68473502-untitled",
+  "title": "मुने र खैरे",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/0WfhLPfv3j"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f68473502-2143-4f64-b2db-1e311281f5c8%2f%e0%a4%ae%e0%a5%81%e0%a4%a8%e0%a5%87+%e0%a4%b0+%e0%a4%96%e0%a5%88%e0%a4%b0%e0%a5%87%2fdog patho.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f68473502-2143-4f64-b2db-1e311281f5c8%2f%e0%a4%ae%e0%a5%81%e0%a4%a8%e0%a5%87+%e0%a4%b0+%e0%a4%96%e0%a5%88%e0%a4%b0%e0%a5%87%2fAOR_girl-19.png",
+      "text": "मायाको घरमा मुने नामको पाठो छ। मुनेको एउटा खैरे कुकुर साथी थियो। मुने चकचके थियो। उ कहिले बारदलिमा जान्थ्यो। कहिले झ्यालबाट हेर्थ्यो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f68473502-2143-4f64-b2db-1e311281f5c8%2f%e0%a4%ae%e0%a5%81%e0%a4%a8%e0%a5%87+%e0%a4%b0+%e0%a4%96%e0%a5%88%e0%a4%b0%e0%a5%87%2fimage4.png",
+      "text": "कहिले त घरको सिंढी चढ्थ्यो। घरको धुरीमा पनि पुग्थ्यो। यो सब गरेको खैरे हेरिरहन्थ्यो। खैरेलाई मुनेको चर्तिकला रमाइलो लाग्थ्यो।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f68473502-2143-4f64-b2db-1e311281f5c8%2f%e0%a4%ae%e0%a5%81%e0%a4%a8%e0%a5%87+%e0%a4%b0+%e0%a4%96%e0%a5%88%e0%a4%b0%e0%a5%87%2fAOR_agc004.png",
+      "text": "मुने पाठो खेल्दै घरबाट टाढा जान्थ्यो। त्यो बेला खैरे भ्याउँभ्याउँ गरेर भुक्थ्यो। कुकुरले पाठाको हेरचाह नै गर्थ्यो। खैरे भएपछि माया ढुक्‍क हुन्थी।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f68473502-2143-4f64-b2db-1e311281f5c8%2f%e0%a4%ae%e0%a5%81%e0%a4%a8%e0%a5%87+%e0%a4%b0+%e0%a4%96%e0%a5%88%e0%a4%b0%e0%a5%87%2fimage2.png",
+      "text": "खैरेले मुनेलाई निकै पिछा गर्थ्यो। मुने पनि खैरेसँग खुसी हुन्थ्यो। मुने कहिलेकाँही खैरेसँग जिस्किन्थ्यो। ऊ उफ्रिँदै खैरेको शरीरमा लड्थ्यो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f68473502-2143-4f64-b2db-1e311281f5c8%2f%e0%a4%ae%e0%a5%81%e0%a4%a8%e0%a5%87+%e0%a4%b0+%e0%a4%96%e0%a5%88%e0%a4%b0%e0%a5%87%2fAOR_OWA003.png",
+      "text": "मायाको घर भिरालो ठाँउमा थियो। उसको घरको पछाडि ढुँङ्गाको देवाल थियो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f68473502-2143-4f64-b2db-1e311281f5c8%2f%e0%a4%ae%e0%a5%81%e0%a4%a8%e0%a5%87+%e0%a4%b0+%e0%a4%96%e0%a5%88%e0%a4%b0%e0%a5%87%2fAOR_adb028.png",
+      "text": "एक दिनको कुरा हो । मुने र खैरे घरपछाडि खेल्दै थिए। मुने देवालमा उफ्रँदै थियो। खैरे चौरमा किरासँगै जिस्किँदै थियो। देवाल त्यति बलियो थिएन।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f68473502-2143-4f64-b2db-1e311281f5c8%2f%e0%a4%ae%e0%a5%81%e0%a4%a8%e0%a5%87+%e0%a4%b0+%e0%a4%96%e0%a5%88%e0%a4%b0%e0%a5%87%2fgoat.png",
+      "text": "अचानक गड्याङ्ग आवाज आयो। खैरेले झस्किँदै मुनेतिर हेर्‍याे। मुने म्याँ म्याँ गरी कराउँदै थियो। उसको एउटा खुट्टा ढुँङ्गाले च्यापिएको थियो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f68473502-2143-4f64-b2db-1e311281f5c8%2f%e0%a4%ae%e0%a5%81%e0%a4%a8%e0%a5%87+%e0%a4%b0+%e0%a4%96%e0%a5%88%e0%a4%b0%e0%a5%87%2fAOR_AN161.png",
+      "text": "खैरे आत्तिँदै जोरले भुक्न थाल्यो। उसले ढुङ्गालाई हटाउन खोज्यो। ढुङ्गा ठुलो थियो। धेरै प्रयास गर्‍यो तर सकेन। अन्त्यमा खैरे जोडले भुक्दै घरतिर गयो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f68473502-2143-4f64-b2db-1e311281f5c8%2f%e0%a4%ae%e0%a5%81%e0%a4%a8%e0%a5%87+%e0%a4%b0+%e0%a4%96%e0%a5%88%e0%a4%b0%e0%a5%87%2fsaving.png",
+      "text": "माया गृहकार्य गर्दै थिइन्। खैरे मायाको नजिकै गएर भुक्न थाल्यो। पछ्यौरा तान्दै मायालाई मुनेतिर लग्यो। माया दौडँदै खेरेको पछि पछि गइन्।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f68473502-2143-4f64-b2db-1e311281f5c8%2f%e0%a4%ae%e0%a5%81%e0%a4%a8%e0%a5%87+%e0%a4%b0+%e0%a4%96%e0%a5%88%e0%a4%b0%e0%a5%87%2fimage.jpg",
+      "text": "खुट्टा च्यापिएर मुने कराउँदै थियो। मायाले ढुङ्गा हटाइन् र मुनेलाई निकालिन्। मुनेको खुट्टामा चोट लागेको रहेछ। मायाले मुनेको घाउमा औषधी लगाइदिइन्। खैरेलाई मायाले धन्यवाद दिइन्।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 206
+  }
+}

@@ -2060,6 +2060,11 @@ window.SelHub = window.SelHub || {
                     // Fallback
                     var textarea = document.createElement('textarea');
                     textarea.value = text;
+                    textarea.setAttribute('aria-label', 'Team retrospective text for copying');
+                    textarea.setAttribute('readonly', '');
+                    textarea.tabIndex = -1;
+                    textarea.style.position = 'fixed';
+                    textarea.style.left = '-9999px';
                     document.body.appendChild(textarea);
                     textarea.select();
                     try { document.execCommand('copy'); addToast('Retrospective copied to clipboard!', 'success'); tryAwardBadge('retro_exporter'); } catch(e) { addToast('Could not copy.', 'error'); }

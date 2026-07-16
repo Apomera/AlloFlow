@@ -37,9 +37,10 @@ describe('#1 view — the Start-New button is an actionable Stop while the loop 
     expect(view).toContain('{pdfAutoContinueRunning ? (');
     // the running branch sets the abort flag (Stop only — no reset-while-running)
     const i = view.indexOf('{pdfAutoContinueRunning ? (');
-    const branch = view.slice(i, i + 1400);
+    const branch = view.slice(i, i + 2400);
     expect(branch).toContain('pdfAutoContinueAbortRef.current = true');
     expect(branch).toContain('startNewPdfAudit()'); // the idle branch still resets
+    expect(branch).toContain('await askPdfConfirmation'); // destructive reset uses the shared safe-default dialog
     // idle branch is only disabled by the initial-fix flag now, not the loop flag
     expect(branch).toContain('disabled={pdfFixLoading}');
     expect(branch).not.toContain('disabled={pdfFixLoading || pdfAutoContinueRunning}');

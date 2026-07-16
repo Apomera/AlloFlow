@@ -51,6 +51,19 @@ describe('classifyScore — standard + T-score bands', () => {
     expect(PC._classifyScore(50, 't_score')).toBe('Average');
     expect(PC._classifyScore(66, 't_score')).toBe('At-Risk');
     expect(PC._classifyScore(72, 't_score')).toBe('Clinically Significant');
+    expect(PC._classifyScore(66, 'T-score')).toBe('At-Risk');
+    expect(PC._classifyScore(72, 't score')).toBe('Clinically Significant');
+    expect(PC._classifyScore(72, 'TSCORE')).toBe('Clinically Significant');
+  });
+});
+
+describe('verifyDraft — UI score-type compatibility', () => {
+  it('treats the UI T-score spelling as a T-score for classifications and percentiles', () => {
+    const sources = [{ assessment: 'BASC-3 (Teacher)', subtest: 'Attention Problems', score: 66, scoreType: 'T-score' }];
+    const draft = 'On the BASC-3 Teacher form, Attention Problems was 66, in the At-Risk range (95th percentile).';
+    const result = PC.verifyDraft(sources, draft);
+    expect(kinds(result)).not.toContain('classification_mismatch');
+    expect(kinds(result)).not.toContain('percentile_mismatch');
   });
 });
 

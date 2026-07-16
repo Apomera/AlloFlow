@@ -26,9 +26,10 @@ describe('Word Sounds Review accessibility', () => {
     expect(source).toContain('probeCancelRef.current?.focus()');
   });
 
-  it('uses polling only for audio readiness, not a user time limit', () => {
-    expect(source).toContain('const interval = setInterval(checkAudio, 1000)');
-    expect(source).toContain('return () => clearInterval(interval)');
+  it('uses cancellable scheduling only for audio readiness, not a user time limit', () => {
+    expect(source).not.toContain('setInterval(');
+    expect(source).toContain('pollTimer = setTimeout(pollAudioReadiness, 1000)');
+    expect(source).toContain('if (pollTimer) clearTimeout(pollTimer)');
     expect(source).not.toContain('time limit');
   });
 });

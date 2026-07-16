@@ -5,6 +5,7 @@ import { webcrypto } from 'node:crypto';
 
 const source = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 const pipelineSource = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const policySource = readFileSync(resolve(process.cwd(), 'verification_policy_source.jsx'), 'utf8');
 
 function extractFunctionFrom(text, name) {
   let start = text.indexOf('function ' + name + '(');
@@ -32,6 +33,7 @@ const helpers = new Function('crypto', 'TextEncoder',
   extractFunction('_viewRehydrateVerificationHtmlBinding') + '\n' +
   extractFunction('_viewBindFreshVerificationResult') + '\n' +
   extractFunction('_viewBindValidationToHtml') + '\n' +
+  "const _viewUtf8LenMemo = typeof WeakMap !== 'undefined' ? new WeakMap() : null;\n" +
   extractFunction('_viewValidationMatchesHtml') + '\n' +
   extractFunction('_viewAttachTaggedArtifactProof') + '\n' +
   extractFunction('_viewTaggedArtifactProofMatches') + '\n' +
@@ -63,12 +65,14 @@ const fetchHelpers = new Function(
   'return { readBounded: _readWebsiteResponseBounded, fetchOnce: _fetchWebsiteSourceOnce };'
 )();
 
-const canonicalStart = pipelineSource.indexOf('function _alloDeriveVerificationState(');
-const canonicalEnd = pipelineSource.indexOf(String.fromCharCode(10) + 'function _alloEqualAccessReviewCount', canonicalStart);
+const canonicalStart = policySource.indexOf('function _alloDeriveVerificationState(');
+const canonicalEnd = policySource.indexOf(String.fromCharCode(10) + 'function _alloUnavailableVerificationState', canonicalStart);
 if (canonicalStart < 0 || canonicalEnd < 0) throw new Error('Canonical verification helper markers not found');
 const canonicalDerive = new Function(
-  pipelineSource.slice(canonicalStart, canonicalEnd) + String.fromCharCode(10) + 'return _alloDeriveVerificationState;'
+  policySource.slice(canonicalStart, canonicalEnd) + String.fromCharCode(10) + 'return _alloDeriveVerificationState;'
 )();
+globalThis.window.AlloModules = globalThis.window.AlloModules || {};
+globalThis.window.AlloModules.VerificationPolicy = { deriveVerificationState: canonicalDerive };
 const completeInput = () => ({
   ai: { score: 91 },
   axe: { score: 94, totalIncomplete: 0 },
@@ -127,14 +131,16 @@ describe('remediation view verification state', () => {
     expect(eaResult.reasons).toContain('equal-access-review-count-unknown');
   });
 
-  it('retains language, indeterminate-rule, and scalar/static-scope review reasons', () => {
+  it('retains language + indeterminate-rule gates; static-scope context rides reasons without counting (B3)', () => {
     const input = completeInput();
     input.axe.totalIncomplete = 2;
     input.languageReviewRequired = true;
     input.extraReasons = 'Static source excludes interaction behavior.';
     const result = helpers.derive(input, null);
     expect(result.verificationState).toBe('review-required');
-    expect(result.reviewCount).toBe(4);
+    // B3 (2026-07-13): 2 axe incompletes + 1 language gate; the static-scope
+    // caveat is context and no longer counts (was 4).
+    expect(result.reviewCount).toBe(3);
     expect(result.reasons).toContain('document-language-needs-review');
     expect(result.reasons).toContain('Static source excludes interaction behavior.');
   });
@@ -297,7 +303,9 @@ describe('exact-HTML verification binding', () => {
     expect(source).toContain('const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);');
     expect(source).toContain('const _boundWebResult = await _viewBindFreshVerificationResult({');
     expect((source.match(/reader\.onload = async \(ev\) => \{/g) || []).length).toBeGreaterThanOrEqual(2);
-    expect((source.match(/await _viewRehydrateVerificationHtmlBinding\(parsedProject, _docPipeline\)/g) || []).length).toBe(2);
+    expect((source.match(/const sanitizedImport = _viewSanitizeProjectImport\(parsedProject, _docPipeline\);/g) || []).length).toBe(2);
+    expect((source.match(/await _viewRehydrateVerificationHtmlBinding\(sanitizedImport\.project, _docPipeline\)/g) || []).length).toBe(2);
+    expect(source).not.toMatch(/if \(file\.size > _VIEW_MAX_PROJECT_FILE_BYTES\)[\s\S]{0,180}const file = e\.target\.files/);
     expect((source.match(/const _projectLoadToken = \+\+_projectLoadSelectionRef\.current;/g) || []).length).toBe(2);
     expect((source.match(/if \(_projectLoadToken !== _projectLoadSelectionRef\.current\) return;/g) || []).length).toBe(4);
     expect((source.match(/if \(_projectLoadToken === _projectLoadSelectionRef\.current\) addToast/g) || []).length).toBe(2);
@@ -382,6 +390,7 @@ describe('web and workbench integration guards', () => {
     expect(block).toContain("verificationReasons: ['content-modified-pending-reverification']");
     expect(block).toContain('const recheck = await _reauditAndScore(newHtml, null)');
     expect(source).not.toContain('const [reAi, reAxe] = await Promise.all');
+
     expect(source).not.toContain('axeAudit: reAxe || prev');
   });
 
@@ -412,5 +421,22 @@ describe('web and workbench integration guards', () => {
     expect(source).toContain('const _trailVerification = _verificationForExport(pdfFixResult)');
     expect(source).toContain('live scripts, external CSS, responsive states, and interaction behavior are not evaluated');
     expect(source).toContain('AI + axe-core + IBM Equal Access');
+  });
+});
+describe('PDF verification recovery and referral separation', () => {
+  it('renders the canonical state, engine coverage, reasons, and a verification-only retry', () => {
+    expect(source).toContain('data-help-key="pdf_audit_verification_status"');
+    expect(source).toContain('WCAG verification: {label}');
+    expect(source).toContain('<strong>Equal Access:</strong> {engineLabel(coverage.equalAccess)}');
+    expect(source).toContain("const reasons = Array.isArray(pdfFixResult.verificationReasons)");
+    expect(source).toContain("_reauditAndScore(pdfFixResult.accessibleHtml, null)");
+    const panel = source.slice(source.indexOf('data-help-key="pdf_audit_verification_status"'), source.indexOf('Results dashboard bar'));
+    expect(panel).not.toContain('runAutoFixLoop');
+  });
+
+  it('does not turn verification-only partial/unavailable evidence into an expert referral', () => {
+    expect(pipelineSource).not.toContain('if (_verificationState.requiresManualReview) {');
+    expect(source).not.toContain('needsExpertReview: _verification.requiresManualReview');
+    expect(source).toContain('Number.isFinite(_wscore) && _wscore < 50');
   });
 });

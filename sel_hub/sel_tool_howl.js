@@ -18282,11 +18282,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
             h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _howFg('#a78bfa'), fontWeight: 700, padding: '4px 0' } }, '✏️ Sketch evidence ' + (sketch ? '(saved)' : '')),
             h('div', { style: { marginTop: 6 } },
               h('canvas', {
+                role: 'img',
+                'aria-label': 'Optional freehand sketch evidence for ' + props.hwName + '. A text evidence field is also available.',
                 ref: canvasRef, width: 320, height: 160,
                 onMouseDown: startSketch, onMouseMove: moveSketch, onMouseUp: endSketch, onMouseLeave: endSketch,
                 onTouchStart: startSketch, onTouchMove: moveSketch, onTouchEnd: endSketch,
-                style: { width: '100%', maxWidth: 320, height: 160, background: _howBg('#1e293b'), borderRadius: 4, border: '1px solid #334155', cursor: 'crosshair', touchAction: 'none' },
-                'aria-label': 'Sketch canvas for ' + props.hwName + ' evidence'
+                style: { width: '100%', maxWidth: 320, height: 160, background: _howBg('#1e293b'), borderRadius: 4, border: '1px solid #334155', cursor: 'crosshair', touchAction: 'none' }
               }),
               h('div', { style: { marginTop: 4 } },
                 h('button', { onClick: clearSketch, 'aria-label': 'Clear sketch',
@@ -18557,10 +18558,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
                         background: a.doneOn ? hw.color : 'transparent', color: _howFg('#fff'), cursor: 'pointer', fontSize: 12, flexShrink: 0, padding: 0 }
                     }, a.doneOn ? '✓' : ''),
                     h('input', {
+                      'aria-label': 'Micro-action text',
                       type: 'text', value: a.text || '',
                       onChange: function(e) { updateAction(a.id, { text: e.target.value }); },
                       placeholder: 'e.g., Ask one question in math each day this week',
-                      'aria-label': 'Micro-action text',
                       style: { flex: 1, padding: '6px 8px', borderRadius: 4, border: '1px solid #334155', background: _howBg('#0f172a'), color: _howFg('#e2e8f0'), fontSize: 12, fontFamily: 'inherit',
                         textDecoration: a.doneOn ? 'line-through' : 'none', opacity: a.doneOn ? 0.6 : 1 }
                     }),
@@ -19736,6 +19737,9 @@ if (activeTab === 'radar') {
       var lvl = ratings[h2.id] || 0;
       return _axisPoint(i, lvl).join(',');
     }).join(' ');
+    var radarSummary = howlList.map(function(h2) {
+      return h2.name + ': level ' + (ratings[h2.id] || 0) + ' of 4';
+    }).join('; ');
     radarContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: _howBg('#1e293b'), marginBottom: 12 } },
         h('p', { style: { margin: 0, color: _howFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
@@ -19743,7 +19747,7 @@ if (activeTab === 'radar') {
           'Your last check-in visualized. Each axis = a HOWL. Distance from center = level (1-4). A balanced radar = balanced growth. A spiky radar = uneven growth. Both are normal; the radar just makes them visible.'
         )
       ),
-      h('svg', { width: 400, height: 400, viewBox: '0 0 400 400', style: { maxWidth: '100%', height: 'auto', display: 'block', margin: '0 auto' } },
+      h('svg', { role: 'img', 'aria-label': 'HOWL radar chart. ' + radarSummary, focusable: 'false', width: 400, height: 400, viewBox: '0 0 400 400', style: { maxWidth: '100%', height: 'auto', display: 'block', margin: '0 auto' } },
         // background grid rings
         [1, 2, 3, 4].map(function(lvl) {
           var pts = howlList.map(function(_, i) { return _axisPoint(i, lvl).join(','); }).join(' ');
@@ -20069,7 +20073,7 @@ if (activeTab === 'climate_gauge') {
     ),
     h('div', { style: { display: 'flex', gap: 14, alignItems: 'center', justifyContent: 'center', background: _howBg('#0f172a'), borderRadius: 12, padding: 20 } },
       // SVG thermometer
-      h('svg', { width: 120, height: 320, viewBox: '0 0 120 320' },
+      h('svg', { role: 'img', 'aria-label': 'Crew climate gauge for ' + ((DIMENSIONS.find(function(dim) { return dim.id === cgDimension; }) || {}).label || 'all dimensions') + ': ' + (avg ? avg.toFixed(1) + ' out of 10 from ' + filtered.length + ' anonymous scores' : 'no scores yet'), focusable: 'false', width: 120, height: 320, viewBox: '0 0 120 320' },
         // outer tube
         h('rect', { x: 40, y: 20, width: 40, height: 240, rx: 20, fill: _howBg('#1e293b'), stroke: _howFg('#475569'), strokeWidth: 2 }),
         // mercury fill
@@ -20112,7 +20116,7 @@ if (activeTab === 'climate_gauge') {
         })
       ),
       h('div', { style: { color: _howFg('#cbd5e1'), fontSize: 12, marginBottom: 4 } }, '"' + (DIMENSIONS.find(function(x){return x.id===cgMyDimension;}) || {}).desc + '": ' + cgMyScore + ' / 10'),
-      h('input', { type: 'range', min: 1, max: 10, value: cgMyScore,
+      h('input', { 'aria-label': 'My ' + ((DIMENSIONS.find(function(dim) { return dim.id === cgMyDimension; }) || {}).label || 'Crew climate') + ' score', 'aria-valuetext': cgMyScore + ' out of 10', type: 'range', min: 1, max: 10, value: cgMyScore,
         onChange: function(e) { upd({ cgMyScore: parseInt(e.target.value, 10) }); },
         style: { width: '100%' }
       }),
@@ -20172,7 +20176,7 @@ if (activeTab === 'opener_random') {
         ),
         h('div', { style: { padding: 10, borderRadius: 10, background: _howBg('#1e293b') } },
           h('div', { style: { color: _howFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Max duration: ' + (orDur === 0 ? 'any' : orDur + ' min')),
-          h('input', { type: 'range', min: 0, max: 15, value: orDur,
+          h('input', { 'aria-label': 'Maximum opener duration', 'aria-valuetext': orDur === 0 ? 'Any duration' : orDur + ' minutes', type: 'range', min: 0, max: 15, value: orDur,
             onChange: function(e) { upd({ orDur: parseInt(e.target.value, 10) }); },
             style: { width: '100%' }
           })
@@ -20277,7 +20281,7 @@ if (activeTab === 'timeline') {
     ),
     h('div', { style: { marginTop: 14, padding: 10, borderRadius: 10, background: _howBg('#1e293b'), textAlign: 'center' } },
       h('div', { style: { color: _howFg('#fbbf24'), fontSize: 11, fontWeight: 700, marginBottom: 6 } }, 'Reset quarter start'),
-      h('input', { type: 'date', value: quarterStartStr,
+      h('input', { 'aria-label': 'Quarter start date', type: 'date', value: quarterStartStr,
         onChange: function(e) { upd({ quarterStart: e.target.value }); },
         style: { padding: 6, borderRadius: 6, border: '1px solid #475569', background: _howBg('#0f172a'), color: _howFg('#e2e8f0') }
       })

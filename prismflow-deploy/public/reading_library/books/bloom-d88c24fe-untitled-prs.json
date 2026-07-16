@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d88c24fe-untitled-prs",
+  "title": "نهال شانی",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Pz8tACbHaC"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd88c24fe-4635-4073-89ef-0cba517b9898%2f%d9%86%d9%87%d8%a7%d9%84+%d8%b4%d8%a7%d9%86%db%8c%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd88c24fe-4635-4073-89ef-0cba517b9898%2f%d9%86%d9%87%d8%a7%d9%84+%d8%b4%d8%a7%d9%86%db%8c%2f2.jpg",
+      "text": "همه جا سرسبز بود."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd88c24fe-4635-4073-89ef-0cba517b9898%2f%d9%86%d9%87%d8%a7%d9%84+%d8%b4%d8%a7%d9%86%db%8c%2f%db%b3.jpg",
+      "text": "امیر و آزاده خوشحال بودند.\nآن ها به میله آمده بودند."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd88c24fe-4635-4073-89ef-0cba517b9898%2f%d9%86%d9%87%d8%a7%d9%84+%d8%b4%d8%a7%d9%86%db%8c%2f%db%b4.jpg",
+      "text": "روی تپۀ سرسبز نشسته بودند."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd88c24fe-4635-4073-89ef-0cba517b9898%2f%d9%86%d9%87%d8%a7%d9%84+%d8%b4%d8%a7%d9%86%db%8c%2f%db%b5.jpg",
+      "text": "امیر و آزاده به پدر گفتند:\nچرا مردم نهال شانی می کنند؟"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd88c24fe-4635-4073-89ef-0cba517b9898%2f%d9%86%d9%87%d8%a7%d9%84+%d8%b4%d8%a7%d9%86%db%8c%2f6.jpg",
+      "text": "پدر به آن ها گفت:\nاین فصل، فصل بهار است."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd88c24fe-4635-4073-89ef-0cba517b9898%2f%d9%86%d9%87%d8%a7%d9%84+%d8%b4%d8%a7%d9%86%db%8c%2f7.jpg",
+      "text": "همه جا سرسبز می شود."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd88c24fe-4635-4073-89ef-0cba517b9898%2f%d9%86%d9%87%d8%a7%d9%84+%d8%b4%d8%a7%d9%86%db%8c%2f8.jpg",
+      "text": "مردم نهال شانی می کنند."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd88c24fe-4635-4073-89ef-0cba517b9898%2f%d9%86%d9%87%d8%a7%d9%84+%d8%b4%d8%a7%d9%86%db%8c%2f9.jpg",
+      "text": "امروز، روز جشن نهال شانی است.\nامیر و آزاده خوشحال بودند."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 63
+  }
+}

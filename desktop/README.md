@@ -64,7 +64,7 @@ npm.cmd run start
 
 The native shell and packaging scripts live in `desktop/package.json` and require the `desktop/node_modules` dependencies.
 
-Electron is currently pinned to the 37.x line because Electron 43's installer hit a Windows ARM64 native extraction issue in this workspace.
+Electron stays on the patched 39.8.5+ line for now because Electron 43's installer hit a Windows ARM64 native extraction issue in this workspace. Re-test Windows ARM64 packaging before the next major upgrade.
 
 The packaging commands use the version-controlled build-resources/icon.ico. Regenerate it only when allobot.svg changes:
 

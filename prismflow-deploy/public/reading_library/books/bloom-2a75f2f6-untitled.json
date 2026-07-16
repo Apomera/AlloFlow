@@ -1,0 +1,180 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-2a75f2f6-untitled",
+  "title": "ဖိုးတားအိူည် ကေးစူးဒါင်းခည်း",
+  "description": "လော်င်ဖိုးတားဆမားဒေဲႈဒါ်ႈကျောႈ ကေးစူးဒါင်း။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RBTT & NTC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/CDXFDH9psC"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f1.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f11.jpg",
+      "text": "ဖိုးတားဒီး အန်းမိုႈကော်န်းစော်င်းအူချှေႈဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi196c6d69-b424-4a1d-9de5-ea8f8a0e8e72.mp3",
+          "dur": 3.749637
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f2.jpg",
+      "text": "ဖိုးတားဒီး အန်းမေဲႈစံမ့်အရာင်ပံင်ကနိုက် ကော်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fb848b7cb-d5fd-4557-8a2c-aa62bb8917dd.mp3",
+          "dur": 4.245963
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f32.jpg",
+      "text": "ဖိုးတားဒီး အန်းမေဲႈစံမ့်ခံဝ်မူန်းစာနံင်ဟိုန်းအန်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fbc76fe24-6170-40a9-8a57-e7017fc47824.mp3",
+          "dur": 4.141473
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f42.jpg",
+      "text": "ဖိုးတားဒီး တေဲႈဒိူည်းဟာဝ်းစံမ့်အရာင်အန်းကာည်းခံဝ်မူန်းအန်း ပါ့်စော်င်း ကော်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi4e5aca22-dd3c-4222-9db7-b9fb7d7254de.mp3",
+          "dur": 5.552086
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f5.jpg",
+      "text": "ဖိုးတားဒီး အန်းဒဲႈစံမ့်ဘံဝ်ဖီုင်းအန်းကဲကနိုက်အရာင်အန်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fd500b2a1-bd77-41f8-baf1-feef0084a8c5.mp3",
+          "dur": 4.414618
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f62.jpg",
+      "text": "ဖိုးတားဒီး အန်းကဆာင်းဒဲႈစံမ့်ဘံဝ်ဖီုင်းအန်းကဲဟိုမ်း ခံဝ်မူန်းအန်းဒီး။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2feadb167c-6287-4bf2-9c4b-e9269668ad1c.mp3",
+          "dur": 4.728082
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f7.jpg",
+      "text": "ဘံဝ်ဖီုင်းအန်းကဲကလံက်စီ ကနိုက်ဖာ်ႈအရာင်အန်း စီအူန်းအူန်းဖာ်ႈဘာည်းဇေဲန်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi74fc19ab-3d46-4cf9-9cb6-a9f7f866635a.mp3",
+          "dur": 6.321524
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f82.jpg",
+      "text": "ဘံဝ်ဖီုင်းအန်းကဲကလံက်စီ ဟိုမ်းဖာ်ႈခံဝ်မူန်းအန်း စီလည်လေဲႈႎီးဟာဝ်းဘာည်းဇေဲန်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fd9e1aa94-6535-4f82-973a-6ec01587d362.mp3",
+          "dur": 5.720718
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f9.jpg",
+      "text": "ဘံဝ်ဖီုင်းအန်းကဲကလံက်စီ ဂေါႇကဲဘိူန်းလာ်ကနိုက်အရာင်အန်း ကဲစီဒါ်ႈ“ကေးစူးဒါင်းခည်းနာ်ႏ ဖိုးတား။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi467969e8-306b-4f44-9b73-2ef84b265958.mp3",
+          "dur": 7.732112
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f10.jpg",
+      "text": "ဘံဝ်ဖီုင်းအန်းကဲကလံက်စီ ဟိုမ်းဖာ်ႈခံဝ်မူန်းအန်း စီဒါ်ႈ “ကေးစူးဒါင်းခည်းနာ်ႏ ဖိုးတား။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi8601e6df-fcba-49d5-aa0e-3e004b9dfb1e.mp3",
+          "dur": 6.034182
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f111.jpg",
+      "text": "ဆာ်ဘံဝ်ဖီုင်းအန်းကဲဒါ်ႈ ကေးစူးဒါင်းဘာည်းဇေဲန်း ဖိုးတားဒီးမာ် ခိုည်းပေါႇအခည်းဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi6fadf24a-ba1b-4bfb-a1b0-5f38b985cb28.mp3",
+          "dur": 6.034182
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f12.jpg",
+      "text": "စံင်နည်ဆာ်အီးရေဲန်းဒဲႈအီးပေန်အီးပဲန်းတာ့်အဲ၊ အဲနံင်လိုဒါ်ႈ “ကေးစူးဒါင်းခည်းနာ်ႏ”အန်းဟည်နာ်ႇဟာဝ်း ဘာည်းဇေဲန်းဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fc8ffb2da-9e7d-4ff9-96d5-8ae5b221ff20.mp3",
+          "dur": 8.332918
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2f13.jpg",
+      "text": "ဖိုးတားစီဒါ်ႈဒဲ့ဒဲ့တံင်မိုည်ႇအန်း “ကေးစူးဒါင်းခည်းနာ်ႏ။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2a75f2f6-ddb1-43cc-846b-0a9cf5c8d88d%2f%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba+%e1%80%80%e1%80%b1%e1%80%b8%e1%80%85%e1%80%b0%e1%80%b8%e1%80%92%e1%80%ab%e1%80%84%e1%80%ba%e1%80%b8%e1%80%81%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fa8bbad40-189b-45a8-98a6-3cf2c80f08e3.mp3",
+          "dur": 4.623594
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 13,
+    "words": 41
+  }
+}

@@ -3873,12 +3873,14 @@
         });
         created.push(asset);
       }
+      asset.proceduralVoiceDefault = ogClone(proceduralVoice);
       asset.proceduralVoice = proceduralVoice;
       pad.assetId = asset.id;
       pad.engine = ogSafeString(slot.engine, pad.engine || 'sample');
       pad.name = asset.name;
       pad.gain = slot.gain == null ? pad.gain : ogClamp(slot.gain, 0, 1.5, pad.gain || 0.9);
       pad.pitch = slot.pitch == null ? pad.pitch || 0 : ogClamp(slot.pitch, -24, 24, 0);
+      pad.proceduralVoiceDefault = ogClone(asset.proceduralVoiceDefault || proceduralVoice);
       pad.proceduralVoice = ogClone(proceduralVoice);
       if (Object.prototype.hasOwnProperty.call(slot, 'chokeGroup')) pad.chokeGroup = slot.chokeGroup;
       else if (slot.engine === 'hihat' || slot.engine === 'openhat') pad.chokeGroup = 'hat';
@@ -3898,6 +3900,75 @@
     };
   }
 
+  function ogResolvePadProceduralVoiceDefault(project, trackId, padId) {
+    var pad = ogFindPad(project, trackId, padId);
+    if (!pad) throw new Error('OpenGroove: pad not found');
+    var asset = pad.assetId ? ogFindAsset(project, pad.assetId) : null;
+    var current = pad.proceduralVoice || (asset && asset.proceduralVoice) || {};
+    var base = pad.proceduralVoiceDefault || (asset && asset.proceduralVoiceDefault) || null;
+    var kitId = base && base.kitId || current && current.kitId;
+    if (!base && kitId) {
+      var kit = ogGetFactorySampleKit(kitId);
+      if (kit) {
+        var slot = (kit.pads || []).filter(function (item) { return item.padId === padId; })[0] || {};
+        base = Object.assign({}, kit.voice || {}, slot.voice || {}, { kitId: kit.id, kitName: kit.name });
+      }
+    }
+    if (!base) base = current;
+    return ogNormalizeProceduralVoice(base || {});
+  }
+
+  function ogSetPadProceduralVoice(project, trackId, padId, updates) {
+    updates = updates || {};
+    var pad = ogFindPad(project, trackId, padId);
+    if (!pad) throw new Error('OpenGroove: pad not found');
+    var asset = pad.assetId ? ogFindAsset(project, pad.assetId) : null;
+    var defaultVoice = ogResolvePadProceduralVoiceDefault(project, trackId, padId);
+    if (!pad.proceduralVoiceDefault) pad.proceduralVoiceDefault = ogClone(defaultVoice);
+    if (asset && asset.mimeType === 'audio/procedural' && !asset.proceduralVoiceDefault) asset.proceduralVoiceDefault = ogClone(defaultVoice);
+    var base = pad.proceduralVoice || (asset && asset.proceduralVoice) || defaultVoice || {};
+    pad.proceduralVoice = ogNormalizeProceduralVoice(Object.assign({}, base, updates));
+    if (asset && asset.mimeType === 'audio/procedural') asset.proceduralVoice = ogClone(pad.proceduralVoice);
+    return pad.proceduralVoice;
+  }
+
+  function ogResetPadProceduralVoice(project, trackId, padId) {
+    var pad = ogFindPad(project, trackId, padId);
+    if (!pad) throw new Error('OpenGroove: pad not found');
+    var asset = pad.assetId ? ogFindAsset(project, pad.assetId) : null;
+    var resetVoice = ogResolvePadProceduralVoiceDefault(project, trackId, padId);
+    pad.proceduralVoiceDefault = ogClone(resetVoice);
+    pad.proceduralVoice = ogClone(resetVoice);
+    if (asset && asset.mimeType === 'audio/procedural') {
+      asset.proceduralVoiceDefault = ogClone(resetVoice);
+      asset.proceduralVoice = ogClone(resetVoice);
+    }
+    return pad.proceduralVoice;
+  }
+
+  function ogRandomizePadProceduralVoice(project, trackId, padId, options) {
+    options = options || {};
+    var pad = ogFindPad(project, trackId, padId);
+    if (!pad) throw new Error('OpenGroove: pad not found');
+    var asset = pad.assetId ? ogFindAsset(project, pad.assetId) : null;
+    var base = pad.proceduralVoice || (asset && asset.proceduralVoice) || ogResolvePadProceduralVoiceDefault(project, trackId, padId);
+    var amount = ogClamp(options.amount, 0, 1, 0.34);
+    var seed = ogSafeString(options.seed, (project && project.title || 'Open Groove') + ':' + trackId + ':' + padId + ':' + (project && project.updatedAt || 'voice'));
+    function varied(key, min, max, fallback) {
+      var center = ogClamp(base && base[key], min, max, fallback);
+      var span = (max - min) * amount * 0.28;
+      var next = center + (ogSeededUnit(seed + ':' + key) * 2 - 1) * span;
+      return Math.round(ogClamp(next, min, max, fallback) * 1000) / 1000;
+    }
+    return ogSetPadProceduralVoice(project, trackId, padId, {
+      pitch: varied('pitch', 0.5, 2, 1),
+      brightness: varied('brightness', 0.35, 2.4, 1),
+      decay: varied('decay', 0.25, 2.5, 1),
+      noise: varied('noise', 0, 2, 1),
+      click: varied('click', 0, 2, 1),
+      body: varied('body', 0, 2, 1)
+    });
+  }
   function ogNormalizeStemMode(mode) {
     var key = String(mode || 'four').toLowerCase();
     if (key === '2' || key === '2stem' || key === '2stems' || key === 'two') return 'two';
@@ -4109,6 +4180,7 @@
     pad.assetId = asset.id;
     pad.engine = 'sample';
     pad.name = asset.name;
+    pad.proceduralVoiceDefault = asset.proceduralVoiceDefault ? ogClone(asset.proceduralVoiceDefault) : asset.proceduralVoice ? ogClone(asset.proceduralVoice) : null;
     pad.proceduralVoice = asset.proceduralVoice ? ogClone(asset.proceduralVoice) : null;
     return pad;
   }
@@ -4150,6 +4222,7 @@
       pad.assetId = asset.id;
       pad.engine = 'sample';
       pad.name = asset.name + ' ' + (i + 1);
+      pad.proceduralVoiceDefault = asset.proceduralVoiceDefault ? ogClone(asset.proceduralVoiceDefault) : asset.proceduralVoice ? ogClone(asset.proceduralVoice) : null;
       pad.proceduralVoice = asset.proceduralVoice ? ogClone(asset.proceduralVoice) : null;
       pad.sampleRegion = ogNormalizeSampleRegion(asset, {
         startSec: sliceStart,
@@ -4554,7 +4627,12 @@
     ogRegisterUserRecording: ogRegisterUserRecording,
     ogListFactorySampleKits: ogListFactorySampleKits,
     ogGetFactorySampleKit: ogGetFactorySampleKit,
+    ogNormalizeProceduralVoice: ogNormalizeProceduralVoice,
     ogInstallFactorySampleKit: ogInstallFactorySampleKit,
+    ogSetPadProceduralVoice: ogSetPadProceduralVoice,
+    ogResolvePadProceduralVoiceDefault: ogResolvePadProceduralVoiceDefault,
+    ogResetPadProceduralVoice: ogResetPadProceduralVoice,
+    ogRandomizePadProceduralVoice: ogRandomizePadProceduralVoice,
     ogEmbedAssetData: ogEmbedAssetData,
     ogAssignAssetToPad: ogAssignAssetToPad,
     ogSetPadSampleRegion: ogSetPadSampleRegion,

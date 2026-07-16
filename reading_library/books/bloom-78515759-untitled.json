@@ -1,0 +1,242 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-78515759-untitled",
+  "title": "ກັບຄືນໄປໂຮງຮຽນ",
+  "description": "Alphabet book with school theme",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Bloom Lao"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Lao",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/oRvBirvg19"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fKids+Back+to+School.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fSchool2.jpg",
+      "text": "ໂຮງຮຽນ"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fStudent.jpg",
+      "text": "ນັກຮຽນ"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fClassroom-wooden+floor.jpg",
+      "text": "ຫ້ອງຮຽນ"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fTeacher+in+classroom.jpg",
+      "text": "ນາຍຄູ"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fClassmates.jpg",
+      "text": "ເພື່ອນຮ່ວມຫ້ອງ"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fBlackboard.jpg",
+      "text": "ກະດານດໍາ"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fDesk.jpg",
+      "text": "ໂຕະ"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fChair+2.jpg",
+      "text": "ຕັ່ງ"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fClock4.jpg",
+      "text": "ໂມງ"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fPosters-PNG+animals.jpg",
+      "text": "ໂປສເຕີ"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fMap.jpg",
+      "text": "ແຜ່ນທີ່"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fBackpack.jpg",
+      "text": "ຖົງເປ້"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fBook2.jpg",
+      "text": "ປື້ມ"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fTextbooks2.jpg",
+      "text": "ປື້ມບົດຮຽນ"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fNotebook.jpg",
+      "text": "ປື້ມບັນທຶກ"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fPencil2.jpg",
+      "text": "ສໍດໍາ"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fEraser.jpg",
+      "text": "ຢາງລຶບ"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fSharpener.jpg",
+      "text": "ໂຮງແຫຼມສໍ"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fPen.jpg",
+      "text": "ບິກ"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fMarkers.jpg",
+      "text": "ບິກເພີດ"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fPaintbrush.jpg",
+      "text": "ຟອຍທາສີ"
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fCrayon4.jpg",
+      "text": "ສີທຽນ"
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fChalk-three+colors.jpg",
+      "text": "ສໍຂາວ"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fRuler2.jpg",
+      "text": "ບັນທັດ"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fScissors.jpg",
+      "text": "ມີດຕັດ"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fGlue.jpg",
+      "text": "ກາວ"
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fStapler.jpg",
+      "text": "ກະລັບເພີ"
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fCalculator+2.jpg",
+      "text": "ເຄື່ອງຄິດເລກ"
+    },
+    {
+      "n": 29,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fComputer.jpg",
+      "text": "ຄອມພິວເຕີ"
+    },
+    {
+      "n": 30,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fPaperclip2.jpg",
+      "text": "ຄຣິບເຈ້ຍ"
+    },
+    {
+      "n": 31,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fEnglish2.jpg",
+      "text": "ພາສາອັງກິດ"
+    },
+    {
+      "n": 32,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fReading4.jpg",
+      "text": "ການອ່ານ"
+    },
+    {
+      "n": 33,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fWriting2.jpg",
+      "text": "ການຂຽນ"
+    },
+    {
+      "n": 34,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fMath4.jpg",
+      "text": "ຄະນິດສາດ"
+    },
+    {
+      "n": 35,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fScience.jpg",
+      "text": "ວິທະຍາສາດ"
+    },
+    {
+      "n": 36,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fGeography.jpg",
+      "text": "ພູມສາດ"
+    },
+    {
+      "n": 37,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fHistory.jpg",
+      "text": "ປະຫວັດສາດ"
+    },
+    {
+      "n": 38,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fMusic.jpg",
+      "text": "ດົນຕຣີ"
+    },
+    {
+      "n": 39,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fArt4.jpg",
+      "text": "ແຕ້ມຮູບ"
+    },
+    {
+      "n": 40,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fPhysical+Ed2.jpg",
+      "text": "ພະລະສຶກສາ"
+    },
+    {
+      "n": 41,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/oRvBirvg19%2f1752649369906%2f%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%ba%84%e0%ba%b7%e0%ba%99%e0%bb%84%e0%ba%9b%e0%bb%82%e0%ba%ae%e0%ba%87%e0%ba%ae%e0%ba%bd%e0%ba%99%2fPlayground1.jpg",
+      "text": "ສະໜາມເດັກ"
+    }
+  ],
+  "stats": {
+    "pages": 41,
+    "words": 41
+  }
+}

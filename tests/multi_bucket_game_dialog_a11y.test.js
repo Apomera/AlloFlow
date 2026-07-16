@@ -18,11 +18,12 @@ describe('Multi-Bucket Sort dialog accessibility', () => {
     expect(source).toMatch(/event\.key !== ["']Tab["']/);
   });
 
-  it('retains keyboard placement and replay focus return', () => {
+  it('retains native keyboard placement and origin focus return', () => {
     const source = files[0][1];
-    expect(source).toContain('handleItemKeyDown');
+    expect(source).toContain('data-multi-bucket-item-id');
     expect(source).toContain('handleKeyboardMove');
-    expect(source).toContain('gameContainerRef.current?.focus()');
+    expect(source).toContain('focusMultiBucketItem');
+    expect(source).toContain('cancelMultiBucketSelection');
   });
 
   it('uses unique refs and 44 CSS-pixel actions', () => {

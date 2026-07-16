@@ -1,0 +1,78 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d4c391f7-ico-udashaka-ko-bagukorera-ntugikorere-uwundi",
+  "title": "Ico udashaka ko bagukorera ntugikorere uwundi",
+  "description": "A Kirundi picture book from Bloom Library.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "FH Burundi"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "FH Burundi",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ZXLGvubVTf"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2fd4c391f7-0d93-4a67-b545-0e02d58b4e92%2fIco+udashaka+ko+bagukorera+ntugikorere+uwundi%2faor_Pc15.png",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2fd4c391f7-0d93-4a67-b545-0e02d58b4e92%2fIco+udashaka+ko+bagukorera+ntugikorere+uwundi%2faor_S-1-12.png",
+      "text": "Kanyana ni umwana yavuka mu muryango ubayabaye. Abavyeyi biwe bari abirimizi kandi bafungura bibagoye.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2fd4c391f7-0d93-4a67-b545-0e02d58b4e92%2fIco+udashaka+ko+bagukorera+ntugikorere+uwundi%2faudio%2fd8e50af4-b6a1-4aa4-a93d-b8141489fff8.mp3",
+          "dur": 4.336252
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2fd4c391f7-0d93-4a67-b545-0e02d58b4e92%2fIco+udashaka+ko+bagukorera+ntugikorere+uwundi%2faor_7N.png",
+      "text": "Amaze kuja kw'ishure, yahahuriye n'abandi bana bavuka mu miryango yifise"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2fd4c391f7-0d93-4a67-b545-0e02d58b4e92%2fIco+udashaka+ko+bagukorera+ntugikorere+uwundi%2faor_Pmq5.png",
+      "text": "Abo bana baramusuzugura cane kuko yafungura indya baha abatishoboye ku mashure, akambara nabi, mu gutaha naho akagenda n'amaguru."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2fd4c391f7-0d93-4a67-b545-0e02d58b4e92%2fIco+udashaka+ko+bagukorera+ntugikorere+uwundi%2faor_D-1-43.png",
+      "text": "Umusi umwe, bariko baramucokora nkuko bama, umwe amubwira amucurangiza ati: \"Kanyana wabonye irya modoka yakatabonetse? Irya niyo intahana, rero uzoze uremera nkusuzugure kuko wewe utaha n'amaguru. Nari kukwunguruza ariko wewe woducafuriza imodoka\"."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Erega iyo modoka yarimwo nyina wa wa mwana maze yumva agasuzuguro ku mwana wiwe bimutera agahinda amukankamira amubwira ati: Kirazira kikaziririzwa guturubika uwundi mwana ngo nuko uronka ico ushaka. Kuva ubu mbere, uzoza urafungura nawe ivyo baha abatishoboye, vyongeye sinzongera kuza kugutora n'imodoka, uzotaha n'amaguru. Ariko wa mwana we akibwirako nyina wiwe atavyo yokora namba."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "Erega, ivyo nyina yamubwiye vyabaye impamo. Wa mwana atangura kuja kw'ishure n'amaguru agataha uko nyene. Ntibitevye, nawe batanguye kumutwenga nkuko yabigirira Mutoni, gushika naho yama ariko ararira."
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Erega vyarangiye wa mwana abaye umugenzi pfampfe wa Kanyana, kuko niwe basangira bakanatahana."
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 169
+  }
+}

@@ -13,6 +13,8 @@
  * Icons: read from window globals (each falls back to noop). Avoids tight
  * coupling to the parent app's lucide-react imports.
  */
+const _headerUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
+
 function HeaderBar(props) {
   const noop = () => null;
   const AlertCircle = window.AlertCircle || noop;
@@ -82,6 +84,7 @@ function HeaderBar(props) {
     GlobalMuteButton, KOKORO_VOICES, UiLanguageSelector, _isCanvasEnv, activeSessionCode,
     addToast, ai, appId, currentLevelXP,
     customExportCSS, createHomeworkAssignmentLink, dismissHelpOnboarding,
+    homeworkExpiryDays, openRecentQrShares, recentQrShareCount, setHomeworkExpiryDays,
     focusNarrationEnabled, generatedContent, globalLevel, globalProgress, globalXPNext,
     handleCloudToggleClick, handleExportIMS, handleExportQTI, handleRestoreView,
     handleSetActiveViewToDashboard, handleSetIsJoinPopoverOpenToFalse,
@@ -112,31 +115,13 @@ function HeaderBar(props) {
 
   const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
   const _setupMenuRef = React.useRef(null);
-  const _setupMenuReturnRef = React.useRef(null);
-  // Setup-path dialog a11y: trap focus inside the dialog, close on Escape from anywhere
-  // (not just the backdrop), and restore focus to the opener — matching the full-lesson
-  // modal pattern in the Guided banner.
-  React.useEffect(() => {
-    if (!showSetupPathMenu) return;
-    _setupMenuReturnRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
-    const root = _setupMenuRef.current;
-    try { if (root) { const f = root.querySelector('button, a[href], [tabindex]:not([tabindex="-1"])'); (f || root).focus(); } } catch (_) {}
-    const onKey = (e) => {
-      if (e.key === 'Escape') { e.stopPropagation(); setShowSetupPathMenu(false); return; }
-      if (e.key === 'Tab' && root) {
-        const items = root.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])');
-        if (!items.length) return;
-        const first = items[0], last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); try { last.focus(); } catch (_) {} }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); try { first.focus(); } catch (_) {} }
-      }
-    };
-    document.addEventListener('keydown', onKey, true);
-    return () => {
-      document.removeEventListener('keydown', onKey, true);
-      try { const r = _setupMenuReturnRef.current; if (r && r.focus && document.contains(r)) r.focus(); } catch (_) {}
-    };
-  }, [showSetupPathMenu]);
+  const _textSettingsRef = React.useRef(null);
+  const _voiceSettingsRef = React.useRef(null);
+  const _joinPopoverRef = React.useRef(null);
+  _headerUseFocusTrap(_setupMenuRef, showSetupPathMenu, () => setShowSetupPathMenu(false));
+  _headerUseFocusTrap(_textSettingsRef, showTextSettings, handleSetShowTextSettingsToFalse);
+  _headerUseFocusTrap(_voiceSettingsRef, showVoiceSettings, handleSetShowVoiceSettingsToFalse);
+  _headerUseFocusTrap(_joinPopoverRef, isJoinPopoverOpen, handleSetIsJoinPopoverOpenToFalse);
   const openQuickStartSetup = () => {
     try { if (safeRemoveItem) safeRemoveItem('allo_wizard_completed'); } catch (_) {}
     setShowSetupPathMenu(false);
@@ -210,7 +195,7 @@ function HeaderBar(props) {
             </div>
             <div className="flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0">
                 <div className="w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0">
-                    <button
+                    <button type="button"
                         onClick={handleSetShowXPModalToTrue}
                         data-help-key="xp_modal_trigger"
                         className={`relative z-[60] flex items-center gap-2 px-3 py-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all hover:scale-105 active:scale-95 cursor-pointer ${theme === 'contrast' ? 'border-yellow-400 bg-black text-yellow-400' : 'bg-yellow-400/20 border-yellow-200/50 text-yellow-100 hover:bg-yellow-400/30'}`}
@@ -235,7 +220,7 @@ function HeaderBar(props) {
                     </button>
                     <div id="tour-header-settings" className={`relative z-[60] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                         <GlobalMuteButton className={`px-3 py-2 rounded-xl transition-colors ${theme === 'light' ? 'bg-white/10 hover:bg-white/20 text-white' : theme === 'contrast' ? 'bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold' : 'hover:bg-white/10 text-white'}`} />
-                        <button
+                        <button type="button"
                             onClick={() => setShowReadThisPage(prev => !prev)}
                             data-help-key="read_this_page_toggle"
                             className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${showReadThisPage || focusNarrationEnabled ? 'ring-2 ring-purple-400 !bg-purple-600 !text-white shadow-[0_0_10px_rgba(147,51,234,0.5)]' : ''} ${theme === 'light' ? 'bg-white/10 hover:bg-white/20 text-white' : theme === 'contrast' ? 'bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold' : 'hover:bg-white/10 text-white'}`}
@@ -245,12 +230,14 @@ function HeaderBar(props) {
                             <Ear size={18} aria-hidden="true" className={showReadThisPage ? 'animate-pulse' : ''} />
                         </button>
                         <div className="relative">
-                            <button
+                            <button type="button"
                                 onClick={() => { setShowTextSettings(!showTextSettings); setShowVoiceSettings(false); }}
                                 data-help-key="header_settings_text"
                                 className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${theme === 'light' ? 'bg-white/10 hover:bg-white/20 text-white' : theme === 'contrast' ? 'bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold' : 'hover:bg-white/10 text-white'}`}
                                 title={t('immersive.settings_label')}
                                 aria-label={t('immersive.settings_label')}
+                                aria-haspopup="dialog"
+                                aria-expanded={showTextSettings}
                             >
                                 <Type size={18} aria-hidden="true"/>
                                 <span className="text-xs font-bold hidden xl:inline">{t('immersive.label_text')}</span>
@@ -258,12 +245,15 @@ function HeaderBar(props) {
                             </button>
                             {showTextSettings && (
                                 <>
-                                    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[10000]" onClick={handleSetShowTextSettingsToFalse}></div>
-                                    <div className={`fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
+                                    <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowTextSettingsToFalse}></div>
+                                    <div ref={_textSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-text-settings-title" className={`fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
                                         <div className="space-y-5">
                                             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
-                                                <h4 className="font-bold text-sm">{t('settings.text.header')}</h4>
-                                                <button onClick={resetFontSize} data-help-key="header_settings_text_reset" className="text-[11px] text-indigo-500 hover:text-indigo-700 font-bold flex items-center gap-1"><RefreshCw size={10}/> {t('common.reset')}</button>
+                                                <h4 id="header-text-settings-title" className="font-bold text-sm">{t('settings.text.header')}</h4>
+                                                <div className="flex items-center gap-2">
+                                                    <button type="button" onClick={resetFontSize} data-help-key="header_settings_text_reset" className="text-[11px] text-indigo-500 hover:text-indigo-700 font-bold flex items-center gap-1"><RefreshCw size={10}/> {t('common.reset')}</button>
+                                                    <button type="button" onClick={handleSetShowTextSettingsToFalse} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={t('common.close') || 'Close text settings'}>&times;</button>
+                                                </div>
                                             </div>
                                             <div className="space-y-2">
                                                 <label className={`text-xs font-bold flex items-center gap-1 ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>{t('settings.text.font_family')}</label>
@@ -281,7 +271,7 @@ function HeaderBar(props) {
                                                     {t('settings.text.font_preview')} {t('settings.text.font_preview_sample')}
                                                 </p>
                                             </div>
-                                            <button
+                                            <button type="button"
                                                 aria-label={t('common.toggle_focus_mode')}
                                                 onClick={handleToggleFocusMode}
                                                 data-help-key="header_settings_text_bionic"
@@ -306,7 +296,7 @@ function HeaderBar(props) {
                                                     <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{baseFontSize}px</span>
                                                 </div>
                                             <div className="flex items-center gap-3" data-help-key="header_settings_text_size">
-                                                    <button aria-label={t('common.minimize')} onClick={() => { setBaseFontSize(Math.max(12, baseFontSize - 1)); setSliderFontSize(Math.max(12, baseFontSize - 1)); }} className={`p-2.5 rounded-lg transition-colors ${theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-slate-700'}`}><Minimize size={16}/></button>
+                                                    <button type="button" aria-label={t('common.minimize')} onClick={() => { setBaseFontSize(Math.max(12, baseFontSize - 1)); setSliderFontSize(Math.max(12, baseFontSize - 1)); }} className={`p-2.5 rounded-lg transition-colors ${theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-slate-700'}`}><Minimize size={16}/></button>
                                                     <input aria-label={t('common.adjust_slider_font_size')}
                                                         type="range" min="12" max="24" step="1"
                                                         value={sliderFontSize}
@@ -315,7 +305,7 @@ function HeaderBar(props) {
                                                         onTouchEnd={() => setBaseFontSize(sliderFontSize)}
                                                         className="flex-grow h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                                     />
-                                                    <button aria-label={t('common.maximize')} onClick={() => { setBaseFontSize(Math.min(24, baseFontSize + 1)); setSliderFontSize(Math.min(24, baseFontSize + 1)); }} className={`p-2.5 rounded-lg transition-colors ${theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-slate-700'}`}><Maximize size={16}/></button>
+                                                    <button type="button" aria-label={t('common.maximize')} onClick={() => { setBaseFontSize(Math.min(24, baseFontSize + 1)); setSliderFontSize(Math.min(24, baseFontSize + 1)); }} className={`p-2.5 rounded-lg transition-colors ${theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-slate-700'}`}><Maximize size={16}/></button>
                                                 </div>
                                             </div>
                                             <div className="border-t border-slate-100 dark:border-slate-700 pt-3 mt-3">
@@ -364,7 +354,7 @@ function HeaderBar(props) {
                                                         { id: 'dyslexia', label: 'Easy Read', bg: '#faf8ef', fg: '#1e293b', border: '#e8e0c8', emoji: '🔤' },
                                                     ].map(function(th) {
                                                         var isActive = readingTheme === th.id;
-                                                        return <button key={th.id}
+                                                        return <button type="button" key={th.id}
                                                             role="radio" aria-checked={isActive} aria-label={th.label + ' theme'}
                                                             onClick={() => setReadingTheme(th.id)}
                                                             title={th.label}
@@ -383,12 +373,14 @@ function HeaderBar(props) {
                             )}
                         </div>
                         <div className="relative">
-                            <button
+                            <button type="button"
                                 onClick={() => { setShowVoiceSettings(!showVoiceSettings); setShowTextSettings(false); }}
                                 data-help-key="header_settings_voice"
                                 className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${theme === 'light' ? 'bg-white/10 hover:bg-white/20 text-white' : theme === 'contrast' ? 'bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold' : 'hover:bg-white/10 text-white'}`}
                                 title={t('settings.voice.label')}
                                 aria-label={t('settings.voice.label')}
+                                aria-haspopup="dialog"
+                                aria-expanded={showVoiceSettings}
                             >
                                 <Headphones size={18} aria-hidden="true"/>
                                 <span className="text-xs font-bold hidden xl:inline">{t('immersive.label_voice')}</span>
@@ -396,11 +388,12 @@ function HeaderBar(props) {
                             </button>
                             {showVoiceSettings && (
                                 <>
-                                    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[10000]" onClick={handleSetShowVoiceSettingsToFalse}></div>
-                                    <div className={`fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
+                                    <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowVoiceSettingsToFalse}></div>
+                                    <div ref={_voiceSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-voice-settings-title" className={`fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
                                         <div className="space-y-3">
                                             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
-                                                <h4 className="font-bold text-sm">{t('settings.voice.label')}</h4>
+                                                <h4 id="header-voice-settings-title" className="font-bold text-sm">{t('settings.voice.label')}</h4>
+                                                <button type="button" onClick={handleSetShowVoiceSettingsToFalse} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={t('common.close') || 'Close voice settings'}>&times;</button>
                                             </div>
                                             <div>
                                                 <select aria-label={t('common.selection')}
@@ -549,7 +542,7 @@ function HeaderBar(props) {
                             )}
                         </div>
                         <div className="w-px h-6 bg-white/20 mx-1"></div>
-                        <button
+                        <button type="button"
                           onClick={handleToggleDisableAnimations}
                           data-help-key="header_settings_anim"
                           className={`p-2 rounded-xl transition-all flex items-center gap-2 ${disableAnimations ? 'bg-red-700 text-white shadow-lg' : 'hover:bg-white/10 text-white/80 hover:text-white'}`}
@@ -558,7 +551,7 @@ function HeaderBar(props) {
                         >
                           {disableAnimations ? <ZapOff size={20} aria-hidden="true" /> : <Zap size={20} aria-hidden="true" />}
                         </button>
-                        <button
+                        <button type="button"
                           onClick={toggleTheme}
                           data-help-key="header_settings_theme"
                           className={`p-2 rounded-xl transition-all flex items-center gap-2 ${
@@ -573,7 +566,7 @@ function HeaderBar(props) {
                           {theme === 'dark' && <Moon size={20} aria-hidden="true" />}
                           {theme === 'contrast' && <Eye size={20} aria-hidden="true" />}
                         </button>
-                        <button
+                        <button type="button"
                           onClick={toggleOverlay}
                           data-help-key="header_settings_overlay"
                           className={`p-2 rounded-xl transition-all flex items-center gap-2 ${colorOverlay !== 'none' ? 'bg-white text-indigo-900 shadow-lg' : 'hover:bg-white/10 text-white/80 hover:text-white'}`}
@@ -585,7 +578,7 @@ function HeaderBar(props) {
                     </div>
                     <div id="tour-header-tools" className={`relative z-40 flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                         {!isStudentLinkMode && !isIndependentMode && (
-                            <button
+                            <button type="button"
                               onClick={() => {
                                   if (!isTeacherMode && APP_CONFIG._cfg_validation_key) {
                                       setPendingRole('toggle_view');
@@ -604,7 +597,7 @@ function HeaderBar(props) {
                         )}
                         {true /* all modes see dashboard */ && (
                             <>
-                                <button
+                                <button type="button"
                                   onClick={handleSetActiveViewToDashboard}
                                   data-help-key="header_dashboard"
                                   className={`p-2 rounded-xl transition-all flex items-center gap-2 ${activeView === 'dashboard' ? 'bg-white text-indigo-900 shadow-lg' : 'hover:bg-white/10 text-white/80 hover:text-white'}`}
@@ -614,7 +607,7 @@ function HeaderBar(props) {
                                   <Layout size={20} />
                                 </button>
                                 {latestLessonPlan && (
-                                    <button
+                                    <button type="button"
                                         onClick={() => handleRestoreView(latestLessonPlan)}
                                         data-help-key="header_jump_lesson"
                                         className={`p-2 rounded-xl transition-all flex items-center gap-2 ${generatedContent?.id === latestLessonPlan.id ? 'bg-cyan-100 text-cyan-800 shadow-lg ring-2 ring-cyan-500' : 'hover:bg-white/10 text-white/80 hover:text-white'}`}
@@ -625,7 +618,7 @@ function HeaderBar(props) {
                                     </button>
                                 )}
                                 {notebookEntryCount > 0 && setShowNotebook && (
-                                    <button
+                                    <button type="button"
                                         onClick={() => setShowNotebook(true)}
                                         data-help-key="header_open_notebook"
                                         className="p-2 rounded-xl transition-all flex items-center gap-1.5 hover:bg-white/10 text-white/80 hover:text-white"
@@ -641,7 +634,7 @@ function HeaderBar(props) {
                     </div>
                     <div id="tour-header-utils" className={`relative z-[100] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 sm:gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                         {isTeacherMode && (
-                            <button
+                            <button type="button"
                                 onClick={handleSetShowHintsModalToTrue}
                                 data-help-key="hints_recall"
                                 className="p-2 rounded-xl hover:bg-white/10 text-white/70 hover:text-white transition-colors relative"
@@ -654,7 +647,7 @@ function HeaderBar(props) {
                                 )}
                             </button>
                         )}
-                        <button
+                        <button type="button"
                             onClick={handleToggleIsBotVisible}
                             data-help-key="header_bot_toggle"
                             className={`p-2 rounded-xl transition-colors ${isBotVisible ? 'bg-indigo-500 text-white shadow-md' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
@@ -667,7 +660,7 @@ function HeaderBar(props) {
                             </div>
                         </button>
                         <div className="relative">
-                        <button
+                        <button type="button"
                             data-help-ignore="true"
                             onClick={handleToggleIsHelpMode}
                             className={`p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md animate-pulse' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
@@ -677,18 +670,20 @@ function HeaderBar(props) {
                             <CircleHelp size={20} />
                         </button>
                         {showHelpOnboarding && !isHelpMode && (
-                            <div
+                            <button
+                                type="button"
                                 onClick={dismissHelpOnboarding}
-                                className="absolute -bottom-14 right-0 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce z-[10999] whitespace-nowrap border-2 border-indigo-400"
+                                aria-label={t('common.dismiss') || 'Dismiss help tip'}
+                                className="absolute -bottom-14 right-0 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                                 style={{ minWidth: '160px', textAlign: 'center' }}
                             >
-                                <div className="absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400"></div>
-                                <span>💡 Click <strong>?</strong> anytime for help!</span>
-                            </div>
+                                <span aria-hidden="true" className="absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400"></span>
+                                <span><span aria-hidden="true">&#128161;</span> Click <strong>?</strong> anytime for help!</span>
+                            </button>
                         )}
                         </div>
                         {isTeacherMode && (
-                            <button
+                            <button type="button"
                                 onClick={handleCloudToggleClick}
                                 data-help-key="header_cloud_sync"
                                 className={`p-2 rounded-xl transition-colors ${isCloudSyncEnabled ? 'bg-green-700 text-white shadow-lg shadow-green-500/30' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
@@ -700,7 +695,7 @@ function HeaderBar(props) {
                         )}
                         {isTeacherMode && (
                             <>
-                            <button
+                            <button type="button"
                               onClick={() => { setRunTour(true); setTourStep(0); setSpotlightMessage(''); }}
                               data-help-key="header_tour_start"
                               className="p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
@@ -709,7 +704,7 @@ function HeaderBar(props) {
                             >
                               <MapIcon size={20} />
                             </button>
-                            <button
+                            <button type="button"
                               onClick={() => setShowSetupPathMenu(true)}
                               data-help-key="header_rerun_wizard"
                               className="p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
@@ -720,7 +715,7 @@ function HeaderBar(props) {
                             </button>
                             </>
                         )}
-                        <button
+                        <button type="button"
                           onClick={handleSetShowInfoModalToTrue}
                           data-help-key="header_about"
                           className="p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
@@ -747,7 +742,7 @@ function HeaderBar(props) {
                             Diagnostics); deploy shows the full provider/key/URL stack +
                             Model Diagnostics. */}
                         {isTeacherMode && (
-                        <button
+                        <button type="button"
                           onClick={() => setShowAIBackendModal(true)}
                           data-help-key="header_ai_backend"
                           className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider ${
@@ -763,7 +758,7 @@ function HeaderBar(props) {
                         </button>
                         )}
                         {isTeacherMode && (
-                        <button
+                        <button type="button"
                           onClick={() => {
                             if (APP_CONFIG._cfg_validation_key) {
                               setPendingRole('educator_hub');
@@ -782,7 +777,7 @@ function HeaderBar(props) {
                         </button>
                         )}
                         {isTeacherMode && setShowLearningHub && (
-                        <button
+                        <button type="button"
                           onClick={() => setShowLearningHub(true)}
                           data-help-key="header_learning_hub"
                           className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
@@ -794,7 +789,7 @@ function HeaderBar(props) {
                         </button>
                         )}
                         {isTeacherMode && !isIndependentMode && setBridgeSendOpen && (
-                        <button
+                        <button type="button"
                           onClick={() => setBridgeSendOpen(true)}
                           data-help-key="header_bridge"
                           className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
@@ -809,7 +804,7 @@ function HeaderBar(props) {
                         <div className="relative">
                             {isTeacherMode ? (
                                 !isIndependentMode && (<>
-                                <button
+                                <button type="button"
                                     aria-label={t('common.connect')}
                                     onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
                                     className={`px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border ${activeSessionCode ? 'bg-green-700 text-white border-green-400 animate-pulse' : 'bg-white/10 hover:bg-white/20 text-white border-white/10 hover:border-white/30'}`}
@@ -826,7 +821,7 @@ function HeaderBar(props) {
                                         <div className={`flex items-center gap-2 text-white px-3 py-1.5 rounded-lg text-xs font-bold border shadow-sm transition-colors ${sessionData ? 'bg-green-700 border-green-600' : 'bg-yellow-500 border-yellow-400'}`}>
                                             {sessionData ? <Wifi size={14} className="animate-pulse"/> : <RefreshCw size={14} className="animate-spin"/>}
                                             <span>{sessionData ? `Synced: ${activeSessionCode}` : `Connecting: ${activeSessionCode}`}</span>
-                                            <button
+                                            <button type="button"
                                                 aria-label={t('common.close')}
                                                 data-help-key="header_session_status"
                                                 onClick={() => {
@@ -845,17 +840,23 @@ function HeaderBar(props) {
                                         </div>
                                     ) : (
                                         <>
-                                            <button
+                                            <button type="button"
                                                 onClick={handleToggleIsJoinPopoverOpen}
                                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30"
                                                 data-help-key="header_session_join"
                                                 title={t('session.join_tooltip')}
+                                                aria-haspopup="dialog"
+                                                aria-expanded={isJoinPopoverOpen}
                                             >
                                                 <WifiOff size={14} /> <span className="hidden lg:inline">{t('session.join')}</span>
                                             </button>
                                             {isJoinPopoverOpen && (
-                                                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[100] animate-in fade-in zoom-in-95">
+                                                <div ref={_joinPopoverRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-join-session-title" className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 motion-reduce:animate-none">
                                                     <div className="space-y-2">
+                                                        <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                                                            <h2 id="header-join-session-title" className="text-sm font-black text-slate-800">{t('session.join')}</h2>
+                                                            <button type="button" onClick={handleSetIsJoinPopoverOpenToFalse} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={t('common.close') || 'Close join session'}>&times;</button>
+                                                        </div>
                                                         <div>
                                                             <label className="block text-[11px] font-bold text-slate-600 mb-1 uppercase">{t('session.host_id_optional')}</label>
                                                             <input aria-label={t('common.session_default_placeholder')}
@@ -879,7 +880,7 @@ function HeaderBar(props) {
                                                                     maxLength={5}
                                                                     className="w-full text-center font-mono font-bold text-lg border border-slate-400 rounded p-1 uppercase focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800"
                                                                 />
-                                                                <button
+                                                                <button type="button"
                                                                     aria-label={t('common.continue')}
                                                                     onClick={() => joinClassSession(joinCodeInput)}
                                                                     className="bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 transition-colors"
@@ -892,7 +893,7 @@ function HeaderBar(props) {
                                                 </div>
                                             )}
                                             {isJoinPopoverOpen && (
-                                                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={handleSetIsJoinPopoverOpenToFalse}></div>
+                                                <div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleSetIsJoinPopoverOpenToFalse}></div>
                                             )}
                                         </>
                                     )}
@@ -901,7 +902,7 @@ function HeaderBar(props) {
                         </div>
                         {isTeacherMode && (
                         <div className="relative">
-                            <button
+                            <button type="button"
                                 onClick={handleSetIsTranslateModalOpenToTrue}
                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 mr-2"
                                 title={t('header.translate_tooltip')}
@@ -909,7 +910,7 @@ function HeaderBar(props) {
                             >
                                 <Languages size={14} /> <span className="hidden lg:inline">{t('header.translate_button')}</span>
                             </button>
-                            <button
+                            <button type="button"
                                 aria-label={t('header.documents_menu_aria') || 'Documents menu'}
                                 aria-haspopup="menu"
                                 aria-expanded={showExportMenu}
@@ -929,10 +930,10 @@ function HeaderBar(props) {
                                     else if (e.key === 'Escape') { setShowExportMenu(false); document.querySelector('[data-help-key="header_export"]')?.focus(); }
                                   }} ref={(el) => { if (el) { const first = el.querySelector('[role="menuitem"]'); if (first) first.focus(); } }} className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl p-2 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 flex flex-col gap-1">
                                     <div className="text-xs font-black text-slate-800 px-2 py-1 flex items-center gap-1.5">{"\ud83d\udcc4"} Documents</div>
-                                    <button role="menuitem" onClick={() => openExportPreview('print')} className="w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mb-1">{"\ud83d\udee0\ufe0f"} Document Builder</button>
+                                    <button type="button" role="menuitem" onClick={() => openExportPreview('print')} className="w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mb-1">{"\ud83d\udee0\ufe0f"} Document Builder</button>
                                     {customExportCSS && <div className="text-[11px] text-green-600 font-medium px-2 mb-1">✓ Custom style active</div>}
                                     <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcc4"} Print & PDF</div>
-                                    <button role="menuitem"
+                                    <button type="button" role="menuitem"
                                         aria-label={t('header.open_doc_builder_pdf_aria') || 'Open Document Builder for PDF'}
                                         onClick={() => openExportPreview('print')}
                                         className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-green-50 text-green-700 text-xs font-bold transition-colors"
@@ -940,7 +941,7 @@ function HeaderBar(props) {
                                     >
                                         <FileDown size={14} /> PDF / {t('export_menu.print')}
                                     </button>
-                                    <button role="menuitem"
+                                    <button type="button" role="menuitem"
                                         onClick={() => openExportPreview('worksheet')}
                                         className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors"
                                         data-help-key="export_worksheet"
@@ -948,14 +949,14 @@ function HeaderBar(props) {
                                         <FileText size={14} /> {t('export_menu.worksheet')}
                                     </button>
                                     <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcbb"} Digital Formats</div>
-                                    <button role="menuitem"
+                                    <button type="button" role="menuitem"
                                         onClick={() => openExportPreview('html')}
                                         className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-indigo-50 text-indigo-700 text-xs font-bold transition-colors"
                                         data-help-key="export_html"
                                     >
                                         <Code size={14} /> {t('export_menu.html')}
                                     </button>
-                                    <button role="menuitem" aria-label={t('common.export_as_slides')}
+                                    <button type="button" role="menuitem" aria-label={t('common.export_as_slides')}
                                         onClick={() => openExportPreview('slides')}
                                         disabled={!pptxLoaded} title={t('header.export_slides_tooltip') || 'Opens Document Builder in Slides mode'}
                                         className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-orange-50 text-orange-700 text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -965,17 +966,29 @@ function HeaderBar(props) {
                                         {t('export_menu.slides')}
                                     </button>
                                     <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">Student QR</div>
-                                    <button role="menuitem"
+                                    <button type="button" role="menuitem"
                                         onClick={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); setShowExportMenu(false); }}
                                         className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50 text-cyan-700 text-xs font-bold transition-colors"
                                         data-help-key="homework_qr"
                                     >
                                         <Share2 size={14} /> Homework QR
                                     </button>
+                                    <div className="px-3 pb-2">
+                                      <label className="block text-[11px] font-bold text-slate-600" htmlFor="homework-qr-expiry">Homework link length</label>
+                                      <select id="homework-qr-expiry" value={homeworkExpiryDays || 14} onChange={event => setHomeworkExpiryDays(Number(event.target.value) || 14)} className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                                        <option value={1}>1 day</option>
+                                        <option value={7}>1 week</option>
+                                        <option value={14}>2 weeks</option>
+                                        <option value={30}>30 days</option>
+                                      </select>
+                                      <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800">
+                                        <History size={14}/> Recent homework links{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
+                                      </button>
+                                    </div>
                                     <p className="px-3 pb-2 text-[11px] leading-snug text-slate-500">Teacher-prepared resources open for students with AI generation off.</p>
                                     <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83c\udfeb"} LMS Integration</div>
                                     {activeView === 'quiz' && !isIndependentMode && (
-                                        <button role="menuitem"
+                                        <button type="button" role="menuitem"
                                             onClick={() => { handleExportQTI(); setShowExportMenu(false); }}
                                             className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-teal-50 text-teal-700 text-xs font-bold transition-colors"
                                             data-help-key="export_qti"
@@ -984,7 +997,7 @@ function HeaderBar(props) {
                                         </button>
                                     )}
                                     {!isIndependentMode && (
-                                    <button role="menuitem"
+                                    <button type="button" role="menuitem"
                                         onClick={() => { handleExportIMS(); setShowExportMenu(false); }}
                                         className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-yellow-50 text-yellow-700 text-xs font-bold transition-colors"
                                         data-help-key="export_ims"
@@ -994,11 +1007,11 @@ function HeaderBar(props) {
                                     )}
                                 </div>
                             )}
-                            {showExportMenu && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={handleSetShowExportMenuToFalse}></div>}
+                            {showExportMenu && <div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleSetShowExportMenuToFalse}></div>}
                         </div>
                         )}
                             {isTeacherMode && (
-                            <button
+                            <button type="button"
                                 onClick={() => setShowClassAnalytics(true)}
                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40"
                                 title={t('common.assessment_center') || 'Assessment Center'}
@@ -1008,7 +1021,7 @@ function HeaderBar(props) {
                             </button>
                             )}
                         {!isTeacherMode && (
-                            <button
+                            <button type="button"
                                 onClick={handleSetShowSubmitModalToTrue}
                                 className={`bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30`}
                                 title={t('header.submit_tooltip')}

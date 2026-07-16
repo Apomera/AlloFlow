@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4cc52ec9-untitled-ne",
+  "title": "दिदी र भाइ",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/5oebmcBfqt"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f4cc52ec9-1a87-4d9b-8e0f-042c86255f44%2f%e0%a4%a6%e0%a4%bf%e0%a4%a6%e0%a5%80+%e0%a4%b0+%e0%a4%ad%e0%a4%be%e0%a4%87%2fAOR_EAG00095111.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f4cc52ec9-1a87-4d9b-8e0f-042c86255f44%2f%e0%a4%a6%e0%a4%bf%e0%a4%a6%e0%a5%80+%e0%a4%b0+%e0%a4%ad%e0%a4%be%e0%a4%87%2fAOR_EAG00095.png",
+      "text": "एउटा सुन्दर गाउँ थियो। एउटा परिवारमा दिदी र भाइ थिए। दिदी र भाइ असाध्यै मिलेका थिए। सँगै विद्यालय जान्थे। सँगै घर आउँथे। सँगै खाजा खान्थे।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f4cc52ec9-1a87-4d9b-8e0f-042c86255f44%2f%e0%a4%a6%e0%a4%bf%e0%a4%a6%e0%a5%80+%e0%a4%b0+%e0%a4%ad%e0%a4%be%e0%a4%87%2fAOR_E-1-240.png",
+      "text": "गाउँदेखि पर बाक्लो जङ्गल रहेछ। एक दिनको कुरा हो। ती दिदी भाइ जङ्गलमा घुम्न गएछन्। जङ्गलमा उनीहरूले धेरै कुराहरू देखेछन्।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f4cc52ec9-1a87-4d9b-8e0f-042c86255f44%2f%e0%a4%a6%e0%a4%bf%e0%a4%a6%e0%a5%80+%e0%a4%b0+%e0%a4%ad%e0%a4%be%e0%a4%87%2fAOR_OWE002.png",
+      "text": "जङ्गगलमा ईनार पनि रहेछ। इनार देख्दा उनीहरू छक्‍क परेछन्। इनारमा पानी पनि रहेछ। एकछिन उनीहरू इनारको वरिपरी घुमिरहे।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f4cc52ec9-1a87-4d9b-8e0f-042c86255f44%2f%e0%a4%a6%e0%a4%bf%e0%a4%a6%e0%a5%80+%e0%a4%b0+%e0%a4%ad%e0%a4%be%e0%a4%87%2fAOR_CA-1-247.png",
+      "text": "भाइचाहिँ ऐंसेलुको झाङ्गतिर गए। दिदीचाहिँले इनार हेरिरहिन्। ईनारमा पानी तान्ने बाल्टिन पनि थियो। उनी इनारमा निहुरिएर पानी तान्न थालिन्।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f4cc52ec9-1a87-4d9b-8e0f-042c86255f44%2f%e0%a4%a6%e0%a4%bf%e0%a4%a6%e0%a5%80+%e0%a4%b0+%e0%a4%ad%e0%a4%be%e0%a4%87%2fAOR_MWC1811.png",
+      "text": "उनी इनारको डिलमा उभिएकी थिइन्। पानी तान्न लाग्दा डोरी चुडियो। एक्‍कासी उनी इनारमा खसिन्। उनी चिच्याउन थालिन्।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f4cc52ec9-1a87-4d9b-8e0f-042c86255f44%2f%e0%a4%a6%e0%a4%bf%e0%a4%a6%e0%a5%80+%e0%a4%b0+%e0%a4%ad%e0%a4%be%e0%a4%87%2fimage.png",
+      "text": "भाइले दिदीको आवाज सुने। दिदी आत्तिएर कराएको सुने। ऊ आवाज आएतिर दौडिए। आवाज ईनारबाट आइरहेको थियो।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f4cc52ec9-1a87-4d9b-8e0f-042c86255f44%2f%e0%a4%a6%e0%a4%bf%e0%a4%a6%e0%a5%80+%e0%a4%b0+%e0%a4%ad%e0%a4%be%e0%a4%87%2fimage1.png",
+      "text": "उनले यताउता हेरे। एउटा नाइलनको डोरी देखे। हत्तपत्त त्यो डोरी इनारमा खसाले। दिदीले डोरीमा बेस्सरी समातिन्।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f4cc52ec9-1a87-4d9b-8e0f-042c86255f44%2f%e0%a4%a6%e0%a4%bf%e0%a4%a6%e0%a5%80+%e0%a4%b0+%e0%a4%ad%e0%a4%be%e0%a4%87%2fimage2.png",
+      "text": "दिदीले डोरी बेस्सरी समातिरहिन्। भाइले बलले डोरी तान्न थाले। तर डोरी सजिलै तान्न सकेनन्। उनले प्रयास गरिरहे।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f4cc52ec9-1a87-4d9b-8e0f-042c86255f44%2f%e0%a4%a6%e0%a4%bf%e0%a4%a6%e0%a5%80+%e0%a4%b0+%e0%a4%ad%e0%a4%be%e0%a4%87%2fwell.png",
+      "text": "दिदीचाहिँ बिस्तारै डोरीको माथि आइन्। अन्तमा भाइले दिदीलाई इनारबाट बाहिर ल्याए । उनी सफल भए।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f4cc52ec9-1a87-4d9b-8e0f-042c86255f44%2f%e0%a4%a6%e0%a4%bf%e0%a4%a6%e0%a5%80+%e0%a4%b0+%e0%a4%ad%e0%a4%be%e0%a4%87%2fAOR_pg015.png",
+      "text": "एक क्षणपछि गाउँले त्यहाँ आए। भाइले उनीहरूलाई सबै कुरा बताए। भाइको बहादुरी देखेर सबैले धन्यवाद दिए। सबै सँगै घर फर्किए ।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 184
+  }
+}

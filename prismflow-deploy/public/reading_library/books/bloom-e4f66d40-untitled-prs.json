@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e4f66d40-untitled-prs",
+  "title": "بخوان بگو چیستم",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/zztaDJLCCv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fe4f66d40-078b-4853-a0a6-fb4e3137645b%2f%d8%a8%d8%ae%d9%88%d8%a7%d9%86+%d8%a8%da%af%d9%88+%da%86%db%8c%d8%b3%d8%aa%d9%85%2f13.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fe4f66d40-078b-4853-a0a6-fb4e3137645b%2f%d8%a8%d8%ae%d9%88%d8%a7%d9%86+%d8%a8%da%af%d9%88+%da%86%db%8c%d8%b3%d8%aa%d9%85%2f12.jpg",
+      "text": "من جای آموختن علم و دانش استم.\nآغوش من پر از کتاب های زیبا است."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "من کودکان با ادب را دوست دارم.\nوقتی پیش من می آیید، بسیار خوش می شوم.\nاما روزی که نمی آیید، خیلی ناراحت می شوم."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fe4f66d40-078b-4853-a0a6-fb4e3137645b%2f%d8%a8%d8%ae%d9%88%d8%a7%d9%86+%d8%a8%da%af%d9%88+%da%86%db%8c%d8%b3%d8%aa%d9%85%2f31.jpg",
+      "text": "من قدر شما را می دانم.\nشما هم قدر من را بدانید.\nمیزها و چوکی هایم را نشکنید."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "صنف هایم را پاک نگهدارید.\nدیوارها و کلکین هایم را خراشیده و کثیف نسازید.\nاگر مرا خراشیده و کثیف بسازید، ناراحت می شوم."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fe4f66d40-078b-4853-a0a6-fb4e3137645b%2f%d8%a8%d8%ae%d9%88%d8%a7%d9%86+%d8%a8%da%af%d9%88+%da%86%db%8c%d8%b3%d8%aa%d9%85%2f41.jpg",
+      "text": "من می دانم که شما شاگردان حرف شنو استید.\nهیچوقت کارهای ناپسند نمی کنید."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "زمستان وقتی رخصت می شوید،\nمن خیلی ناراحت می شوم.\nاما از شما یک خواهش دارم."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fe4f66d40-078b-4853-a0a6-fb4e3137645b%2f%d8%a8%d8%ae%d9%88%d8%a7%d9%86+%d8%a8%da%af%d9%88+%da%86%db%8c%d8%b3%d8%aa%d9%85%2f2.jpg",
+      "text": "زمستان درس های تان را بخوانید.\nبرای صنف بعدی آماده گی بگیرید.\nمن در بهار، منتظر آمدن شما استم."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "من شما را بسیار دوست دارم.\nحالا مرا شناختید که کی استم؟\nبلی، من مکتب استم.\nمکتب زیبای شما."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 149
+  }
+}

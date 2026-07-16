@@ -1,0 +1,122 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1996bcca-untitled-km",
+  "title": "២២ក នអើន កៅដាសទោក",
+  "description": "A story of a bear and a monkey (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/8w2jDiKh8J"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage18.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage1.png",
+      "text": "មានថ្ងៃមួយខ្លាឃ្មុំក្រោកពីប្រលឹមដើរទៅរកចំណីស៊ី។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage2.png",
+      "text": "ទៅដល់ដើមឈើមួយ វាក៏ឃើញម្រោមនៅរន្ធឈើនោះ។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage3.png",
+      "text": "ខ្លាឃ្មុំក៏ហែកដើមឈើដើម្បីយកម្រោម មានស្វាមួយនៅក្បែរនោះដែរ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage4.png",
+      "text": "ខ្លាឃ្មុំក៏បានអោយម្រោមទៅស្វា វាល្មោភស៊ីណាស់។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage5.png",
+      "text": "ហើយស្វាបបួលខ្លាឃ្មុំឡើងយកឃ្មុំ។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage6.png",
+      "text": "ដល់ដើមឈើនោះខ្លាឃ្មុំក៏បានឡើងយកឃ្មុំ។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage7.png",
+      "text": "ស្វាឃើញឃ្មុំទិចខ្លាឃ្មុំ វាក៏រត់ បានបុកនិងគល់ឈើ។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage8.png",
+      "text": "ខ្លាឃ្មុំប៉ាកស្វានាំទៅដាក់នៅកន្លែងសំបុក។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage9.png",
+      "text": "បន្ទាប់មកខ្លាឃ្មុំបេះផ្លែស្លែងអោយស្វាស៊ីដែរ។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage10.png",
+      "text": "ខ្លាឃ្មុំបានកាយឱមាល់ នៅក្នុងរន្ធដី។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage11.png",
+      "text": "ស្វាឃើញឱមាល់ទិចខ្លាឃ្មុំវាក៏រត់ ។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage12.png",
+      "text": "ស្វារត់មិនប្រយ័ត្ន បានបុកដំរីឈ្មោល។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage13.png",
+      "text": "ដំរីខឹងក៏រត់តាមជាន់ស្វា វារត់ពួនក្នុងរូងថ្ម។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage14.png",
+      "text": "ស្វាបានសុំអោយខ្លាឃ្មុំជួយ រហូតទាល់តែរួចខ្លួនពីដំរី។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage15.png",
+      "text": "ស្វាកាន់ដៃខ្លាឃ្មុំ នាំគ្នាទៅកន្លែងវិញ។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage16.png",
+      "text": "ដល់អូរមួយ ស្វានិងខ្លាឃ្មុំផឹកទឹកនៅទីនោះ។"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f1996bcca-fe05-4e8e-a946-d13c8b6a7377%2f%e1%9f%a2%e1%9f%a2%e1%9e%80%e2%80%8b+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%85%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9f%84%e1%9e%80%2fimage17.png",
+      "text": "ពួកវាក៏ដើរត្រឡប់មកដល់កន្លែងដើមវិញ៕"
+    }
+  ],
+  "stats": {
+    "pages": 17,
+    "words": 29
+  }
+}

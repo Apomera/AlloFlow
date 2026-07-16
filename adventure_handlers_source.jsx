@@ -41,6 +41,10 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
     } else {
         initialGold = Math.floor(globalPoints / 2);
     }
+    const isSequel = Boolean(contextOverride);
+    const startingLevel = isSequel ? Math.max(1, Number(adventureState.level) || 1) : 1;
+    const startingXp = isSequel ? Math.max(0, Number(adventureState.xp) || 0) : 0;
+    const startingXpToNext = isSequel ? Math.max(1, Number(adventureState.xpToNextLevel) || 100) : 100;
     setAdventureState(prev => ({
       ...prev,
       history: [],
@@ -48,9 +52,9 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
       isLoading: true,
       isGameOver: false,
       turnCount: 0,
-      level: 1,
-      xp: 0,
-      xpToNextLevel: 100,
+      level: startingLevel,
+      xp: startingXp,
+      xpToNextLevel: startingXpToNext,
       energy: 100,
       sceneImage: null,
       isImageLoading: false,
@@ -357,9 +361,9 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
         isLoading: false,
         isGameOver: false,
         turnCount: 1,
-        level: 1,
-        xp: 0,
-        xpToNextLevel: 100,
+        level: startingLevel,
+        xp: startingXp,
+        xpToNextLevel: startingXpToNext,
         sceneImage: null,
         isImageLoading: true,
         inventory: [...prev.inventory, ...initialInventory],
@@ -372,14 +376,15 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           type: 'adventure',
           title: sourceTopic ? `Adventure: ${sourceTopic}` : 'Interactive Adventure',
-          meta: `Level 1 - ${adventureInputMode === 'debate' ? 'Debate' : 'Simulation'}`,
+          meta: `Level ${startingLevel} - ${adventureInputMode === 'debate' ? 'Debate' : 'Simulation'}`,
           timestamp: new Date(),
           data: {
               snapshot: {
                   currentScene: sceneData,
                   history: [],
-                  level: 1,
-                  xp: 0,
+                  level: startingLevel,
+                  xp: startingXp,
+                  xpToNextLevel: startingXpToNext,
                   energy: 100,
                   gold: initialGold,
                   inventory: initialInventory,
@@ -431,16 +436,31 @@ const handleStartAdventure = (deps) => {
 };
 
 const handleResumeAdventure = async (deps) => {
-  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, adventureImageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleResumeAdventure fired"); } catch(_) {}
       setIsResumingAdventure(true);
       try {
-          const parsed = await storageDB.get('allo_adventure_save');
-          if (!parsed) {
+          const savedRecord = await storageDB.get('allo_adventure_save');
+          if (!savedRecord) {
               addToast(t('toasts.no_save_file'), "error");
               setHasSavedAdventure(false);
               return;
           }
+          const { _adventureConfig: savedConfig = {}, ...parsed } = savedRecord;
+          if (typeof setAdventureDifficulty === 'function' && savedConfig.difficulty) setAdventureDifficulty(savedConfig.difficulty);
+          if (typeof setAdventureInputMode === 'function' && savedConfig.inputMode) setAdventureInputMode(savedConfig.inputMode);
+          if (typeof setAdventureLanguageMode === 'function' && savedConfig.languageMode) setAdventureLanguageMode(savedConfig.languageMode);
+          if (typeof setAdventureChanceMode === 'function' && savedConfig.chanceMode !== undefined) setAdventureChanceMode(!!savedConfig.chanceMode);
+          if (typeof setAdventureFreeResponseEnabled === 'function' && savedConfig.freeResponse !== undefined) setAdventureFreeResponseEnabled(!!savedConfig.freeResponse);
+          if (typeof setAdventureConsistentCharacters === 'function' && savedConfig.consistentCharacters !== undefined) setAdventureConsistentCharacters(!!savedConfig.consistentCharacters);
+          if (typeof setIsAdventureStoryMode === 'function' && savedConfig.storyMode !== undefined) setIsAdventureStoryMode(!!savedConfig.storyMode);
+          if (typeof setIsSocialStoryMode === 'function' && savedConfig.socialStoryMode !== undefined) setIsSocialStoryMode(!!savedConfig.socialStoryMode);
+          if (typeof setSocialStoryFocus === 'function' && savedConfig.socialStoryFocus !== undefined) setSocialStoryFocus(savedConfig.socialStoryFocus || '');
+          if (typeof setAdventureArtStyle === 'function' && savedConfig.artStyle) setAdventureArtStyle(savedConfig.artStyle);
+          if (typeof setAdventureCustomArtStyle === 'function' && savedConfig.customArtStyle !== undefined) setAdventureCustomArtStyle(savedConfig.customArtStyle || '');
+          if (typeof setUseLowQualityVisuals === 'function' && savedConfig.lowQualityVisuals !== undefined) setUseLowQualityVisuals(!!savedConfig.lowQualityVisuals);
+          if (typeof setEnableFactionResources === 'function' && savedConfig.enableFactionResources !== undefined) setEnableFactionResources(!!savedConfig.enableFactionResources);
+          if (typeof setFactionResourceMode === 'function' && savedConfig.factionResourceMode) setFactionResourceMode(savedConfig.factionResourceMode);
           const safeState = {
               ...parsed,
               energy: (typeof parsed.energy === 'number' && !isNaN(parsed.energy)) ? parsed.energy : 100,
@@ -458,7 +478,20 @@ const handleResumeAdventure = async (deps) => {
               characters: parsed.characters || [],
               isReviewingCharacters: false
           };
-          setAdventureState(safeState);
+          let restoredSceneImage = null;
+          try {
+              if (adventureImageDB && typeof adventureImageDB.getImage === 'function') {
+                  restoredSceneImage = await adventureImageDB.getImage(safeState.turnCount);
+              }
+          } catch (imageError) {
+              warnLog("Adventure Image Restore Error", imageError);
+          }
+          setAdventureState({
+              ...safeState,
+              sceneImage: restoredSceneImage || null,
+              isImageLoading: false,
+              imageCache: []
+          });
           setActiveView('adventure');
           addToast(`Resumed Adventure (Level ${safeState.level})`, "success");
       } catch (e) {
@@ -473,13 +506,22 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleAdventureTextSubmit fired"); } catch(_) {}
     const currentInput = overrideInput || adventureTextInput;
-    if (!currentInput.trim()) return;
+    if (!currentInput.trim() || adventureState.isLoading) return;
+    if (!isTeacherMode && activeSessionCode) {
+        addToast(t('adventure.status_messages.teacher_control') || "Teacher controls the adventure in live sessions.", "info");
+        return;
+    }
     SafetyContentChecker.aiCheck(currentInput, 'adventure', apiKey, handleAiSafetyFlag);
     lastTurnSnapshot.current = structuredClone(adventureState);
     stopPlayback();
+    setAdventureState(prev => ({ ...prev, isLoading: true, pendingChoice: currentInput }));
     let archivedImageId = null;
     if (adventureState.sceneImage) {
-        archivedImageId = await archiveAdventureImage(adventureState.sceneImage);
+        try {
+            archivedImageId = await archiveAdventureImage(adventureState.sceneImage);
+        } catch (archiveError) {
+            warnLog("Adventure Image Archive Error", archiveError);
+        }
     }
     setAdventureState(prev => ({
         ...prev,
@@ -521,7 +563,6 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
                   langInstruction = `Language: ${adventureLanguageMode}. Do NOT provide English translations.`;
               }
               langInstruction += ` STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.`;
-              langInstruction += ` STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.`;
           }
           const socialStoryInstruction = isSocialStoryMode
               ? `FOCUS: Social Story Mode. Continue the narrative focusing on "${socialStoryFocus || 'Social Skills'}". Evaluate the user's choice: "${currentInput}" based on its social impact. Show the consequences (positive or negative) on relationships and feelings.
@@ -560,6 +601,29 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
                - 11-15: Success
                - 16-20: Critical Success
                CRITICAL: You MUST set "d20" and "total" in the JSON to this 1-20 score. Do NOT use a 1-5 star rating.`;
+          const toneInstruction = isAdventureStoryMode
+              ? "TONE: Story Time Mode (Family Friendly). Continue with exploration, mystery, and puzzles. Avoid combat or intense danger."
+              : "";
+          const taggingInstruction = `
+            OUTCOME TAGGING (REQUIRED): Return "outcomeType" as exactly one of
+            "strategic_success", "partial_success", "misconception", or "neutral".
+            If the response demonstrates a source concept, return it in "conceptsUsed".
+          `;
+          let climaxInstruction = '';
+          if (adventureState.climax?.isActive) {
+              const currentScore = Number(adventureState.climax.masteryScore) || 50;
+              climaxInstruction = `CLIMAX ACTIVE. Current mastery progress: ${currentScore}/100.
+                Apply a progress shift of +20 critical success, +10 success, -5 partial/neutral,
+                -15 failure, or -25 critical failure. Return the new "masteryScore".
+                Return "climaxResult":"victory" at 100+, "failure" at 0-, otherwise null,
+                and make the scene a clear continuation of the active climax.`;
+          }
+          const outcomeJsonFields = `
+                "outcomeType": "strategic_success | partial_success | misconception | neutral",
+                "conceptsUsed": ["Concept Name"],
+                "climaxResult": "victory | failure | null",
+                "masteryScore": number,
+          `;
           let historyContext = "";
           if (adventureState.narrativeLedger) {
               const recentHistory = adventureState.history.slice(-5);
@@ -584,8 +648,11 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
             --- USER INPUT END ---
             ${ADVENTURE_GUARDRAIL}
             ${langInstruction}
+            ${toneInstruction}
             ${adventureCustomInstructions ? `Custom Instructions: ${adventureCustomInstructions}` : ''}
             ${mechanicsInstruction}
+            ${taggingInstruction}
+            ${climaxInstruction}
             Task: Analyze argument, Assign Strategy Rating (1-20), Calculate Total Score.
             CRITICAL: CALCULATE MOMENTUM CHANGE
             Based on the "Total Score" (1-20 Scale), determine "debateMomentumChange":
@@ -598,6 +665,7 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
             ${NARRATIVE_GUARDRAILS}
             Return ONLY JSON:
             {
+                ${outcomeJsonFields}
                 "debateMomentumChange": number (e.g. 10, -5, 15),
                 "resetDebate": boolean,
                 "newTopic": "String",
@@ -668,8 +736,11 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
                 Standard Inventory: [${currentInventoryNames}]
                 ${stateInstruction}
                 ${langInstruction}
+                ${toneInstruction}
                 ${adventureCustomInstructions ? `Custom Instructions: ${adventureCustomInstructions}` : ''}
                 ${mechanicsInstruction}
+                ${taggingInstruction}
+                ${climaxInstruction}
                 ${optionsInstruction}
                 CRITICAL: Do NOT include status displays (Health, Stability, XP, Level, etc.) in the scene text. These are tracked in the UI.
                 The scene text should be pure narrative describing what happens as a result of the policy decision.
@@ -677,6 +748,7 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
                 ${NARRATIVE_GUARDRAILS}
                 Return ONLY JSON:
                 {
+                    ${outcomeJsonFields}
                     "evaluation": "Effect of the policy decision...", "xpAwarded": number, "energyChange": number,
                     "rollDetails": { "strategyRating": number, "d20": ${chanceRoll || "Score_1_to_20"}, "total": number, "outcomeType": "String" },
                     "inventoryUpdate": { "add": [{ "name": "Policy", "type": "permanent" }] } OR { "remove": "Policy" } OR null,
@@ -717,9 +789,12 @@ Do NOT force all characters into every scene — let the narrative decide natura
                 Inventory: [${currentInventoryNames}]
                 Energy: ${adventureState.energy}/100
                 ${langInstruction}
+                ${toneInstruction}
                 ${adventureCustomInstructions ? `Custom Instructions: ${adventureCustomInstructions}` : ''}
                 ${socialStoryInstruction}
                 ${mechanicsInstruction}
+                ${taggingInstruction}
+                ${climaxInstruction}
                 ${optionsInstruction}
                 Task: Analyze action, Assign Strategy Rating (1-20), Calculate Total Score. Determine Outcome.
                 ${turnsSinceLastDrop >= 6 ? '- KEY ITEM OPPORTUNITY: If Score High, award Key Item.' : ''}
@@ -729,6 +804,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
                 ${NARRATIVE_GUARDRAILS}
                 Return ONLY JSON:
                 {
+                    ${outcomeJsonFields}
                     "evaluation": "Feedback...", "xpAwarded": number, "energyChange": number, "goldAwarded": number,
                     "rollDetails": { "strategyRating": number, "d20": ${chanceRoll || "Score_1_to_20"}, "total": number, "outcomeType": "String" },
                     "inventoryUpdate": { "add": [{ "name": "Item", "type": "permanent" }] } OR { "remove": "Item Name" } OR null,
@@ -764,11 +840,18 @@ Do NOT force all characters into every scene — let the narrative decide natura
               };
               addToast(t('toasts.auto_repair_fallback'), "warning");
           }
+          if (!data.scene || typeof data.scene !== 'object') {
+              data.scene = { text: t('adventure.status_messages.continue') || 'The adventure continues.', options: [] };
+          }
+          data.scene.text = String(data.scene.text || (t('adventure.status_messages.continue') || 'The adventure continues.'));
+          if (!Array.isArray(data.scene.options)) data.scene.options = [];
+          if (!data.feedback && !data.evaluation) data.evaluation = t('adventure.status_messages.turn_complete') || 'Turn complete.';
           let xpVal = data.xpAwarded !== undefined ? data.xpAwarded : (data.xpChange || 0);
           xpVal = parseInt(xpVal, 10);
           if (isNaN(xpVal)) xpVal = 0;
           data.xpAwarded = xpVal;
           data.xpChange = xpVal;
+          data.isTerminalTurn = !!isLastTurn;
           let roll;
           if (adventureChanceMode) {
               roll = parseInt(data.rollDetails?.d20 || data.rollDetails?.total || chanceRoll || 10, 10);
@@ -787,7 +870,8 @@ Do NOT force all characters into every scene — let the narrative decide natura
       warnLog("Adventure Text Error:", error);
       addToast(t('toasts.connection_failed'), "error");
       setFailedAdventureAction({ type: 'text', payload: currentInput });
-      setAdventureState(prev => ({ ...prev, isLoading: false }));
+      const snapshot = lastTurnSnapshot.current;
+      setAdventureState(prev => snapshot ? { ...snapshot, isLoading: false, isImageLoading: false } : { ...prev, isLoading: false });
     }
 };
 
@@ -795,6 +879,7 @@ const handleAdventureChoice = async (choice, deps) => {
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleAdventureChoice fired"); } catch(_) {}
     const normalizedChoice = typeof choice === 'object' && choice?.action ? choice.action : choice;
+    if (adventureState.isLoading) return;
     if (!isTeacherMode && activeSessionCode) {
         if (sessionData?.democracy?.isActive) {
             if (!user) return;
@@ -818,9 +903,14 @@ const handleAdventureChoice = async (choice, deps) => {
     stopPlayback();
     playAdventureEventSound('decision_select');
     lastTurnSnapshot.current = structuredClone(adventureState);
+    setAdventureState(prev => ({ ...prev, isLoading: true, pendingChoice: normalizedChoice }));
     let archivedImageId = null;
     if (adventureState.sceneImage) {
-        archivedImageId = await archiveAdventureImage(adventureState.sceneImage);
+        try {
+            archivedImageId = await archiveAdventureImage(adventureState.sceneImage);
+        } catch (archiveError) {
+            warnLog("Adventure Image Archive Error", archiveError);
+        }
     }
     const safeState = { ...adventureState };
     setAdventureState(prev => ({
@@ -861,14 +951,23 @@ const handleAdventureChoice = async (choice, deps) => {
           }
           langInstruction += ` STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.`;
       }
-      const optionsInstruction = !adventureFreeResponseEnabled ? `
+      const toneInstruction = isAdventureStoryMode
+          ? "TONE: Story Time Mode (Family Friendly). Continue with exploration, mystery, and puzzles. Avoid combat or intense danger."
+          : "";
+      const socialStoryInstruction = isSocialStoryMode
+          ? `SOCIAL STORY MODE: Continue focusing on "${socialStoryFocus || 'Social Skills'}". Show realistic emotional and relationship consequences, and keep choices grounded in cooperative, assertive, passive, impulsive, and creative social approaches.`
+          : "";
+      const optionsInstruction = !adventureFreeResponseEnabled ? (isSocialStoryMode ? `
+        CRITICAL: Provide 4-6 distinct social choices, including cooperative/prosocial,
+        assertive/boundary-setting, passive/avoidant, impulsive/aggressive, and creative alternatives.
+      ` : `
         CRITICAL: Provide exactly 6 distinct choices for the NEXT scene options, randomly ordered:
         - 1 Very Strong/Smart Option (Demonstrates mastery)
         - 2 Mildly Good Options (Acceptable but standard)
         - 1 Neutral Option (Irrelevant or passive)
         - 1 Mildly Bad Option (Minor misconception or risky)
         - 1 Very Bad Option (Major misconception or failure)
-      ` : '';
+      `) : '';
       const jsonOptionsExample = adventureFreeResponseEnabled ? "[]" : `["Choice 1", "Choice 2", "Choice 3", "Choice 4", "Choice 5", "Choice 6"]`;
       const chanceRoll = adventureChanceMode ? Math.floor(Math.random() * 20) + 1 : null;
       const rollModifier = adventureState.activeRollModifier || 0;
@@ -985,6 +1084,8 @@ const handleAdventureChoice = async (choice, deps) => {
         -------------------------
         Source Material: "${sourceText.substring(0, 1000)}..."
         ${langInstruction}
+        ${toneInstruction}
+        ${socialStoryInstruction}
         ${adventureCustomInstructions ? `Custom Instructions: ${adventureCustomInstructions}` : ''}
         Level: ${adventureState.level}, Energy: ${adventureState.energy}/100, Inventory: [${currentInventoryNames}]
         Previous Scene: "${adventureState.currentScene.text}"
@@ -1053,6 +1154,12 @@ const handleAdventureChoice = async (choice, deps) => {
           };
           addToast(t('toasts.auto_repair_fallback'), "warning");
       }
+       if (!data.scene || typeof data.scene !== 'object') {
+           data.scene = { text: t('adventure.status_messages.continue') || 'The adventure continues.', options: [] };
+       }
+       data.scene.text = String(data.scene.text || (t('adventure.status_messages.continue') || 'The adventure continues.'));
+       if (!Array.isArray(data.scene.options)) data.scene.options = [];
+       if (!data.feedback && !data.evaluation) data.feedback = t('adventure.status_messages.turn_complete') || 'Turn complete.';
        if (data.soundParams && data.scene) {
            data.scene.soundParams = data.soundParams;
        }
@@ -1112,6 +1219,7 @@ const handleAdventureChoice = async (choice, deps) => {
       if (isNaN(xpVal)) xpVal = 0;
       data.xpAwarded = xpVal;
       data.xpChange = xpVal;
+      data.isTerminalTurn = !!isLastTurn;
       let roll;
       if (adventureChanceMode) {
           roll = parseInt(data.rollDetails?.d20 || data.rollDetails?.total || chanceRoll || 10, 10);

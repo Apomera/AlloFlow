@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-236804fa-untitled-prs",
+  "title": "داکتر شهلا",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Qpi6E4MnHv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f236804fa-6c83-4af5-966b-3bad9c31c6ab%2f%d8%af%d8%a7%da%a9%d8%aa%d8%b1+%d8%b4%d9%87%d9%84%d8%a7%2f11.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f236804fa-6c83-4af5-966b-3bad9c31c6ab%2f%d8%af%d8%a7%da%a9%d8%aa%d8%b1+%d8%b4%d9%87%d9%84%d8%a7%2f1.jpg",
+      "text": "سلام کودکان عزیز!\nمن داکتر شهلا استم.\nمی خواهید بدانید چگونه می توانید صحتمند باشید؟\nپس به سخنان من دقت کنید."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "برای این که صحتمند باشید باید نظافت تان را مراعات نمایید.\nدست های تان را با آب و صابون :\nا- قبل از غذا\n2- بعد از غذا\n3- بعد از رفع حاجت\nبشویید.\nناخن های تان را بگیرید تا مکروب زیر آن جا نگیرد."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f236804fa-6c83-4af5-966b-3bad9c31c6ab%2f%d8%af%d8%a7%da%a9%d8%aa%d8%b1+%d8%b4%d9%87%d9%84%d8%a7%2f2.jpg",
+      "text": "دندان های تان را با مسواک و برس بشویید.\nاین کار را هرصبح و شب بعد از غذا انجام دهید."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "چهارمغز، بادام و دیگر چیزهای سخت را با دندان نشکنید.\nزیرا دچار دندان دردی می شوید.\nیا شاید دندان های تان را از دست بدهید.\nبرای این که دندان های محکم داشته باشید.\nخوردن شیر و ماست را فراموش نکنید."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f236804fa-6c83-4af5-966b-3bad9c31c6ab%2f%d8%af%d8%a7%da%a9%d8%aa%d8%b1+%d8%b4%d9%87%d9%84%d8%a7%2feye+3.jpg",
+      "text": "در حفاظت چشم های تان توجه کنید.\nدست ناپاک را به چشم های تان نزنید.\nهمچنان به صفحۀ کمپیوترو تلویزیون از نزدیک نبینید."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "همه ما باید به سلامتی خود توجه کنیم.\nبرای این که همیشه تندرست باشید؛ ورزش را فراموش نکنید."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f236804fa-6c83-4af5-966b-3bad9c31c6ab%2f%d8%af%d8%a7%da%a9%d8%aa%d8%b1+%d8%b4%d9%87%d9%84%d8%a7%2fsport+411.jpg",
+      "text": "ورزش برای تان نشاط می آورد.\nهر ورزشی را که علاقه دارید انجام دهید.\nمانند: دوش، حرکات منظم بدن، توپ بازی یا هم ریسمان بازی."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "از میوه ها و ترکاری استفاده کنید. آب پاک بنوشید.\nاز غذاهای روی بازار استفاده نکنید.\nبرای این که انسان تندرست و موفق باشید.\nباید نکات ذکر شده را عملی کنید."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 223
+  }
+}

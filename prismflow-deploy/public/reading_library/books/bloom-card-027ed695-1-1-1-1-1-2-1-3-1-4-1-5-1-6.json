@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-027ed695-1-1-1-1-1-2-1-3-1-4-1-5-1-6",
+  "title": "Доброго дня!1.1 Урок УЖМ1.1 Як привітатись та попрощатись; 1.2 Представитись;1.3 Звідки ви?; 1.4 Розповісти про себе; 1.5 Розмова; 1.6 Український алфавіт.",
+  "description": "http://localhost:8089/bloom/C:/Users/Lenovo T560/AppData/Local/Temp/blooma2v5zo5g.htm",
+  "language": "Ukrainian",
+  "langCode": "uk",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Primer"
+  ],
+  "authors": [
+    "Anatolii Khyliuk"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Anatolii Khyliuk",
+  "license": "CC BY-NC-ND",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/JIExBpIJdG"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/JIExBpIJdG%2f1781703957095%2f%d0%94%d0%be%d0%b1%d1%80%d0%be%d0%b3%d0%be+%d0%b4%d0%bd%d1%8f!1.1+%d0%a3%d1%80%d0%be%d0%ba+%d0%a3%d0%96%d0%9c1.1+%d0%af%d0%ba+%d0%bf%d1%80%d0%b8%d0%b2%d1%96%d1%82%d0%b0%d1%82%d0%b8%d1%81%d1%8c+%d1%82%d0%b0+%d0%bf%d0%be%d0%bf%d1%80%2ffile_00000000b034720a8ab6233ab546b05b+(2).jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"Доброго дня!1.1 Урок УЖМ1.1 Як привітатись та попрощатись; 1.2 Представитись;1.3 Звідки ви?; 1.4 Розповісти про себе; 1.5 Розмова; 1.6 Український алфавіт.\" (Ukrainian). http://localhost:8089/bloom/C:/Users/Lenovo T560/AppData/Local/Temp/blooma2v5zo5g.htm"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-ND) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 78
+  }
+}

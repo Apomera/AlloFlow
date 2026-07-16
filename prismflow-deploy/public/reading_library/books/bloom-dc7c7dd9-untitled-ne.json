@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-dc7c7dd9-untitled-ne",
+  "title": "थरीथरीका मोबाइल",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tPTF0jU3QS"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fdc7c7dd9-8ad5-4fd2-8756-bdb75284b9f9%2f%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%95%e0%a4%be+%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fmobile1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fdc7c7dd9-8ad5-4fd2-8756-bdb75284b9f9%2f%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%95%e0%a4%be+%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fmobile.png",
+      "text": "बिन्दाको घरमा तीनवटा मोबाइल छन्। बुबा र आमाको मोबाइल ठुला छन्। हजुरबासँग सानो मोवाइल छ। बिन्दा आमासँग मोबाइलमा गीत सुन्छिन्। त्यसैगरी फिल्म हेर्ने, फोन गर्ने गर्छिन्।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fdc7c7dd9-8ad5-4fd2-8756-bdb75284b9f9%2f%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%95%e0%a4%be+%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage.jpg",
+      "text": "आमाको मोबाइलमा राम्रा कथाहरू पनि छन्। बिन्दा किताबभन्दा मोबाइलमा पढ्न रूचाउँछिन्। मोबाइलमै चित्रमा रङ भर्दा खुसी हुन्छिन्।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fdc7c7dd9-8ad5-4fd2-8756-bdb75284b9f9%2f%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%95%e0%a4%be+%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage1.jpg",
+      "text": "कहिले काहीँ आमाले माइतमा फोन गर्नुहुन्छ। बिन्दा पनि मामा, माइजूसँग कुरा गर्छिन्। मोबाइलमा भिडियो हेरेर गफ गर्दा रमाउँछिन्। भिडियो हेर्दै कुरा गर्दा सबजना झुम्मिन्छन्।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fdc7c7dd9-8ad5-4fd2-8756-bdb75284b9f9%2f%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%95%e0%a4%be+%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage.png",
+      "text": "बिन्दाले पनि मोबाइल चलाउँछिन्। फोन गर्ने र गीत बजाउन सक्छिन्। फोटो खिच्ने, रेकर्ड गर्ने पनि गर्छिन्। विद्यालय जाने समय पनि मोबाइलमै हेर्छिन्।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fdc7c7dd9-8ad5-4fd2-8756-bdb75284b9f9%2f%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%95%e0%a4%be+%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage2.jpg",
+      "text": "मोबाइलमा बिन्दाका राम्रा राम्रा फोटोहरू छन्। नाचेका भिडियोहरू छन्। बहिनीले गाएको गित पनि रेकर्ड छ। आफू नाचेको भिडियो हेरेर दङ्ग पर्छिन्।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fdc7c7dd9-8ad5-4fd2-8756-bdb75284b9f9%2f%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%95%e0%a4%be+%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage3.jpg",
+      "text": "हजुरबाको मोबाइल पनि बिन्दाले चलाउँछिन्। त्यो मोबाइलमा फोटो खिच्न मिल्दैन। फिल्म हेर्न, गीत सुन्न पनि मिल्दैन। उनलाई अचम्म लाग्छ।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fdc7c7dd9-8ad5-4fd2-8756-bdb75284b9f9%2f%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%95%e0%a4%be+%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage4.jpg",
+      "text": "“यो मोबाइलमा आमाकोमा जस्तै किन आउँदैन?” हजुरबा र आमालाई सोध्छिन्। “हाम्रो सस्तो मोबाइल हो।” उनीहरूले जवाफ दिन्छन्।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fdc7c7dd9-8ad5-4fd2-8756-bdb75284b9f9%2f%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%95%e0%a4%be+%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage5.jpg",
+      "text": "बिन्दाले सोच्ने गर्छिन्। मोबाइलले पनि पैसा अनुसार काम गर्दोरहेछ। साधारण अनि आधुनिक पनि हुने रहेछ। सबै छानिछानी पाइँदो रहेछन्।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fdc7c7dd9-8ad5-4fd2-8756-bdb75284b9f9%2f%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%95%e0%a4%be+%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fAOR_9LLL.png",
+      "text": "उनलाई हजुरबाले भन्नु भयो। “पहिले गीत सुन्न रेडियो हुन्थ्यो। फिल्म हेर्ने टीभी हुन्थ्यो । समय घडीमा हेरिन्थो। फोटो खिच्न छुट्टै क्यामरा चाहिँन्थ्यो। आजभोलि सबै काम एउटै मोबाइलले गर्छ।”"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fdc7c7dd9-8ad5-4fd2-8756-bdb75284b9f9%2f%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%a5%e0%a4%b0%e0%a5%80%e0%a4%95%e0%a4%be+%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage51.jpg",
+      "text": "हजुरअामाले थप्नु भयो। “यो त सानो कम्प्युटर नै हो। कम्प्युटरले गर्ने धेरै काम यसले गर्छ।” यतिकैमा हजुरबाको मोबाइलमा फोन आउँछ। ट्रिङ्....ट्रिङ्...।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 214
+  }
+}

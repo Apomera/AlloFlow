@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-411564a4-untitled",
+  "title": "सालक",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/qgRX6F3OUq"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f411564a4-6210-4a7b-b0e8-79c3abcf53a6%2f%e0%a4%b8%e0%a4%be%e0%a4%b2%e0%a4%95%2fAOR_B-NA-4.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f411564a4-6210-4a7b-b0e8-79c3abcf53a6%2f%e0%a4%b8%e0%a4%be%e0%a4%b2%e0%a4%95%2fAOR_MWC24.png",
+      "text": "एउटा केटो हिँडिरहेको थियो। ऊ एउटा जङ्गलमा पुग्यो। उसले एउटा अनौठो चिज देख्यो। ओहो के रहेछ भनेर निजक गयो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f411564a4-6210-4a7b-b0e8-79c3abcf53a6%2f%e0%a4%b8%e0%a4%be%e0%a4%b2%e0%a4%95%2fAOR_B-NA-41.png",
+      "text": "त्यो सजीव जनावर थियो। त्यसको शरीर कडा वस्तुले ढाकेको थियो। मुख भने सानो थियो । त्यसको लामो जिब्रो पनि थियो। त्यो बिस्तार घस्रेर हिड्थ्यो।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f411564a4-6210-4a7b-b0e8-79c3abcf53a6%2f%e0%a4%b8%e0%a4%be%e0%a4%b2%e0%a4%95%2fAOR_Anteatr2.png",
+      "text": "त्यो जनावरले लामो जिब्रो निकाल्यो। कमिलाको गोलाको नजिक गयो। कमिला खाना थाल्यो। ऊ अझ पर गयो। मसिना धमिरा किरालाई देख्यो। त्यो जनावर रमायो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f411564a4-6210-4a7b-b0e8-79c3abcf53a6%2f%e0%a4%b8%e0%a4%be%e0%a4%b2%e0%a4%95%2fAOR_B-3-2.png",
+      "text": "उसले बिस्तारै धमिरालाई खान थाल्यो। उसले धेरै धमिरा खाएर टन्न अघायो। त्यो कुरा केटाले चाख मानेर हेरिरह्यो। त्यो देखेर ऊ दङ्ग पर्‍यो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f411564a4-6210-4a7b-b0e8-79c3abcf53a6%2f%e0%a4%b8%e0%a4%be%e0%a4%b2%e0%a4%95%2fAOR_pms014m.png",
+      "text": "बाटोमा एकजना बटुवा आइरहेको देख्यो। केटाले त्यो बटुवालाई बोलायो। ऊ खुसी हुँदै सोध्न थाल्यो। दाइ दाइ त्यो के हो?"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f411564a4-6210-4a7b-b0e8-79c3abcf53a6%2f%e0%a4%b8%e0%a4%be%e0%a4%b2%e0%a4%95%2fAOR_B-NA-411.png",
+      "text": "उसको उत्साह देखेर बटुवा खुसी भयो। अब बटुवा जनावरपट्टि गए। ओहो! यो सालक पो हो त। यसलाई हामीले संरक्षण गर्नुपर्छ। यो दुर्लभ जनावर हो।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f411564a4-6210-4a7b-b0e8-79c3abcf53a6%2f%e0%a4%b8%e0%a4%be%e0%a4%b2%e0%a4%95%2fAOR_E-1-173.png",
+      "text": "यो नेपालमा पनि पाइन्छ। यसले कसैलाई हानी गर्दैन। यसले वनजङ्गललाई रमाइलो प्रदान गर्छ। यो भएको ठाउँमा पर्यटकहरू घुम्न आउँछन्। उनीहरू धेरै रमाउँछन्।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f411564a4-6210-4a7b-b0e8-79c3abcf53a6%2f%e0%a4%b8%e0%a4%be%e0%a4%b2%e0%a4%95%2fAOR_E-1-250.png",
+      "text": "यसको संरक्षण गर्न जनावर चराउनु हुँदैन। माटोलाई धेरै खनजोत गर्नु हुँदैन। बोट बिरूवा रोप्नुपर्छ। यो भएको ठाउँलाई संरक्षण गर्नुपर्छ।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f411564a4-6210-4a7b-b0e8-79c3abcf53a6%2f%e0%a4%b8%e0%a4%be%e0%a4%b2%e0%a4%95%2fimage.jpg",
+      "text": "यसले खानेकुरा खोज्न माटोमा दुलो बनाउँछ। माटो खुकुलो र मलिलो पार्छ। यसलाई कसैले समाउनु हुँदैन। समाउन खोज्दा बल जस्तै गोलो बन्छ।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f411564a4-6210-4a7b-b0e8-79c3abcf53a6%2f%e0%a4%b8%e0%a4%be%e0%a4%b2%e0%a4%95%2fAOR_PMM007.png",
+      "text": "यो कुरा सुनेपछि केटो खुसी भयो। बटुवालाई धन्यवाद दियो। ऊ घरतिर जाँदै गर्दा सोच्यो । \"मेरो बारीमा पनि सालक भएको भए?\""
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 214
+  }
+}

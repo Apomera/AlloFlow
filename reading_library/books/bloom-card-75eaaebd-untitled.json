@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-75eaaebd-untitled",
+  "title": "ደሙ እስካሁን ድረስ እያፈተለከ በመውጣት ላይ ነው።",
+  "description": "A Amharic picture book, readable free at Bloom Library.",
+  "language": "Amharic",
+  "langCode": "am",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Health"
+  ],
+  "authors": [
+    "WA UK"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "WA UK",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/8kbolEXyYX"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/musie_menna%40sil.org%2f75eaaebd-ca20-493d-8ab7-ba5e707087ba%2f%e1%8b%b0%e1%88%99+%e1%8a%a5%e1%88%b5%e1%8a%ab%e1%88%81%e1%8a%95+%e1%8b%b5%e1%88%a8%e1%88%b5+%e1%8a%a5%e1%8b%ab%e1%8d%88%e1%89%b0%e1%88%88%e1%8a%a8+%e1%89%a0%e1%88%98%e1%8b%8d%e1%8c%a3%e1%89%b5+%e1%88%8b%e1%8b%ad+%e1%8a%90%e1%8b%8d%e1%8d%a2%2fPicture1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ደሙ እስካሁን ድረስ እያፈተለከ በመውጣት ላይ ነው።\" (Amharic)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 62
+  }
+}

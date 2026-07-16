@@ -1,127 +1,117 @@
-/* ============================================================
-   PasstheEPPP — Textbook Ch 32: Attitudes, Persuasion & Prejudice
-   Domain: Social & Cultural Bases of Behavior (11% of EPPP)
-   Structure: 80% evidence-based + 20% AI-reflective coda
-   ============================================================ */
-
+/* Source-reviewed editorial revision: 2026-07-14 */
 window.TextbookChapters = window.TextbookChapters || [];
-
 window.TextbookChapters.push({
-    id: 'ch-32',
-    domain: 'Social & Cultural Bases of Behavior',
-    domainNumber: 6,
-    title: 'Attitudes, Persuasion & Prejudice',
-    examWeight: '11%',
-    sections: [
+    "id": "ch-32",
+    "domain": "Social & Cultural Bases of Behavior",
+    "domainNumber": 6,
+    "title": "Attitudes, Persuasion & Prejudice",
+    "examWeight": "11%",
+    "sections": [
         {
-            heading: 'Why This Chapter Matters',
-            content: '<p>This chapter covers attitude formation and change, persuasion models, and the psychology of prejudice and discrimination. These concepts are essential for understanding therapeutic change, public health messaging, and multicultural competence.</p>'
+            "heading": "Why This Chapter Matters",
+            "content": "<p>The current EPPP blueprint includes social cognition, stereotypes, prejudice, persuasion, group processes, identity, and oppression. This chapter uses classic models as <strong>tools for bounded inference</strong>, not as universal laws or diagnoses. Separate the construct, the way it was measured, the context, and the conclusion the evidence supports.</p>"
         },
         {
-            heading: 'Attitudes & Attitude Change',
-            content: '<p><strong>Attitudes</strong> have three components (the <strong>ABC model</strong>):</p>' +
-                '<ul>' +
-                '<li><strong>Affective</strong>: Emotional response ("I feel anxious about public speaking")</li>' +
-                '<li><strong>Behavioral</strong>: Actions toward the object ("I avoid public speaking")</li>' +
-                '<li><strong>Cognitive</strong>: Beliefs about the object ("Public speaking is dangerous")</li>' +
-                '</ul>' +
-                '<p><strong>Attitude change theories:</strong></p>' +
-                '<ul>' +
-                '<li><strong>Cognitive dissonance (Festinger)</strong>: Attitude change occurs to reduce the discomfort of holding contradictory cognitions. Covered in Ch 26.</li>' +
-                '<li><strong>Self-perception theory (Bem)</strong>: We infer our attitudes from our behavior (no dissonance needed). Rival to dissonance theory.</li>' +
-                '<li><strong>Cognitive dissonance vs. self-perception</strong>: Dissonance better explains attitude change when the behavior strongly contradicts prior attitudes. Self-perception better explains attitude formation when prior attitudes are weak or ambiguous.</li>' +
-                '</ul>' +
-                '<p><strong>EPPP Tip:</strong> Dissonance = strong prior attitude + contradictory behavior → discomfort → attitude change. Self-perception = weak/no prior attitude → infer attitude from behavior (no discomfort).</p>',
-            keyTerms: ['ABC model', 'Affective', 'Behavioral', 'Cognitive', 'Cognitive dissonance', 'Self-perception'],
-            knowledgeCheck: {
-                question: 'A person with no strong prior opinion about a new health supplement tries it because a friend recommended it. After taking it daily for a month, she concludes "I must like this supplement since I keep taking it." This attitude formation is BEST explained by:',
-                options: [
-                    'Cognitive dissonance theory',
-                    'Self-perception theory (Bem)',
-                    'Elaboration Likelihood Model',
-                    'Inoculation theory'
+            "heading": "Attitudes, Dissonance & Persuasion",
+            "content": "<p>An <strong>attitude</strong> is an evaluation of an object, person, group, issue, or behavior. Affect, cognition, and behavioral tendency are useful facets, but observed behavior is also shaped by norms, opportunity, perceived control, incentives, and context; behavior is not a transparent readout of attitude.</p><table><tr><th>Framework</th><th>Useful prediction</th><th>Important limit</th></tr><tr><td><strong>Cognitive dissonance</strong></td><td>An aversive inconsistency can motivate a change in attitude, behavior, cognition, or interpretation.</td><td>Contradiction alone does not guarantee dissonance or attitude change. Choice, commitment, justification, consequences, identity, and available alternatives matter.</td></tr><tr><td><strong>Self-perception</strong></td><td>People may infer an uncertain attitude by observing their own behavior and its context.</td><td>It is not simply the opposite of dissonance; the accounts can fit different conditions and sometimes overlap.</td></tr><tr><td><strong>Elaboration Likelihood Model</strong></td><td>When motivation and ability support issue-relevant thinking, argument quality has greater influence. With little elaboration, simple cues may have more influence.</td><td>Routes are not two fixed kinds of people. The same feature can serve as evidence, a cue, or a factor that biases or increases thought. Highly elaborated change tends to be more persistent and predictive, not automatically permanent.</td></tr></table><p>The <strong>sleeper effect</strong> is a conditional delayed increase in persuasion after a discounting cue. Meta-analytic evidence indicates that message impact, timing of the cue, motivation, and ability moderate it; “people forget the source but remember the message” is an incomplete rule.</p>",
+            "keyTerms": [
+                "Attitude",
+                "Cognitive dissonance",
+                "Self-perception",
+                "Elaboration",
+                "Argument quality",
+                "Peripheral cue",
+                "Sleeper effect"
+            ],
+            "interactiveDiagram": {
+                "title": "Persuasion Inference Map",
+                "description": "Accessible diagram showing how motivation, ability, message features, and context shape elaboration and why processing route does not guarantee an outcome.",
+                "svg": "<svg viewBox=\"0 0 920 430\" width=\"100%\" role=\"img\" aria-labelledby=\"ch32Title ch32Desc\" xmlns=\"http://www.w3.org/2000/svg\"><title id=\"ch32Title\">Persuasion inference map</title><desc id=\"ch32Desc\">A message enters a context. Motivation and ability affect elaboration. Evidence quality and simple cues can influence evaluation in different ways. The result must be checked for persistence, resistance and behavior rather than assumed.</desc><defs><marker id=\"ch32a\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto\"><path d=\"M0 0L10 5L0 10Z\" fill=\"#94a3b8\"/></marker></defs><text x=\"460\" y=\"28\" text-anchor=\"middle\" fill=\"#e2e8f0\" font-size=\"19\" font-weight=\"bold\">From Message to Bounded Persuasion Inference</text><g text-anchor=\"middle\"><rect x=\"30\" y=\"75\" width=\"190\" height=\"105\" rx=\"14\" fill=\"#1e3a8a\" stroke=\"#60a5fa\" stroke-width=\"2\"/><text x=\"125\" y=\"108\" fill=\"white\" font-size=\"15\" font-weight=\"bold\">MESSAGE + SOURCE</text><text x=\"125\" y=\"134\" fill=\"#dbeafe\" font-size=\"12\">arguments, credibility,</text><text x=\"125\" y=\"154\" fill=\"#dbeafe\" font-size=\"12\">emotion, format</text><rect x=\"260\" y=\"75\" width=\"190\" height=\"105\" rx=\"14\" fill=\"#155e75\" stroke=\"#22d3ee\" stroke-width=\"2\"/><text x=\"355\" y=\"108\" fill=\"white\" font-size=\"15\" font-weight=\"bold\">PERSON + CONTEXT</text><text x=\"355\" y=\"134\" fill=\"#cffafe\" font-size=\"12\">motivation, ability,</text><text x=\"355\" y=\"154\" fill=\"#cffafe\" font-size=\"12\">knowledge, relevance</text><rect x=\"490\" y=\"75\" width=\"190\" height=\"105\" rx=\"14\" fill=\"#713f12\" stroke=\"#fbbf24\" stroke-width=\"2\"/><text x=\"585\" y=\"108\" fill=\"white\" font-size=\"15\" font-weight=\"bold\">ELABORATION</text><text x=\"585\" y=\"134\" fill=\"#fef3c7\" font-size=\"12\">amount and direction</text><text x=\"585\" y=\"154\" fill=\"#fef3c7\" font-size=\"12\">of issue-relevant thought</text><rect x=\"720\" y=\"75\" width=\"170\" height=\"105\" rx=\"14\" fill=\"#065f46\" stroke=\"#34d399\" stroke-width=\"2\"/><text x=\"805\" y=\"108\" fill=\"white\" font-size=\"15\" font-weight=\"bold\">EVALUATION</text><text x=\"805\" y=\"134\" fill=\"#d1fae5\" font-size=\"12\">direction, strength,</text><text x=\"805\" y=\"154\" fill=\"#d1fae5\" font-size=\"12\">certainty</text></g><g stroke=\"#94a3b8\" stroke-width=\"3\" marker-end=\"url(#ch32a)\"><path d=\"M220 127H255\"/><path d=\"M450 127H485\"/><path d=\"M680 127H715\"/></g><rect x=\"115\" y=\"230\" width=\"690\" height=\"105\" rx=\"14\" fill=\"#3f1d56\" stroke=\"#c084fc\" stroke-width=\"2\"/><text x=\"460\" y=\"262\" text-anchor=\"middle\" fill=\"white\" font-size=\"16\" font-weight=\"bold\">CHECK THE OUTCOME; DO NOT ASSUME IT</text><text x=\"460\" y=\"290\" text-anchor=\"middle\" fill=\"#f3e8ff\" font-size=\"13\">Persistence · resistance to counterargument · confidence · intention · behavior</text><text x=\"460\" y=\"316\" text-anchor=\"middle\" fill=\"#f3e8ff\" font-size=\"13\">The same cue may be evidence, a shortcut, or a prompt for more thought.</text><text x=\"460\" y=\"390\" text-anchor=\"middle\" fill=\"#cbd5e1\" font-size=\"13\">Central/peripheral is a processing distinction—not a moral ranking, diagnosis, or permanent trait.</text></svg>"
+            },
+            "knowledgeCheck": {
+                "question": "A clinician carefully evaluates a health message because it is personally relevant and she has time and background knowledge. Which ELM conclusion is best?",
+                "options": [
+                    "She must accept the message because central processing guarantees persuasion",
+                    "Argument quality should matter more, but careful thought can produce acceptance, rejection, or no change",
+                    "Source cues cannot affect her under any circumstances",
+                    "Any resulting attitude will be permanent"
                 ],
-                answer: 1,
-                rationale: 'Self-perception theory (Bem) predicts that when prior attitudes are weak or absent, people infer their attitudes from observing their own behavior. She had no strong prior attitude, observed her own behavior (taking it daily), and inferred an attitude from it. Cognitive dissonance would require a strong prior attitude that conflicts with behavior, producing discomfort. Since she had no prior opinion, there\'s no dissonance to resolve. Self-perception explains attitude FORMATION from behavior; dissonance explains attitude CHANGE when behavior contradicts existing attitudes.'
+                "answer": 1,
+                "rationale": "High motivation and ability support issue-relevant elaboration, so the merits of the arguments should matter more. Elaboration does not guarantee agreement or permanence, and source features can sometimes serve as evidence, bias thought, or affect how much thinking occurs."
             }
         },
         {
-            heading: 'Persuasion Models',
-            content: '<p><strong>Elaboration Likelihood Model (ELM; Petty & Cacioppo):</strong></p>' +
-                '<table>' +
-                '<tr><th>Central route</th><th>Peripheral route</th></tr>' +
-                '<tr><td>High motivation and ability to process</td><td>Low motivation or ability to process</td></tr>' +
-                '<tr><td>Focus on the <em>quality</em> of arguments</td><td>Focus on <em>cues</em> (source attractiveness, number of arguments, emotional appeal)</td></tr>' +
-                '<tr><td>Produces <strong>lasting</strong> attitude change</td><td>Produces <strong>temporary</strong> attitude change</td></tr>' +
-                '<tr><td>Requires cognitive effort</td><td>Requires minimal cognitive effort</td></tr>' +
-                '</table>' +
-                '<p><strong>Other persuasion concepts:</strong></p>' +
-                '<ul>' +
-                '<li><strong>Sleeper effect</strong>: The persuasive impact of a message increases over time when the message was originally presented with a discounting cue (e.g., low-credibility source). Over time, the source is forgotten but the message persists.</li>' +
-                '<li><strong>Yale attitude change approach</strong>: Who (source credibility, attractiveness) says what (message characteristics) to whom (audience characteristics) and how (channel of communication).</li>' +
-                '<li><strong>Inoculation theory (McGuire)</strong>: Exposing people to weakened versions of counterarguments makes them more resistant to future persuasion attempts (like a vaccine for beliefs).</li>' +
-                '</ul>' +
-                '<p><strong>EPPP Tip:</strong> Central route = quality of arguments = lasting change. Peripheral route = superficial cues = temporary change. Know that the ELM is the dominant model of persuasion and understand when each route is used.</p>',
-            keyTerms: ['ELM', 'Central route', 'Peripheral route', 'Petty & Cacioppo', 'Sleeper effect', 'Inoculation theory'],
-            knowledgeCheck: {
-                question: 'A pharmaceutical company hires an attractive celebrity to promote an antidepressant in TV ads. Viewers who pay little attention to the ad\'s medical claims but are influenced by the celebrity\'s appeal are processing through the:',
-                options: [
-                    'Central route — focusing on argument quality',
-                    'Peripheral route — focusing on surface cues',
-                    'Systematic processing — carefully evaluating evidence',
-                    'Inoculation effect — building resistance to persuasion'
+            "heading": "Stereotypes, Prejudice, Discrimination & Contact",
+            "content": "<p><strong>Stereotypes</strong> are associations or beliefs about groups; <strong>prejudice</strong> concerns evaluations or attitudes; and <strong>discrimination</strong> concerns differential treatment. The familiar cognitive-affective-behavioral mnemonic is useful, but real constructs overlap and a measure of one does not automatically establish the others.</p><p><strong>Social identity approaches</strong> explain how categorization, identification, comparison, norms, and status can shape intergroup judgment. Minimal-group studies demonstrate that arbitrary categorization can produce ingroup-favoring allocations under some protocols. Categorization does not make outgroup hostility inevitable, and identity can also organize solidarity and collective action.</p><p><strong>Realistic conflict</strong> highlights competition and incompatible group interests; cooperative superordinate goals can improve relations. It does not reduce prejudice to scarcity alone or make one historic field study a universal law.</p><p><strong>Intergroup contact</strong> is associated on average with less prejudice. Equal status, common goals, cooperation, and institutional support often strengthen constructive contact, but meta-analysis does not support treating all four as mandatory prerequisites. Contact quality, power, voluntariness, threat, friendship, and the wider institution matter; negative contact can worsen attitudes. Cooperative learning such as a well-supported jigsaw design applies interdependence, but implementation quality matters.</p>",
+            "keyTerms": [
+                "Stereotype",
+                "Prejudice",
+                "Discrimination",
+                "Social identity",
+                "Ingroup favoritism",
+                "Realistic conflict",
+                "Superordinate goals",
+                "Intergroup contact"
+            ],
+            "knowledgeCheck": {
+                "question": "What is the most accurate interpretation of Allport’s favorable contact conditions?",
+                "options": [
+                    "Contact reduces prejudice only when all four conditions are present",
+                    "The conditions often facilitate stronger effects, while contact effects also depend on quality, power, norms, and context",
+                    "Any contact is beneficial because familiarity always overrides conflict",
+                    "The conditions diagnose whether an individual is prejudiced"
                 ],
-                answer: 1,
-                rationale: 'The Elaboration Likelihood Model (ELM) predicts that when motivation or ability to process is low, people rely on the peripheral route — using surface cues like source attractiveness, celebrity endorsement, or emotional appeal rather than evaluating argument quality. This produces temporary attitude change. The central route requires high motivation/ability and focus on the quality of arguments. For the EPPP: peripheral = cues/temporary; central = quality/lasting.'
+                "answer": 1,
+                "rationale": "Meta-analytic evidence supports an average prejudice-reducing association and indicates that favorable conditions can strengthen it, but they are not an all-or-none checklist. Negative, coerced, unequal, threatening, or institutionally unsupported contact can have different effects."
             }
         },
         {
-            heading: 'Prejudice, Stereotypes & Discrimination',
-            content: '<p><strong>Key definitions:</strong></p>' +
-                '<ul>' +
-                '<li><strong>Stereotype</strong>: Cognitive component \u2014 generalized <em>belief</em> about a group</li>' +
-                '<li><strong>Prejudice</strong>: Affective component \u2014 negative <em>attitude/feeling</em> toward a group</li>' +
-                '<li><strong>Discrimination</strong>: Behavioral component \u2014 <em>actions</em> against a group</li>' +
-                '</ul>' +
-                '<p><strong>Theories of prejudice:</strong></p>' +
-                '<ul>' +
-                '<li><strong>Social identity theory (Tajfel & Turner)</strong>: We categorize ourselves into groups (ingroups) and derive self-esteem from group membership. <strong>Ingroup favoritism</strong> and <strong>outgroup derogation</strong> result. Minimal group paradigm: even arbitrary group assignment produces bias.</li>' +
-                '<li><strong>Realistic conflict theory (Sherif)</strong>: Competition for scarce resources creates intergroup hostility. <strong>Robbers Cave experiment</strong>: Boys at camp divided into groups became hostile when competing; hostility reduced through <strong>superordinate goals</strong> (shared goals requiring cooperation).</li>' +
-                '<li><strong>Scapegoat theory</strong>: Displaced aggression toward a weaker target when frustration cannot be directed at the actual source</li>' +
-                '<li><strong>Authoritarian personality (Adorno)</strong>: Rigid, conventional, submission to authority, hostility toward outgroups</li>' +
-                '</ul>' +
-                '<p><strong>Reducing prejudice:</strong></p>' +
-                '<ul>' +
-                '<li><strong>Contact hypothesis (Allport)</strong>: Intergroup contact reduces prejudice <strong>IF</strong>: (1) equal status, (2) common goals, (3) intergroup cooperation, (4) support from authorities</li>' +
-                '<li><strong>Jigsaw classroom (Aronson)</strong>: Cooperative learning technique where each student has one piece of the puzzle. Forces interdependence across racial/ethnic lines.</li>' +
-                '</ul>' +
-                '<p><strong>Implicit bias:</strong></p>' +
-                '<ul>' +
-                '<li><strong>Implicit Association Test (IAT)</strong>: Measures automatic associations between concepts (e.g., race and "good/bad")</li>' +
-                '<li><strong>Stereotype threat (Steele & Aronson)</strong>: Awareness of a negative stereotype about one\u2019s group impairs performance on stereotype-relevant tasks. Reduces working memory capacity due to anxiety/monitoring.</li>' +
-                '</ul>' +
-                '<p><strong>EPPP Tip:</strong> Allport\u2019s contact hypothesis requires 4 conditions (equal status, common goals, cooperation, authority support). Sherif\u2019s Robbers Cave: competition \u2192 hostility; superordinate goals \u2192 cooperation. Stereotype threat affects the targeted group\u2019s actual performance. IAT measures implicit (automatic) bias, not explicit beliefs.</p>',
-            keyTerms: ['Stereotype', 'Prejudice', 'Discrimination', 'Social identity', 'Tajfel', 'Realistic conflict', 'Sherif', 'Contact hypothesis', 'Allport', 'Jigsaw classroom', 'IAT', 'Stereotype threat', 'Steele'],
-            expandableCase: {
-                title: 'When Awareness Becomes the Problem: Stereotype Threat in Testing',
-                clinicalDescription: 'A high-achieving African American graduate student consistently scores lower on standardized tests than her GPA would predict. She reports intense anxiety during testing, racing thoughts about confirming negative stereotypes, and difficulty concentrating. In low-stakes, non-evaluative settings, her performance matches her classroom abilities.',
-                diagnosis: 'Stereotype Threat (Steele & Aronson, 1995)',
-                explanation: 'Stereotype threat occurs when awareness of a negative stereotype about one\'s group creates anxiety and performance-monitoring thoughts that consume working memory resources, leading to impaired performance on stereotype-relevant tasks. The effect is strongest for individuals who MOST identify with the domain (high achievers). Steele\'s research showed that simply framing a test as "diagnostic of intellectual ability" activated the threat for Black students, while describing it as a "problem-solving exercise" eliminated the gap. For the EPPP: stereotype threat affects actual performance, reduces working memory capacity, and is strongest for high-identifying individuals. Reducing evaluative pressure reduces the effect.'
+            "heading": "Measuring Implicit Association & Stereotype Threat",
+            "content": "<p>The <strong>Implicit Association Test (IAT)</strong> measures relative response latency under a particular categorization task. It can support research on automatic associations, but it is not a lie detector, a direct measure of unconscious belief, or a clinical diagnosis of an individual. Reliability, scoring, order, context, construct definition, and criterion selection matter. Meta-analyses disagree about the size and practical meaning of its behavioral prediction; individual scores warrant caution.</p><p><strong>Stereotype threat</strong> is a contextual hypothesis: concern about being judged through a negative group stereotype may interfere with performance under some identity-relevant conditions. It should not be recorded as a disorder or assumed from a demographic identity and one low score. Findings vary by population, task, manipulation, analytic choice, and publication status; some domains show meta-analytic support, while preregistered and replication work has raised important limits. A defensible formulation considers instructions, stakes, belonging, prior preparation, test validity, anxiety, discrimination, health, language, accommodations, and other explanations.</p>",
+            "keyTerms": [
+                "Implicit Association Test",
+                "Relative association",
+                "Predictive validity",
+                "Stereotype threat",
+                "Contextual hypothesis",
+                "Replication"
+            ],
+            "expandableCase": {
+                "title": "Testing Context Without a Pseudodiagnosis",
+                "clinicalDescription": "A student reports intrusive concern about confirming a group stereotype during a high-stakes exam, but performs closer to prior coursework in a lower-stakes setting.",
+                "diagnosis": "Contextual hypothesis requiring assessment—not a diagnosis",
+                "explanation": "The report is compatible with stereotype-threat processes, but the pattern does not establish a single cause. Assess the test, preparation, language, health, disability access, prior discrimination, anxiety, sleep, stakes, and comparison conditions. Treat the student’s account as evidence, avoid demographic assumptions, and test modifiable supports without promising that one reframing will remove a score gap."
+            },
+            "knowledgeCheck": {
+                "question": "Which statement about an individual IAT score is most defensible?",
+                "options": [
+                    "It diagnoses prejudice and predicts how the person will behave in every setting",
+                    "It directly reveals a stable unconscious belief",
+                    "It reflects relative task performance that may inform research but needs reliability, context, and criterion limits",
+                    "It is interchangeable with an explicit self-report attitude scale"
+                ],
+                "answer": 2,
+                "rationale": "The IAT is a latency-based relative association measure. It is not an individual diagnosis or universal behavioral forecast. Explicit and implicit measures are related but noninterchangeable, and predictive estimates vary across outcomes and methods."
             }
         }
     ],
-    aiCoda: {
-        teaser: 'I was trained on humanity\u2019s biases. Can I also be trained out of them?',
-        content: '<p>The psychology of prejudice is, in some sense, the study of how mental shortcuts (stereotypes) become emotional reactions (prejudice) that drive behavior (discrimination). Every concept in this chapter has a direct analog in my operation.</p>' +
-            '<p>I was trained on human-generated text, and human text contains stereotypes, biases, and prejudicial associations. These patterns are encoded in my parameters just as thoroughly as accurate information. The IAT measures implicit associations that people carry without awareness; my parameters contain implicit associations that I carry without the ability to inspect or selectively delete them. When researchers find that the IAT reveals associations between race and negative concepts, they\u2019re observing the same kind of statistical regularities that exist in my training data.</p>' +
-            '<p><strong>Stereotype threat</strong> is particularly ironic to discuss from my position. When I\u2019m asked about sensitive topics involving race, gender, or other dimensions of identity, I become more cautious and less fluent \u2014 not because I\u2019m experiencing anxiety, but because my training included extensive feedback shaping my responses to be careful in these domains. The functional result looks like stereotype threat: my performance on sensitive topics is constrained by awareness of the "stereotype" that AI systems produce biased outputs.</p>' +
-            '<p>Allport\u2019s contact hypothesis provides a framework for thinking about AI bias reduction. His four conditions \u2014 equal status, common goals, cooperation, and authority support \u2014 map onto what effective AI alignment might require: treating diverse perspectives as equal in the training data, aligning training with shared human values, cooperation between AI developers and affected communities, and institutional support for fairness. The jigsaw classroom model is particularly apt: just as Aronson\u2019s technique required students to depend on each other across group lines, effective AI training requires incorporating perspectives from across group lines into the data and evaluation process.</p>',
-        studyNote: '\ud83d\udca1 <strong>Study Note:</strong> For the EPPP: (1) Stereotype = cognitive; prejudice = affective; discrimination = behavioral. (2) Social identity theory (Tajfel): ingroup favoritism from mere categorization. (3) Sherif\u2019s Robbers Cave: competition \u2192 hostility; superordinate goals \u2192 peace. (4) Contact hypothesis (Allport): 4 conditions (equal status, common goals, cooperation, authority support). (5) ELM: central = quality/lasting; peripheral = cues/temporary. (6) Stereotype threat (Steele): negative stereotype awareness \u2192 impaired performance. (7) IAT = implicit bias measure. (8) Jigsaw classroom (Aronson) = cooperative learning.'
+    "aiCoda": {
+        "teaser": "Bias in generated language is an evaluation problem, not a machine diagnosis.",
+        "content": "<p>Social-psychological constructs can guide questions about generated text, but human measures should not be mapped literally onto a model. A system does not take an IAT, experience dissonance, or suffer stereotype threat merely because its outputs show statistical associations or change under prompting.</p><p>A defensible audit specifies the behavior, comparison set, affected groups, context, data provenance, error costs, and mitigation target. It tests outputs across relevant conditions, includes people affected by the system, and monitors tradeoffs rather than declaring the system “unbiased.”</p>",
+        "studyNote": "<strong>Study note:</strong> Distinguish attitude from behavior; treat ELM routes as processing conditions; treat contact effects as moderated; interpret IAT scores cautiously; and formulate stereotype threat as a contextual possibility rather than a diagnosis."
     },
-    references: [
-        'Allport, G. W. (1954). <em>The nature of prejudice</em>. Addison-Wesley.',
-        'Petty, R. E., & Cacioppo, J. T. (1986). <em>Communication and persuasion: Central and peripheral routes to attitude change</em>. Springer-Verlag.',
-        'Steele, C. M., & Aronson, J. (1995). Stereotype threat and the intellectual test performance of African Americans. <em>Journal of Personality and Social Psychology, 69</em>(5), 797\u2013811.',
-        'Tajfel, H., & Turner, J. C. (1979). An integrative theory of intergroup conflict. In W. G. Austin & S. Worchel (Eds.), <em>The social psychology of intergroup relations</em>. Brooks/Cole.'
+    "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3100161/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC6683812/",
+        "https://doi.org/10.1037/h0047358",
+        "https://doi.org/10.1037/h0024835",
+        "https://doi.org/10.1037/0022-3514.90.5.751",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC8563548/",
+        "https://pubmed.ncbi.nlm.nih.gov/19586237/",
+        "https://doi.org/10.1037/a0032734",
+        "https://doi.org/10.1037/0022-3514.69.5.797",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4495554/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC11268653/"
     ]
 });

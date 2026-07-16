@@ -1,4 +1,4 @@
-﻿// view_pdf_audit_source.jsx — PDF Accessibility Audit modal CDN module
+// view_pdf_audit_source.jsx — PDF Accessibility Audit modal CDN module
 // Extracted from AlloFlowANTI.txt L30982-L38171 (May 2026, Round 4 Tier A).
 //
 // This is the single largest extraction in the project — 148 props
@@ -41,6 +41,33 @@ const OCR_LANG_OPTIONS = [
 ];
 
 // ── Accessible Word (.docx) export ──────────────────────────────────────────
+// Keep the UI's delivery decision aligned with the document pipeline. A
+// generated file is "verified" only when both saved-byte checks affirmatively
+// pass; null/missing/error routes to an explicitly marked unverified choice.
+function _alloTaggedPdfDeliveryVerdict(result) {
+  const roundTrip = result && result.roundTrip;
+  if (!roundTrip) return { ok: false, code: 'roundtrip-unavailable', reason: 'post-save structure verification was unavailable' };
+  if (roundTrip.ok !== true) {
+    const rtFails = (roundTrip.checks || []).filter((c) => c && c.status === 'fail').map((c) => c.rule);
+    const rtWarnings = (roundTrip.warnings || []).filter(Boolean);
+    return { ok: false, code: roundTrip.ok === false ? 'roundtrip-failed' : 'roundtrip-unavailable', reason: rtFails.join('; ') || rtWarnings.join('; ') || 'post-save structure verification did not complete successfully' };
+  }
+  const validator = result && result.postExportValidator;
+  if (!validator) return { ok: false, code: 'validator-unavailable', reason: 'byte-level exported-PDF validation was unavailable' };
+  if (validator.error) return { ok: false, code: 'validator-error', reason: 'byte-level exported-PDF validation failed to run: ' + validator.error };
+  const summary = validator.summary;
+  if (!summary || summary.overall !== 'PASS') {
+    const byteFails = (validator.checks || []).filter((c) => c && c.status === 'fail').map((c) => c.rule || c.label).filter(Boolean);
+    return { ok: false, code: 'validator-failed', reason: byteFails.join('; ') || 'byte-level exported-PDF validation did not pass' };
+  }
+  return { ok: true, code: 'verified', reason: '' };
+}
+
+function _alloExecutableActiveContentFindings(result) {
+  const findings = result && result.activeContent && Array.isArray(result.activeContent.findings) ? result.activeContent.findings : [];
+  const executable = { 'open-action': true, javascript: true, launch: true, 'additional-actions': true };
+  return findings.filter((finding) => finding && executable[finding.type]);
+}
 // _ensureDocxLib: lazy-load the docx UMD build (window.docx). Mirror chain —
 // cdnjs does NOT carry the docx UMD build, so two verified mirrors only.
 function _ensureDocxLib() {
@@ -132,6 +159,21 @@ async function _sha256OfBytes(bytes) {
   } catch (_) { return null; }
 }
 
+const _VIEW_MAX_PROJECT_FILE_BYTES = 320 * 1024 * 1024;
+async function _viewSha256Text(text) {
+  try {
+    if (typeof TextEncoder === 'undefined') return null;
+    return await _sha256OfBytes(new TextEncoder().encode(String(text || '')));
+  } catch (_) { return null; }
+}
+function _viewSanitizeProjectImport(parsed, pipeline) {
+  const factory = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline;
+  const helper = (pipeline && pipeline.sanitizeRemediationProject) || (factory && factory.sanitizeRemediationProject);
+  if (typeof helper !== 'function') throw new Error('Remediation security module is still loading. Please retry in a moment.');
+  const result = helper(parsed);
+  if (!result || !result.project) throw new Error('The project could not be sanitized safely.');
+  return result;
+}
 function _viewVerificationBindingHelper(pipeline, name) {
   try {
     const factory = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline;
@@ -250,6 +292,13 @@ async function _viewBindValidationToHtml(validation, html, pipeline) {
   }
   return next;
 }
+// C2 perf memo (2026-07-13): _currentTaggedValidation runs this on EVERY render
+// of the 15k-line component once a tagged validation exists, and the old body
+// UTF-8-encoded the full document each time (multi-MB doc = visible Chromebook
+// jank for the rest of the session). The byteLength of a given (validation,
+// exact-html) pair is immutable — memo on validation identity; a different html
+// string misses and re-encodes.
+const _viewUtf8LenMemo = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
 function _viewValidationMatchesHtml(validation, html) {
   if (!validation || !_viewValidVerificationHtmlBinding(validation.sourceHtmlBinding)) return false;
   const exact = String(html == null ? '' : html);
@@ -262,8 +311,14 @@ function _viewValidationMatchesHtml(validation, html) {
   if (!descriptor || descriptor.enumerable !== false || descriptor.value !== exact
       || !digestDescriptor || digestDescriptor.enumerable !== false
       || digestDescriptor.value !== validation.sourceHtmlBinding.digest) return false;
-  try { return typeof TextEncoder !== 'undefined' && new TextEncoder().encode(exact).byteLength === validation.sourceHtmlBinding.utf8ByteLength; }
-  catch (_) { return false; }
+  const memo = _viewUtf8LenMemo ? _viewUtf8LenMemo.get(validation) : null;
+  if (memo && memo.html === exact) return memo.len === validation.sourceHtmlBinding.utf8ByteLength;
+  try {
+    if (typeof TextEncoder === 'undefined') return false;
+    const len = new TextEncoder().encode(exact).byteLength;
+    try { if (_viewUtf8LenMemo) _viewUtf8LenMemo.set(validation, { html: exact, len }); } catch (_) {}
+    return len === validation.sourceHtmlBinding.utf8ByteLength;
+  } catch (_) { return false; }
 }
 function _viewAttachTaggedArtifactProof(value, ticket) {
   if (!value || typeof value !== 'object' || !ticket || !ticket.bytes || !Number.isSafeInteger(ticket.generation)) return value;
@@ -393,70 +448,22 @@ function _htmlHasExplicitLanguage(html) {
 function _viewDeriveVerificationState(input, pipeline) {
   const data = input || {};
   try {
-    const factory = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline;
-    const canonical = (pipeline && pipeline.deriveVerificationState) || (factory && factory.deriveVerificationState);
+    const modules = typeof window !== 'undefined' && window.AlloModules;
+    const policy = modules && modules.VerificationPolicy;
+    const factory = modules && modules.createDocPipeline;
+    const canonical = (pipeline && pipeline.deriveVerificationState)
+      || (policy && policy.deriveVerificationState)
+      || (factory && factory.deriveVerificationState);
     if (typeof canonical === 'function') {
       const result = canonical(data);
       if (result && result.coverage && typeof result.verificationState === 'string') return result;
     }
-  } catch (_) {}
-  const finite = (value) => typeof value === 'number' && Number.isFinite(value);
-  const count = (value) => finite(value) ? Math.max(0, Math.floor(value)) : null;
-  const ai = data.ai || data.verificationAudit || null;
-  const axe = data.axe || data.axeAudit || null;
-  const equalAccess = data.equalAccess || data.secondEngineAudit || null;
-  const reasons = [];
-
-  let aiStatus = 'unavailable';
-  if (!finite(ai && ai.score)) reasons.push('ai-unavailable');
-  else if (data.aiIncomplete || data.aiVerificationIncomplete || ai._partialAudit || ai.partial || ai._scoreDegraded || ai.scoreDegraded || ai.synthesized) {
-    aiStatus = 'partial';
-    if (data.aiIncomplete || data.aiVerificationIncomplete) reasons.push('ai-verification-incomplete');
-    if (ai._partialAudit || ai.partial) reasons.push('ai-partial-audit');
-    if (ai._scoreDegraded || ai.scoreDegraded) reasons.push('ai-score-degraded');
-    if (ai.synthesized) reasons.push('ai-synthesized');
-  } else aiStatus = 'complete';
-
-  let axeStatus = 'unavailable';
-  let axeReviewCount = 0;
-  if (!finite(axe && axe.score)) reasons.push('axe-unavailable');
-  else {
-    const incomplete = count(axe.totalIncomplete);
-    if (incomplete === null) { axeStatus = 'partial'; reasons.push('axe-review-count-unknown'); }
-    else if (incomplete > 0) { axeStatus = 'complete-with-review'; axeReviewCount = incomplete; reasons.push('axe-incomplete:' + incomplete); }
-    else axeStatus = 'complete';
-  }
-
-  let eaStatus = 'unavailable';
-  let eaReviewCount = 0;
-  if (!finite(equalAccess && equalAccess.score)) reasons.push('equal-access-unavailable');
-  else {
-    const potential = count(equalAccess.potentialViolations);
-    const manual = count(equalAccess.manualViolations);
-    const aggregate = count(equalAccess.reviewFindingCount);
-    if ((potential === null || manual === null) && aggregate === null) { eaStatus = 'partial'; reasons.push('equal-access-review-count-unknown'); }
-    else {
-      eaReviewCount = aggregate !== null ? Math.max(aggregate, (potential || 0) + (manual || 0)) : ((potential || 0) + (manual || 0));
-      if (eaReviewCount > 0) {
-        eaStatus = 'complete-with-review';
-        if ((potential || 0) > 0) reasons.push('equal-access-potential:' + potential);
-        if ((manual || 0) > 0) reasons.push('equal-access-manual:' + manual);
-        if ((potential === null || manual === null) && aggregate > 0) reasons.push('equal-access-review-findings:' + aggregate);
-      } else eaStatus = 'complete';
+    if (policy && typeof policy.unavailableVerificationState === 'function') {
+      return policy.unavailableVerificationState('verification-policy-module-unavailable');
     }
-  }
-
-  const extra = (Array.isArray(data.extraReasons) ? data.extraReasons : (data.extraReasons == null || data.extraReasons === '' ? [] : [data.extraReasons]))
-    .map((reason) => String(reason == null ? '' : reason).trim()).filter(Boolean);
-  reasons.push(...extra);
-  if (data.languageReviewRequired) reasons.push(String(data.languageReviewReason || 'document-language-needs-review'));
-  const reviewCount = axeReviewCount + eaReviewCount + extra.length + Number(!!data.languageReviewRequired);
-  const allComplete = aiStatus === 'complete' && axeStatus === 'complete' && eaStatus === 'complete';
-  const allUnavailable = aiStatus === 'unavailable' && axeStatus === 'unavailable' && eaStatus === 'unavailable';
-  const hasReviewEvidence = reviewCount > 0 || aiStatus === 'complete-with-review' || axeStatus === 'complete-with-review' || eaStatus === 'complete-with-review';
-  const verificationState = allUnavailable ? 'unavailable' : hasReviewEvidence ? 'review-required' : allComplete ? 'complete' : 'partial';
-  const coverage = { standard: 'WCAG 2.2 AA', ai: aiStatus, axe: axeStatus, equalAccess: eaStatus, pdfUaSelfCheck: data.pdfUaSelfCheck || 'not-run' };
-  return { verificationCoverage: coverage, coverage, verificationState, afterScoreVerified: verificationState === 'complete', requiresManualReview: verificationState !== 'complete', reviewCount, reasons };
+  } catch (_) {}
+  const coverage = { standard: 'WCAG 2.2 AA', ai: 'unavailable', axe: 'unavailable', equalAccess: 'unavailable', pdfUaSelfCheck: 'not-run' };
+  return { verificationCoverage: coverage, coverage, verificationState: 'unavailable', afterScoreVerified: false, requiresManualReview: true, reviewCount: 1, reasons: ['verification-policy-module-unavailable'] };
 }
 function _viewVerificationForExport(result, pipeline) {
   const value = result || {};
@@ -470,7 +477,9 @@ function _viewVerificationForExport(result, pipeline) {
     extraReasons: value.verificationExtraReasons || [],
   }, pipeline);
   const binding = _viewValidVerificationHtmlBinding(value.verificationHtmlBinding) ? value.verificationHtmlBinding : null;
-  const stored = !!(value.verificationCoverage && value.verificationCoverage.standard === 'WCAG 2.2 AA' && /^(complete|review-required|partial|unavailable)$/.test(value.verificationState || ''));
+  // C7 (2026-07-13): prefix-match the standard so the NEXT version bump doesn't
+  // silently demote every canonical save made under the previous label.
+  const stored = !!(value.verificationCoverage && /^WCAG 2\.\d+ AA$/.test(String(value.verificationCoverage.standard || '')) && /^(complete|review-required|partial|unavailable)$/.test(value.verificationState || ''));
   const liveBound = _viewIsLiveVerificationHtmlBound(value, value.accessibleHtml, pipeline);
   if (stored && liveBound) return { ...derived, verificationHtmlBinding: binding };
   const why = stored ? 'verification-html-binding-missing-or-stale' : 'This saved result predates canonical verification coverage and is unverified.';
@@ -506,6 +515,112 @@ function _normTokenForDiffShared(s) {
 // docx-library types so it stays unit-testable headlessly —
 // tests/view_pdf_audit_docx_spec.test.js extracts this function at runtime
 // (anti-drift pattern); keep the "// end _htmlToDocxSpec" marker intact.
+function _htmlToStructuredText(html, markdown) {
+  const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  const lines = [];
+  const mdTick = String.fromCharCode(96);
+  const clean = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+  const inline = (node) => {
+    if (!node) return '';
+    if (node.nodeType === 3) return node.textContent || '';
+    if (node.nodeType !== 1) return '';
+    const tag = node.tagName.toLowerCase();
+    if (tag === 'br') return '\n';
+    if (tag === 'table' || tag === 'ul' || tag === 'ol') return '';
+    if (tag === 'img') {
+      const alt = clean(node.getAttribute('alt'));
+      return alt ? '[Image: ' + alt + ']' : '';
+    }
+    if (tag === 'input') {
+      const type = (node.getAttribute('type') || 'text').toLowerCase();
+      if (type === 'checkbox' || type === 'radio') return node.checked || node.hasAttribute('checked') ? '[x]' : '[ ]';
+      return node.getAttribute('value') || node.getAttribute('placeholder') || '________';
+    }
+    if (tag === 'select') {
+      const selected = node.querySelector('option:checked') || node.querySelector('option[selected]') || node.querySelector('option');
+      return selected ? selected.textContent || '' : '';
+    }
+    let text = Array.from(node.childNodes || []).map(inline).join('');
+    if (markdown && tag === 'a' && node.getAttribute('href')) text = '[' + (text || node.getAttribute('href')) + '](' + node.getAttribute('href').replace(/([()\\])/g, '\\$1') + ')';
+    if (markdown && (tag === 'strong' || tag === 'b')) text = '**' + text + '**';
+    if (markdown && (tag === 'em' || tag === 'i')) text = '*' + text + '*';
+    if (markdown && tag === 'code') text = mdTick + text.split(mdTick).join('\\' + mdTick) + mdTick;
+    if (markdown && (tag === 'del' || tag === 's')) text = '~~' + text + '~~';
+    return text;
+  };
+  const emitTable = (table) => {
+    const caption = Array.from(table.children || []).find((node) => node.tagName === 'CAPTION');
+    if (caption) lines.push((markdown ? '**' : '') + clean(inline(caption)) + (markdown ? '**' : ''), '');
+    const rowNodes = Array.from(table.querySelectorAll('tr')).filter((tr) => tr.closest('table') === table);
+    const cellValue = (cell) => {
+      let value = String(inline(cell) || '').replace(/[ \t]+/g, ' ').replace(/\s*\n\s*/g, markdown ? '<br>' : ' / ').trim();
+      if (markdown) value = value.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+      return value;
+    };
+    const rows = rowNodes.map((tr) => Array.from(tr.children).filter((cell) => /^(TH|TD)$/.test(cell.tagName)).map(cellValue));
+    if (rows.length && markdown) {
+      const hasHeader = Array.from(rowNodes[0].children || []).some((cell) => cell.tagName === 'TH');
+      const header = hasHeader ? rows[0] : rows[0].map(() => '');
+      lines.push('| ' + header.join(' | ') + ' |', '| ' + header.map(() => '---').join(' | ') + ' |');
+      (hasHeader ? rows.slice(1) : rows).forEach((row) => lines.push('| ' + row.join(' | ') + ' |'));
+    } else rows.forEach((row) => lines.push(row.join('\t')));
+    lines.push('');
+    Array.from(table.querySelectorAll('table')).filter((nested) => nested !== table && nested.parentElement.closest('table') === table).forEach(emitTable);
+  };
+  const emitList = (list, depth) => {
+    const ordered = list.tagName === 'OL';
+    const startAt = ordered ? (parseInt(list.getAttribute('start'), 10) || 1) : 1;
+    const items = Array.from(list.children || []).filter((item) => item.tagName === 'LI');
+    items.forEach((item, index) => {
+      const own = Array.from(item.childNodes || []).filter((node) => !(node.nodeType === 1 && /^(UL|OL|TABLE)$/.test(node.tagName))).map(inline).join('');
+      lines.push('  '.repeat(depth || 0) + (ordered ? (startAt + index) + '. ' : '- ') + clean(own));
+      Array.from(item.children || []).filter((node) => /^(UL|OL)$/.test(node.tagName)).forEach((nested) => emitList(nested, (depth || 0) + 1));
+      Array.from(item.children || []).filter((node) => node.tagName === 'TABLE').forEach(emitTable);
+    });
+    if (!(depth || 0)) lines.push('');
+  };
+  const visit = (child, depth) => {
+    if (!child || child.nodeType !== 1) return;
+    const tag = child.tagName.toLowerCase();
+    if (tag === 'script' || tag === 'style' || tag === 'title') return;
+    if (/^h[1-6]$/.test(tag)) lines.push((markdown ? '#'.repeat(Number(tag[1])) + ' ' : '') + clean(inline(child)), '');
+    else if (tag === 'p') lines.push(clean(inline(child)), '');
+    else if (tag === 'blockquote') lines.push((markdown ? '> ' : '') + clean(inline(child)), '');
+    else if (tag === 'figcaption') lines.push((markdown ? '*' : '') + clean(inline(child)) + (markdown ? '*' : ''), '');
+    else if (tag === 'summary') lines.push((markdown ? '**' : '') + clean(inline(child)) + (markdown ? '**' : ''), '');
+    else if (tag === 'dt') lines.push((markdown ? '**' : '') + clean(inline(child)) + (markdown ? '**' : ''));
+    else if (tag === 'dd') lines.push((markdown ? ': ' : '  ') + clean(inline(child)), '');
+    else if (tag === 'ul' || tag === 'ol') emitList(child, depth || 0);
+    else if (tag === 'table') emitTable(child);
+    else if (tag === 'img') { const value = clean(inline(child)); if (value) lines.push(value, ''); }
+    else if (tag === 'pre') { const value = String(child.textContent || '').replace(/^\s+|\s+$/g, ''); if (value) lines.push(markdown ? mdTick.repeat(3) + 'text\n' + value + '\n' + mdTick.repeat(3) : value, ''); }
+    else if (tag === 'hr') lines.push(markdown ? '---' : '----------', '');
+    else if (tag === 'details' && child.classList.contains('allo-math-source')) return;
+    else {
+      let pending = '';
+      const flush = () => { const value = clean(pending); if (value) lines.push(value, ''); pending = ''; };
+      for (const node of Array.from(child.childNodes || [])) {
+        if (node.nodeType === 1 && /^(H[1-6]|P|BLOCKQUOTE|FIGCAPTION|SUMMARY|DT|DD|UL|OL|TABLE|IMG|PRE|HR|DETAILS|DIV|SECTION|ARTICLE|MAIN|ASIDE|NAV|FIGURE|DL)$/.test(node.tagName)) { flush(); visit(node, depth || 0); }
+        else pending += inline(node);
+      }
+      flush();
+    }
+  };
+  const walk = (node, depth) => {
+    let pending = '';
+    const flush = () => { const value = clean(pending); if (value) lines.push(value, ''); pending = ''; };
+    for (const child of Array.from(node.childNodes || [])) {
+      if (child.nodeType === 1) { flush(); visit(child, depth || 0); }
+      else pending += child.textContent || '';
+    }
+    flush();
+  };
+  walk(doc.body || doc.documentElement, 0);
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+function _htmlToPlainTextExport(html) { return _htmlToStructuredText(html, false); }
+function _htmlToMarkdownExport(html) { return _htmlToStructuredText(html, true); }
+
 function _htmlToDocxSpec(html) {
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
   const title = (((doc.querySelector('title') || {}).textContent) || ((doc.querySelector('h1') || {}).textContent) || 'Accessible document').trim().slice(0, 200) || 'Accessible document';
@@ -537,13 +652,15 @@ function _htmlToDocxSpec(html) {
   };
   const inlineRuns = (el, fmt) => {
     fmt = fmt || {};
+    const ownLang = el && el.getAttribute && (el.getAttribute('lang') || el.getAttribute('xml:lang'));
+    if (ownLang && !fmt.lang) fmt = { ...fmt, lang: ownLang };
     let out = [];
     const kids = el.childNodes || [];
     for (let i = 0; i < kids.length; i++) {
       const n = kids[i];
       if (n.nodeType === 3) {
         const txt = String(n.textContent || '').replace(/\s+/g, ' ');
-        if (txt) out.push({ text: txt, bold: !!fmt.bold, italic: !!fmt.italic, underline: !!fmt.underline, link: fmt.link || null, sup: !!fmt.sup, sub: !!fmt.sub });
+        if (txt) out.push({ text: txt, bold: !!fmt.bold, italic: !!fmt.italic, underline: !!fmt.underline, strike: !!fmt.strike, highlight: !!fmt.highlight, code: !!fmt.code, lang: fmt.lang || null, link: fmt.link || null, sup: !!fmt.sup, sub: !!fmt.sub });
         continue;
       }
       if (n.nodeType !== 1 || _isControlEl(n)) continue;
@@ -576,12 +693,28 @@ function _htmlToDocxSpec(html) {
         // flattening to baseline in docx/pptx. Thread vertical alignment.
         sup: fmt.sup || tag === 'SUP',
         sub: fmt.sub || tag === 'SUB',
+        strike: fmt.strike || tag === 'S' || tag === 'DEL',
+        highlight: fmt.highlight || tag === 'MARK',
+        code: fmt.code || tag === 'CODE' || tag === 'KBD' || tag === 'SAMP',
+        lang: (n.getAttribute && (n.getAttribute('lang') || n.getAttribute('xml:lang'))) || fmt.lang || null,
       }));
     }
     return out;
   };
   const _runsText = (runs) => runs.map((r) => r.text || '').join('').trim();
   const pushParagraph = (runs, opts) => { if (_runsText(runs)) { blocks.push({ type: 'paragraph', runs, ...(opts && opts.hanging ? { hanging: true } : {}), ...(opts && opts.centered ? { centered: true } : {}) }); counts.paragraphs++; } };
+  const pushMixedParagraph = (el, opts) => {
+    let pending = [];
+    const flush = () => { if (pending.length) { pushParagraph(inlineRuns({ childNodes: pending }, {}), opts); pending = []; } };
+    const visit = (parent) => {
+      for (const child of Array.from(parent.childNodes || [])) {
+        if (child.nodeType === 1 && child.tagName === 'IMG') { flush(); pushImage(child, ''); }
+        else if (child.nodeType === 1 && child.querySelector && child.querySelector('img')) { flush(); visit(child); flush(); }
+        else pending.push(child);
+      }
+    };
+    visit(el); flush();
+  };
   const pushImage = (img, fallbackAlt) => {
     const src = img.getAttribute('src') || '';
     const alt = (img.getAttribute('alt') || fallbackAlt || '').trim();
@@ -639,13 +772,14 @@ function _htmlToDocxSpec(html) {
         // title-page lines (title/author/affiliation/course) are centered in any
         // mode — a title page is inherently centered.
         const isRef = (n.classList && n.classList.contains('allo-ref-entry')) || (n.closest && n.closest('.allo-references'));
-        pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {}), { hanging: !!isRef, centered: !!_inTitlePage });
+        if (tag === 'P' && n.querySelector && n.querySelector('img')) pushMixedParagraph(n, { hanging: !!isRef, centered: !!_inTitlePage });
+        else pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : (tag === 'PRE' ? { code: true } : {})), { hanging: !!isRef, centered: !!_inTitlePage });
         continue;
       }
       if (tag === 'UL' || tag === 'OL') { const items = []; listItems(n, 0, items); if (items.length) { blocks.push({ type: 'list', ordered: tag === 'OL', items }); counts.lists++; } continue; }
       if (tag === 'TABLE') {
         const rows = [];
-        const trs = n.querySelectorAll('tr');
+        const trs = Array.from(n.querySelectorAll('tr')).filter((tr) => tr.closest('table') === n);
         for (let r = 0; r < trs.length; r++) {
           const tr = trs[r];
           const cells = [];
@@ -657,15 +791,18 @@ function _htmlToDocxSpec(html) {
             // Merged cells (builder-review A5, 2026-07-01): carry colspan/rowspan into the
             // spec so the DOCX builder can emit real merges. HTML omits cells covered by a
             // rowspan, which is exactly the shape the docx lib's rowSpan expects.
-            cells.push({ runs: inlineRuns(cell, {}), header: cell.tagName === 'TH',
+            const cellCopy = cell.cloneNode(true);
+            Array.from(cellCopy.querySelectorAll('table')).forEach((nested) => nested.remove());
+            cells.push({ runs: inlineRuns(cellCopy, {}), header: cell.tagName === 'TH', scope: (cell.getAttribute('scope') || '').toLowerCase(),
               colSpan: Math.max(1, parseInt(cell.getAttribute('colspan') || '1', 10) || 1),
               rowSpan: Math.max(1, parseInt(cell.getAttribute('rowspan') || '1', 10) || 1) });
           }
           if (cells.length) rows.push({ header: allTh || (tr.parentNode && tr.parentNode.tagName === 'THEAD'), cells });
         }
         if (rows.length) { blocks.push({ type: 'table', rows }); counts.tables++; }
-        const cap = n.querySelector('caption');
+        const cap = Array.from(n.children || []).find((child) => child.tagName === 'CAPTION');
         if (cap) pushParagraph(inlineRuns(cap, { italic: true }));
+        Array.from(n.querySelectorAll('table')).filter((nested) => nested !== n && nested.parentElement.closest('table') === n).forEach((nested) => walk({ childNodes: [nested] }));
         continue;
       }
       if (tag === 'IMG') { pushImage(n, ''); continue; }
@@ -680,6 +817,28 @@ function _htmlToDocxSpec(html) {
       if (tag === 'DIV' || tag === 'MAIN' || tag === 'SECTION' || tag === 'ARTICLE' || tag === 'HEADER' || tag === 'FOOTER' || tag === 'NAV' || tag === 'ASIDE' || tag === 'DL' || tag === 'FORM') {
         if (n.querySelector && n.querySelector('h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,dl,pre,div,section,article')) walk(n);
         else pushParagraph(inlineRuns(n, {}));
+        continue;
+      }
+      if (tag === 'DETAILS') {
+        // AI companion panels (export-format review R2 #9). The old catch-all below
+        // fused every text leaf of a <details> into ONE run, gluing adjacent chart
+        // cell values together digit-to-digit ("Q1Q2...101520"). allo-math-source is
+        // a redundant "show source" panel (the equation is already rendered in the
+        // body), so drop it entirely like the audio lane does; other panels keep
+        // their CONTENT, walked as real blocks (the data table stays a table). The
+        // toggle <summary> label and raw <math> (MathML is a foreign element, so its
+        // tagName is lowercase — normalize) are skipped.
+        if (n.classList && n.classList.contains('allo-math-source')) continue;
+        _flushInline();
+        const _dk = [];
+        const _dkids = n.childNodes || [];
+        for (let _di = 0; _di < _dkids.length; _di++) {
+          const _dn = _dkids[_di];
+          const _tn = (_dn.tagName || '').toUpperCase();
+          if (_dn.nodeType === 1 && (_tn === 'SUMMARY' || _tn === 'MATH')) continue;
+          _dk.push(_dn);
+        }
+        walk({ childNodes: _dk });
         continue;
       }
       pushParagraph(inlineRuns(n, {}));
@@ -720,6 +879,9 @@ function _expXmlEsc(s) {
 
 // Serialize a spec run-array to ODF inline markup (nested text:spans so we only
 // need single-property styles, all defined in the automatic-styles below).
+function _odtLangStyleName(lang) {
+  return 'T_Lang_' + String(lang || '').replace(/[^A-Za-z0-9]/g, '_').slice(0, 48);
+}
 function _odtRuns(runs, footnotes) {
   return (runs || []).map((r) => {
     if (!r) return '';
@@ -736,8 +898,12 @@ function _odtRuns(runs, footnotes) {
     let t = _expXmlEsc(r.text);
     if (r.sub) t = '<text:span text:style-name="T_Sub">' + t + '</text:span>';
     if (r.sup) t = '<text:span text:style-name="T_Sup">' + t + '</text:span>';
+    if (r.code) t = '<text:span text:style-name="T_Code">' + t + '</text:span>';
+    if (r.strike) t = '<text:span text:style-name="T_Strike">' + t + '</text:span>';
+    if (r.highlight) t = '<text:span text:style-name="T_Highlight">' + t + '</text:span>';
     if (r.italic) t = '<text:span text:style-name="T_Italic">' + t + '</text:span>';
     if (r.bold) t = '<text:span text:style-name="T_Bold">' + t + '</text:span>';
+    if (r.lang) t = '<text:span text:style-name="' + _odtLangStyleName(r.lang) + '">' + t + '</text:span>';
     if (r.link) t = '<text:a xlink:href="' + _expXmlEsc(r.link) + '">' + t + '</text:a>';
     return t;
   }).join('');
@@ -767,9 +933,65 @@ function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listClo
   return out;
 }
 
-function _htmlToOdtContentXml(html) {
+function _dataImageInfo(src) {
+  const match = /^data:(image\/(?:png|jpeg|jpg|gif|webp));base64,([a-z0-9+/=\r\n]+)$/i.exec(String(src || ''));
+  if (!match) return null;
+  try {
+    const mime = match[1].toLowerCase().replace('image/jpg', 'image/jpeg');
+    const base64 = match[2].replace(/\s+/g, '');
+    const bin = atob(base64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    let width = 0, height = 0;
+    if (mime === 'image/png' && bytes.length >= 24 && bytes[0] === 0x89 && bytes[1] === 0x50) {
+      width = ((bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19]) >>> 0;
+      height = ((bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23]) >>> 0;
+    } else if (mime === 'image/gif' && bytes.length >= 10) {
+      width = bytes[6] | (bytes[7] << 8); height = bytes[8] | (bytes[9] << 8);
+    } else if (mime === 'image/jpeg' && bytes.length > 4) {
+      let pos = 2;
+      while (pos + 8 < bytes.length) {
+        if (bytes[pos] !== 0xff) { pos++; continue; }
+        const marker = bytes[pos + 1], size = (bytes[pos + 2] << 8) | bytes[pos + 3];
+        if ([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)) {
+          height = (bytes[pos + 5] << 8) | bytes[pos + 6]; width = (bytes[pos + 7] << 8) | bytes[pos + 8]; break;
+        }
+        if (size < 2) break; pos += 2 + size;
+      }
+    }
+    return { mime, ext: mime === 'image/jpeg' ? 'jpg' : mime.slice(6), base64, bytes, width, height };
+  } catch (_) { return null; }
+}
+function _imageDisplayPx(info, widthAttr, heightAttr) {
+  const attrW = Math.max(0, parseInt(widthAttr, 10) || 0), attrH = Math.max(0, parseInt(heightAttr, 10) || 0);
+  const ratio = info && info.width > 0 && info.height > 0 ? info.width / info.height : 0;
+  let width = attrW || ((info && info.width >= 32) ? info.width : 480);
+  let height = attrH || (ratio ? Math.round(width / ratio) : Math.round(width * 0.66));
+  if (attrH && !attrW && ratio) width = Math.round(height * ratio);
+  if (attrW && !attrH && ratio) height = Math.round(width / ratio);
+  const scale = Math.min(1, 600 / Math.max(1, width), 720 / Math.max(1, height));
+  return { width: Math.max(24, Math.round(width * scale)), height: Math.max(24, Math.round(height * scale)) };
+}
+
+function _htmlToOdtContentXml(html, imageAssets) {
   const spec = _htmlToDocxSpec(html);
   const body = [];
+  const _odtLangs = new Set();
+  const _collectLangs = (runs) => (runs || []).forEach((run) => { if (run && run.lang) _odtLangs.add(run.lang); });
+  for (const block of (spec.blocks || [])) {
+    _collectLangs(block.runs);
+    (block.items || []).forEach((item) => _collectLangs(item.runs));
+    (block.rows || []).forEach((row) => (row.cells || []).forEach((cell) => _collectLangs(cell.runs)));
+  }
+  Object.keys(spec.footnotes || {}).forEach((key) => _collectLangs(spec.footnotes[key]));
+  const _odtLangStyles = Array.from(_odtLangs).map((language) => {
+    const parts = String(language).split(/[-_]/);
+    const primary = /^[A-Za-z]{2,3}$/.test(parts[0] || '') ? parts[0].toLowerCase() : 'none';
+    const region = parts.slice(1).find((part) => /^(?:[A-Za-z]{2}|[0-9]{3})$/.test(part));
+    return '<style:style style:name="' + _odtLangStyleName(language) + '" style:family="text"><style:text-properties fo:language="' + _expXmlEsc(primary) + '"' + (region ? ' fo:country="' + _expXmlEsc(region.toUpperCase()) + '"' : '') + '/></style:style>';
+  }).join('');
+  const imageBySrc = new Map((imageAssets || []).map((asset) => [asset.src, asset]));
+  let tableSeq = 0, imageFrameSeq = 0;
   for (const b of (spec.blocks || [])) {
     if (b.type === 'heading') {
       const lvl = Math.min(6, Math.max(1, b.level || 1));
@@ -799,10 +1021,12 @@ function _htmlToOdtContentXml(html) {
           const c = cells[ci++];
           if (!c) break;
           const cs = Math.max(1, c.colSpan || 1), rs = Math.max(1, c.rowSpan || 1);
-          out += '<table:table-cell office:value-type="string"'
+          const _cellStyle = c.header ? 'TableHeaderCell' : 'TableCell';
+          const _paraStyle = c.header ? 'P_TableHeader' : 'Standard';
+          out += '<table:table-cell table:style-name="' + _cellStyle + '" office:value-type="string"'
             + (cs > 1 ? ' table:number-columns-spanned="' + cs + '"' : '')
             + (rs > 1 ? ' table:number-rows-spanned="' + rs + '"' : '')
-            + '><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + '</text:p></table:table-cell>';
+            + '><text:p text:style-name="' + _paraStyle + '">' + _odtRuns(c.runs, spec.footnotes) + '</text:p></table:table-cell>';
           if (cs > 1) out += Array(cs - 1).fill('<table:covered-table-cell/>').join('');
           if (rs > 1) for (let k = 0; k < cs; k++) _pend[col + k] = (_pend[col + k] || 0) + (rs - 1);
           col += cs;
@@ -810,31 +1034,56 @@ function _htmlToOdtContentXml(html) {
         return out + '</table:table-row>';
       };
       const _rows = _rows0;
+      const _dataRows = _rows.filter((row) => !row.header);
+      let _headerCols = 0;
+      if (_dataRows.length) {
+        while (_headerCols < cols && _dataRows.every((row) => {
+          const cell = (row.cells || [])[_headerCols];
+          return !!(cell && cell.header && cell.scope === 'row' && Math.max(1, cell.colSpan || 1) === 1);
+        })) _headerCols++;
+      }
+      const _colXml = (_headerCols > 0
+        ? '<table:table-header-columns><table:table-column table:number-columns-repeated="' + _headerCols + '"/></table:table-header-columns>'
+        : '') + (cols > _headerCols ? '<table:table-column table:number-columns-repeated="' + (cols - _headerCols) + '"/>' : '');
       // ODF: wrap the leading header row(s) in <table:table-header-rows> so AT announces them as
       // headers (audit #19 — every row used to serialize as a plain table-row, so DOCX/DTBook kept
       // header semantics but ODT alone lost them). r.header is the spec's all-th/<thead> flag.
       let _hdr = 0;
       while (_hdr < _rows.length && _rows[_hdr].header) _hdr++;
       const _hdrXml = _hdr > 0 ? '<table:table-header-rows>' + _rows.slice(0, _hdr).map(_odtRow).join('') + '</table:table-header-rows>' : '';
-      body.push('<table:table table:name="Table1">' +
-        '<table:table-column table:number-columns-repeated="' + cols + '"/>' +
+      body.push('<table:table table:name="Table' + (++tableSeq) + '">' +
+        _colXml +
         _hdrXml + _rows.slice(_hdr).map(_odtRow).join('') +
         '</table:table>');
     } else if (b.type === 'image') {
-      // ODT image embedding needs Pictures/ + draw:frame; degrade to alt text so
-      // the figure's meaning is never silently lost (same rule as the docx path).
-      if (b.alt) body.push('<text:p text:style-name="Standard">[' + _expXmlEsc(b.alt) + ']</text:p>');
+      const asset = b.src ? imageBySrc.get(b.src) : null;
+      if (asset) {
+        const size = _imageDisplayPx(asset, b.width, b.height);
+        const widthIn = Math.max(0.25, size.width / 96).toFixed(3);
+        const heightIn = Math.max(0.25, size.height / 96).toFixed(3);
+        const alt = _expXmlEsc(b.alt || 'Image');
+        body.push('<text:p text:style-name="Standard"><draw:frame draw:name="Image' + (++imageFrameSeq) + '" text:anchor-type="as-char" svg:width="' + widthIn + 'in" svg:height="' + heightIn + 'in" draw:z-index="0">' +
+          '<draw:image xlink:href="' + _expXmlEsc(asset.path) + '" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>' +
+          '<svg:title>' + alt + '</svg:title><svg:desc>' + alt + '</svg:desc></draw:frame></text:p>');
+      } else if (b.alt) body.push('<text:p text:style-name="Standard">[Image: ' + _expXmlEsc(b.alt) + ']</text:p>');
     } else if (b.type === 'pagebreak') {
       body.push('<text:p text:style-name="P_PageBreak"/>');
     }
   }
   return '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" office:version="1.2">\n' +
+    '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" office:version="1.2">\n' +
     '<office:automatic-styles>' +
     '<style:style style:name="T_Bold" style:family="text"><style:text-properties fo:font-weight="bold"/></style:style>' +
     '<style:style style:name="T_Italic" style:family="text"><style:text-properties fo:font-style="italic"/></style:style>' +
     '<style:style style:name="T_Sub" style:family="text"><style:text-properties style:text-position="sub 58%"/></style:style>' +
     '<style:style style:name="T_Sup" style:family="text"><style:text-properties style:text-position="super 58%"/></style:style>' +
+    '<style:style style:name="T_Code" style:family="text"><style:text-properties style:font-name="Liberation Mono"/></style:style>' +
+    '<style:style style:name="T_Strike" style:family="text"><style:text-properties style:text-line-through-style="solid"/></style:style>' +
+    '<style:style style:name="T_Highlight" style:family="text"><style:text-properties fo:background-color="#FFF59D"/></style:style>' +
+    _odtLangStyles +
+    '<style:style style:name="P_TableHeader" style:family="paragraph"><style:text-properties fo:font-weight="bold"/></style:style>' +
+    '<style:style style:name="TableCell" style:family="table-cell"><style:table-cell-properties fo:border="0.75pt solid #94A3B8" fo:padding="0.06in"/></style:style>' +
+    '<style:style style:name="TableHeaderCell" style:family="table-cell"><style:table-cell-properties fo:background-color="#E2E8F0" fo:border="0.75pt solid #64748B" fo:padding="0.06in"/></style:style>' +
     '<style:style style:name="P_PageBreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>' +
     '<text:list-style style:name="L_Bullet"><text:list-level-style-bullet text:level="1" text:bullet-char="•"><style:list-level-properties text:space-before="0.25in" text:min-label-width="0.25in"/></text:list-level-style-bullet></text:list-style>' +
     '<text:list-style style:name="L_Number"><text:list-level-style-number text:level="1" style:num-format="1" text:num-suffix="."><style:list-level-properties text:space-before="0.25in" text:min-label-width="0.25in"/></text:list-level-style-number></text:list-style>' +
@@ -844,13 +1093,29 @@ function _htmlToOdtContentXml(html) {
 }
 
 // The fixed ODT sidecar files (mimetype must be FIRST + STORED in the zip).
-const _ODT_MANIFEST_XML = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-  '<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">' +
-  '<manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.text"/>' +
-  '<manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>' +
-  '<manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>' +
-  '<manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>' +
-  '</manifest:manifest>';
+function _htmlToOdtPackageParts(html) {
+  const spec = _htmlToDocxSpec(html);
+  const images = [], seen = new Map();
+  for (const block of (spec.blocks || [])) {
+    if (block.type !== 'image' || !block.src || seen.has(block.src)) continue;
+    const info = _dataImageInfo(block.src);
+    if (!info) continue;
+    const asset = { src: block.src, path: 'Pictures/image-' + (images.length + 1) + '.' + info.ext, mime: info.mime, base64: info.base64, width: info.width, height: info.height };
+    images.push(asset); seen.set(block.src, asset);
+  }
+  return { contentXml: _htmlToOdtContentXml(html, images), images };
+}
+function _buildOdtManifestXml(images) {
+  const entries = (images || []).map((image) => '<manifest:file-entry manifest:full-path="' + _expXmlEsc(image.path) + '" manifest:media-type="' + _expXmlEsc(image.mime) + '"/>').join('');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">' +
+    '<manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.text"/>' +
+    '<manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>' +
+    '<manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>' +
+    '<manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>' +
+    entries + '</manifest:manifest>';
+}
+
 const _ODT_STYLES_XML = '<?xml version="1.0" encoding="UTF-8"?>\n' +
   '<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" office:version="1.2"><office:styles>' +
   '<style:default-style style:family="paragraph"><style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/></style:default-style>' +
@@ -874,13 +1139,15 @@ function _expDtbookRuns(runs) {
     let t = _expXmlEsc(r.text);
     if (r.sub) t = '<sub>' + t + '</sub>';
     if (r.sup) t = '<sup>' + t + '</sup>';
+    if (r.code) t = '<code>' + t + '</code>';
     if (r.italic) t = '<em>' + t + '</em>';
     if (r.bold) t = '<strong>' + t + '</strong>';
+    if (r.lang) t = '<span xml:lang="' + _expXmlEsc(r.lang) + '">' + t + '</span>';
     if (r.link) t = '<a href="' + _expXmlEsc(r.link) + '">' + t + '</a>';
     return t;
   }).join('');
 }
-function _htmlToDtbookXml(html, lang) {
+function _htmlToDtbookXml(html, lang, uid) {
   const spec = _htmlToDocxSpec(html);
   const L = lang || spec.lang || 'en';
   const title = _expXmlEsc(spec.title || 'Document');
@@ -937,44 +1204,56 @@ function _htmlToDtbookXml(html, lang) {
     '<meta name="dc:Language" content="' + _expXmlEsc(L) + '"/>' +
     '<meta name="dc:Publisher" content="AlloFlow"/>' +
     '<meta name="dc:Format" content="ANSI/NISO Z39.86-2005"/>' +
-    '<meta name="dtb:uid" content="alloflow-daisy-' + Date.now() + '"/>' +
+    '<meta name="dtb:uid" content="' + _expXmlEsc(uid || 'alloflow-daisy') + '"/>' +
     '</head>\n' +
     '<book><bodymatter>' + bodyInner + '</bodymatter></book>\n' +
     '</dtbook>';
 }
 // Navigation Control file (NCX) + OPF package for the DAISY book — navPoints
 // from the document headings so DAISY players get a real navigable TOC.
-function _htmlToDaisyNcx(html, title) {
+function _htmlToDaisyNcx(html, title, uid) {
   const spec = _htmlToDocxSpec(html);
   const heads = (spec.blocks || []).filter((b) => b.type === 'heading');
   let i = 0;
   const navPoints = heads.map((h) => {
     i++;
     const label = _expXmlEsc((h.runs || []).map((r) => r.text || '').join('') || ('Section ' + i));
-    return '<navPoint id="np' + i + '" playOrder="' + i + '"><navLabel><text>' + label + '</text></navLabel><content src="dtbook.xml#h' + i + '"/></navPoint>';
+    return '<navPoint id="np' + i + '" playOrder="' + i + '"><navLabel><text>' + label + '</text></navLabel><content src="book.smil#par' + i + '"/></navPoint>';
   }).join('\n');
   return '<?xml version="1.0" encoding="utf-8"?>\n' +
     '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">\n' +
     '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n' +
-    '<head><meta name="dtb:uid" content="alloflow-daisy"/><meta name="dtb:depth" content="1"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n' +
+    '<head><meta name="dtb:uid" content="' + _expXmlEsc(uid || 'alloflow-daisy') + '"/><meta name="dtb:depth" content="1"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n' +
     '<docTitle><text>' + _expXmlEsc(title || spec.title || 'Document') + '</text></docTitle>\n' +
-    '<navMap>' + (navPoints || '<navPoint id="np1" playOrder="1"><navLabel><text>' + _expXmlEsc(title || 'Document') + '</text></navLabel><content src="dtbook.xml"/></navPoint>') + '</navMap>\n' +
+    '<navMap>' + (navPoints || '<navPoint id="np1" playOrder="1"><navLabel><text>' + _expXmlEsc(title || 'Document') + '</text></navLabel><content src="book.smil#par1"/></navPoint>') + '</navMap>\n' +
     '</ncx>';
 }
-const _DAISY_OPF_XML = (title, lang) => '<?xml version="1.0" encoding="utf-8"?>\n' +
+function _htmlToDaisySmil(html, uid) {
+  const spec = _htmlToDocxSpec(html);
+  const heads = (spec.blocks || []).filter((b) => b.type === 'heading');
+  const pars = heads.length
+    ? heads.map((_, i) => '<par id="par' + (i + 1) + '"><text src="dtbook.xml#h' + (i + 1) + '"/></par>').join('\n')
+    : '<par id="par1"><text src="dtbook.xml"/></par>';
+  return '<?xml version="1.0" encoding="utf-8"?>\n' +
+    '<!DOCTYPE smil PUBLIC "-//NISO//DTD dtbsmil 2005-2//EN" "http://www.daisy.org/z3986/2005/dtbsmil-2005-2.dtd">\n' +
+    '<smil xmlns="http://www.w3.org/2001/SMIL20/"><head><meta name="dtb:uid" content="' + _expXmlEsc(uid || 'alloflow-daisy') +
+    '"/><meta name="dtb:totalElapsedTime" content="0:00:00"/></head><body><seq dur="0:00:00">' + pars + '</seq></body></smil>';
+}
+const _DAISY_OPF_XML = (title, lang, uid) => '<?xml version="1.0" encoding="utf-8"?>\n' +
   '<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="uid">\n' +
   '<metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/">' +
   '<dc:Title>' + _expXmlEsc(title) + '</dc:Title>' +
   '<dc:Language>' + _expXmlEsc(lang || 'en') + '</dc:Language>' +
   '<dc:Format>ANSI/NISO Z39.86-2005</dc:Format>' +
-  '<dc:Identifier id="uid">alloflow-daisy</dc:Identifier>' +
+  '<dc:Identifier id="uid">' + _expXmlEsc(uid || 'alloflow-daisy') + '</dc:Identifier>' +
   '<dc:Publisher>AlloFlow</dc:Publisher>' +
   '</dc-metadata><x-metadata><meta name="dtb:multimediaType" content="textNCX"/><meta name="dtb:totalTime" content="0:00:00"/></x-metadata></metadata>\n' +
   '<manifest>' +
   '<item id="opf" href="package.opf" media-type="text/xml"/>' +
   '<item id="dtbook" href="dtbook.xml" media-type="application/x-dtbook+xml"/>' +
   '<item id="ncx" href="navigation.ncx" media-type="application/x-dtbncx+xml"/>' +
-  '</manifest>\n<spine><itemref idref="dtbook"/></spine>\n</package>';
+  '<item id="smil" href="book.smil" media-type="application/smil"/>' +
+  '</manifest>\n<spine><itemref idref="smil"/></spine>\n</package>';
 
 // ── EPUB3 Media Overlays (read-along) — pure helpers (2026-06-14) ────────────
 // True read-along: each spoken text block gets a stable id, one TTS clip, and a
@@ -1043,11 +1322,11 @@ function _collectMoSegments(html) {
   // be well-formed. innerHTML leaves void elements unclosed (<input data-allo-field>, <col>, <source>,
   // …) and named entities (&mdash; &copy;) that are undefined in XML, so epubcheck / Apple Books /
   // Thorium reject the WHOLE EPUB with a parse error — while the toast claims success. XMLSerializer
-  // self-closes void elements and emits literal chars; strip the per-child redundant xhtml xmlns. (#1)
+  // self-closes void elements and emits literal chars while preserving foreign-content namespace re-entry. (#1)
   let bodyHtml;
   try {
     const _xs = new XMLSerializer();
-    bodyHtml = Array.from(root.childNodes).map((n) => _xs.serializeToString(n)).join('').replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
+    bodyHtml = Array.from(root.childNodes).map((n) => _xs.serializeToString(n)).join('').replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, '');
   } catch (_) { bodyHtml = root.innerHTML; }
   return { segments, bodyHtml, lang: (doc.documentElement.getAttribute('lang') || 'en') };
 }
@@ -1072,13 +1351,17 @@ function _buildMoSmil(segments, durations, ext, hasAudio) {
   }).join('\n');
   return '<?xml version="1.0" encoding="utf-8"?>\n' +
     '<smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">\n' +
-    '<body><seq>' + pars + '</seq></body>\n</smil>';
+    // EPUB 3 Media Overlays requires epub:textref on the seq (epubcheck RSC-005);
+    // it points at the content document this overlay narrates.
+    '<body><seq epub:textref="content.xhtml">' + pars + '</seq></body>\n</smil>';
 }
 // OPF for the media-overlay ePub: content references its overlay; manifest lists
 // the SMIL + every audio clip; media:duration (global + per-overlay) is required.
-function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio) {
+function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio, contentProperties) {
   const _ext = ext || 'mp3';
   const _mime = mime || 'audio/mpeg';
+  const _contentProps = Array.isArray(contentProperties) ? contentProperties.filter((p) => p === 'svg' || p === 'mathml') : [];
+  const _contentPropAttr = _contentProps.length ? ' properties="' + Array.from(new Set(_contentProps)).join(' ') + '"' : '';
   // Only manifest the audio clips that actually exist in the zip (a declared item
   // with no file = invalid EPUB). 2026-06-15 review P0 fix.
   const _has = (i) => !hasAudio || hasAudio[i];
@@ -1104,7 +1387,7 @@ function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, ha
     '<meta property="schema:accessibilitySummary">Read-along ebook: AlloFlow text-to-speech narration synchronized to the text via EPUB3 Media Overlays.</meta>' +
     '</metadata>\n' +
     '<manifest>\n' +
-    '<item id="content" href="content.xhtml" media-type="application/xhtml+xml" media-overlay="smil"/>\n' +
+    '<item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + _contentPropAttr + ' media-overlay="smil"/>\n' +
     '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n' +
     '<item id="smil" href="content.smil" media-type="application/smil+xml"/>\n' +
     audioItems + '\n' +
@@ -1247,7 +1530,7 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     // definition in document.footnotes. Degrades to a superscript digit only if
     // the lib lacks FootnoteReferenceRun (very old CDN cache).
     if (r.footnoteId) { return (typeof d.FootnoteReferenceRun === 'function') ? new d.FootnoteReferenceRun(r.footnoteId) : new d.TextRun({ text: String(r.footnoteId), superScript: true }); }
-    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : undefined, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? 'Hyperlink' : undefined, ...(_rtl ? { rightToLeft: true } : {}) });
+    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : undefined, strike: !!r.strike, highlight: r.highlight ? ((d.HighlightColor && d.HighlightColor.YELLOW) || 'yellow') : undefined, font: r.code ? 'Courier New' : undefined, language: r.lang ? { value: r.lang } : undefined, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? 'Hyperlink' : undefined, ...(_rtl ? { rightToLeft: true } : {}) });
     return r.link ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
   });
   // Every Paragraph in this builder goes through _P so the bidi flag can't be missed
@@ -1288,17 +1571,19 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
       }
     } else if (b.type === 'table' && b.rows.length) {
       children.push(new d.Table({
+        style: 'TableGrid',
         width: { size: 100, type: d.WidthType.PERCENTAGE },
         // RTL (#2): flip the table's visual column order for right-to-left documents.
         ...(_rtl ? { visuallyRightToLeft: true } : {}),
         rows: b.rows.map((row) => new d.TableRow({
           tableHeader: !!row.header,
+          cantSplit: true,
           children: row.cells.map((c) => new d.TableCell({
             // Merged cells (A5): columnSpan → OOXML gridSpan; rowSpan → vMerge chain.
             // The spec's HTML source omits covered cells, matching the docx lib contract.
             ...(c.colSpan > 1 ? { columnSpan: c.colSpan } : {}),
             ...(c.rowSpan > 1 ? { rowSpan: c.rowSpan } : {}),
-            children: [_P({ children: runsTo(c.runs) })],
+            children: [_P({ children: runsTo(c.header ? c.runs.map((run) => ({ ...run, bold: true })) : c.runs) })],
           })),
         })),
       }));
@@ -1306,14 +1591,10 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
       let placed = false;
       if (b.src) {
         try {
-          const b64 = b.src.split(',')[1] || '';
-          const bin = atob(b64);
-          const bytes = new Uint8Array(bin.length);
-          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-          const w = Math.min(Math.max(parseInt(b.width, 10) || 480, 40), 600);
-          const hRaw = parseInt(b.height, 10);
-          const h = Math.max(hRaw || Math.round(w * 0.66), 30);
-          children.push(_P({ children: [new d.ImageRun({ data: bytes, transformation: { width: w, height: h }, altText: { title: b.alt || 'Image', description: b.alt || 'Image', name: (b.alt || 'image').slice(0, 60) } })] }));
+          const info = _dataImageInfo(b.src);
+          if (!info) throw new Error('Unsupported image data');
+          const size = _imageDisplayPx(info, b.width, b.height);
+          children.push(_P({ children: [new d.ImageRun({ data: info.bytes, transformation: size, altText: { title: b.alt || 'Image', description: b.alt || 'Image', name: (b.alt || 'image').slice(0, 60) } })] }));
           placed = true;
         } catch (_) { /* degrade to the alt-text paragraph below */ }
       }
@@ -1450,50 +1731,89 @@ function _ensurePptxLib() {
 function _docxSpecToSlides(spec) {
   const slides = [];
   let cur = null;
-  const newSlide = (title) => { cur = { title: (title || '').trim().slice(0, 120) || null, items: [], lineEst: 0 }; slides.push(cur); };
+  const MAX_LINES = 13;
   const runsText = (runs) => (runs || []).map((r) => (r.br ? ' ' : (r.text || ''))).join('').replace(/\s+/g, ' ').trim();
-  const pushItem = (item, lines) => {
-    if (!cur) newSlide(spec.title || 'Document');
-    if (cur.lineEst + lines > 14 && cur.items.length) {
-      const t = cur.title;
-      newSlide(t ? (t.replace(/ \(cont\.\)$/, '') + ' (cont.)') : null);
-    }
-    cur.items.push(item);
-    cur.lineEst += lines;
+  const cleanTitle = (title) => String(title || '').replace(/ \(cont\.\)$/i, '').trim();
+  const newSlide = (title, continuation) => {
+    const base = cleanTitle(title || spec.title || 'Document').slice(0, 120) || 'Document';
+    cur = { title: continuation ? base + ' (cont.)' : base, items: [], lineEst: 0 };
+    slides.push(cur);
   };
+  const estimateLines = (text, width) => {
+    const chars = Math.max(28, width || 78);
+    return Math.max(1, String(text || '').split(/\n/).reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / chars)), 0));
+  };
+  const splitText = (text, maxChars) => {
+    const value = String(text || '').trim();
+    if (!value) return [];
+    const chunks = [];
+    let remaining = value;
+    const limit = Math.max(120, maxChars || 650);
+    while (remaining.length > limit) {
+      let at = remaining.lastIndexOf(' ', limit);
+      if (at < Math.floor(limit * 0.55)) at = remaining.indexOf(' ', limit);
+      if (at < 1) at = limit;
+      chunks.push(remaining.slice(0, at).trim());
+      remaining = remaining.slice(at).trim();
+    }
+    if (remaining) chunks.push(remaining);
+    return chunks;
+  };
+  const pushItem = (item, lines) => {
+    const needed = Math.max(1, Math.min(MAX_LINES, lines || 1));
+    if (!cur) newSlide(spec.title || 'Document', false);
+    if (cur.items.length && cur.lineEst + needed > MAX_LINES) newSlide(cur.title, true);
+    cur.items.push(item);
+    cur.lineEst += needed;
+  };
+  let logicalImages = 0, logicalTables = 0, logicalBullets = 0;
   for (const b of (spec.blocks || [])) {
     if (b.type === 'heading') {
-      const t = runsText(b.runs);
-      if (!t) continue;
-      if (b.level <= 2) newSlide(t);
-      else pushItem({ kind: 'subhead', text: t }, 2);
+      const text = runsText(b.runs);
+      if (!text) continue;
+      if (b.level <= 2) newSlide(text, false);
+      else splitText(text, 420).forEach((part) => pushItem({ kind: 'subhead', text: part }, Math.min(3, estimateLines(part, 70) + 1)));
     } else if (b.type === 'paragraph') {
-      const t = runsText(b.runs);
-      if (t) pushItem({ kind: 'text', text: t }, Math.max(1, Math.ceil(t.length / 90)));
+      const text = runsText(b.runs);
+      splitText(text, 650).forEach((part) => pushItem({ kind: 'text', text: part }, estimateLines(part, 76)));
     } else if (b.type === 'list') {
-      for (const it of (b.items || [])) {
-        const t = runsText(it.runs);
-        if (t) pushItem({ kind: 'bullet', text: t, level: Math.min(it.level || 0, 4) }, 1);
+      for (const item of (b.items || [])) {
+        const text = runsText(item.runs);
+        const parts = splitText(text, 480);
+        parts.forEach((part) => {
+          pushItem({ kind: 'bullet', text: part, level: Math.min(item.level || 0, 4) }, estimateLines(part, 68 - Math.min(item.level || 0, 4) * 6));
+          logicalBullets++;
+        });
       }
     } else if (b.type === 'table') {
-      // Merge parity (#10): carry the spec's colSpan/rowSpan so the PPTX table
-      // can emit real merges instead of flattening to a rectangular grid.
-      const rows = (b.rows || []).map((r) => ({ header: !!r.header, cells: (r.cells || []).map((c) => ({ text: runsText(c.runs), colSpan: c.colSpan || 1, rowSpan: c.rowSpan || 1 })) }));
-      if (rows.length) pushItem({ kind: 'table', rows }, rows.length + 1);
+      const rows = (b.rows || []).map((r) => ({ header: !!r.header, cells: (r.cells || []).map((c) => ({ text: runsText(c.runs), header: !!c.header, scope: c.scope || '', colSpan: c.colSpan || 1, rowSpan: c.rowSpan || 1 })) }));
+      if (!rows.length) continue;
+      logicalTables++;
+      const tableColumns = Math.max(1, ...rows.map((row) => row.cells.length));
+      const tableCharsPerLine = Math.max(22, Math.floor(120 / tableColumns));
+      const headerRows = [];
+      while (headerRows.length < rows.length && rows[headerRows.length].header) headerRows.push(rows[headerRows.length]);
+      const bodyRows = rows.slice(headerRows.length);
+      const pages = [];
+      let page = headerRows.slice(), lineCount = headerRows.reduce((sum, row) => sum + Math.max(1, ...row.cells.map((c) => estimateLines(c.text, tableCharsPerLine))), 0);
+      for (const row of bodyRows.length ? bodyRows : (headerRows.length ? [] : rows)) {
+        const rowLines = Math.min(5, Math.max(1, ...row.cells.map((c) => estimateLines(c.text, tableCharsPerLine))));
+        if (page.length > headerRows.length && lineCount + rowLines > 11) {
+          pages.push(page); page = headerRows.slice(); lineCount = headerRows.length;
+        }
+        page.push(row); lineCount += rowLines;
+      }
+      if (page.length) pages.push(page);
+      pages.forEach((pageRows) => pushItem({ kind: 'table', rows: pageRows, repeatHeader: headerRows.length }, Math.min(10, pageRows.reduce((sum, row) => sum + Math.max(1, ...row.cells.map((c) => estimateLines(c.text, tableCharsPerLine))), 0) + 1)));
     } else if (b.type === 'image') {
+      logicalImages++;
       pushItem({ kind: 'image', src: b.src || null, alt: b.alt || '', width: b.width, height: b.height }, 8);
+    } else if (b.type === 'pagebreak') {
+      if (cur && cur.items.length) newSlide(cur.title, true);
     }
   }
-  const counts = { slides: slides.length, images: 0, tables: 0, bullets: 0, titled: 0 };
-  for (const s of slides) {
-    if (s.title) counts.titled++;
-    for (const it of s.items) {
-      if (it.kind === 'image') counts.images++;
-      else if (it.kind === 'table') counts.tables++;
-      else if (it.kind === 'bullet') counts.bullets++;
-    }
-  }
-  return { title: spec.title, lang: spec.lang, slides, counts };
+  const counts = { slides: slides.length, images: logicalImages, tables: logicalTables, bullets: logicalBullets, titled: slides.filter((slide) => !!slide.title).length };
+  return { title: spec.title, lang: spec.lang, rtl: !!spec.rtl, slides, counts };
 }
 // end _docxSpecToSlides
 
@@ -1543,52 +1863,88 @@ function _sanitizePptxTheme(raw) {
 async function _buildPptxBlobFromSlides(deck, P, theme) {
   const th = _sanitizePptxTheme(theme);
   const p = new P();
-  try { p.title = deck.title || 'Accessible deck'; } catch (_) {}
+  try {
+    p.title = deck.title || 'Accessible deck';
+    p.subject = 'Accessible slide deck generated by AlloFlow';
+    p.author = 'AlloFlow';
+    p.company = 'AlloFlow';
+  } catch (_) {}
   try { p.layout = 'LAYOUT_16x9'; } catch (_) {}
+  try { p.lang = deck.lang || 'en'; p.rtlMode = !!deck.rtl; } catch (_) {}
+  let hasTitleMaster = false;
+  try {
+    if (typeof p.defineSlideMaster === 'function') {
+      p.defineSlideMaster({
+        title: 'ALLOFLOW_CONTENT',
+        background: { color: th.bg },
+        margin: [0.25, 0.5, 0.35, 0.5],
+        objects: [
+          { placeholder: { options: { name: 'slideTitle', type: 'title', x: 0.5, y: 0.22, w: 8.65, h: 0.72, fontSize: 27, bold: true, color: th.title, fontFace: th.font, fit: 'shrink', margin: 0.02, valign: 'mid', align: deck.rtl ? 'right' : 'left' }, text: '' } },
+          { line: { x: 0.5, y: 1.02, w: 9, h: 0, line: { color: th.tableBorder, pt: 1 } } },
+          { text: { text: deck.title || 'Accessible deck', options: { x: 0.5, y: 5.28, w: 7.7, h: 0.18, fontSize: 8, color: th.body, transparency: 28, margin: 0, fit: 'shrink' } } },
+          { slideNumber: { x: 9.0, y: 5.25, w: 0.45, h: 0.2, fontSize: 9, color: th.body, align: 'right' } },
+        ],
+      });
+      hasTitleMaster = true;
+    }
+  } catch (_) {}
   for (const s of deck.slides) {
-    const slide = p.addSlide();
+    const slide = hasTitleMaster ? p.addSlide('ALLOFLOW_CONTENT') : p.addSlide();
     try { slide.background = { color: th.bg }; } catch (_) {}
-    let y = 0.35;
+    let y = s.title ? 1.16 : 0.35;
     if (s.title) {
-      slide.addText(s.title, { x: 0.5, y, w: 9, h: 0.8, fontSize: 28, bold: true, color: th.title, fontFace: th.font });
-      y = 1.3;
+      slide.addText(s.title, hasTitleMaster ? { placeholder: 'slideTitle' } : { x: 0.5, y: 0.22, w: 9, h: 0.72, fontSize: 27, bold: true, color: th.title, fontFace: th.font, fit: 'shrink', margin: 0.02, align: deck.rtl ? 'right' : 'left' });
     }
     let runs = [];
+    const estimateRunLines = (run) => {
+      const width = 78 - (run.kind === 'bullet' ? Math.min(run.level || 0, 4) * 7 : 0);
+      return Math.max(1, Math.ceil(String(run.text || '').length / Math.max(32, width))) + (run.kind === 'subhead' ? 1 : 0);
+    };
     const flushText = () => {
       if (!runs.length) return;
-      const h = Math.min(0.3 * runs.length + 0.2, Math.max(5.2 - y, 0.5));
+      const lineCount = runs.reduce((sum, run) => sum + estimateRunLines(run), 0);
+      const available = Math.max(0.45, 5.12 - y);
+      const h = Math.min(available, Math.max(0.55, lineCount * 0.27 + 0.12));
       slide.addText(
-        runs.map((r) => ({ text: r.text, options: { bullet: r.kind === 'bullet' ? true : undefined, indentLevel: r.kind === 'bullet' ? (r.level || 0) : undefined, bold: r.kind === 'subhead', fontSize: r.kind === 'subhead' ? 20 : 16, breakLine: true } })),
-        { x: 0.5, y, w: 9, h, valign: 'top', color: th.body, fontFace: th.font }
+        runs.map((r) => ({ text: r.text, options: { bullet: r.kind === 'bullet' ? { indent: 16 + Math.min(r.level || 0, 4) * 14 } : undefined, hanging: r.kind === 'bullet' ? 4 : undefined, bold: r.kind === 'subhead', fontSize: r.kind === 'subhead' ? 19 : 15.5, breakLine: true, paraSpaceAfterPt: r.kind === 'subhead' ? 5 : 3 } })),
+        { x: 0.55, y, w: 8.9, h, valign: 'top', color: th.body, fontFace: th.font, fit: 'shrink', margin: 0.04, breakLine: false, align: deck.rtl ? 'right' : 'left', rtlMode: !!deck.rtl }
       );
-      y += h + 0.1;
+      y += h + 0.08;
       runs = [];
     };
     for (const it of s.items) {
       if (it.kind === 'text' || it.kind === 'bullet' || it.kind === 'subhead') { runs.push(it); continue; }
       flushText();
       if (it.kind === 'table' && it.rows.length) {
-        // Merge parity (#10): pptxgenjs cell options take lowercase colspan/rowspan.
-        // Cells may be legacy strings (older saved items) or {text, colSpan, rowSpan}.
         const tableRows = it.rows.map((r) => r.cells.map((c) => {
-          const _txt = (typeof c === 'string') ? c : (c && c.text) || '';
-          const _cs = (c && c.colSpan) || 1, _rs = (c && c.rowSpan) || 1;
-          return { text: _txt, options: { ...(r.header ? { bold: true, fill: th.tableHeadFill, color: th.tableHeadText } : {}), ...(_cs > 1 ? { colspan: _cs } : {}), ...(_rs > 1 ? { rowspan: _rs } : {}) } };
+          const text = (typeof c === 'string') ? c : (c && c.text) || '';
+          const colSpan = (c && c.colSpan) || 1, rowSpan = (c && c.rowSpan) || 1;
+          return { text, options: { ...((r.header || (c && c.header)) ? { bold: true, fill: th.tableHeadFill, color: th.tableHeadText } : {}), ...(colSpan > 1 ? { colspan: colSpan } : {}), ...(rowSpan > 1 ? { rowspan: rowSpan } : {}), margin: 0.035, valign: 'middle', align: deck.rtl ? 'right' : 'left' } };
         }));
-        slide.addTable(tableRows, { x: 0.5, y, w: 9, fontSize: 12, border: { type: 'solid', color: th.tableBorder, pt: 0.5 }, color: th.body, fontFace: th.font });
-        y += 0.35 * it.rows.length + 0.25;
+        const columnCount = Math.max(1, ...it.rows.map((row) => row.cells.length));
+        const fontSize = Math.max(9, Math.min(12, 13 - Math.max(0, columnCount - 3) * 0.6));
+        slide.addTable(tableRows, {
+          x: 0.55, y, w: 8.9, fontSize,
+          border: { type: 'solid', color: th.tableBorder, pt: 0.6 },
+          color: th.body, fontFace: th.font, margin: 0.035,
+          autoPage: false,
+        });
+        const rowLines = it.rows.reduce((sum, row) => sum + Math.max(1, ...row.cells.map((cell) => Math.ceil(String((cell && cell.text) || cell || '').length / Math.max(16, Math.floor(68 / columnCount))))), 0);
+        y += Math.min(3.9, Math.max(0.55, rowLines * 0.28)) + 0.15;
       } else if (it.kind === 'image') {
         let placed = false;
+        const boxH = Math.max(1.2, Math.min(3.75, 5.1 - y));
         if (it.src && /^data:image\//.test(it.src)) {
           try {
-            slide.addImage({ data: it.src.replace(/^data:/, ''), x: 0.5, y, w: 3.2, h: 2.4, altText: it.alt || 'Image' });
-            y += 2.55;
+            const data = it.src.replace(/^data:/, '');
+            slide.addImage({ data, x: 0.6, y, w: 8.8, h: boxH, sizing: { type: 'contain', x: 0.6, y, w: 8.8, h: boxH }, altText: it.alt || 'Image' });
+            y += boxH + 0.12;
             placed = true;
           } catch (_) { /* degrade below */ }
         }
         if (!placed) {
-          slide.addText('[Image: ' + (it.alt || 'no description available') + ']', { x: 0.5, y, w: 9, h: 0.4, italic: true, fontSize: 14, color: th.body });
-          y += 0.5;
+          slide.addText('[Image: ' + (it.alt || 'no description available') + ']', { x: 0.55, y, w: 8.9, h: 0.55, italic: true, fontSize: 13.5, color: th.body, fit: 'shrink', margin: 0.04, align: deck.rtl ? 'right' : 'left' });
+          y += 0.62;
         }
       }
     }
@@ -1772,7 +2128,7 @@ var ruler=$('allo-reader-ruler');
 d.addEventListener('mousemove',function(e){if(ruler&&root.getAttribute('data-allo-ruler')==='1')ruler.style.top=(e.clientY-ruler.offsetHeight/2)+'px';});
 var synth=window.speechSynthesis;
 function bodyText(){var b=d.body?d.body.cloneNode(true):null;if(!b)return '';var x=b.querySelector('#allo-reader-bar');if(x&&x.parentNode)x.parentNode.removeChild(x);var y=b.querySelector('#allo-reader-ruler');if(y&&y.parentNode)y.parentNode.removeChild(y);return (b.innerText||b.textContent||'').replace(/\\s+/g,' ').trim();}
-function speak(){if(!synth)return;synth.cancel();var txt=bodyText();if(!txt)return;var rate=$('allo-rd-rate');var r=rate?parseFloat(rate.value)||1:1;var parts=txt.match(/[^.!?]+[.!?]*\\s*/g)||[txt];var buf='',q=[];for(var i=0;i<parts.length;i++){buf+=parts[i];if(buf.length>180){q.push(buf);buf='';}}if(buf)q.push(buf);for(var j=0;j<q.length;j++){var u=new SpeechSynthesisUtterance(q[j]);u.rate=r;synth.speak(u);}}
+function speak(){if(!synth)return;synth.cancel();var txt=bodyText();if(!txt)return;var rate=$('allo-rd-rate');var r=rate?parseFloat(rate.value)||1:1;var lang=(root.getAttribute('lang')||(d.body&&d.body.getAttribute('lang'))||'').trim();var parts=txt.match(/[^.!?]+[.!?]*\\s*/g)||[txt];var buf='',q=[];for(var i=0;i<parts.length;i++){buf+=parts[i];if(buf.length>180){q.push(buf);buf='';}}if(buf)q.push(buf);for(var j=0;j<q.length;j++){var u=new SpeechSynthesisUtterance(q[j]);u.rate=r;if(lang)u.lang=lang;synth.speak(u);}}
 on('allo-rd-play','click',speak);
 on('allo-rd-stop','click',function(){if(synth)synth.cancel();});
 apply();
@@ -1802,6 +2158,46 @@ const DOC_MODES = {
   mla: { id: 'mla', label: 'MLA 9', icon: '📝', blurb: 'MLA 9th edition: Times New Roman 12pt, double-spaced, centered Works Cited heading, hanging indent.', academic: true, refHeading: 'Works Cited', citation: '(Author 12)', css: _DOC_MODE_CSS_BASE + 'main h1{text-align:center;font-weight:normal}.allo-references h2{text-align:center;font-weight:normal}' },
   chicago: { id: 'chicago', label: 'Chicago', icon: '📚', blurb: 'Chicago (notes–bibliography): Times New Roman 12pt, double-spaced, footnotes, hanging-indent Bibliography.', academic: true, refHeading: 'Bibliography', citation: '¹', css: _DOC_MODE_CSS_BASE + 'main h1{text-align:center}.allo-references h2{text-align:center}' },
 };
+
+async function _buildAccessibleOfficeExport({ html, title, format }) {
+  if (!html || typeof html !== 'string') throw new Error('No document content is available.');
+  const safeTitle = String(title || 'AlloFlow Document').replace(/[\\/:*?"<>|]+/g, '-').trim().substring(0, 100) || 'AlloFlow Document';
+  if (format === 'docx') {
+    const d = await _ensureDocxLib();
+    if (!d) throw new Error('The Word export library could not load. Check the connection and try again.');
+    const spec = _htmlToDocxSpec(html);
+    const blob = await _buildDocxBlobFromSpec(spec, d, DOC_MODES.standard);
+    return {
+      blob,
+      fileName: safeTitle + '-accessible.docx',
+      message: 'Accessible Word file downloaded. Verify it in Word: Review > Check Accessibility.',
+      counts: spec.counts,
+    };
+  }
+  if (format !== 'odt') throw new Error('Unsupported Office export format.');
+  if (!window.JSZip) throw new Error('The compression library is still loading.');
+  const zip = new window.JSZip();
+  const odtParts = _htmlToOdtPackageParts(html);
+  zip.file('mimetype', 'application/vnd.oasis.opendocument.text', { compression: 'STORE' });
+  zip.file('META-INF/manifest.xml', _buildOdtManifestXml(odtParts.images));
+  zip.file('content.xml', odtParts.contentXml);
+  odtParts.images.forEach((image) => zip.file(image.path, image.base64, { base64: true }));
+  const lang = ((html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || 'en').trim();
+  const langParts = lang.split(/[-_]/);
+  const language = (langParts[0] || 'en').toLowerCase();
+  const country = langParts[1] ? langParts[1].toUpperCase() : 'none';
+  const rtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
+  let styles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" fo:language="' + language + '" fo:country="' + country + '"/>');
+  if (rtl) styles = styles.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>');
+  zip.file('styles.xml', styles);
+  zip.file('meta.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(safeTitle) + '</dc:title><dc:language>' + _expXmlEsc(lang) + '</dc:language></office:meta></office:document-meta>');
+  const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.oasis.opendocument.text' });
+  return {
+    blob,
+    fileName: safeTitle + '-accessible.odt',
+    message: 'Accessible OpenDocument file downloaded. Verify it in LibreOffice or Word before distributing.',
+  };
+}
 
 // Footnote renumber engine (2026-06-13): keeps superscript anchors, the notes
 // list, ids, and back-references in sync after any insert/delete/reorder. Each
@@ -1935,6 +2331,34 @@ function _srStyleTextFromHtml(html) {
   return out.join('\n\n');
 }
 
+async function _epubCoreAudioBlob(blob) {
+  if (!blob || !blob.size) return null;
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+    bytes[8] === 0x57 && bytes[9] === 0x41 && bytes[10] === 0x56 && bytes[11] === 0x45;
+  if (!isWav) {
+    const isMp3 = /mpeg|mp3/i.test(blob.type || '') || (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0);
+    return isMp3 ? new Blob([bytes], { type: 'audio/mpeg' }) : null;
+  }
+  let fmt = null, dataStart = 0, dataLen = 0;
+  for (let pos = 12; pos + 8 <= bytes.length;) {
+    const size = bytes[pos + 4] | (bytes[pos + 5] << 8) | (bytes[pos + 6] << 16) | (bytes[pos + 7] << 24);
+    if (bytes[pos] === 0x66 && bytes[pos + 1] === 0x6d && bytes[pos + 2] === 0x74 && bytes[pos + 3] === 0x20 && size >= 16) {
+      fmt = { format: bytes[pos + 8] | (bytes[pos + 9] << 8), channels: bytes[pos + 10] | (bytes[pos + 11] << 8),
+        sampleRate: bytes[pos + 12] | (bytes[pos + 13] << 8) | (bytes[pos + 14] << 16) | (bytes[pos + 15] << 24),
+        bits: bytes[pos + 22] | (bytes[pos + 23] << 8) };
+    }
+    if (bytes[pos] === 0x64 && bytes[pos + 1] === 0x61 && bytes[pos + 2] === 0x74 && bytes[pos + 3] === 0x61) { dataStart = pos + 8; dataLen = Math.min(size, bytes.length - dataStart); break; }
+    pos += 8 + size + (size % 2);
+  }
+  const encoder = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AudioHelpers && window.AlloModules.AudioHelpers.pcmToMp3;
+  if (!fmt || fmt.format !== 1 || fmt.channels !== 1 || fmt.bits !== 16 || !dataStart || !dataLen || typeof encoder !== 'function') return null;
+  const pcmBytes = bytes.slice(dataStart, dataStart + dataLen);
+  const pcm = new Int16Array(pcmBytes.buffer, pcmBytes.byteOffset, Math.floor(pcmBytes.byteLength / 2));
+  const mp3 = await encoder(pcm, fmt.sampleRate, 64);
+  return mp3 && mp3.size ? new Blob([mp3], { type: 'audio/mpeg' }) : null;
+}
+
 async function _concatAudioBlobs(blobs) {
   if (!blobs || blobs.length === 0) return null;
   if (blobs.length === 1) return blobs[0];
@@ -1942,8 +2366,18 @@ async function _concatAudioBlobs(blobs) {
   const isWav = first.length > 12 &&
     first[0] === 0x52 && first[1] === 0x49 && first[2] === 0x46 && first[3] === 0x46 &&   // 'RIFF'
     first[8] === 0x57 && first[9] === 0x41 && first[10] === 0x56 && first[11] === 0x45;   // 'WAVE'
+  // Never concatenate different containers: a RIFF payload inside an MP3 (or vice versa)
+  // produces a download that decoders truncate or reject.
+  const formatFlags = [isWav];
+  for (let i = 1; i < blobs.length; i++) {
+    const head = new Uint8Array(await blobs[i].slice(0, 12).arrayBuffer());
+    formatFlags.push(head.length > 11 && head[0] === 0x52 && head[1] === 0x49 && head[2] === 0x46 && head[3] === 0x46 && head[8] === 0x57 && head[9] === 0x41 && head[10] === 0x56 && head[11] === 0x45);
+  }
+  if (formatFlags.some((flag) => flag !== isWav)) return null;
   if (!isWav) {
-    // Non-WAV (e.g. MP3 fallback): frame concatenation is valid; keep prior behavior.
+    const family = (blob) => /mpeg|mp3/i.test(blob.type || '') ? 'mpeg' : ((blob.type || '').toLowerCase() || 'unknown');
+    const firstFamily = family(blobs[0]);
+    if (blobs.some((blob) => family(blob) !== firstFamily)) return null;
     return new Blob(blobs, { type: blobs[0].type || 'audio/mpeg' });
   }
   // WAV: two-pass single-allocation stitch (perf-audio-concat) — parse each segment's PCM
@@ -1951,35 +2385,35 @@ async function _concatAudioBlobs(blobs) {
   // and copies, releasing each buffer as it goes), collapsing the old ~3x peak (pcms[] +
   // joined pcm + outBuf) to ~1x outBuf + one transient segment. Byte-identical output.
   const _parsePcm = function (buf) {
-    if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return null; // non-RIFF
-    let dataStart = 44, rate = 0; // canonical header; scan for the 'fmt '/'data' chunks to be safe
-    for (let j = 12; j < Math.min(buf.length - 8, 256); j++) {
-      if (rate === 0 && buf[j] === 0x66 && buf[j + 1] === 0x6d && buf[j + 2] === 0x74 && buf[j + 3] === 0x20) { // 'fmt '
-        const o = j + 12; rate = buf[o] | (buf[o + 1] << 8) | (buf[o + 2] << 16) | (buf[o + 3] << 24);
+    if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46 || buf[8] !== 0x57 || buf[9] !== 0x41 || buf[10] !== 0x56 || buf[11] !== 0x45) return null;
+    let format = 0, channels = 0, rate = 0, bits = 0, dataStart = 0, dataLen = 0;
+    for (let pos = 12; pos + 8 <= buf.length;) {
+      const size = (buf[pos + 4] | (buf[pos + 5] << 8) | (buf[pos + 6] << 16) | (buf[pos + 7] << 24)) >>> 0;
+      if (pos + 8 + size > buf.length) return null;
+      if (buf[pos] === 0x66 && buf[pos + 1] === 0x6d && buf[pos + 2] === 0x74 && buf[pos + 3] === 0x20 && size >= 16) {
+        format = buf[pos + 8] | (buf[pos + 9] << 8); channels = buf[pos + 10] | (buf[pos + 11] << 8);
+        rate = (buf[pos + 12] | (buf[pos + 13] << 8) | (buf[pos + 14] << 16) | (buf[pos + 15] << 24)) >>> 0;
+        bits = buf[pos + 22] | (buf[pos + 23] << 8);
+      } else if (buf[pos] === 0x64 && buf[pos + 1] === 0x61 && buf[pos + 2] === 0x74 && buf[pos + 3] === 0x61) {
+        dataStart = pos + 8; dataLen = size;
       }
-      if (buf[j] === 0x64 && buf[j + 1] === 0x61 && buf[j + 2] === 0x74 && buf[j + 3] === 0x61) { dataStart = j + 8; break; } // 'data'
+      pos += 8 + size + (size % 2);
     }
-    return { dataStart: dataStart, len: buf.length - dataStart, rate: rate };
+    return format && channels && rate && bits && dataStart ? { dataStart, len: dataLen, format, channels, rate, bits } : null;
   };
-  // Pass 1 — size + collect rates; each buf falls out of scope per iteration (no retention).
-  const rates = [];
-  let total = 0, used = 0;
+  // Pass 1: validate every segment and size the output. A single WAV header cannot
+  // represent mixed rates/channel layouts, so reject instead of pitch-shifting later parts.
+  let total = 0, signature = null;
   for (let i = 0; i < blobs.length; i++) {
     const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
     const m = _parsePcm(buf);
-    if (!m) continue;
-    if (m.rate > 0) rates.push(m.rate);
-    total += m.len; used++;
+    if (!m || m.format !== 1 || m.channels !== 1 || m.bits !== 16) return null;
+    if (!signature) signature = { rate: m.rate, format: m.format, channels: m.channels, bits: m.bits };
+    else if (m.rate !== signature.rate || m.format !== signature.format || m.channels !== signature.channels || m.bits !== signature.bits) return null;
+    total += m.len;
   }
-  if (used === 0) return null;
-  // Use the segments' ACTUAL sample rate (was hardcoded 24000 — wrong for the 22.05 kHz Piper
-  // fallback, which then played the whole file ~8.8% fast/pitched-up). Mixed rates across
-  // segments can't share one header correctly, so use the first and warn (rare: one TTS
-  // provider per run). Falls back to 24000 only if no fmt chunk was readable.
-  const sampleRate = rates[0] || 24000, numCh = 1, bps = 16;
-  if (rates.length > 1 && rates.some(function (r) { return r !== rates[0]; })) {
-    try { (typeof warnLog === 'function' ? warnLog : console.warn)('[Audio] mixed WAV sample rates ' + JSON.stringify(rates) + ' — using ' + sampleRate + 'Hz; off-rate segments may play at the wrong speed.'); } catch (_) {}
-  }
+  if (!signature || total === 0) return null;
+  const sampleRate = signature.rate, numCh = signature.channels, bps = signature.bits;
   const blockAlign = numCh * bps / 8, byteRate = sampleRate * blockAlign;
   const outBuf = new ArrayBuffer(44 + total);
   const dv = new DataView(outBuf);
@@ -1995,8 +2429,8 @@ async function _concatAudioBlobs(blobs) {
   for (let i = 0; i < blobs.length; i++) {
     const buf = new Uint8Array(await blobs[i].arrayBuffer());
     const m = _parsePcm(buf);
-    if (!m) continue;
-    outPcm.set(buf.subarray(m.dataStart), poff); poff += m.len;
+    if (!m) return null;
+    outPcm.set(buf.subarray(m.dataStart, m.dataStart + m.len), poff); poff += m.len;
   }
   return new Blob([outBuf], { type: 'audio/wav' });
 }
@@ -2224,11 +2658,13 @@ function PdfAuditView(props) {
     pdfAutoSaveProject, pdfBatchCurrentIndex, pdfBatchMode, pdfBatchProcessing,
     pdfBatchQueue, pdfBatchStep, pdfBatchSummary, pdfFixLoading,
     pdfFixMode, pdfFixModeRef, pdfFixResult, pdfFixResultRef,
+    capturePdfHtmlCommitToken, commitPdfFixResultIfCurrent,
     pdfFixStep, pdfMultiSession, pdfPageRange, pdfPolishPasses,
     pdfPreviewA11yInspect, pdfPreviewFontSize, pdfPreviewOpen, pdfPreviewRef,
     pdfPreviewTheme, pdfTargetScore, pdfWebMode, pendingPdfBase64,
     pendingPdfFile, proceedWithPdfTransform, processExpertCommand, refixChunk,
     remediateSurgicallyThenAI, runAutoFixLoop, runAxeAudit, runPdfAccessibilityAudit,
+    remediationReady, remediationDependencyState, retryRemediationDependencies,
     runPdfBatchRemediation, runTier2SurgicalFixes, runTier2_5SectionScopedFixes, safeCloneAudit,
     safeCloseAudit, safeDownloadBlob, sanitizeStyleForWCAG, saveProjectToFile,
     selectedPreviewImgRef, selectedVoice, setAgentActivityLog, setAgentLogFullView,
@@ -2245,6 +2681,147 @@ function PdfAuditView(props) {
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
     pdfRunHistory, setPdfRunHistory
   } = props;
+  const [remediationProgress, setRemediationProgress] = useState(null);
+  const [showAgentTrace, setShowAgentTrace] = useState(false);
+  const [liveChunkTrace, setLiveChunkTrace] = useState({});
+  const [pdfConfirmRequest, setPdfConfirmRequest] = useState(null);
+  const pdfConfirmResolveRef = useRef(null);
+  const pdfConfirmCancelRef = useRef(null);
+  const askPdfConfirmation = React.useCallback((options) => new Promise((resolve) => {
+    if (pdfConfirmResolveRef.current) pdfConfirmResolveRef.current(false);
+    pdfConfirmResolveRef.current = resolve;
+    setPdfConfirmRequest({
+      title: String((options && options.title) || 'Please confirm'),
+      description: String((options && options.description) || ''),
+      confirmLabel: String((options && options.confirmLabel) || 'Continue'),
+      cancelLabel: String((options && options.cancelLabel) || 'Cancel'),
+      alternativeLabel: options && options.alternativeLabel ? String(options.alternativeLabel) : '',
+      tone: options && options.tone === 'danger' ? 'danger' : 'primary',
+    });
+  }), []);
+  const settlePdfConfirmation = React.useCallback((result) => {
+    const resolve = pdfConfirmResolveRef.current;
+    pdfConfirmResolveRef.current = null;
+    setPdfConfirmRequest(null);
+    if (resolve) resolve(result);
+  }, []);
+  useEffect(() => {
+    if (!pdfConfirmRequest) return undefined;
+    const timer = setTimeout(() => {
+      try { if (pdfConfirmCancelRef.current) pdfConfirmCancelRef.current.focus(); } catch (_) {}
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [pdfConfirmRequest]);
+  useEffect(() => () => {
+    const resolve = pdfConfirmResolveRef.current;
+    pdfConfirmResolveRef.current = null;
+    if (resolve) resolve(false);
+  }, []);
+  useEffect(() => {
+    const appendTrace = (detail) => {
+      if (!detail || !Number.isInteger(detail.index)) return;
+      const safe = {
+        index: detail.index,
+        phase: String(detail.phase || 'working'),
+        label: String(detail.label || 'Working...').slice(0, 160),
+        timestamp: detail.timestamp || Date.now(),
+        attempt: detail.attempt || null,
+        integrityPassed: detail.integrityPassed === true,
+        aiVerified: detail.aiVerified === true,
+        usedOriginal: detail.usedOriginal === true,
+      };
+      setLiveChunkTrace(prev => {
+        const prior = prev[safe.index] || { history: [] };
+        const history = (prior.history || []).slice();
+        if (!history.length || history[history.length - 1].phase !== safe.phase || history[history.length - 1].label !== safe.label) history.push(safe);
+        return { ...prev, [safe.index]: { ...safe, history: history.slice(-8) } };
+      });
+    };
+    const onProgress = (e) => { if (e && e.detail && e.detail.version === 1) setRemediationProgress(e.detail); };
+    const onChunkSessionStart = () => setLiveChunkTrace({});
+    const onChunkProgress = (e) => appendTrace(e && e.detail);
+    const onChunkFixed = (e) => {
+      const d = (e && e.detail) || {};
+      appendTrace({
+        index: d.index,
+        phase: d.usedOriginal ? 'fallback' : 'accepted',
+        label: d.usedOriginal ? 'AI proposal rejected — rule-based repairs kept' : 'Accepted after integrity and accessibility checks',
+        timestamp: d.timestamp,
+        integrityPassed: d.integrityPassed,
+        aiVerified: d.aiVerified,
+        usedOriginal: d.usedOriginal,
+      });
+    };
+    window.addEventListener('alloflow:remediation-progress', onProgress);
+    window.addEventListener('alloflow:chunk-session-start', onChunkSessionStart);
+    window.addEventListener('alloflow:chunk-progress', onChunkProgress);
+    window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
+    return () => {
+      window.removeEventListener('alloflow:remediation-progress', onProgress);
+      window.removeEventListener('alloflow:chunk-session-start', onChunkSessionStart);
+      window.removeEventListener('alloflow:chunk-progress', onChunkProgress);
+      window.removeEventListener('alloflow:chunk-fixed', onChunkFixed);
+    };
+  }, []);
+  const _legacyProgressPercent = pdfFixStep.includes('Step 1') ? 15 : pdfFixStep.includes('Step 2') ? 50 : pdfFixStep.includes('Step 3') ? 80 : pdfFixStep.includes('Step 4') ? 92 : (pdfFixStep.includes('Auto-fix') || pdfFixStep.includes('Auto-continue')) ? 96 : 5;
+  const _remediationPercent = remediationProgress && typeof remediationProgress.overallPercent === 'number' ? Math.max(0, Math.min(100, remediationProgress.overallPercent)) : _legacyProgressPercent;
+  const _progressStats = (remediationProgress && remediationProgress.stats) || {};
+  const _formatElapsed = (ms) => {
+    const seconds = Math.max(0, Math.round((Number(ms) || 0) / 1000));
+    return seconds < 60 ? seconds + 's' : Math.floor(seconds / 60) + 'm ' + (seconds % 60) + 's';
+  };
+  const _captureAsyncHtmlToken = () => {
+    if (typeof capturePdfHtmlCommitToken === 'function') return capturePdfHtmlCommitToken();
+    const current = pdfFixResultRef && pdfFixResultRef.current;
+    return { revision: null, html: current && typeof current.accessibleHtml === 'string' ? current.accessibleHtml : (pdfFixResult && pdfFixResult.accessibleHtml) };
+  };
+  const _commitAsyncHtmlIfCurrent = (token, updater) => {
+    if (typeof commitPdfFixResultIfCurrent === 'function') return commitPdfFixResultIfCurrent(token, updater);
+    const current = pdfFixResultRef && pdfFixResultRef.current;
+    if (!token || !current || current.accessibleHtml !== token.html) return false;
+    setPdfFixResult((prev) => prev && prev.accessibleHtml === token.html ? updater(prev) : prev);
+    return true;
+  };
+  // One-click remediation is one logical operation even though it crosses several host states
+  // (audit -> OCR/fix -> auto-continue -> final validation). React state alone is not a safe
+  // re-entry lock: a rapid second click can arrive before the next render, and the audit result
+  // view reappears while the fix is still running. The ref closes that same-tick window; the
+  // state keeps the control visibly busy/disabled across every phase.
+  const _oneClickRemediationBusyRef = useRef(false);
+  const [oneClickRemediationBusy, setOneClickRemediationBusy] = useState(false);
+  const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning;
+  const [currentRemediationDigest, setCurrentRemediationDigest] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    const html = String((pdfFixResult && pdfFixResult.accessibleHtml) || '');
+    setCurrentRemediationDigest(null);
+    if (!html) return () => { cancelled = true; };
+    _viewSha256Text(html).then((digest) => {
+      if (!cancelled) setCurrentRemediationDigest(digest ? ('sha256:' + digest) : null);
+    });
+    return () => { cancelled = true; };
+  }, [pdfFixResult && pdfFixResult.accessibleHtml]);
+  const _companionIsStale = (companion) => !!(companion
+    && (!currentRemediationDigest || companion.sourceDigest !== currentRemediationDigest));
+  const _requireFreshCompanion = (companion, label) => {
+    if (!_companionIsStale(companion)) return true;
+    addToast((label || 'This companion version') + ' is out of date because the remediated document changed. Regenerate it before exporting or creating audio.', 'info');
+    return false;
+  };
+  const _sourceDigestForToken = async (token) => {
+    const digest = await _viewSha256Text(String((token && token.html) || ''));
+    if (!digest) throw new Error('Could not bind this companion version to the source document.');
+    return 'sha256:' + digest;
+  };
+
+  const _requireRemediationReady = () => {
+    if (remediationReady !== false) return true;
+    const state = remediationDependencyState || { pending: [], failed: [] };
+    const names = (state.failed || []).concat(state.pending || []);
+    addToast('The remediation engine is still loading' + (names.length ? ': ' + names.join(', ') : '') + '. Retry when the dependencies are ready.', state.failed && state.failed.length ? 'error' : 'info');
+    return false;
+  };
+  const _remediationDependencies = remediationDependencyState || { pending: [], failed: [] };
 
   // WCAG 2.1.2 / 2.4.3: keep Tab inside the audit dialog while it is open.
   // The dialog previously had aria-modal + Escape but no Tab trap, so keyboard
@@ -2255,13 +2832,22 @@ function PdfAuditView(props) {
   // load Office zip containers, so the tagged buttons are gated on this.
   // 'JVBER' is base64 of '%PDF'.
   const _inputIsPdf = !!((pendingPdfFile && (pendingPdfFile.type === 'application/pdf' || /\.pdf$/i.test(pendingPdfFile.name || ''))) || (typeof pendingPdfBase64 === 'string' && pendingPdfBase64.slice(0, 5) === 'JVBER'));
+  const _executableActiveContentFindings = _alloExecutableActiveContentFindings((pdfFixResult && pdfFixResult.activeContent) ? pdfFixResult : pdfAuditResult);
+  const _hasExecutableActiveContent = _executableActiveContentFindings.length > 0;
   // Tier 4: surface "resume previous batch" banner when an interrupted batch
   // is found in IndexedDB. Hooks must run unconditionally before any early
   // return — keep this above the !pdfAuditResult guard.
   const [resumableBatch, setResumableBatch] = useState(null);
+  const [verificationRefreshBusy, setVerificationRefreshBusy] = useState(false);
   // A SHA-256 rehydration can finish out of order when two project files are selected quickly.
   // Both project pickers share this token: only the most recently selected file may commit.
   const _projectLoadSelectionRef = useRef(0);
+  // C7 (2026-07-13): a FRESH upload during a project rehydrate await used to lose the
+  // race — the finishing loader committed the project over the newly picked file. Any
+  // pendingPdfBase64 change now invalidates in-flight project loads. Effects run
+  // post-render, so a loader's OWN commit (it sets state only after its final token
+  // check, with no awaits in between) can never self-invalidate.
+  React.useEffect(() => { _projectLoadSelectionRef.current++; }, [pendingPdfBase64]);
   // Tier A #1: most-recent tagged-PDF validation result, populated by the
   // Tagged PDF download flow. Used by the Download Accessibility Report
   // button to assemble an Adobe-style compliance report.
@@ -2368,6 +2954,7 @@ function PdfAuditView(props) {
   const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => { try { return localStorage.getItem('alloflow_pdf_auto_verapdf') !== 'false'; } catch (_) { return true; } });
   React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_auto_verapdf', String(pdfAutoVeraPdf)); } catch (_) {} }, [pdfAutoVeraPdf]);
   const _lastTaggedBytesRef = useRef(null);                   // shipped tagged-PDF bytes, for on-demand veraPDF validation
+  const _activeContentFidelityOverrideRef = useRef(false); // one-shot advanced override; reset when the export starts
   const _taggedArtifactGenerationRef = useRef(0);
   const _veraPdfValidationGenerationRef = useRef(0);
   const _selectTaggedArtifact = (bytes) => {
@@ -2449,7 +3036,7 @@ function PdfAuditView(props) {
       addToast(_sanitized
         ? ('🧼 ' + (t('toasts.typeset_sanitized') || 'Rebuilding a clean, tagged PDF from the remediated content — drops any embedded scripts, actions, or attachments from the original…'))
         : (t('toasts.typeset_tagging') || '📄 Generating a typeset tagged PDF from the accessible content… (clean layout, not the original design)'), 'info');
-      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, ''), lang: 'en', subject: _sanitized ? 'Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)' : 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
+      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, ''), lang: _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name).lang, subject: _sanitized ? 'Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)' : 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
       const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
       if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
       const _typesetSourceHtml = String((pdfFixResult && pdfFixResult.accessibleHtml) || '');
@@ -2469,13 +3056,22 @@ function PdfAuditView(props) {
         veraPdfAt: null,
         veraPdfBytesHash: null,
       }, _typesetSourceHtml, _docPipeline);
-      if (!_taggedArtifactTicketIsCurrent(_typesetArtifact)
-          || String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== _typesetSourceHtml) return;
+      if (!_taggedArtifactTicketIsCurrent(_typesetArtifact)) return;
+      if (String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== _typesetSourceHtml) {
+        // C3 (2026-07-13): withholding is correct (the document changed mid-generation,
+        // e.g. an auto-continue round committed new HTML) — but a silent return reads
+        // as a broken button. Say why nothing downloaded.
+        addToast('The document changed while this download was being prepared (a fix round finished). Click download again for the current version.', 'info');
+        return;
+      }
       setLastTaggedValidation(_viewAttachTaggedArtifactProof(_typesetValidation, _typesetArtifact));
-      const _rt = (_result && _result.roundTrip) || null;
-      if (_rt && _rt.ok === false) {
-        _lastTaggedDeliveryRef.current = { withheld: true, reason: 'typeset post-save structure check failed' }; // M14
-        addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check — use the Word or HTML download instead.'), 'error');
+      const _typesetVerdict = _alloTaggedPdfDeliveryVerdict(_result);
+      if (!_typesetVerdict.ok) {
+        const _typesetUnverifiedName = (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, '') + (_sanitized ? '-tagged-clean-UNVERIFIED.pdf' : '-tagged-typeset-UNVERIFIED.pdf');
+        _taggedGateBytesRef.current = { bytes: taggedBytes, fileName: _typesetUnverifiedName };
+        _lastTaggedDeliveryRef.current = { withheld: true, reason: 'typeset verification unavailable/failed (' + _typesetVerdict.reason + ')' }; // M14
+        setTaggedGateIssue('Generated-layout export: ' + _typesetVerdict.reason);
+        addToast('The generated-layout tagged PDF could not be verified. An explicitly marked download option is pinned in the Downloads section.', 'warning');
         return;
       }
       safeDownloadBlob(new Blob([taggedBytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, '') + (_sanitized ? '-tagged-clean.pdf' : '-tagged-typeset.pdf'));
@@ -2668,6 +3264,21 @@ function PdfAuditView(props) {
       if (pdfAutoVeraPdf && _isPdfIn && _veraEmbedPref() !== 'blocked' && !_veraIframeRef.current) warmVeraPdfIframe();
     } catch (_) {}
   }, [pendingPdfBase64, pendingPdfFile, pdfAutoVeraPdf]);
+  // Panel-open pre-warm (2026-07-13): the PDF-load warm above still leaves the very
+  // FIRST session boot (~25MB CheerpJ download + JVM start, ~15s) racing a quick
+  // validate on a small document. Warming once at panel mount overlaps that boot
+  // with file picking instead. Delayed 3s so it never competes with the panel's own
+  // first paint; same guards as above (opt-out and known-blocked embeds untouched).
+  React.useEffect(() => {
+    const _warmTimer = setTimeout(() => {
+      try {
+        if (pdfAutoVeraPdf && _veraEmbedPref() !== 'blocked' && !_veraIframeRef.current) warmVeraPdfIframe();
+      } catch (_) {}
+    }, 3000);
+    return () => clearTimeout(_warmTimer);
+    // Mount-only by design: this is a one-shot boot overlap, not a reactive subscription.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Human-readable tagged-PDF result lines, pinned in a dismissable panel.
   // Previously these were ~8 sequential toasts that auto-dismissed faster
   // than anyone could read them (user-testing finding 2026-06-10).
@@ -2801,7 +3412,7 @@ function PdfAuditView(props) {
     const j = audioJobRef.current;
     if (!j || !j.blobs.length) { addToast(t('toasts.audio_nothing_yet') || 'No audio sections generated yet.', 'error'); return; }
     const combined = await _concatAudioBlobs(j.blobs.filter(Boolean));
-    if (!combined) { addToast(t('toasts.audio_generation_failed_tts_may'), 'error'); return; }
+    if (!combined) { addToast(t('toasts.audio_incompatible_parts') || 'Audio sections used incompatible codecs, sample rates, or WAV layouts, so AlloFlow did not create a corrupt combined file. Retry with one voice/provider for the whole document.', 'error'); return; }
     const dlUrl = URL.createObjectURL(combined);
     const a = document.createElement('a');
     a.href = dlUrl;
@@ -2823,7 +3434,7 @@ function PdfAuditView(props) {
   // earlier sections live in the part-files the teacher already downloaded.
   const _saveAudioMeta = (j, complete) => {
     try {
-      setPdfFixResult((prev) => prev ? { ...prev, _audioJobMeta: complete ? null : { nextIdx: j.nextIdx, total: j.segments.length, srMode: !!j.srMode, savedAt: Date.now() } } : prev);
+      setPdfFixResult((prev) => prev ? { ...prev, _audioJobMeta: complete ? null : { nextIdx: j.nextIdx, total: j.segments.length, srMode: !!j.srMode, variant: j.variant || 'main', langSuffix: j.langSuffix || '', companionAt: j.companionAt || null, savedAt: Date.now() } } : prev);
     } catch (_) {}
   };
 
@@ -2836,16 +3447,26 @@ function PdfAuditView(props) {
     try {
       const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
       const zip = new window.JSZip();
+      const odtParts = _htmlToOdtPackageParts(html);
       zip.file('mimetype', 'application/vnd.oasis.opendocument.text', { compression: 'STORE' });
-      zip.file('META-INF/manifest.xml', _ODT_MANIFEST_XML);
-      zip.file('content.xml', _htmlToOdtContentXml(html));
+      zip.file('META-INF/manifest.xml', _buildOdtManifestXml(odtParts.images));
+      zip.file('content.xml', odtParts.contentXml);
+      odtParts.images.forEach((image) => zip.file(image.path, image.base64, { base64: true }));
+      // Document language (export-format review R2): the ODT declared NO language,
+      // so a Spanish handout opened as the reader's locale — wrong screen-reader
+      // pronunciation and spell-check. Tag the default text style with fo:language
+      // (WCAG 3.1.1) and record dc:language in the metadata.
+      const _odtLang = ((html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || 'en').trim();
+      const _odtLangParts = _odtLang.split(/[-_]/);
+      const _odtLg = (_odtLangParts[0] || 'en').toLowerCase();
+      const _odtCt = _odtLangParts[1] ? _odtLangParts[1].toUpperCase() : 'none';
       // RTL (#2): ODF document direction lives in the default paragraph style —
       // style:writing-mode="rl-tb" flips paragraphs, tables, and lists document-wide.
       const _odtRtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
-      zip.file('styles.xml', _odtRtl
-        ? _ODT_STYLES_XML.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>')
-        : _ODT_STYLES_XML);
-      zip.file('meta.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + '</dc:title></office:meta></office:document-meta>');
+      let _odtStyles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" fo:language="' + _odtLg + '" fo:country="' + _odtCt + '"/>');
+      if (_odtRtl) _odtStyles = _odtStyles.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>');
+      zip.file('styles.xml', _odtStyles);
+      zip.file('meta.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + '</dc:title><dc:language>' + _expXmlEsc(_odtLang) + '</dc:language></office:meta></office:document-meta>');
       const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.oasis.opendocument.text' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '.odt';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
@@ -2862,9 +3483,11 @@ function PdfAuditView(props) {
       const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
       const lang = (html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || 'en';
       const zip = new window.JSZip();
-      zip.file('dtbook.xml', _htmlToDtbookXml(html, lang));
-      zip.file('navigation.ncx', _htmlToDaisyNcx(html, title));
-      zip.file('package.opf', _DAISY_OPF_XML(title, lang));
+      const uid = 'urn:uuid:' + ((globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') ? globalThis.crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
+      zip.file('dtbook.xml', _htmlToDtbookXml(html, lang, uid));
+      zip.file('navigation.ncx', _htmlToDaisyNcx(html, title, uid));
+      zip.file('book.smil', _htmlToDaisySmil(html, uid));
+      zip.file('package.opf', _DAISY_OPF_XML(title, lang, uid));
       const blob = await zip.generateAsync({ type: 'blob' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '-daisy.zip';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
@@ -2883,7 +3506,11 @@ function PdfAuditView(props) {
     const { segments, bodyHtml, lang } = _collectMoSegments(html);
     if (!segments.length) { addToast(t('toasts.mo_no_text') || 'No readable text found to narrate.', 'error'); return; }
     const _confirm = (t('pdf_audit.mo.confirm') || 'Build a read-along ebook? This narrates {n} text sections with text-to-speech — about {n} voice calls, which can take a few minutes.').replace(/\{n\}/g, String(segments.length));
-    if (!window.confirm(_confirm)) return;
+    if (!(await askPdfConfirmation({
+      title: t('pdf_audit.mo.confirm_title') || 'Build read-along ebook?',
+      description: _confirm,
+      confirmLabel: t('pdf_audit.mo.confirm_action') || 'Build read-along',
+    }))) return;
     const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
     const epubLang = lang || 'en';
     setMoExport({ total: segments.length, done: 0, status: 'running' });
@@ -2896,7 +3523,10 @@ function PdfAuditView(props) {
           const url = await callTTS(segments[i].text, selectedVoice || 'Puck', 1, 2);
           if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
             dur = await measure(url);
-            blob = await (await _withTimeout(fetch(url), 20000, 'TTS audio fetch')).blob();
+            const response = await _withTimeout(fetch(url), 20000, 'TTS audio fetch');
+            if (!response.ok) throw new Error('TTS audio fetch failed (' + response.status + ')');
+            const rawBlob = await response.blob();
+            blob = await _epubCoreAudioBlob(rawBlob);
             // Recover duration from WAV header bytes when measure() gave 0/Infinity, so the
             // clip's clipEnd isn't 0s (block would speak nothing / never highlight). (exp-clip-duration)
             if (!(typeof dur === 'number' && isFinite(dur) && dur > 0) && blob) { try { dur = _wavDurationFromBytes(new Uint8Array(await blob.arrayBuffer())); } catch (_) {} }
@@ -2906,10 +3536,8 @@ function PdfAuditView(props) {
         audioBlobs.push(blob); durations.push(dur);
         setMoExport({ total: segments.length, done: i + 1, status: 'running' });
       }
-      const firstBlob = audioBlobs.find(Boolean);
-      const isWav = !!(firstBlob && /wav/i.test(firstBlob.type || ''));
-      const ext = isWav ? 'wav' : 'mp3';
-      const mime = isWav ? 'audio/wav' : 'audio/mpeg';
+      const ext = 'mp3';
+      const mime = 'audio/mpeg';
       const totalSec = durations.reduce((a, b) => a + (b || 0), 0);
       const withAudio = audioBlobs.filter(Boolean).length;
       const _hasAudio = audioBlobs.map(Boolean); // which segments actually got a clip
@@ -2918,7 +3546,10 @@ function PdfAuditView(props) {
       let xhtml = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + _expXmlEsc(epubLang) + '" lang="' + _expXmlEsc(epubLang) + '"><head><meta charset="utf-8"/><title>' + _expXmlEsc(title) + '</title></head><body>' + bodyHtml + '</body></html>';
       xhtml = xhtml.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
       const _smilXml = _buildMoSmil(segments, durations, ext, _hasAudio);
-      const _opfXml = _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio);
+      const _moContentProperties = [];
+      if (/<svg\b/i.test(bodyHtml)) _moContentProperties.push('svg');
+      if (/<math\b/i.test(bodyHtml)) _moContentProperties.push('mathml');
+      const _opfXml = _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio, _moContentProperties);
       const _navXhtml = '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + '</a></li></ol></nav></body></html>';
       zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
       zip.file('META-INF/container.xml', _containerXml);
@@ -2946,7 +3577,7 @@ function PdfAuditView(props) {
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
       setMoExport({ total: segments.length, done: segments.length, status: 'done' });
       if (withAudio === 0) addToast((t('toasts.mo_no_audio') || '⚠ Read-along ebook saved, but no audio could be generated (voice service unavailable). The text + sync structure are intact.') + _epubSelfCheckNote, _epubSelfCheckNote ? 'error' : 'error');
-      else addToast('📖🔊 ' + (t('toasts.mo_done') || 'Read-along ebook downloaded') + ' — ' + withAudio + '/' + segments.length + ' sections narrated.' + _epubSelfCheckNote, _epubSelfCheckNote ? 'error' : 'success');
+      else addToast('📖🔊 ' + (t('toasts.mo_done') || 'Read-along ebook downloaded') + ' — ' + withAudio + '/' + segments.length + ' audio portions narrated.' + _epubSelfCheckNote, _epubSelfCheckNote ? 'error' : 'success');
       setTimeout(() => setMoExport(null), 4000);
     } catch (e) { setMoExport(null); addToast('Read-along export failed: ' + (e?.message || 'unknown error'), 'error'); }
   };
@@ -2963,7 +3594,10 @@ function PdfAuditView(props) {
         const url = await callTTS(j.segments[j.nextIdx], selectedVoice || 'Puck', 1, 2);
         if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
           const resp = await _withTimeout(fetch(url), 20000, 'TTS audio fetch');
-          j.blobs.push(await resp.blob());
+          if (!resp.ok) throw new Error('TTS audio fetch failed (' + resp.status + ')');
+          const audioBlob = await resp.blob();
+          if (!audioBlob.size) throw new Error('TTS audio fetch returned an empty payload');
+          j.blobs.push(audioBlob);
           try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
           j.nextIdx++;
           consecutiveNull = 0;
@@ -3002,9 +3636,17 @@ function PdfAuditView(props) {
     // preamble). Re-deriving from raw textContent produced a different segment count,
     // so the "document changed — starting fresh" path fired almost every time,
     // defeating cross-session resume (2026-06-15 review fix).
-    const srcText = meta.srMode
-      ? _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim()
-      : _audioReadyText(pdfFixResult.accessibleHtml).trim();
+    let sourceHtml = pdfFixResult.accessibleHtml;
+    if (meta.variant === 'translation') {
+      const companion = pdfFixResult._translation;
+      if (!companion || (meta.companionAt && companion.at !== meta.companionAt)) { addToast('The saved translation audio source is no longer available. Start a new audio export.', 'error'); return; }
+      sourceHtml = companion.html;
+    } else if (meta.variant === 'plain') {
+      const companion = pdfFixResult._plainLanguage;
+      if (!companion || (meta.companionAt && companion.at !== meta.companionAt)) { addToast('The saved plain-language audio source is no longer available. Start a new audio export.', 'error'); return; }
+      sourceHtml = companion.html;
+    }
+    const srcText = meta.srMode ? _srStyleTextFromHtml(sourceHtml).trim() : _audioReadyText(sourceHtml).trim();
     const segments = [];
     let remaining = srcText;
     while (remaining.length > 0) {
@@ -3017,9 +3659,9 @@ function PdfAuditView(props) {
     }
     if (segments.length !== meta.total) {
       addToast(t('toasts.audio_resume_mismatch') || '⚠ The document changed since that audio job (section count differs) — starting fresh instead so nothing mismatches.', 'info');
-      audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, srMode: !!meta.srMode };
+      audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, srMode: !!meta.srMode, variant: meta.variant || 'main', langSuffix: meta.langSuffix || '', companionAt: meta.companionAt || null };
     } else {
-      audioJobRef.current = { segments, blobs: [], nextIdx: meta.nextIdx, failed: 0, pauseRequested: false, srMode: !!meta.srMode, partOffset: meta.nextIdx };
+      audioJobRef.current = { segments, blobs: [], nextIdx: meta.nextIdx, failed: 0, pauseRequested: false, srMode: !!meta.srMode, variant: meta.variant || 'main', langSuffix: meta.langSuffix || '', companionAt: meta.companionAt || null, partOffset: meta.nextIdx };
       addToast((t('toasts.audio_resuming_saved') || 'Resuming audio from section ') + (meta.nextIdx + 1) + '/' + meta.total + (t('toasts.audio_resuming_saved2') || ' — this session’s sections will download as the next part file (your earlier part file has sections 1–' + meta.nextIdx + ').'), 'info');
     }
     _runAudioJob();
@@ -3095,12 +3737,14 @@ function PdfAuditView(props) {
   const plainCompareTrapRef = useRef(null);
   const translateCompareTrapRef = useRef(null);
   const closeConfirmTrapRef = useRef(null);
+  const pdfConfirmTrapRef = useRef(null);
   _alloUseFocusTrap(pdfPreviewTrapRef, !!(pdfPreviewOpen && pdfFixResult));
   _alloUseFocusTrap(pdfFieldsTrapRef, !!pdfFieldCandidates);
   _alloUseFocusTrap(fillableTrapRef, !!fillableCandidates);
   _alloUseFocusTrap(plainCompareTrapRef, !!(showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage));
   _alloUseFocusTrap(translateCompareTrapRef, !!(showTranslationCompare && pdfFixResult && pdfFixResult._translation));
   _alloUseFocusTrap(closeConfirmTrapRef, !!showCloseConfirm);
+  _alloUseFocusTrap(pdfConfirmTrapRef, !!pdfConfirmRequest);
   // S3 (agent): the translate_document command pre-fills the language
   // here via event — the RUN click stays the teacher's (quota guardrail).
   useEffect(() => {
@@ -3559,21 +4203,27 @@ function PdfAuditView(props) {
       const _wscore = _computeHeadline(_wvOk ? _wv.score : null, _wdet);
       const _sameBoundHtml = _viewIsLiveVerificationHtmlBound(pdfFixResult, newHtml, _docPipeline);
       const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);
-      let _applied = false;
+      // C7 (2026-07-13): this decision used to be computed INSIDE the setPdfFixResult
+      // updater and read afterwards via closure mutation — React guarantees neither
+      // WHEN nor HOW MANY TIMES an updater runs, so `_applied`/`_verification` were
+      // timing-dependent. Everything is now computed from the host-synced ref FIRST;
+      // the updater is a pure CAS guard+swap. In the sub-millisecond race where a
+      // concurrent commit changes the html between the ref read and the swap, the
+      // updater keeps `prev` (no stomp) and the tagged-validation clearing below is
+      // fail-safe (it only ever WITHHOLDS stale validation state).
+      const _curFix = pdfFixResultRef.current;
+      const _applied = !!(_curFix && _curFix.accessibleHtml === newHtml);
       let _verification = _deriveVerificationState({ ai: _wv, axe: _wa, equalAccess: _wea, pdfUaSelfCheck: 'not-run' });
-      setPdfFixResult(prev => {
-        if (!prev) return prev;
-        if (prev.accessibleHtml !== newHtml) return prev;
-        _applied = true;
+      if (_applied) {
         _verification = _deriveVerificationState({
           ai: _wv,
           axe: _wa,
           equalAccess: _wea,
-          pdfUaSelfCheck: _sameBoundHtml ? ((prev.verificationCoverage && prev.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',
-          languageReviewRequired: !!prev.languageReviewRequired,
-          extraReasons: prev.verificationExtraReasons || [],
+          pdfUaSelfCheck: _sameBoundHtml ? ((_curFix.verificationCoverage && _curFix.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',
+          languageReviewRequired: !!_curFix.languageReviewRequired,
+          extraReasons: _curFix.verificationExtraReasons || [],
         });
-        const _next = ({ ...prev,
+        const _next = ({ ..._curFix,
           verificationHtmlBinding: _freshBinding || null,
           verificationAudit: _wvOk ? _wv : null,
           afterScore: Number.isFinite(_wscore) ? _wscore : null,
@@ -3593,11 +4243,13 @@ function PdfAuditView(props) {
           verificationReasons: _verification.reasons,
           verificationReviewCount: _verification.reviewCount,
           requiresManualReview: _verification.requiresManualReview,
-          needsExpertReview: _verification.requiresManualReview || prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both' || (Number.isFinite(_wscore) && _wscore < 70),
-          expertReviewReason: _verification.requiresManualReview
-            ? ((prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both') ? 'both' : 'accessibility')
-            : ((prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both') ? 'content-fidelity' : ((Number.isFinite(_wscore) && _wscore < 70) ? 'accessibility' : null)),
-          issueResolution: (_wvOk && typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,
+          needsExpertReview: !!(_curFix.fidelityLimited || _curFix.expertReviewReason === 'content-fidelity' || _curFix.expertReviewReason === 'both'
+            || (_waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0)
+            || (_weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0)
+            || (Number.isFinite(_wscore) && _wscore < 50)),
+          expertReviewReason: (_curFix.fidelityLimited || _curFix.expertReviewReason === 'content-fidelity' || _curFix.expertReviewReason === 'both') ? 'content-fidelity'
+            : (((_waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0) || (_weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0) || (Number.isFinite(_wscore) && _wscore < 50)) ? 'accessibility' : null),
+          issueResolution: (_wvOk && typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(_curFix.issueResolution, _wv) || _curFix.issueResolution) : _curFix.issueResolution,
         });
         if (_freshBinding) {
           _viewAttachRuntimeBindingProof(_next, newHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
@@ -3612,8 +4264,8 @@ function PdfAuditView(props) {
           requiresManualReview: !!_bound.requiresManualReview,
           reasons: _bound.verificationReasons || _verification.reasons,
         };
-        return _bound;
-      });
+        setPdfFixResult(prev => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);
+      }
       if (_applied && !_sameBoundHtml) {
         setLastTaggedValidation(null);
         setVeraPdfResult(null);
@@ -3656,8 +4308,8 @@ function PdfAuditView(props) {
         verificationReasons: ['content-modified-pending-reverification'],
         verificationReviewCount: 0,
         requiresManualReview: true,
-        needsExpertReview: true,
-        expertReviewReason: prev.fidelityLimited ? 'both' : 'accessibility',
+        needsExpertReview: !!prev.fidelityLimited,
+        expertReviewReason: prev.fidelityLimited ? 'content-fidelity' : null,
         issueResolution: null,
         remainingIssues: null,
         htmlChars: newHtml.length,
@@ -3751,7 +4403,7 @@ function PdfAuditView(props) {
     const res = await _reauditAndScore(newHtml, null);
     _setIssueEdit(prev => { const n = { ...prev }; delete n[key]; return n; });   // close the editor
     _setIssueSourceOpen(prev => ({ ...prev, [key]: false }));                      // collapse the source panel
-    if (res && res.ok) addToast((t('pdf_audit.issue.edit_rechecked') || '📊 Re-checked: ') + res.score + '/100 · ' + res.issues + ' issue(s) remaining', 'success');
+    if (res && res.ok) addToast((t('pdf_audit.issue.edit_rechecked') || '📊 Re-checked: ') + res.score + '/100 · ' + (Number.isFinite(res.issues) ? (res.issues + ' issue(s) remaining') : 'issue recount unavailable (AI audit throttled)'), 'success'); // C4: deterministic-only re-audit has issues=null — never render "null issue(s)"
     else addToast(t('pdf_audit.issue.edit_applied_no_reaudit') || '✏ Edit applied. (Couldn’t re-score automatically — the preview is updated; re-run audit when ready.)', 'info');
   };
 
@@ -3767,6 +4419,8 @@ function PdfAuditView(props) {
     if (typeof processExpertCommand !== 'function') { addToast(t('pdf_audit.issue.ai_unavailable') || 'The AI agent is unavailable right now — edit the HTML directly above instead.', 'info'); return; }
     const original = String((ed && ed.original) || '');
     if (!original) return;
+    const _commitToken = _captureAsyncHtmlToken();
+    const _sourceHtml = String((_commitToken && _commitToken.html) || '');
     _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: true } }));
     addToast(t('pdf_audit.issue.ai_running') || '✨ Asking the AI to apply that to this section…', 'info');
     let result = null;
@@ -3774,7 +4428,7 @@ function PdfAuditView(props) {
     let edited = result && result.html ? result.html : null;
     if (edited && /<body[\s>]/i.test(edited)) { const m = edited.match(/<body[^>]*>([\s\S]*?)<\/body>/i); if (m) edited = m[1].trim(); } // unwrap if the agent returned a full doc
     if (!edited || edited === original) { _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } })); addToast(t('pdf_audit.issue.ai_nochange') || 'The AI made no change here (or it was busy) — rephrase, or edit the HTML directly above.', 'info'); return; }
-    const sp = _spliceBlock(pdfFixResult.accessibleHtml, original, edited);
+    const sp = _spliceBlock(_sourceHtml, original, edited);
     if (!sp.ok) {
       _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } }));
       addToast(sp.reason === 'ambiguous'
@@ -3783,8 +4437,11 @@ function PdfAuditView(props) {
         sp.reason === 'ambiguous' ? 'info' : 'error');
       return;
     }
-    const _before = pdfFixResult.accessibleHtml;
-    setPdfFixResult((p) => p ? { ...p, accessibleHtml: sp.html, _preCmdHtml: _before } : p);
+    const _before = _sourceHtml;
+    if (!_commitAsyncHtmlIfCurrent(_commitToken, (p) => ({ ...p, accessibleHtml: sp.html, _preCmdHtml: _before }))) {
+      _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } }));
+      addToast(t('pdf_audit.issue.edit_moved') || 'The document changed while the AI was working ? its stale result was discarded.', 'info'); return;
+    }
     _setIssueEdit((prev) => { const n = { ...prev }; delete n[key]; return n; });
     _setIssueSourceOpen((prev) => ({ ...prev, [key]: false }));
     addToast(t('pdf_audit.issue.ai_applied') || '✨ Applied to this section — re-checking…', 'success');
@@ -3964,7 +4621,7 @@ function PdfAuditView(props) {
   // "Re-run with restoration" UI. PREFER the tagged-PDF round-trip snapshot (tokens lost in PDF tagging)
   // when it's fresh; otherwise — e.g. after the auto-continue loop, which updates the document but never
   // refreshes lastTaggedValidation — FALL BACK to a fresh source-vs-final-text diff (tokens lost in
-  // remediation) so Recovery is runnable any time after remediation, not only right after a Tagged PDF
+  // the remediated HTML rather than only during PDF tagging) so restoration can run before the next
   // export. Pure (no closure deps) → testable. Returns { missingTokens, residual, freshMode }.
   const _recoveryResidualSource = (td, sourceText, finalText) => {
     const _normTokenForDiff = _normTokenForDiffShared; // S7: single-sourced from the pipeline
@@ -4401,8 +5058,11 @@ function PdfAuditView(props) {
                             languageReviewRequired,
                             verificationExtraReasons: [_STATIC_WEB_REVIEW_REASON],
                             autoFixPasses: autoFix?.passes || 0,
-                            needsExpertReview: verification.requiresManualReview || (Number.isFinite(finalScore) && finalScore < 70),
-                            expertReviewReason: 'accessibility',
+                            needsExpertReview: !!((finalAxe && Array.isArray(finalAxe.critical) && finalAxe.critical.length > 0)
+                              || (finalEa && Number.isFinite(finalEa.failViolations) && finalEa.failViolations > 0)
+                              || (Number.isFinite(finalScore) && finalScore < 50)),
+                            expertReviewReason: ((finalAxe && Array.isArray(finalAxe.critical) && finalAxe.critical.length > 0)
+                              || (finalEa && Number.isFinite(finalEa.failViolations) && finalEa.failViolations > 0) || (Number.isFinite(finalScore) && finalScore < 50)) ? 'accessibility' : null,
                             htmlChars: fixed.length,
                             chunkState: autoFix?.chunkState || null,
                             chunkWeightedScore: autoFix?.chunkWeightedScore || null,
@@ -4489,7 +5149,7 @@ function PdfAuditView(props) {
                                   // resuming under the CURRENT sliders mixed configurations in one summary and
                                   // broke the Tier-4 done-skip (cache keys no longer matched).
                                   if (resumableBatch.settings) { addToast(t('pdf_audit.batch.resume.settings_toast') || 'Resuming with the batch’s original settings — current slider values apply to new batches.', 'info'); }
-                                  try { runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null }); } catch (e) { warnLog('[Batch Resume] start failed:', e); }
+                                  try { runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null, resumeBatchId: resumableBatch.batchId || null }); } catch (e) { warnLog('[Batch Resume] start failed:', e); }
                                 }}
                                 data-help-key="pdf_audit_view_batch_resume_btn"
                                 className="px-4 py-1.5 bg-gradient-to-r from-amber-800 to-orange-800 text-white rounded-lg text-xs font-bold hover:from-amber-900 hover:to-orange-900 transition-all shadow"
@@ -4498,7 +5158,7 @@ function PdfAuditView(props) {
                               </button>
                               <button
                                 onClick={async () => {
-                                  try { if (_docPipeline && _docPipeline.discardResumableBatch) await _docPipeline.discardResumableBatch(); } catch (_) {}
+                                  try { if (_docPipeline && _docPipeline.discardResumableBatch) await _docPipeline.discardResumableBatch(resumableBatch.batchId || null); } catch (_) {}
                                   setResumableBatch(null);
                                 }}
                                 data-help-key="pdf_audit_view_batch_discard_btn"
@@ -4590,15 +5250,15 @@ function PdfAuditView(props) {
                     {/* Batch Summary */}
                     {pdfBatchSummary && (
                       <div className={`mb-4 p-4 rounded-xl border ${(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
-                        <h4 className={`text-sm font-black mb-2 ${(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? 'text-amber-900' : 'text-green-800'}`}>{(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? '\u26a0' : '\u2705'} Batch Processing Complete</h4>
+                        <h4 className={`text-sm font-black mb-2 ${(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? 'text-amber-900' : 'text-green-800'}`}>{(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? '\u26a0' : '\u2705'} {t('pdf_audit.batch.summary_title') || 'Batch Processing Complete'}</h4>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-slate-700">{pdfBatchSummary.processed ?? (pdfBatchSummary.succeeded + (pdfBatchSummary.reviewRequired || 0))}/{pdfBatchSummary.total}</div><div className="text-[11px] text-slate-600">Processed</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-700">{pdfBatchSummary.fullyVerified ?? pdfBatchSummary.succeeded}</div><div className="text-[11px] text-slate-600">Fully verified</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-amber-700">{pdfBatchSummary.reviewRequired || 0}</div><div className="text-[11px] text-slate-600">Need review</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-700">{pdfBatchSummary.above90Verified ?? 0}</div><div className="text-[11px] text-slate-600">Verified at 90+</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-slate-700">{pdfBatchSummary.processed ?? (pdfBatchSummary.succeeded + (pdfBatchSummary.reviewRequired || 0))}/{pdfBatchSummary.total}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_processed') || 'Processed'}</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-700">{pdfBatchSummary.fullyVerified ?? pdfBatchSummary.succeeded}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_fully_verified') || 'Fully verified'}</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-amber-700">{pdfBatchSummary.reviewRequired || 0}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_need_review') || 'Need review'}</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-700">{pdfBatchSummary.above90Verified ?? 0}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_verified_90') || 'Verified at 90+'}</div></div>
                         </div>
                         <div className="text-xs text-slate-600 space-y-0.5">
-                          <p>{'\ud83d\udcc8'} Numeric-score average: {pdfBatchSummary.avgBefore} {'\u2192'} {pdfBatchSummary.avgAfter} ({pdfBatchSummary.avgImprovement >= 0 ? '+' : ''}{pdfBatchSummary.avgImprovement} average change)</p>
+                          <p>{'\ud83d\udcc8'} Numeric-score average: {pdfBatchSummary.avgBefore} {'\u2192'} {pdfBatchSummary.avgAfter} ({Number.isFinite(pdfBatchSummary.avgImprovement) ? ((pdfBatchSummary.avgImprovement >= 0 ? '+' : '') + pdfBatchSummary.avgImprovement) : 'n/a'} average change)</p>
                           {pdfBatchSummary.failed > 0 && <p>{'\u274c'} {pdfBatchSummary.failed} failed</p>}
                           {pdfBatchSummary.needsExpert > 0 && <p>{'\ud83e\uddd1\u200d\ud83d\udd2c'} {pdfBatchSummary.needsExpert} need expert review</p>}
                           <p>{'\u23f1\ufe0f'} Total time: {Math.floor(pdfBatchSummary.totalElapsed / 60)}m {pdfBatchSummary.totalElapsed % 60}s</p>
@@ -4628,7 +5288,7 @@ function PdfAuditView(props) {
                     {/* Action Buttons */}
                     <div className="flex gap-2 justify-center">
                       {!pdfBatchProcessing && !pdfBatchSummary && pdfBatchQueue.length > 0 && (
-                        <button onClick={() => {
+                        <button onClick={async () => {
                           // Pre-batch cost estimator \u2014 honest range based on file count and
                           // configured fix passes. Canvas mode: free under Google quotas.
                           // Self-hosted (Blaze tier): show $ range so the user can ack before kicking off.
@@ -4644,7 +5304,11 @@ function PdfAuditView(props) {
                           const message = isCanvas
                             ? `Start batch remediation of ${fileCount} PDF${filePlural}?\n\nCanvas mode \u2014 model calls are covered by your Google / Gemini quota. No billing.\n\nEstimated work: ~${totalCalls} model calls across ${fileCount} file${filePlural} (avg. ${callsPerFile} per file \u00d7 up to ${passes} fix pass${passPlural}).`
                             : `Start batch remediation of ${fileCount} PDF${filePlural}?\n\nEstimated Gemini API consumption: ~${totalCalls} calls (${callsPerFile} per file \u00d7 ${fileCount} files \u00d7 ${passes} fix pass${passPlural}).\n\nEstimated cost on Gemini Flash (Blaze tier): $${costLow}\u2013$${costHigh}\n\nThis is a rough estimate \u2014 actual cost varies with file complexity (scanned/image-heavy PDFs use more vision calls). Reduce \u201cMax Fix Passes\u201d in Settings to cap cost.`;
-                          if (window.confirm(message)) runPdfBatchRemediation();
+                          if (await askPdfConfirmation({
+                            title: 'Start batch remediation?',
+                            description: message,
+                            confirmLabel: `Start batch (${fileCount} file${filePlural})`,
+                          })) runPdfBatchRemediation();
                         }} data-help-key="pdf_audit_view_batch_start_btn" className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                           {'\u267f'} Start Batch ({pdfBatchQueue.length} files)
                         </button>
@@ -4718,11 +5382,13 @@ tr:hover{background:#1e293b50}
 </div>
 
 <div class="grid">
-  <div class="card"><div class="card-title">Documents Processed</div><div class="card-value" style="color:#a5b4fc">${queue.length}</div><div class="card-sub">${done.length} succeeded · ${failed.length} failed</div></div>
-  <div class="card"><div class="card-title">Average Score</div><div class="card-value" style="color:${(summary?.avgAfter||0) >= 80 ? '#4ade80' : (summary?.avgAfter||0) >= 50 ? '#fbbf24' : '#f87171'}">${summary?.avgAfter || 0}</div><div class="card-sub">Before: ${summary?.avgBefore || 0} · Improvement: +${summary?.avgImprovement || 0}</div></div>
+  <div class="card"><div class="card-title">Documents Processed</div><div class="card-value" style="color:#a5b4fc">${queue.length}</div><div class="card-sub">${done.length} processed · ${summary?.fullyVerified ?? 0} fully verified · ${failed.length} failed</div></div>
+  <div class="card"><div class="card-title">Average Score</div><div class="card-value" style="color:${(summary?.avgAfter||0) >= 80 ? '#4ade80' : (summary?.avgAfter||0) >= 50 ? '#fbbf24' : '#f87171'}">${summary?.avgAfter || 0}</div><div class="card-sub">Before: ${summary?.avgBefore || 0} · Improvement: ${summary && Number.isFinite(summary.avgImprovement) ? ((summary.avgImprovement >= 0 ? '+' : '') + summary.avgImprovement) : 'n/a'}</div></div>
   <div class="card"><div class="card-title">Docs Scoring 90+ (content audit)</div><div class="card-value" style="color:${excellent.length === done.length ? '#4ade80' : '#fbbf24'}">${done.length > 0 ? Math.round(excellent.length / done.length * 100) : 0}%</div><div class="card-sub">${excellent.length} of ${done.length} scored 90+ on the content audit (not PDF/UA conformance)</div></div>
-  <div class="card"><div class="card-title">Need Expert Review</div><div class="card-value" style="color:${(summary?.needsExpert||0) > 0 ? '#f87171' : '#4ade80'}">${summary?.needsExpert || 0}</div><div class="card-sub">${needsWork.length} below 70 · ${good.length} between 70-89</div></div>
+  <div class="card"><div class="card-title">Need Expert Review</div><div class="card-value" style="color:${(summary?.needsExpert||0) > 0 ? '#f87171' : '#4ade80'}">${summary?.needsExpert || 0}</div><div class="card-sub">${summary?.reviewRequired ?? 0} verification review · ${needsWork.length} below 70 · ${good.length} between 70-89</div></div>
 </div>
+
+${summary && summary.verificationStates ? '<div class="section"><h2>WCAG Verification (AI + axe-core + Equal Access)</h2><div style="display:flex;gap:12px;flex-wrap:wrap;font-size:13px">' + ['complete', 'review-required', 'partial', 'unavailable'].map((k) => '<span style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 14px"><strong style="color:' + (k === 'complete' ? '#4ade80' : k === 'review-required' ? '#fbbf24' : '#94a3b8') + '">' + (summary.verificationStates[k] || 0) + '</strong> ' + k.replace('-', ' ') + '</span>').join('') + '</div><p style="font-size:11px;color:#64748b;margin-top:8px">"Fully verified" needs every engine to complete with zero review findings — a review state is a checklist item, not a failure.</p></div>' : ''}
 
 <div class="section">
   <h2>Score Distribution</h2>
@@ -4754,12 +5420,13 @@ tr:hover{background:#1e293b50}
 
 <div class="section">
   <h2>Document Details</h2>
-  <table><thead><tr><th>#</th><th>Document</th><th>Before</th><th>After</th><th>Gain</th><th>Fix Passes</th><th>Status</th></tr></thead><tbody>
+  <table><thead><tr><th>#</th><th>Document</th><th>Before</th><th>After</th><th>Gain</th><th>Fix Passes</th><th>Verification</th><th>Status</th></tr></thead><tbody>
   ${queue.map((f, i) => {
     const r = f.result;
     const after = r?.afterScore || 0;
     const cls = after >= 90 ? 'excellent' : after >= 70 ? 'good' : 'needs-work';
-    return '<tr><td>' + (i+1) + '</td><td>' + esc(f.fileName) + '</td><td>' + (r?.beforeScore ?? '—') + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? '—') + '</span></td><td>+' + (r ? (r.afterScore - r.beforeScore) : '—') + '</td><td>' + (r?.autoFixPasses ?? '—') + '</td><td>' + (f.status === 'done' ? '✅' : '❌ ' + esc(f.error || '')) + '</td></tr>';
+    const gain = (r && r.afterScore != null && r.beforeScore != null) ? ((r.afterScore - r.beforeScore >= 0 ? '+' : '') + (r.afterScore - r.beforeScore)) : '—';
+    return '<tr><td>' + (i+1) + '</td><td>' + esc(f.fileName) + '</td><td>' + (r?.beforeScore ?? '—') + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? '—') + '</span></td><td>' + gain + '</td><td>' + (r?.autoFixPasses ?? '—') + '</td><td>' + esc((r && r.verificationState) || '—') + '</td><td>' + (f.status === 'done' ? '✅' : '❌ ' + esc(f.error || '')) + '</td></tr>';
   }).join('')}
   </tbody></table>
 </div>
@@ -4857,9 +5524,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       sees it before any audit runs. The automated WCAG checks (axe / Equal Access) run locally.
                       Note: PDFs always use Gemini Vision today — there is no AI-free PDF audit mode (Office /
                       transcript inputs already run axe-only). */}
+                  {remediationReady === false && (
+                    <div role="alert" className="mb-3 rounded-xl border border-amber-400 bg-amber-50 p-3 text-xs text-amber-900">
+                      <div className="font-black">Remediation engine not ready</div>
+                      <div>{_remediationDependencies.failed.length ? 'Required modules failed to load: ' + _remediationDependencies.failed.join(', ') : 'Required modules are still loading: ' + _remediationDependencies.pending.join(', ')}</div>
+                      {_remediationDependencies.failed.length > 0 && typeof retryRemediationDependencies === 'function' && (
+                        <button type="button" onClick={retryRemediationDependencies} className="mt-2 rounded-lg border border-amber-500 bg-white px-3 py-1 font-bold hover:bg-amber-100">Retry required modules</button>
+                      )}
+                    </div>
+                  )}
                   <p className="text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200">🔒 {t('pdf_audit.gemini_disclosure') || 'Privacy: this document’s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don’t upload documents containing student personal information you aren’t permitted to share with a third-party AI service.'}</p>
-                  <button data-help-key="pdf_audit_view_make_accessible_btn" onClick={async () => {
+                  <button data-help-key="pdf_audit_view_make_accessible_btn" disabled={_oneClickOperationBusy || remediationReady === false} aria-busy={_oneClickOperationBusy ? 'true' : undefined} onClick={async () => {
+                    if (_oneClickRemediationBusyRef.current || pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning) {
+                      addToast(t('toasts.remediation_already_running') || 'Remediation is already running. This click was ignored so the active run can finish.', 'info');
+                      return;
+                    }
+                    _oneClickRemediationBusyRef.current = true;
+                    setOneClickRemediationBusy(true);
+                    try {
                     if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; }
+                    if (!_requireRemediationReady()) return;
                     // B1 (2026-06-28): a PRIOR run's Stop left pdfAutoContinueAbortRef.current = true and it is
                     // never reset elsewhere — so a fresh "Make Accessible" would see _stopped()===true and skip
                     // BOTH auto-continue loops (one pass, then a silent stop). Clear it at the start of each run.
@@ -4901,7 +5585,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // auditResult removes that race; the try/catch keeps an audit error from aborting
                     // the whole chain. (Make-Accessible auto-continue fix 2026-06-15)
                     let _audit = null;
-                    try { _audit = await runPdfAccessibilityAudit(pendingPdfBase64); }
+                    try { _audit = await runPdfAccessibilityAudit(pendingPdfBase64); if (!_audit) return; }
                     catch (auditErr) { addToast((t('toasts.audit_error_continuing') || '⚠ The audit hit an error — attempting remediation anyway.'), 'warning'); }
                     // Cosmetic settle only — the fix no longer depends on audit STATE (it gets auditResult below).
                     await new Promise((res) => setTimeout(res, 250));
@@ -4921,9 +5605,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // reruns. Policy reads the STRUCTURED evidence first; the message regex is only the
                     // fallback for unclassified errors. Note the old regex treated EVERY quota/429 as
                     // permanent — a per-minute burst should wait-and-retry (H2), not bail.
-                    const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|failed to (?:load|fetch)|load timeout)\b/i;
+                    const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|dependency|module unavailable|modules? finish loading|failed to (?:load|fetch)|load timeout)\b/i;
                     const _handsDisposition = (e) => {
                       if (!e) return 'retry';                              // no result, no error → transient shape
+                      if (e.isAlreadyRunning) return 'stop-silent';        // duplicate invocation: the original run owns the UI
                       const _m = String((e && (e.message || e)) || '');
                       if (e.name === 'AbortError' || /\baborted?\b/i.test(_m)) return 'stop-silent'; // cancellation: no retry, no alarm
                       if (e.isConfig) return 'never';
@@ -5073,8 +5758,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped('transport-blocked');
                       } catch (_) {}
                     }
-                  }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
-                    ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>
+                    } finally {
+                      _oneClickRemediationBusyRef.current = false;
+                      setOneClickRemediationBusy(false);
+                    }
+                  }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all motion-reduce:transition-none shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                    {_oneClickOperationBusy ? (
+                      <><span className="animate-spin motion-reduce:animate-none inline-block mr-2" aria-hidden="true">⏳</span>{pdfAuditLoading ? (t('pdf_audit.one_click.auditing') || 'Auditing document…') : pdfFixLoading ? (pdfFixStep || t('pdf_audit.one_click.remediating') || 'Remediating document…') : pdfAutoContinueRunning ? (t('pdf_audit.one_click.verifying') || 'Verifying improvements…') : (t('pdf_audit.one_click.finishing') || 'Finishing remediation…')}<span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.wait') || 'Keep this window open — duplicate starts are disabled'}</span></>
+                    ) : (
+                      <>✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span></>
+                    )}
                   </button>
                   <p className="text-[11px] text-slate-600 mt-2 text-center">{t('pdf_audit.one_click.desc') || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.'}
                     {typeof startPipelineTour === 'function' && (
@@ -5340,7 +6033,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </div>
                   </div>
                 </details>
-                <div className="flex gap-3 justify-center">
+                <div className={`flex gap-3 justify-center ${remediationReady === false ? 'opacity-50' : ''}`} aria-disabled={remediationReady === false} onClickCapture={(event) => { if (remediationReady === false) { event.preventDefault(); event.stopPropagation(); _requireRemediationReady(); } }}>
                   <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0); if (pdfAutoContinue && r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); } if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
@@ -5456,6 +6149,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <button
                           onClick={async () => {
                             try {
+                              const _quickExec = _alloExecutableActiveContentFindings(pdfAuditResult);
+                              if (_quickExec.length > 0) {
+                                addToast('Quick original-byte tagging is disabled because this PDF contains executable actions. Run Make Accessible, then use the clean tagged-PDF export.', 'warning');
+                                return;
+                              }
                               const freshBase64 = await ensurePdfBase64();
                               if (!freshBase64) return;
                               const ok = await _ensurePdfLib();
@@ -5486,14 +6184,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               setVeraPdfResult(null);
                               // Parity with the main tagged-download path: never hand over
                               // a baseline file whose structure failed the post-save check.
-                              const _blRoundTrip = (_result && _result.roundTrip) || null;
-                              if (_blRoundTrip && _blRoundTrip.ok === false) {
-                                const _blFails = (_blRoundTrip.checks || []).filter(c => c && c.status === 'fail').map(c => c.rule);
-                                const _blMsg = _blFails.length ? _blFails.join('; ') : ((_blRoundTrip.warnings || []).join('; ') || 'structure may not have survived serialization');
+                              const _blVerdict = _alloTaggedPdfDeliveryVerdict(_result);
+                              if (!_blVerdict.ok) {
+                                const _blFails = [];
+                                const _blMsg = _blVerdict.reason;
                                 addToast('⚠ Baseline post-save structure check FAILED: ' + _blMsg + '.', 'error');
-                                const _blProceed = (typeof window !== 'undefined' && typeof window.confirm === 'function')
-                                  ? window.confirm('The baseline tagged PDF FAILED its post-save structure check:\n\n' + _blMsg + '\n\nDownload the unverified file anyway?')
-                                  : false;
+                                const _blProceed = await askPdfConfirmation({
+                                  title: 'Download an unverified tagged PDF?',
+                                  description: 'The baseline tagged PDF failed its post-save structure check:\n\n' + _blMsg + '\n\nOnly continue if you will verify the file before distributing it.',
+                                  confirmLabel: 'Download unverified PDF',
+                                  tone: 'danger',
+                                });
                                 if (!_blProceed) { _lastTaggedDeliveryRef.current = { withheld: true, reason: 'baseline post-save structure check failed (declined)' }; addToast('Download cancelled — the baseline tagged PDF did not pass verification.', 'info'); return; } // M14
                               }
                               const blob = new Blob([taggedBytes], { type: 'application/pdf' });
@@ -5551,13 +6252,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     📂 {t('pdf_audit.continue_session') || 'Continue a previous session'}
                     <input type="file" accept=".json" className="hidden" onChange={(e) => {
                       const file = e.target.files?.[0]; if (!file) return;
+                      if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
                       const _projectLoadToken = ++_projectLoadSelectionRef.current;
                       const reader = new FileReader();
                       reader.onload = async (ev) => {
                         if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
                         try {
                           const parsedProject = JSON.parse(ev.target.result);
-                          const project = await _viewRehydrateVerificationHtmlBinding(parsedProject, _docPipeline);
+                          const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
+                          const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
                           if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
                           if (!project.version || (!project.accessibleHtml && !project.incomplete)) { addToast(t('toasts.valid_alloflow_project_file'), 'error'); return; }
                           // Forward-version guard (deep dive 2026-07-02 H12): a v3+ file half-loading
@@ -5628,6 +6331,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           });
                           const _loadedFixResult = {
                             accessibleHtml: project.accessibleHtml,
+                            documentDigest: project.documentDigest || null,
                             beforeScore: project.beforeScore,
                             afterScore: project.afterScore,
                             _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
@@ -5746,9 +6450,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </span>
                       )}
                       <button onClick={() => {
-                        const head = 'date,file,outcome,fail_stage,fail_reason,before,after,gain,passes,axe_violations,pages,retries,vision_calls,api_calls,api_ms,duration_s';
+                        const head = 'date,file,outcome,verification,fail_stage,fail_reason,before,after,gain,passes,axe_violations,pages,retries,vision_calls,api_calls,api_ms,duration_s';
                         const _csv = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
-                        const lines = _hist.map((r) => [String(r.at || '').slice(0, 10), _csv(r.fileName || ''), r.outcome || '', _csv(r.failStage || ''), _csv(r.failReason || ''), r.beforeScore != null ? r.beforeScore : '', r.afterScore != null ? r.afterScore : '', (r.beforeScore != null && r.afterScore != null) ? (r.afterScore - r.beforeScore) : '', r.passes != null ? r.passes : '', r.axeViolations != null ? r.axeViolations : '', r.pages != null ? r.pages : '', r.retries != null ? r.retries : '', r.visionCalls != null ? r.visionCalls : '', r.apiCalls != null ? r.apiCalls : '', r.apiMs != null ? r.apiMs : '', r.durationMs != null ? Math.round(r.durationMs / 1000) : ''].join(','));
+                        const lines = _hist.map((r) => [String(r.at || '').slice(0, 10), _csv(r.fileName || ''), r.outcome || '', _csv(r.verificationState || ''), _csv(r.failStage || ''), _csv(r.failReason || ''), r.beforeScore != null ? r.beforeScore : '', r.afterScore != null ? r.afterScore : '', (r.beforeScore != null && r.afterScore != null) ? (r.afterScore - r.beforeScore) : '', r.passes != null ? r.passes : '', r.axeViolations != null ? r.axeViolations : '', r.pages != null ? r.pages : '', r.retries != null ? r.retries : '', r.visionCalls != null ? r.visionCalls : '', r.apiCalls != null ? r.apiCalls : '', r.apiMs != null ? r.apiMs : '', r.durationMs != null ? Math.round(r.durationMs / 1000) : ''].join(','));
                         safeDownloadBlob(new Blob([head + '\n' + lines.join('\n')], { type: 'text/csv' }), 'alloflow-remediation-history.csv');
                       }} className="ml-auto px-2 py-0.5 bg-white border border-indigo-300 text-indigo-700 rounded-full font-bold hover:bg-indigo-100 shrink-0">⬇ CSV</button>
                     </div>
@@ -5883,7 +6587,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </div>
               </div>
-            ) : pdfAuditResult && pdfAuditResult._isWebAudit && pdfAuditResult.score == null ? (
+            ) : pdfAuditResult && pdfAuditResult._isWebAudit && pdfAuditResult.score == null && !pdfFixResult ? ( /* C5: a successful Audit & Remediate sets only pdfFixResult — never let the failed-audit screen hide the remediation results */
               <div role="alert" className="rounded-2xl overflow-hidden border border-amber-300 shadow-lg">
                 <div className="p-6 text-center bg-gradient-to-r from-amber-800 to-orange-800 text-white">
                   <div className="text-4xl mb-2" aria-hidden="true">⚠️</div>
@@ -6467,7 +7171,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <li key={idx}>
                                 ✓ Pages {r.pages[0]}–{r.pages[1]}
                                 {r.completedAt && <span className="text-indigo-600"> · {new Date(r.completedAt).toLocaleDateString()}</span>}
-                                {typeof r.finalScore === 'number' && <span className="text-indigo-600"> · score {r.finalScore}/100</span>}
+                                {/* C7 (2026-07-13): ranges are SAVED with afterScore — the old r.finalScore read had no writer, so per-range scores never displayed. finalScore kept as a legacy fallback. */}
+                                {Number.isFinite(r.afterScore ?? r.finalScore) && <span className="text-indigo-600"> · score {r.afterScore ?? r.finalScore}/100</span>}
                               </li>
                             ))}
                           </ul>
@@ -6496,7 +7201,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <button
                               onClick={async () => {
                                 if (!_docPipeline || !_docPipeline.clearMultiSession || !pdfMultiSession.sessionId) return;
-                                if (!window.confirm('Clear saved progress for this PDF? This cannot be undone.')) return;
+                                if (!(await askPdfConfirmation({
+                                  title: 'Clear saved PDF progress?',
+                                  description: 'This permanently removes the saved multi-session progress for this PDF. This cannot be undone.',
+                                  confirmLabel: 'Clear saved progress',
+                                  tone: 'danger',
+                                }))) return;
                                 await _docPipeline.clearMultiSession(pdfMultiSession.sessionId);
                                 setPdfMultiSession(null);
                                 setPdfPageRange(null);
@@ -6815,6 +7525,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </>) : (
                       <button onClick={async () => {
                         console.warn('[Fix&Verify btn] clicked — pendingPdfBase64:', !!pendingPdfBase64, 'pdfAuditResult:', !!pdfAuditResult, 'pageRange:', pdfPageRange);
+                        if (!_requireRemediationReady()) return;
                         const freshBase64 = await ensurePdfBase64();
                         if (!freshBase64) return; // user cancelled re-attach
                         if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
@@ -6822,17 +7533,40 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         } else {
                           fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting
                         }
-                      }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
+                      }} disabled={pdfFixLoading || remediationReady === false} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                         {pdfFixLoading ? <span className="animate-spin">⏳</span> : <Sparkles size={16} />}
                         {pdfFixLoading ? (pdfFixStep || 'Fixing...') : (pdfPageRange ? `♿ Fix Pages ${pdfPageRange.start}–${pdfPageRange.end}` : `♿ Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ''}`)}
                       </button>
                     )}
                     {pdfFixLoading && (
-                      <div className="basis-full mt-1" role="status" aria-live="polite">
-                        <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label={t('pdf_audit.fix_pass.progress_aria') || 'Fix and verify progress'} aria-valuenow={pdfFixStep.includes('Step 1') ? 15 : pdfFixStep.includes('Step 2') ? 50 : pdfFixStep.includes('Step 3') ? 80 : pdfFixStep.includes('Step 4') ? 92 : pdfFixStep.includes('Auto-fix') ? 96 : 5} aria-valuemin={0} aria-valuemax={100}>
-                          <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full" style={{ width: pdfFixStep.includes('Step 1') ? '15%' : pdfFixStep.includes('Step 2') ? '50%' : pdfFixStep.includes('Step 3') ? '80%' : pdfFixStep.includes('Step 4') ? '92%' : (pdfFixStep.includes('Auto-fix') || pdfFixStep.includes('Auto-continue')) ? '96%' : '5%' }}></div>
+                      <div className="basis-full mt-1" role="region" aria-label="Detailed remediation progress">
+                        <div className="flex items-center justify-between gap-3 mb-1 text-[11px] text-slate-600">
+                          <span className="font-bold">{Math.round(_remediationPercent)}% estimated</span>
+                          <span>{_formatElapsed(remediationProgress?.elapsedMs)} elapsed</span>
                         </div>
-                        <div className="text-xs text-slate-700 mt-0.5 text-center" role="status" aria-live="polite">{pdfFixStep}</div>
+                        <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden" role="progressbar" aria-label={t('pdf_audit.fix_pass.progress_aria') || 'Fix and verify progress'} aria-valuenow={Math.round(_remediationPercent)} aria-valuemin={0} aria-valuemax={100}>
+                          <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full" style={{ width: _remediationPercent + '%' }}></div>
+                        </div>
+                        <div className="text-xs text-slate-700 mt-1 text-center font-semibold" role="status" aria-live="polite" aria-atomic="true">{remediationProgress?.detail || pdfFixStep}</div>
+                        <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[10px]">
+                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">AI calls {_progressStats.apiCalls || 0}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">Vision {_progressStats.visionCalls || 0}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">Retries {_progressStats.transportRetries || 0}</span>
+                          {!!_progressStats.recoveredRetries && <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Recovered {_progressStats.recoveredRetries}</span>}
+                          {!!_progressStats.authThrottles && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Throttle signals {_progressStats.authThrottles}</span>}
+                        </div>
+                        {remediationProgress?.activity?.message && (
+                          <div className={'mt-2 rounded-lg border px-2.5 py-1.5 text-[11px] ' + (remediationProgress.status === 'throttled' ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-slate-50 border-slate-200 text-slate-700')}>
+                            <span className="font-bold">{remediationProgress.status === 'throttled' ? 'Waiting safely: ' : 'Current activity: '}</span>
+                            {remediationProgress.activity.message}
+                          </div>
+                        )}
+                        <div className="mt-2 flex items-center justify-center">
+                          <button type="button" onClick={() => setShowAgentTrace(v => !v)} aria-pressed={showAgentTrace} className="text-[11px] font-bold px-3 py-1 rounded-full border border-indigo-300 bg-indigo-50 text-indigo-800 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-400">
+                            {showAgentTrace ? 'Hide live agent trace' : 'Show live agent trace'}
+                          </button>
+                        </div>
+                        {showAgentTrace && <div className="mt-1 text-[10px] text-center text-slate-600">Read-only safety view: intermediate AI HTML is isolated; code appears only after validation.</div>}
 
                         {/* ── Pipeline Step Tracker — always visible during processing ── */}
                         {/* ── Pipeline Step Tracker with contextual explanation ── */}
@@ -6959,6 +7693,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {liveChunkStream.map((chunk, ci) => {
                                 const isWorking = chunk.status === 'working';
                                 const totalFixes = (chunk.deterministicFixCount || 0) + (chunk.surgicalFixCount || 0);
+                                const trace = liveChunkTrace[chunk.index];
                                 // (2026-06-20) A section whose audit didn't return a number (AI throttled) must
                                 // NOT be painted red 0 — that reads as "scored zero / broken" when it's just "not
                                 // scored yet". Render it neutral slate with an honest "not scored" label.
@@ -6993,7 +7728,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       {chunk.aiVerified && !chunk.usedOriginal && <span className="text-emerald-700" title={t('pdf_audit.live_chunk.content_verified_title') || "AI content-preservation check passed — the section's text content was preserved through the rewrite."}>✓ content verified</span>}
                                       {chunk.usedOriginal && <span className="text-red-700 font-bold" title={t('pdf_audit.live_chunk.ai_skipped_long_title') || 'AI rewrite failed or was rejected for this section — only deterministic (rule-based) fixes were applied. The section is still more accessible than the original, just less so than successfully AI-fixed sections.'}>{t('pdf_audit.live_chunk.ai_skipped_rule_only') || 'AI skipped · rule-based only'}</span>}
                                     </>}
-                                    {isWorking && <span className="ml-auto text-indigo-600 font-bold">Fixing...</span>}
+                                    {isWorking && <span className="ml-auto text-indigo-600 font-bold">{trace?.label || 'Fixing...'}</span>}
+                                    {showAgentTrace && trace?.history?.length > 0 && (
+                                      <div className="basis-full mt-1 flex flex-wrap gap-1" aria-label={'Agent trace for section ' + ((chunk.index || ci) + 1)}>
+                                        {trace.history.map((item, ti) => <span key={ti} className={'px-1.5 py-0.5 rounded border ' + (item.phase === 'accepted' ? 'bg-emerald-100 border-emerald-200 text-emerald-800' : item.phase === 'fallback' ? 'bg-amber-100 border-amber-200 text-amber-800' : 'bg-white border-indigo-200 text-indigo-700')}>{item.label}</span>)}
+                                      </div>
+                                    )}
                                   </div>
                                 );
                               })}
@@ -8172,8 +8912,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="text-xs text-indigo-700">{t('pdf_audit.live_chunk.review_subhead') || 'Watch each section get fixed in real time — reject or re-fix anything that looks wrong'}</div>
                           </div>
                         </div>
-                        <div className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold" role="status" aria-live="polite" aria-atomic="true">
-                          {liveChunkStream.filter(c => c.status === 'complete').length}/{liveChunkStream.length} complete
+                        <div className="flex items-center gap-2">
+                          <button type="button" onClick={() => setShowAgentTrace(v => !v)} aria-pressed={showAgentTrace} className="text-[10px] font-bold px-2 py-1 rounded-full border border-indigo-300 bg-white text-indigo-800 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-400">
+                            {showAgentTrace ? 'Hide trace' : 'Show agent trace'}
+                          </button>
+                          <div className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold" role="status" aria-live="polite" aria-atomic="true">
+                            {liveChunkStream.filter(c => c.status === 'complete').length}/{liveChunkStream.length} complete
+                          </div>
                         </div>
                       </div>
 
@@ -8188,6 +8933,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const isWorking = chunk.status === 'working';
                           const isRejected = !!liveChunkRejected[chunk.index];
                           const isExpanded = !!liveChunkExpanded[chunk.index];
+                          const trace = liveChunkTrace[chunk.index];
                           // (2026-06-22) A section whose per-chunk audit didn't return a number (AI throttled /
                           // partial coverage → score NULLED) must NOT render as a blank red "/100" — that reads
                           // as "scored zero / broken" when it's just "not scored". Mirror the sister list view
@@ -8209,7 +8955,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="text-[11px] font-bold text-slate-700">Section {chunk.index + 1}</span>
                                     <span className="text-[11px] text-slate-600">{chunk.sizeKB || '?'}KB</span>
-                                    {isWorking && <span className="text-[11px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold animate-pulse">Fixing...</span>}
+                                    {isWorking && <span className="text-[11px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold animate-pulse">{trace?.label || 'Fixing...'}</span>}
                                     {!isWorking && (chunk.deterministicFixCount > 0) && <span className="text-[11px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.rule_based_title') || 'Rule-based (deterministic) regex fixes applied — always safe, no AI involved'}>{chunk.deterministicFixCount} rule-based</span>}
                                     {!isWorking && (chunk.surgicalFixCount > 0) && <span className="text-[11px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.targeted_title') || 'AI-diagnosed targeted micro-fixes applied via deterministic tools (content-preserving)'}>{chunk.surgicalFixCount} targeted</span>}
                                     {!isWorking && chunk.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.ai_skipped_short_title') || 'AI rewrite failed or was rejected for this section — only rule-based fixes were applied. Still more accessible than the original.'}>{t('pdf_audit.live_chunk.ai_skipped_short') || 'AI skipped'}</span>}
@@ -8228,6 +8974,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   </div>
                                 )}
                               </div>
+                              {showAgentTrace && trace?.history?.length > 0 && (
+                                <div className="px-2 pb-2">
+                                  <div className="rounded-lg border border-indigo-200 bg-white/80 p-2">
+                                    <div className="text-[10px] font-black uppercase tracking-wide text-indigo-700 mb-1">Read-only agent trace</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {trace.history.map((item, ti) => <span key={ti} className={'text-[10px] px-1.5 py-0.5 rounded border ' + (item.phase === 'accepted' ? 'bg-emerald-100 border-emerald-200 text-emerald-800' : item.phase === 'fallback' ? 'bg-amber-100 border-amber-200 text-amber-800' : 'bg-indigo-50 border-indigo-200 text-indigo-700')}>{item.label}</span>)}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
 
                               {/* Action buttons — only shown after chunk is complete */}
                               {!isWorking && (
@@ -8379,6 +9135,57 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                         );
                       })()}
+                      {(() => {
+                        const state = pdfFixResult.verificationState || 'unavailable';
+                        const coverage = pdfFixResult.verificationCoverage || {};
+                        const reasons = Array.isArray(pdfFixResult.verificationReasons) ? pdfFixResult.verificationReasons : [];
+                        const tone = state === 'complete'
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
+                          : state === 'review-required'
+                            ? 'bg-amber-50 border-amber-300 text-amber-950'
+                            : 'bg-slate-50 border-slate-400 text-slate-900';
+                        const label = state === 'complete' ? 'Complete'
+                          : state === 'review-required' ? 'Human review required'
+                            : state === 'partial' ? 'Partial' : 'Unavailable';
+                        const engineLabel = (value) => String(value || 'unavailable').replace(/-/g, ' ');
+                        return (
+                          <section data-help-key="pdf_audit_verification_status" aria-labelledby="pdf-verification-status-heading" className={`rounded-xl border p-3 ${tone}`}>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 id="pdf-verification-status-heading" className="text-sm font-black">WCAG verification: {label}</h3>
+                              <span className="text-[10px] font-bold rounded-full border border-current/30 px-2 py-0.5">{coverage.standard || 'WCAG 2.2 AA'}</span>
+                              {state !== 'complete' && (
+                                <button
+                                  type="button"
+                                  disabled={verificationRefreshBusy || pdfFixLoading || pdfAutoContinueRunning}
+                                  onClick={async () => {
+                                    if (verificationRefreshBusy || !pdfFixResult.accessibleHtml) return;
+                                    setVerificationRefreshBusy(true);
+                                    setPdfFixStep('Re-running verification without changing the document...');
+                                    try {
+                                      const result = await _reauditAndScore(pdfFixResult.accessibleHtml, null);
+                                      if (result && result.ok) addToast('Verification refreshed: ' + result.verificationState + '.', result.verificationState === 'complete' ? 'success' : 'warning');
+                                      else addToast('Verification could not complete. The document was not changed.', 'warning');
+                                    } finally { setVerificationRefreshBusy(false); }
+                                  }}
+                                  className="ml-auto px-2.5 py-1 rounded-lg bg-white border border-current/30 text-[11px] font-bold hover:bg-black/5 disabled:opacity-50"
+                                >{verificationRefreshBusy ? 'Re-checking...' : 'Re-run verification only'}</button>
+                              )}
+                            </div>
+                            <ul className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-1 text-[11px]">
+                              <li><strong>AI:</strong> {engineLabel(coverage.ai)}</li>
+                              <li><strong>axe-core:</strong> {engineLabel(coverage.axe)}</li>
+                              <li><strong>Equal Access:</strong> {engineLabel(coverage.equalAccess)}</li>
+                            </ul>
+                            {pdfFixResult._finalAuditRetryAvailable && state !== 'complete' && (
+                              /* Reader for the previously write-only flag: the LAST verification audit
+                                 failed outright (throttle/transport), so a retry is genuinely likely to
+                                 improve the state — say so instead of leaving the button unexplained. */
+                              <p className="mt-1.5 text-[11px] font-semibold">The last verification audit could not finish (AI throttled or engine unavailable). "Re-run verification only" retries it without changing the document.</p>
+                            )}
+                            {reasons.length > 0 && <details className="mt-2 text-[11px]"><summary className="font-bold cursor-pointer">Why this status?</summary><ul className="mt-1 ml-5 list-disc space-y-0.5">{reasons.map((reason, index) => <li key={index}>{String(reason).replace(/[-:]/g, ' ')}</li>)}</ul></details>}
+                          </section>
+                        );
+                      })()}
                       {/* ── Results dashboard bar: pinned overview + jump-links. ──
                           NAVIGATION-ONLY by design: it moves no existing element
                           (the 308-element inventory is the completeness contract —
@@ -8506,25 +9313,42 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               );
                             })()}
                             {(() => {
-                              // H-5 Phase-A instrument: always-visible reading-order readout for the
-                              // EXPORTED tagged PDF. The ratio is the LCS monotonic-match between the
-                              // source token order and the round-tripped tagged-PDF order (100% = identical
-                              // order). Low values flag multi-column / table reflow a screen reader would
-                              // read out of sequence. Informational only — calibration corpus pending
-                              // before this gates conformance (see doc_pipeline readingOrderSequenceRatio).
-                              const _td = _currentTaggedValidation && _currentTaggedValidation.roundTrip && _currentTaggedValidation.roundTrip.textDiff;
+                              // The saved StructTreeRoot /K walk is the authoritative assistive-technology
+                              // order. The pdf.js token ratio remains a supplemental content-stream signal
+                              // for older artifacts and layout diagnostics; it never substitutes for /K.
+                              const _rt = _currentTaggedValidation && _currentTaggedValidation.roundTrip;
+                              const _tree = _currentTaggedValidation && _currentTaggedValidation.roundTrip && _currentTaggedValidation.roundTrip.tagTreeOrder;
+                              const _td = _rt && _rt.textDiff;
                               const _ro = _td && typeof _td.readingOrderRatio === 'number' ? _td.readingOrderRatio : null;
+                              if (_tree && (typeof _tree.exact === 'boolean' || _tree.exact === null)) {
+                                const _treeFail = _tree.exact === false;
+                                const _treeUnknown = _tree.exact === null;
+                                const _treeExpected = Number.isFinite(_tree.expectedLeafCount) ? _tree.expectedLeafCount : null;
+                                const _treeSaved = Number.isFinite(_tree.savedLeafCount) ? _tree.savedLeafCount : null;
+                                const _treeCounts = (_treeSaved !== null && _treeExpected !== null) ? (_treeSaved + '/' + _treeExpected + ' tagged leaves') : 'verified';
+                                const _treeDetail = _treeUnknown
+                                  ? 'The saved structure tree could not be walked, so logical reading order is unavailable and needs review.'
+                                  : _treeFail
+                                    ? 'The saved StructTreeRoot /K order differs from the HTML-derived semantic order; verified delivery is withheld.'
+                                    : 'The saved StructTreeRoot /K follows the exact HTML-derived semantic-leaf order.';
+                                const _streamDetail = _ro === null ? '' : (' Supplemental content-stream sequence: ' + (Math.round(_ro * 10) / 10) + '%.');
+                                return (
+                                  <_AlloQualifier className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (_treeFail ? 'bg-red-100 text-red-700' : (_treeUnknown ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'))}
+                                    text={(t('pdf_audit.dashboard.reading_order_title') || 'Logical reading order of the EXPORTED tagged PDF, verified from the saved structure tree used by assistive technology.') + ' ' + _treeDetail + _streamDetail}>
+                                    {(_treeFail ? '❌ ' : (_treeUnknown ? '⚠️ ' : '✅ ')) + (t('pdf_audit.dashboard.reading_order') || 'Reading order') + ': ' + (_treeUnknown ? 'unavailable' : (_treeFail ? 'tag-tree mismatch' : _treeCounts))}
+                                  </_AlloQualifier>
+                                );
+                              }
                               if (_ro === null) return null;
                               const _low = _ro < 80;
                               const _mid = !_low && _ro < 90;
                               return (
                                 <_AlloQualifier className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (_low ? 'bg-amber-100 text-amber-700' : (_mid ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-600'))}
-                                  text={t('pdf_audit.dashboard.reading_order_title') || 'Reading-order match between the SOURCE document and the EXPORTED tagged PDF (round-trip token order, longest-common-subsequence). 100% = identical order. Lower values can indicate multi-column or table reflow that a screen reader will read out of sequence. Informational — being calibrated, does not yet block conformance.'}>
-                                  {(_low ? '⚠️ ' : '') + (t('pdf_audit.dashboard.reading_order') || 'Reading order') + ': ' + (Math.round(_ro * 10) / 10) + '%'}
+                                  text={'Supplemental content-stream sequence: ' + (Math.round(_ro * 10) / 10) + '%. This is a layout diagnostic only; no saved StructTreeRoot /K fingerprint was available for this older artifact.'}>
+                                  {(_low ? '⚠️ ' : '') + (t('pdf_audit.dashboard.reading_order') || 'Reading order') + ' (stream): ' + (Math.round(_ro * 10) / 10) + '%'}
                                 </_AlloQualifier>
                               );
-                            })()}
-                            <span className="h-4 w-px bg-slate-300 mx-0.5" aria-hidden="true"></span>
+                            })()}                            <span className="h-4 w-px bg-slate-300 mx-0.5" aria-hidden="true"></span>
                             <button className={_chip} onClick={() => _jump('allo-sec-verify')}>✅ {t('pdf_audit.dashboard.verify') || 'Verification'}</button>
                             <button className={_chip} onClick={() => _jump('allo-sec-recovery')}>🩹 {t('pdf_audit.dashboard.recovery') || 'Recovery'}</button>
                             <button className={_chip} onClick={() => _jump('allo-sec-axe')}>🪓 {t('pdf_audit.dashboard.axe') || 'Issues (axe)'}</button>
@@ -8569,8 +9393,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </button>
                         ) : (
                           <button
-                            onClick={() => {
-                              if (window.confirm(t('pdf_audit.start_new_confirm') || 'Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.')) {
+                            onClick={async () => {
+                              if (await askPdfConfirmation({
+                                title: t('pdf_audit.start_new_title_short') || 'Start a new audit?',
+                                description: t('pdf_audit.start_new_confirm') || 'Your current audit will be cleared. Download any remediated files or save the project first if you need to keep this work.',
+                                confirmLabel: t('pdf_audit.start_new_audit') || 'Start New Audit',
+                                tone: 'danger',
+                              })) {
                                 startNewPdfAudit();
                               }
                             }}
@@ -8633,6 +9462,23 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div className="flex-1 min-w-[240px]">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('pdf_audit.imgreview.alt_label') || 'Description (what a screen reader says)'}</label>
                                 <textarea value={imgReviewDraft} onChange={(e) => setImgReviewDraft(e.target.value)} rows={3} className="w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5" />
+                                {(() => {
+                                  // M20 (2026-07-13): live quality feedback on the DRAFT — the same heuristics
+                                  // that flag alts in the final audit run here as the teacher types, so the
+                                  // flag disappears the moment the description is fixed. Window static keeps
+                                  // this independent of the _docPipeline prop contract.
+                                  const _aqFn = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.altQuality) || null;
+                                  let _q = null;
+                                  try { _q = _aqFn ? _aqFn(imgReviewDraft, {}) : null; } catch (_) { _q = null; }
+                                  const _issues = (_q && Array.isArray(_q.issues)) ? _q.issues : [];
+                                  if (!_issues.length) return null;
+                                  const _labels = _issues.slice(0, 3).map((x) => (x && x.label) || (x && x.id) || String(x)).join('; ');
+                                  return (
+                                    <p className={`mt-1 text-[11px] font-bold ${_q.severity === 'high' ? 'text-red-700' : 'text-amber-700'}`} role="status">
+                                      {_q.severity === 'high' ? '🛑' : '⚠'} {t('pdf_audit.imgreview.quality_flag') || 'This description may not help a screen-reader user'}: {_labels}. {t('pdf_audit.imgreview.quality_hint') || 'Describe what the image SHOWS, not what it is.'}
+                                    </p>
+                                  );
+                                })()}
                                 {it.latex && (
                                   <div className="mt-1.5">
                                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('pdf_audit.imgreview.latex_label') || 'AI-transcribed math (LaTeX)'}</span>
@@ -9161,7 +10007,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               '3.1.4': 'Abbreviations',
                               '3.3.2': 'Labels or Instructions',
                               '4.1.1': 'Parsing (duplicate IDs)',
-                              '4.1.2': 'Name, Role, Value'
+                              '4.1.2': 'Name, Role, Value',
+                              // WCAG 2.2 additions (B6, 2026-07-13) — the engines run wcag22
+                              // tags / the WCAG_2_2 policy, so these SC numbers reach this map.
+                              '2.4.11': 'Focus Not Obscured (Minimum)',
+                              '2.4.12': 'Focus Not Obscured (Enhanced)',
+                              '2.4.13': 'Focus Appearance',
+                              '2.5.7': 'Dragging Movements',
+                              '2.5.8': 'Target Size (Minimum)',
+                              '3.2.6': 'Consistent Help',
+                              '3.3.7': 'Redundant Entry',
+                              '3.3.8': 'Accessible Authentication (Minimum)',
+                              '3.3.9': 'Accessible Authentication (Enhanced)'
                             };
                             const scMap = {};
                             const addToSc = (sc, bucket) => {
@@ -9442,7 +10299,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   learns to distrust the panel. Quality-class notes now get a quality lead. */}
                               {(() => {
                                 const _notes = Array.isArray(pdfFixResult.fidelityNotes) ? pdfFixResult.fidelityNotes : [];
-                                const _qualityKinds = { altQuality: 1, activeContent: 1, lowOcrAccuracy: 1, lowOcrConfidence: 1, ocrDupeCollapse: 1, pageEdge: 1 };
+                                const _qualityKinds = { altQuality: 1, activeContent: 1, lowOcrAccuracy: 1, lowOcrConfidence: 1, ocrDupeCollapse: 1, pageEdge: 1, ocrColumnOrder: 1 };
                                 const _textLossConcern = (cov == null || cov < 97) || pdfFixResult.integrityWarning || _notes.some(n => n && !_qualityKinds[n.kind]);
                                 return _textLossConcern ? (
                                   <p className="text-xs text-sky-800 leading-relaxed mt-1">
@@ -10289,6 +11146,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           id="allo-tagged-pdf-btn"
                           onClick={async () => {
                             try {
+                              const _fidelityOverride = _activeContentFidelityOverrideRef.current === true;
+                              _activeContentFidelityOverrideRef.current = false;
+                              if (_hasExecutableActiveContent && !_fidelityOverride) {
+                                await _runTypesetExport({ sanitized: true });
+                                return;
+                              }
+                              if (_hasExecutableActiveContent) addToast('Advanced fidelity export enabled: the original executable actions and visual layout will be preserved. Redistribute only after a security review.', 'warning');
                               const freshBase64 = await ensurePdfBase64();
                               if (!freshBase64) return;
                               const ok = await _ensurePdfLib();
@@ -10334,7 +11198,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     const _r2 = await createTaggedPdf(bytes, _fr2, { title, lang, author: _author, subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(_fr2) });
                                     const _td2 = _r2 && _r2.roundTrip && _r2.roundTrip.textDiff;
                                     const _res2 = _td2 && typeof _td2.residualMissingCount === 'number' ? _td2.residualMissingCount : null;
-                                    if (_r2 && _r2.bytes && !(_r2.roundTrip && _r2.roundTrip.ok === false) && _res2 != null && _res2 <= _res0) {
+                                    if (_r2 && _r2.bytes && _alloTaggedPdfDeliveryVerdict(_r2).ok && _res2 != null && _res2 <= _res0) {
                                       const _pre = pdfFixResult.accessibleHtml;
                                       setPdfFixResult(prev => prev ? _viewEnforceVerificationHtmlBinding({ ...prev, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt, _preCmdHtml: _pre }, 'content-modified-pending-reverification', _docPipeline) : prev);
                                       _tagSourceHtml = _h;
@@ -10391,8 +11255,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 veraPdfBytesHash: _transferVeraVerdict ? _newTaggedHash : null,
                                 generatedAt: new Date().toISOString(),
                               }, _tagSourceHtml, _docPipeline);
-                              if (!_taggedArtifactTicketIsCurrent(_taggedArtifact)
-                                  || String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== String(_tagSourceHtml || '')) return;
+                              if (!_taggedArtifactTicketIsCurrent(_taggedArtifact)) return;
+                              if (String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== String(_tagSourceHtml || '')) {
+                                addToast('The document changed while this download was being prepared (a fix round finished). Click download again for the current version.', 'info'); // C3
+                                return;
+                              }
                               setLastTaggedValidation(_viewAttachTaggedArtifactProof(_boundTaggedValidation, _taggedArtifact));
                               if (_transferVeraVerdict) setVeraPdfResult(_viewAttachTaggedArtifactProof({ ..._priorValidation.veraPdf }, _taggedArtifact));
                               // ── #5 Content-fidelity gate ── A SEVERE shortfall (<80% of source text
@@ -10417,13 +11284,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               }
                               // ── Gate the download on the post-save structural self-check ──
                               // createTaggedPdf re-parses the SHIPPED bytes; if the tag tree / MarkInfo /
-                              // language didn't survive serialization (roundTrip.ok === false), do NOT
+                              // verification did not affirmatively complete (roundTrip.ok !== true), do NOT
                               // silently hand over a broken tagged PDF. Previously a passed and a failed
                               // verification produced the identical download with only an after-the-fact
                               // toast; now a hard fail requires an explicit "download anyway" opt-in.
-                              if (roundTrip && roundTrip.ok === false) {
-                                const _rtFails = (roundTrip.checks || []).filter(c => c && c.status === 'fail').map(c => c.rule);
-                                const _rtMsg = _rtFails.length ? _rtFails.join('; ') : ((roundTrip.warnings || []).join('; ') || 'structure may not have survived serialization');
+                              const _deliveryVerdict = _alloTaggedPdfDeliveryVerdict(_result);
+                              if (!_deliveryVerdict.ok) {
+                                const _rtFails = [];
+                                const _rtMsg = _deliveryVerdict.reason;
                                 // Inline decision panel instead of a blocking window.confirm
                                 // (2026-06-12): confirm() is unreliable in the Canvas sandbox
                                 // and a modal dead-end was the worst ending the hands-free
@@ -10457,7 +11325,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 if ((ocrTextLayer.pagesIncomplete || 0) > 0) _bits.push(ocrTextLayer.pagesIncomplete + ' got only partial text');
                                 _rpt.push({ tone: 'warn', text: 'Per-page OCR: of ' + _pw + ' scanned page(s), ' + _bits.join(' and ') + ' — those page(s) will not be fully searchable or read aloud; verify them against the original.' });
                               }
-                              if (roundTrip && roundTrip.ok !== false && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
+                              if (roundTrip && roundTrip.ok === true && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
                                 _rpt.push({ tone: 'warn', text: 'Structure self-check notes: ' + roundTrip.warnings.join('; ') });
                               }
                               if (postExportValidator && postExportValidator.summary) {
@@ -10523,10 +11391,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               addToast(t('toasts.tagged_pdf_failed') + (err?.message || 'unknown error') + '. Try PDF (from HTML) as a fallback.', 'error');
                             }
                           }}
-                          className="px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5"
-                          title={t('pdf_audit.tagged_pdf.title') || "Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters."}
+                          className={_hasExecutableActiveContent ? "px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors flex items-center gap-1.5" : "px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5"}
+                          title={_hasExecutableActiveContent ? 'Recommended: rebuild a clean tagged PDF from the remediated content. Executable actions from the source PDF are removed; the visual layout is regenerated.' : (t('pdf_audit.tagged_pdf.title') || "Preserve the original PDF's visual layout and inject accessibility tags into its structure tree. Best for trusted textbooks, multi-column documents, and branded PDFs where visual fidelity matters.")}
                         >
-                          📄 Tagged PDF
+                          {_hasExecutableActiveContent ? '🧼 Clean tagged PDF (recommended)' : '📄 Tagged PDF'}
                         </button>
                         ) : (
                         <button
@@ -10544,16 +11412,24 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             embedded scripts/actions/attachments the source carried); this offers the
                             SAME typeset rebuild the non-PDF path uses as an explicit "clean" alternative
                             that drops all original active content. Secondary styling so the fidelity-
-                            preserving Tagged PDF stays the default choice. */}
+                            preserving export is available only as an explicit advanced override when executable actions were detected. */}
                         {_inputIsPdf && (
                         <button
                           id="allo-tagged-pdf-clean-btn"
                           data-help-key="pdf_audit_view_sanitized_rebuild_btn"
-                          onClick={() => _runTypesetExport({ sanitized: true })}
-                          className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5"
-                          title={t('pdf_audit.tagged_pdf.sanitized_title') || "Rebuild a CLEAN tagged PDF from the remediated content instead of tagging the original file. Because it regenerates the PDF, it drops any embedded JavaScript, open/launch actions, file attachments, and original metadata the source carried — a safer file to redistribute, at the cost of the original visual design. Use this when the source PDF is from an untrusted or unknown origin."}
+                          onClick={() => {
+                            if (_hasExecutableActiveContent) {
+                              _activeContentFidelityOverrideRef.current = true;
+                              const fidelityButton = document.getElementById('allo-tagged-pdf-btn');
+                              if (fidelityButton) fidelityButton.click();
+                              return;
+                            }
+                            _runTypesetExport({ sanitized: true });
+                          }}
+                          className={_hasExecutableActiveContent ? "px-4 py-2.5 bg-amber-50 text-amber-800 border border-amber-400 rounded-xl font-bold text-sm hover:bg-amber-100 transition-colors flex items-center gap-1.5" : "px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5"}
+                          title={_hasExecutableActiveContent ? 'Advanced: preserve the original PDF layout and its executable actions. Use only after a security review; the clean tagged PDF is the recommended distributable copy.' : (t('pdf_audit.tagged_pdf.sanitized_title') || "Rebuild a CLEAN tagged PDF from the remediated content instead of tagging the original file. Because it regenerates the PDF, it drops embedded JavaScript, open/launch actions, file attachments, and original metadata.")}
                         >
-                          🧼 {t('pdf_audit.tagged_pdf.sanitized_label') || 'Rebuild clean (drops embedded scripts)'}
+                          {_hasExecutableActiveContent ? '⚠ Preserve source actions (advanced)' : ('🧼 ' + (t('pdf_audit.tagged_pdf.sanitized_label') || 'Rebuild clean (drops embedded scripts)'))}
                         </button>
                         )}
                         <button onClick={async () => {
@@ -10939,8 +11815,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           veraPdfBytesHash: null,
                                           generatedAt: new Date().toISOString(),
                                         }, html, _docPipeline);
-                                        if (!_taggedArtifactTicketIsCurrent(_restoredArtifact)
-                                            || String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== String(html || '')) return;
+                                        if (!_taggedArtifactTicketIsCurrent(_restoredArtifact)) return;
+                                        if (String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== String(html || '')) {
+                                          addToast('The document changed while this download was being prepared (a fix round finished). Click download again for the current version.', 'info'); // C3
+                                          return;
+                                        }
                                         setLastTaggedValidation(_viewAttachTaggedArtifactProof(_restoredValidation, _restoredArtifact));
                                         const restoredCount = allRestored.length;
                                         const unresolvedCount = allUnplaceable.length;
@@ -11240,9 +12119,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           // Re-scanning re-runs the WHOLE pipeline and REPLACES the current results (2026-06-23,
                           // maintainer Canvas test: this was wiping a good audit with no warning). When there's a
                           // result to lose, confirm first and offer to save the project so it isn't discarded.
-                          if (pdfFixResult && pdfFixResult.accessibleHtml && typeof window !== 'undefined' && typeof window.confirm === 'function') {
-                            if (!window.confirm(t('pdf_audit.rescan_confirm') || 'Re-scanning with OCR starts the audit over and REPLACES your current results. Continue?')) return;
-                            if (typeof saveProjectToFile === 'function' && window.confirm(t('pdf_audit.rescan_save_first') || 'Save your current project first?\n\nOK = download a .alloflow.json now, then re-scan.\nCancel = re-scan without saving.')) {
+                          if (pdfFixResult && pdfFixResult.accessibleHtml) {
+                            const _rescanDecision = await askPdfConfirmation({
+                              title: t('pdf_audit.rescan_title') || 'Replace results with a new OCR scan?',
+                              description: (t('pdf_audit.rescan_confirm') || 'Re-scanning with OCR starts the audit over and REPLACES your current results.') + '\n\n' + (t('pdf_audit.rescan_save_first') || 'Save a project copy first if you may need this work again.'),
+                              confirmLabel: t('pdf_audit.rescan_save_action') || 'Save project and re-scan',
+                              alternativeLabel: t('pdf_audit.rescan_without_save') || 'Re-scan without saving',
+                            });
+                            if (!_rescanDecision) return;
+                            if (_rescanDecision === true && typeof saveProjectToFile === 'function') {
                               try { saveProjectToFile(false); addToast(t('pdf_audit.rescan_saved') || '💾 Project saved — re-scanning…', 'info'); } catch (_) {}
                             }
                           }
@@ -11276,13 +12161,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           📂 Load Project
                           <input type="file" accept=".json,.alloflow.json" className="hidden" onChange={(e) => {
                             const file = e.target.files?.[0]; if (!file) return;
+                            if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
                             const _projectLoadToken = ++_projectLoadSelectionRef.current;
                             const reader = new FileReader();
                             reader.onload = async (ev) => {
                               if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
                               try {
                                 const parsedProject = JSON.parse(ev.target.result);
-                                const project = await _viewRehydrateVerificationHtmlBinding(parsedProject, _docPipeline);
+                                const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
+                                const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
                                 if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
                                 if (project && project.incomplete && project.version) {
                                   // Unfinished run: this results-screen loader only swaps in COMPLETED
@@ -11294,6 +12181,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 if (!project.accessibleHtml || !project.version) { addToast(t('toasts.invalid_project_file_2'), 'error'); return; }
                                 const _loadedFixResult = {
                                   accessibleHtml: project.accessibleHtml,
+                                  documentDigest: project.documentDigest || null,
                                   beforeScore: project.beforeScore,
                                   afterScore: project.afterScore,
                                   _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
@@ -11495,6 +12383,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
                             zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
                             const epubLang = ((typeof html === 'string' && html.match(/<html[^>]*lang=["']([^"']+)["']/i)) || [])[1] || 'en';
+                            const _epubContentProps = [];
+                            if (/<svg\b/i.test(html)) _epubContentProps.push('svg');
+                            if (/<math\b/i.test(html)) _epubContentProps.push('mathml');
+                            const _epubContentPropAttr = _epubContentProps.length ? ' properties="' + _epubContentProps.join(' ') + '"' : '';
                             const opf = `<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -11515,7 +12407,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
     <meta property="schema:accessibilitySummary">Remediated for accessibility by AlloFlow: semantic headings, logical reading order, table of contents, and alternative text for images.</meta>
   </metadata>
   <manifest>
-    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"/>
+    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_epubContentPropAttr}/>
     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
   </manifest>
   <spine><itemref idref="content"/></spine>
@@ -11528,13 +12420,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             let xhtml;
                             try {
                               const _d = new DOMParser().parseFromString(html, 'text/html');
-                              xhtml = new XMLSerializer().serializeToString(_d.documentElement).replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
+                              xhtml = new XMLSerializer().serializeToString(_d.documentElement).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, '');
                             } catch (_) { xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;'); }
-                            if (!xhtml.includes('xmlns')) xhtml = xhtml.replace('<html', '<html xmlns="http://www.w3.org/1999/xhtml"');
+                            // #8: ALWAYS restore the XHTML namespace on the ROOT html element. The old
+                            // `!includes('xmlns')` check was defeated by any child xmlns (a MathML/SVG
+                            // equation), leaving the root in no namespace so readers reject the book.
+                            if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
                             zip.file('OEBPS/content.xhtml', xhtml);
-                            const headings = [...html.matchAll(/<h([1-3])[^>]*id="([^"]*)"[^>]*>([^<]+)/gi)];
+                            // Escape the id + heading text into nav.xhtml (an unescaped & or a heading
+                            // that starts with an inline tag produced malformed XML / a missing entry);
+                            // capture the FULL heading text, then strip inline tags.
+                            const _navEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                            const headings = [...html.matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
                             const navItems = headings.length > 0
-                              ? headings.map(m => `<li><a href="content.xhtml#${m[2]}">${m[3].trim()}</a></li>`).join('\n')
+                              ? headings.map(m => `<li><a href="content.xhtml#${_navEsc(m[2])}">${_navEsc(m[3].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()) || 'Section'}</a></li>`).join('\n')
                               : '<li><a href="content.xhtml">Document</a></li>';
                             zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
@@ -11555,7 +12454,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button onClick={() => {
                             const html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
-                            const text = html.replace(/<[^>]*>/g, '\n').replace(/&[^;]+;/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+                            // #3 (export-format review R2): the old tag-strip embossed <style>/<title>
+                            // bodies, shattered a line at every inline tag, and its greedy &[^;]+;
+                            // could swallow real text across newlines. Parse + drop non-content
+                            // (script/style/head, editor chrome, and the AI math/chart source panels),
+                            // then flatten one line per block — matching the Document Builder lane.
+                            let text = '';
+                            try {
+                              const _d = new DOMParser().parseFromString(html, 'text/html');
+                              _d.querySelectorAll('script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source').forEach(el => { try { el.remove(); } catch (_) {} });
+                              _d.querySelectorAll('details.allo-chart-data > summary').forEach(el => { try { el.remove(); } catch (_) {} });
+                              _d.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(el => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(_d.createTextNode('\n')); } catch (_) {} });
+                              _d.querySelectorAll('p,li,tr,figcaption,blockquote,div,br').forEach(el => { try { el.appendChild(_d.createTextNode('\n')); } catch (_) {} });
+                              text = ((_d.body && _d.body.textContent) || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+                            } catch (_) {
+                              text = html.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]*>/g, '\n').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&#?[a-z0-9]+;/gi, ' ').replace(/\n{3,}/g, '\n\n').trim();
+                            }
                             // Real ASCII Braille (BRF), Grade 1 / uncontracted (audit
                             // 2026-06-13): a .brf must be ASCII braille (0x20–0x5F North-
                             // American Braille Computer Code), NOT Unicode U+2800 patterns —
@@ -11566,33 +12480,109 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             // sign (#) before a 1-0→A-J digit run; standard BRF punctuation;
                             // 40-cell line wrap.
                             const _brfDigit = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
-                            const _brfPunct = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '7', ')': '7', '"': '7', "'": "'", '-': '-', '/': '/', '*': '9', '&': '&', '@': '@', '#': '#' };
-                            const _toBRF = (src) => {
-                              const lines = src.replace(/\r\n?/g, '\n').split('\n');
-                              const out = [];
-                              for (const line of lines) {
-                                let bl = ''; let numMode = false;
-                                for (let i = 0; i < line.length; i++) {
-                                  const ch = line[i];
+                            const _brfPunct = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '"<', ')': '">', "'": "'", '-': '-', '/': '_/', '*': '"9', '&': '@&', '+': '"6', '=': '"7', '<': '@<', '>': '@>' };
+                            const _brfSmart = { '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*' };
+                            const _brfOpenQuote = '\ue000', _brfCloseQuote = '\ue001';
+                            const _brfPrefix = /[#,;@_^".]$/;
+                            const _brfHardSplit = (word, into, cells) => {
+                              if (/^#[A-J14]+$/.test(word)) {
+                                while (word.length > cells) { into.push(word.slice(0, cells - 1) + '"'); word = word.slice(cells - 1); }
+                                if (word) into.push(word);
+                                return;
+                              }
+                              while (word.length > cells) {
+                                let cut = cells;
+                                while (cut > 1 && _brfPrefix.test(word.slice(0, cut))) cut--;
+                                into.push(word.slice(0, cut)); word = word.slice(cut);
+                              }
+                              if (word) into.push(word);
+                            };
+                            const _brfWrap = (line, into, cells) => {
+                              if (line.length <= cells) { into.push(line); return; }
+                              const words = line.split(' '); let cur = '';
+                              for (let word of words) {
+                                if (word.length > cells) { if (cur) { into.push(cur); cur = ''; } _brfHardSplit(word, into, cells); continue; }
+                                if (!cur) cur = word;
+                                else if (cur.length + 1 + word.length <= cells) cur += ' ' + word;
+                                else { into.push(cur); cur = word; }
+                              }
+                              if (cur) into.push(cur);
+                            };
+                            const _toBRF = (src, opts) => {
+                              const cells = (opts && opts.cellsPerLine) || 40;
+                              let norm = String(src == null ? '' : src).replace(/[\u201c\u00ab]/g, _brfOpenQuote).replace(/[\u201d\u00bb]/g, _brfCloseQuote);
+                              norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _brfSmart[c] || '');
+                              try { norm = norm.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
+                              const out = []; let dropped = 0;
+                              for (const line of norm.replace(/\r\n?/g, '\n').split('\n')) {
+                                const chars = Array.from(line); let bl = ''; let numMode = false;
+                                for (let i = 0; i < chars.length; i++) {
+                                  const ch = chars[i];
                                   if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _brfDigit[ch]; continue; }
+                                  if (numMode && (ch === ',' || ch === '.')) { bl += _brfPunct[ch]; continue; }
+                                  if (numMode && ch >= 'a' && ch <= 'j') bl += ';';
                                   numMode = false;
                                   if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
-                                  if (ch >= 'A' && ch <= 'Z') { bl += ',' + ch; continue; }
+                                  if (ch >= 'A' && ch <= 'Z') {
+                                    let end = i;
+                                    while (end < chars.length && chars[end] >= 'A' && chars[end] <= 'Z') end++;
+                                    const prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
+                                    const nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
+                                    if (!prevIsLetter && !nextIsLetter && end - i >= 2) { bl += ',,' + chars.slice(i, end).join(''); i = end - 1; }
+                                    else bl += ',' + ch;
+                                    continue;
+                                  }
                                   if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
-                                  bl += (_brfPunct[ch] !== undefined ? _brfPunct[ch] : (ch.charCodeAt(0) >= 0x20 && ch.charCodeAt(0) <= 0x7e ? ch.toUpperCase() : ''));
+                                  if (ch === _brfOpenQuote) { bl += '8'; continue; }
+                                  if (ch === _brfCloseQuote) { bl += '0'; continue; }
+                                  if (ch === '"') { const prev = i > 0 ? chars[i - 1] : ''; bl += (!prev || /\s|[([{]/.test(prev)) ? '8' : '0'; continue; }
+                                  if (_brfPunct[ch] !== undefined) { bl += _brfPunct[ch]; continue; }
+                                  dropped++;
                                 }
-                                out.push(bl.slice(0, 40));
-                                if (bl.length > 40) { let rest = bl.slice(40); while (rest.length) { out.push(rest.slice(0, 40)); rest = rest.slice(40); } }
+                                _brfWrap(bl, out, cells);
                               }
-                              return out.join('\r\n');
+                              const brf = out.join('\r\n');
+                              return (opts && opts.withMeta) ? { brf, dropped } : brf;
                             };
-                            const brf = _toBRF(text);
-                            const blob = new Blob([brf], { type: 'application/x-brf' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a'); a.href = url;
-                            a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.brf';
-                            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                            addToast(t('toasts.braille_file_downloaded_grade_brf'), 'success');
+const _downloadBRF = (brf) => {
+                              const blob = new Blob([brf], { type: 'application/x-brf' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a'); a.href = url;
+                              a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.brf';
+                              document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                            };
+                            // Prefer UEB Grade 2 via liblouis; fall back to the shared canonical
+                            // Grade-1 converter (same loader file), then to the inline _toBRF if the
+                            // load fails — parity with the Document Builder braille export.
+                            const _ensureBrailleLoader = (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function')
+                              ? Promise.resolve(true)
+                              : (window.__alloLoadPlugin ? window.__alloLoadPlugin('liblouis_braille_loader.js') : Promise.resolve(false));
+                            Promise.resolve(_ensureBrailleLoader).catch(() => false).then(() => {
+                              let _g1Dropped = 0, _grade1;
+                              if (window.AlloBraille && typeof window.AlloBraille.toGrade1BRF === 'function') {
+                                const _r = window.AlloBraille.toGrade1BRF(text, { withMeta: true });
+                                _grade1 = _r.brf; _g1Dropped = _r.dropped;
+                              } else { const _r = _toBRF(text, { withMeta: true }); _grade1 = _r.brf; _g1Dropped = _r.dropped; }
+                              const _warnDrop = () => { if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + ' character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.', 'info'); };
+                              if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') {
+                                addToast('Preparing contracted braille (UEB Grade 2)…', 'info');
+                                Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
+                                  if (ueb && ueb.replace(/\s/g, '').length) {
+                                    _downloadBRF(ueb);
+                                    addToast('Electronic Braille (UEB Grade 2) downloaded', 'success');
+                                  } else {
+                                    _downloadBRF(_grade1); _warnDrop();
+                                    addToast(t('toasts.braille_file_downloaded_grade_brf'), 'success');
+                                  }
+                                }).catch(() => {
+                                  _downloadBRF(_grade1); _warnDrop();
+                                  addToast(t('toasts.braille_file_downloaded_grade_brf'), 'success');
+                                });
+                              } else {
+                                _downloadBRF(_grade1); _warnDrop();
+                                addToast(t('toasts.braille_file_downloaded_grade_brf'), 'success');
+                              }
+                            });
                           }} data-help-key="pdf_audit_alt_formats_braille_btn" className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             ⠃⠗⠇ Electronic Braille (BRF)
                           </button>
@@ -11615,11 +12605,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button onClick={() => {
                             const html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
-                            const text = html.replace(/<h([1-6])[^>]*>/gi, (m, l) => '\n' + '#'.repeat(parseInt(l)) + ' ')
-                              .replace(/<\/h[1-6]>/gi, '\n').replace(/<li[^>]*>/gi, '  • ').replace(/<\/li>/gi, '\n')
-                              .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]*>/g, '')
-                              .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
-                              .replace(/&#160;/g, ' ').replace(/\n{4,}/g, '\n\n\n').trim();
+                            const text = _htmlToPlainTextExport(html);
                             const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a'); a.href = url;
@@ -11634,20 +12620,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button onClick={() => {
                             const html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
-                            let md = html.replace(/<h1[^>]*>/gi, '# ').replace(/<\/h1>/gi, '\n\n')
-                              .replace(/<h2[^>]*>/gi, '## ').replace(/<\/h2>/gi, '\n\n')
-                              .replace(/<h3[^>]*>/gi, '### ').replace(/<\/h3>/gi, '\n\n')
-                              .replace(/<h4[^>]*>/gi, '#### ').replace(/<\/h4>/gi, '\n\n')
-                              .replace(/<strong[^>]*>/gi, '**').replace(/<\/strong>/gi, '**')
-                              .replace(/<em[^>]*>/gi, '*').replace(/<\/em>/gi, '*')
-                              // Single-pass link rewrite: the old two-step chain rewrote the opening
-                              // <a> to a bare "[" (discarding the href) BEFORE the </a> replacer
-                              // back-scanned for it, so every link came out "[text]()" with an empty URL.
-                              .replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
-                              .replace(/<li[^>]*>/gi, '- ').replace(/<\/li>/gi, '\n')
-                              .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n')
-                              .replace(/<img[^>]*alt="([^"]*)"[^>]*>/gi, '![$1](image)')
-                              .replace(/<[^>]*>/g, '').replace(/\n{4,}/g, '\n\n\n').trim();
+                            let md = _htmlToMarkdownExport(html);
                             const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a'); a.href = url;
@@ -11768,28 +12741,34 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           e.preventDefault();
                           if (!expertCommandInput.trim() || isAgentRunning || !pdfFixResult?.accessibleHtml) return;
                           const cmd = expertCommandInput.trim();
+                          const _commitToken = _captureAsyncHtmlToken();
+                          const _commandSourceHtml = String((_commitToken && _commitToken.html) || '');
                           setExpertCommandInput('');
                           setIsAgentRunning(true);
                           console.info('[ExpertWorkbench] start command=' + JSON.stringify(cmd));
                           addToast(`🤖 Workbench running: ${cmd}`, 'info');
                           setAgentActivityLog(prev => [...prev, { text: '▶ ' + cmd, type: 'command', time: new Date().toLocaleTimeString() }]);
                           try {
-                            const result = await processExpertCommand(cmd, pdfFixResult.accessibleHtml, {
+                            const result = await processExpertCommand(cmd, _commandSourceHtml, {
                               onProgress: () => {},
                               onActivity: (entry) => {
                                 console.info('[ExpertWorkbench] activity type=' + entry.type + ' text=' + entry.text);
                                 setAgentActivityLog(prev => [...prev, entry]);
                               }
                             });
-                            if (result && result.html && result.html !== pdfFixResult.accessibleHtml) {
+                            if (result && result.html && result.html !== _commandSourceHtml) {
                               // Snapshot the command's before/after TEXT so "See what changed" can
                               // open a word-level diff of just this command (not the whole remediation).
                               const _stripT = (h) => String(h || '').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
-                              const _cmdDiff = { before: _stripT(pdfFixResult.accessibleHtml), after: _stripT(result.html), label: cmd };
+                              const _cmdDiff = { before: _stripT(_commandSourceHtml), after: _stripT(result.html), label: cmd };
                               // Snapshot the FULL before-HTML so a regressing fix can be reverted in one
                               // click (mini-audit, 2026-06-16) — mirrors the _preBionicHtml snapshot pattern.
-                              const _preCmdHtml = pdfFixResult.accessibleHtml;
-                              setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }));
+                              const _preCmdHtml = _commandSourceHtml;
+                              if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
+                                setAgentActivityLog(prev => [...prev, { text: '? Stale result discarded ? document changed', type: 'info', time: new Date().toLocaleTimeString() }]);
+                                addToast(t('toasts.workbench_stale') || 'The document changed while Workbench was running ? its stale result was discarded.', 'info');
+                                setIsAgentRunning(false); return;
+                              }
                               // Re-audit + recompute so the headline score, "Remaining Issues" count, and the
                               // Newly-Introduced list reflect THIS Workbench fix (the mini-audit only verifies
                               // axe STRUCTURE; the panel was otherwise stale until a full re-run). The fix is
@@ -12201,6 +13180,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (!pdfFixResult?.accessibleHtml) return;
                               setPdfTranslateBusy(true);
                               try {
+                                const _translationToken = _captureAsyncHtmlToken();
+                                const _translationSource = String((_translationToken && _translationToken.html) || '');
+                                const _translationSourceDigest = await _sourceDigestForToken(_translationToken);
                                 // Any language (2026-06-12 correction): resolve the
                                 // BCP-47 code via the app's language util; for the
                                 // long tail it doesn't know (it falls back to 'en'),
@@ -12214,11 +13196,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     if (/^[a-z]{2,3}$/.test(_resp) && _resp !== 'und') _code = _resp;
                                   } catch (_) {}
                                 }
-                                const r = await translateAccessibleHtml(pdfFixResult.accessibleHtml, pdfTranslateLang, {
+                                const r = await translateAccessibleHtml(_translationSource, pdfTranslateLang, {
                                   langCode: _code,
                                   onProgress: (i, total) => setPdfTranslateProgress(i + '/' + total),
                                 });
-                                setPdfFixResult((prev) => prev ? { ...prev, _translation: { lang: r.lang, langCode: r.langCode, rtl: r.rtl, html: r.html, at: Date.now(), srcLen: (pdfFixResult.accessibleHtml || "").length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                const _translationCommitted = _commitAsyncHtmlIfCurrent(_translationToken, (prev) => prev ? { ...prev, _translation: { lang: r.lang, langCode: r.langCode, rtl: r.rtl, html: r.html, at: Date.now(), sourceDigest: _translationSourceDigest, srcLen: _translationSource.length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                if (!_translationCommitted) {
+                                  throw new Error('The document changed while translation was running, so the stale result was discarded. Run translation again.');
+                                }
                                 addToast('🌐 ' + (t('toasts.translated_doc') || 'Document translated to ') + r.lang + (r.chunksFailed > 0 ? (' — ' + r.chunksFailed + '/' + r.chunksTotal + (t('toasts.translated_doc_partial') || ' sections kept the original text (structure check failed); review them in Compare.')) : (t('toasts.translated_doc_ok') || ' — structure verified on every section.')) + ' ' + (t('toasts.translated_doc_review') || 'AI translation: have a bilingual reviewer check before official use.'), r.chunksFailed > 0 ? 'info' : 'success');
                               } catch (e) {
                                 addToast((t('toasts.translate_failed') || 'Translation failed: ') + ((e && e.message) || 'unknown'), 'error');
@@ -12234,20 +13219,28 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 ⚖ {(t('pdf_audit.translate.compare') || 'Compare')} ({pdfFixResult._translation.lang})
                               </button>
                               <button onClick={() => {
-                                const blob = new Blob([pdfFixResult._translation.html], { type: 'text/html' });
+                                if (!_requireFreshCompanion(pdfFixResult._translation, 'This translation')) return;
+                                const blob = new Blob([_wrapAsReaderApp(pdfFixResult._translation.html)], { type: 'text/html' });
                                 safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-' + (pdfFixResult._translation.langCode || 'translated') + '.html');
                                 addToast('🌐 ' + (t('toasts.translated_html_dl') || 'Translated HTML downloaded.'), 'success');
                               }} className="px-3 py-2 bg-sky-100 border border-sky-300 text-sky-800 rounded-xl font-bold text-xs hover:bg-sky-200">
                                 📄 HTML ({pdfFixResult._translation.langCode || '…'})
                               </button>
                               <button onClick={async () => {
+                                if (!_requireFreshCompanion(pdfFixResult._translation, 'This translation')) return;
                                 try {
                                   addToast(t('toasts.typeset_translated') || '📄 Typesetting the translated document — same tagger, same gates…', 'info');
                                   const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._translation.html }, { title: (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + ' (' + pdfFixResult._translation.lang + ')', lang: pdfFixResult._translation.langCode || 'en' });
                                   const _bytes = _result && _result.bytes ? _result.bytes : _result;
                                   if (!_bytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
-                                  const _rt = _result && _result.roundTrip;
-                                  if (_rt && _rt.ok === false) { addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check.'), 'error'); return; }
+                                  const _translatedVerdict = _alloTaggedPdfDeliveryVerdict(_result);
+                                  if (!_translatedVerdict.ok) {
+                                    const _translatedName = (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-' + (pdfFixResult._translation.langCode || 'translated') + '-tagged-UNVERIFIED.pdf';
+                                    _taggedGateBytesRef.current = { bytes: _bytes, fileName: _translatedName };
+                                    setTaggedGateIssue('Translated export: ' + _translatedVerdict.reason);
+                                    addToast('The translated tagged PDF could not be verified. An explicitly marked download option is pinned in the Downloads section.', 'warning');
+                                    return;
+                                  }
                                   safeDownloadBlob(new Blob([_bytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-' + (pdfFixResult._translation.langCode || 'translated') + '-tagged.pdf');
                                   const _s = (_result && _result.summary) || {};
                                   if (_s.unicodeTypesetWarning) addToast('⚠ ' + _s.unicodeTypesetWarning.advice, 'warning');
@@ -12257,6 +13250,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 📑 {(t('pdf_audit.translate.tagged') || 'Tagged PDF')} ({pdfFixResult._translation.langCode || '…'})
                               </button>
                               {callTTS && !audioJob && <button onClick={() => {
+                                if (!_requireFreshCompanion(pdfFixResult._translation, 'This translation')) return;
                                 const fullText = _audioReadyText(pdfFixResult._translation.html);
                                 if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                                 const segments = [];
@@ -12269,7 +13263,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   segments.push(remaining.substring(0, splitAt));
                                   remaining = remaining.substring(splitAt).trim();
                                 }
-                                audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, langSuffix: '-' + (pdfFixResult._translation.langCode || 'translated') };
+                                audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, variant: 'translation', companionAt: pdfFixResult._translation.at || null, langSuffix: '-' + (pdfFixResult._translation.langCode || 'translated') };
                                 addToast('🎧 ' + (t('toasts.translated_audio_start') || 'Generating audio in ') + pdfFixResult._translation.lang + ' — ' + segments.length + ' ' + (t('toasts.translated_audio_start2') || 'sections. The voices are multilingual; preview a section before sharing.'), 'info');
                                 _runAudioJob();
                               }} className="px-3 py-2 bg-sky-100 border border-sky-300 text-sky-800 rounded-xl font-bold text-xs hover:bg-sky-200" title={t('pdf_audit.translate.audio_title') || 'Spoken audio of the TRANSLATION — the same resumable job (pause, rate-limit survival, partial download). Gemini voices are multilingual; preview before sharing.'}>
@@ -12294,8 +13288,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (!pdfFixResult?.accessibleHtml) return;
                               setPlainLangBusy(true);
                               try {
-                                const r = await simplifyAccessibleHtml(pdfFixResult.accessibleHtml, { gradeBand: plainLangLevel, onProgress: (i, total) => setPlainLangProgress(i + '/' + total) });
-                                setPdfFixResult((prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), srcLen: (pdfFixResult.accessibleHtml || "").length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                const _plainToken = _captureAsyncHtmlToken();
+                                const _plainSource = String((_plainToken && _plainToken.html) || '');
+                                const _plainSourceDigest = await _sourceDigestForToken(_plainToken);
+                                const r = await simplifyAccessibleHtml(_plainSource, {
+                                  gradeBand: plainLangLevel,
+                                  onProgress: (i, total) => setPlainLangProgress(i + '/' + total),
+                                });
+                                const _plainCommitted = _commitAsyncHtmlIfCurrent(_plainToken, (prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), sourceDigest: _plainSourceDigest, srcLen: _plainSource.length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                if (!_plainCommitted) {
+                                  throw new Error('The document changed while simplification was running, so the stale result was discarded. Run it again.');
+                                }
                                 addToast('🪶 ' + (t('toasts.plain_done') || 'Plain-language version ready') + (r.chunksFailed > 0 ? (' — ' + r.chunksFailed + '/' + r.chunksTotal + (t('toasts.plain_partial') || ' sections kept the original text (structure check failed).')) : (t('toasts.plain_ok') || ' — structure verified on every section.')) + ' ' + (t('toasts.plain_review') || 'Wording simplified, facts kept; the original remains authoritative.'), r.chunksFailed > 0 ? 'info' : 'success');
                               } catch (e) {
                                 addToast((t('toasts.plain_failed') || 'Plain-language version failed: ') + ((e && e.message) || 'unknown'), 'error');
@@ -12311,20 +13314,28 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 ⚖ {t('pdf_audit.plain.compare') || 'Compare'}
                               </button>
                               <button onClick={() => {
-                                const blob = new Blob([pdfFixResult._plainLanguage.html], { type: 'text/html' });
+                                if (!_requireFreshCompanion(pdfFixResult._plainLanguage, 'This plain-language version')) return;
+                                const blob = new Blob([_wrapAsReaderApp(pdfFixResult._plainLanguage.html)], { type: 'text/html' });
                                 safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-plain-language.html');
                                 addToast('🪶 ' + (t('toasts.plain_html_dl') || 'Plain-language HTML downloaded.'), 'success');
                               }} className="px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200">
                                 📄 HTML
                               </button>
                               <button onClick={async () => {
+                                if (!_requireFreshCompanion(pdfFixResult._plainLanguage, 'This plain-language version')) return;
                                 try {
                                   addToast(t('toasts.typeset_plain') || '📄 Typesetting the plain-language version — same tagger, same gates…', 'info');
-                                  const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._plainLanguage.html }, { title: (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + ' (plain language)', lang: 'en' });
+                                  const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._plainLanguage.html }, { title: (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + ' (plain language)', lang: _deriveDocMeta(pdfFixResult._plainLanguage.html, pendingPdfFile?.name).lang });
                                   const _bytes = _result && _result.bytes ? _result.bytes : _result;
                                   if (!_bytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
-                                  const _rt = _result && _result.roundTrip;
-                                  if (_rt && _rt.ok === false) { addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check.'), 'error'); return; }
+                                  const _plainVerdict = _alloTaggedPdfDeliveryVerdict(_result);
+                                  if (!_plainVerdict.ok) {
+                                    const _plainName = (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-plain-language-tagged-UNVERIFIED.pdf';
+                                    _taggedGateBytesRef.current = { bytes: _bytes, fileName: _plainName };
+                                    setTaggedGateIssue('Plain-language export: ' + _plainVerdict.reason);
+                                    addToast('The plain-language tagged PDF could not be verified. An explicitly marked download option is pinned in the Downloads section.', 'warning');
+                                    return;
+                                  }
                                   safeDownloadBlob(new Blob([_bytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-plain-language-tagged.pdf');
                                   const _s = (_result && _result.summary) || {};
                                   addToast((_s.uaDeclared ? '✅ ' : '📄 ') + (t('toasts.plain_tagged_done') || 'Plain-language tagged PDF ready') + (_s.uaDeclared ? ' — PDF/UA declared.' : '.'), 'success');
@@ -12333,6 +13344,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 📑 {t('pdf_audit.plain.tagged') || 'Tagged PDF'}
                               </button>
                               {callTTS && !audioJob && <button onClick={() => {
+                                if (!_requireFreshCompanion(pdfFixResult._plainLanguage, 'This plain-language version')) return;
                                 const fullText = _audioReadyText(pdfFixResult._plainLanguage.html);
                                 if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                                 const segments = [];
@@ -12345,7 +13357,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   segments.push(remaining.substring(0, splitAt));
                                   remaining = remaining.substring(splitAt).trim();
                                 }
-                                audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, langSuffix: '-plain' };
+                                audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, variant: 'plain', companionAt: pdfFixResult._plainLanguage.at || null, langSuffix: '-plain' };
                                 addToast('🎧 ' + (t('toasts.plain_audio_start') || 'Generating plain-language audio — ') + segments.length + ' ' + (t('toasts.plain_audio_start2') || 'sections.'), 'info');
                                 _runAudioJob();
                               }} className="px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200" title={t('pdf_audit.plain.audio_title') || 'Spoken audio of the plain-language version — simpler wording often serves struggling readers better as audio too.'}>
@@ -12516,11 +13528,30 @@ ${text}
 
 Return ONLY the plain language summary in ${lang}.`, false);
                               if (summary) {
-                                const summaryHtml = summary.replace(/\n\n/g, '</p><p>').replace(/\n- /g, '</p><li>').replace(/\n/g, '<br>');
-                                const dir = ['Arabic', 'Hebrew', 'Farsi', 'Persian', 'Urdu', 'Dari'].some(l => lang.includes(l)) ? 'rtl' : 'ltr';
+                                // XSS + lang hardening (export-format review R2, 2026-07-13): `summary`
+                                // is model output and `lang`/filename are user-controlled, so escape
+                                // everything before it enters the same-origin popup document; resolve a
+                                // real BCP-47 subtag (absent beats a wrong guess, matching the translate
+                                // path) instead of slicing the first two letters of the language NAME;
+                                // and derive RTL from that resolved code the way the export spec does.
+                                const _escSum = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                                const _summaryHtml = _escSum(summary).split(/\n{2,}/).map((para) => {
+                                  const _ls = para.split('\n');
+                                  if (_ls.some(l => /^\s*-\s+/.test(l)) && _ls.every(l => !l.trim() || /^\s*-\s+/.test(l))) {
+                                    const _lis = _ls.filter(l => l.trim()).map(l => '<li>' + l.replace(/^\s*-\s+/, '') + '</li>').join('');
+                                    return _lis ? '<ul>' + _lis + '</ul>' : '';
+                                  }
+                                  return '<p>' + _ls.filter(l => l.length).join('<br>') + '</p>';
+                                }).filter(Boolean).join('');
+                                let _langCode = '';
+                                try { const _u = typeof languageToTTSCode === 'function' ? languageToTTSCode(lang) : ''; if (_u && !(_u === 'en' && !/english/i.test(lang))) _langCode = _u; } catch (_) {}
+                                const dir = /^(ar|he|iw|fa|ur|ps|sd|ug|yi|dv|ckb)([-_]|$)/i.test(_langCode) ? 'rtl' : 'ltr';
+                                const _langAttr = _langCode ? ` lang="${_langCode}"` : '';
+                                const _safeLang = _escSum(lang);
+                                const _safeName = _escSum(pendingPdfFile?.name || 'document');
                                 const win = window.open('', '_blank');
                                 if (win) {
-                                  win.document.write(`<!DOCTYPE html><html lang="${lang === 'English' ? 'en' : lang.substring(0,2).toLowerCase()}" dir="${dir}"><head><meta charset="UTF-8"><title>Plain Language Summary — ${lang}</title><style>body{font-family:'Lexend',system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1e293b;font-size:${level === '3' ? '18' : '16'}px;direction:${dir}}h1{color:#4f46e5;font-size:1.4rem;border-bottom:3px solid #6366f1;padding-bottom:0.5rem}h2{color:#4f46e5;font-size:1.1rem;margin-top:1.5rem}li{margin-bottom:0.5rem}p{margin-bottom:1rem}.badge{display:inline-flex;gap:6px;align-items:center;background:#e0e7ff;color:#4338ca;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:1rem}.footer{margin-top:2rem;padding-top:1rem;border-top:2px solid #e2e8f0;font-size:11px;color:#94a3b8}@media print{body{font-size:14px;max-width:100%}}</style></head><body><div class="badge">📖 ${lang} · ${gradeLabel}</div><h1>${lang === 'English' ? 'Easy-to-Read Summary' : 'Summary'}</h1><p>${summaryHtml}</p><div class="footer"><p>Source: ${pendingPdfFile?.name || 'document'} · Generated ${new Date().toLocaleDateString()} by AlloFlow</p><button onclick="window.print()" style="margin-top:8px;padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer">🖨️ Print</button></div></body></html>`);
+                                  win.document.write(`<!DOCTYPE html><html${_langAttr} dir="${dir}"><head><meta charset="UTF-8"><title>Plain Language Summary: ${_safeLang}</title><style>body{font-family:'Lexend',system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1e293b;font-size:${level === '3' ? '18' : '16'}px;direction:${dir}}h1{color:#4f46e5;font-size:1.4rem;border-bottom:3px solid #6366f1;padding-bottom:0.5rem}h2{color:#4f46e5;font-size:1.1rem;margin-top:1.5rem}li{margin-bottom:0.5rem}p{margin-bottom:1rem}.badge{display:inline-flex;gap:6px;align-items:center;background:#e0e7ff;color:#4338ca;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:1rem}.footer{margin-top:2rem;padding-top:1rem;border-top:2px solid #e2e8f0;font-size:11px;color:#94a3b8}@media print{body{font-size:14px;max-width:100%}}</style></head><body><div class="badge">📖 ${_safeLang} · ${gradeLabel}</div><h1>${lang === 'English' ? 'Easy-to-Read Summary' : 'Summary'}</h1>${_summaryHtml}<div class="footer"><p>Source: ${_safeName} · Generated ${new Date().toLocaleDateString()} by AlloFlow</p><button onclick="window.print()" style="margin-top:8px;padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer">🖨️ Print</button></div></body></html>`);
                                   win.document.close();
                                   addToast(`📖 ${lang} summary generated!`, 'success');
                                 }
@@ -12585,6 +13616,55 @@ Return ONLY the plain language summary in ${lang}.`, false);
               Tip: <strong>Save & close</strong> downloads a <code className="px-1 bg-slate-100 rounded">.alloflow.json</code> project file
               that you can re-open later via the sidebar's <strong>Load Project</strong> button.
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Shared safe-default confirmation for destructive, costly, and unverified PDF actions. */}
+      {pdfConfirmRequest && (
+        <div
+          role="presentation"
+          className="allo-docsuite fixed inset-0 z-[220] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) settlePdfConfirmation(false); }}
+        >
+          <div
+            ref={pdfConfirmTrapRef}
+            tabIndex={-1}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="pdf-action-confirm-title"
+            aria-describedby="pdf-action-confirm-description"
+            onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); settlePdfConfirmation(false); } }}
+            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border-2 border-amber-300"
+          >
+            <h3 id="pdf-action-confirm-title" className="text-lg font-bold text-slate-900 mb-2">{pdfConfirmRequest.title}</h3>
+            <p id="pdf-action-confirm-description" className="text-sm text-slate-700 mb-5 leading-relaxed whitespace-pre-line">{pdfConfirmRequest.description}</p>
+            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+              <button
+                ref={pdfConfirmCancelRef}
+                type="button"
+                onClick={() => settlePdfConfirmation(false)}
+                className="min-h-11 px-4 py-2 bg-white text-slate-800 border border-slate-400 rounded-xl text-sm font-bold hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"
+              >
+                {pdfConfirmRequest.cancelLabel}
+              </button>
+              {pdfConfirmRequest.alternativeLabel && (
+                <button
+                  type="button"
+                  onClick={() => settlePdfConfirmation('alternative')}
+                  className="min-h-11 px-4 py-2 bg-white text-red-800 border border-red-400 rounded-xl text-sm font-bold hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
+                >
+                  {pdfConfirmRequest.alternativeLabel}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => settlePdfConfirmation(true)}
+                className={'min-h-11 px-4 py-2 text-white rounded-xl text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ' + (pdfConfirmRequest.tone === 'danger' ? 'bg-red-700 hover:bg-red-800 focus-visible:ring-red-700' : 'bg-indigo-700 hover:bg-indigo-800 focus-visible:ring-indigo-700')}
+              >
+                {pdfConfirmRequest.confirmLabel}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -15220,7 +16300,11 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     try {
                       const url = await callTTS(segments[si], selectedVoice || 'Puck', 1, 2);
                       if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
-                        const r = await _withTimeout(fetch(url), 20000, 'TTS audio fetch'); blobs.push(await r.blob());
+                        const r = await _withTimeout(fetch(url), 20000, 'TTS audio fetch');
+                        if (!r.ok) throw new Error('TTS audio fetch failed (' + r.status + ')');
+                        const audioBlob = await r.blob();
+                        if (!audioBlob.size) throw new Error('TTS audio fetch returned an empty payload');
+                        blobs.push(audioBlob);
                         try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
                         consecutiveNull = 0;
                       } else { failed++; consecutiveNull++; }
@@ -15238,7 +16322,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   if (btn) { btn.textContent = '🎧 Download Audio'; btn.disabled = false; }
                   if (blobs.length === 0) { addToast(t('toasts.audio_generation_failed_check_tts'), 'error'); return; }
                   const combined = await _concatAudioBlobs(blobs);
-                  if (!combined) { addToast(t('toasts.audio_generation_failed_check_tts'), 'error'); return; }
+                  if (!combined) { addToast(t('toasts.audio_incompatible_parts') || 'Audio sections used incompatible codecs, sample rates, or WAV layouts, so AlloFlow did not create a corrupt combined file. Retry with one voice/provider for the whole document.', 'error'); return; }
                   const dlUrl = URL.createObjectURL(combined);
                   const a = document.createElement('a');
                   a.href = dlUrl; a.download = 'document-audio.' + (combined.type?.includes('mpeg') || combined.type?.includes('mp3') ? 'mp3' : 'wav');
@@ -15394,7 +16478,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <button onClick={() => {
                   const html = getPdfPreviewHtml();
                   setPdfFixResult(prev => ({ ...prev, accessibleHtml: html }));
-                  const blob = new Blob([html], { type: 'text/html' });
+                  const blob = new Blob([_wrapAsReaderApp(html)], { type: 'text/html' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a'); a.href = url; a.download = `${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-accessible.html`;
                   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
@@ -15527,18 +16611,22 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     </div>
                     <div className="px-4 py-3 border-t border-slate-200 flex items-center gap-2">
                       <button onClick={async () => {
+                        if (_hasExecutableActiveContent) {
+                          addToast('Original-layout fillable export is disabled because this PDF contains executable actions. Use the clean tagged PDF, or remove the actions in a trusted PDF editor first.', 'warning');
+                          return;
+                        }
                         setPdfFieldBusy(true);
                         try {
                           const b64 = await ensurePdfBase64();
                           const fielded = await overlayPdfFormFields(b64, pdfFieldCandidates, pdfFieldAccepted);
                           addToast('📝 ' + fielded.created + ' ' + (t('toasts.fillable_pdf_placed') || 'fields placed on the original layout — tagging for screen readers…'), 'info');
-                          const _dm = { title: (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, ''), lang: 'en' };
+                          const _dm = { title: (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, ''), lang: _deriveDocMeta(pdfFixResult?.accessibleHtml, pendingPdfFile?.name).lang };
                           let outBytes = fielded.bytes, tagNote = '';
                           try {
                             const tagged = await createTaggedPdf(fielded.bytes, pdfFixResult, _dm);
                             const tBytes = tagged && tagged.bytes ? tagged.bytes : tagged;
-                            const rt = tagged && tagged.roundTrip;
-                            if (tBytes && !(rt && rt.ok === false)) {
+                            const _fillableVerdict = _alloTaggedPdfDeliveryVerdict(tagged);
+                            if (tBytes && _fillableVerdict.ok) {
                               outBytes = tBytes;
                               const _s = (tagged && tagged.summary) || {};
                               tagNote = _s.uaDeclared ? (t('toasts.fillable_pdf_ua') || ' Tagged — PDF/UA declared.') : (t('toasts.fillable_pdf_tagged') || ' Tagged (declaration withheld — see verification).');
@@ -15611,7 +16699,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         {pdfFixResult._plainLanguage.chunksFailed > 0 && (
                           <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5">⚠ {pdfFixResult._plainLanguage.chunksFailed}/{pdfFixResult._plainLanguage.chunksTotal} {t('pdf_audit.translate.kept_original') || 'sections kept the original text'}</span>
                         )}
-                        {pdfFixResult._plainLanguage.srcLen != null && pdfFixResult._plainLanguage.srcLen !== (pdfFixResult.accessibleHtml || '').length && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.plain.stale_title') || 'The document changed after this plain-language version was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
+                        {_companionIsStale(pdfFixResult._plainLanguage) && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.plain.stale_title') || 'The document changed after this plain-language version was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
                         <button onClick={() => setShowPlainCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
                       </div>
                     </div>
@@ -15641,7 +16729,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         {pdfFixResult._translation.chunksFailed > 0 && (
                           <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5">⚠ {pdfFixResult._translation.chunksFailed}/{pdfFixResult._translation.chunksTotal} {t('pdf_audit.translate.kept_original') || 'sections kept the original text'}</span>
                         )}
-                        {pdfFixResult._translation.srcLen != null && pdfFixResult._translation.srcLen !== (pdfFixResult.accessibleHtml || '').length && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.translate.stale_title') || 'The document changed after this translation was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
+                        {_companionIsStale(pdfFixResult._translation) && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.translate.stale_title') || 'The document changed after this translation was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
                         <button onClick={() => setShowTranslationCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
                       </div>
                     </div>

@@ -182,4 +182,98 @@ describe('SimplifiedView Edit Audio mode', () => {
     expect(button('Play audio for sentence 1').disabled).toBe(true);
     expect(button('Remove saved audio for sentence 1')).toBeNull();
   });
+  it('shows saved voice settings, rebuild guidance, and capture-limit failures', async () => {
+    const saved = new Set(['First sentence.']);
+    const store = {
+      keyFor: (sentence) => String(sentence).toLowerCase(),
+      has: (sentence) => saved.has(sentence),
+      get: (sentence) => saved.has(sentence) ? 'blob:saved-' + sentence : null,
+      sourceOf: (sentence) => saved.has(sentence) ? 'ai-played' : null,
+      metadataOf: (sentence) => saved.has(sentence) ? {
+        voice: 'Puck',
+        speed: 0.9,
+        language: 'English',
+        provider: 'played-tts-mp3',
+      } : null,
+      estimateBytes: () => 1024 * 1024,
+      limits: () => ({ maxBytes: 12 * 1024 * 1024, maxClipBytes: 2 * 1024 * 1024 }),
+    };
+    window.AlloModules.KaraokeAudioStore = {
+      current: store,
+      keyFor: store.keyFor,
+    };
+    window.__alloRegenerateSentenceAudio = vi.fn(async () => 'blob:rebuilt');
+    window.__alloRemoveSentenceAudio = vi.fn(async () => true);
+    window.__alloStoreRecordedSentenceAudio = vi.fn(async () => true);
+
+    mount(baseProps({ selectedVoice: 'Kore', voiceSpeed: 1 }));
+    const toggle = host.querySelector('button[aria-label^="Edit audio."]');
+    act(() => { toggle.click(); });
+
+    expect(button('Rebuild audio for sentence 1')).toBeTruthy();
+    expect(host.textContent).toContain('settings changed');
+    expect(host.textContent).toContain('AI voice');
+    expect(host.textContent).toContain('Puck');
+    expect(host.textContent).toContain('1/2 saved');
+    expect(host.textContent).toContain('1/12 MB');
+
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-capture', {
+        detail: {
+          sentence: 'First sentence.',
+          resourceId: 'resource-edit-audio',
+          status: 'limit',
+          code: 'resource-limit',
+          reason: 'This resource reached its 12 MB saved read-aloud limit.',
+        },
+      }));
+      await Promise.resolve();
+    });
+
+    expect(host.textContent).toContain('Storage limit');
+    expect(host.textContent).toContain('1 save issue');
+    expect(host.textContent).toContain('This resource reached its 12 MB saved read-aloud limit.');
+  });
+  it('auto-populates Edit Audio when a played karaoke clip finishes saving', async () => {
+    const saved = new Set();
+    const store = {
+      has: (sentence) => saved.has(sentence),
+      get: (sentence) => saved.has(sentence) ? 'blob:saved-' + sentence : null,
+      sourceOf: (sentence) => saved.has(sentence) ? 'ai-played' : null,
+      metadataOf: (sentence) => saved.has(sentence) ? {
+        voice: 'Kore',
+        speed: 1,
+        language: 'English',
+        provider: 'played-tts-mp3',
+      } : null,
+      estimateBytes: () => saved.size * 2048,
+      limits: () => ({ maxBytes: 12 * 1024 * 1024, maxClipBytes: 2 * 1024 * 1024 }),
+    };
+    window.AlloModules.KaraokeAudioStore = {
+      current: store,
+      keyFor: (sentence) => String(sentence).toLowerCase(),
+    };
+    window.__alloRegenerateSentenceAudio = vi.fn();
+    window.__alloRemoveSentenceAudio = vi.fn();
+    window.__alloStoreRecordedSentenceAudio = vi.fn();
+
+    mount(baseProps());
+    const toggle = host.querySelector('button[aria-label^="Edit audio."]');
+    expect(toggle.getAttribute('aria-label')).toContain('0 of 2 sentences saved');
+
+    await act(async () => {
+      saved.add('First sentence.');
+      window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-capture', {
+        detail: {
+          sentence: 'First sentence.',
+          resourceId: 'resource-edit-audio',
+          status: 'saved',
+          mime: 'audio/mpeg',
+        },
+      }));
+      await Promise.resolve();
+    });
+
+    expect(toggle.getAttribute('aria-label')).toContain('1 of 2 sentences saved');
+  });
 });

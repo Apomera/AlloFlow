@@ -441,7 +441,9 @@
     if (!audioUrl || typeof audioUrl !== 'string') return null;
     try {
       const resp = await fetch(audioUrl);
-      return await resp.blob();
+      if (!resp.ok) return null;
+      const blob = await resp.blob();
+      return blob && blob.size > 0 ? blob : null;
     } catch (e) { return null; }
   };
   const _alloCallExportTTS = async (callTTS, text, voice, language) => {
@@ -460,7 +462,18 @@
     const isWav = first.length > 12 &&
       first[0] === 0x52 && first[1] === 0x49 && first[2] === 0x46 && first[3] === 0x46 &&
       first[8] === 0x57 && first[9] === 0x41 && first[10] === 0x56 && first[11] === 0x45;
-    if (!isWav) return new Blob(blobs, { type: blobs[0].type || 'audio/mpeg' });
+    const formatFlags = [isWav];
+    for (let i = 1; i < blobs.length; i++) {
+      const head = new Uint8Array(await blobs[i].slice(0, 12).arrayBuffer());
+      formatFlags.push(head.length > 11 && head[0] === 0x52 && head[1] === 0x49 && head[2] === 0x46 && head[3] === 0x46 && head[8] === 0x57 && head[9] === 0x41 && head[10] === 0x56 && head[11] === 0x45);
+    }
+    if (formatFlags.some((flag) => flag !== isWav)) return null;
+    if (!isWav) {
+      const family = (blob) => /mpeg|mp3/i.test(blob.type || '') ? 'mpeg' : ((blob.type || '').toLowerCase() || 'unknown');
+      const firstFamily = family(blobs[0]);
+      if (blobs.some((blob) => family(blob) !== firstFamily)) return null;
+      return new Blob(blobs, { type: blobs[0].type || 'audio/mpeg' });
+    }
     const parsePcm = (buf) => {
       if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return null;
       let dataStart = 44, rate = 0;
@@ -547,8 +560,19 @@
         if (blob) blobs.push(blob);
         state.done++;
       }
+      // Honesty (export-format review R2 #12): a failed TTS chunk is simply
+      // absent from `blobs`, so the concatenated file silently drops those
+      // audio portions. Track how many are missing so the caller and the on-page
+      // download card can say so instead of reporting a clean success.
+      const _total = plan.chunks.length;
+      const _missing = _total - blobs.length;
       let combined = await _alloConcatAudioBlobs(blobs);
-      if (!combined) continue;
+      if (!combined) {
+        // Every section of this variant failed — no file to offer; record it.
+        out.failedVariants = (out.failedVariants || []).concat(plan.label);
+        continue;
+      }
+      if (_missing > 0) out.anyPartial = true;
       if (compressAudio) {
         if (progress) progress.update(state.done, state.total, 'Compressing ' + plan.label.toLowerCase() + '...');
         combined = await _alloCompressAudioBlob(combined);
@@ -559,7 +583,7 @@
       let href = path;
       if (singleFile) href = await _alloBlobToDataUrl(combined);
       else out.assets.push({ path: path, blob: combined });
-      out.downloads.push({ variant: plan.variant, label: plan.label, description: plan.description, href: href, download: filename, type: combined.type || 'audio/' + ext, size: combined.size || 0 });
+      out.downloads.push({ variant: plan.variant, label: plan.label, description: plan.description, href: href, download: filename, type: combined.type || 'audio/' + ext, size: combined.size || 0, missing: _missing, total: _total });
     }
     return out;
   };
@@ -599,6 +623,15 @@
       desc.style.cssText = 'font-size:0.84rem;color:#475569;line-height:1.35;';
       row.appendChild(link);
       row.appendChild(desc);
+      // #12: if some generated audio portions could not be voiced, say so on the card itself so a
+      // teacher does not hand out audio that silently skips part of the document.
+      if (item.missing > 0 && item.total) {
+        const warn = doc.createElement('span');
+        warn.setAttribute('role', 'note');
+        warn.textContent = '⚠ ' + item.missing + ' of ' + item.total + ' audio portions are missing from this file (audio could not be generated for them).';
+        warn.style.cssText = 'flex-basis:100%;font-size:0.82rem;color:#b45309;font-weight:700;line-height:1.35;';
+        row.appendChild(warn);
+      }
       aside.appendChild(row);
     }
     const st = root.querySelector && root.querySelector('#alloflow-audio-download-style');
@@ -760,11 +793,17 @@
         try { if (processed[r].abox) processed[r].abox.remove(); } catch (e) {}
       }
       if (addToast) addToast('Could not generate inline passage audio, so that playback control was removed.', 'info');
+    } else if (audioJobs.length && embeddedCount < audioJobs.length) {
+      // #12: some passages voiced, some did not — the rest still play, but say so.
+      if (addToast) addToast('Audio could not be generated for ' + (audioJobs.length - embeddedCount) + ' of ' + audioJobs.length + ' passages; the others play normally.', 'info');
     }
     const built = await _alloBuildAudioDownloadAssets(downloadPlans, { callTTS: callTTS, selectedVoice: selectedVoice, quality: audioConfig.quality, singleFile: !!opts.singleFile, language: docLanguage }, progress, progressState);
     result.assets = built.assets || [];
     result.downloads = built.downloads || [];
     if (result.downloads.length) _alloInsertAudioDownloads(root, result.downloads);
+    // #12: never report a clean success when the downloadable audio is incomplete.
+    if (addToast && built.failedVariants && built.failedVariants.length) addToast('Some audio versions could not be generated (' + built.failedVariants.join(', ') + ') and were skipped. The exported document still opens normally.', 'error');
+    if (addToast && built.anyPartial) addToast('Heads up: the downloadable audio is missing the audio portions that could not be voiced (the download card shows how many).', 'info');
     if (progress) progress.done('Audio ready. Starting download...');
     return result;
   };
@@ -891,7 +930,8 @@
     // Failed popups/ZIP generation remain recoverable and preserve the live draft.
     if (mode === 'slides') {
       if (typeof handleExportSlides !== 'function') return false;
-      await handleExportSlides();
+      const slideExported = await handleExportSlides();
+      if (slideExported === false) return false;
       if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
       return true;
     }
@@ -1369,6 +1409,54 @@
   // Without the singleton, the App-side useMemo wrapper (or repeated
   // calls) would each get a fresh object with its own dbPromise — the
   // cache would fragment and the IDB connection would re-open.
+  // ── Adventure images: device-storage bridge mirror (2026-07-14) ────
+  // The local 'allo_adventure_images' IndexedDB is keyed to the app origin,
+  // which on Canvas is a new throwaway every session — scene art silently
+  // died between sessions unless the teacher opted into the Firestore
+  // archive (a FERPA exposure). Canvas surfaces now write scene images
+  // through to the device-storage bridge (ns adventure_images, stable
+  // alloflow-cdn origin, on-device only) and fall back to it on read
+  // misses, backfilling the fast local store. Entries older than 30 days
+  // are pruned once per session, mirroring the cloud archive's expiry.
+  const _advBridgeWanted = (() => {
+    try {
+      const host = window.location.hostname || '';
+      if ((window.location.href || '').startsWith('blob:')) return true;
+      return host.includes('googleusercontent') || host.includes('scf.usercontent') ||
+             host.includes('code-server') || host.includes('idx.google') || host.includes('run.app');
+    } catch (e) { return false; }
+  })();
+  let _advBridgePruned = false;
+  const _advBridge = () => {
+    if (!window.__alloDeviceStoragePromise) {
+      window.__alloDeviceStoragePromise = window.alloDeviceStorage
+        ? Promise.resolve(window.alloDeviceStorage)
+        : new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
+            s.onload = () => {
+              if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);
+              else reject(new Error('device storage module missing after load'));
+            };
+            s.onerror = () => reject(new Error('device storage module failed to load'));
+            document.head.appendChild(s);
+          });
+    }
+    return window.__alloDeviceStoragePromise.then((ds) => ds.ready().then(() => {
+      if (!_advBridgePruned) {
+        _advBridgePruned = true;
+        const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        ds.getAll('adventure_images').then((rows) => {
+          (rows || []).forEach((r) => {
+            if (r && r.value && typeof r.value.timestamp === 'number' && r.value.timestamp < cutoff) {
+              ds.remove('adventure_images', r.key).catch(() => {});
+            }
+          });
+        }).catch(() => {});
+      }
+      return ds;
+    }));
+  };
   let _adventureImageDBInstance = null;
   const getAdventureImageDB = (deps) => {
     const { warnLog } = deps || {};
@@ -1393,6 +1481,10 @@
         return this.dbPromise;
       },
       async storeImage(turnNumber, base64Image) {
+        if (_advBridgeWanted) {
+          _advBridge().then((ds) => ds.set('adventure_images', String(turnNumber), { image: base64Image, timestamp: Date.now() }))
+            .catch((e) => _warn('adventure image bridge mirror failed', e && (e.code || e.message)));
+        }
         const db = await this.getDB(); if (!db) return false;
         return new Promise(function(resolve) {
           try {
@@ -1404,8 +1496,8 @@
         });
       },
       async getImage(turnNumber) {
-        const db = await this.getDB(); if (!db) return null;
-        return new Promise(function(resolve) {
+        const db = await this.getDB();
+        const local = !db ? null : await new Promise(function(resolve) {
           try {
             const tx = db.transaction('images', 'readonly');
             const request = tx.objectStore('images').get(turnNumber);
@@ -1413,10 +1505,21 @@
             request.onerror = function() { resolve(null); };
           } catch (e) { resolve(null); }
         });
+        if (local || !_advBridgeWanted) return local;
+        // Fresh Canvas session: local store is empty but the bridge may hold
+        // the scene. Backfill local so later reads hit the fast path.
+        try {
+          const entry = await _advBridge().then((ds) => ds.get('adventure_images', String(turnNumber)));
+          if (entry && entry.image) {
+            this.storeImage(turnNumber, entry.image);
+            return entry.image;
+          }
+        } catch (e) { _warn('adventure image bridge read failed', e && (e.code || e.message)); }
+        return null;
       },
       async getAllImages() {
-        const db = await this.getDB(); if (!db) return [];
-        return new Promise(function(resolve) {
+        const db = await this.getDB();
+        const local = !db ? [] : await new Promise(function(resolve) {
           try {
             const tx = db.transaction('images', 'readonly');
             const request = tx.objectStore('images').getAll();
@@ -1424,8 +1527,22 @@
             request.onerror = function() { resolve([]); };
           } catch (e) { resolve([]); }
         });
+        if (!_advBridgeWanted) return local;
+        try {
+          const bridged = await _advBridge().then((ds) => ds.getAll('adventure_images'));
+          const seen = new Set(local.map(function(r) { return String(r.turn); }));
+          (bridged || []).forEach(function(r) {
+            if (r && r.value && r.value.image && !seen.has(String(r.key))) {
+              local.push({ turn: parseInt(r.key, 10), image: r.value.image, timestamp: r.value.timestamp });
+            }
+          });
+        } catch (e) { _warn('adventure image bridge list failed', e && (e.code || e.message)); }
+        return local;
       },
       async clearAll() {
+        if (_advBridgeWanted) {
+          _advBridge().then((ds) => ds.clearNamespace('adventure_images')).catch(() => {});
+        }
         const db = await this.getDB(); if (!db) return;
         try { db.transaction('images', 'readwrite').objectStore('images').clear(); }
         catch (e) { _warn('IDB clear failed', e); }

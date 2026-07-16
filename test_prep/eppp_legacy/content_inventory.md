@@ -1,26 +1,26 @@
 # Pass the EPPP learning-content inventory
 
-Generated: 2026-07-12T21:42:15.693Z
+Generated: 2026-07-15T13:35:21.093Z
 
 ## Inventory
 
 | Content type | Count |
 | --- | ---: |
 | Legacy learner-visible questions | 2933 |
-| Total native QA-passed questions | 500 |
+| Total native QA-passed questions | 1500 |
 | Native-original QA-passed questions | 8 |
-| Legacy questions migrated and QA-passed | 492 |
+| Legacy questions migrated and QA-passed | 1443 |
 | Legacy full-review target | 2933 |
-| Remaining to target | 2441 |
+| Remaining to target | 1490 |
 | Flashcards | 415 |
 | Memory aids and mnemonics | 255 |
 | Textbook chapters | 49 |
 | Textbook sections | 278 |
-| Embedded knowledge checks | 91 |
+| Embedded knowledge checks | 109 |
 | Interactive diagram templates | 25 |
-| Diagram placements in chapters | 52 |
+| Diagram placements in chapters | 61 |
 | Searchable term definitions | 1583 |
-| Chapter reference entries | 293 |
+| Chapter reference entries | 383 |
 | AI-reflective chapter codas | 49 |
 | Learner modes/pages | 14 |
 
@@ -28,14 +28,14 @@ Generated: 2026-07-12T21:42:15.693Z
 
 | Domain | Blueprint weight | Legacy-pool share | Legacy items QA passed | Review universe | Remaining |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Biological Bases of Behavior | 10% | 17% | 49 | 500 | 451 |
-| Cognitive-Affective Bases of Behavior | 13% | 11.7% | 64 | 344 | 280 |
-| Social & Cultural Bases of Behavior | 11% | 11.4% | 54 | 335 | 281 |
-| Growth & Lifespan Development | 12% | 12.4% | 59 | 364 | 305 |
-| Assessment & Diagnosis | 16% | 11.6% | 79 | 341 | 262 |
-| Treatment, Intervention & Prevention | 15% | 12.9% | 74 | 378 | 304 |
-| Research Methods & Statistics | 7% | 11.7% | 34 | 343 | 309 |
-| Ethical, Legal & Professional Issues | 16% | 11.2% | 79 | 328 | 249 |
+| Biological Bases of Behavior | 10% | 17% | 149 | 500 | 351 |
+| Cognitive-Affective Bases of Behavior | 13% | 11.7% | 194 | 344 | 150 |
+| Social & Cultural Bases of Behavior | 11% | 11.4% | 159 | 335 | 176 |
+| Growth & Lifespan Development | 12% | 12.4% | 179 | 364 | 185 |
+| Assessment & Diagnosis | 16% | 11.6% | 232 | 341 | 109 |
+| Treatment, Intervention & Prevention | 15% | 12.9% | 224 | 378 | 154 |
+| Research Methods & Statistics | 7% | 11.7% | 94 | 343 | 249 |
+| Ethical, Legal & Professional Issues | 16% | 11.2% | 212 | 328 | 116 |
 
 Recommended release gates: 100-question foundation, 300-question alpha, 1,000-question beta, 2,000-question expansion, and the complete 2,933-question reviewed universe. Reviewing all questions does not guarantee publishing every original wording: failures must be corrected, diversified, or retired. Practice forms should sample by blueprint weight rather than mirror the uneven legacy-pool distribution.
 
@@ -72,10 +72,10 @@ Recommended release gates: 100-question foundation, 300-question alpha, 1,000-qu
 | Content | Count | Status | Next gate |
 | --- | ---: | --- | --- |
 | legacy questions | 2933 | active-full-review | re-author or correct, source QA, item-writing QA, accessibility, independent expert validation |
-| textbook chapters | 49 | legacy-preserved-review-not-started | claim-level source audit, instructional edit, accessibility and expert review |
+| textbook chapters | 49 | review-in-progress | 0 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review |
 | interactive diagrams | 25 | legacy-preserved-review-not-started | concept accuracy, labels, keyboard/screen-reader alternative, reduced-motion review |
-| flashcards | 415 | legacy-preserved-review-not-started | deduplication, atomic-answer review, source support and clue check |
-| memory aids | 255 | legacy-preserved-review-not-started | oversimplification, outdated clinical guidance, bias and source review |
+| flashcards | 415 | first-pass-complete-expert-pending | independent qualified expert validation and release decisions for retained cards; retired duplicate cards remain excluded |
+| memory aids | 255 | review-in-progress | remaining aids need oversimplification, outdated-guidance, bias, and source review |
 | term definitions | 1583 | legacy-preserved-review-not-started | definition/source/version audit and cross-link review |
 
 ## Learner modes

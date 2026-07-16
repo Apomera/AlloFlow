@@ -1,0 +1,92 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-09f39e83-untitled-my",
+  "title": "လမင်းနဲ့ ဦးထုပ်",
+  "description": "A Burmese picture book from Bloom Library.",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Thein Min Aung"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Thein Min Aung",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HFSQb7iOv6"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Page+021.jpg",
+      "text": "ကျွန်တော်တို့အားလုံး ကျောင်းစုံညီပွဲကိုသွားခဲ့ကြတယ်။"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Page+031.jpg",
+      "text": "အဖေက အစ်ကို့ကို ဖန်စီမျက်မှန်ဝယ်ပေးတယ်။\nအမေက ကျွန်တော့ကို အပြာနုရောင် ဦးထုပ်ဝယ်ပေးတယ်။ ညီမလေးကတော့ ချိုချဉ် ရတာပေါ့။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Page+041.jpg",
+      "text": "အိမ်အပြန်လမ်းမှာ လေပြင်းတိုက်တော့ ကျွန်တော့ ဦးထုပ်ကလေး လွင့်ပါသွားတယ်။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Page+051.jpg",
+      "text": "ကျွန်တော့ ဦးထုပ်ကလေးဟာ သစ်ပင်အိုကြီးတစ်ပင်ရဲ့ ကိုင်းမှာ ချိတ်နေတယ်။"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Page+061.jpg",
+      "text": "ကျွန်တော် သည်းထန်စွာ ငိုခဲ့တယ်။ ပြီးတော့ ထမင်းလည်းမစားဘူး။"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Page+071.jpg",
+      "text": "အဲ့ည ညဉ့်နက်တော့ လမင်းကြီးထွက်လာတယ်။ သူမဟာ သစ်ပင်အိုကြီးပေါ်က ကျွန်တော့ ဦးထုပ်ကလေးကို ကြည့်တယ်။"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Page+081.jpg",
+      "text": "လမင်းကြီးဟာ ကျွန်တော့ ဦးထုပ်ကလေးကိုဆောင်းတယ်။ ပြီးတော့ ပျော်ပျော်ကြီး ပြုံးတယ်။ ကျွန်တော်လည်းပဲ ပြုံးရမယ်။"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Page+091.jpg",
+      "text": "နောက်နေ့ ကျောင်းဆင်းတော့ အမေက ကျွန်တော့ကို အနီရောင်တောက်တောက် ဦးထုပ်အသစ်တစ်လုံး ပေးတယ်။ \"လမင်းကြီးကပေးလိုက်တာ\" လို့ သူမကပြောတယ်။"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Page+101.jpg",
+      "text": "အဲ့ညမှာတော့ လမင်းကြီးရော ကျွန်တော်ပါ နှစ်ဦးစလုံး ကိုယ့်ဦးထုပ်ကိုယ်ဆောင်းပြီး ပြုံးခဲ့ကြတယ်။ ကျွန်တော်တို့ ပျော်ရွှင်ဲ့ကြတယ်။"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Page+111.jpg",
+      "text": "နေမင်းကြီးကရော ဦးထုပ်လိုမယ်လို့ မင်းထင်လား။"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Page+121.jpg",
+      "text": "ဒီနေ့ ကျွန်တော် ဘယ်ဦးထုပ်ဆောင်းမလဲဆိုတာ ခန့်မှန်းကြည့်ပါ။"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 68
+  }
+}

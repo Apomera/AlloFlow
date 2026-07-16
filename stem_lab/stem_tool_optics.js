@@ -694,7 +694,7 @@
             h('option', { value: 'custom' }, 'custom')
           ),
           h('input', {
-            type: 'number', step: 0.001, min: 1.0, max: 3.5, value: n1,
+            type: 'number', step: 0.001, min: 1.0, max: 3.5, value: n1, 'aria-label': 'Top refractive index',
             onChange: function(e) { upd('refrN1', parseFloat(e.target.value) || 1.0); },
             'data-op-focusable': 'true',
             style: { width: 60, padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700 }
@@ -714,7 +714,7 @@
             h('option', { value: 'custom' }, 'custom')
           ),
           h('input', {
-            type: 'number', step: 0.001, min: 1.0, max: 3.5, value: n2,
+            type: 'number', step: 0.001, min: 1.0, max: 3.5, value: n2, 'aria-label': 'Bottom refractive index',
             onChange: function(e) { upd('refrN2', parseFloat(e.target.value) || 1.0); },
             'data-op-focusable': 'true',
             style: { width: 60, padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700 }
@@ -1395,21 +1395,6 @@
           );
         })
       ),
-      // Quest auto-tracking on the calc render: award once per category
-      !lens.error && (function() {
-        if (lens.isReal && !state.realImageFormed) {
-          setTimeout(function() {
-            upd({ realImageFormed: true });
-            if (awardXP) awardXP(10, 'OpticsLab — formed a real image', 'opticsLab');
-          }, 50);
-        } else if (!lens.isReal && !state.virtualImageFormed) {
-          setTimeout(function() {
-            upd({ virtualImageFormed: true });
-            if (awardXP) awardXP(10, 'OpticsLab — formed a virtual image', 'opticsLab');
-          }, 50);
-        }
-        return null;
-      })(),
       h('button', {
         onClick: function() { upd('lensShowMath', !state.lensShowMath); },
         'data-op-focusable': 'true',
@@ -2887,26 +2872,73 @@
         });
       }
 
-      // Quest auto-tracking based on state changes
-      // (Refraction TIR detection)
-      try {
-        var n1 = d.refrN1, n2 = d.refrN2, t1 = degToRad(d.refrTheta1 || 0);
-        var snellRes = snell(t1, n1, n2);
-        if (snellRes.tir && !d.tirTriggered) {
-          // Set later via upd to avoid re-render storm; defer
-          setTimeout(function() {
-            setLabToolData(function(prev) {
-              if (!prev.opticsLab || prev.opticsLab.tirTriggered) return prev;
-              var next = Object.assign({}, prev);
-              next.opticsLab = Object.assign({}, prev.opticsLab, { tirTriggered: true });
-              if (awardXP) awardXP(10, 'OpticsLab — TIR triggered', 'opticsLab');
-              return next;
-            });
-          }, 50);
-        }
-      } catch (e) {}
+      // Award simulation milestones from effects, never from render paths.
+      React.useEffect(function() {
+        if (d.tirTriggered) return;
+        var result = snell(degToRad(d.refrTheta1 || 0), d.refrN1, d.refrN2);
+        if (!result.tir) return;
+        upd({ tirTriggered: true });
+        if (awardXP) awardXP(10, 'OpticsLab â€” TIR triggered', 'opticsLab');
+      }, [d.refrN1, d.refrN2, d.refrTheta1, d.tirTriggered]);
 
-      // ── Build UI ──
+      React.useEffect(function() {
+        if (d.mode !== 'lenses') return;
+        var focal = Math.abs(d.lensFocal != null ? d.lensFocal : 12);
+        var signedFocal = (d.lensType || 'converging') === 'converging' ? focal : -focal;
+        var result = thinLens(d.lensDo != null ? d.lensDo : 25, signedFocal);
+        if (result.error) return;
+        if (result.isReal && !d.realImageFormed) {
+          upd({ realImageFormed: true });
+          if (awardXP) awardXP(10, 'OpticsLab â€” formed a real image', 'opticsLab');
+        } else if (!result.isReal && !d.virtualImageFormed) {
+          upd({ virtualImageFormed: true });
+          if (awardXP) awardXP(10, 'OpticsLab â€” formed a virtual image', 'opticsLab');
+        }
+      }, [d.mode, d.lensType, d.lensFocal, d.lensDo, d.realImageFormed, d.virtualImageFormed]);
+
+      React.useEffect(function() {
+        var phase = d.phenoAfterPhase || 'idle';
+        if (phase === 'idle') return;
+        var timer = setTimeout(function() {
+          var elapsedMs = Date.now() - (d.phenoAfterStartedAt || Date.now());
+          if (phase === 'staring' && elapsedMs >= 12000) {
+            upd({ phenoAfterPhase: 'reveal', phenoAfterStartedAt: Date.now() });
+          } else if (phase === 'reveal' && elapsedMs >= 8000) {
+            upd({ phenoAfterPhase: 'idle', phenoAfterStartedAt: 0 });
+          } else {
+            upd('phenoAfterTick', Date.now());
+          }
+        }, 250);
+        return function() { clearTimeout(timer); };
+      }, [d.phenoAfterPhase, d.phenoAfterStartedAt, d.phenoAfterTick]);
+
+      React.useEffect(function() {
+        if (!d.phenoQuantumPlaying) return;
+        var rate = d.phenoQuantumRate || 'slow';
+        var timer = setTimeout(function() {
+          var width = 460, height = 200;
+          var perTick = rate === 'fast' ? 12 : 1;
+          var fresh = [];
+          for (var i = 0; i < perTick; i++) {
+            var point = null;
+            for (var attempt = 0; attempt < 30; attempt++) {
+              var x = Math.random() * width;
+              var wave = Math.cos((x / width - 0.5) * 8 * Math.PI);
+              if (Math.random() < wave * wave) {
+                point = { x: x, y: 14 + Math.random() * (height - 28) };
+                break;
+              }
+            }
+            fresh.push(point || { x: width / 2, y: height / 2 });
+          }
+          var combined = (d.phenoQuantumDots || []).concat(fresh);
+          if (combined.length > 1500) combined = combined.slice(-1500);
+          upd({ phenoQuantumDots: combined, phenoQuantumCount: (d.phenoQuantumCount || 0) + perTick });
+        }, rate === 'fast' ? 50 : 120);
+        return function() { clearTimeout(timer); };
+      }, [d.phenoQuantumPlaying, d.phenoQuantumRate, d.phenoQuantumDots, d.phenoQuantumCount]);
+
+      // Build UI
       var OP_CORE_MODES = ['home', 'reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization', 'quiz', 'mastery', 'inquiry'];
       var opMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
       var opTotalQuestions = AP_OPTICS_QUIZ.length || 0;
@@ -3044,8 +3076,10 @@
             var sel = d.mode === tab.id;
             return h('button', {
               key: tab.id,
+              id: 'op-tab-' + tab.id,
               role: 'tab',
               'aria-selected': sel,
+              'aria-controls': 'op-panel-' + tab.id,
               tabIndex: sel ? 0 : -1,
               'data-op-focusable': 'true',
               'data-op-tab-value': tab.id,
@@ -3063,6 +3097,13 @@
           })
         ),
         // Active mode
+        h('div', {
+          id: 'op-panel-' + d.mode,
+          role: 'tabpanel',
+          'aria-labelledby': 'op-tab-' + d.mode,
+          tabIndex: 0,
+          'data-op-focusable': 'true'
+        },
         d.mode === 'home' && _renderHome(d, upd, h),
         d.mode === 'reflection' && _renderTopicPanel({
           d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'reflection',
@@ -3160,7 +3201,7 @@
                 );
               })
             ),
-            h('svg', { width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+            h('svg', { role: 'img', 'aria-label': "Snell law inquiry diagram showing refraction, total internal reflection, and dispersion.", width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
               h('rect', { x: 0, y: 0, width: 320, height: 100, fill: '#0a1a2a', opacity: 0.4 }),
               h('rect', { x: 0, y: 100, width: 320, height: 100, fill: sm.color, opacity: 0.12 }),
               h('line', { x1: 0, y1: 100, x2: 320, y2: 100, stroke: '#475569', strokeWidth: 1 }),
@@ -3239,10 +3280,11 @@
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, t('stem.optics.i_can_explain_why_this_n_n_combination', 'I can explain why this n₁/n₂/θ combination yields this refraction state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.optics.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            iq.understood && h('textarea', { 'aria-label': 'Explain the refraction result in your own words', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.optics.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
             h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, t('stem.optics.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Dispersion model is illustrative (Cauchy-like first-order); real dispersion curves are material-specific (Sellmeier coefficients).'))
           );
-        })(),
+        })()
+        ),
         // Concept-mastery celebration overlay — fixed-position, top of screen,
         // self-clears after 3.5s. Renders on top of any view.
         opCeleb && h('div', {
@@ -4682,18 +4724,8 @@
     var remaining;
     if (phase === 'staring') {
       remaining = Math.max(0, stareDur - elapsed);
-      if (remaining === 0 && typeof setTimeout === 'function') {
-        setTimeout(function() { upd({ phenoAfterPhase: 'reveal', phenoAfterStartedAt: Date.now() }); }, 0);
-      }
     } else if (phase === 'reveal') {
       remaining = Math.max(0, revealDur - elapsed);
-      if (remaining === 0 && typeof setTimeout === 'function') {
-        setTimeout(function() { upd({ phenoAfterPhase: 'idle', phenoAfterStartedAt: 0 }); }, 0);
-      }
-    }
-    // Schedule a per-second re-render so the countdown updates
-    if (phase !== 'idle' && typeof setTimeout === 'function') {
-      setTimeout(function() { upd('phenoAfterTick', Date.now()); }, 250);
     }
     function complementHex(hex) {
       var r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
@@ -5819,19 +5851,6 @@
       // Fallback (very unlikely): center
       return { x: W / 2, y: H / 2 };
     }
-    // Auto-fire scheduling (mirrors after-image timer pattern)
-    if (playing && typeof setTimeout === 'function') {
-      var perTick = rate === 'fast' ? 12 : 1;
-      setTimeout(function() {
-        var fresh = [];
-        for (var i = 0; i < perTick; i++) fresh.push(fireOne());
-        var combined = dots.concat(fresh);
-        // Cap at 1500 dots for SVG-render perf — beyond this the pattern is
-        // already saturated visually and the marginal photon adds no info.
-        if (combined.length > 1500) combined = combined.slice(-1500);
-        upd({ phenoQuantumDots: combined, phenoQuantumCount: count + perTick });
-      }, rate === 'fast' ? 50 : 120);
-    }
     // Render dots as small SVG circles. 1500 circles is borderline but works.
     // The newest dot gets a brief landing flash (scale + glow → settle) so
     // each fired photon visibly "arrives" on the screen.
@@ -6454,11 +6473,10 @@
           'Searchable reference covering reflection, refraction, interference, diffraction, polarization, color, vision, and atmospheric optics. Each entry has the physics, formula, where you can see it in real life, and a fun fact. Click any tile to expand.')
       ),
       h('div', { style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
-        h('input', {
+        h('input', { 'aria-label': 'Search phenomena encyclopedia',
           type: 'text', value: d.phDbQuery || '',
           placeholder: '🔍 Search phenomena, descriptions, formulas, examples...',
           onChange: function(e) { upd('phDbQuery', e.target.value); },
-          'aria-label': 'Search phenomena encyclopedia',
           style: { flex: '1 1 280px', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 8, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13 }
         })
       ),
@@ -11795,7 +11813,7 @@
         ),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: 14 } },
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', marginBottom: 8 } }, 'Ray diagram'),
-          h('svg', { viewBox: '0 0 400 260', style: { width: '100%', height: 200, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
+          h('svg', { role: 'img', 'aria-label': "Brewster angle diagram showing reflected and refracted polarized light.", viewBox: '0 0 400 260', style: { width: '100%', height: 200, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
             // boundary
             h('line', { x1: 30, y1: cy, x2: 370, y2: cy, stroke: '#5eead4', strokeWidth: 2 }),
             // normal
@@ -11874,7 +11892,7 @@
           h('span', null, 'Wavelength: '),
           h('span', { style: { fontSize: 18, fontWeight: 900, color: '#fbbf24', fontFamily: 'monospace' } }, lambdaNm.toLocaleString() + ' nm'),
           h('span', { style: { padding: '2px 8px', borderRadius: 12, background: color, color: '#0f172a', fontSize: 10, fontWeight: 700 } }, band)),
-        h('input', { type: 'range', min: 100, max: 10000, step: 1, value: lambdaNm,
+        h('input', { type: 'range', 'aria-label': 'Photon wavelength', min: 100, max: 10000, step: 1, value: lambdaNm,
           onChange: function(e) { upd('photonLambdaNm', parseFloat(e.target.value)); },
           style: { width: '100%' } }),
         h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } },
@@ -11971,7 +11989,7 @@
         ),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,146,60,0.30)', borderRadius: 10, padding: 14 } },
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fdba74', marginBottom: 8 } }, 'Ray paths'),
-          h('svg', { viewBox: '0 0 400 260', style: { width: '100%', height: 200, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
+          h('svg', { role: 'img', 'aria-label': "Total internal reflection diagram showing the incident ray and critical angle.", viewBox: '0 0 400 260', style: { width: '100%', height: 200, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
             h('rect', { x: 30, y: 30, width: 340, height: cy - 30, fill: 'rgba(56,189,248,0.06)' }),
             h('rect', { x: 30, y: cy, width: 340, height: 230 - cy, fill: 'rgba(251,146,60,0.06)' }),
             h('line', { x1: 30, y1: cy, x2: 370, y2: cy, stroke: '#fb923c', strokeWidth: 2 }),
@@ -12315,7 +12333,7 @@
             }))),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 14 } },
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, 'Cross-section'),
-          h('svg', { viewBox: '0 0 400 220', style: { width: '100%', height: 200, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
+          h('svg', { role: 'img', 'aria-label': "Fiber optic acceptance cone and numerical aperture diagram.", viewBox: '0 0 400 220', style: { width: '100%', height: 200, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
             // outer cladding
             h('rect', { x: 30, y: 70, width: 340, height: 80, fill: 'rgba(56,189,248,0.10)', stroke: '#7dd3fc', strokeWidth: 1 }),
             // core (inner)
@@ -12726,7 +12744,7 @@
                       var cx = 250, cy = 130, len = 100;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 260', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, rgba(125,211,252,0.15) 0%, rgba(125,211,252,0.05) 50%, rgba(59,130,246,0.20) 50.1%, rgba(59,130,246,0.35) 100%)' } },
+                          h('svg', { role: 'img', 'aria-label': "Snell law refraction diagram showing incident, reflected, and transmitted rays.", viewBox: '0 0 500 260', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, rgba(125,211,252,0.15) 0%, rgba(125,211,252,0.05) 50%, rgba(59,130,246,0.20) 50.1%, rgba(59,130,246,0.35) 100%)' } },
                             h('line', { x1: 0, y1: 130, x2: 500, y2: 130, stroke: '#475569', strokeWidth: 1 }),
                             h('line', { x1: cx, y1: 30, x2: cx, y2: 230, stroke: '#475569', strokeWidth: 0.5, strokeDasharray: '4,3' }),
                             h('text', { x: 50, y: 90, fill: '#7dd3fc', fontSize: 11 }, 'n₁ = ' + n1.toFixed(2)),
@@ -12749,7 +12767,7 @@
                           [{ l: 'Angle of incidence', k: 'vizSnellTh', v: th1, min: 0, max: 89, suf: '°' }, { l: 'n₁ (incident)', k: 'vizSnellN1', v: n1, min: 1, max: 2.5, suf: '', step: 0.01 }, { l: 'n₂ (refracted)', k: 'vizSnellN2', v: n2, min: 1, max: 2.5, suf: '', step: 0.01 }].map(function(s) {
                             return h('div', { key: s.k, style: { flex: 1, minWidth: 130 } },
                               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step ? 2 : 0) + s.suf),
-                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                              h('input', { type: 'range', 'aria-label': s.l, min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                             );
                           })
                         ),
@@ -12789,7 +12807,7 @@
                       var realImg = di > 0 && converging;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 560 260', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Lens ray tracer showing object and image formation.", viewBox: '0 0 560 260', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('line', { x1: 0, y1: 130, x2: 560, y2: 130, stroke: '#475569', strokeWidth: 1 }),
                             h('line', { x1: cx - f, y1: 125, x2: cx - f, y2: 135, stroke: '#94a3b8', strokeWidth: 1 }),
                             h('line', { x1: cx + f, y1: 125, x2: cx + f, y2: 135, stroke: '#94a3b8', strokeWidth: 1 }),
@@ -12819,7 +12837,7 @@
                           [{ l: 'Focal length', k: 'vizLensF', v: f, min: 20, max: 120 }, { l: 'Object distance', k: 'vizLensDo', v: doDist, min: 30, max: 260 }, { l: 'Object height', k: 'vizLensH', v: hObj, min: 10, max: 70 }].map(function(s) {
                             return h('div', { key: s.k, style: { flex: 1, minWidth: 130 } },
                               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, s.l + ': ' + s.v),
-                              h('input', { type: 'range', min: s.min, max: s.max, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                              h('input', { type: 'range', 'aria-label': s.l, min: s.min, max: s.max, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                             );
                           })
                         )
@@ -12845,7 +12863,7 @@
                       var WAVELENGTHS = [{ nm: 400, c: '#7e22ce' }, { nm: 440, c: '#2563eb' }, { nm: 490, c: '#06b6d4' }, { nm: 550, c: '#22c55e' }, { nm: 590, c: '#facc15' }, { nm: 630, c: '#f97316' }, { nm: 700, c: '#dc2626' }];
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Prism dispersion diagram separating white light into visible colors.", viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('polygon', { points: '200,180 280,180 240,80', fill: 'rgba(125,211,252,0.20)', stroke: '#7dd3fc', strokeWidth: 1.5 }),
                             h('line', { x1: 30, y1: 130, x2: 215, y2: 130, stroke: '#fff', strokeWidth: 2 }),
                             h('text', { x: 30, y: 125, fill: '#fff', fontSize: 10 }, 'White light →'),
@@ -12866,7 +12884,7 @@
                         ),
                         h('div', { style: { marginTop: 8 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2, fontSize: 11 } }, 'Apex angle: ' + angle + '°'),
-                          h('input', { type: 'range', min: 30, max: 90, value: angle, onChange: function(e) { upd('vizPrismAngle', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Prism apex angle', min: 30, max: 90, value: angle, onChange: function(e) { upd('vizPrismAngle', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         )
                       );
                     })()
@@ -12896,7 +12914,7 @@
                       var mx = 420, my = 130;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 260', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Mirror reflection diagram showing incident and reflected rays.", viewBox: '0 0 500 260', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('line', { x1: 0, y1: 130, x2: 500, y2: 130, stroke: '#475569', strokeWidth: 1 }),
                             h('path', { d: 'M ' + mx + ' ' + (my - 80) + ' Q ' + (mx + (type === 'concave' ? -30 : 30)) + ' ' + my + ' ' + mx + ' ' + (my + 80), fill: 'none', stroke: '#cbd5e1', strokeWidth: 3 }),
                             h('line', { x1: mx - f, y1: 125, x2: mx - f, y2: 135, stroke: '#94a3b8', strokeWidth: 1 }),
@@ -12922,7 +12940,7 @@
                           [{ l: 'Focal length', k: 'vizMirrF', v: f, min: 20, max: 100 }, { l: 'Object distance', k: 'vizMirrDo', v: doDist, min: 30, max: 200 }, { l: 'Object height', k: 'vizMirrH', v: hObj, min: 10, max: 60 }].map(function(s) {
                             return h('div', { key: s.k, style: { flex: 1, minWidth: 130 } },
                               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, s.l + ': ' + s.v),
-                              h('input', { type: 'range', min: s.min, max: s.max, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                              h('input', { type: 'range', 'aria-label': s.l, min: s.min, max: s.max, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                             );
                           })
                         )
@@ -12957,7 +12975,7 @@
                       function wlColor(w) { if (w < 440) return '#7e22ce'; if (w < 490) return '#2563eb'; if (w < 580) return '#22c55e'; if (w < 645) return '#facc15'; if (w < 700) return '#f97316'; return '#dc2626'; }
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 260', style: { width: '100%', display: 'block', background: '#000' } },
+                          h('svg', { role: 'img', 'aria-label': "Double-slit interference pattern with bright and dark fringes.", viewBox: '0 0 500 260', style: { width: '100%', display: 'block', background: '#000' } },
                             h('rect', { x: 50, y: 110, width: 8, height: 14, fill: '#94a3b8' }),
                             h('rect', { x: 50, y: 136, width: 8, height: 14, fill: '#94a3b8' }),
                             h('text', { x: 30, y: 130, fill: '#cbd5e1', fontSize: 9, textAnchor: 'end' }, 'slits'),
@@ -12974,7 +12992,7 @@
                           [{ l: 'Wavelength (nm)', k: 'vizDsLam', v: lam, min: 380, max: 750 }, { l: 'Slit sep (mm)', k: 'vizDsSlit', v: slit, min: 0.02, max: 0.5, step: 0.01 }, { l: 'Screen dist (m)', k: 'vizDsL', v: L, min: 0.3, max: 3, step: 0.1 }].map(function(s) {
                             return h('div', { key: s.k, style: { flex: 1, minWidth: 130 } },
                               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step ? 2 : 0)),
-                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                              h('input', { type: 'range', 'aria-label': s.l, min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                             );
                           })
                         )
@@ -13002,7 +13020,7 @@
                       var Itrans = trans * trans;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Polarization diagram showing transmitted intensity through rotated filters.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('rect', { x: 30, y: 70, width: 50, height: 70, fill: 'rgba(255,255,255,0.4)' }),
                             h('text', { x: 55, y: 65, textAnchor: 'middle', fill: '#fff', fontSize: 10 }, 'Unpolarized'),
                             h('circle', { cx: 150, cy: 105, r: 40, fill: 'none', stroke: '#7dd3fc', strokeWidth: 2 }),
@@ -13020,7 +13038,7 @@
                           [{ l: 'Polarizer 1', k: 'vizPol1', v: th1 }, { l: 'Polarizer 2', k: 'vizPol2', v: th2 }].map(function(s) {
                             return h('div', { key: s.k, style: { flex: 1 } },
                               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, s.l + ': ' + s.v + '°'),
-                              h('input', { type: 'range', min: 0, max: 180, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                              h('input', { type: 'range', 'aria-label': s.l, min: 0, max: 180, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                             );
                           })
                         )
@@ -13054,7 +13072,7 @@
                       function wlColor(w) { if (w < 440) return '#7e22ce'; if (w < 490) return '#2563eb'; if (w < 580) return '#22c55e'; if (w < 645) return '#facc15'; if (w < 700) return '#f97316'; return '#dc2626'; }
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#000' } },
+                          h('svg', { role: 'img', 'aria-label': "Single-slit diffraction intensity pattern.", viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#000' } },
                             pts.map(function(p, pi) {
                               return h('rect', { key: pi, x: p.x, y: 60, width: 1, height: 100, fill: wlColor(lam), opacity: p.I });
                             }),
@@ -13066,7 +13084,7 @@
                           [{ l: 'Wavelength', k: 'vizSsLam', v: lam, min: 380, max: 750 }, { l: 'Slit width (mm)', k: 'vizSsW', v: w, min: 0.01, max: 0.2, step: 0.01 }].map(function(s) {
                             return h('div', { key: s.k, style: { flex: 1 } },
                               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step ? 2 : 0)),
-                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                              h('input', { type: 'range', 'aria-label': s.l, min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                             );
                           })
                         )
@@ -13101,7 +13119,7 @@
                       var domW = COLORS.find(function(c) { return c.I === maxI; });
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Thin-film interference diagram showing reflected light paths.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('rect', { x: 100, y: 90, width: 300, height: 30, fill: wlColor(domW.w), opacity: 0.7 }),
                             h('rect', { x: 100, y: 90, width: 300, height: 30, fill: 'none', stroke: '#7dd3fc', strokeWidth: 1 }),
                             h('text', { x: 250, y: 80, textAnchor: 'middle', fill: '#fff', fontSize: 10 }, 'Thin film (' + thick + ' nm)'),
@@ -13117,7 +13135,7 @@
                           [{ l: 'Thickness (nm)', k: 'vizTfThick', v: thick, min: 50, max: 1000 }, { l: 'Refractive index', k: 'vizTfN', v: n, min: 1.0, max: 2.5, step: 0.01 }].map(function(s) {
                             return h('div', { key: s.k, style: { flex: 1 } },
                               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step ? 2 : 0)),
-                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                              h('input', { type: 'range', 'aria-label': s.l, min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                             );
                           })
                         )
@@ -13142,7 +13160,7 @@
                       var COLORS = [{ nm: 700, c: '#dc2626', a: 40.4 }, { nm: 600, c: '#f97316', a: 41 }, { nm: 580, c: '#fbbf24', a: 41.4 }, { nm: 540, c: '#22c55e', a: 41.8 }, { nm: 480, c: '#06b6d4', a: 42.0 }, { nm: 450, c: '#2563eb', a: 42.2 }, { nm: 420, c: '#7e22ce', a: 42.4 }];
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #2563eb 0%, #06b6d4 80%, #22c55e 100%)' } },
+                          h('svg', { role: 'img', 'aria-label': "Rainbow formation diagram showing refraction and reflection in a water droplet.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #2563eb 0%, #06b6d4 80%, #22c55e 100%)' } },
                             h('circle', { cx: 100, cy: 200, r: 60, fill: '#22c55e' }),
                             COLORS.map(function(co, ci) {
                               return h('path', { key: ci, d: 'M 100 200 A ' + (40 + ci * 8) + ' ' + (40 + ci * 8) + ' 0 0 1 ' + (100 + (40 + ci * 8) * Math.cos(Math.PI * (180 - co.a) / 180)) + ' ' + (200 - (40 + ci * 8) * Math.sin(Math.PI * (180 - co.a) / 180)), fill: 'none', stroke: co.c, strokeWidth: 4 });
@@ -13178,7 +13196,7 @@
                       var heat = d.vizMirH != null ? d.vizMirH : 50;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #fef3c7 0%, #fbbf24 40%, #f97316 70%, #dc2626 100%)' } },
+                          h('svg', { role: 'img', 'aria-label': "Mirage diagram showing light bending through heated air.", viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #fef3c7 0%, #fbbf24 40%, #f97316 70%, #dc2626 100%)' } },
                             h('rect', { x: 0, y: 150, width: 500, height: 50, fill: '#7c2d12' }),
                             h('rect', { x: 100, y: 50, width: 30, height: 50, fill: '#94a3b8' }),
                             h('polygon', { points: '90,50 130,30 130,50', fill: '#dc2626' }),
@@ -13192,7 +13210,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Heat intensity: ' + heat + '%'),
-                          h('input', { type: 'range', min: 0, max: 100, value: heat, onChange: function(e) { upd('vizMirH', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Mirage heat gradient', min: 0, max: 100, value: heat, onChange: function(e) { upd('vizMirH', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         )
                       );
                     })()
@@ -13216,7 +13234,7 @@
                       var sunColor = alt > 50 ? '#fde047' : alt > 20 ? '#fbbf24' : '#dc2626';
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: skyColor } },
+                          h('svg', { role: 'img', 'aria-label': "Rayleigh scattering diagram explaining blue sky color.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: skyColor } },
                             h('rect', { x: 0, y: 170, width: 500, height: 50, fill: '#22c55e' }),
                             h('circle', { cx: 250, cy: 200 - alt * 2, r: 22, fill: sunColor, opacity: 0.4 }),
                             h('circle', { cx: 250, cy: 200 - alt * 2, r: 15, fill: sunColor }),
@@ -13225,7 +13243,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Sun altitude: ' + alt + '°'),
-                          h('input', { type: 'range', min: 0, max: 90, value: alt, onChange: function(e) { upd('vizSkyAlt', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Sun altitude', min: 0, max: 90, value: alt, onChange: function(e) { upd('vizSkyAlt', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                           'Rayleigh scattering: shorter wavelengths (blue) scatter ~10× more than longer (red). At noon, scattered blue light comes from every direction — blue sky. At sunset, light passes through thicker atmosphere — blues are scattered away leaving red.'
@@ -13259,7 +13277,7 @@
                       }
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#000' } },
+                          h('svg', { role: 'img', 'aria-label': "Wave-particle duality visualization of photons and interference.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#000' } },
                             h('rect', { x: 50, y: 30, width: 400, height: 140, fill: 'none', stroke: '#475569' }),
                             dots.map(function(p, pi) {
                               return h('circle', { key: pi, cx: p.x, cy: p.y, r: 1.5, fill: '#fde047' });
@@ -13269,7 +13287,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Photons: ' + nPhot),
-                          h('input', { type: 'range', min: 10, max: 2000, value: nPhot, onChange: function(e) { upd('vizWpN', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Photon count', min: 10, max: 2000, value: nPhot, onChange: function(e) { upd('vizWpN', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         )
                       );
                     })()
@@ -13291,7 +13309,7 @@
                       var dist = d.vizPhD != null ? d.vizPhD : 100;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Pinhole camera diagram showing an inverted projected image.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('line', { x1: 80, y1: 60, x2: 80, y2: 160, stroke: '#22c55e', strokeWidth: 4 }),
                             h('circle', { cx: 80, cy: 75, r: 6, fill: '#fde047' }),
                             h('text', { x: 80, y: 175, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Object'),
@@ -13311,7 +13329,7 @@
                           [{ l: 'Pinhole size', k: 'vizPhSize', v: pSize, min: 0.5, max: 4, step: 0.1 }, { l: 'Image distance', k: 'vizPhD', v: dist, min: 50, max: 200 }].map(function(s) {
                             return h('div', { key: s.k, style: { flex: 1 } },
                               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step ? 1 : 0)),
-                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                              h('input', { type: 'range', 'aria-label': s.l, min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                             );
                           })
                         )
@@ -13337,7 +13355,7 @@
                       var B = d.vizCmB != null ? d.vizCmB : 255;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Additive red, green, and blue color mixing diagram.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('circle', { cx: 180, cy: 100, r: 60, fill: 'rgb(' + R + ',0,0)', opacity: R / 255 }),
                             h('circle', { cx: 260, cy: 100, r: 60, fill: 'rgb(0,' + G + ',0)', opacity: G / 255 }),
                             h('circle', { cx: 220, cy: 160, r: 60, fill: 'rgb(0,0,' + B + ')', opacity: B / 255 }),
@@ -13350,7 +13368,7 @@
                           [{ l: 'Red', k: 'vizCmR', v: R, c: '#dc2626' }, { l: 'Green', k: 'vizCmG', v: G, c: '#22c55e' }, { l: 'Blue', k: 'vizCmB', v: B, c: '#2563eb' }].map(function(s) {
                             return h('div', { key: s.k, style: { flex: 1 } },
                               h('div', { style: { color: s.c, marginBottom: 2, fontWeight: 700 } }, s.l + ': ' + s.v),
-                              h('input', { type: 'range', min: 0, max: 255, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                              h('input', { type: 'range', 'aria-label': s.l, min: 0, max: 255, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                             );
                           })
                         )
@@ -13374,7 +13392,7 @@
                       var alt = d.vizArAlt != null ? d.vizArAlt : 5;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #0a0a18 0%, #4338ca 30%, #f97316 70%, #dc2626 100%)' } },
+                          h('svg', { role: 'img', 'aria-label': "Atmospheric refraction diagram showing the apparent position of the Sun.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #0a0a18 0%, #4338ca 30%, #f97316 70%, #dc2626 100%)' } },
                             h('rect', { x: 0, y: 180, width: 500, height: 40, fill: '#1f2937' }),
                             h('circle', { cx: 250, cy: 200 - alt * 20, r: 18, fill: '#fbbf24' }),
                             h('path', { d: 'M 100 ' + (200 - alt * 20) + ' Q 250 ' + (210 - alt * 20) + ' 400 ' + (200 - alt * 20), stroke: '#fbbf24', strokeWidth: 1.5, fill: 'none', strokeDasharray: '3,2', opacity: 0.6 }),
@@ -13384,7 +13402,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Sun altitude: ' + alt + '°'),
-                          h('input', { type: 'range', min: 0, max: 30, value: alt, onChange: function(e) { upd('vizArAlt', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Atmospheric path altitude', min: 0, max: 30, value: alt, onChange: function(e) { upd('vizArAlt', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
                           'Atmospheric refraction bends sunlight upward. The Sun on the horizon is actually BELOW it — but we see it. The Sun looks oval when low because the bottom is refracted more than the top.'
@@ -13408,7 +13426,7 @@
           (function() {
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Fresnel lens cross-section and focused light rays.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('path', { d: 'M 80 100 Q 130 110 80 120 Z', fill: 'rgba(125,211,252,0.5)', stroke: '#7dd3fc', strokeWidth: 1 }),
                             h('path', { d: 'M 80 80 Q 130 90 80 100 Z', fill: 'rgba(125,211,252,0.5)', stroke: '#7dd3fc', strokeWidth: 1 }),
                             h('path', { d: 'M 80 120 Q 130 130 80 140 Z', fill: 'rgba(125,211,252,0.5)', stroke: '#7dd3fc', strokeWidth: 1 }),
@@ -13451,7 +13469,7 @@
                           })
                         ),
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Comparison diagram of refracting and reflecting telescope designs.", viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             type === 'refractor' ? h('g', null,
                               h('rect', { x: 50, y: 80, width: 350, height: 40, fill: '#475569' }),
                               h('ellipse', { cx: 60, cy: 100, rx: 8, ry: 20, fill: '#7dd3fc' }),
@@ -13506,7 +13524,7 @@
                       function wlColor(w) { if (w < 440) return '#7e22ce'; if (w < 490) return '#2563eb'; if (w < 580) return '#22c55e'; if (w < 645) return '#facc15'; if (w < 700) return '#f97316'; return '#dc2626'; }
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Newton rings interference pattern.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             rings.map(function(r, ri) {
                               return h('circle', { key: ri, cx: 250, cy: 110, r: r.r, fill: r.dark ? '#000' : wlColor(lam), opacity: r.dark ? 1 : 0.6 });
                             }),
@@ -13516,7 +13534,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Wavelength: ' + lam + ' nm'),
-                          h('input', { type: 'range', min: 380, max: 750, value: lam, onChange: function(e) { upd('vizNrLam', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Nanorod resonance wavelength', min: 380, max: 750, value: lam, onChange: function(e) { upd('vizNrLam', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                           'Newton 1717 observed concentric rings when a curved lens sits on flat glass. Different gap heights produce constructive + destructive interference. Used to test lens quality.'
@@ -13545,7 +13563,7 @@
                       var thR = th * Math.PI / 180;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, rgba(125,211,252,0.15) 0%, rgba(125,211,252,0.05) 50%, rgba(59,130,246,0.25) 50.1%, rgba(59,130,246,0.40) 100%)' } },
+                          h('svg', { role: 'img', 'aria-label': "Brewster angle polarization diagram.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, rgba(125,211,252,0.15) 0%, rgba(125,211,252,0.05) 50%, rgba(59,130,246,0.25) 50.1%, rgba(59,130,246,0.40) 100%)' } },
                             h('line', { x1: 0, y1: 110, x2: 500, y2: 110, stroke: '#475569' }),
                             h('line', { x1: 250 - Math.sin(thR) * 100, y1: 110 - Math.cos(thR) * 100, x2: 250, y2: 110, stroke: '#fde047', strokeWidth: 2 }),
                             isBrew && h('line', { x1: 250, y1: 110, x2: 250 + Math.cos(thR) * 100, y2: 110 + Math.sin(thR) * 100, stroke: '#22c55e', strokeWidth: 1, strokeDasharray: '4,2', opacity: 0.5 }),
@@ -13558,7 +13576,7 @@
                           [{ l: 'Angle', k: 'vizBrTh', v: th, min: 0, max: 89, step: 0.5 }, { l: 'n₂', k: 'vizBrN2', v: n2, min: 1, max: 2.5, step: 0.01 }].map(function(s) {
                             return h('div', { key: s.k, style: { flex: 1 } },
                               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step < 1 ? 2 : 1)),
-                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                              h('input', { type: 'range', 'aria-label': s.l, min: s.min, max: s.max, step: s.step, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                             );
                           })
                         ),
@@ -13592,7 +13610,7 @@
                       function wlColor(w) { if (w < 440) return '#7e22ce'; if (w < 490) return '#2563eb'; if (w < 580) return '#22c55e'; if (w < 645) return '#facc15'; if (w < 700) return '#f97316'; return '#dc2626'; }
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#000' } },
+                          h('svg', { role: 'img', 'aria-label': "Diffraction grating spectrum and order diagram.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#000' } },
                             h('rect', { x: 50, y: 100, width: 8, height: 30, fill: '#94a3b8' }),
                             h('line', { x1: 58, y1: 115, x2: 250, y2: 115, stroke: '#fff', strokeWidth: 2 }),
                             orders.map(function(o, oi) {
@@ -13611,7 +13629,7 @@
                           [{ l: 'Lines/mm', k: 'vizDgLines', v: lines, min: 100, max: 2000, step: 50 }, { l: 'Wavelength', k: 'vizDgLam', v: lam, min: 380, max: 750 }].map(function(s) {
                             return h('div', { key: s.k, style: { flex: 1 } },
                               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, s.l + ': ' + s.v),
-                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                              h('input', { type: 'range', 'aria-label': s.l, min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                             );
                           })
                         )
@@ -13636,7 +13654,7 @@
                       var lensThick = focusDist < 25 ? 'thicker' : focusDist > 100 ? 'thinner' : 'relaxed';
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Eye accommodation diagram showing focus for near and distant objects.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('ellipse', { cx: 350, cy: 110, rx: 90, ry: 70, fill: 'rgba(255,255,255,0.05)', stroke: '#cbd5e1', strokeWidth: 2 }),
                             h('rect', { x: 260, y: 70, width: 16, height: 80, rx: 8, fill: 'rgba(125,211,252,0.5)', stroke: '#7dd3fc' }),
                             h('text', { x: 268, y: 60, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Cornea'),
@@ -13653,7 +13671,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Object distance: ' + focusDist + ' cm'),
-                          h('input', { type: 'range', min: 10, max: 500, value: focusDist, onChange: function(e) { upd('vizEyeF', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Object focus distance', min: 10, max: 500, value: focusDist, onChange: function(e) { upd('vizEyeF', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                           'The eye lens thickens to focus near objects + relaxes for distance. Accommodation. Loss of this flexibility (presbyopia) starts around age 40 — why reading glasses become necessary.'
@@ -13679,7 +13697,7 @@
                       var dof = 1 / fst * 2;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1f2937 0%, #0a0a18 100%)' } },
+                          h('svg', { role: 'img', 'aria-label': "Camera aperture diagram comparing depth of field.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1f2937 0%, #0a0a18 100%)' } },
                             h('rect', { x: 50, y: 70, width: 80, height: 80, fill: '#22c55e', opacity: dof > 0.5 ? 1 : 0.4 }),
                             h('text', { x: 90, y: 165, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Close'),
                             h('rect', { x: 200, y: 80, width: 70, height: 70, fill: '#fbbf24' }),
@@ -13693,7 +13711,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Aperture: f/' + fst),
-                          h('input', { type: 'range', min: 1.4, max: 22, step: 0.1, value: fst, onChange: function(e) { upd('vizCamF', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Camera aperture f-number', min: 1.4, max: 22, step: 0.1, value: fst, onChange: function(e) { upd('vizCamF', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         )
                       );
                     })()
@@ -13719,7 +13737,7 @@
                       var lx = Math.log10(lam);
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Electromagnetic spectrum diagram with current wavelength marked.", viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('rect', { x: 30, y: 60, width: 440, height: 40, fill: 'url(#grad)' }),
                             h('defs', null, h('linearGradient', { id: 'grad', x1: '0%', x2: '100%' },
                               h('stop', { offset: '0%', stopColor: '#a78bfa' }), h('stop', { offset: '15%', stopColor: '#a78bfa' }), h('stop', { offset: '30%', stopColor: '#7dd3fc' }), h('stop', { offset: '45%', stopColor: '#fde047' }), h('stop', { offset: '55%', stopColor: '#dc2626' }), h('stop', { offset: '70%', stopColor: '#7c2d12' }), h('stop', { offset: '100%', stopColor: '#1e40af' })
@@ -13735,7 +13753,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Wavelength: ' + lam.toExponential(1) + ' nm'),
-                          h('input', { type: 'range', min: 0, max: 12, step: 0.1, value: lx, onChange: function(e) { upd('vizEmLam', Math.pow(10, parseFloat(e.target.value))); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Electromagnetic wavelength scale', min: 0, max: 12, step: 0.1, value: lx, onChange: function(e) { upd('vizEmLam', Math.pow(10, parseFloat(e.target.value))); }, style: { width: '100%' } })
                         )
                       );
                     })()
@@ -13759,7 +13777,7 @@
                       for (var i = 0; i < GRID; i++) for (var j = 0; j < GRID; j++) cells.push({ x: 100 + i * 50, y: 50 + j * 50 });
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: '#fff' } },
+                          h('svg', { role: 'img', 'aria-label': "Hermann grid optical illusion.", viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: '#fff' } },
                             cells.map(function(c, ci) {
                               return h('rect', { key: ci, x: c.x, y: c.y, width: 40, height: 40, fill: '#000' });
                             }),
@@ -13788,7 +13806,7 @@
                       var MATS = [['Vacuum', 1.000], ['Air', 1.0003], ['Water', 1.33], ['Ice', 1.31], ['Glass (crown)', 1.52], ['Glass (flint)', 1.62], ['Sapphire', 1.77], ['Cubic zirconia', 2.16], ['Diamond', 2.42], ['Silicon', 3.96]];
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Refractive index comparison visualization.", viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             MATS.map(function(m, mi) {
                               var y = 30 + mi * 22;
                               var w = Math.min(280, (m[1] - 1) * 90);
@@ -13829,7 +13847,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Refractive index: n = ' + n.toFixed(2)),
-                          h('input', { type: 'range', min: 1, max: 4, step: 0.01, value: n, onChange: function(e) { upd('vizLsN', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Material refractive index', min: 1, max: 4, step: 0.01, value: n, onChange: function(e) { upd('vizLsN', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         )
                       );
                     })()
@@ -13857,7 +13875,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Wavelength: ' + lam + ' nm'),
-                          h('input', { type: 'range', min: 100, max: 2000, value: lam, onChange: function(e) { upd('vizPeLam', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Photon energy wavelength', min: 100, max: 2000, value: lam, onChange: function(e) { upd('vizPeLam', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
                           'E = hf = hc/λ. UV (4eV) damages skin. Visible (2-3eV). IR (1-2eV) is heat. Reference: bandgap of silicon is 1.12eV.'
@@ -13880,7 +13898,7 @@
                       var sa = d.vizSaAmt != null ? d.vizSaAmt : 30;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Spherical aberration diagram showing marginal and central ray focus.", viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('path', { d: 'M 100 50 Q 130 100 100 150', fill: 'rgba(125,211,252,0.4)', stroke: '#7dd3fc', strokeWidth: 1 }),
                             [60, 75, 90, 110, 125, 140].map(function(yy, i) {
                               var marginal = Math.abs(yy - 100) > 25;
@@ -13898,7 +13916,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Aberration amount: ' + sa + '%'),
-                          h('input', { type: 'range', min: 0, max: 100, value: sa, onChange: function(e) { upd('vizSaAmt', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Spherical aberration amount', min: 0, max: 100, value: sa, onChange: function(e) { upd('vizSaAmt', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         )
                       );
                     })()
@@ -13917,7 +13935,7 @@
           (function() {
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Chromatic aberration diagram showing color-dependent focal points.", viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('path', { d: 'M 130 50 Q 160 100 130 150', fill: 'rgba(125,211,252,0.4)', stroke: '#7dd3fc', strokeWidth: 1 }),
                             ['#7e22ce', '#2563eb', '#22c55e', '#fde047', '#f97316', '#dc2626'].map(function(c, ci) {
                               var foc = 240 + ci * 12;
@@ -14012,7 +14030,7 @@
                       var on = d.vizPsOn != null ? d.vizPsOn : false;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: on ? 'linear-gradient(180deg, #fef9c3 0%, #06b6d4 60%, #1e3a8a 100%)' : 'linear-gradient(180deg, #ffffff 0%, #fde047 60%, #fbbf24 100%)' } },
+                          h('svg', { role: 'img', 'aria-label': "Polarized sunglasses diagram comparing glare with the filter on and off.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: on ? 'linear-gradient(180deg, #fef9c3 0%, #06b6d4 60%, #1e3a8a 100%)' : 'linear-gradient(180deg, #ffffff 0%, #fde047 60%, #fbbf24 100%)' } },
                             h('rect', { x: 0, y: 130, width: 500, height: 30, fill: on ? '#1e40af' : '#7dd3fc' }),
                             !on && h('rect', { x: 100, y: 130, width: 300, height: 5, fill: '#fde047', opacity: 0.8 }),
                             !on && [120, 200, 280, 360].map(function(x) { return h('rect', { key: x, x: x, y: 132, width: 8, height: 2, fill: '#fff' }); }),
@@ -14043,7 +14061,7 @@
                       var mag = d.vizMsMag != null ? d.vizMsMag : 400;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Microscope field visualization at the selected magnification.", viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             h('circle', { cx: 250, cy: 100, r: 80, fill: 'rgba(125,211,252,0.20)', stroke: '#7dd3fc', strokeWidth: 2 }),
                             mag < 100 && h('text', { x: 250, y: 105, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 11 }, 'Just a fuzzy blob'),
                             mag >= 100 && mag < 400 && [220, 250, 280].map(function(x, i) {
@@ -14065,7 +14083,7 @@
                         ),
                         h('div', { style: { marginTop: 8, fontSize: 11 } },
                           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, 'Magnification: ' + mag + '×'),
-                          h('input', { type: 'range', min: 40, max: 1500, step: 20, value: mag, onChange: function(e) { upd('vizMsMag', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                          h('input', { type: 'range', 'aria-label': 'Microscope magnification', min: 40, max: 1500, step: 20, value: mag, onChange: function(e) { upd('vizMsMag', parseFloat(e.target.value)); }, style: { width: '100%' } })
                         )
                       );
                     })()
@@ -14144,7 +14162,7 @@
                       var coh = d.vizCiCoh != null ? d.vizCiCoh : true;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                          h('svg', { role: 'img', 'aria-label': "Comparison of coherent and incoherent light waves.", viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                             [0, 1, 2, 3, 4, 5].map(function(wi) {
                               var off = coh ? 0 : (wi * 47) % 50;
                               var y = 50 + wi * 22;

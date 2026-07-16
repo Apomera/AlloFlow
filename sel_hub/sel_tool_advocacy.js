@@ -16173,8 +16173,19 @@ window.SelHub = window.SelHub || {
       }, extra || {})
     }), label);
   }
+  function advFieldConfig(extra, fallbackLabel) {
+    var fieldProps = {};
+    var styleProps = {};
+    Object.keys(extra || {}).forEach(function(key) {
+      if (key === 'id' || key === 'name' || key === 'required' || key === 'autoComplete' || key === 'inputMode' || key.indexOf('aria-') === 0) fieldProps[key] = extra[key];
+      else styleProps[key] = extra[key];
+    });
+    if (!fieldProps.id && !fieldProps['aria-label'] && fallbackLabel) fieldProps['aria-label'] = fallbackLabel;
+    return { props: fieldProps, style: styleProps };
+  }
   function advInput(value, onChange, placeholder, extra) {
-    return hh('input', Object.assign({
+    var config = advFieldConfig(extra, placeholder);
+    return hh('input', Object.assign({ 'aria-label': config.props['aria-label'] || undefined,
       type: 'text', value: value || '', placeholder: placeholder || '',
       onChange: function(e) { onChange(e.target.value); },
       style: Object.assign({
@@ -16182,12 +16193,13 @@ window.SelHub = window.SelHub || {
         fontSize: 12, color: '#e2e8f0',
         background: 'rgba(2,6,23,0.7)',
         border: '1px solid rgba(100,116,139,0.40)',
-        borderRadius: 6, outline: 'none', boxSizing: 'border-box'
-      }, extra || {})
-    }));
+        borderRadius: 6, boxSizing: 'border-box'
+      }, config.style)
+    }, config.props));
   }
   function advTextarea(value, onChange, placeholder, rows, extra) {
-    return hh('textarea', Object.assign({
+    var config = advFieldConfig(extra, placeholder);
+    return hh('textarea', Object.assign({ 'aria-label': config.props['aria-label'] || undefined,
       value: value || '', placeholder: placeholder || '', rows: rows || 3,
       onChange: function(e) { onChange(e.target.value); },
       style: Object.assign({
@@ -16195,10 +16207,10 @@ window.SelHub = window.SelHub || {
         fontSize: 12, color: '#e2e8f0',
         background: 'rgba(2,6,23,0.7)',
         border: '1px solid rgba(100,116,139,0.40)',
-        borderRadius: 6, outline: 'none', boxSizing: 'border-box',
+        borderRadius: 6, boxSizing: 'border-box',
         fontFamily: 'inherit', resize: 'vertical'
-      }, extra || {})
-    }));
+      }, config.style)
+    }, config.props));
   }
   function advSectionHeader(icon, title, subtitle, accent) {
     accent = accent || '#6366f1';
@@ -16574,7 +16586,7 @@ window.SelHub = window.SelHub || {
             advInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Their name'),
             (function() {
               var first = ROLES[0];
-              return hh('select', { value: form.role || '',
+              return hh('select', { 'aria-label': 'Champion role', value: form.role || '',
                 onChange: function(e) { setForm(Object.assign({}, form, { role: e.target.value })); },
                 style: { padding: '10px 8px', fontSize: 11, color: '#10b981', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(16,185,129,0.40)', borderRadius: 6 }
               },
@@ -16830,7 +16842,7 @@ window.SelHub = window.SelHub || {
           hh('div', { style: { marginBottom: 8 } },
             hh('span', { style: { fontSize: 11, color: '#f472b6', marginRight: 6 } }, 'How did it feel?'),
             hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.felt + '/10'),
-            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.felt,
+            hh('input', { 'aria-label': 'How did it feel?', 'aria-valuetext': form.felt + ' out of 10', type: 'range', min: 1, max: 10, step: 1, value: form.felt,
               onChange: function(e) { setForm(Object.assign({}, form, { felt: parseInt(e.target.value, 10) })); },
               style: { width: '100%', accentColor: '#ec4899', marginTop: 4 }
             })
@@ -17004,6 +17016,101 @@ window.SelHub = window.SelHub || {
 
       var activeTab     = d.activeTab || 'mykit';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
+      var advConfirmAction = d.advConfirmAction || null;
+
+      function focusAdvocacyControl(id) {
+        setTimeout(function() {
+          var target = document.getElementById(id);
+          if (target && target.focus) target.focus();
+        }, 50);
+      }
+      function openAdvocacyConfirm(action) {
+        upd('advConfirmAction', action);
+        focusAdvocacyControl('adv-confirm-cancel');
+      }
+      function closeAdvocacyConfirm() {
+        var triggerId = advConfirmAction && advConfirmAction.triggerId;
+        upd('advConfirmAction', null);
+        if (triggerId) focusAdvocacyControl(triggerId);
+      }
+      function commitAdvocacyAction() {
+        if (!advConfirmAction) return;
+        var patch = { advConfirmAction: null };
+        var focusId;
+        var message;
+        if (advConfirmAction.type === 'reset-strengths') {
+          patch.strengthsRatings = {};
+          patch.strengthsStep = 0;
+          focusId = 'adv-strengths-heading';
+          message = 'All strengths ratings reset.';
+        } else if (advConfirmAction.type === 'delete-journal') {
+          patch.journalEntries = (d.journalEntries || []).filter(function(entry) { return entry.id !== advConfirmAction.entryId; });
+          focusId = 'adv-journal-heading';
+          message = 'Journal entry deleted.';
+        } else if (advConfirmAction.type === 'new-bingo-card') {
+          var shuffled = BINGO_CHALLENGES.slice().sort(function() { return Math.random() - 0.5; });
+          patch.bingoCard = { cells: shuffled.slice(0, 25), generatedOn: new Date().toISOString().slice(0, 10) };
+          focusId = 'adv-bingo-heading';
+          message = 'New bingo card generated. Past completions were kept.';
+        } else {
+          closeAdvocacyConfirm();
+          return;
+        }
+        upd(patch);
+        if (announceToSR) announceToSR(message);
+        focusAdvocacyControl(focusId);
+      }
+      function handleAdvocacyConfirmKeyDown(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeAdvocacyConfirm();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var buttons = event.currentTarget.querySelectorAll('button:not([disabled])');
+        if (!buttons.length) return;
+        var first = buttons[0];
+        var last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+      function renderAdvocacyConfirm() {
+        if (!advConfirmAction) return null;
+        var copy = {
+          'reset-strengths': ['Reset all strengths ratings?', 'This permanently clears every rating in your Self-Advocacy Strengths Profile and returns it to the first page. This cannot be undone.', 'Reset ratings'],
+          'delete-journal': ['Delete journal entry?', 'This permanently deletes this advocacy journal entry. This cannot be undone.', 'Delete entry'],
+          'new-bingo-card': ['Generate a new bingo card?', 'This replaces the current bingo card layout. Your past completion records are kept.', 'Generate new card']
+        }[advConfirmAction.type];
+        if (!copy) return null;
+        return h('div', {
+          id: 'adv-destructive-confirm',
+          className: 'fixed inset-0 z-[10003] flex items-center justify-center bg-slate-950/80 p-4',
+          role: 'alertdialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'adv-confirm-title',
+          'aria-describedby': 'adv-confirm-description',
+          onKeyDown: handleAdvocacyConfirmKeyDown
+        }, h('div', { style: { width: '100%', maxWidth: 500, padding: 22, borderRadius: 14, border: '2px solid #f87171', background: _advBg('#0f172a'), color: _advFg('#f1f5f9'), boxShadow: '0 20px 60px rgba(0,0,0,0.45)' } },
+          h('h2', { id: 'adv-confirm-title', style: { margin: '0 0 8px', fontSize: 19, fontWeight: 900, color: _advFg('#fca5a5') } }, copy[0]),
+          h('p', { id: 'adv-confirm-description', style: { margin: '0 0 18px', fontSize: 13, lineHeight: 1.6, color: _advFg('#cbd5e1') } }, copy[1]),
+          h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
+            h('button', {
+              id: 'adv-confirm-cancel',
+              onClick: closeAdvocacyConfirm,
+              style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #94a3b8', background: _advBg('#334155'), color: _advFg('#f1f5f9'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            }, 'Cancel'),
+            h('button', {
+              onClick: commitAdvocacyAction,
+              style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #f87171', background: '#b91c1c', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+            }, copy[2])
+          )
+        ));
+      }
 
       // Scenarios state
       var scIdx          = d.scIdx || 0;
@@ -17061,6 +17168,68 @@ window.SelHub = window.SelHub || {
       var earnedBadges   = d.earnedBadges || {};
       var showBadgePopup = d.showBadgePopup || null;
       var showBadgesPanel = d.showBadgesPanel || false;
+      var advocacyBadgeDialogRef = React.useRef(null);
+      var advocacyBadgeDialogOpenerRef = React.useRef(null);
+      var advocacyBadgeDialogOpen = !!showBadgePopup || !!showBadgesPanel;
+
+      function closeAdvocacyBadgeDialogs() {
+        upd('showBadgePopup', null);
+        upd('showBadgesPanel', false);
+      }
+
+      React.useEffect(function() {
+        if (!advocacyBadgeDialogOpen) return undefined;
+        var opener = document.activeElement;
+        if (opener && typeof opener.focus === 'function') advocacyBadgeDialogOpenerRef.current = opener;
+        function getAdvocacyDialogFocusable(dialog) {
+          if (!dialog) return [];
+          return Array.prototype.filter.call(
+            dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+            function(el) { return !el.hidden && el.getAttribute('aria-hidden') !== 'true'; }
+          );
+        }
+        function handleAdvocacyBadgeDialogKeyDown(event) {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopPropagation();
+            closeAdvocacyBadgeDialogs();
+            return;
+          }
+          if (event.key !== 'Tab') return;
+          var dialog = advocacyBadgeDialogRef.current;
+          var focusable = getAdvocacyDialogFocusable(dialog);
+          if (!focusable.length) {
+            event.preventDefault();
+            if (dialog) dialog.focus();
+            return;
+          }
+          var first = focusable[0];
+          var last = focusable[focusable.length - 1];
+          if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+        document.addEventListener('keydown', handleAdvocacyBadgeDialogKeyDown, true);
+        var focusTimer = setTimeout(function() {
+          var dialog = advocacyBadgeDialogRef.current;
+          var focusable = getAdvocacyDialogFocusable(dialog);
+          if (focusable.length) focusable[0].focus();
+          else if (dialog) dialog.focus();
+        }, 0);
+        return function() {
+          clearTimeout(focusTimer);
+          document.removeEventListener('keydown', handleAdvocacyBadgeDialogKeyDown, true);
+          var previous = advocacyBadgeDialogOpenerRef.current;
+          advocacyBadgeDialogOpenerRef.current = null;
+          if (previous && previous.isConnected !== false && typeof previous.focus === 'function') {
+            setTimeout(function() { previous.focus(); }, 0);
+          }
+        };
+      }, [advocacyBadgeDialogOpen]);
 
       // ── Helpers ──
       function tryAwardBadge(badgeId) {
@@ -17075,7 +17244,6 @@ window.SelHub = window.SelHub || {
           addToast(badge.icon + ' Badge earned: ' + badge.name + '!', 'success');
           if (announceToSR) announceToSR('Badge earned: ' + badge.name);
           awardXP(25);
-          setTimeout(function() { upd('showBadgePopup', null); }, 3000);
         }
       }
 
@@ -17183,24 +17351,26 @@ window.SelHub = window.SelHub || {
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
         if (popBadge) {
-          badgePopup = h('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function() { upd('showBadgePopup', null); } },
-            h('div', { style: { background: _advBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
-              h('div', { style: { fontSize: 56, marginBottom: 10 } }, popBadge.icon),
-              h('div', { style: { fontSize: 18, fontWeight: 700, color: _advFg('#f1f5f9'), marginBottom: 6 } }, popBadge.name),
-              h('div', { style: { fontSize: 12, color: _advFg('#94a3b8') } }, popBadge.desc)
+          badgePopup = h('div', { ref: advocacyBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'advocacy-badge-earned-title', 'aria-describedby': 'advocacy-badge-earned-desc', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function(e) { if (e.target === e.currentTarget) closeAdvocacyBadgeDialogs(); } },
+            h('div', { style: { position: 'relative', background: _advBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
+              h('button', { 'aria-label': 'Close badge announcement', onClick: closeAdvocacyBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _advBg('#334155'), color: _advFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+              h('div', { style: { fontSize: 56, marginBottom: 10 }, 'aria-hidden': 'true' }, popBadge.icon),
+              h('h3', { id: 'advocacy-badge-earned-title', style: { fontSize: 18, fontWeight: 700, color: _advFg('#f1f5f9'), margin: '0 0 6px' } }, 'Badge earned: ' + popBadge.name),
+              h('div', { id: 'advocacy-badge-earned-desc', style: { fontSize: 12, color: _advFg('#94a3b8') } }, popBadge.desc)
             )
           );
         }
       }
       if (showBadgesPanel) {
-        badgePopup = h('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function() { upd('showBadgesPanel', false); } },
-          h('div', { onClick: function(e) { e.stopPropagation(); }, style: { background: _advBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
-            h('h3', { style: { textAlign: 'center', color: _advFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+        badgePopup = h('div', { ref: advocacyBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'advocacy-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function(e) { if (e.target === e.currentTarget) closeAdvocacyBadgeDialogs(); } },
+          h('div', { style: { position: 'relative', background: _advBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
+            h('button', { 'aria-label': 'Close badges panel', onClick: closeAdvocacyBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _advBg('#334155'), color: _advFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+            h('h3', { id: 'advocacy-badges-panel-title', style: { textAlign: 'center', color: _advFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               BADGES.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _advBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
-                  h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
+                  h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? _advFg('#f1f5f9') : _advFg('#94a3b8'), marginTop: 4 } }, b.name),
                   h('div', { style: { fontSize: 10, color: _advFg('#94a3b8'), marginTop: 2 } }, b.desc)
                 );
@@ -17309,7 +17479,7 @@ window.SelHub = window.SelHub || {
         }
         function nextPage() { upd('strengthsStep', pageIdx + 1); }
         function prevPage() { upd('strengthsStep', Math.max(0, pageIdx - 1)); }
-        function resetAssessment() { if (confirm('Reset all ratings?')) { upd('strengthsRatings', {}); upd('strengthsStep', 0); } }
+        function resetAssessment() { openAdvocacyConfirm({ type: 'reset-strengths', triggerId: 'adv-reset-strengths' }); }
         // Compute strand averages
         var strandAvgs = {};
         SELF_ADVOCACY_STRANDS.forEach(function(s) {
@@ -17327,7 +17497,7 @@ window.SelHub = window.SelHub || {
         var pageRated = pageItems.filter(function(it, i) { return ratings[pageIdx * STEPS_PER_PAGE + i] != null; }).length;
 
         strengthsContent = h('div', { style: { padding: 20, maxWidth: 800, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '🧭 Self-Advocacy Strengths Profile'),
+          h('h3', { id: 'adv-strengths-heading', tabIndex: -1, style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '🧭 Self-Advocacy Strengths Profile'),
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, '60 items across 6 strands. Rate each 0 (not me at all) to 3 (sounds exactly like me). Honest is better than aspirational.'),
           allDone && h('div', null,
             // Radar
@@ -17384,7 +17554,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
-              h('button', { onClick: resetAssessment, style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid #a5b4fc', background: 'rgba(165,180,252,0.15)', color: _advFg('#a5b4fc'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '↺ Reset assessment')
+              h('button', { id: 'adv-reset-strengths', onClick: resetAssessment, style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid #a5b4fc', background: 'rgba(165,180,252,0.15)', color: _advFg('#a5b4fc'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '↺ Reset assessment')
             )
           ),
 
@@ -17466,7 +17636,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '💬 Phrase Library'),
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, ADVOCACY_PHRASES.length + ' phrases by context. Tap ⭐ to favorite. Copy any phrase to clipboard.'),
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
-            h('input', { type: 'text', value: d.phraseQuery || '',
+            h('input', { 'aria-label': 'Search advocacy phrases', type: 'text', value: d.phraseQuery || '',
               onChange: function(e) { upd('phraseQuery', e.target.value); },
               placeholder: '🔍 Search phrases...',
               style: { flex: '1 1 200px', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13 }
@@ -17532,7 +17702,7 @@ window.SelHub = window.SelHub || {
         accomLibContent = h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '🛠 Accommodation Library'),
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, ACCOMMODATIONS_LIBRARY.length + ' accommodations across 12 categories. Each includes: who it helps, why it works, when to ask, and sample request language.'),
-          h('input', { type: 'text', value: d.accomLibQuery || '',
+          h('input', { 'aria-label': 'Search accommodations', type: 'text', value: d.accomLibQuery || '',
             onChange: function(e) { upd('accomLibQuery', e.target.value); },
             placeholder: '🔍 Search accommodations...',
             style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13, marginBottom: 10, boxSizing: 'border-box' }
@@ -17626,47 +17796,47 @@ window.SelHub = window.SelHub || {
         }
         vocabContent = h('div', { style: { padding: 20, maxWidth: 700, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '📚 Advocacy Vocabulary'),
-          h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, ADVOCACY_VOCABULARY.length + ' terms. Click the card to flip. Mark terms as learned. Words you can name are words you can use.'),
+          h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, ADVOCACY_VOCABULARY.length + ' terms. Activate the card to flip it. Keyboard users can press Enter or Space. Mark terms as learned. Words you can name are words you can use.'),
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap', justifyContent: 'center' } },
             vocabCats.map(function(c) {
               var active = vocabCat === c.id;
-              return h('button', { key: c.id, onClick: function() { upd('vocabCat', c.id); upd('vocabIdx', 0); upd('vocabFlipped', false); },
+              return h('button', { key: c.id, 'aria-pressed': active ? 'true' : 'false', onClick: function() { upd('vocabCat', c.id); upd('vocabIdx', 0); upd('vocabFlipped', false); },
                 style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? _advFg('#fbbf24') : _advBg('#334155')),
                   background: active ? 'rgba(251,191,36,0.18)' : '#0f172a', color: active ? _advFg('#fcd34d') : _advFg('#94a3b8'),
                   cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, c.label);
             })
           ),
-          h('div', { style: { textAlign: 'center', fontSize: 11, color: _advFg('#94a3b8'), marginBottom: 10 } },
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { textAlign: 'center', fontSize: 11, color: _advFg('#94a3b8'), marginBottom: 10 } },
             (vocabIdx + 1) + ' / ' + filtered.length + ' · ' + learned.length + ' learned'),
           // Flashcard
-          h('div', { onClick: function() { upd('vocabFlipped', !vocabFlipped); },
-            'aria-label': 'Flashcard — click to flip', 'aria-pressed': vocabFlipped,
-            style: { padding: 24, background: vocabFlipped ? 'linear-gradient(135deg, #1e293b, #312e81)' : 'linear-gradient(135deg, #312e81, #1e293b)',
+          h('button', { type: 'button', onClick: function() { upd('vocabFlipped', !vocabFlipped); },
+            'aria-label': (vocabFlipped ? 'Show term for ' : 'Show definition for ') + current.word,
+            'aria-expanded': vocabFlipped ? 'true' : 'false', 'aria-controls': 'advocacy-vocab-card-content',
+            style: { width: '100%', padding: 24, background: vocabFlipped ? 'linear-gradient(135deg, #1e293b, #312e81)' : 'linear-gradient(135deg, #312e81, #1e293b)',
               borderRadius: 16, marginBottom: 14, cursor: 'pointer', minHeight: 240, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-              border: '2px solid ' + (vocabFlipped ? '#a5b4fc' : _advFg('#fbbf24')), transition: 'all 0.3s' } },
+              border: '2px solid ' + (vocabFlipped ? '#a5b4fc' : _advFg('#fbbf24')), transition: 'all 0.3s', textAlign: 'inherit', fontFamily: 'inherit' } },
             !vocabFlipped
-              ? h('div', { style: { textAlign: 'center' } },
-                  h('div', { style: { fontSize: 11, color: _advFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 } }, 'TERM'),
-                  h('div', { style: { fontSize: 24, color: _advFg('#fff'), fontWeight: 900, marginBottom: 16 } }, current.word),
-                  h('div', { style: { fontSize: 11, color: _advFg('#94a3b8'), fontStyle: 'italic' } }, 'Click to flip ↻')
+              ? h('span', { id: 'advocacy-vocab-card-content', style: { display: 'block', textAlign: 'center' } },
+                  h('span', { style: { display: 'block', fontSize: 11, color: _advFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 } }, 'TERM'),
+                  h('span', { style: { display: 'block', fontSize: 24, color: _advFg('#fff'), fontWeight: 900, marginBottom: 16 } }, current.word),
+                  h('span', { style: { display: 'block', fontSize: 11, color: _advFg('#94a3b8'), fontStyle: 'italic' } }, 'Activate to show definition ↻')
                 )
-              : h('div', null,
-                  h('div', { style: { fontSize: 11, color: _advFg('#a5b4fc'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'DEFINITION'),
-                  h('p', { style: { fontSize: 14, color: _advFg('#fff'), lineHeight: 1.6, margin: '0 0 12px' } }, current.def),
-                  current.example && h('div', null,
-                    h('div', { style: { fontSize: 10, color: _advFg('#86efac'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Example'),
-                    h('p', { style: { fontSize: 13, color: _advFg('#bbf7d0'), fontStyle: 'italic', margin: '0 0 12px' } }, current.example)
+              : h('span', { id: 'advocacy-vocab-card-content', style: { display: 'block' } },
+                  h('span', { style: { display: 'block', fontSize: 11, color: _advFg('#a5b4fc'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'DEFINITION'),
+                  h('span', { style: { display: 'block', fontSize: 14, color: _advFg('#fff'), lineHeight: 1.6, margin: '0 0 12px' } }, current.def),
+                  current.example && h('span', { style: { display: 'block' } },
+                    h('span', { style: { display: 'block', fontSize: 10, color: _advFg('#86efac'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Example'),
+                    h('span', { style: { display: 'block', fontSize: 13, color: _advFg('#bbf7d0'), fontStyle: 'italic', margin: '0 0 12px' } }, current.example)
                   ),
-                  h('div', null,
-                    h('div', { style: { fontSize: 10, color: _advFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Why it matters'),
-                    h('p', { style: { fontSize: 12, color: _advFg('#fde68a'), margin: 0, lineHeight: 1.6 } }, current.why)
+                  h('span', { style: { display: 'block' } },
+                    h('span', { style: { display: 'block', fontSize: 10, color: _advFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Why it matters'),
+                    h('span', { style: { display: 'block', fontSize: 12, color: _advFg('#fde68a'), margin: 0, lineHeight: 1.6 } }, current.why)
                   )
                 )
-          ),
-          h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+          ),          h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
             h('button', { onClick: function() { upd('vocabIdx', (vocabIdx - 1 + filtered.length) % filtered.length); upd('vocabFlipped', false); },
               style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '← Previous'),
-            h('button', { onClick: markLearned,
+            h('button', { 'aria-pressed': learned.indexOf(current.word) >= 0 ? 'true' : 'false', onClick: markLearned,
               style: { padding: '10px 16px', borderRadius: 8, border: 'none', background: learned.indexOf(current.word) >= 0 ? _advFg('#22c55e') : _advFg('#fbbf24'), color: _advFg('#0f172a'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               learned.indexOf(current.word) >= 0 ? '✓ Learned' : 'Mark learned'),
             h('button', { onClick: function() { upd('vocabIdx', (vocabIdx + 1) % filtered.length); upd('vocabFlipped', false); },
@@ -17692,7 +17862,7 @@ window.SelHub = window.SelHub || {
         function updateDraft(field, value) {
           var nd = Object.assign({}, jDraft); nd[field] = value; upd('journalDraft', nd);
         }
-        function removeEntry(id) { if (confirm('Delete this entry?')) upd('journalEntries', entries.filter(function(e) { return e.id !== id; })); }
+        function removeEntry(id) { openAdvocacyConfirm({ type: 'delete-journal', entryId: id, triggerId: 'adv-delete-journal-' + id }); }
         var entryTypes = [
           { id: 'win', label: '⭐ Win', color: _advFg('#22c55e'), prompt: 'What did you advocate for that worked? Be specific.' },
           { id: 'tough', label: '🌊 Tough one', color: _advFg('#f59e0b'), prompt: 'A situation that didn\'t go well. What happened? What would you do differently?' },
@@ -17702,7 +17872,7 @@ window.SelHub = window.SelHub || {
         ];
         var currentType = entryTypes.find(function(t) { return t.id === jDraft.type; }) || entryTypes[0];
         journalContent = h('div', { style: { padding: 20, maxWidth: 800, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '📓 Advocacy Journal'),
+          h('h3', { id: 'adv-journal-heading', tabIndex: -1, style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '📓 Advocacy Journal'),
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, 'Date-stamped reflections on your advocacy journey. ' + entries.length + ' entries.'),
           // Entry composer
           h('div', { style: { padding: 16, background: _advBg('#0f172a'), borderRadius: 12, borderLeft: '4px solid ' + currentType.color, marginBottom: 14 } },
@@ -17758,7 +17928,7 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: 11, color: t.color, fontWeight: 800 } }, t.label),
                   h('span', { style: { fontSize: 11, color: _advFg('#94a3b8'), fontFamily: 'ui-monospace, Menlo, monospace' } }, when.toLocaleString()),
                   e.situation && h('span', { style: { fontSize: 11, color: _advFg('#cbd5e1'), fontStyle: 'italic' } }, '· ' + e.situation),
-                  h('button', { onClick: function() { removeEntry(e.id); }, 'aria-label': 'Delete entry', style: { marginLeft: 'auto', background: 'transparent', border: 'none', color: _advFg('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
+                  h('button', { id: 'adv-delete-journal-' + e.id, onClick: function() { removeEntry(e.id); }, 'aria-label': 'Delete entry', style: { marginLeft: 'auto', background: 'transparent', border: 'none', color: _advFg('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
                 ),
                 h('p', { style: { fontSize: 13, color: _advFg('#e2e8f0'), lineHeight: 1.65, margin: '0 0 6px' } }, e.text),
                 e.felt && h('div', { style: { fontSize: 11, color: _advFg('#94a3b8'), fontStyle: 'italic' } }, '↪ Felt: ' + e.felt)
@@ -17899,15 +18069,12 @@ window.SelHub = window.SelHub || {
           upd('bingoCompleted', nc);
         }
         function newCard() {
-          if (confirm('Generate a new bingo card? Past completions are kept.')) {
-            var shuffled = BINGO_CHALLENGES.slice().sort(function() { return Math.random() - 0.5; });
-            upd('bingoCard', { cells: shuffled.slice(0, 25), generatedOn: new Date().toISOString().slice(0, 10) });
-          }
+          openAdvocacyConfirm({ type: 'new-bingo-card', triggerId: 'adv-new-bingo-card' });
         }
         var completedCount = bingoCard.cells.filter(function(c) { return bingoCompleted[c.id]; }).length;
 
         bingoContent = h('div', { style: { padding: 20, maxWidth: 700, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '🎲 Daily Advocacy Bingo'),
+          h('h3', { id: 'adv-bingo-heading', tabIndex: -1, style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '🎲 Daily Advocacy Bingo'),
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, 'Practice cards. Tap a cell when you do it. ' + completedCount + ' / 25 completed on this card.'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginBottom: 14 } },
             bingoCard.cells.map(function(cell) {
@@ -17925,7 +18092,7 @@ window.SelHub = window.SelHub || {
             })
           ),
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
-            h('button', { onClick: newCard,
+            h('button', { id: 'adv-new-bingo-card', onClick: newCard,
               style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid #fbbf24', background: 'rgba(251,191,36,0.10)', color: _advFg('#fcd34d'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '🎲 New card')
           ),
           completedCount >= 5 && h('div', { style: { marginTop: 14, padding: 12, background: 'rgba(34,197,94,0.10)', borderRadius: 10, borderLeft: '3px solid #22c55e', textAlign: 'center', fontSize: 13, color: _advFg('#86efac'), fontWeight: 700 } },
@@ -18003,7 +18170,7 @@ window.SelHub = window.SelHub || {
               ),
               isOpen && h('div', { style: { padding: '0 16px 16px' } },
                 h('p', { style: { fontSize: 12, color: _advFg('#cbd5e1'), fontStyle: 'italic', margin: '0 0 10px', lineHeight: 1.55 } }, '📝 ' + lt.purpose),
-                h('textarea', { value: body,
+                h('textarea', { 'aria-label': 'Editable ' + lt.title + ' letter template', value: body,
                   onChange: function(e) { updateCustom(lt.id, e.target.value); },
                   rows: Math.min(body.split('\n').length + 1, 16),
                   style: { width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1.65, resize: 'vertical', boxSizing: 'border-box' }
@@ -18958,11 +19125,10 @@ window.SelHub = window.SelHub || {
           !done && currentQ && h('div', { style: { padding: 16, background: _advBg('#0f172a'), borderRadius: 12, borderLeft: '4px solid #a5b4fc', marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 6px', fontSize: 15, fontWeight: 800, color: _advFg('#a5b4fc') } }, currentQ.q),
             h('p', { style: { fontSize: 12, color: _advFg('#94a3b8'), fontStyle: 'italic', margin: '0 0 12px' } }, currentQ.help),
-            currentQ.input === 'text' && h('input', {
+            currentQ.input === 'text' && h('input', { 'aria-label': currentQ.q,
               type: 'text', value: path[currentQ.field] || '',
               onChange: function(e) { updateDis(currentQ.field, e.target.value); },
               placeholder: currentQ.placeholder,
-              'aria-label': currentQ.q,
               style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13, boxSizing: 'border-box' }
             }),
             currentQ.input === 'radio' && (currentQ.options || []).map(function(opt) {
@@ -20010,6 +20176,7 @@ window.SelHub = window.SelHub || {
         tabBar,
         heroBand,
         badgePopup,
+        renderAdvocacyConfirm(),
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );

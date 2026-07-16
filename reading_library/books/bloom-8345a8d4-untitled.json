@@ -1,0 +1,135 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-8345a8d4-untitled",
+  "title": "ເບິ່ງແມ! ນັ້ນແມ່ນ!",
+  "description": "A simple reader to learn new words",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Lao"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Lao",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/pM2l9Es3n0"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There!+-+cover+(Large).jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+friend+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນເພື່ອນ."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+Bible+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນປື້ມພຣະຄໍາພີ."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+newspaper+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນໜັງສືພິມ."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+plane+copy+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນເຄື່ອງບິນ."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+bird+copy+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນນົກ."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+canoe+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນເຮືອ."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+fall+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນລົດຕໍາກັນ."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+mosquito+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນໂຕຍຸງ."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+rope+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນເຊືອກ."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+baby+copy+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນເດັກນ້ອຍ."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+speed+boat+copy+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນເຮືອຈັກ."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+family+copy+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນຄອບຄົວ."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+book+copy+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນປື້ມ."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+clinic+copy+(Large)2.jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນຄຣີນິກ."
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+shop+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນຮ້ານຂາຍເຄື່ອງ."
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+jet+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນເຄື່ອງບິນລໍາໃຫຍ່."
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+shell+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນໂຕຫອຍ."
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+snake+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນໂຕງູ"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+coconut+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນໝາກພ້າວ."
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/pM2l9Es3n0%2f1753686127435%2f%e0%bb%80%e0%ba%9a%e0%ba%b4%e0%bb%88%e0%ba%87%e0%bb%81%e0%ba%a1!+%e0%ba%99%e0%ba%b1%e0%bb%89%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99!%2fLook!+There+is+a+mango+(Large).jpg",
+      "text": "ເບິ່ງແມ!\nນີ້ແມ່ນໝາກມ່ວງ."
+    }
+  ],
+  "stats": {
+    "pages": 20,
+    "words": 40
+  }
+}

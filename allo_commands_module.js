@@ -325,6 +325,153 @@ function runFindReadingCommand(c, params, t) {
   else if (c && typeof c.openReadingLibrary === "function") c.openReadingLibrary();
   return readingRecommendationText(matches, params || {}, t);
 }
+const PLAN_CONTRACTS = Object.freeze({
+  create_lesson: {
+    demoSafe: false,
+    interaction: "guided",
+    terminal: true,
+    params: ["topic", "grade"],
+    reason: "Starts an interactive lesson wizard; it does not finish lesson content automatically."
+  },
+  open_video_studio: {
+    demoSafe: false,
+    reason: "Opens the recorder/editor itself; compose and run automatic demos from Video Studio instead."
+  },
+  generate_quiz: { requires: ["source"], produces: ["quiz"] },
+  generate_glossary: { requires: ["source"], produces: ["glossary"] },
+  generate_simplified: { requires: ["source"], produces: ["source"], params: ["grade"] },
+  generate_sentence_frames: { requires: ["source"], produces: ["sentence-frames"] },
+  generate_analysis: { requires: ["source"], produces: ["analysis"] },
+  generate_outline: { requires: ["source"], produces: ["outline"] },
+  launch_flashcards: { requires: ["glossary"] },
+  export_pack: {
+    demoSafe: false,
+    requires: ["source"],
+    interaction: "external",
+    reason: "Starts a file download outside the recorded workflow."
+  },
+  translate_document: {
+    demoSafe: false,
+    requires: ["pipeline"],
+    interaction: "interactive",
+    params: ["language"],
+    reason: "Prepares translation controls but still requires a teacher click and AI quota."
+  },
+  pipeline_score: { requires: ["pipeline"] },
+  pipeline_issues: { requires: ["pipeline"] },
+  pipeline_downloads: { requires: ["pipeline"] },
+  pipeline_verification: { requires: ["pipeline"] },
+  pipeline_tour: { requires: ["pipeline"] },
+  pipeline_fix_again: {
+    demoSafe: false,
+    requires: ["pipeline"],
+    reason: "Starts a real remediation pass."
+  },
+  pipeline_stop: {
+    demoSafe: false,
+    requires: ["pipeline"],
+    reason: "Stops an active remediation pass."
+  }
+});
+const DEMO_BLOCKED_COMMANDS = /* @__PURE__ */ new Set([
+  "open_notebook",
+  "open_class_session",
+  "open_class_analytics",
+  "open_ai_settings",
+  "open_roster",
+  "open_project_settings",
+  "open_behavior_lens",
+  "open_report_writer",
+  "open_dynamic_assessment",
+  "open_submission_inbox",
+  "submit_work",
+  "toggle_dictation",
+  "voice_start",
+  "voice_stop",
+  "toggle_cloud_sync",
+  "report_problem",
+  "clear_my_answers"
+]);
+function getCommandContract(commandOrId) {
+  const cmd = commandOrId && typeof commandOrId === "object" ? commandOrId : null;
+  const id = String(cmd ? cmd.id : commandOrId || "");
+  const declared = PLAN_CONTRACTS[id] || {};
+  return {
+    demoSafe: declared.demoSafe !== false && !DEMO_BLOCKED_COMMANDS.has(id) && !(cmd && cmd.destructive),
+    interaction: declared.interaction || "automatic",
+    terminal: !!declared.terminal,
+    requires: Array.isArray(declared.requires) ? declared.requires.slice() : [],
+    produces: Array.isArray(declared.produces) ? declared.produces.slice() : [],
+    params: Array.isArray(declared.params) ? declared.params.slice() : [],
+    reason: declared.reason || ""
+  };
+}
+function _planCapabilities(ctx) {
+  const out = /* @__PURE__ */ new Set();
+  if (ctx && ctx.hasSourceOrAnalysis) out.add("source");
+  if (ctx && ctx.contentIsGlossary) out.add("glossary");
+  if (ctx && ctx.contentLoaded) out.add("content");
+  if (ctx && ctx.pipelineOpen) out.add("pipeline");
+  return out;
+}
+function validatePlan(ctx, rawSteps, opts = {}) {
+  const list = (Array.isArray(rawSteps) ? rawSteps : []).slice(0, 8);
+  const all = buildAlloCommands(ctx || {}, { includeGated: true });
+  const liveIds = new Set(buildAlloCommands(ctx || {}).map((c) => c.id));
+  const initial = _planCapabilities(ctx || {});
+  const capabilities = new Set(initial);
+  const items = [];
+  for (let i = 0; i < list.length; i++) {
+    const step = list[i] || {};
+    const cmd = all.find((c) => c.id === step.commandId);
+    const contract = getCommandContract(cmd || step.commandId);
+    let status = "ready";
+    let detail = "";
+    if (!cmd) {
+      status = "block";
+      detail = "This command is not available for the current role.";
+    } else if (opts.demoSafeOnly && !contract.demoSafe) {
+      status = "block";
+      detail = contract.reason || "This command is not allowed in automatic demo recording.";
+    } else {
+      const missing = contract.requires.filter((name) => !capabilities.has(name));
+      if (missing.length) {
+        status = "block";
+        detail = "Needs " + missing.join(", ") + " before this step.";
+      } else if (contract.terminal && i < list.length - 1) {
+        status = "block";
+        detail = contract.reason || "This interactive command must be the final step.";
+      } else if (contract.interaction !== "automatic" && !opts.allowInteractive) {
+        status = "block";
+        detail = contract.reason || "This step requires teacher interaction.";
+      } else if (!liveIds.has(cmd.id)) {
+        const unlockedByPlan = contract.requires.length > 0 && contract.requires.every((name) => capabilities.has(name)) && contract.requires.some((name) => !initial.has(name));
+        if (!unlockedByPlan) {
+          status = "block";
+          detail = "This command is not available in the current app state.";
+        }
+      }
+    }
+    if (status !== "block") contract.produces.forEach((name) => capabilities.add(name));
+    items.push({
+      index: i,
+      commandId: step.commandId || "",
+      label: cmd && cmd.label || step.commandId || "Unknown command",
+      params: _cleanPlanParams(step.params),
+      why: typeof step.why === "string" ? step.why.slice(0, 120) : "",
+      status,
+      detail,
+      contract
+    });
+  }
+  const blockingCount = items.filter((item) => item.status === "block").length;
+  return {
+    ok: list.length > 0 && blockingCount === 0,
+    items,
+    blockingCount,
+    warningCount: items.filter((item) => item.status === "warn").length
+  };
+}
 function buildAlloCommands(ctx, opts = {}) {
   const t = _mkT(ctx && ctx.t);
   const cmds = [
@@ -409,6 +556,18 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openSymbolStudio();
       return t("cmd.open_symbol_studio_done", "Symbol Studio opened.");
     } },
+    { id: "open_video_studio", opensPanel: "videoStudio", icon: "\u{1F3A5}", roles: "teacher", label: t("cmd.open_video_studio", "Open Video Studio"), aliases: ["video studio", "screen recorder", "record a demo", "demo recorder", "tutorial recorder"], hint: t("cmd.open_video_studio_hint", "Record, caption, and edit walkthroughs"), run: (c) => {
+      c.openVideoStudio();
+      return t("cmd.open_video_studio_done", "Video Studio opened.");
+    } },
+    { id: "open_cinematic_studio", opensPanel: "cinematicStudio", icon: "\u{1F3AC}", roles: "teacher", label: t("cmd.open_cinematic_studio", "Open Cinematic Studio"), aliases: ["cinematic studio", "cinematic crawl", "title crawl", "intro video", "video opener"], hint: t("cmd.open_cinematic_studio_hint", "Create cinematic intros and explainers"), run: (c) => {
+      c.openCinematicStudio();
+      return t("cmd.open_cinematic_studio_done", "Cinematic Studio opened.");
+    } },
+    { id: "open_allo_studio", opensPanel: "alloStudio", icon: "\u{1F5BC}\uFE0F", roles: "teacher", label: t("cmd.open_allo_studio", "Open AlloStudio"), aliases: ["allostudio", "allo studio", "design studio", "poster editor", "worksheet editor", "flyer studio"], hint: t("cmd.open_allo_studio_hint", "Design accessible posters, flyers, and worksheets"), run: (c) => {
+      c.openAlloStudio();
+      return t("cmd.open_allo_studio_done", "AlloStudio opened.");
+    } },
     { id: "open_accessibility_lab", opensPanel: "accessibilityLab", icon: "\u267F", roles: "teacher", label: t("cmd.open_accessibility_lab", "Open the Accessibility Lab"), aliases: ["accessibility lab", "a11y lab", "accessibility checker", "wcag", "contrast checker"], hint: t("cmd.open_accessibility_lab_hint", "Check & improve accessibility"), run: (c) => {
       c.openAccessibilityLab();
       return t("cmd.open_accessibility_lab_done", "Accessibility Lab opened.");
@@ -428,6 +587,22 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_reading_library", opensPanel: "readingLibrary", icon: "\u{1F4DA}", roles: "all", label: t("cmd.open_reading_library", "Open the Reading Library"), aliases: ["reading library", "library", "books", "picture books", "storyweaver", "read a book"], hint: t("cmd.open_reading_library_hint", "Browse open picture books in 10 languages"), run: (c) => {
       c.openReadingLibrary();
       return t("cmd.open_reading_library_done", "Reading Library opened.");
+    } },
+    { id: "open_open_groove", opensPanel: "openGroove", icon: "\u{1F39B}\uFE0F", roles: "all", label: t("cmd.open_open_groove", "Open Open Groove Studio"), aliases: ["open groove", "groove studio", "music studio", "beat maker", "beats", "synth", "composer"], hint: t("cmd.open_open_groove_hint", "Make beats, synth patterns, and notation-aware music"), run: (c) => {
+      c.openOpenGroove();
+      return t("cmd.open_open_groove_done", "Open Groove Studio opened.");
+    } },
+    { id: "open_timeline_studio", opensPanel: "timelineStudio", icon: "\u{1F570}\uFE0F", roles: "all", label: t("cmd.open_timeline_studio", "Open Timeline Studio"), aliases: ["timeline studio", "timeline maker", "sequence builder", "chronology", "history timeline"], hint: t("cmd.open_timeline_studio_hint", "Build and verify accessible timelines"), run: (c) => {
+      c.openTimelineStudio();
+      return t("cmd.open_timeline_studio_done", "Timeline Studio opened.");
+    } },
+    { id: "open_lingua_practice", opensPanel: "linguaPractice", icon: "A/\u6587", roles: "all", label: t("cmd.open_lingua_practice", "Open Lingua Practice"), aliases: ["lingua practice", "language practice", "practice language", "vocabulary practice", "multilingual practice"], hint: t("cmd.open_lingua_practice_hint", "Practice vocabulary and language from the current source"), run: (c) => {
+      c.openLinguaPractice();
+      return t("cmd.open_lingua_practice_done", "Lingua Practice opened.");
+    } },
+    { id: "open_test_prep_hub", opensPanel: "testPrepHub", icon: "\u{1F9ED}", roles: "all", label: t("cmd.open_test_prep_hub", "Open Test Prep Hub"), aliases: ["test prep", "test prep hub", "exam prep", "practice questions", "study exams"], hint: t("cmd.open_test_prep_hub_hint", "Open free practice sets and study tools"), run: (c) => {
+      c.openTestPrepHub();
+      return t("cmd.open_test_prep_hub_done", "Test Prep Hub opened.");
     } },
     { id: "find_reading", opensPanel: "readingLibrary", icon: "\u{1F4DA}", roles: "all", label: t("cmd.find_reading", "Find the right book"), aliases: ["find a book", "find books about", "recommend a book", "suggest a book", "book about", "books about", "reading about", "learn about", "science article about", "primary source about"], hint: t("cmd.find_reading_hint", "Ask by topic, grade, language, source, or type"), run: (c, params) => runFindReadingCommand(c, params || {}, t) },
     // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
@@ -819,11 +994,14 @@ function _cleanPlanParams(p) {
   }
   return out;
 }
-async function planUtterance(ctx, rawText) {
+async function planUtterance(ctx, rawText, opts = {}) {
   const text = String(rawText || "").trim();
   if (!text || text.length > 400) return null;
   if (!ctx || typeof ctx.callGemini !== "function") return null;
-  const commands = buildAlloCommands(ctx, { includeGated: true }).filter((c) => !c.chatSkip && !c.destructive);
+  const commands = buildAlloCommands(ctx, { includeGated: true }).filter((c) => {
+    if (c.chatSkip || c.destructive) return false;
+    return !opts.demoSafeOnly || getCommandContract(c).demoSafe;
+  });
   if (!commands.length) return null;
   const _gatedNow = (c) => {
     if (!c.when) return false;
@@ -833,9 +1011,19 @@ async function planUtterance(ctx, rawText) {
       return true;
     }
   };
-  const menu = commands.map((c) => c.id + ": " + c.label + (_gatedNow(c) ? " [not available yet \u2014 an earlier step must first create what it needs]" : "")).join("\n");
+  const menu = commands.map((c) => {
+    const contract = getCommandContract(c);
+    const notes = [];
+    if (_gatedNow(c)) notes.push("not available in the live state");
+    if (contract.requires.length) notes.push("requires " + contract.requires.join(", "));
+    if (contract.produces.length) notes.push("produces " + contract.produces.join(", "));
+    if (contract.params.length) notes.push("params " + contract.params.join(", "));
+    if (contract.interaction !== "automatic") notes.push(contract.interaction);
+    if (contract.terminal) notes.push("must be final");
+    return c.id + ": " + c.label + (notes.length ? " [" + notes.join("; ") + "]" : "");
+  }).join("\n");
   try {
-    const out = await ctx.callGemini("A teacher asked an education app's assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n" + menu + '\n\nTask: "' + text.replace(/"/g, "'") + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. 2 to 6 steps. A command marked [not available yet \u2014 an earlier step must first create what it needs] may only appear AFTER a step that produces its prerequisite (e.g. create_lesson before generate_quiz). params carries values the user stated (e.g. {"topic": "volcanoes", "grade": "5"} or {"language": "Spanish"}); use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).');
+    const out = await ctx.callGemini("A teacher asked an education app's assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n" + menu + '\n\nTask: "' + text.replace(/"/g, "'") + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. Use 2 to 6 steps. A command with requirements may appear only when the current app state already satisfies them or an EARLIER command explicitly says it produces them. Navigation and guided wizards do not produce content unless their contract says so. A command marked [must be final] cannot have later steps. params carries only values the user stated, using the named params in the menu; use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).');
     const m = String(out || "").match(/\{[\s\S]*\}/);
     const j = JSON.parse(m ? m[0] : String(out));
     if (!j || !Array.isArray(j.steps) || typeof j.confidence !== "number" || j.confidence < 0.7) return null;
@@ -843,11 +1031,16 @@ async function planUtterance(ctx, rawText) {
     const steps = j.steps.filter((s) => s && typeof s.commandId === "string").slice(0, 6);
     if (steps.length < 2) return null;
     if (steps.some((s) => !known.has(s.commandId))) return null;
-    return steps.map((s) => ({
+    const cleanSteps = steps.map((s) => ({
       commandId: s.commandId,
       params: _cleanPlanParams(s.params),
       why: typeof s.why === "string" ? s.why.slice(0, 120) : ""
     }));
+    const report = validatePlan(ctx, cleanSteps, {
+      demoSafeOnly: !!opts.demoSafeOnly,
+      allowInteractive: !!opts.allowInteractive
+    });
+    return report.ok ? cleanSteps : null;
   } catch (_) {
     return null;
   }
@@ -857,13 +1050,13 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
   const t = _mkT((getCtx() || {}).t);
   const list = (Array.isArray(steps) ? steps : []).slice(0, 6);
   const results = [];
-  if (!list.length) return { ok: false, failedStep: 0, results, reason: t("plan.empty", "There were no steps to run.") };
+  if (!list.length) return { ok: false, failedStep: 0, results, remainingSteps: [], reason: t("plan.empty", "There were no steps to run.") };
   for (let i = 0; i < list.length; i++) {
-    if (opts.shouldStop && opts.shouldStop()) return { ok: false, stopped: true, failedStep: i, results, reason: t("plan.stopped", "Stopped before step ") + (i + 1) + "." };
+    if (opts.shouldStop && opts.shouldStop()) return { ok: false, stopped: true, failedStep: i, results, remainingSteps: list.slice(i), reason: t("plan.stopped", "Stopped before step ") + (i + 1) + "." };
     const s = list[i] || {};
     const ctx = getCtx();
     const cmd = buildAlloCommands(ctx).find((c) => c.id === s.commandId);
-    if (!cmd) return { ok: false, failedStep: i, results, reason: t("plan.unavailable", "Step ") + (i + 1) + " (" + (s.commandId || "?") + ")" + t("plan.unavailable2", " isn\u2019t available right now \u2014 it may need something an earlier step didn\u2019t produce.") };
+    if (!cmd) return { ok: false, failedStep: i, results, remainingSteps: list.slice(i), reason: t("plan.unavailable", "Step ") + (i + 1) + " (" + (s.commandId || "?") + ")" + t("plan.unavailable2", " isn\u2019t available right now \u2014 it may need something an earlier step didn\u2019t produce.") };
     if (cmd.destructive) {
       let allowed = false;
       if (typeof opts.confirmDestructive === "function") {
@@ -873,7 +1066,7 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
           allowed = false;
         }
       }
-      if (!allowed) return { ok: false, failedStep: i, results, reason: (cmd.label || s.commandId) + t("plan.needs_confirm", " needs its own confirmation \u2014 run it from the Ctrl+K menu.") };
+      if (!allowed) return { ok: false, failedStep: i, results, remainingSteps: list.slice(i), reason: (cmd.label || s.commandId) + t("plan.needs_confirm", " needs its own confirmation \u2014 run it from the Ctrl+K menu.") };
     }
     if (typeof opts.onStep === "function") {
       try {
@@ -888,8 +1081,8 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
       r = { handled: false, narration: e && e.message || "unknown" };
     }
     results.push(r);
-    if (!r || !r.handled || r.ok === false) return { ok: false, failedStep: i, results, reason: r && r.narration || t("plan.step_failed", "That step didn\u2019t work.") };
-    if (r.timedOut) return { ok: false, timedOut: true, failedStep: i, results, reason: (cmd.label || s.commandId) + t("plan.step_timeout", " is taking a while and is still working in the background. I\u2019ve held the remaining steps \u2014 once it finishes, ask me again for the rest.") };
+    if (!r || !r.handled || r.ok === false) return { ok: false, failedStep: i, results, remainingSteps: list.slice(i), reason: r && r.narration || t("plan.step_failed", "That step didn\u2019t work.") };
+    if (r.timedOut) return { ok: false, timedOut: true, failedStep: i, results, remainingSteps: list.slice(i + 1), reason: (cmd.label || s.commandId) + t("plan.step_timeout", " is taking a while and is still working in the background. I\u2019ve held the remaining steps \u2014 once it finishes, ask me again for the rest.") };
     if (typeof opts.onStep === "function") {
       try {
         opts.onStep(i, "done", cmd, r.narration);
@@ -897,7 +1090,7 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
       }
     }
   }
-  return { ok: true, results };
+  return { ok: true, results, remainingSteps: [] };
 }
 function createVoiceLoop(getCtx) {
   let rec = null, active = false, errStreak = 0;
@@ -1036,6 +1229,7 @@ const CMD_GROUP = {
   font_bigger: "accessibility",
   font_smaller: "accessibility",
   font_reset: "accessibility",
+  set_font_size: "accessibility",
   open_text_settings: "accessibility",
   open_voice_settings: "accessibility",
   read_this_page: "accessibility",
@@ -1056,6 +1250,7 @@ const CMD_GROUP = {
   pipeline_issues: "pipeline",
   pipeline_downloads: "pipeline",
   pipeline_verification: "pipeline",
+  translate_document: "pipeline",
   app_tour: "help",
   pipeline_tour: "help",
   report_problem: "help",
@@ -1067,11 +1262,18 @@ const CMD_GROUP = {
   open_behavior_lens: "tools",
   open_report_writer: "tools",
   open_symbol_studio: "tools",
+  open_video_studio: "tools",
+  open_cinematic_studio: "tools",
+  open_allo_studio: "tools",
   open_accessibility_lab: "tools",
   open_lumen: "tools",
   open_community_catalog: "tools",
   open_dynamic_assessment: "tools",
   open_reading_library: "tools",
+  open_open_groove: "tools",
+  open_timeline_studio: "tools",
+  open_lingua_practice: "tools",
+  open_test_prep_hub: "tools",
   find_reading: "tools",
   stop_reading: "accessibility",
   toggle_mute: "accessibility",
@@ -1111,6 +1313,13 @@ const CMD_CONTEXT = {
   open_project_settings: ["educatorHub"],
   open_notebook: ["learningHub"],
   toggle_socratic: ["learningHub"],
+  open_video_studio: ["educatorHub", "videoStudio"],
+  open_cinematic_studio: ["educatorHub", "videoStudio", "cinematicStudio"],
+  open_allo_studio: ["educatorHub", "alloStudio"],
+  open_open_groove: ["learningHub", "openGroove"],
+  open_timeline_studio: ["learningHub", "timelineStudio"],
+  open_lingua_practice: ["learningHub", "content", "linguaPractice"],
+  open_test_prep_hub: ["learningHub", "testPrepHub"],
   generate_quiz: ["content"],
   generate_glossary: ["content"],
   generate_simplified: ["content", "reading"],
@@ -1145,9 +1354,11 @@ const CMD_CONTEXT = {
 };
 const GROUP_ORDER = ["navigate", "create", "tools", "accessibility", "display", "pipeline", "help", "voice"];
 const GROUP_LABEL_FALLBACK = { navigate: "Navigate", create: "Create from this content", tools: "Open a tool", accessibility: "Reading & access", display: "Display & motion", pipeline: "Pipeline results", help: "Help", voice: "Voice" };
-const CTX_FLAG = { pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", symbolStudio: "symbolStudioOpen", stemLab: "stemLabOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
-const CTX_PRIORITY = ["symbolStudio", "stemLab", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
-const CONTEXT_LABEL_FALLBACK = { pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", stemLab: "Here \u2014 STEM Lab", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
+const COMMAND_RECENTS_KEY = "allo_command_recents_v1";
+const COMMAND_RECENTS_LIMIT = 5;
+const CTX_FLAG = { pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", symbolStudio: "symbolStudioOpen", videoStudio: "videoStudioOpen", alloStudio: "alloStudioOpen", cinematicStudio: "cinematicStudioOpen", stemLab: "stemLabOpen", openGroove: "openGrooveOpen", timelineStudio: "timelineStudioOpen", linguaPractice: "linguaPracticeOpen", testPrepHub: "testPrepHubOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
+const CTX_PRIORITY = ["videoStudio", "alloStudio", "cinematicStudio", "symbolStudio", "stemLab", "openGroove", "timelineStudio", "linguaPractice", "testPrepHub", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
+const CONTEXT_LABEL_FALLBACK = { pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 AlloStudio", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
 function _activeContexts(ctx) {
   if (!ctx) return [];
   return CTX_PRIORITY.filter((k) => {
@@ -1160,6 +1371,15 @@ const AlloCommandPalette = ({ ctx }) => {
   const [query, setQuery] = useState("");
   const [sel, setSel] = useState(0);
   const [confirming, setConfirming] = useState(null);
+  const [recentCommandIds, setRecentCommandIds] = useState(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(COMMAND_RECENTS_KEY) || "[]");
+      return Array.isArray(saved) ? saved.filter((id) => typeof id === "string").slice(0, COMMAND_RECENTS_LIMIT) : [];
+    } catch (_) {
+      return [];
+    }
+  });
+  const dialogRef = useRef(null);
   const inputRef = useRef(null);
   const prevFocusRef = useRef(null);
   const t = _mkT(ctx && ctx.t);
@@ -1191,6 +1411,14 @@ const AlloCommandPalette = ({ ctx }) => {
         promoted.forEach((c) => out.push({ kind: "cmd", c }));
       }
     }
+    const recent = recentCommandIds.map((id) => commands.find((c) => c.id === id)).filter((c) => c && !promotedIds.has(c.id)).slice(0, COMMAND_RECENTS_LIMIT);
+    if (recent.length) {
+      out.push({ kind: "header", label: t("palette.group.recent", "Recent") });
+      recent.forEach((c) => {
+        promotedIds.add(c.id);
+        out.push({ kind: "cmd", c });
+      });
+    }
     const PER_GROUP = 6, MAX_ROWS = 40;
     let cmdCount = promotedIds.size;
     for (const g of GROUP_ORDER) {
@@ -1203,7 +1431,7 @@ const AlloCommandPalette = ({ ctx }) => {
       cmdCount += take.length;
     }
     return out;
-  }, [commands, query, ctx, t]);
+  }, [commands, query, ctx, t, recentCommandIds]);
   const selectable = useMemo(() => {
     const a = [];
     rows.forEach((r, i) => {
@@ -1211,6 +1439,15 @@ const AlloCommandPalette = ({ ctx }) => {
     });
     return a;
   }, [rows]);
+  const selectedCommand = rows[sel] && rows[sel].kind === "cmd" ? rows[sel].c : null;
+  const selectedCommandId = selectedCommand ? selectedCommand.id : "";
+  const paletteStatus = (() => {
+    if (confirming && selectedCommand && confirming === selectedCommand.id) return "Confirmation required for " + selectedCommand.label + ". Press Enter again to confirm.";
+    const count = selectable.length;
+    if (!count) return query.trim() ? "No matching commands." : "No commands are available here.";
+    const resultText = query.trim() ? count + " matching command" + (count === 1 ? "." : "s.") : count + " command" + (count === 1 ? " shown." : "s shown.");
+    return resultText + (selectedCommand ? " " + selectedCommand.label + " selected." : "");
+  })();
   useEffect(() => {
     const onKey = (e) => {
       const k = (e.key || "").toLowerCase();
@@ -1235,13 +1472,62 @@ const AlloCommandPalette = ({ ctx }) => {
   useEffect(() => {
     if (open && inputRef.current) inputRef.current.focus();
     if (!open && prevFocusRef.current) {
+      const previous = prevFocusRef.current;
+      prevFocusRef.current = null;
       try {
-        prevFocusRef.current.focus();
+        if (previous.isConnected && typeof previous.focus === "function") previous.focus();
       } catch (_) {
       }
-      prevFocusRef.current = null;
     }
   }, [open]);
+  useEffect(() => {
+    if (!open) return void 0;
+    const dialog = dialogRef.current;
+    const input = inputRef.current;
+    if (!dialog || !input) return void 0;
+    const getFocusable = () => Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+    )).filter((node) => !node.hidden && node.getAttribute("aria-hidden") !== "true");
+    const onDocumentKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (confirming) {
+          setConfirming(null);
+          input.focus();
+        } else {
+          setOpen(false);
+        }
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !dialog.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    const onDocumentFocusIn = (event) => {
+      if (!dialog.contains(event.target)) input.focus();
+    };
+    document.addEventListener("keydown", onDocumentKeyDown, true);
+    document.addEventListener("focusin", onDocumentFocusIn);
+    return () => {
+      document.removeEventListener("keydown", onDocumentKeyDown, true);
+      document.removeEventListener("focusin", onDocumentFocusIn);
+    };
+  }, [open, confirming]);
   useEffect(() => {
     if (open) setSel(selectable.length ? selectable[0] : 0);
   }, [open, query]);
@@ -1253,6 +1539,14 @@ const AlloCommandPalette = ({ ctx }) => {
     }
     if (selectable.indexOf(sel) === -1) setSel(selectable[0]);
   }, [open, selectable, sel]);
+  useEffect(() => {
+    if (!open || !selectedCommandId) return;
+    try {
+      const option = document.getElementById("allo-cmd-" + selectedCommandId);
+      if (option && option.scrollIntoView) option.scrollIntoView({ block: "nearest" });
+    } catch (_) {
+    }
+  }, [open, sel, selectedCommandId]);
   const announce = useCallback((msg) => {
     try {
       if (window.alloAnnounce) window.alloAnnounce(msg);
@@ -1263,6 +1557,17 @@ const AlloCommandPalette = ({ ctx }) => {
     } catch (_) {
     }
   }, [ctx]);
+  const rememberCommand = useCallback((id) => {
+    if (!id) return;
+    setRecentCommandIds((previous) => {
+      const next = [id].concat((Array.isArray(previous) ? previous : []).filter((savedId) => savedId !== id)).slice(0, COMMAND_RECENTS_LIMIT);
+      try {
+        sessionStorage.setItem(COMMAND_RECENTS_KEY, JSON.stringify(next));
+      } catch (_) {
+      }
+      return next;
+    });
+  }, []);
   const runCmd = useCallback((cmd) => {
     if (!cmd) return;
     if (cmd.destructive && (!confirming || confirming !== cmd.id)) {
@@ -1287,21 +1592,24 @@ const AlloCommandPalette = ({ ctx }) => {
       setOpen(false);
       return;
     }
+    rememberCommand(cmd.id);
     setOpen(false);
     if (msg) announce(msg);
-  }, [ctx, confirming, announce, t]);
+  }, [ctx, confirming, announce, rememberCommand, t]);
   if (!open) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[12000] flex items-start justify-center pt-[14vh] px-4", role: "presentation", onClick: () => setOpen(false) }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
     "div",
     {
+      ref: dialogRef,
       role: "dialog",
       "aria-modal": "true",
-      "aria-label": t("palette.aria", "AlloFlow command palette"),
+      "aria-labelledby": "allo-palette-title",
+      tabIndex: -1,
       "data-help-ignore": "true",
       className: "relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-indigo-200 overflow-hidden",
       onClick: (e) => e.stopPropagation()
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-4 py-3 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u26A1"), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-4 py-3 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("h2", { id: "allo-palette-title", className: "sr-only" }, t("palette.aria", "AlloFlow command palette")), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u26A1"), /* @__PURE__ */ React.createElement(
       "input",
       {
         ref: inputRef,
@@ -1324,37 +1632,49 @@ const AlloCommandPalette = ({ ctx }) => {
             e.preventDefault();
             const row = rows[sel];
             if (row && row.kind === "cmd") runCmd(row.c);
-          } else if (e.key === "Escape") {
-            e.preventDefault();
-            if (confirming) setConfirming(null);
-            else setOpen(false);
           }
         },
         placeholder: t("palette.placeholder", "Type a command \u2014 \u201Cbigger text\u201D, \u201Ceducator hub\u201D, \u201Cread this page\u201D\u2026"),
         "aria-label": t("palette.input_aria", "Search commands"),
         role: "combobox",
         "aria-expanded": "true",
+        "aria-autocomplete": "list",
         "aria-controls": "allo-palette-list",
-        "aria-activedescendant": rows[sel] && rows[sel].kind === "cmd" ? "allo-cmd-" + rows[sel].c.id : void 0,
+        "aria-describedby": "allo-palette-status",
+        "aria-activedescendant": selectedCommandId ? "allo-cmd-" + selectedCommandId : void 0,
         className: "flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500"
       }
-    ), /* @__PURE__ */ React.createElement("kbd", { className: "text-[10px] text-slate-500 border border-slate-300 rounded px-1.5 py-0.5" }, "Esc")),
-    /* @__PURE__ */ React.createElement("ul", { id: "allo-palette-list", role: "listbox", "aria-label": t("palette.list_aria", "Matching commands"), className: "max-h-[46vh] overflow-y-auto py-1" }, selectable.length === 0 && /* @__PURE__ */ React.createElement("li", { role: "presentation", className: "px-4 py-6 text-center text-xs text-slate-600" }, t("palette.no_match", "No matching command. The bot chat (and soon voice) understands free-form requests.")), rows.map((row, i) => row.kind === "header" ? /* @__PURE__ */ React.createElement("li", { key: "h-" + i, role: "presentation", className: "px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 select-none" }, row.label) : /* @__PURE__ */ React.createElement("li", { key: row.c.id, id: "allo-cmd-" + row.c.id, role: "option", "aria-selected": i === sel }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("kbd", { className: "text-[10px] text-slate-500 border border-slate-300 rounded px-1.5 py-0.5" }, "Esc"), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
+        onClick: () => setOpen(false),
+        "aria-label": t("palette.close", "Close command palette"),
+        className: "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-xl leading-none text-slate-600 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")
+    )),
+    /* @__PURE__ */ React.createElement("div", { id: "allo-palette-status", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, paletteStatus),
+    /* @__PURE__ */ React.createElement("ul", { id: "allo-palette-list", role: "listbox", "aria-label": t("palette.list_aria", "Matching commands"), className: "max-h-[46vh] overflow-y-auto py-1" }, selectable.length === 0 && /* @__PURE__ */ React.createElement("li", { role: "presentation", className: "px-4 py-6 text-center text-xs text-slate-600" }, t("palette.no_match", "No matching command. The bot chat (and soon voice) understands free-form requests.")), rows.map((row, i) => row.kind === "header" ? /* @__PURE__ */ React.createElement("li", { key: "h-" + i, role: "presentation", className: "px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 select-none" }, row.label) : /* @__PURE__ */ React.createElement(
+      "li",
+      {
+        key: row.c.id,
+        id: "allo-cmd-" + row.c.id,
+        role: "option",
+        "aria-selected": i === sel,
         onClick: () => runCmd(row.c),
         onMouseEnter: () => setSel(i),
-        className: `w-full text-left px-4 py-2.5 flex items-center gap-3 ${i === sel ? "bg-indigo-50" : ""}`
+        className: `min-h-11 w-full cursor-pointer px-4 py-2.5 text-left flex items-center gap-3 ${i === sel ? "bg-indigo-50" : ""}`
       },
       /* @__PURE__ */ React.createElement("span", { className: "text-lg shrink-0", "aria-hidden": "true" }, row.c.icon),
       /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: `block text-sm font-bold ${i === sel ? "text-indigo-900" : "text-slate-800"}` }, row.c.label), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 truncate" }, confirming === row.c.id ? t("palette.confirm", "\u26A0 Press Enter again to confirm") : row.c.hint)),
       i === sel && /* @__PURE__ */ React.createElement("kbd", { className: "text-[10px] text-indigo-600 border border-indigo-300 rounded px-1.5 py-0.5 shrink-0" }, "\u21B5")
-    )))),
+    ))),
     /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 border-t border-slate-200 text-[10px] text-slate-600 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("kbd", { className: "border border-slate-300 rounded px-1" }, "\u2191\u2193"), " ", t("palette.nav", "navigate")), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("kbd", { className: "border border-slate-300 rounded px-1" }, "\u21B5"), " ", t("palette.run", "run")), /* @__PURE__ */ React.createElement("span", { className: "ml-auto" }, t("palette.footer", "Every action is announced. Ctrl+K toggles.")))
   ));
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, planUtterance: planUtterance, runPlan: runPlan };
+  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
   console.log('[CDN] AlloCommands loaded');
 })();

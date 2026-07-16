@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-7b04b36d-untitled",
+  "title": "من پول استم",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/W5AjGhBtwk"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f7b04b36d-bbfb-4d83-98c5-c82c65e9ef3c%2f%d9%85%d9%86+%d9%be%d9%88%d9%84+%d8%a7%d8%b3%d8%aa%d9%85%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f7b04b36d-bbfb-4d83-98c5-c82c65e9ef3c%2f%d9%85%d9%86+%d9%be%d9%88%d9%84+%d8%a7%d8%b3%d8%aa%d9%85%2f22.jpg",
+      "text": "مریم برای خرید قلم از پدرش پول گرفت.\nاو با پول بازی می کرد.\nاحمد، برادرش صدای گریه را شنید.\nاحمد به مریم گفت: می شنوی؟ صدای گریه است.\nمریم با تعجب به اطرافش نگاه کرد."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "مریم گفت:\nاحمد! اینجا کسی گریه نمی کند!\nاحمد به دست مریم اشاره کرد.\nمریم دید که پول در دستش گریه می کند.\nمریم وارخطا شد، پول از دستش افتاد.\nپرسید: تو چطور گریه می کنی؟\nپول با ناراحتی گفت: تو مرا مجبور کردی که گریه کنم.\nتو مرا خوب نگهداری نه می کنی.\nمن نیازهای شما را برآورده می کنم.\nمن شما را دوست دارم."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f7b04b36d-bbfb-4d83-98c5-c82c65e9ef3c%2f%d9%85%d9%86+%d9%be%d9%88%d9%84+%d8%a7%d8%b3%d8%aa%d9%85%2f32.jpg",
+      "text": "من مشکلات شما را حل می کنم.\nمن به راحتی به دست نمی آیم.\nوالدین شما مرا با زحمت و تلاش بسیار به دست می آورند."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "مریم ترسش گم شد و با لبخند به پول گفت:\nراست میگویی.\nپدرم در یک کارگاه نجاری کار می کند.\nاو بسیار زحمت میکشد.\nپول را به مشکل به دست می آورد.\nشب ها خسته از سر کار بر می گردد."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f7b04b36d-bbfb-4d83-98c5-c82c65e9ef3c%2f%d9%85%d9%86+%d9%be%d9%88%d9%84+%d8%a7%d8%b3%d8%aa%d9%85%2f42.jpg",
+      "text": "او پول اش را در بانک نگهداری میکند."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "احمد گفت: من پول را در قُلَک (دخل) خود ذخیره می کنم.\nبه وقت ضرورت از آن استفاده می کنم.\nمریم گفت: من هم پس از این با پول بازی نه می کنم. پول را خوب نگهداری میکنم.\nپول با شنیدن حرف های آن ها خوشحال شد."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f7b04b36d-bbfb-4d83-98c5-c82c65e9ef3c%2f%d9%85%d9%86+%d9%be%d9%88%d9%84+%d8%a7%d8%b3%d8%aa%d9%85%2f61.jpg",
+      "text": "پول گفت:\nخوب شد فهمیدید که من چقدر اهمیت دارم.\nباید از من به خوبی نگهداری کنید.\nیک راه نگهداری خوب من بکس جیبی است."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "احمد گفت:\nاما این را نه فهمیدیم که تو چگونه چاپ میشوی؟\nپول گفت:\nمن توسط ماشین چاپ می شوم.\nچاپ کردن من آسان نیست.\nچاپ کردن من مصرف زیاد میخواهد.\nبه همین خاطر باید مرا خوب نگهداری کنید.\nاحمد و مریم بکس جیبی خریدند تا پول شان خراب نشود."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 299
+  }
+}

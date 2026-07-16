@@ -1,0 +1,92 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-bc95c260-untitled",
+  "title": "ព្រះច័ន្ទនិងមួក",
+  "description": "Story about gaining and losing a new hat.\nរឿងរ៉ាវអំពីការទទួលបាន និងបាត់បង់មួកថ្មី។",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Pratham Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Pratham Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/gd9OkfsZiZ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Page+021.jpg",
+      "text": "យើងទាំងអស់គ្នាបានទៅពិព័រណ៍សប្បាយ។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Page+031.jpg",
+      "text": "ឪពុក​បាន​ទិញ​វ៉ែនតា​សម្រាប់​បងប្រុស។\nម្តាយបានទិញមួកពណ៌ខៀវភ្លឺមកឱ្យខ្ញុំ។\nទារកទទួលបានស្ករគ្រាប់។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Page+041.jpg",
+      "text": "នៅតាមផ្លូវទៅផ្ទះ ខ្យល់បក់ខ្លាំង។ វាបានបំផ្ទុះមួករបស់ខ្ញុំ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Page+051.jpg",
+      "text": "មួករបស់ខ្ញុំបានជាប់នៅលើមែកឈើចាស់ដ៏ធំមួយ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Page+061.jpg",
+      "text": "ខ្ញុំយំយ៉ាងខ្លាំង។ ហើយខ្ញុំមិនបានញ៉ាំអាហារពេលល្ងាចរបស់ខ្ញុំទេ។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Page+071.jpg",
+      "text": "នៅ​យប់​នោះ ព្រះ​ចន្ទ​ក៏​រះ​ឡើង។ វា​មើល​មួក​ខ្ញុំ​នៅ​ដើម​ឈើ​ចាស់​ធំ។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Page+081.jpg",
+      "text": "ព្រះច័ន្ទបានព្យាយាមលើមួករបស់ខ្ញុំ។ វាញញឹមយ៉ាងរីករាយ។ ខ្ញុំក៏ត្រូវញញឹមដែរ។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Page+091.jpg",
+      "text": "ក្រោយ​ពី​រៀន​នៅ​ថ្ងៃ​បន្ទាប់ ម្ដាយ​របស់​ខ្ញុំ​បាន​ឲ្យ​មួក​ពណ៌​ក្រហម​ថ្មី​មួយ​ដល់​ខ្ញុំ។\nម្តាយបាននិយាយថា \"ព្រះច័ន្ទបានផ្ញើវា\" ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Page+101.jpg",
+      "text": "យប់នោះ ទាំងព្រះច័ន្ទទាំងខ្ញុំពាក់មួក ហើយញញឹម។ យើងសប្បាយចិត្ត។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Page+111.jpg",
+      "text": ""
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gd9OkfsZiZ%2f1752484841328%2f%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9f%87%e1%9e%85%e1%9f%90%e1%9e%93%e1%9f%92%e1%9e%91%e1%9e%93%e1%9e%b7%e1%9e%84%e1%9e%98%e1%9e%bd%e1%9e%80%2fThe+Moon+and+The+Cap_Page+121.jpg",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 25
+  }
+}

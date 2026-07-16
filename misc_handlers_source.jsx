@@ -3,10 +3,18 @@
 // extracted from AlloFlowANTI.txt 2026-04-25.
 
 const handleFileUpload = async (e, deps) => {
-  const { LargeFileHandler, callGeminiVision, convertXlsxToMarkdownTables, addToast, t, warnLog, setShowLargeFileModal, setPendingLargeFile, setError, setIsExtracting, setGenerationStep, setInputText, setPendingPdfBase64, setPendingPdfFile, setPdfAuditResult } = deps;
+  const { LargeFileHandler, callGeminiVision, convertXlsxToMarkdownTables, addToast, t, warnLog, setShowLargeFileModal, setPendingLargeFile, setError, setIsExtracting, setGenerationStep, setInputText, recordSourceProvenance, setPendingPdfBase64, setPendingPdfFile, setPdfAuditResult } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] handleFileUpload fired"); } catch(_) {}
     const file = e.target.files[0];
     if (!file) return;
+    const rememberImportedSource = (text) => {
+        if (typeof recordSourceProvenance === 'function') recordSourceProvenance({
+            title: file.name || 'Imported file',
+            locator: file.name || '',
+            type: file.type || 'file',
+            importMethod: 'file-upload'
+        }, text);
+    };
     if (LargeFileHandler.needsChunking(file)) {
         const fileType = LargeFileHandler.getFileType(file);
         if (fileType === 'audio' || fileType === 'video') {
@@ -122,6 +130,7 @@ const handleFileUpload = async (e, deps) => {
         const reader = new FileReader();
         reader.onload = (event) => {
             setInputText(event.target.result);
+            rememberImportedSource(event.target.result);
             setIsExtracting(false);
         };
         reader.onerror = () => {
@@ -199,6 +208,7 @@ const handleFileUpload = async (e, deps) => {
                         const fullText = chunks.join('\n\n---\n\n');
                         if (fullText.trim().length < 50) throw new Error('PDF extraction returned insufficient text');
                         setInputText(fullText);
+                        rememberImportedSource(fullText);
                         setIsExtracting(false);
                         addToast(`PDF extracted successfully (${chunks.length} sections)`, 'success');
                     } catch (pdfErr) {
@@ -244,6 +254,7 @@ const handleFileUpload = async (e, deps) => {
                 }
                 const text = await callGeminiVision(prompt, base64String, mimeType);
                 setInputText(text);
+                rememberImportedSource(text);
                 setIsExtracting(false);
             };
             reader.readAsDataURL(file);
@@ -259,7 +270,7 @@ const handleFileUpload = async (e, deps) => {
 };
 
 const handleLoadProject = (e, deps) => {
-  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers, setConceptMasteryLocal, bankImportedConceptMastery } = deps;
+  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers, setConceptMasteryLocal, bankImportedConceptMastery } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] handleLoadProject fired"); } catch(_) {}
     const file = e.target.files[0];
     if (!file) return;
@@ -354,8 +365,17 @@ const handleLoadProject = (e, deps) => {
                         if (defs.mode) setAdventureInputMode(defs.mode);
                         if (defs.language) setAdventureLanguageMode(defs.language);
                         if (defs.instructions) setAdventureCustomInstructions(defs.instructions);
-                        if (defs.chanceMode !== undefined) setAdventureChanceMode(defs.chanceMode);
-                        if (defs.freeResponse !== undefined) setAdventureFreeResponseEnabled(defs.freeResponse);
+                        if (defs.chanceMode !== undefined) setAdventureChanceMode(!!defs.chanceMode);
+                        if (defs.freeResponse !== undefined) setAdventureFreeResponseEnabled(!!defs.freeResponse);
+                        if (defs.consistentCharacters !== undefined) setAdventureConsistentCharacters(!!defs.consistentCharacters);
+                        if (defs.storyMode !== undefined) setIsAdventureStoryMode(!!defs.storyMode);
+                        if (defs.socialStoryMode !== undefined) setIsSocialStoryMode(!!defs.socialStoryMode);
+                        if (defs.socialStoryFocus !== undefined) setSocialStoryFocus(defs.socialStoryFocus || '');
+                        if (defs.artStyle) setAdventureArtStyle(defs.artStyle);
+                        if (defs.customArtStyle !== undefined) setAdventureCustomArtStyle(defs.customArtStyle || '');
+                        if (defs.lowQualityVisuals !== undefined) setUseLowQualityVisuals(!!defs.lowQualityVisuals);
+                        if (defs.enableFactionResources !== undefined) setEnableFactionResources(!!defs.enableFactionResources);
+                        if (defs.factionResourceMode) setFactionResourceMode(defs.factionResourceMode);
                     }
                 } else {
                     setStudentProjectSettings({

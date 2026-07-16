@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-cfe35ab2-untitled-ne",
+  "title": "चलाख कुकुर",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/qBrGSV6ZoC"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcfe35ab2-9579-418f-bbbe-9f57334cf358%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_adb008.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcfe35ab2-9579-418f-bbbe-9f57334cf358%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_Ca-1-221.png",
+      "text": "एक समयको कुरा हो। एउटा कुकुर जङ्गलको बाटो जाँदै थियो। त्यो जङ्गल एकदम घना थियो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcfe35ab2-9579-418f-bbbe-9f57334cf358%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_Tiger1.png",
+      "text": "जङ्गलको बीचमा के पुगेको थियो। अकस्मात कुकुरले आफ्नो अगाडि बाघ देख्यो। बाघ देख्दा कुकुरको सात्तो गयो।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcfe35ab2-9579-418f-bbbe-9f57334cf358%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fimage.png",
+      "text": "कुकुरले तुरून्तै विचार गर्‍यो। अब बाघले मलाई खान्छ। उसले नजिकै एउटा हड्डी देख्यो। उसले झट्ट एउटा उपाय सोच्यो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcfe35ab2-9579-418f-bbbe-9f57334cf358%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_adb012.png",
+      "text": "उसले त्यो हाड्डी टोक्न थाल्यो। हड्डी साह्रै कडा थियो। हड्डी टोक्दा त्यसमा आफ्नै रगत लटपटीयो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcfe35ab2-9579-418f-bbbe-9f57334cf358%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fimage1.png",
+      "text": "बाघले सुन्‍ने गरी कुकुरले भन्यो। आहा! बाघको मासु भन्दा हाड्डी नै मिठो। यस्तो भन्दै हाड टोकिनै रह्यो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcfe35ab2-9579-418f-bbbe-9f57334cf358%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_CMB0516.png",
+      "text": "बाँदरले बाघ नजिकै गएर भन्यो । महाराज! कुकुरले पुरानो हड्डी खाएको हो। यसले हजुरलाई झुक्यायो।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcfe35ab2-9579-418f-bbbe-9f57334cf358%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_Nig00057.png",
+      "text": "यो कुरा बाघले सुन्यो। कुकुरसँग बाघ खुब डरायो। नजिकैको रूखमा एउटा बाँदर बसेको थियो। ऊ कुकुरको सबै कुरा सुनिरहेको थियो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcfe35ab2-9579-418f-bbbe-9f57334cf358%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_ate0011.png",
+      "text": "बाँदरको कुरा सुनेर बाघ रिसायो। बाघ कुकुरलाई खान अगाडि बढ्यो। कुकुरले बाघलाई नदेखे जसरी भन्यो। \"अझै भोक मेटेको छैन।\""
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcfe35ab2-9579-418f-bbbe-9f57334cf358%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_DOG04.png",
+      "text": "एउटा अर्को बाघ अझै खाइदिन्छु। झन बाँदर मोरोलाई अघिनै लिन पठाएको। न बाँदर आयो न बाघनै।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fcfe35ab2-9579-418f-bbbe-9f57334cf358%2f%e0%a4%9a%e0%a4%b2%e0%a4%be%e0%a4%96+%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0%2fAOR_th00285b1.png",
+      "text": "कुकुरको कुरा सुनेर बाघ झन डरायो। बाघ त्यहाँबाट कुलेलाम ठोक्यो। कुकुर आफ्नो बुध्दीले बाँचेकोमा मख्ख पर्यो।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 167
+  }
+}

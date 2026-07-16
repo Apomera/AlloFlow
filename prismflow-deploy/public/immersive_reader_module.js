@@ -43,6 +43,48 @@ const safeT = (t, key, fb) => {
   const r = t(key);
   return r && r !== key ? r : fb;
 };
+const isInteractiveShortcutTarget = (target) => !!(target && target.closest && target.closest('button, input, select, textarea, a[href], [contenteditable="true"]'));
+const useOverlayDialogFocus = (isOpen) => {
+  const dialogRef = useRef(null);
+  const restoreFocusRef = useRef(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    restoreFocusRef.current = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'));
+    const focusTimer = setTimeout(() => {
+      const focusable = getFocusable();
+      (focusable[0] || dialog).focus();
+    }, 0);
+    const containFocus = (e) => {
+      if (e.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) {
+        e.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", containFocus, true);
+    return () => {
+      clearTimeout(focusTimer);
+      document.removeEventListener("keydown", containFocus, true);
+      const previous = restoreFocusRef.current;
+      if (previous && typeof previous.focus === "function" && document.contains(previous)) previous.focus();
+    };
+  }, [isOpen]);
+  return dialogRef;
+};
 var _lazyIcon = function(name) {
   return function(props) {
     var I = window.AlloIcons && window.AlloIcons[name];
@@ -63,6 +105,7 @@ var X = _lazyIcon("X");
 var Zap = _lazyIcon("Zap");
 const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
   const { t } = useContext(LanguageContext);
+  const dialogRef = useOverlayDialogFocus(isOpen);
   const [words, setWords] = useState([]);
   const [chunkIdx, setChunkIdx] = useState(0);
   const [chunkSize, setChunkSize] = useState(1);
@@ -160,6 +203,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
   useEffect(() => {
     const handler = (e) => {
       if (!isOpen) return;
+      if (e.key !== "Escape" && isInteractiveShortcutTarget(e.target)) return;
       if (e.code === "Space") {
         e.preventDefault();
         handlePlayToggle();
@@ -185,9 +229,10 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     const boldLen = Math.max(1, Math.ceil(w.length * 0.4));
     return /* @__PURE__ */ React.createElement("span", { key: i }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 900, color: c.strong } }, w.slice(0, boldLen)), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: c.light } }, w.slice(boldLen)), i < currentChunk.length - 1 ? " " : "");
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200", style: { backgroundColor: c.bg } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.strong } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base", style: { color: c.strong } }, safeT(t, "immersive.focus_mode", "Focus Mode")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.light } }, chunkIdx + 1, " / ", chunks.length, " \xB7 ", rsvp ? "single-word RSVP" : `${chunkSize}-word chunks \xB7 bold-assist`))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold", style: { color: c.strong } }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "WORDS"), /* @__PURE__ */ React.createElement("input", { "aria-label": t("immersive.words_per_chunk_aria") || "Words per chunk", type: "range", min: "1", max: "6", value: chunkSize, onChange: (e) => setChunkSize(parseInt(e.target.value)), className: "w-16 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-4 text-end" }, chunkSize)), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": safeT(t, "common.speed", "Words per minute"), type: "range", min: "100", max: "900", step: "25", value: wpm, onChange: (e) => setWpm(parseInt(e.target.value)), className: "w-28 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-16 text-end" }, wpm, " wpm")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "THEME"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Theme", value: theme, onChange: (e) => setTheme(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: c.light, background: c.bg, color: c.strong } }, /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600 Warm"), /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"), /* @__PURE__ */ React.createElement("option", { value: "sepia" }, "\u{1F4DC} Sepia"))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "focus-reader-dialog-title", tabIndex: -1, className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none", style: { backgroundColor: c.bg } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.strong } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("h2", { id: "focus-reader-dialog-title", className: "font-bold text-base", style: { color: c.strong } }, safeT(t, "immersive.focus_mode", "Focus Mode")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.light } }, chunkIdx + 1, " / ", chunks.length, " \xB7 ", rsvp ? "single-word RSVP" : `${chunkSize}-word chunks \xB7 bold-assist`))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold", style: { color: c.strong } }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "WORDS"), /* @__PURE__ */ React.createElement("input", { "aria-label": t("immersive.words_per_chunk_aria") || "Words per chunk", type: "range", min: "1", max: "6", value: chunkSize, onChange: (e) => setChunkSize(parseInt(e.target.value)), className: "w-16 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-4 text-end" }, chunkSize)), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": safeT(t, "common.speed", "Words per minute"), type: "range", min: "100", max: "900", step: "25", value: wpm, onChange: (e) => setWpm(parseInt(e.target.value)), className: "w-28 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-16 text-end" }, wpm, " wpm")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "THEME"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Theme", value: theme, onChange: (e) => setTheme(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: c.light, background: c.bg, color: c.strong } }, /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600 Warm"), /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"), /* @__PURE__ */ React.createElement("option", { value: "sepia" }, "\u{1F4DC} Sepia"))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setPunctPauses((v) => !v),
       "aria-pressed": punctPauses,
       title: punctPauses ? "Punctuation-aware pauses on (P to toggle) \u2014 commas slow slightly, sentence ends longer" : "Punctuation pauses off \u2014 constant cadence (P to toggle)",
@@ -198,6 +243,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
   ), rsvp && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "FOCUS"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, colorOptions.map((opt) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       key: opt.value,
       onClick: () => setFocusColor(opt.value),
       "aria-label": `Focus color ${opt.name}`,
@@ -251,6 +297,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
   const ToggleButton = React.memo(({ active, onClick, settingKey, title, children, activeColor = "bg-indigo-600 text-white", ...props }) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: settingKey ? () => toggleSetting(settingKey) : onClick,
       title,
       className: `px-2.5 py-1 text-xs font-bold rounded-full transition-all disabled:opacity-60 disabled:cursor-wait ${active ? activeColor : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
@@ -351,6 +398,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
   )), setInteractionMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5", role: "group", "aria-label": safeT(t, "immersive.tap_mode", "Tap action") }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2" }, safeT(t, "immersive.tap_mode", "Tap")), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setInteractionMode("read"),
       "aria-pressed": interactionMode !== "define" && interactionMode !== "phonics",
       title: safeT(t, "immersive.tap_speak", "Tap a word to hear it"),
@@ -362,6 +410,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setInteractionMode("define"),
       "aria-pressed": interactionMode === "define",
       title: safeT(t, "immersive.tap_define", "Tap a word to see its definition and picture"),
@@ -370,9 +419,10 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     /* @__PURE__ */ React.createElement(BookOpen, { size: 12 }),
     " ",
     safeT(t, "immersive.define", "Define")
-  ))), isChunkReaderActive && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1)), disabled: chunkReaderIdx <= 0, className: "p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all", title: safeT(t, "common.previous", "Previous") + " (\u2190 / Home)" }, /* @__PURE__ */ React.createElement(ChevronLeft, { size: 14 })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center" }, chunkReaderIdx + 1, " / ", totalSentences), /* @__PURE__ */ React.createElement("button", { onClick: () => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1)), disabled: chunkReaderIdx >= totalSentences - 1, className: "p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all", title: safeT(t, "common.next", "Next") + " (\u2192 / End)" }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 14 })), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("button", { onClick: () => setChunkReaderAutoPlay(!chunkReaderAutoPlay), className: `px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`, title: (chunkReaderAutoPlay ? safeT(t, "common.pause", "Pause") : safeT(t, "common.auto_play", "Auto")) + " (Space) \xB7 Esc exits \xB7 Enter skips typewriter reveal" }, chunkReaderAutoPlay ? /* @__PURE__ */ React.createElement(Pause, { size: 12, className: "inline" }) : /* @__PURE__ */ React.createElement(Play, { size: 12, className: "inline" })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "1s"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "1000", max: "8000", step: "500", value: chunkReaderSpeed, onChange: (e) => setChunkReaderSpeed(parseInt(e.target.value)), disabled: !!chunkReaderReadAlong, className: `w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500 ${chunkReaderReadAlong ? "opacity-30" : ""}`, title: chunkReaderReadAlong ? "Disabled while Read Along is on \u2014 audio length drives the pace" : `${(chunkReaderSpeed / 1e3).toFixed(1)}s`, "aria-label": t("immersive.speed") }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 tabular-nums" }, (chunkReaderSpeed / 1e3).toFixed(1), "s")), onToggleChunkReaderReadAlong && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement(
+  ))), isChunkReaderActive && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1)), disabled: chunkReaderIdx <= 0, className: "p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all", title: safeT(t, "common.previous", "Previous") + " (\u2190 / Home)" }, /* @__PURE__ */ React.createElement(ChevronLeft, { size: 14 })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center" }, chunkReaderIdx + 1, " / ", totalSentences), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1)), disabled: chunkReaderIdx >= totalSentences - 1, className: "p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all", title: safeT(t, "common.next", "Next") + " (\u2192 / End)" }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 14 })), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChunkReaderAutoPlay(!chunkReaderAutoPlay), className: `px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`, title: (chunkReaderAutoPlay ? safeT(t, "common.pause", "Pause") : safeT(t, "common.auto_play", "Auto")) + " (Space) \xB7 Esc exits \xB7 Enter skips typewriter reveal" }, chunkReaderAutoPlay ? /* @__PURE__ */ React.createElement(Pause, { size: 12, className: "inline" }) : /* @__PURE__ */ React.createElement(Play, { size: 12, className: "inline" })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "1s"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "1000", max: "8000", step: "500", value: chunkReaderSpeed, onChange: (e) => setChunkReaderSpeed(parseInt(e.target.value)), disabled: !!chunkReaderReadAlong, className: `w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500 ${chunkReaderReadAlong ? "opacity-30" : ""}`, title: chunkReaderReadAlong ? "Disabled while Read Along is on \u2014 audio length drives the pace" : `${(chunkReaderSpeed / 1e3).toFixed(1)}s`, "aria-label": t("immersive.speed") }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 tabular-nums" }, (chunkReaderSpeed / 1e3).toFixed(1), "s")), onToggleChunkReaderReadAlong && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onToggleChunkReaderReadAlong,
       "aria-pressed": !!chunkReaderReadAlong,
       title: chunkReaderReadAlong ? "Read-along OFF: return to timer-based advance" : "Read-along ON: play each sentence with a colored gradient that sweeps across the text in sync with the audio",
@@ -489,6 +539,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
   ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600" }, safeT(t, "immersive.bg", "Bg")), /* @__PURE__ */ React.createElement("input", { type: "color", value: settings.bgColor || "#fdfbf7", onChange: (e) => setSettings((prev) => ({ ...prev, bgColor: e.target.value })), className: "w-6 h-6 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none", style: { backgroundColor: settings.bgColor }, "aria-label": safeT(t, "immersive.bg_color", "Background color") }), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600" }, safeT(t, "immersive.text", "Text")), /* @__PURE__ */ React.createElement("input", { type: "color", value: settings.fontColor || "#1e293b", onChange: (e) => setSettings((prev) => ({ ...prev, fontColor: e.target.value })), className: "w-6 h-6 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none", style: { backgroundColor: settings.fontColor }, "aria-label": safeT(t, "immersive.text_color", "Text color") })))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.close_word_wall"),
       onClick: onClose,
       title: t("immersive.close"),
@@ -499,6 +550,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
 });
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   const { t } = useContext(LanguageContext);
+  const dialogRef = useOverlayDialogFocus(isOpen);
   const [speedPxPerSec, setSpeedPxPerSec] = useState(() => {
     try {
       const v = parseInt(localStorage.getItem("allo_crawl_speed"), 10);
@@ -679,6 +731,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
+      if (e.key !== "Escape" && isInteractiveShortcutTarget(e.target)) return;
       if (e.code === "Space") {
         e.preventDefault();
         setIsPlaying((pl) => !pl);
@@ -700,9 +753,10 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       setIsPlaying(true);
     } else setIsPlaying((pl) => !pl);
   };
-  return /* @__PURE__ */ React.createElement("div", { "data-help-key": "perspective_crawl_overlay_panel", className: "fixed inset-0 z-[300] flex flex-col", style: { backgroundColor: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm", style: { background: "rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "perspective_crawl_exit_btn", onClick: onClose, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full", style: { color: p.text } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, safeT(t, "immersive.cinematic_crawl", "Cinematic Crawl"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs font-bold flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "data-help-key": "perspective_crawl_speed_control", "aria-label": t("immersive.crawl_speed_aria") || "Crawl speed", type: "range", min: "10", max: "140", value: speedPxPerSec, onChange: (e) => setSpeedPxPerSec(parseInt(e.target.value)), className: "w-24 accent-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-14 text-end" }, speedPxPerSec, "px/s")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "PALETTE"), /* @__PURE__ */ React.createElement("select", { "data-help-key": "perspective_crawl_palette_select", "aria-label": t("a11y.fab_open_palette"), value: palette, onChange: (e) => setPalette(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: p.text, background: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("option", { value: "gold" }, "Golden"), /* @__PURE__ */ React.createElement("option", { value: "teal" }, "Aqua"), /* @__PURE__ */ React.createElement("option", { value: "paper" }, "Paper"))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "perspective-crawl-dialog-title", tabIndex: -1, "data-help-key": "perspective_crawl_overlay_panel", className: "fixed inset-0 z-[300] flex flex-col", style: { backgroundColor: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm", style: { background: "rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "perspective_crawl_exit_btn", onClick: onClose, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full", style: { color: p.text } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("h2", { id: "perspective-crawl-dialog-title", className: "font-bold text-base" }, safeT(t, "immersive.cinematic_crawl", "Cinematic Crawl"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs font-bold flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "data-help-key": "perspective_crawl_speed_control", "aria-label": t("immersive.crawl_speed_aria") || "Crawl speed", type: "range", min: "10", max: "140", value: speedPxPerSec, onChange: (e) => setSpeedPxPerSec(parseInt(e.target.value)), className: "w-24 accent-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-14 text-end" }, speedPxPerSec, "px/s")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "PALETTE"), /* @__PURE__ */ React.createElement("select", { "data-help-key": "perspective_crawl_palette_select", "aria-label": t("a11y.fab_open_palette"), value: palette, onChange: (e) => setPalette(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: p.text, background: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("option", { value: "gold" }, "Golden"), /* @__PURE__ */ React.createElement("option", { value: "teal" }, "Aqua"), /* @__PURE__ */ React.createElement("option", { value: "paper" }, "Paper"))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "data-help-key": "perspective_crawl_ambient_toggle",
       onClick: () => setAmbientOn((a) => !a),
       "aria-pressed": ambientOn,
@@ -712,7 +766,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       style: { background: p.text + "22", color: p.text, opacity: ambientOn ? 1 : 0.55 }
     },
     ambientOn ? "\u266A" : "\u266A\u0338"
-  ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "perspective_crawl_play_pause_btn", onClick: togglePlay, "aria-label": isPlaying ? "Pause" : "Play", className: "px-3 py-1 rounded", style: { background: p.text + "22", color: p.text } }, isPlaying ? /* @__PURE__ */ React.createElement(Pause, { size: 14 }) : /* @__PURE__ */ React.createElement(Play, { size: 14 })), /* @__PURE__ */ React.createElement("button", { "data-help-key": "perspective_crawl_restart_btn", onClick: () => {
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "perspective_crawl_play_pause_btn", onClick: togglePlay, "aria-label": isPlaying ? "Pause" : "Play", className: "px-3 py-1 rounded", style: { background: p.text + "22", color: p.text } }, isPlaying ? /* @__PURE__ */ React.createElement(Pause, { size: 14 }) : /* @__PURE__ */ React.createElement(Play, { size: 14 })), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "perspective_crawl_restart_btn", onClick: () => {
     resetCrawl();
     setIsPlaying(true);
   }, "aria-label": t("a11y.restart_crawl"), className: "px-3 py-1 rounded text-xs", style: { background: p.text + "22", color: p.text } }, "\u21BA Restart"))), /* @__PURE__ */ React.createElement(
@@ -780,19 +834,33 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     !isPlaying && !finished && translateYRef.current < -4 && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs pointer-events-none", style: { background: `${p.bg}99`, border: `1px solid ${p.accent}33`, color: p.text } }, "\u23F8 Paused \u2014 click to resume")
   ), /* @__PURE__ */ React.createElement("div", { className: "h-1 w-full", style: { background: p.text + "22" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full transition-all duration-200 ease-linear", style: { width: `${progressPct}%`, backgroundColor: p.accent } })), /* @__PURE__ */ React.createElement("div", { className: "py-2 text-center text-xs", style: { color: p.text, opacity: 0.6 } }, "Click or Space pauses \xB7 R restarts \xB7 M mutes pad \xB7 Esc closes"));
 });
-const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, isTeacher }) => {
+const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, getAudioUrl, isTeacher, captureOn: captureOnProp, onCaptureChange }) => {
   const { t } = useContext(LanguageContext);
+  const dialogRef = useOverlayDialogFocus(isOpen);
   const [sentences, setSentences] = useState([]);
   const [sentenceIdx, setSentenceIdx] = useState(0);
   const [regenBusy, setRegenBusy] = useState(false);
   const [prepState, setPrepState] = useState(null);
-  const [captureOn, setCaptureOn] = useState(() => {
+  const [localCaptureOn, setLocalCaptureOn] = useState(() => {
     try {
       return localStorage.getItem("allo_save_karaoke_audio") !== "0";
     } catch (_) {
       return true;
     }
   });
+  const captureOn = typeof captureOnProp === "boolean" ? captureOnProp : localCaptureOn;
+  const setCaptureOn = useCallback((value) => {
+    const next = !!value;
+    setLocalCaptureOn(next);
+    try {
+      localStorage.setItem("allo_save_karaoke_audio", next ? "1" : "0");
+    } catch (_) {
+    }
+    try {
+      if (typeof onCaptureChange === "function") onCaptureChange(next);
+    } catch (_) {
+    }
+  }, [onCaptureChange]);
   const [recording, setRecording] = useState(false);
   const [studentTakeTick, setStudentTakeTick] = useState(0);
   const _recRef = useRef(null);
@@ -824,6 +892,28 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   const getAudioUrlRef = useRef(getAudioUrl);
   getAudioUrlRef.current = getAudioUrl;
   const warmedRef = useRef(/* @__PURE__ */ new Set());
+  const capturedWarmRef = useRef(/* @__PURE__ */ new Set());
+  const captureRetryRef = useRef(/* @__PURE__ */ new Map());
+  const capturePendingRef = useRef(/* @__PURE__ */ new Set());
+  const captureIssueRef = useRef({ limit: false, message: "" });
+  const [captureSaveState, setCaptureSaveState] = useState({ pending: 0, failed: 0, limit: false, message: "" });
+  const [captureRetrying, setCaptureRetrying] = useState(false);
+  const refreshCaptureSaveState = useCallback(() => {
+    setCaptureSaveState({
+      pending: capturePendingRef.current.size,
+      failed: captureRetryRef.current.size,
+      limit: !!captureIssueRef.current.limit,
+      message: captureIssueRef.current.message || ""
+    });
+  }, []);
+  const captureKeyFor = useCallback((sentenceText) => {
+    try {
+      const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+      if (KS && typeof KS.keyFor === "function") return KS.keyFor(sentenceText);
+    } catch (e) {
+    }
+    return String(sentenceText || "").toLowerCase().replace(/\s+/g, " ").trim();
+  }, []);
   const reducedMotion = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
   const hardStop = useCallback(() => {
     playTokenRef.current++;
@@ -846,28 +936,90 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     }
   }, []);
   const scheduleCaptureForStorage = useCallback((sentenceText, url) => {
-    if (!captureOn || !sentenceText || !url) return;
-    if (typeof window === "undefined" || typeof window.__alloCaptureKaraokeAudio !== "function") return;
-    const run = () => {
+    if (!captureOn || !sentenceText || !url) return Promise.resolve(false);
+    if (typeof window === "undefined" || typeof window.__alloCaptureKaraokeAudio !== "function") return Promise.resolve(false);
+    const key = captureKeyFor(sentenceText);
+    capturePendingRef.current.add(key);
+    refreshCaptureSaveState();
+    let request;
+    try {
+      request = Promise.resolve(window.__alloCaptureKaraokeAudio(sentenceText, url));
+    } catch (e) {
+      request = Promise.resolve(false);
+    }
+    return request.then((saved) => {
+      let stored = false;
       try {
-        const result = window.__alloCaptureKaraokeAudio(sentenceText, url);
-        if (result && typeof result.catch === "function") result.catch(() => {
-        });
+        const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+        stored = !!(st && st.has(sentenceText));
       } catch (e) {
       }
-    };
-    try {
-      if (typeof window.requestIdleCallback === "function") {
-        window.requestIdleCallback(run, { timeout: 1200 });
+      capturePendingRef.current.delete(key);
+      if (saved || stored) {
+        captureRetryRef.current.delete(key);
+        if (captureRetryRef.current.size === 0) captureIssueRef.current = { limit: false, message: "" };
       } else {
-        setTimeout(run, 250);
+        captureRetryRef.current.set(key, { sentence: sentenceText, url });
+        if (!captureIssueRef.current.message) captureIssueRef.current = { limit: false, message: "Some played audio could not be saved." };
       }
-    } catch (e) {
-      setTimeout(run, 250);
+      refreshCaptureSaveState();
+      return !!(saved || stored);
+    }).catch(() => {
+      capturePendingRef.current.delete(key);
+      captureRetryRef.current.set(key, { sentence: sentenceText, url });
+      captureIssueRef.current = { limit: false, message: "Some played audio could not be saved." };
+      refreshCaptureSaveState();
+      return false;
+    });
+  }, [captureOn, captureKeyFor, refreshCaptureSaveState]);
+  useEffect(() => {
+    if (!isOpen || typeof window === "undefined") return;
+    const onCaptureStatus = (event) => {
+      const detail = event && event.detail ? event.detail : {};
+      if (detail.status !== "error" && detail.status !== "limit") return;
+      const key = captureKeyFor(detail.sentence);
+      if (!key || !sentences.some((sentence) => captureKeyFor(sentence) === key)) return;
+      captureIssueRef.current = {
+        limit: detail.status === "limit",
+        message: detail.reason || (detail.status === "limit" ? "Saved read-aloud storage is full." : "Some played audio could not be saved.")
+      };
+      refreshCaptureSaveState();
+    };
+    window.addEventListener("alloflow:karaoke-audio-capture", onCaptureStatus);
+    return () => window.removeEventListener("alloflow:karaoke-audio-capture", onCaptureStatus);
+  }, [isOpen, sentences, captureKeyFor, refreshCaptureSaveState]);
+  const retryFailedCaptures = useCallback(async () => {
+    if (captureRetrying || captureRetryRef.current.size === 0 || captureIssueRef.current.limit) return;
+    setCaptureRetrying(true);
+    const failed = Array.from(captureRetryRef.current.values());
+    const resolver = getAudioUrlRef.current;
+    for (let i = 0; i < failed.length; i++) {
+      const item = failed[i];
+      let retryUrl = item.url;
+      try {
+        if (typeof resolver === "function") retryUrl = await resolver(item.sentence) || retryUrl;
+      } catch (e) {
+      }
+      if (retryUrl) await scheduleCaptureForStorage(item.sentence, retryUrl);
     }
-  }, [captureOn]);
+    setCaptureRetrying(false);
+    refreshCaptureSaveState();
+  }, [captureRetrying, scheduleCaptureForStorage, refreshCaptureSaveState]);
   useEffect(() => {
     setCurrentAudioReadyIdx(-1);
+    captureRetryRef.current.clear();
+    capturePendingRef.current.clear();
+    captureIssueRef.current = { limit: false, message: "" };
+    setCaptureSaveState({ pending: 0, failed: 0, limit: false, message: "" });
+    const canonicalSentences = (Array.isArray(sentenceList) ? sentenceList : []).map((s) => String(s || "").trim()).filter(Boolean);
+    if (canonicalSentences.length) {
+      setSentences(canonicalSentences);
+      setSentenceIdx(0);
+      setSweepPct(0);
+      warmedRef.current = /* @__PURE__ */ new Set();
+      capturedWarmRef.current = /* @__PURE__ */ new Set();
+      return;
+    }
     if (!text) {
       setSentences([]);
       return;
@@ -880,6 +1032,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       setSentenceIdx(0);
       setSweepPct(0);
       warmedRef.current = /* @__PURE__ */ new Set();
+      capturedWarmRef.current = /* @__PURE__ */ new Set();
       return;
     }
     const parts = cleaned.split(/([.!?]+["'\u201D\u2019]?)(\s+|$)/);
@@ -899,7 +1052,8 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     setSentenceIdx(0);
     setSweepPct(0);
     warmedRef.current = /* @__PURE__ */ new Set();
-  }, [text]);
+    capturedWarmRef.current = /* @__PURE__ */ new Set();
+  }, [text, sentenceList]);
   useEffect(() => {
     if (!isOpen || !isPlaying || currentAudioReadyIdx !== sentenceIdx || sentences.length === 0) return;
     const resolver = getAudioUrlRef.current;
@@ -909,13 +1063,30 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     const run = async () => {
       for (let i = sentenceIdx + 1; i <= sentenceIdx + LOOKAHEAD && i < sentences.length; i++) {
         if (cancelled) return;
-        if (warmedRef.current.has(i)) continue;
-        warmedRef.current.add(i);
+        const alreadyWarmed = warmedRef.current.has(i);
+        const needsDurableCapture = captureOn && !capturedWarmRef.current.has(i);
+        if (alreadyWarmed && !needsDurableCapture) continue;
+        if (!alreadyWarmed) warmedRef.current.add(i);
         try {
           const warmedUrl = await resolver(sentences[i]);
-          if (!warmedUrl) warmedRef.current.delete(i);
+          if (cancelled) return;
+          if (!warmedUrl) {
+            warmedRef.current.delete(i);
+            capturedWarmRef.current.delete(i);
+          } else if (needsDurableCapture) {
+            scheduleCaptureForStorage(sentences[i], warmedUrl).then((captured) => {
+              let stored = false;
+              try {
+                const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+                stored = !!(st && st.has(sentences[i]));
+              } catch (e) {
+              }
+              if (captured || stored) capturedWarmRef.current.add(i);
+            });
+          }
         } catch (e) {
           warmedRef.current.delete(i);
+          capturedWarmRef.current.delete(i);
         }
       }
     };
@@ -924,7 +1095,16 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx]);
+  }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx, captureOn, scheduleCaptureForStorage]);
+  const previousCaptureOnRef = useRef(captureOn);
+  useEffect(() => {
+    const justEnabled = !previousCaptureOnRef.current && captureOn;
+    previousCaptureOnRef.current = captureOn;
+    if (!justEnabled || !isOpen || !isPlaying) return;
+    const audio = audioRef.current;
+    const sentence = sentences[sentenceIdx];
+    if (audio && audio.src && sentence) scheduleCaptureForStorage(sentence, audio.src);
+  }, [captureOn, isOpen, isPlaying, sentences, sentenceIdx, scheduleCaptureForStorage]);
   useEffect(() => {
     if (!isOpen) {
       playTokenRef.current++;
@@ -1013,7 +1193,6 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     }
     if (token !== playTokenRef.current) return;
     if (url) {
-      scheduleCaptureForStorage(sentenceText, url);
       const audio = new Audio(url);
       audio.playbackRate = playbackSpeedRef.current || 1;
       audioRef.current = audio;
@@ -1048,6 +1227,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       });
       try {
         await audio.play();
+        scheduleCaptureForStorage(sentenceText, url);
         return;
       } catch (e) {
         if (token !== playTokenRef.current) return;
@@ -1124,7 +1304,15 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       const res = await window.__alloPrepareReadAloud(sentences, function(done, total) {
         setPrepState({ busy: true, done, total });
       });
-      setPrepState({ busy: false, done: res && res.generated || 0, total: res && res.total || 0, bytes: res && res.bytes || 0 });
+      setPrepState({
+        busy: false,
+        done: res && res.generated || 0,
+        total: res && res.total || 0,
+        failed: res && res.failed || 0,
+        remaining: res && res.remaining || 0,
+        bytes: res && res.bytes || 0,
+        failure: res && res.failure
+      });
     } catch (e) {
       setPrepState(null);
     }
@@ -1222,6 +1410,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
+      if (e.key !== "Escape" && isInteractiveShortcutTarget(e.target)) return;
       if (e.code === "Space") {
         e.preventDefault();
         setIsPlaying((p) => !p);
@@ -1356,26 +1545,35 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       return false;
     }
   })();
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200", style: { backgroundColor: c.bg, color: c.ink } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "karaoke-reader-dialog-title", tabIndex: -1, className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none", style: { backgroundColor: c.bg, color: c.ink } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     hardStop();
     onClose();
-  }, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, safeT(t, "immersive.focus_reader", "Focus Reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep", (() => {
+  }, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("h2", { id: "karaoke-reader-dialog-title", className: "font-bold text-base" }, safeT(t, "immersive.focus_reader", "Focus Reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep", (() => {
     try {
       const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
       return _st && _st.sourceOf(sentences[sentenceIdx]) === "human-teacher";
     } catch (e) {
       return false;
     }
-  })() ? " \xB7 \u{1F3A4} your voice" : ""), isGeneratingAudio && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold", role: "status", "aria-live": "polite", style: { color: c.sweep } }, "Generating audio..."))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, isTeacher && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.teacher_audio_tools", "Read-aloud tools") }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1.5 cursor-pointer", title: safeT(t, "immersive.save_readaloud_tip", "Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.") }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: captureOn, onChange: (e) => {
-    const v = e.target.checked;
-    setCaptureOn(v);
-    try {
-      localStorage.setItem("allo_save_karaoke_audio", v ? "1" : "0");
-    } catch (_) {
-    }
-  }, "aria-label": safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen") }), /* @__PURE__ */ React.createElement("span", null, "\u{1F4BE}", " ", safeT(t, "immersive.save_readaloud", "Save read-aloud"))), /* @__PURE__ */ React.createElement(
+  })() ? " \xB7 \u{1F3A4} your voice" : ""), isGeneratingAudio && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold", role: "status", "aria-live": "polite", style: { color: c.sweep } }, "Generating audio..."))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, isTeacher && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.teacher_audio_tools", "Read-aloud tools") }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1.5 cursor-pointer", title: safeT(t, "immersive.save_readaloud_tip", "Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.") }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: captureOn, onChange: (e) => setCaptureOn(e.target.checked), "aria-label": safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen") }), /* @__PURE__ */ React.createElement("span", null, "\u{1F4BE}", " ", safeT(t, "immersive.save_readaloud", "Save read-aloud"))), captureSaveState.pending > 0 && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", style: { color: c.sweep } }, safeT(t, "immersive.saving_readaloud", "Saving"), " ", captureSaveState.pending), captureSaveState.failed > 0 && captureSaveState.limit && /* @__PURE__ */ React.createElement("span", { role: "alert", title: captureSaveState.message, style: { color: "#b45309" } }, safeT(t, "immersive.readaloud_limit", "Storage limit reached"), " \xB7 ", captureSaveState.failed), captureSaveState.failed > 0 && !captureSaveState.limit && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
+      onClick: retryFailedCaptures,
+      disabled: captureRetrying,
+      title: captureSaveState.message || safeT(t, "immersive.retry_readaloud_tip", "Retry audio that could not be saved."),
+      className: "px-2.5 py-1 rounded-full transition-all",
+      style: { background: "transparent", color: "#b91c1c", border: "1px solid #fca5a5", opacity: captureRetrying ? 0.65 : 1 }
+    },
+    captureRetrying ? "\u2026" : "\u21BB",
+    " ",
+    safeT(t, "immersive.retry_failed_saves", "Retry failed saves"),
+    " \xB7 ",
+    captureSaveState.failed
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
       onClick: regenerateCurrent,
       disabled: regenBusy,
       title: safeT(t, "immersive.regenerate_sentence_tip", "Re-generate the audio for this sentence if it sounds off. Students hear your vetted version."),
@@ -1388,6 +1586,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: recordCurrent,
       title: safeT(t, "immersive.record_sentence_tip", "Record your own voice for this sentence. Students hear your recording instead of the computer voice."),
       className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
@@ -1397,6 +1596,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         if (prepState && prepState.busy) {
           window.__alloPrepareReadAloudCancel = true;
@@ -1408,10 +1608,11 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
       style: { background: prepState && !prepState.busy ? c.accent : "transparent", color: c.ink, border: `1px solid ${c.dim}55`, opacity: prepState && prepState.busy ? 0.7 : 1 }
     },
-    prepState && prepState.busy ? `\u2026 ${prepState.done}/${prepState.total} \u2715` : prepState && !prepState.busy ? `\u2713 ${safeT(t, "immersive.readaloud_saved", "Saved")}${prepState.bytes ? " \xB7 " + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + " MB" : ""}` : `\u{1F4BE} ${safeT(t, "immersive.prepare_readaloud", "Prepare read-aloud for students")}`
+    prepState && prepState.busy ? `\u2026 ${prepState.done}/${prepState.total} \u2715` : prepState && !prepState.busy && prepState.remaining ? `\u21BB ${safeT(t, "immersive.retry_failed_saves", "Retry failed saves")} \xB7 ${prepState.remaining}` : prepState && !prepState.busy ? `\u2713 ${safeT(t, "immersive.readaloud_saved", "Saved")}${prepState.bytes ? " \xB7 " + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + " MB" : ""}` : `\u{1F4BE} ${safeT(t, "immersive.prepare_readaloud", "Prepare read-aloud for students")}`
   )), !isTeacher && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.student_reading_tools", "My reading") }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: recordCurrent,
       title: safeT(t, "immersive.record_reading_tip", "Record yourself reading this sentence, then hear it back. The teacher\u2019s read-along stays your reference."),
       className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
@@ -1421,6 +1622,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: playStudentTake,
       disabled: !hasStudentTake,
       title: safeT(t, "immersive.hear_my_reading_tip", "Play back your own recording of this sentence."),
@@ -1433,6 +1635,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   )), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: autoAdvance, onChange: (e) => setAutoAdvance(e.target.checked), "aria-label": t("immersive.auto_advance_aria") || "Auto-advance to next sentence" }), /* @__PURE__ */ React.createElement("span", { style: { color: c.ink } }, "Auto-advance")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": t("immersive.playback_speed_aria") || "Playback speed" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.dim } }, "SPEED"), [0.75, 1, 1.25, 1.5].map((rate) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       key: rate,
       onClick: () => setPlaybackSpeed(rate),
       "aria-pressed": playbackSpeed === rate,
@@ -1450,6 +1653,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   ))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.dim } }, "THEME"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Theme", value: theme, onChange: (e) => setTheme(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: c.ink, background: c.bg, color: c.ink } }, /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600\uFE0F Warm"), /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"), /* @__PURE__ */ React.createElement("option", { value: "sepia" }, "\u{1F4DC} Sepia"))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         if (isPlaying) {
           hardStop();
@@ -1468,6 +1672,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         hardStop();
         setSentenceIdx(0);

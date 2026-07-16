@@ -66,7 +66,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       '.fl-pill { display:inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(56,189,248,0.12); color:#bae6fd; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }',
       '@media (prefers-reduced-motion: reduce) { .fl-bob { animation: none !important; } .fl-pulse { animation: none !important; } }',
       '@keyframes fl-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }',
-      '.fl-pulse { animation: fl-pulse 1.6s ease-in-out infinite; }'
+      '.fl-pulse { animation: fl-pulse 1.6s ease-in-out infinite; }',
+      '.fl-sim-canvas:focus-visible { outline: 4px solid #fbbf24; outline-offset: -4px; }',
+      '.fl-sim-stage { position: relative; overflow: hidden; border-radius: 0 0 8px 8px; background: #06131f; }',
+      '.fl-sim-touch { position: absolute; z-index: 20; left: 50%; bottom: 116px; transform: translateX(-50%); display: flex; gap: 6px; padding: 6px; border-radius: 8px; background: rgba(2,6,23,0.78); border: 1px solid rgba(125,211,252,0.28); }',
+      '.fl-nav-cue { position: absolute; z-index: 18; top: 58px; left: 50%; transform: translateX(-50%); width: min(280px, 32%); min-width: 190px; pointer-events: none; }',
+      '@media (max-width: 760px) { .fl-sim-stage { display: grid; overflow: visible; } .fl-sim-stage .fl-sim-canvas { height: 330px !important; } .fl-sim-instruments, .fl-sim-mission, .fl-sim-log, .fl-sim-touch, .fl-nav-cue { position: static !important; width: auto !important; min-width: 0 !important; max-width: none !important; margin: 8px 8px 0 !important; transform: none !important; } .fl-sim-touch { justify-self: stretch; justify-content: center; flex-wrap: wrap; } }'
     ].join('\n');
     document.head.appendChild(s);
   })();
@@ -424,6 +429,129 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     if (reg === 'greatlakes') return GREATLAKES_SPECIES;
     return MAINE_SPECIES;
   }
+
+  var CORE_SIM_PROFILES = {
+    maine: { title: 'Casco Bay Stewardship Run', targetFishId: 'cod', targetFish: 'Atlantic cod', trapCatch: 'lobster', destination: 'Halfway Rock' },
+    chesapeake: { title: 'Chesapeake Stewardship Run', targetFishId: 'stripedbass', targetFish: 'striped bass', trapCatch: 'blue crab', destination: 'Thomas Point grounds' },
+    pnw: { title: 'Salish Sea Stewardship Run', targetFishId: 'chinook', targetFish: 'Chinook salmon', trapCatch: 'Dungeness crab', destination: 'Burrows Island grounds' },
+    greatlakes: { title: 'St. Marys Stewardship Run', targetFishId: 'laketrout', targetFish: 'lake trout', trapCatch: 'crayfish', destination: 'Point Iroquois grounds' }
+  };
+  var CORE_COLREGS_ENCOUNTERS = {
+    maine: { vessel: 'Casco Bay ferry', vesselKind: 'ferry', rule: 'COLREGS Rule 15', situation: 'A power-driven ferry is crossing from your starboard side. Risk of collision exists.', correctAction: 'give-way', correctLabel: 'Give way: slow and pass astern', incorrectLabel: 'Stand on and hold course', explanation: 'In a crossing situation, the vessel with the other on its starboard side is the give-way vessel. Act early and clearly, normally altering to starboard to pass astern.' },
+    chesapeake: { vessel: 'sailing vessel', vesselKind: 'sail', rule: 'COLREGS Rule 18', situation: 'A sailing vessel under sail is crossing ahead of your power-driven skiff.', correctAction: 'give-way', correctLabel: 'Give way early and visibly', incorrectLabel: 'Stand on as the power vessel', explanation: 'A power-driven vessel underway generally keeps out of the way of a sailing vessel. Maintain a lookout and make an early, substantial alteration.' },
+    pnw: { vessel: 'channel ferry', vesselKind: 'ferry', rule: 'COLREGS Rule 9', situation: 'A ferry is committed to the narrow marked channel ahead.', correctAction: 'give-way', correctLabel: 'Keep clear of the channel transit', incorrectLabel: 'Cross close ahead of the ferry', explanation: 'A small vessel must not impede a vessel that can safely navigate only within a narrow channel. Wait or pass well astern.' },
+    greatlakes: { vessel: 'lake freighter', vesselKind: 'freighter', rule: 'COLREGS Rules 9 and 18', situation: 'A deep-draft freighter is proceeding within the marked channel.', correctAction: 'give-way', correctLabel: 'Keep clear and pass astern', incorrectLabel: 'Hold course across the channel', explanation: 'Do not impede a vessel constrained to the channel by draft and maneuverability. Make your intentions obvious and leave generous sea room.' }
+  };
+  var CORE_COLREGS_STAND_ON = {
+    maine: { vessel: 'outbound lobsterboat', vesselKind: 'workboat', rule: 'COLREGS Rule 15', situation: 'A power-driven lobsterboat is crossing from your port side. It has your skiff on its starboard side.', correctAction: 'stand-on', correctLabel: 'Stand on: maintain course and speed', incorrectLabel: 'Alter toward the crossing vessel', explanation: 'In this crossing geometry, the other vessel has you on its starboard side and is the give-way vessel. You are stand-on: maintain course and speed while monitoring closely and remaining ready to act.', maneuverType: 'stand-on', approachSide: 'port', maneuverLabel: 'Hold stand-on course', maneuverInstruction: 'Maintain heading within 8° and speed within 1.5 kt for 5 seconds while monitoring closest approach.' },
+    chesapeake: { vessel: 'harbor workboat', vesselKind: 'workboat', rule: 'COLREGS Rule 15', situation: 'A power-driven harbor workboat is crossing from port and has your skiff on its starboard side.', correctAction: 'stand-on', correctLabel: 'Stand on and monitor the crossing', incorrectLabel: 'Turn toward the workboat', explanation: 'The workboat is the give-way vessel because your skiff lies on its starboard side. Hold a predictable course and speed, keep watch, and be prepared if it fails to act.', maneuverType: 'stand-on', approachSide: 'port', maneuverLabel: 'Hold stand-on course', maneuverInstruction: 'Maintain heading within 8° and speed within 1.5 kt for 5 seconds while monitoring closest approach.' },
+    pnw: { vessel: 'harbor patrol boat', vesselKind: 'workboat', rule: 'COLREGS Rule 15', situation: 'A power-driven patrol boat is crossing from your port side in open water.', correctAction: 'stand-on', correctLabel: 'Maintain course and speed', incorrectLabel: 'Make an unnecessary port alteration', explanation: 'You are the stand-on vessel in this crossing. Predictability matters: hold course and speed, monitor bearing and range, and act only if the give-way vessel does not.', maneuverType: 'stand-on', approachSide: 'port', maneuverLabel: 'Hold stand-on course', maneuverInstruction: 'Maintain heading within 8° and speed within 1.5 kt for 5 seconds while monitoring closest approach.' },
+    greatlakes: { vessel: 'channel tug', vesselKind: 'workboat', rule: 'COLREGS Rule 15', situation: 'A power-driven tug without a tow is crossing from port and has your skiff on its starboard side.', correctAction: 'stand-on', correctLabel: 'Stand on and keep a close watch', incorrectLabel: 'Turn toward the tug', explanation: 'With no tow or restricted-maneuverability signal, the ordinary crossing rule applies. The tug gives way; your skiff maintains course and speed while monitoring.', maneuverType: 'stand-on', approachSide: 'port', maneuverLabel: 'Hold stand-on course', maneuverInstruction: 'Maintain heading within 8° and speed within 1.5 kt for 5 seconds while monitoring closest approach.' }
+  };
+  Object.keys(CORE_COLREGS_ENCOUNTERS).forEach(function(region) {
+    CORE_COLREGS_ENCOUNTERS[region].maneuverType = 'give-way';
+    CORE_COLREGS_ENCOUNTERS[region].approachSide = 'starboard';
+    CORE_COLREGS_ENCOUNTERS[region].maneuverLabel = 'Execute give-way maneuver';
+    CORE_COLREGS_ENCOUNTERS[region].maneuverInstruction = 'Reduce below 2.5 kt and alter at least 15° to starboard.';
+  });
+  var CORE_VOYAGE_MODES = {
+    guided: { id: 'guided', label: 'Guided', tagline: 'Full fuel, calm daylight, generous targets', startFuel: 100, fuelBurn: 0.42, scoreMultiplier: 1, requiredFuel: 15, requiredAccuracy: 60, safeSpeed: 5, weather: 'clear', timeOfDay: 'day' },
+    skipper: { id: 'skipper', label: 'Skipper', tagline: 'Fog, tighter fuel planning, stronger standards', startFuel: 85, fuelBurn: 0.56, scoreMultiplier: 1.25, requiredFuel: 25, requiredAccuracy: 80, safeSpeed: 4, weather: 'foggy', timeOfDay: 'day' },
+    master: { id: 'master', label: 'Master', tagline: 'Rain at sunset, lean reserves, expert accuracy', startFuel: 72, fuelBurn: 0.7, scoreMultiplier: 1.5, requiredFuel: 30, requiredAccuracy: 90, safeSpeed: 3.5, weather: 'rainy', timeOfDay: 'sunset' }
+  };
+  function getCoreSimProfile(region) {
+    return CORE_SIM_PROFILES[region] || CORE_SIM_PROFILES.maine;
+  }
+  function getCoreVoyageMode(mode) {
+    return CORE_VOYAGE_MODES[mode] || CORE_VOYAGE_MODES.guided;
+  }
+  function getCoreEncounter(region, mode) {
+    var source = mode === 'skipper' ? CORE_COLREGS_STAND_ON : CORE_COLREGS_ENCOUNTERS;
+    return source[region] || source.maine;
+  }
+  function evaluateCoreEncounter(region, action, mode) {
+    var encounter = getCoreEncounter(region, mode);
+    return { correct: action === encounter.correctAction, encounter: encounter };
+  }
+  function evaluateCoreManeuver(type, startHeading, currentHeading, startSpeed, currentSpeed, elapsed) {
+    var headingDelta = currentHeading - startHeading;
+    while (headingDelta > Math.PI) headingDelta -= Math.PI * 2;
+    while (headingDelta < -Math.PI) headingDelta += Math.PI * 2;
+    var headingDeviation = Math.abs(headingDelta * 180 / Math.PI);
+    var speedDeviation = Math.abs(Math.abs(currentSpeed) - Math.abs(startSpeed));
+    if (type === 'stand-on') {
+      var courseSteady = headingDeviation <= 8;
+      var speedSteady = speedDeviation <= 1.5;
+      var observedEnough = elapsed >= 5;
+      return { criterionOne: courseSteady, criterionTwo: speedSteady, observedEnough: observedEnough, headingDeviation: headingDeviation, speedDeviation: speedDeviation, turnDegrees: 0, complete: courseSteady && speedSteady && observedEnough };
+    }
+    var starboardTurn = -headingDelta;
+    var turnDegrees = Math.max(0, starboardTurn * 180 / Math.PI);
+    var slowEnough = Math.abs(currentSpeed) <= 2.5;
+    var turnedEnough = turnDegrees >= 15;
+    return { criterionOne: slowEnough, criterionTwo: turnedEnough, observedEnough: true, headingDeviation: headingDeviation, speedDeviation: speedDeviation, turnDegrees: turnDegrees, complete: slowEnough && turnedEnough };
+  }
+  function evaluateCoreCollisionRisk(startRange, currentRange, closestRange, startBearing, currentBearing) {
+    var bearingDelta = currentBearing - startBearing;
+    while (bearingDelta > 180) bearingDelta -= 360;
+    while (bearingDelta < -180) bearingDelta += 360;
+    var bearingChange = Math.abs(bearingDelta);
+    var rangeChange = currentRange - startRange;
+    var constantBearing = bearingChange <= 5;
+    var closing = currentRange < startRange - 0.5 && currentRange <= closestRange + 0.75;
+    var opening = currentRange > closestRange + 1.5;
+    var id = opening ? 'opening' : closing && constantBearing ? 'collision-risk' : closing ? 'bearing-changing' : 'monitoring';
+    var labels = {
+      'collision-risk': 'Collision risk: steady bearing, closing range',
+      'bearing-changing': 'Bearing changing while range closes',
+      opening: 'Range opening after closest approach',
+      monitoring: 'Monitoring bearing and range'
+    };
+    return { id: id, label: labels[id], bearingChange: bearingChange, rangeChange: rangeChange, constantBearing: constantBearing, closing: closing, opening: opening };
+  }
+  function scoreCoreDecision(score, streak, correct, multiplier) {
+    var nextStreak = correct ? streak + 1 : 0;
+    var baseReward = 25 + Math.min(20, Math.max(0, nextStreak - 1) * 5);
+    var delta = correct ? Math.round(baseReward * (multiplier || 1)) : -15;
+    return { score: Math.max(0, score + delta), streak: nextStreak, delta: delta };
+  }
+  function isCoreMissionReady(state) {
+    return !!(state && state.passedRedNun && state.trafficDecisionMade && state.trafficManeuverComplete && state.reachedHalfwayRock && state.targetFishDecision && state.trapDecisionMade);
+  }
+  function getCoreObjective(state, profile, encounter) {
+    if (!state || !state.passedRedNun) return { id: 'buoy', label: 'Pass red nun on starboard' };
+    if (!state.trafficDecisionMade) return { id: 'traffic', label: 'Resolve crossing with ' + encounter.vessel };
+    if (!state.trafficManeuverComplete) return { id: 'maneuver', label: encounter.maneuverLabel };
+    if (!state.reachedHalfwayRock) return { id: 'grounds', label: 'Reach ' + profile.destination };
+    if (!state.targetFishDecision) return { id: 'fish', label: 'Classify ' + profile.targetFish };
+    if (!state.trapDecisionMade) return { id: 'trap', label: 'Classify ' + profile.trapCatch };
+    return { id: 'dock', label: 'Return safely to dock' };
+  }
+  function relativeCoreBearing(heading, fromX, fromZ, toX, toZ) {
+    var absoluteBearing = Math.atan2(toX - fromX, -(toZ - fromZ));
+    var relative = absoluteBearing - heading;
+    while (relative > Math.PI) relative -= Math.PI * 2;
+    while (relative < -Math.PI) relative += Math.PI * 2;
+    return relative;
+  }
+  function getCoreVoyageRank(score, accuracy, fuel) {
+    if (score >= 200 && accuracy >= 90 && fuel >= 30) return { id: 'gold', label: 'Gold Wheelhouse', stars: 3, color: '#fde68a' };
+    if (score >= 145 && accuracy >= 80 && fuel >= 20) return { id: 'silver', label: 'Silver Skipper', stars: 2, color: '#dbeafe' };
+    return { id: 'bronze', label: 'Bronze Deckhand', stars: 1, color: '#fdba74' };
+  }
+  window.__FisherLabCore = {
+    getCoreSimProfile: getCoreSimProfile,
+    getCoreVoyageMode: getCoreVoyageMode,
+    getCoreEncounter: getCoreEncounter,
+    evaluateCoreEncounter: evaluateCoreEncounter,
+    evaluateCoreManeuver: evaluateCoreManeuver,
+    evaluateCoreCollisionRisk: evaluateCoreCollisionRisk,
+    scoreCoreDecision: scoreCoreDecision,
+    isCoreMissionReady: isCoreMissionReady,
+    getCoreObjective: getCoreObjective,
+    relativeCoreBearing: relativeCoreBearing,
+    getCoreVoyageRank: getCoreVoyageRank
+  };
 
   // ───────────────────────────────────────────────────────────
   // DATA: GEAR & METHODS
@@ -7938,6 +8066,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     boat.position.set(0, 0, 0);
     scene.add(boat);
 
+    // Regional crossing traffic makes the COLREGS lesson visible in the voyage.
+    var trafficVessel = new THREE.Group();
+    var trafficHullColor = activeRegion === 'greatlakes' ? 0x9f2d24 : activeRegion === 'pnw' ? 0x1f6b55 : activeRegion === 'chesapeake' ? 0xf5f1df : 0xe5e7eb;
+    var trafficHull = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.9, 9), new THREE.MeshLambertMaterial({ color: trafficHullColor }));
+    trafficHull.position.y = 0.55;
+    trafficVessel.add(trafficHull);
+    var trafficCabin = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.8, 4.4), new THREE.MeshLambertMaterial({ color: 0xf8fafc }));
+    trafficCabin.position.set(0, 1.7, -0.3);
+    trafficVessel.add(trafficCabin);
+    var trafficWindows = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.45, 2.8), new THREE.MeshLambertMaterial({ color: 0x164e63, transparent: true, opacity: 0.82 }));
+    trafficWindows.position.set(0, 1.95, -0.15);
+    trafficVessel.add(trafficWindows);
+    var trafficStack = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 1.5, 10), new THREE.MeshLambertMaterial({ color: 0x1f2937 }));
+    trafficStack.position.set(0, 3.15, -1.1);
+    trafficVessel.add(trafficStack);
+    var trafficMast = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.3, 8), new THREE.MeshLambertMaterial({ color: 0xd1d5db }));
+    trafficMast.position.set(0, 3.3, 1.2);
+    trafficVessel.add(trafficMast);
+    if (activeRegion === 'chesapeake') {
+      trafficCabin.visible = false;
+      trafficWindows.visible = false;
+      trafficStack.visible = false;
+      var sailShape = new THREE.Shape();
+      sailShape.moveTo(0, 0);
+      sailShape.lineTo(0, 4.6);
+      sailShape.lineTo(3.2, 0.3);
+      sailShape.closePath();
+      var trafficSail = new THREE.Mesh(new THREE.ShapeGeometry(sailShape), new THREE.MeshLambertMaterial({ color: 0xfff7ed, side: THREE.DoubleSide }));
+      trafficSail.position.set(-0.1, 1.0, 0.8);
+      trafficSail.rotation.y = Math.PI / 2;
+      trafficVessel.add(trafficSail);
+    }
+    var trafficRed = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff2d2d }));
+    trafficRed.position.set(-1.85, 1.2, 3.1);
+    trafficVessel.add(trafficRed);
+    var trafficGreen = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), new THREE.MeshBasicMaterial({ color: 0x22c55e }));
+    trafficGreen.position.set(1.85, 1.2, 3.1);
+    trafficVessel.add(trafficGreen);
+    trafficVessel.position.set(30, 0, -42);
+    trafficVessel.rotation.y = -Math.PI / 2;
+    trafficVessel.visible = false;
+    scene.add(trafficVessel);
+
     // ═══════════════════════════════════════════════════════════════════
     // AMBIENT VISUAL FX — a "living sea & sky" rendering layer draped over
     // the existing scene. Purely visual: the fisheries SIMULATION (catch
@@ -7957,7 +8128,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
         // ── procedural textures ──
         function radialTex(inner, outer) {
-          var c = document.createElement('canvas'); c.width = c.height = 64;
+          var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Decorative simulator texture'); c.width = c.height = 64;
           var g = c.getContext('2d');
           var grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
           grd.addColorStop(0, inner); grd.addColorStop(1, outer);
@@ -7965,7 +8136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           return keep(new THREE.CanvasTexture(c));
         }
         function streakTex() {
-          var c = document.createElement('canvas'); c.width = 8; c.height = 32;
+          var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Decorative simulator texture'); c.width = 8; c.height = 32;
           var g = c.getContext('2d');
           var gr = g.createLinearGradient(0, 0, 0, 32);
           gr.addColorStop(0, 'rgba(205,222,236,0)'); gr.addColorStop(0.5, 'rgba(214,230,242,0.9)'); gr.addColorStop(1, 'rgba(205,222,236,0)');
@@ -7973,7 +8144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           return keep(new THREE.CanvasTexture(c));
         }
         function gullTex() {
-          var c = document.createElement('canvas'); c.width = 32; c.height = 32;
+          var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Decorative simulator texture'); c.width = 32; c.height = 32;
           var g = c.getContext('2d');
           g.strokeStyle = 'rgba(58,66,76,0.92)'; g.lineWidth = 2.6; g.lineCap = 'round';
           g.beginPath(); g.moveTo(4, 20); g.quadraticCurveTo(12, 9, 16, 16); g.quadraticCurveTo(20, 9, 28, 20); g.stroke();
@@ -8681,6 +8852,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── Boat state
+    var missionProfile = getCoreSimProfile(activeRegion);
+    var voyageMode = getCoreVoyageMode((opts && opts.mode) || 'guided');
+    var encounterProfile = getCoreEncounter(activeRegion, voyageMode.id);
+    var trafficTravelDirection = encounterProfile.approachSide === 'port' ? 1 : -1;
     var boatState = {
       pos: new THREE.Vector3(0, 0, 5.5),
       heading: Math.PI, // facing south (out of harbor)
@@ -8691,16 +8866,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       passedRedNun: false,
       reachedHalfwayRock: false,
       returnedHome: false,
-      fuel: 100,
+      fuel: voyageMode.startFuel,
       fishLanded: 0,
       keptKeeperCod: false,
       lobstersHauled: 0,
       keeperLobsters: 0,
       closestTrapId: null,
       closestTrapHauled: false,
-      timeOfDay: 'day',
-      weather: 'clear',
-      cameraView: 'chase'
+      timeOfDay: voyageMode.timeOfDay,
+      weather: voyageMode.weather,
+      cameraView: 'chase',
+      paused: false,
+      stewardshipScore: 0,
+      decisionStreak: 0,
+      correctDecisions: 0,
+      totalDecisions: 0,
+      targetFishDecision: false,
+      trapDecisionMade: false,
+      trafficEncounterTriggered: false,
+      trafficDecisionMade: false,
+      trafficDecisionCorrect: false,
+      trafficManeuverComplete: false,
+      trafficManeuverReviewed: false,
+      trafficManeuverSeconds: 0,
+      trafficStartHeading: Math.PI,
+      trafficStartSpeed: 0,
+      trafficStartRange: 0,
+      trafficStartBearing: 0,
+      trafficClosestRange: Infinity,
+      missionComplete: false,
+      fuelDepletedWarned: false,
+      earlyDockWarned: false,
+      unsafeSpeedWarned: false,
+      unsafeSpeedSeconds: 0
     };
     boat.position.copy(boatState.pos);
 
@@ -8802,15 +9000,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── Keyboard state
     var keys = {};
     function onKeyDown(e) {
-      if (document.activeElement && (
-        document.activeElement.tagName === 'INPUT' ||
-        document.activeElement.tagName === 'SELECT' ||
-        document.activeElement.tagName === 'TEXTAREA'
-      )) {
+      if (document.activeElement !== canvas) return;
+      keys[e.key.toLowerCase()] = true;
+      if (e.key === ' ' || e.key.indexOf('Arrow') === 0) e.preventDefault();
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        setPaused(!boatState.paused, true);
         return;
       }
-      keys[e.key.toLowerCase()] = true;
-      if (e.key === ' ') e.preventDefault();
 
       if (e.key === 'h' || e.key === 'H') {
         startHauling();
@@ -8836,6 +9032,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var cameraTarget = new THREE.Vector3();
     var hudCb = (opts && opts.onHudUpdate) || function() {};
     var statusCb = (opts && opts.onStatus) || function() {};
+    var lastHud = {};
+    function setPaused(paused, announce) {
+      boatState.paused = !!paused;
+      keys = {};
+      boatState.throttle = 0;
+      if (announce) {
+        flAnnounce(boatState.paused ? 'Simulation paused.' : 'Simulation resumed. Focus the harbor scene to steer.');
+        statusCb({ type: 'system', text: boatState.paused ? 'Simulation paused' : 'Simulation resumed' });
+      }
+      hudCb(Object.assign({}, lastHud, { paused: boatState.paused }));
+    }
+    function resolveTrafficEncounter(action) {
+      if (boatState.trafficDecisionMade) return;
+      var result = evaluateCoreEncounter(activeRegion, action, voyageMode.id);
+      var scored = scoreCoreDecision(boatState.stewardshipScore, boatState.decisionStreak, result.correct, voyageMode.scoreMultiplier);
+      boatState.stewardshipScore = scored.score;
+      boatState.decisionStreak = scored.streak;
+      boatState.totalDecisions += 1;
+      if (result.correct) boatState.correctDecisions += 1;
+      boatState.trafficDecisionMade = true;
+      boatState.trafficDecisionCorrect = result.correct;
+      boatState.trafficStartHeading = boatState.heading;
+      boatState.trafficStartSpeed = boatState.speed;
+      boatState.trafficManeuverSeconds = 0;
+      boatState.trafficStartRange = boat.position.distanceTo(trafficVessel.position);
+      boatState.trafficStartBearing = relativeCoreBearing(boatState.heading, boat.position.x, boat.position.z, trafficVessel.position.x, trafficVessel.position.z) * 180 / Math.PI;
+      boatState.trafficClosestRange = boatState.trafficStartRange;
+      setPaused(false, false);
+      statusCb({ type: result.correct ? 'score' : 'violation', text: (result.correct ? '+' : '') + scored.delta + ' points · ' + result.encounter.explanation });
+      statusCb({ type: 'guidance', text: 'Helm drill: ' + encounterProfile.maneuverInstruction });
+      flAnnounce((result.correct ? 'Correct. ' : 'Review needed. ') + encounterProfile.maneuverInstruction);
+    }
+
+    function resolveCatch(kind, action, correct, speciesId) {
+      var scored = scoreCoreDecision(boatState.stewardshipScore, boatState.decisionStreak, correct, voyageMode.scoreMultiplier);
+      boatState.stewardshipScore = scored.score;
+      boatState.decisionStreak = scored.streak;
+      boatState.totalDecisions += 1;
+      if (correct) boatState.correctDecisions += 1;
+      if (kind === 'shellfish') {
+        boatState.lobstersHauled += 1;
+        boatState.trapDecisionMade = correct || boatState.trapDecisionMade;
+        if (action === 'keep' && correct) boatState.keeperLobsters += 1;
+      } else if (speciesId === missionProfile.targetFishId && correct) {
+        boatState.targetFishDecision = true;
+      }
+      setPaused(false, false);
+      statusCb({ type: correct ? 'score' : 'violation', text: (correct ? '+' : '') + scored.delta + ' stewardship points' + (correct && scored.streak > 1 ? ' · ' + scored.streak + ' decision streak' : '') });
+    }
 
     var t0 = performance.now();
     var raf = null;
@@ -8848,6 +9093,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var now = performance.now();
       var dt = Math.min(0.08, (now - lastT) / 1000);
       lastT = now;
+      if (boatState.paused) {
+        var pausedComposer = renderer._alloComposer;
+        if (pausedComposer) pausedComposer.render(); else renderer.render(scene, camera);
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       elapsed += dt;
 
       // Inputs
@@ -8857,13 +9108,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (keys['a'] || keys['arrowleft']) steer = 1;
       if (keys['d'] || keys['arrowright']) steer = -1;
       if (keys[' ']) accel = 1.5;
+      if (boatState.fuel <= 0) {
+        accel = 0;
+        if (!boatState.fuelDepletedWarned) {
+          boatState.fuelDepletedWarned = true;
+          statusCb({ type: 'violation', text: 'Fuel exhausted — propulsion offline. Restart the mission and plan a reserve.' });
+          flAnnounce('Fuel exhausted. Propulsion offline.');
+        }
+      }
 
-      // Boat physics & dynamic pitch/roll feedback
-      boatState.throttle += (accel - boatState.throttle) * 0.04;
+      // Frame-rate-independent response keeps handling consistent across devices.
+      var throttleResponse = 1 - Math.exp(-3.0 * dt);
+      boatState.throttle += (accel - boatState.throttle) * throttleResponse;
       boatState.speed += boatState.throttle * 6 * dt;
-      boatState.speed *= 0.985;
+      boatState.speed *= Math.exp(-0.9 * dt);
+      var conditionSpeedLimit = boatState.weather === 'foggy' ? voyageMode.safeSpeed : boatState.weather === 'rainy' ? Math.min(5, voyageMode.safeSpeed + 1) : 8;
       if (boatState.speed > 8) boatState.speed = 8;
       if (boatState.speed < -3) boatState.speed = -3;
+      if (boatState.weather !== 'clear' && Math.abs(boatState.speed) > conditionSpeedLimit) {
+        boatState.unsafeSpeedSeconds += dt;
+        if (boatState.unsafeSpeedSeconds >= 3 && !boatState.unsafeSpeedWarned) {
+          boatState.unsafeSpeedWarned = true;
+          boatState.stewardshipScore = Math.max(0, boatState.stewardshipScore - 10);
+          statusCb({ type: 'violation', text: 'Unsafe speed for visibility and sea state: -10 points. Reduce below ' + conditionSpeedLimit.toFixed(1) + ' kt.' });
+          flAnnounce('Unsafe speed for current conditions. Reduce speed.');
+        }
+      } else {
+        boatState.unsafeSpeedSeconds = Math.max(0, boatState.unsafeSpeedSeconds - dt * 2);
+      }
       boatState.heading += steer * dt * 0.9 * Math.min(1, Math.abs(boatState.speed) / 2 + 0.2);
       
       var targetRoll = -steer * 0.12 * Math.min(1.0, Math.abs(boatState.speed) / 2.0);
@@ -8875,8 +9147,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var dx = Math.sin(boatState.heading) * boatState.speed * dt;
       var dz = Math.cos(boatState.heading) * boatState.speed * dt;
       boatState.pos.x += dx;
-      boatState.pos.z -= dz;
-      boatState.fuel -= Math.abs(boatState.throttle) * dt * 0.5;
+      boatState.pos.z += dz;
+      var weatherFuelFactor = boatState.weather === 'rainy' ? 1.25 : boatState.weather === 'foggy' ? 1.08 : 1;
+      boatState.fuel = Math.max(0, boatState.fuel - Math.abs(boatState.throttle) * dt * voyageMode.fuelBurn * weatherFuelFactor);
 
       boat.position.x = boatState.pos.x;
       boat.position.z = boatState.pos.z;
@@ -8910,7 +9183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           var angleOffset = boatState.heading + (Math.random() - 0.5) * 0.2;
           var dist = 2.4 + Math.random() * 0.4;
           var px = boat.position.x - Math.sin(angleOffset) * dist;
-          var pz = boat.position.z + Math.cos(angleOffset) * dist;
+          var pz = boat.position.z - Math.cos(angleOffset) * dist;
           var py = 0.05 + (Math.random() - 0.5) * 0.05;
 
           var speedFactor = boatState.speed * 0.4;
@@ -9061,6 +9334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             keeper = (length >= 3.25) && (length <= 5.0) && !isVNotched;
           }
 
+          setPaused(true, false);
           statusCb({
             type: 'lobster-haul',
             specimenType: (activeRegion === 'chesapeake' || activeRegion === 'pnw') ? 'crab' : activeRegion === 'greatlakes' ? 'crayfish' : 'lobster',
@@ -9082,12 +9356,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           var bb = buoys[ib];
           if (bb.userData.type !== 'red-nun') continue;
           var d = boat.position.distanceTo(bb.position);
-          if (d < 4) {
+          if (d < 7) {
             var toBuoy = new THREE.Vector3().subVectors(bb.position, boat.position);
             var localX = Math.cos(boatState.heading) * toBuoy.x + Math.sin(boatState.heading) * toBuoy.z;
             if (localX > 0.5) {
               boatState.passedRedNun = true;
-              flAnnounce('Passed red nun on starboard.');
+              boatState.stewardshipScore += Math.round(20 * voyageMode.scoreMultiplier);
+              flAnnounce('Passed red nun on starboard. Twenty navigation points earned.');
               statusCb({ type: 'milestone', text: 'Passed first red nun on starboard ✓' });
             } else if (localX < -0.5) {
               flAnnounce('Passed red nun on the wrong side (port).');
@@ -9097,23 +9372,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
       }
 
+      // Trigger one visible regional traffic encounter after clearing the harbor entrance.
+      if (boatState.passedRedNun && !boatState.trafficEncounterTriggered && boat.position.distanceTo(dock.position) > 22) {
+        boatState.trafficEncounterTriggered = true;
+        trafficVessel.visible = true;
+        trafficVessel.position.set(trafficTravelDirection > 0 ? -26 : 26, 0, boat.position.z - 18);
+        trafficVessel.rotation.y = trafficTravelDirection > 0 ? Math.PI / 2 : -Math.PI / 2;
+        setPaused(true, false);
+        statusCb({ type: 'traffic-encounter', encounter: encounterProfile, text: encounterProfile.vessel + ' crossing · ' + encounterProfile.rule + ' decision required' });
+        flAnnounce('Traffic encounter. ' + encounterProfile.situation + ' Choose the correct action.');
+      }
+      var trafficManeuver = evaluateCoreManeuver(encounterProfile.maneuverType, boatState.trafficStartHeading, boatState.heading, boatState.trafficStartSpeed, boatState.speed, boatState.trafficManeuverSeconds);
+      var trafficRange = boat.position.distanceTo(trafficVessel.position);
+      var trafficRelativeBearing = relativeCoreBearing(boatState.heading, boat.position.x, boat.position.z, trafficVessel.position.x, trafficVessel.position.z) * 180 / Math.PI;
+      if (boatState.trafficDecisionMade && !boatState.trafficManeuverComplete) {
+        boatState.trafficManeuverSeconds += dt;
+        boatState.trafficClosestRange = Math.min(boatState.trafficClosestRange, trafficRange);
+        if (trafficManeuver.complete) {
+          boatState.trafficManeuverComplete = true;
+          var maneuverBonus = Math.round(20 * voyageMode.scoreMultiplier);
+          boatState.stewardshipScore += maneuverBonus;
+          statusCb({ type: 'milestone', text: encounterProfile.maneuverLabel + ' complete · +' + maneuverBonus + ' points' });
+          flAnnounce(encounterProfile.maneuverLabel + ' complete.');
+        } else if (boatState.trafficManeuverSeconds >= 20) {
+          boatState.trafficManeuverComplete = true;
+          boatState.trafficManeuverReviewed = true;
+          statusCb({ type: 'guidance', text: 'Maneuver window ended. Review: ' + encounterProfile.maneuverInstruction });
+          flAnnounce('Maneuver reviewed. Continue the voyage.');
+        }
+      }
+      var trafficRisk = boatState.trafficDecisionMade ? evaluateCoreCollisionRisk(boatState.trafficStartRange, trafficRange, boatState.trafficClosestRange, boatState.trafficStartBearing, trafficRelativeBearing) : { id: 'monitoring', label: 'Monitoring bearing and range', bearingChange: 0, rangeChange: 0, constantBearing: false, closing: false, opening: false };
+      if (boatState.trafficDecisionMade && trafficVessel.visible) {
+        trafficVessel.position.x += trafficTravelDirection * dt * 4.2;
+        if ((trafficTravelDirection < 0 && trafficVessel.position.x < -34) || (trafficTravelDirection > 0 && trafficVessel.position.x > 34)) trafficVessel.visible = false;
+      }
+
       // Reached Halfway Rock
       if (!boatState.reachedHalfwayRock) {
         var dRock = boat.position.distanceTo(rock.position);
         if (dRock < 6) {
           boatState.reachedHalfwayRock = true;
-          flAnnounce('Reached Halfway Rock. Drop a jig (press F).');
-          statusCb({ type: 'milestone', text: 'Reached Halfway Rock — press F to fish' });
+          boatState.stewardshipScore += Math.round(30 * voyageMode.scoreMultiplier);
+          flAnnounce('Reached the fishing grounds. Drop a jig with F.');
+          statusCb({ type: 'milestone', text: 'Reached ' + missionProfile.destination + ' — press F to fish' });
         }
       }
 
-      // Returned home
+      // A safe return completes the run only after all learning objectives.
       if (boatState.reachedHalfwayRock && !boatState.returnedHome) {
         var dDock = boat.position.distanceTo(dock.position);
         if (dDock < 4 && Math.abs(boatState.speed) < 1) {
-          boatState.returnedHome = true;
-          flAnnounce('Docked safely. Mission summary available.');
-          statusCb({ type: 'complete', text: 'Mission complete — review summary' });
+          if (isCoreMissionReady(boatState)) {
+            boatState.returnedHome = true;
+            boatState.missionComplete = true;
+            var returnBonus = Math.round(50 * voyageMode.scoreMultiplier);
+            boatState.stewardshipScore += returnBonus;
+            var finalAccuracy = boatState.totalDecisions ? Math.round(boatState.correctDecisions / boatState.totalDecisions * 100) : 0;
+            var finalRank = getCoreVoyageRank(boatState.stewardshipScore, finalAccuracy, boatState.fuel);
+            setPaused(true, false);
+            flAnnounce('Docked safely. Mission complete. ' + finalRank.label + ' earned.');
+            statusCb({ type: 'mission-complete', score: boatState.stewardshipScore, accuracy: finalAccuracy, fuel: boatState.fuel, elapsed: elapsed, mode: voyageMode.id, rank: finalRank, text: 'Mission complete — safe return bonus +' + returnBonus });
+          } else if (!boatState.earlyDockWarned) {
+            boatState.earlyDockWarned = true;
+            statusCb({ type: 'guidance', text: 'Not ready to dock: finish the traffic, fish, and trap decisions before returning.' });
+          }
         }
       }
 
@@ -9157,14 +9479,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           }
         }
         
+        setPaused(true, false);
         statusCb({
-          type: 'fish',
+          type: 'fish-haul',
           species: sp,
           length: len,
           isKeeper: isKeeper,
           text: 'Landed a ' + len + '" ' + sp.name + (isKeeper ? ' — KEEPER' : ' — release (' + (sp.slot ? 'slot ' + sp.slot : 'min ' + sp.minSize + '"') + ')')
         });
-        if (sp.id === 'cod' && isKeeper) boatState.keptKeeperCod = true;
+        // The learner decides keep or release in the inspection overlay.
       }
 
       // Wave animation — 3 octaves; amplitude scales with weather-driven sea state
@@ -9192,7 +9515,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var desiredCam = new THREE.Vector3(
           boat.position.x - Math.sin(boatState.heading) * 9,
           4,
-          boat.position.z + Math.cos(boatState.heading) * 9
+          boat.position.z - Math.cos(boatState.heading) * 9
         );
         camera.position.lerp(desiredCam, reducedMotion ? 0.25 : 0.08);
         cameraTarget.set(boat.position.x, 1.5, boat.position.z);
@@ -9214,7 +9537,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         camera.lookAt(cameraTarget);
       }
 
-      hudCb({
+      var objective = getCoreObjective(boatState, missionProfile, encounterProfile);
+      var objectiveTarget = rock;
+      if (objective.id === 'buoy') {
+        for (var ob = 0; ob < buoys.length; ob++) {
+          if (buoys[ob].userData.type === 'red-nun') { objectiveTarget = buoys[ob]; break; }
+        }
+      } else if (objective.id === 'traffic' || objective.id === 'maneuver') {
+        objectiveTarget = trafficVessel;
+      } else if (objective.id === 'trap') {
+        var nearestTrap = null;
+        var nearestTrapDistance = Infinity;
+        for (var ot = 0; ot < buoys.length; ot++) {
+          if (buoys[ot].userData.type !== 'lobster-buoy' || buoys[ot].userData.hauled) continue;
+          var trapDistance = boat.position.distanceTo(buoys[ot].position);
+          if (trapDistance < nearestTrapDistance) { nearestTrap = buoys[ot]; nearestTrapDistance = trapDistance; }
+        }
+        if (nearestTrap) objectiveTarget = nearestTrap;
+      } else if (objective.id === 'dock') {
+        objectiveTarget = dock;
+      }
+      var objectiveDistance = boat.position.distanceTo(objectiveTarget.position);
+      var objectiveBearing = relativeCoreBearing(boatState.heading, boat.position.x, boat.position.z, objectiveTarget.position.x, objectiveTarget.position.z) * 180 / Math.PI;
+      if (objective.id === 'maneuver') objectiveBearing = encounterProfile.maneuverType === 'stand-on' ? 0 : 25;
+
+      var hudPayload = {
         speed: boatState.speed,
         heading: boatState.heading,
         fuel: boatState.fuel,
@@ -9232,8 +9579,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         distToDock: boat.position.distanceTo(dock.position),
         cameraView: cameraView,
         timeOfDay: boatState.timeOfDay,
-        weather: boatState.weather
-      });
+        weather: boatState.weather,
+        paused: boatState.paused,
+        stewardshipScore: boatState.stewardshipScore,
+        decisionStreak: boatState.decisionStreak,
+        correctDecisions: boatState.correctDecisions,
+        totalDecisions: boatState.totalDecisions,
+        targetFishDecision: boatState.targetFishDecision,
+        trapDecisionMade: boatState.trapDecisionMade,
+        trafficDecisionMade: boatState.trafficDecisionMade,
+        trafficDecisionCorrect: boatState.trafficDecisionCorrect,
+        trafficManeuverComplete: boatState.trafficManeuverComplete,
+        trafficManeuverReviewed: boatState.trafficManeuverReviewed,
+        trafficManeuverType: encounterProfile.maneuverType,
+        trafficManeuverLabel: encounterProfile.maneuverLabel,
+        trafficCriterionOne: trafficManeuver.criterionOne,
+        trafficCriterionTwo: trafficManeuver.criterionTwo,
+        trafficObservedEnough: trafficManeuver.observedEnough,
+        trafficHeadingDeviation: trafficManeuver.headingDeviation,
+        trafficSpeedDeviation: trafficManeuver.speedDeviation,
+        trafficTurnDegrees: trafficManeuver.turnDegrees,
+        trafficRange: trafficRange,
+        trafficRelativeBearing: trafficRelativeBearing,
+        trafficRiskId: trafficRisk.id,
+        trafficRiskLabel: trafficRisk.label,
+        trafficBearingChange: trafficRisk.bearingChange,
+        trafficRangeChange: trafficRisk.rangeChange,
+        trafficConstantBearing: trafficRisk.constantBearing,
+        trafficClosing: trafficRisk.closing,
+        trafficOpening: trafficRisk.opening,
+        trafficClosestRange: boatState.trafficClosestRange,
+        trafficManeuverSeconds: boatState.trafficManeuverSeconds,
+        trafficVesselVisible: trafficVessel.visible,
+        missionComplete: boatState.missionComplete,
+        mode: voyageMode.id,
+        modeLabel: voyageMode.label,
+        requiredFuel: voyageMode.requiredFuel,
+        requiredAccuracy: voyageMode.requiredAccuracy,
+        safeSpeed: conditionSpeedLimit,
+        unsafeSpeed: boatState.weather !== 'clear' && Math.abs(boatState.speed) > conditionSpeedLimit,
+        objectiveId: objective.id,
+        objectiveLabel: objective.label,
+        objectiveDistance: objectiveDistance,
+        objectiveBearing: objectiveBearing,
+        boatX: boatState.pos.x,
+        boatZ: boatState.pos.z
+      };
+      lastHud = hudPayload;
+      hudCb(hudPayload);
 
       AF.update(dt, elapsed);
       var _ac = renderer._alloComposer;
@@ -9280,15 +9673,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       haulTrap: function() {
         startHauling();
       },
+      fish: function() {
+        if (boatState.reachedHalfwayRock) keys['f'] = true;
+        else statusCb({ type: 'guidance', text: 'Navigate to the fishing grounds before dropping a line.' });
+      },
+      setControl: function(key, pressed) {
+        if (!boatState.paused) keys[key] = !!pressed;
+      },
+      setPaused: function(paused) {
+        setPaused(paused, true);
+      },
+      resolveCatch: function(kind, action, correct, speciesId) {
+        resolveCatch(kind, action, correct, speciesId);
+      },
+      resolveTrafficEncounter: function(action) {
+        resolveTrafficEncounter(action);
+      },
       setWeather: function(w) {
         boatState.weather = w;
         updateEnvironment(boatState.timeOfDay, w);
       },
-      addKeeperLobster: function(isKeeper) {
-        boatState.lobstersHauled += 1;
-        if (isKeeper) {
-          boatState.keeperLobsters += 1;
-        }
+      restartMission: function() {
+        boatState.pos.set(0, 0, 5.5);
+        boat.position.copy(boatState.pos);
+        boatState.heading = Math.PI;
+        boatState.speed = 0;
+        boatState.throttle = 0;
+        boatState.passedRedNun = false;
+        boatState.reachedHalfwayRock = false;
+        boatState.returnedHome = false;
+        boatState.fuel = voyageMode.startFuel;
+        boatState.fishLanded = 0;
+        boatState.lobstersHauled = 0;
+        boatState.keeperLobsters = 0;
+        boatState.targetFishDecision = false;
+        boatState.trapDecisionMade = false;
+        boatState.trafficEncounterTriggered = false;
+        boatState.trafficDecisionMade = false;
+        boatState.trafficDecisionCorrect = false;
+        boatState.trafficManeuverComplete = false;
+        boatState.trafficManeuverReviewed = false;
+        boatState.trafficManeuverSeconds = 0;
+        boatState.trafficStartHeading = Math.PI;
+        boatState.trafficStartSpeed = 0;
+        boatState.trafficStartRange = 0;
+        boatState.trafficStartBearing = 0;
+        boatState.trafficClosestRange = Infinity;
+        boatState.missionComplete = false;
+        boatState.stewardshipScore = 0;
+        boatState.decisionStreak = 0;
+        boatState.correctDecisions = 0;
+        boatState.totalDecisions = 0;
+        boatState.fuelDepletedWarned = false;
+        boatState.earlyDockWarned = false;
+        boatState.unsafeSpeedWarned = false;
+        boatState.unsafeSpeedSeconds = 0;
+        buoys.forEach(function(b) { if (b.userData.type === 'lobster-buoy') b.userData.hauled = false; });
+        trafficVessel.position.set(30, 0, -42);
+        trafficVessel.visible = false;
+        setPaused(false, false);
+        statusCb({ type: 'system', text: missionProfile.title + ' restarted' });
       }
     };
   }
@@ -9336,6 +9780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var aqCondIQ = aqCondHook[0], setAqCondIQ = aqCondHook[1];
     var canvasRef = useRef(null);
     var harborRef = useRef(null);
+    var decisionFocusRef = useRef(null);
 
     var soundHook = useState(false);
     var soundOn = soundHook[0], setSoundOn = soundHook[1];
@@ -9345,8 +9790,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var cameraView = camHook[0], setCameraViewState = camHook[1];
     var weatherHook = useState('clear');
     var weather = weatherHook[0], setWeatherState = weatherHook[1];
+    var voyageModeHook = useState(stateInit.coreVoyageMode || 'guided');
+    var voyageMode = voyageModeHook[0], setVoyageMode = voyageModeHook[1];
     var activeLobsterHook = useState(null);
     var activeLobster = activeLobsterHook[0], setActiveLobster = activeLobsterHook[1];
+    var activeFishHook = useState(null);
+    var activeFish = activeFishHook[0], setActiveFish = activeFishHook[1];
+    var activeTrafficHook = useState(null);
+    var activeTraffic = activeTrafficHook[0], setActiveTraffic = activeTrafficHook[1];
     var caliperHook = useState(3.5);
     var caliperVal = caliperHook[0], setCaliperVal = caliperHook[1];
     var missionDrawerHook = useState(false);
@@ -9426,6 +9877,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       setCheckpointResult(null);
     }
 
+    useEffect(function() {
+      if (!activeFish && !activeLobster && !activeTraffic) return;
+      setTimeout(function() {
+        if (decisionFocusRef.current && decisionFocusRef.current.focus) decisionFocusRef.current.focus();
+      }, 0);
+    }, [activeFish, activeLobster, activeTraffic]);
+
     // Regenerate checkpoint specimen on region changes
     useEffect(function() {
       generateCheckpointSpecimen();
@@ -9462,6 +9920,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       saveState(s);
     }, [region]);
 
+    useEffect(function() {
+      var s = loadState();
+      s.coreVoyageMode = voyageMode;
+      saveState(s);
+    }, [voyageMode]);
+
     function recordCatch(speciesId, length) {
       var saved = loadState();
       var priorLog = Array.isArray(saved.lifeLog) ? saved.lifeLog : (lifeLog || []);
@@ -9488,9 +9952,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         setActiveLobster(ev);
         setCaliperVal(3.5);
       }
+      if (ev.type === 'fish-haul') setActiveFish(ev);
+      if (ev.type === 'traffic-encounter') setActiveTraffic(ev.encounter);
+      if (ev.type === 'mission-complete') {
+        var saved = loadState();
+        saved.completedMissions = saved.completedMissions || {};
+        saved.completedMissions['core-' + region] = true;
+        saved.completedMissions['core-' + region + '-' + (ev.mode || 'guided')] = true;
+        saved.bestCoreScores = saved.bestCoreScores || {};
+        saved.bestCoreScores[region] = Math.max(saved.bestCoreScores[region] || 0, ev.score || 0);
+        saved.bestCoreRanks = saved.bestCoreRanks || {};
+        var rankWeight = { bronze: 1, silver: 2, gold: 3 };
+        var rankKey = region + ':' + (ev.mode || 'guided');
+        var priorRank = saved.bestCoreRanks[rankKey];
+        if (!priorRank || (rankWeight[ev.rank && ev.rank.id] || 0) > (rankWeight[priorRank] || 0)) saved.bestCoreRanks[rankKey] = ev.rank ? ev.rank.id : 'bronze';
+        saved.coreTrips = (saved.coreTrips || 0) + 1;
+        saveState(saved);
+      }
     }
 
     function startSim() {
+      var selectedMode = getCoreVoyageMode(voyageMode);
+      setTimeOfDayState(selectedMode.timeOfDay);
+      setWeatherState(selectedMode.weather);
+      setStatus([]);
+      setHud({});
+      setActiveFish(null);
+      setActiveLobster(null);
+      setActiveTraffic(null);
       if (window.THREE) {
         setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
       } else {
@@ -9522,6 +10011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             activeSimRegionRef.current = region;
             harborRef.current = initHarborSim(canvasRef.current, {
               region: region,
+              mode: voyageMode,
               onHudUpdate: setHud,
               onStatus: pushStatus,
               onSoundToggle: setSoundOn,
@@ -9534,7 +10024,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             harborRef.current.setTimeOfDay(timeOfDay);
             harborRef.current.setCameraView(cameraView);
             harborRef.current.setWeather(weather);
-            flAnnounce('FisherLab 3D sim launched for ' + REGIONS[region].label + '. Use WASD/arrows to steer, Space for boost, F to fish, H to haul trap, V to cycle camera, M to toggle sound.');
+            setTimeout(function() { if (canvasRef.current && canvasRef.current.focus) canvasRef.current.focus(); }, 0);
+            flAnnounce('FisherLab 3D sim launched for ' + REGIONS[region].label + '. Harbor scene focused. Use WASD or arrows to steer, F to fish, H to haul, and P to pause.');
           } catch (err) {
             console.error('[FisherLab] Error starting 3D simulation:', err);
             setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
@@ -9683,6 +10174,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     ];
 
     function tabBar() {
+      function onSectionTabKey(e) {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+        var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+        var current = Array.prototype.indexOf.call(tabs, e.currentTarget);
+        if (current < 0 || !tabs.length) return;
+        var next = e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : (current + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        e.preventDefault();
+        tabs[next].focus();
+        tabs[next].click();
+      }
       var activeCatObj = CATEGORIES.find(function(c) { return c.tabs.indexOf(tab) !== -1; }) || CATEGORIES[0];
       var activeCat = activeCatObj.id;
       var query = String(tabSearch || '').trim().toLocaleLowerCase();
@@ -9764,7 +10265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           })
         ),
         !query && h('div', {
-          role: 'group',
+          role: 'tablist',
           'aria-label': activeCatObj.name + ' sections',
           style: { display: 'flex', flexWrap: 'wrap', gap: 5, padding: 6, background: 'rgba(15,23,42,0.35)', borderRadius: 8, border: '1px solid rgba(56,189,248,0.1)' }
         },
@@ -9774,9 +10275,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             var selected = tab === tId;
             return h('button', {
               key: tId,
+              id: 'fl-tab-' + tId,
               type: 'button',
-              'aria-current': selected ? 'page' : undefined,
+              role: 'tab',
+              'aria-selected': selected,
+              'aria-controls': 'fl-active-panel',
+              tabIndex: selected ? 0 : -1,
               className: 'fl-btn',
+              onKeyDown: onSectionTabKey,
               onClick: function() { openTab(tObj); },
               style: {
                 padding: '6px 10px',
@@ -9913,7 +10419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('span', null, s.label),
                 h('span', { style: { fontFamily: 'monospace', color: sm.color, fontWeight: 700 } }, (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit)
               ),
-              h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+              h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: iq[s.k], 'aria-label': s.label + ' (' + s.unit + ')', onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
             );
           })
         ),
@@ -9951,7 +10457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
           h('span', null, 'I can explain why these parameters yield this species ranking.')
         ),
-        iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+        iq.understood && h('textarea', { 'aria-label': 'Explain the species ranking in your own words', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
         h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Illustrative tolerance ranges only; do not use for actual stocking or fishery decisions. Always consult primary literature and DMR for production use.')
       );
     }
@@ -10159,10 +10665,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // ─── SIM tab
     function simTab() {
+      var mission = getCoreSimProfile(region);
+      var completedObjectives = (hud.passedRedNun ? 1 : 0) + (hud.trafficManeuverComplete ? 1 : 0) + (hud.reachedHalfwayRock ? 1 : 0) + (hud.targetFishDecision ? 1 : 0) + (hud.trapDecisionMade ? 1 : 0) + (hud.returnedHome ? 1 : 0);
+      var missionProgressPct = Math.round(completedObjectives / 6 * 100);
+      var fuelValue = hud.fuel == null ? 100 : Math.max(0, hud.fuel);
+      var decisionAccuracy = hud.totalDecisions ? Math.round((hud.correctDecisions || 0) / hud.totalDecisions * 100) : 0;
+      var modeProfile = getCoreVoyageMode(voyageMode);
+      var voyageRank = getCoreVoyageRank(hud.stewardshipScore || 0, decisionAccuracy, fuelValue);
+      var trafficPlotAngle = (hud.trafficRelativeBearing || 0) * Math.PI / 180;
+      var trafficPlotRadius = Math.min(22, Math.max(7, (hud.trafficRange || 0) / 38 * 22));
+      var trafficPlotX = Math.sin(trafficPlotAngle) * trafficPlotRadius;
+      var trafficPlotY = -Math.cos(trafficPlotAngle) * trafficPlotRadius;
+      var trafficRiskColor = hud.trafficRiskId === 'collision-risk' ? '#fca5a5' : hud.trafficRiskId === 'opening' ? '#86efac' : hud.trafficRiskId === 'bearing-changing' ? '#7dd3fc' : '#fde68a';
+      function setHeldControl(key, pressed) {
+        if (harborRef.current && harborRef.current.setControl) harborRef.current.setControl(key, pressed);
+      }
+      function restartCoreMission() {
+        setStatus([]);
+        setActiveFish(null);
+        setActiveLobster(null);
+        setActiveTraffic(null);
+        if (harborRef.current && harborRef.current.restartMission) harborRef.current.restartMission();
+        if (canvasRef.current && canvasRef.current.focus) canvasRef.current.focus();
+      }
       return h('div', null,
         regionBar(),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '3D Simulator'),
+          h('section', { 'aria-labelledby': 'fl-core-mission-title', style: { marginBottom: 12, padding: 12, borderRadius: 8, background: 'linear-gradient(135deg, rgba(8,47,73,0.9), rgba(6,78,59,0.72))', border: '1px solid rgba(125,211,252,0.32)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 12, alignItems: 'center' } },
+            h('div', { style: { minWidth: 0 } },
+              h('h3', { id: 'fl-core-mission-title', style: { margin: '0 0 4px', color: '#f8fafc', fontSize: 16 } }, mission.title),
+              h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11, lineHeight: 1.5 } }, 'Navigate correctly, resolve a live COLREGS traffic encounter, reach ' + mission.destination + ', classify a ' + mission.targetFish + ' and a ' + mission.trapCatch + ', then return with fuel in reserve. ' + modeProfile.label + ' target: at least ' + modeProfile.requiredAccuracy + '% accuracy and ' + modeProfile.requiredFuel + '% fuel remaining.')),
+            h('div', { style: { display: 'grid', gap: 3, textAlign: 'right', fontFamily: 'ui-monospace, monospace' } },
+              h('strong', { style: { color: '#fde68a', fontSize: 18 } }, (hud.stewardshipScore || 0) + ' pts'),
+              h('span', { style: { color: '#a7f3d0', fontSize: 10 } }, completedObjectives + '/6 objectives'),
+              h('span', { style: { color: '#bae6fd', fontSize: 10 } }, fuelValue.toFixed(0) + '% fuel'))
+          ),
+          h('fieldset', { disabled: sim.active, style: { margin: '0 0 12px', padding: 0, border: 0 } },
+            h('legend', { style: { marginBottom: 7, color: '#bae6fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Voyage challenge'),
+            h('div', { role: 'radiogroup', 'aria-label': 'Voyage challenge', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8 } },
+              ['guided', 'skipper', 'master'].map(function(modeId) {
+                var candidate = getCoreVoyageMode(modeId);
+                var selected = voyageMode === modeId;
+                return h('button', { key: modeId, type: 'button', role: 'radio', 'aria-checked': selected, disabled: sim.active,
+                  onClick: function() { setVoyageMode(modeId); setTimeOfDayState(candidate.timeOfDay); setWeatherState(candidate.weather); flAnnounce(candidate.label + ' voyage selected. ' + candidate.tagline); },
+                  style: { minHeight: 72, padding: 10, textAlign: 'left', borderRadius: 7, border: '1px solid ' + (selected ? '#38bdf8' : 'rgba(148,163,184,0.3)'), background: selected ? 'rgba(14,116,144,0.42)' : 'rgba(15,23,42,0.55)', color: '#f8fafc', cursor: sim.active ? 'not-allowed' : 'pointer', opacity: sim.active && !selected ? 0.55 : 1 } },
+                  h('strong', { style: { display: 'block', color: selected ? '#7dd3fc' : '#e2e8f0', fontSize: 13 } }, candidate.label),
+                  h('span', { style: { display: 'block', marginTop: 4, color: '#cbd5e1', fontSize: 10, lineHeight: 1.35 } }, candidate.tagline),
+                  h('span', { style: { display: 'block', marginTop: 4, color: '#a7f3d0', fontSize: 9, fontWeight: 800 } }, candidate.scoreMultiplier + 'x score · ' + candidate.startFuel + '% starting fuel'));
+              })
+            )
+          ),
           !sim.threeLoaded && !sim.threeError && !sim.loading ? h('div', { style: { textAlign: 'center', padding: 20 } },
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14 } }, 'The 3D engine (three.js r128, ~600 KB) loads on demand from cdnjs.'),
             h('button', { className: 'fl-btn',
@@ -10184,63 +10737,111 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           sim.threeLoaded && !sim.active ? h('div', { style: { textAlign: 'center', padding: 14 } },
             h('button', { className: 'fl-btn', onClick: startSim,
               style: { padding: '12px 24px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
-              '▶ Cast off — start Mission 1')) : null,
-          sim.active ? h('div', { style: { position: 'relative' } },
+              '▶ Cast off — ' + modeProfile.label + ' voyage')) : null,
+          sim.active ? h('div', { className: 'fl-sim-stage' },
             // Sound, View and Weather Controls bar
             h('div', { style: { display: 'flex', gap: 10, padding: 10, background: 'rgba(15,23,42,0.85)', borderRadius: '8px 8px 0 0', border: '1px solid rgba(56,189,248,0.22)', borderBottom: 'none', flexWrap: 'wrap', alignItems: 'center' } },
+              h('span', { className: 'fl-pill', style: { background: 'rgba(251,191,36,0.16)', color: '#fde68a' } }, modeProfile.label + ' · ' + modeProfile.scoreMultiplier + 'x'),
               h('button', {
                 className: 'fl-btn',
                 onClick: function() { setSoundOn(!soundOn); },
                 style: { padding: '6px 12px', background: soundOn ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: soundOn ? '#04141f' : '#cbd5e1', border: '1px solid ' + (soundOn ? '#38bdf8' : 'rgba(100,116,139,0.3)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, soundOn ? '🔊 Sound: ON (M)' : '🔇 Sound: OFF (M)'),
-              h('div', { style: { display: 'flex', gap: 4 } },
+              h('div', { role: 'group', 'aria-label': 'Camera view', style: { display: 'flex', gap: 4 } },
                 ['chase', 'firstperson', 'topdown'].map(function(view) {
                   var isSel = cameraView === view;
                   var labels = { chase: '📹 Chase', firstperson: '👁️ First-Person', topdown: '🛰️ Top-Down' };
                   return h('button', {
                     key: view,
+                    className: 'fl-btn',
+                    'aria-pressed': isSel,
                     onClick: function() { setCameraViewState(view); },
                     style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                   }, labels[view]);
                 })
               ),
-              h('div', { style: { display: 'flex', gap: 4 } },
+              h('div', { role: 'group', 'aria-label': 'Time of day', style: { display: 'flex', gap: 4 } },
                 ['day', 'sunset', 'night'].map(function(tod) {
                   var isSel = timeOfDay === tod;
                   var labels = { day: '☀️ Day', sunset: '🌅 Sunset', night: '🌙 Night' };
                   return h('button', {
                     key: tod,
+                    className: 'fl-btn',
+                    'aria-pressed': isSel,
+                    disabled: voyageMode !== 'guided',
                     onClick: function() { setTimeOfDayState(tod); },
-                    style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: voyageMode === 'guided' ? 'pointer' : 'not-allowed', opacity: voyageMode === 'guided' || isSel ? 1 : 0.5 }
                   }, labels[tod]);
                 })
               ),
-              h('div', { style: { display: 'flex', gap: 4 } },
+              h('div', { role: 'group', 'aria-label': 'Weather', style: { display: 'flex', gap: 4 } },
                 ['clear', 'foggy', 'rainy'].map(function(w) {
                   var isSel = weather === w;
                   var labels = { clear: '☀️ Clear', foggy: '🌫️ Foggy', rainy: '🌧️ Rainy' };
                   return h('button', {
                     key: w,
+                    className: 'fl-btn',
+                    'aria-pressed': isSel,
+                    disabled: voyageMode !== 'guided',
                     onClick: function() { setWeatherState(w); },
-                    style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: voyageMode === 'guided' ? 'pointer' : 'not-allowed', opacity: voyageMode === 'guided' || isSel ? 1 : 0.5 }
                   }, labels[w]);
                 })
               ),
+              h('button', { className: 'fl-btn', 'aria-pressed': !!hud.paused, onClick: function() { if (harborRef.current && harborRef.current.setPaused) harborRef.current.setPaused(!hud.paused); }, style: { padding: '6px 10px', background: hud.paused ? '#fbbf24' : 'rgba(15,23,42,0.5)', color: hud.paused ? '#04141f' : '#cbd5e1', border: '1px solid rgba(251,191,36,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, hud.paused ? '▶ Resume (P)' : '⏸ Pause (P)'),
+              h('button', { className: 'fl-btn', onClick: stopSim, style: { padding: '6px 10px', background: 'rgba(127,29,29,0.78)', color: '#fee2e2', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Exit'),
               hud.closestTrapId && !hud.closestTrapHauled ? h('button', {
                 className: 'fl-btn',
                 onClick: function() { if (harborRef.current && harborRef.current.haulTrap) harborRef.current.haulTrap(); },
                 style: { marginLeft: 'auto', padding: '6px 12px', background: '#fbbf24', color: '#04141f', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }
               }, '🦞 Haul Trap (H)') : null
             ),
-            h('canvas', { ref: canvasRef, style: { width: '100%', height: 460, display: 'block', borderRadius: '0 0 8px 8px', background: '#9bc4d8' },
-              'aria-label': '3D harbor scene. Use WASD or arrow keys to steer the boat. Press F at Halfway Rock to fish.' }),
+            h('canvas', { ref: canvasRef, className: 'fl-sim-canvas', role: 'application', tabIndex: 0, style: { width: '100%', height: 460, display: 'block', background: '#9bc4d8' },
+              'aria-label': 'Interactive 3D harbor. Focus this scene to steer with WASD or arrow keys. Press F at the fishing grounds, H near a trap, and P to pause.',
+              'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space F H P V M Escape',
+              onClick: function(e) { if (e.currentTarget && e.currentTarget.focus) e.currentTarget.focus(); },
+              onFocus: function() { flAnnounce('Harbor controls active. Steer with WASD or arrows. Press P to pause.'); } }),
+
+            h('div', { className: 'fl-nav-cue', 'aria-label': 'Next voyage objective and relative bearing', style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(3,18,31,0.88)', border: '1px solid rgba(125,211,252,0.45)', boxShadow: '0 8px 24px rgba(0,0,0,0.38)', color: '#e0f2fe', textAlign: 'center' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 } },
+                h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', color: '#fbbf24', fontSize: 22, lineHeight: 1, transform: 'rotate(' + (hud.objectiveBearing || 0) + 'deg)', transition: 'transform 0.2s ease' } }, '↑'),
+                h('div', { style: { minWidth: 0, textAlign: 'left' } },
+                  h('strong', { style: { display: 'block', color: '#f8fafc', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, hud.objectiveLabel || 'Preparing route'),
+                  h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 9 } }, hud.objectiveDistance == null ? 'Acquiring waypoint' : hud.objectiveId === 'maneuver' ? (hud.trafficManeuverType === 'stand-on' ? 'Maintain course · monitor closest approach' : 'Alter starboard · open closest approach') : hud.objectiveDistance.toFixed(1) + ' sim range · ' + (Math.abs(hud.objectiveBearing || 0) < 12 ? 'on course' : (hud.objectiveBearing || 0) < 0 ? 'turn port' : 'turn starboard'))
+                )
+              ),
+              hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('div', { style: { marginTop: 7, paddingTop: 7, borderTop: '1px solid rgba(125,211,252,0.25)', display: 'grid', gap: 4, textAlign: 'left' } },
+                h('div', { 'aria-label': 'Closest point of approach watch. ' + (hud.trafficRiskLabel || 'Monitoring bearing and range') + '. Bearing change ' + (hud.trafficBearingChange || 0).toFixed(1) + ' degrees. Range change ' + (hud.trafficRangeChange || 0).toFixed(1) + ' simulation units.', style: { display: 'grid', gridTemplateColumns: '54px minmax(0,1fr)', gap: 7, alignItems: 'center', paddingBottom: 5, marginBottom: 1, borderBottom: '1px solid rgba(125,211,252,0.18)' } },
+                  h('div', { 'aria-hidden': 'true', style: { position: 'relative', width: 50, height: 50, borderRadius: '50%', border: '1px solid rgba(125,211,252,0.55)', background: 'radial-gradient(circle, transparent 31%, rgba(125,211,252,0.18) 32%, transparent 34%, transparent 64%, rgba(125,211,252,0.18) 65%, transparent 67%), linear-gradient(90deg, transparent 49%, rgba(125,211,252,0.22) 50%, transparent 52%), linear-gradient(transparent 49%, rgba(125,211,252,0.22) 50%, transparent 52%)' } },
+                    h('span', { style: { position: 'absolute', left: '50%', top: '50%', width: 6, height: 8, borderRadius: '50% 50% 35% 35%', background: '#f8fafc', transform: 'translate(-50%,-50%)' } }),
+                    h('span', { style: { position: 'absolute', left: '50%', top: '50%', width: 7, height: 7, borderRadius: '50%', background: trafficRiskColor, border: '1px solid #020617', boxShadow: '0 0 7px ' + trafficRiskColor, transform: 'translate(calc(-50% + ' + trafficPlotX.toFixed(1) + 'px), calc(-50% + ' + trafficPlotY.toFixed(1) + 'px))', transition: 'transform 0.15s linear' } })
+                  ),
+                  h('div', { style: { minWidth: 0 } },
+                    h('strong', { style: { display: 'block', color: trafficRiskColor, fontSize: 9, lineHeight: 1.3 } }, 'CPA WATCH · ' + (hud.trafficRiskLabel || 'Monitoring bearing and range')),
+                    h('span', { style: { display: 'block', marginTop: 3, color: '#dbeafe', fontSize: 8 } }, 'Bearing Δ ' + (hud.trafficBearingChange || 0).toFixed(1) + '° · Range Δ ' + ((hud.trafficRangeChange || 0) > 0 ? '+' : '') + (hud.trafficRangeChange || 0).toFixed(1))
+                  )
+                ),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficCriterionOne ? '#86efac' : '#fef3c7', fontSize: 9 } },
+                  h('span', null, (hud.trafficCriterionOne ? '✓ ' : '○ ') + (hud.trafficManeuverType === 'stand-on' ? 'Course steady ≤ 8°' : 'Safe speed ≤ 2.5 kt')),
+                  h('strong', null, hud.trafficManeuverType === 'stand-on' ? (hud.trafficHeadingDeviation || 0).toFixed(1) + '°' : Math.abs(hud.speed || 0).toFixed(1) + ' kt')),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficCriterionTwo ? '#86efac' : '#fef3c7', fontSize: 9 } },
+                  h('span', null, (hud.trafficCriterionTwo ? '✓ ' : '○ ') + (hud.trafficManeuverType === 'stand-on' ? 'Speed steady ± 1.5 kt' : 'Alter 15° starboard')),
+                  h('strong', null, hud.trafficManeuverType === 'stand-on' ? (hud.trafficSpeedDeviation || 0).toFixed(1) + ' kt' : Math.min(99, hud.trafficTurnDegrees || 0).toFixed(0) + '°')),
+                hud.trafficManeuverType === 'stand-on' ? h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficObservedEnough ? '#86efac' : '#fef3c7', fontSize: 9 } },
+                  h('span', null, (hud.trafficObservedEnough ? '✓ ' : '○ ') + 'Observe crossing 5 s'),
+                  h('strong', null, Math.min(5, hud.trafficManeuverSeconds || 0).toFixed(1) + ' s')) : null,
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: '#bae6fd', fontSize: 9 } },
+                  h('span', null, 'Closest range'),
+                  h('strong', null, isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) + ' sim' : 'tracking'))
+              ) : null
+            ),
             
             // HUD Instruments and Compass Dial overlay
-            h('div', { style: { position: 'absolute', top: 58, left: 10, background: 'rgba(8,18,32,0.85)', padding: '12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', zIndex: 10, border: '1px solid rgba(56,189,248,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', width: 140 } },
+            h('div', { className: 'fl-sim-instruments', style: { position: 'absolute', top: 58, left: 10, background: 'rgba(8,18,32,0.85)', padding: '12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', zIndex: 10, border: '1px solid rgba(56,189,248,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', width: 140 } },
               h('div', { style: { textAlign: 'center', marginBottom: 8, fontSize: 10, color: '#38bdf8', fontWeight: 'bold' } }, 'INSTRUMENTS'),
               // Rotating Compass
               h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8, position: 'relative' } },
-                h('svg', { width: 70, height: 70, viewBox: '0 0 100 100', style: { transform: 'rotate(' + (-(hud.heading || 0) * 180 / Math.PI) + 'deg)', transition: 'transform 0.1s ease-out' } },
+                h('svg', { width: 70, height: 70, viewBox: '0 0 100 100', role: 'img', 'aria-label': 'Compass heading ' + headingToCompass(hud.heading), style: { transform: 'rotate(' + (-(hud.heading || 0) * 180 / Math.PI) + 'deg)', transition: 'transform 0.1s ease-out' } },
                   h('circle', { cx: 50, cy: 50, r: 45, fill: '#0b1329', stroke: '#38bdf8', strokeWidth: 2 }),
                   h('text', { x: 50, y: 22, textAnchor: 'middle', fontSize: 16, fill: '#ef4444', fontWeight: 'bold' }, 'N'),
                   h('text', { x: 78, y: 55, textAnchor: 'middle', fontSize: 14, fill: '#cbd5e1' }, 'E'),
@@ -10254,12 +10855,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('div', { style: { position: 'absolute', top: -3, left: 'calc(50% - 5px)', width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderBottom: '6px solid #ef4444', zIndex: 11 } })
               ),
               h('div', { style: { borderTop: '1px solid rgba(56,189,248,0.2)', paddingTop: 6, display: 'flex', flexDirection: 'column', gap: 3 } },
-                h('div', null, 'Speed: ', h('b', { style: { color: '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
+                h('div', null, 'Speed: ', h('b', { style: { color: hud.unsafeSpeed ? '#fb923c' : '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
+                h('div', null, 'Safe speed: ', h('b', { style: { color: hud.unsafeSpeed ? '#fb923c' : '#bae6fd' } }, (hud.safeSpeed == null ? 8 : hud.safeSpeed).toFixed(1) + ' kt')),
                 h('div', null, 'Heading: ', h('b', { style: { color: '#bae6fd' } }, headingToCompass(hud.heading))),
-                h('div', null, 'Fuel: ', h('b', { style: { color: (hud.fuel || 100) < 30 ? '#fb923c' : '#86efac' } }, Math.max(0, hud.fuel || 0).toFixed(0) + '%')),
+                h('div', null, 'Fuel: ', h('b', { style: { color: fuelValue < 30 ? '#fb923c' : '#86efac' } }, fuelValue.toFixed(0) + '%')),
                 h('div', null, 'Fish: ', h('b', { style: { color: '#fbbf24' } }, hud.fishLanded || 0)),
                 h('div', null, 'Lobster Keepers: ', h('b', { style: { color: '#fbbf24' } }, hud.keeperLobsters || 0)),
-                h('div', null, 'Traps Hauled: ', h('b', { style: { color: '#bae6fd' } }, hud.lobstersHauled || 0))
+                h('div', null, 'Traps Hauled: ', h('b', { style: { color: '#bae6fd' } }, hud.lobstersHauled || 0)),
+                hud.trafficVesselVisible ? h('div', { style: { marginTop: 3, color: '#fde68a', fontWeight: 900 } }, 'Traffic: vessel clearing') : null
               ),
               // Throttle level indicator bar
               h('div', { style: { marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 } },
@@ -10271,25 +10874,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             ),
 
             // Mission progress
-            h('div', { style: { position: 'absolute', top: 58, right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220, zIndex: 10 } },
-              h('div', { style: { fontWeight: 800, color: '#bae6fd', marginBottom: 4 } }, 'Mission 1'),
-              h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Passed red nun' : '• Pass red nun on starboard'),
-              h('div', { style: { fontSize: 10 } }, hud.reachedHalfwayRock ? '✓ Reached Halfway Rock' : '• Reach Halfway Rock'),
-              h('div', { style: { fontSize: 10 } }, hud.keptKeeperCod ? '✓ Landed keeper cod' : '• Land a cod ≥22"'),
-              h('div', { style: { fontSize: 10 } }, (hud.keeperLobsters || 0) >= 1 ? '✓ Caught keeper lobster' : '• Haul lobster trap & keep a legal lobster (3-1/4" to 5")'),
-              h('div', { style: { fontSize: 10 } }, hud.returnedHome ? '✓ Returned home' : '• Return to dock')),
+            h('div', { className: 'fl-sim-mission', style: { position: 'absolute', top: 58, right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220, zIndex: 10 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, fontWeight: 800, color: '#bae6fd', marginBottom: 5 } }, h('span', null, mission.title), h('span', { style: { color: '#fde68a' } }, (hud.stewardshipScore || 0) + ' pts')),
+              h('div', { style: { height: 5, borderRadius: 4, overflow: 'hidden', background: 'rgba(148,163,184,0.22)', marginBottom: 6 } }, h('div', { style: { width: missionProgressPct + '%', height: '100%', background: 'linear-gradient(90deg,#22c55e,#38bdf8)', transition: 'width 0.25s ease' } })),
+              h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Navigate red nun correctly' : '○ Pass red nun on starboard'),
+              h('div', { style: { fontSize: 10, color: hud.trafficManeuverReviewed || (hud.trafficDecisionMade && !hud.trafficDecisionCorrect) ? '#fdba74' : 'inherit' } }, hud.trafficManeuverComplete ? (hud.trafficManeuverReviewed ? '△ ' + hud.trafficManeuverLabel + ' reviewed' : '✓ ' + hud.trafficManeuverLabel) : hud.trafficDecisionMade ? (hud.trafficManeuverType === 'stand-on' ? '○ Hold course + speed for 5 s' : '○ Slow + alter 15° starboard') : '○ Resolve crossing traffic'),
+              h('div', { style: { fontSize: 10 } }, hud.reachedHalfwayRock ? '✓ Reach ' + mission.destination : '○ Reach ' + mission.destination),
+              h('div', { style: { fontSize: 10 } }, hud.targetFishDecision ? '✓ Classify ' + mission.targetFish : '○ Classify ' + mission.targetFish),
+              h('div', { style: { fontSize: 10 } }, hud.trapDecisionMade ? '✓ Classify ' + mission.trapCatch : '○ Classify ' + mission.trapCatch),
+              h('div', { style: { fontSize: 10 } }, hud.returnedHome ? '✓ Return safely' : '○ Return with ' + modeProfile.requiredFuel + '% fuel reserve'),
+              h('div', { style: { marginTop: 5, fontSize: 9, color: hud.unsafeSpeed ? '#fb923c' : '#a7f3d0', fontWeight: hud.unsafeSpeed ? 900 : 600 } }, hud.unsafeSpeed ? 'Reduce speed for current conditions' : (hud.decisionStreak || 0) ? 'Decision streak ×' + hud.decisionStreak + ' · ' + decisionAccuracy + '% accurate' : 'Build a streak with correct classifications')),
             
             // Status log
-            h('div', { style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: 100, overflowY: 'auto', background: 'rgba(8,18,32,0.85)', padding: 8, borderRadius: 8, zIndex: 10 } },
+            h('div', { className: 'fl-sim-log', role: 'log', 'aria-live': 'polite', 'aria-label': 'Voyage log', style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: 100, overflowY: 'auto', background: 'rgba(8,18,32,0.85)', padding: 8, borderRadius: 8, zIndex: 10 } },
               (status || []).slice(-4).map(function(ev, ei) {
                 var color = ev.type === 'fish' || ev.type === 'lobster' ? '#fbbf24' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#bae6fd'));
                 return h('div', { key: ei, style: { fontSize: 11, color: color, marginBottom: 2 } }, '• ' + ev.text);
               })),
             
-            // Stop button
-            h('button', { onClick: stopSim, className: 'fl-btn',
-              style: { position: 'absolute', bottom: 10, right: 10, padding: '6px 12px', background: 'rgba(220,38,38,0.85)', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', zIndex: 15 } },
-              '✕ Exit sim'),
+            h('div', { className: 'fl-sim-touch', role: 'group', 'aria-label': 'On-screen boat controls' },
+              [
+                { key: 'arrowleft', label: 'Turn port', icon: '←' },
+                { key: 'arrowup', label: 'Throttle forward', icon: '↑' },
+                { key: 'arrowdown', label: 'Reduce speed or reverse', icon: '↓' },
+                { key: 'arrowright', label: 'Turn starboard', icon: '→' }
+              ].map(function(control) {
+                return h('button', { key: control.key, type: 'button', className: 'fl-btn', 'aria-label': control.label,
+                  onPointerDown: function(e) { e.preventDefault(); setHeldControl(control.key, true); },
+                  onPointerUp: function() { setHeldControl(control.key, false); },
+                  onPointerCancel: function() { setHeldControl(control.key, false); },
+                  onPointerLeave: function() { setHeldControl(control.key, false); },
+                  style: { width: 38, height: 34, borderRadius: 6, border: '1px solid rgba(125,211,252,0.4)', background: '#0f2740', color: '#e0f2fe', fontSize: 18, cursor: 'pointer' }
+                }, control.icon);
+              }),
+              h('button', { type: 'button', className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.fish) harborRef.current.fish(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(196,181,253,0.5)', background: '#312e81', color: '#ede9fe', fontWeight: 800, cursor: 'pointer' } }, 'Fish'),
+              h('button', { type: 'button', className: 'fl-btn', disabled: !hud.closestTrapId || hud.closestTrapHauled, onClick: function() { if (harborRef.current && harborRef.current.haulTrap) harborRef.current.haulTrap(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(251,191,36,0.5)', background: '#713f12', color: '#fef3c7', fontWeight: 800, cursor: hud.closestTrapId ? 'pointer' : 'not-allowed', opacity: hud.closestTrapId ? 1 : 0.55 } }, 'Haul')
+            ),
+
+            activeTraffic ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-traffic-title', style: { position: 'absolute', inset: 0, zIndex: 92, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.94)' } },
+              h('div', { style: { width: 'min(590px,100%)', padding: 18, borderRadius: 8, border: '1px solid rgba(251,191,36,0.55)', background: 'linear-gradient(145deg,#422006,#082f49 58%,#0f172a)', boxShadow: '0 22px 60px rgba(0,0,0,0.65)' } },
+                h('div', { style: { color: '#fde68a', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Traffic encounter · simulation paused'),
+                h('h3', { id: 'fl-traffic-title', style: { margin: '5px 0 4px', color: '#f8fafc', fontSize: 22 } }, activeTraffic.vessel + ' on crossing course'),
+                h('div', { className: 'fl-pill', style: { marginBottom: 10, background: 'rgba(251,191,36,0.18)', color: '#fde68a' } }, activeTraffic.rule),
+                h('p', { style: { color: '#dbeafe', fontSize: 13, lineHeight: 1.55 } }, activeTraffic.situation),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 8, margin: '12px 0' } },
+                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#7dd3fc', fontSize: 11 } }, 'Lookout report'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11, lineHeight: 1.4 } }, 'Constant bearing and decreasing range indicate risk of collision. Decide early and make a substantial, visible maneuver.')),
+                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#a7f3d0', fontSize: 11 } }, 'Your vessel'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11, lineHeight: 1.4 } }, 'You are operating a small power-driven fishing skiff. Choose your responsibility, not the maneuver you hope the other vessel makes.'))
+                ),
+                h('p', { style: { color: '#f8fafc', fontSize: 12, fontWeight: 900 } }, 'What is your safest COLREGS action?'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                  h('button', { type: 'button', ref: decisionFocusRef, className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.resolveTrafficEncounter) harborRef.current.resolveTrafficEncounter('give-way'); setActiveTraffic(null); }, style: { flex: '1 1 220px', padding: 11, border: '1px solid rgba(125,211,252,0.55)', borderRadius: 7, background: '#164e63', color: '#f0f9ff', fontWeight: 900, cursor: 'pointer' } }, activeTraffic.correctAction === 'give-way' ? activeTraffic.correctLabel : activeTraffic.incorrectLabel),
+                  h('button', { type: 'button', className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.resolveTrafficEncounter) harborRef.current.resolveTrafficEncounter('stand-on'); setActiveTraffic(null); }, style: { flex: '1 1 220px', padding: 11, border: '1px solid rgba(148,163,184,0.65)', borderRadius: 7, background: '#334155', color: '#f8fafc', fontWeight: 900, cursor: 'pointer' } }, activeTraffic.correctAction === 'stand-on' ? activeTraffic.correctLabel : activeTraffic.incorrectLabel)
+                )
+              )
+            ) : null,
+
+            activeFish ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-fish-inspection-title', style: { position: 'absolute', inset: 0, zIndex: 90, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.94)' } },
+              h('div', { style: { width: 'min(560px, 100%)', padding: 18, borderRadius: 8, border: '1px solid rgba(125,211,252,0.5)', background: 'linear-gradient(145deg,#082f49,#0f172a)', boxShadow: '0 22px 60px rgba(0,0,0,0.6)' } },
+                h('div', { style: { color: '#7dd3fc', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Catch inspection · simulation paused'),
+                h('h3', { id: 'fl-fish-inspection-title', style: { margin: '5px 0 8px', color: '#f8fafc', fontSize: 22 } }, activeFish.species.emoji + ' ' + activeFish.species.name + ' · ' + activeFish.length + ' in'),
+                h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, activeFish.species.idMarks),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 8, margin: '12px 0' } },
+                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#fde68a', fontSize: 11 } }, 'Training rule'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 12 } }, activeFish.species.slot ? 'Slot: ' + activeFish.species.slot : activeFish.species.minSize ? 'Minimum: ' + activeFish.species.minSize + ' in' : 'No size score in this activity')),
+                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#a7f3d0', fontSize: 11 } }, 'Stewardship context'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11, lineHeight: 1.4 } }, activeFish.species.stewardship))
+                ),
+                h('p', { style: { color: '#bae6fd', fontSize: 12, fontWeight: 800 } }, 'Classify this catch. “Legal to retain” describes the training rule; voluntary release is always allowed.'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                  h('button', { type: 'button', ref: decisionFocusRef, className: 'fl-btn', onClick: function() { var correct = !!activeFish.isKeeper; var msg = correct ? 'Correct: this fish meets the training size rule.' : 'Incorrect: this fish must be released under the training size rule.'; pushStatus({ type: 'fish', species: activeFish.species, length: activeFish.length, isKeeper: correct, text: msg }); if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', 'keep', correct, activeFish.species.id); flAnnounce(msg); setActiveFish(null); }, style: { flex: '1 1 200px', padding: 11, border: 0, borderRadius: 7, background: '#059669', color: '#fff', fontWeight: 900, cursor: 'pointer' } }, 'Legal to retain'),
+                  h('button', { type: 'button', className: 'fl-btn', onClick: function() { var correct = !activeFish.isKeeper; var msg = correct ? 'Correct: this fish must be released under the training size rule.' : 'Not quite: this fish meets the size rule, though voluntary release remains allowed.'; pushStatus({ type: correct ? 'complete' : 'guidance', text: msg }); if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', 'release', correct, activeFish.species.id); flAnnounce(msg); setActiveFish(null); }, style: { flex: '1 1 200px', padding: 11, border: '1px solid rgba(148,163,184,0.5)', borderRadius: 7, background: '#334155', color: '#fff', fontWeight: 900, cursor: 'pointer' } }, 'Must release')
+                )
+              )
+            ) : null,
+
+            hud.missionComplete ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-debrief-title', style: { position: 'absolute', inset: 0, zIndex: 85, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.88)' } },
+              h('div', { style: { width: 'min(500px,100%)', padding: 20, borderRadius: 8, border: '1px solid rgba(52,211,153,0.55)', background: 'linear-gradient(145deg,#064e3b,#082f49 58%,#0f172a)', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.65)' } },
+                h('div', { style: { color: '#6ee7b7', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, modeProfile.label + ' voyage · safe return'),
+                h('h3', { id: 'fl-debrief-title', style: { margin: '6px 0 2px', color: '#fff', fontSize: 24 } }, mission.title),
+                h('div', { style: { color: voyageRank.color, fontSize: 13, fontWeight: 900, textTransform: 'uppercase' } }, Array(voyageRank.stars + 1).join('★') + ' ' + voyageRank.label),
+                h('div', { style: { color: '#fde68a', fontSize: 34, fontWeight: 900, marginTop: 4 } }, (hud.stewardshipScore || 0) + ' pts'),
+                h('p', { style: { color: '#dbeafe', fontSize: 12 } }, (hud.correctDecisions || 0) + ' of ' + (hud.totalDecisions || 0) + ' catch classifications correct · ' + fuelValue.toFixed(0) + '% fuel remaining · ' + Math.max(0, Math.round((hud.elapsed || 0) / 60)) + ' min'),
+                h('p', { style: { color: fuelValue >= modeProfile.requiredFuel && decisionAccuracy >= modeProfile.requiredAccuracy ? '#a7f3d0' : '#fdba74', fontSize: 11, lineHeight: 1.5 } }, fuelValue >= modeProfile.requiredFuel && decisionAccuracy >= modeProfile.requiredAccuracy ? 'Challenge standard met: accurate decisions and a prudent reserve.' : 'Next target: at least ' + modeProfile.requiredFuel + '% fuel and ' + modeProfile.requiredAccuracy + '% classification accuracy.'),
+                h('div', { style: { display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 8 } },
+                  h('button', { type: 'button', className: 'fl-btn', onClick: restartCoreMission, style: { padding: '10px 16px', border: 0, borderRadius: 7, background: '#34d399', color: '#052e2b', fontWeight: 900, cursor: 'pointer' } }, 'Replay voyage'),
+                  h('button', { type: 'button', className: 'fl-btn', onClick: stopSim, style: { padding: '10px 16px', border: '1px solid rgba(186,230,253,0.4)', borderRadius: 7, background: 'rgba(15,23,42,0.7)', color: '#e0f2fe', fontWeight: 900, cursor: 'pointer' } }, 'Return to briefing')
+                )
+              )
+            ) : null,
               
             // Interactive Carapace Caliper Inspection Screen Overlay
             activeLobster ? (function() {
@@ -10384,6 +11054,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       width: '100%',
                       height: '100%',
                       viewBox: '0 0 540 280',
+                      role: 'img',
+                      'aria-label': 'Measurement diagram for a ' + activeLobster.length.toFixed(2) + ' inch ' + activeLobster.specimenType + '.',
                       style: { flex: 1, background: '#111827', borderRadius: '6px' }
                     },
                       // Ruler background markings
@@ -10569,6 +11241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       ),
                       h('input', {
                         type: 'range',
+                        'aria-label': 'Caliper measurement in inches',
                         min: activeLobster.specimenType === 'crab' ? 3.00 : activeLobster.specimenType === 'crayfish' ? 1.50 : 2.50,
                         max: activeLobster.specimenType === 'crab' ? 8.00 : activeLobster.specimenType === 'crayfish' ? 5.00 : 6.00,
                         step: 0.05,
@@ -10607,6 +11280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' } }, 'Confirm your compliance action:'),
                       h('button', {
                         className: 'fl-btn',
+                        ref: decisionFocusRef,
                         onClick: function() {
                           var decisionCorrect = activeLobster.isKeeper;
                           var msg = '';
@@ -10657,13 +11331,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                             pushStatus({ type: 'violation', text: violationText });
                           }
 
-                          if (harborRef.current && harborRef.current.resumeSim) {
-                            harborRef.current.resumeSim('keep', decisionCorrect);
+                          if (harborRef.current && harborRef.current.resolveCatch) {
+                            harborRef.current.resolveCatch('shellfish', 'keep', decisionCorrect, activeLobster.specimenType);
                           }
                           setActiveLobster(null);
                         },
                         style: { padding: '10px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
-                      }, '📥 KEEP IN LIVEWELL (LEGAL CATCH)'),
+                      }, 'CLASSIFY: LEGAL TO RETAIN'),
 
                       h('button', {
                         className: 'fl-btn',
@@ -10676,18 +11350,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                             flAnnounce(msg);
                             pushStatus({ type: 'complete', text: msg });
                           } else {
-                            msg = '⚠ Released a legal keeper ' + (activeLobster.specimenType === 'crab' ? 'crab' : activeLobster.specimenType === 'crayfish' ? 'crayfish' : 'lobster') + ' (' + activeLobster.length.toFixed(2) + '"). Lost catch market value.';
+                            msg = 'Not quite: this specimen meets the training rule, though voluntary release remains allowed (' + activeLobster.length.toFixed(2) + '").';
                             flAnnounce(msg);
                             pushStatus({ type: 'complete', text: msg });
                           }
                           
-                          if (harborRef.current && harborRef.current.resumeSim) {
-                            harborRef.current.resumeSim('release', false);
+                          if (harborRef.current && harborRef.current.resolveCatch) {
+                            harborRef.current.resolveCatch('shellfish', 'release', decisionCorrect, activeLobster.specimenType);
                           }
                           setActiveLobster(null);
                         },
                         style: { padding: '10px', background: '#64748b', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
-                      }, '🌊 RELEASE OVERBOARD (RETURN TO SEA)')
+                      }, 'CLASSIFY: MUST RELEASE')
                     )
                   )
                 )
@@ -10707,7 +11381,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               { k: 'F', d: 'Fish (at fishing waypoint)', c: '#a78bfa' },
               { k: 'H', d: 'Haul lobster trap (near buoy)', c: '#fbbf24' },
               { k: 'V', d: 'Cycle camera view', c: '#38bdf8' },
-              { k: 'M', d: 'Toggle sound mute', c: '#86efac' }
+              { k: 'M', d: 'Toggle sound mute', c: '#86efac' },
+              { k: 'P / Esc', d: 'Pause or resume', c: '#fde68a' }
             ].map(function(c, i) {
               return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid ' + c.c } },
                 h('div', { style: { fontWeight: 800, color: c.c, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 2 } }, c.k),
@@ -10892,7 +11567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('thead', null,
               h('tr', { style: { background: 'rgba(56,189,248,0.15)' } },
                 ['Species', 'Min size', 'Slot', 'Daily bag', 'Season'].map(function(c, ci) {
-                  return h('th', { key: ci, style: { padding: '6px 8px', textAlign: 'left', color: '#bae6fd', fontWeight: 700 } }, c);
+                  return h('th', { key: ci, scope: 'col', style: { padding: '6px 8px', textAlign: 'left', color: '#bae6fd', fontWeight: 700 } }, c);
                 }))),
             h('tbody', null,
               currentSpeciesList.map(function(s, i) {
@@ -12599,8 +13274,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return h('div', { style: { padding: 16, background: 'linear-gradient(180deg, #031523 0%, #06313a 52%, #071827 100%)', minHeight: 400 } },
       tabBar(),
       h('section', {
-        id: 'fl-panel-' + tab,
-        role: 'region',
+        id: 'fl-active-panel',
+        role: 'tabpanel',
         'aria-label': activeTabEntry.label,
         style: { minWidth: 0 }
       },

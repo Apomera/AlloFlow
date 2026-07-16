@@ -19046,7 +19046,7 @@ var d = labToolData.cell || {};
 
                 cctx.globalAlpha = tt.alpha;
 
-                var ttFontSize = 8 * dpr;
+                var ttFontSize = 10.5 * dpr;
 
                 cctx.font = 'bold ' + (ttFontSize * 1.1) + 'px Inter, system-ui, sans-serif';
 
@@ -19056,7 +19056,7 @@ var d = labToolData.cell || {};
 
                 // Word-wrap the description
 
-                var ttMaxW = 220 * dpr;
+                var ttMaxW = 290 * dpr;
 
                 var ttWords = tt.anatomy.fn.split(' ');
 
@@ -19104,7 +19104,8 @@ var d = labToolData.cell || {};
 
                 // Background
 
-                cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.93))';
+                // Canvas fillStyle cannot resolve CSS custom properties; use an explicit opaque surface.
+                cctx.fillStyle = 'rgba(15,23,42,0.98)';
 
                 cctx.beginPath();
 
@@ -19148,7 +19149,7 @@ var d = labToolData.cell || {};
 
                 cctx.font = ttFontSize + 'px Inter, system-ui, sans-serif';
 
-                cctx.fillStyle = 'rgba(226,232,240,0.95)';
+                cctx.fillStyle = '#f8fafc';
 
                 ttLines.forEach(function (line, li) {
 
@@ -19310,7 +19311,7 @@ var d = labToolData.cell || {};
 
                 // Pill background
 
-                cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.75))';
+                cctx.fillStyle = 'rgba(15,23,42,0.92)';
 
                 cctx.beginPath();
 
@@ -19382,7 +19383,7 @@ var d = labToolData.cell || {};
 
                 htY = Math.max(2 * dpr, htY);
 
-                cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.8))';
+                cctx.fillStyle = 'rgba(15,23,42,0.94)';
 
                 cctx.beginPath();
 
@@ -19426,7 +19427,7 @@ var d = labToolData.cell || {};
 
               var mlx = 6 * dpr, mly = HH - 22 * dpr, mlw = 48 * dpr, mlh = 16 * dpr;
 
-              cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.45))';
+              cctx.fillStyle = 'rgba(15,23,42,0.82)';
 
               cctx.beginPath();
 
@@ -19468,7 +19469,7 @@ var d = labToolData.cell || {};
 
                 // Background pill
 
-                cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.55))';
+                cctx.fillStyle = 'rgba(15,23,42,0.86)';
 
                 cctx.beginPath();
 
@@ -20137,13 +20138,13 @@ var d = labToolData.cell || {};
           var completedChallengeCount = CELL_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length;
           var organellesExplored = (ext.organellesClicked || []).length + (d.interiorSeen || []).length;
           var cellModeCategoryHint = {
-            observe: 'interactive', interior: 'interactive', play: 'interactive', quiz: 'interactive',
+            observe: 'interactive', interior: 'interactive', processes: 'interactive', play: 'interactive', quiz: 'interactive',
             encyclopedia: 'browse', filter: 'browse', compare: 'browse',
             history: 'knowledge', biologists: 'knowledge', lab: 'knowledge', disease: 'knowledge', ecology: 'knowledge',
             glossary: 'reference', finale: 'reference'
           };
           var cellModeLabelMap = {
-            observe: 'Observe', interior: 'Inside the Cell', play: 'Play', quiz: 'Quiz',
+            observe: 'Observe', interior: 'Inside the Cell', processes: 'Cell Processes', play: 'Play', quiz: 'Quiz',
             encyclopedia: 'Encyclopedia', filter: 'Filter', compare: 'Compare',
             history: 'History', biologists: 'Biologists', lab: 'Lab Techniques', disease: 'Diseases', ecology: 'Ecology',
             glossary: 'Glossary', finale: 'Finale'
@@ -20178,13 +20179,13 @@ var d = labToolData.cell || {};
 
               React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "⭐ " + (d.researchPoints || 0) + " RP"),
 
-              React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
+              React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : d.mode === 'processes' ? "\u2699\uFE0F Cell Processes" : "\uD83D\uDC41 Observe"),
 
 
               (function() {
                 var CELL_CATEGORIES = [
-                  { id: 'interactive', label: 'Interactive Sim', icon: '🔬', desc: 'Watch, go inside a cell, play, or quiz', color: 'green',
-                    modes: ['observe', 'interior', 'play', 'quiz'] },
+                  { id: 'interactive', label: 'Interactive Sim', icon: '🔬', desc: 'Watch, go inside a cell, trace processes, play, or quiz', color: 'green',
+                    modes: ['observe', 'interior', 'processes', 'play', 'quiz'] },
                   { id: 'browse', label: 'Browse Organisms', icon: '🦠', desc: 'Encyclopedia + filter + compare', color: 'cyan',
                     modes: ['encyclopedia', 'filter', 'compare'] },
                   { id: 'knowledge', label: 'Knowledge & History', icon: '📚', desc: 'History, biologists, labs, diseases, ecology', color: 'amber',
@@ -20194,6 +20195,7 @@ var d = labToolData.cell || {};
                 ];
                 var CELL_MODE_LABELS = {
                   observe: '👁 Observe', interior: '🔬 Inside the Cell', play: '🎮 Play', quiz: '🧠 Quiz',
+                  processes: '\u2699\uFE0F Cell Processes',
                   encyclopedia: '📚 Encyclopedia', filter: '🔍 Filter', compare: '⚖ Compare',
                   history: '📜 History', biologists: '🧑‍🔬 Biologists', lab: '🔬 Lab Techniques',
                   disease: '🦠 Diseases', ecology: '🌍 Ecology',
@@ -20212,7 +20214,7 @@ var d = labToolData.cell || {};
                 var atHub = !d._cellCategory && !d._cellSearch && !d._cellPicked;
                 var activeCat = CELL_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
                 var searchTerm = (d._cellSearch || '').toLowerCase();
-                var allModes = ['observe','interior','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','finale'];
+                var allModes = ['observe','interior','processes','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','finale'];
                 // Grade gate: hide the Diseases mode (STIs, death tolls) from K-2 and 3-5.
                 if (!cellBandAllowsClinical) { CELL_CATEGORIES.forEach(function(c) { c.modes = c.modes.filter(function(m) { return m !== 'disease'; }); }); allModes = allModes.filter(function(m) { return m !== 'disease'; }); }
                 var searchResults = searchTerm ? allModes.filter(function(m) { return (CELL_MODE_LABELS[m] || m).toLowerCase().indexOf(searchTerm) !== -1; }) : null;
@@ -20312,7 +20314,7 @@ var d = labToolData.cell || {};
                     React.createElement("div", null,
                       React.createElement("div", { className: "text-[11px] font-black uppercase text-emerald-700" }, "Cell Lab Command Deck"),
                       React.createElement("h4", { className: "mt-1 text-xl font-black text-slate-900" }, cellModeLabelMap[activeCellMode] || "Observe"),
-                      React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600" }, "Start with the living petri dish, jump inside a single cell, then use play and quiz modes to connect structures to behavior.")
+                      React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600" }, "Start with the living petri dish, inspect organelles, then trace how matter and energy move through cell processes before testing your understanding.")
                     ),
                     React.createElement("span", { className: "rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-black text-emerald-700 shadow-sm" },
                       d.mode === 'play' ? "Playing" : d.quizMode ? "Quiz active" : "Explore ready"
@@ -20337,6 +20339,7 @@ var d = labToolData.cell || {};
                   [
                     { id: 'observe', label: 'Petri Dish', desc: 'Watch organisms move, feed, split, and interact.', accent: '#15803d' },
                     { id: 'interior', label: 'Inside a Cell', desc: 'Compare animal, plant, and bacterial structures.', accent: '#0e7490' },
+                    { id: 'processes', label: 'Cell Processes', desc: 'Trace energy, membrane transport, photosynthesis, and protein shipping.', accent: '#b45309' },
                     { id: 'play', label: 'Play as Cell', desc: 'Control an organism and learn its survival strategy.', accent: '#7c3aed' },
                     { id: 'quiz', label: 'Concept Check', desc: 'Practice organelles, movement, and cell type clues.', accent: '#0284c7' }
                   ].map(function(route) {
@@ -20391,6 +20394,7 @@ var d = labToolData.cell || {};
               var MODE_META = {
                 observe: { accent: '#15803d', soft: 'rgba(22,163,74,0.10)', icon: '👁️', title: 'Observe - explore the cell',         hint: 'Click any organelle to see its structure, function, and how it talks to its neighbors. Cells are factories: every organelle has a job and a delivery route.' },
                 play:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎮', title: 'Play - be the organism',           hint: 'Steer the cell yourself. Bacteria swim with flagella; protists pseudopod; humans push fluid via pumps. Movement reveals what each cell is built for.' },
+                processes: { accent: '#b45309', soft: 'rgba(245,158,11,0.12)', icon: '⚙️', title: 'Processes - follow matter and energy', hint: 'Trace where each process happens, what enters, what leaves, and which organelles cooperate. Start with cellular respiration, then zoom into the Krebs cycle.' },
                 quiz:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🧠', title: 'Quiz - concepts in context',        hint: 'Multi-choice items on organelle function, transport, signaling, and life cycle. Each question links back to what you saw in the simulator.' }
               };
               var meta = MODE_META[d.mode] || MODE_META.observe;
@@ -20417,7 +20421,7 @@ var d = labToolData.cell || {};
 
             // Canvas (petri dish) — hidden while the "Inside the Cell" interior view is active
 
-            d.mode !== 'interior' && React.createElement("div", { "data-cell-stage": true, className: "relative rounded-xl overflow-hidden border border-emerald-300 bg-slate-950 shadow-xl", style: { height: '560px', background: 'radial-gradient(circle at 22% 18%,rgba(34,197,94,0.22),rgba(2,6,23,0) 34%),radial-gradient(circle at 78% 16%,rgba(14,165,233,0.18),rgba(2,6,23,0) 30%),#020617' } },
+            d.mode !== 'interior' && d.mode !== 'processes' && React.createElement("div", { "data-cell-stage": true, className: "relative rounded-xl overflow-hidden border border-emerald-300 bg-slate-950 shadow-xl", style: { height: '560px', background: 'radial-gradient(circle at 22% 18%,rgba(34,197,94,0.22),rgba(2,6,23,0) 34%),radial-gradient(circle at 78% 16%,rgba(14,165,233,0.18),rgba(2,6,23,0) 30%),#020617' } },
 
               React.createElement("div", { id: "cell-sim-status", role: "status", "aria-live": "polite", className: typeof srOnly === 'string' ? srOnly : "sr-only", style: srOnly && typeof srOnly === 'object' ? srOnly : undefined }, cellCanvasStatus),
 
@@ -21436,7 +21440,647 @@ var d = labToolData.cell || {};
             ,
 
             // ═══════════════════════════════════════════════════════════
-            // ENCYCLOPEDIA MODE
+            // CELL PROCESSES — connected pathway maps
+            d.mode === 'processes' && (function() {
+              var h = React.createElement;
+              var PROCESSES = [
+                { id: 'respiration', name: 'Cellular respiration', icon: '⚡', location: 'Cytosol + mitochondrion', equation: 'glucose + oxygen → carbon dioxide + water + ATP', summary: 'Cells transfer chemical energy from glucose into ATP through linked stages. Glycolysis begins outside the mitochondrion; pyruvate oxidation, the Krebs cycle, and oxidative phosphorylation continue inside it.', steps: [
+                  ['1', 'Glycolysis', 'Cytosol', 'Glucose → 2 pyruvate; small ATP gain + NADH'],
+                  ['2', 'Pyruvate oxidation', 'Mitochondrial matrix', 'Pyruvate → acetyl-CoA + CO₂ + NADH'],
+                  ['3', 'Krebs cycle', 'Mitochondrial matrix', 'Acetyl-CoA is oxidized; CO₂, NADH, FADH₂ + ATP/GTP form'],
+                  ['4', 'Electron transport + chemiosmosis', 'Inner mitochondrial membrane', 'Electron carriers build an H⁺ gradient; ATP synthase makes most ATP']
+                ], organelles: ['cytoplasm', 'mitochondria'] },
+                { id: 'krebs', name: 'Krebs cycle (TCA)', icon: '🔄', location: 'Mitochondrial matrix', equation: '2 acetyl-CoA → 4 CO₂ + 6 NADH + 2 FADH₂ + 2 ATP/GTP (per glucose)', summary: 'The cycle finishes oxidizing the two acetyl groups derived from one glucose. Its main job is loading NADH and FADH₂ with high-energy electrons for the electron transport chain—not directly making most of the cell’s ATP.', steps: [
+                  ['1', 'Citrate formation', 'Oxaloacetate + acetyl-CoA', 'Citrate synthase joins a 2-carbon acetyl group to 4-carbon oxaloacetate'],
+                  ['2', 'Two oxidative decarboxylations', 'Isocitrate → α-ketoglutarate → succinyl-CoA', 'Two carbons leave as CO₂ and NADH captures electrons'],
+                  ['3', 'Substrate-level phosphorylation', 'Succinyl-CoA → succinate', 'Enough energy is released to make GTP or ATP directly'],
+                  ['4', 'Regeneration', 'Succinate → fumarate → malate → oxaloacetate', 'FADH₂ and NADH form; oxaloacetate is ready for another turn']
+                ], organelles: ['mitochondria'] },
+                { id: 'etc', name: 'Electron transport + ATP synthase', icon: '\uD83D\uDD0B', location: 'Inner mitochondrial membrane', equation: 'NADH/FADH\u2082 + O\u2082 + ADP + Pi \u2192 NAD\u207A/FAD + H\u2082O + ATP', summary: 'High-energy electrons move through membrane protein complexes. Their energy pumps protons into the intermembrane space. Oxygen accepts the electrons at the end, while protons flow back through ATP synthase to power ATP production.', steps: [
+                  ['1', 'Electron entry', 'Complex I + Complex II', 'NADH donates electrons to Complex I; FADH\u2082 feeds them through Complex II'],
+                  ['2', 'Proton pumping', 'Complexes I, III, and IV', 'Electron energy pumps H\u207A from the matrix into the intermembrane space'],
+                  ['3', 'Oxygen reduction', 'Complex IV', 'O\u2082 accepts electrons and joins H\u207A to form H\u2082O'],
+                  ['4', 'Chemiosmosis', 'ATP synthase', 'H\u207A flows down its gradient into the matrix, coupling ADP + Pi \u2192 ATP']
+                ], organelles: ['mitochondria'] },
+                { id: 'photosynthesis', name: 'Photosynthesis', icon: '🌿', location: 'Chloroplast', equation: 'carbon dioxide + water + light → sugar + oxygen', summary: 'Photosynthesis couples two systems. Light reactions capture energy and split water; the Calvin cycle uses ATP and NADPH to incorporate carbon dioxide into carbohydrate.', steps: [
+                  ['1', 'Photosystem II', 'Thylakoid membrane', 'Light energizes electrons; water splits and oxygen is released'],
+                  ['2', 'Electron transport', 'Thylakoid membrane', 'Electron flow pumps H⁺ into the thylakoid lumen'],
+                  ['3', 'ATP + NADPH', 'Thylakoid membrane', 'ATP synthase uses the gradient; Photosystem I helps reduce NADP⁺'],
+                  ['4', 'Calvin cycle', 'Chloroplast stroma', 'Rubisco fixes CO₂; ATP + NADPH support production of G3P']
+                ], organelles: ['chloroplast'] },
+                { id: 'transport', name: 'Membrane transport', icon: '\u2194\uFE0F', location: 'Plasma membrane', equation: 'passive transport: high \u2192 low concentration \u2022 active transport: ATP powers movement against a gradient', summary: 'The selectively permeable plasma membrane controls exchange with the environment. Small nonpolar molecules can cross the lipid bilayer, channels and carriers help specific substances move, water follows its gradient by osmosis, and pumps use energy to move substances against a gradient.', steps: [
+                  ['1', 'Simple diffusion', 'Through the phospholipid bilayer', 'Small nonpolar molecules such as O\u2082 and CO\u2082 move down their concentration gradients'],
+                  ['2', 'Facilitated diffusion', 'Channel or carrier protein', 'Ions and polar molecules move down a gradient through a selective membrane protein'],
+                  ['3', 'Osmosis', 'Membrane, often through aquaporins', 'Water moves toward the side with more dissolved solute until water potential is balanced'],
+                  ['4', 'Active transport', 'Membrane pump', 'ATP changes a pump\u2019s shape so selected substances can move against their concentration gradient']
+                ], organelles: ['cellMembrane'] },
+                { id: 'protein', name: 'Protein production + shipping', icon: '📦', location: 'Nucleus → ribosome → ER → Golgi', equation: 'DNA → RNA → protein → folded, tagged, and delivered product', summary: 'A secreted or membrane protein passes through an organelle supply chain. Information moves from DNA to RNA; ribosomes build the amino-acid chain; the endomembrane system folds, modifies, sorts, and ships it.', steps: [
+                  ['1', 'Transcription', 'Nucleus', 'A gene’s DNA sequence is copied into messenger RNA'],
+                  ['2', 'Translation', 'Ribosome on rough ER', 'The ribosome reads mRNA and builds a polypeptide into the ER'],
+                  ['3', 'Folding + quality control', 'Rough ER', 'Chaperones help folding; defective proteins are retained or recycled'],
+                  ['4', 'Modify + sort + deliver', 'Golgi + transport vesicles', 'Molecular tags route cargo to membrane, lysosome, or secretion']
+                ], organelles: ['nucleus', 'ribosomes', 'roughER', 'golgi'] }
+              ];
+              var requested = typeof d.cellProcess === 'string' ? d.cellProcess : 'respiration';
+              var selectedIndex = PROCESSES.findIndex(function(p) { return p.id === requested; });
+              if (selectedIndex < 0) selectedIndex = 0;
+              var process = PROCESSES[selectedIndex];
+              var savedProcessStep = Number(d.cellProcessStep);
+              var selectedStepIndex = Number.isInteger(savedProcessStep) && savedProcessStep >= 0 && savedProcessStep < process.steps.length ? savedProcessStep : 0;
+              var focusedProcessStep = process.steps[selectedStepIndex];
+              function chooseProcessStep(index) {
+                if (index < 0 || index >= process.steps.length) return;
+                upd('cellProcessStep', index);
+              }
+              function chooseProcess(index, focus) {
+                var next = PROCESSES[(index + PROCESSES.length) % PROCESSES.length];
+                upd('cellProcess', next.id);
+                upd('cellProcessStep', 0);
+                if (focus && typeof document !== 'undefined') setTimeout(function() {
+                  var target = document.getElementById('cell-process-tab-' + next.id);
+                  if (target) target.focus();
+                }, 0);
+              }
+              function keyProcess(e, index) {
+                var next = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = index + 1;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = index - 1;
+                else if (e.key === 'Home') next = 0;
+                else if (e.key === 'End') next = PROCESSES.length - 1;
+                if (next == null) return;
+                e.preventDefault(); chooseProcess(next, true);
+              }
+              var processVisuals = {
+                respiration: { accent: '#0e7490', soft: '#ecfeff', eyebrow: 'Energy overview', input: 'Glucose + O\u2082', output: 'ATP + CO\u2082 + H\u2082O' },
+                krebs: { accent: '#be123c', soft: '#fff1f2', eyebrow: 'Matrix cycle', input: 'Acetyl-CoA', output: 'NADH + FADH\u2082 + CO\u2082' },
+                etc: { accent: '#6d28d9', soft: '#f5f3ff', eyebrow: 'Membrane energy coupling', input: 'NADH + FADH\u2082 + O\u2082', output: 'ATP + H\u2082O' },
+                photosynthesis: { accent: '#15803d', soft: '#f0fdf4', eyebrow: 'Light to chemical energy', input: 'CO\u2082 + H\u2082O + light', output: 'Sugar + O\u2082' },
+                transport: { accent: '#0369a1', soft: '#f0f9ff', eyebrow: 'Selective membrane exchange', input: 'Molecules + concentration gradients', output: 'Controlled movement across membrane' },
+                protein: { accent: '#7c3aed', soft: '#faf5ff', eyebrow: 'Information to product', input: 'DNA instructions', output: 'Delivered protein' }
+              };
+              var processVisual = processVisuals[process.id] || processVisuals.respiration;
+              var processConnections = {
+                respiration: [
+                  { id: 'krebs', label: 'Zoom into the Krebs cycle', reason: 'Follow carbon oxidation and electron-carrier loading in the mitochondrial matrix.' },
+                  { id: 'etc', label: 'Follow electrons to ATP synthase', reason: 'See how NADH and FADH\u2082 power the proton gradient and most ATP production.' }
+                ],
+                krebs: [
+                  { id: 'etc', label: 'Continue to electron transport', reason: 'Track the high-energy electrons carried by NADH and FADH\u2082.' },
+                  { id: 'respiration', label: 'Return to respiration overview', reason: 'Place the cycle back into the complete glucose-to-ATP pathway.' }
+                ],
+                etc: [
+                  { id: 'respiration', label: 'Return to respiration overview', reason: 'Connect oxidative phosphorylation to glycolysis and the Krebs cycle.' },
+                  { id: 'photosynthesis', label: 'Compare chloroplast chemiosmosis', reason: 'Compare how two organelles use proton gradients to make ATP.' }
+                ],
+                photosynthesis: [
+                  { id: 'etc', label: 'Compare mitochondrial chemiosmosis', reason: 'Contrast proton gradients across thylakoid and mitochondrial membranes.' },
+                  { id: 'respiration', label: 'Compare energy transformations', reason: 'Relate carbon storage in photosynthesis to carbon oxidation in respiration.' }
+                ],
+                transport: [
+                  { id: 'protein', label: 'See how membrane proteins are made', reason: 'Follow channels, carriers, and pumps through ER and Golgi processing.' },
+                  { id: 'photosynthesis', label: 'See transport build a proton gradient', reason: 'Connect selective membrane movement to the thylakoid light reactions.' }
+                ],
+                protein: [
+                  { id: 'transport', label: 'See membrane proteins at work', reason: 'Apply protein shipping to channels, carriers, and ATP-powered pumps.' },
+                  { id: 'respiration', label: 'Follow the ATP supply', reason: 'Connect protein production and trafficking to the cell\u2019s energy system.' }
+                ]
+              };
+              var relatedProcesses = processConnections[process.id] || [];
+              function chooseRelatedProcess(id) {
+                var relatedIndex = PROCESSES.findIndex(function(p) { return p.id === id; });
+                if (relatedIndex >= 0) chooseProcess(relatedIndex, true);
+              }              var deepDives = [
+                { title: 'Mitochondrion', color: '#e11d48', parts: 'Outer membrane • intermembrane space • folded inner membrane (cristae) • matrix', why: 'Compartment boundaries let electron transport build a proton gradient. The Krebs cycle occurs in the matrix; ATP synthase sits in the inner membrane.' },
+                { title: 'Chloroplast', color: '#15803d', parts: 'Outer + inner membranes • stroma • thylakoids • grana • thylakoid lumen', why: 'Light reactions build a proton gradient across thylakoids. Carbon fixation occurs in the surrounding stroma.' },
+                { title: 'Endomembrane system', color: '#7c3aed', parts: 'Nuclear envelope • rough + smooth ER • Golgi cisternae • vesicles • lysosomes • plasma membrane', why: 'Membrane-bound compartments maintain different chemical environments while vesicles move selected cargo between them.' }
+              ];
+              function renderOrganelleCutaway(item) {
+                if (item.title === 'Mitochondrion') {
+                  return h('figure', { className: 'mt-3 overflow-hidden rounded-xl border border-rose-200 bg-slate-950 p-2' },
+                    h('svg', { viewBox: '0 0 320 210', role: 'img', 'aria-labelledby': 'cell-mito-cutaway-title cell-mito-cutaway-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                      h('title', { id: 'cell-mito-cutaway-title' }, 'Cutaway of a mitochondrion'),
+                      h('desc', { id: 'cell-mito-cutaway-desc' }, 'A mitochondrion with an outer membrane, an intermembrane space, a folded inner membrane called cristae, a matrix containing mitochondrial DNA, and ATP synthase embedded in the inner membrane.'),
+                      h('path', { d: 'M30 108 C31 50 82 25 170 32 C255 38 296 77 281 134 C268 184 206 194 115 184 C58 178 27 153 30 108 Z', fill: '#4c0519', stroke: '#fb7185', strokeWidth: 4 }),
+                      h('path', { d: 'M45 108 C46 62 88 43 166 48 C237 52 274 82 266 127 C256 166 204 179 121 169 C72 164 43 145 45 108 Z', fill: '#881337', stroke: '#fecdd3', strokeWidth: 3 }),
+                      ['M67 82 C92 58 110 114 137 84 S181 111 209 80 S240 105 253 88','M61 124 C90 96 112 151 142 121 S186 149 216 117 S243 143 256 126'].map(function(path, i) { return h('path', { key: 'crista-' + i, d: path, fill: 'none', stroke: '#fda4af', strokeWidth: 8, strokeLinecap: 'round' }); }),
+                      h('path', { d: 'M161 136 C174 121 191 145 177 155 C165 164 149 151 161 136 Z', fill: 'none', stroke: '#67e8f9', strokeWidth: 3 }),
+                      [[96,73],[135,92],[190,72],[222,101]].map(function(point, i) { return h('g', { key: 'atp-' + i, 'aria-hidden': 'true' }, h('circle', { cx: point[0], cy: point[1], r: 5, fill: '#fbbf24' }), h('line', { x1: point[0], y1: point[1] + 5, x2: point[0], y2: point[1] + 12, stroke: '#fde68a', strokeWidth: 2 })); }),
+                      h('text', { x: 13, y: 28, fill: '#f8fafc', fontSize: 11, fontWeight: 900 }, 'outer membrane'),
+                      h('path', { d: 'M82 32 L82 44', stroke: '#f8fafc', strokeWidth: 2 }),
+                      h('text', { x: 196, y: 20, fill: '#fecdd3', fontSize: 11, fontWeight: 900 }, 'intermembrane space'),
+                      h('path', { d: 'M226 25 L232 48', stroke: '#fecdd3', strokeWidth: 2 }),
+                      h('text', { x: 7, y: 202, fill: '#fda4af', fontSize: 11, fontWeight: 900 }, 'cristae = inner membrane folds'),
+                      h('path', { d: 'M116 188 L133 147', stroke: '#fda4af', strokeWidth: 2 }),
+                      h('text', { x: 236, y: 184, fill: '#a5f3fc', fontSize: 11, fontWeight: 900 }, 'matrix + mtDNA'),
+                      h('path', { d: 'M235 172 L183 150', stroke: '#a5f3fc', strokeWidth: 2 }),
+                      h('text', { x: 118, y: 112, textAnchor: 'middle', fill: '#fde68a', fontSize: 11, fontWeight: 900 }, 'ATP synthase')
+                    ),
+                    h('figcaption', { className: 'pt-2 text-[11px] leading-relaxed text-slate-300' }, 'Cristae increase inner-membrane area for electron transport and ATP synthase. The matrix contains enzymes for pyruvate oxidation and the Krebs cycle.')
+                  );
+                }
+                if (item.title === 'Chloroplast') {
+                  return h('figure', { className: 'mt-3 overflow-hidden rounded-xl border border-emerald-200 bg-slate-950 p-2' },
+                    h('svg', { viewBox: '0 0 320 210', role: 'img', 'aria-labelledby': 'cell-chloroplast-cutaway-title cell-chloroplast-cutaway-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                      h('title', { id: 'cell-chloroplast-cutaway-title' }, 'Cutaway of a chloroplast'),
+                      h('desc', { id: 'cell-chloroplast-cutaway-desc' }, 'A chloroplast with a double membrane, fluid stroma, stacks of thylakoid discs called grana, connecting stroma lamellae, and chloroplast DNA.'),
+                      h('ellipse', { cx: 160, cy: 108, rx: 137, ry: 76, fill: '#052e16', stroke: '#4ade80', strokeWidth: 4 }),
+                      h('ellipse', { cx: 160, cy: 108, rx: 122, ry: 62, fill: '#14532d', stroke: '#bbf7d0', strokeWidth: 2 }),
+                      [[82,88],[168,120],[235,82]].map(function(stack, si) { return h('g', { key: 'granum-' + si }, [0,1,2,3].map(function(i) { return h('ellipse', { key: i, cx: stack[0], cy: stack[1] + i * 10, rx: 31, ry: 8, fill: i % 2 ? '#15803d' : '#166534', stroke: '#86efac', strokeWidth: 2 }); })); }),
+                      h('path', { d: 'M111 110 C132 104 140 118 151 126 M199 131 C211 119 220 111 228 110', fill: 'none', stroke: '#86efac', strokeWidth: 5 }),
+                      h('path', { d: 'M117 150 C130 134 148 160 134 170 C121 179 106 164 117 150 Z', fill: 'none', stroke: '#67e8f9', strokeWidth: 3 }),
+                      h('text', { x: 12, y: 26, fill: '#f8fafc', fontSize: 11, fontWeight: 900 }, 'double membrane'),
+                      h('path', { d: 'M87 29 L79 51', stroke: '#f8fafc', strokeWidth: 2 }),
+                      h('text', { x: 211, y: 25, fill: '#bbf7d0', fontSize: 11, fontWeight: 900 }, 'stroma'),
+                      h('path', { d: 'M235 30 L221 64', stroke: '#bbf7d0', strokeWidth: 2 }),
+                      h('text', { x: 12, y: 197, fill: '#a7f3d0', fontSize: 11, fontWeight: 900 }, 'granum = thylakoid stack'),
+                      h('path', { d: 'M109 184 L92 124', stroke: '#a7f3d0', strokeWidth: 2 }),
+                      h('text', { x: 191, y: 198, fill: '#a5f3fc', fontSize: 11, fontWeight: 900 }, 'chloroplast DNA'),
+                      h('path', { d: 'M222 183 L139 161', stroke: '#a5f3fc', strokeWidth: 2 }),
+                      h('text', { x: 160, y: 82, textAnchor: 'middle', fill: '#dcfce7', fontSize: 11, fontWeight: 900 }, 'stroma lamella')
+                    ),
+                    h('figcaption', { className: 'pt-2 text-[11px] leading-relaxed text-slate-300' }, 'Thylakoid membranes host the light reactions and enclose the proton-rich lumen. The surrounding stroma contains enzymes of the Calvin cycle.')
+                  );
+                }
+                return h('figure', { className: 'mt-3 overflow-hidden rounded-xl border border-violet-200 bg-slate-950 p-2' },
+                  h('svg', { viewBox: '0 0 320 210', role: 'img', 'aria-labelledby': 'cell-endomembrane-cutaway-title cell-endomembrane-cutaway-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                    h('title', { id: 'cell-endomembrane-cutaway-title' }, 'Map of the endomembrane system'),
+                    h('desc', { id: 'cell-endomembrane-cutaway-desc' }, 'The nuclear envelope connects to rough endoplasmic reticulum with ribosomes. Cargo buds into transport vesicles, enters the Golgi apparatus, and is routed to a lysosome, the plasma membrane, or secretion outside the cell.'),
+                    h('defs', null, h('marker', { id: 'cell-endomembrane-arrow', markerWidth: 8, markerHeight: 8, refX: 7, refY: 3, orient: 'auto' }, h('path', { d: 'M0 0 L0 6 L8 3 Z', fill: '#c4b5fd' }))),
+                    h('circle', { cx: 61, cy: 104, r: 45, fill: '#164e63', stroke: '#67e8f9', strokeWidth: 3 }),
+                    h('circle', { cx: 61, cy: 104, r: 32, fill: '#0e7490', stroke: '#a5f3fc', strokeWidth: 2 }),
+                    h('text', { x: 61, y: 108, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 900 }, 'nucleus'),
+                    [0,1,2].map(function(i) { return h('path', { key: 'rough-er-' + i, d: 'M98 ' + (75 + i * 30) + ' C125 ' + (55 + i * 30) + ' 145 ' + (96 + i * 30) + ' 178 ' + (73 + i * 30), fill: 'none', stroke: '#a78bfa', strokeWidth: 9, strokeLinecap: 'round' }); }),
+                    [[112,66],[132,91],[151,116],[170,132]].map(function(point, i) { return h('circle', { key: 'ribosome-' + i, cx: point[0], cy: point[1], r: 4, fill: '#f8fafc' }); }),
+                    h('text', { x: 140, y: 38, textAnchor: 'middle', fill: '#ddd6fe', fontSize: 11, fontWeight: 900 }, 'rough ER + ribosomes'),
+                    h('circle', { cx: 195, cy: 103, r: 12, fill: '#7c3aed', stroke: '#ede9fe', strokeWidth: 2 }),
+                    h('path', { d: 'M178 103 L211 103', stroke: '#c4b5fd', strokeWidth: 3, markerEnd: 'url(#cell-endomembrane-arrow)' }),
+                    [0,1,2,3].map(function(i) { return h('path', { key: 'golgi-stack-' + i, d: 'M216 ' + (68 + i * 25) + ' Q250 ' + (87 + i * 15) + ' 282 ' + (68 + i * 25), fill: 'none', stroke: i < 2 ? '#c4b5fd' : '#8b5cf6', strokeWidth: 9, strokeLinecap: 'round' }); }),
+                    h('text', { x: 250, y: 39, textAnchor: 'middle', fill: '#ede9fe', fontSize: 11, fontWeight: 900 }, 'Golgi'),
+                    h('circle', { cx: 290, cy: 158, r: 13, fill: '#10b981', stroke: '#a7f3d0', strokeWidth: 2 }),
+                    h('circle', { cx: 254, cy: 174, r: 10, fill: '#7c3aed', stroke: '#ddd6fe', strokeWidth: 2 }),
+                    h('path', { d: 'M275 142 C294 133 301 119 302 101 M271 146 C278 157 281 161 284 164', fill: 'none', stroke: '#c4b5fd', strokeWidth: 3, markerEnd: 'url(#cell-endomembrane-arrow)' }),
+                    h('text', { x: 302, y: 93, textAnchor: 'end', fill: '#a7f3d0', fontSize: 11, fontWeight: 900 }, 'membrane / secretion'),
+                    h('text', { x: 236, y: 199, fill: '#ddd6fe', fontSize: 11, fontWeight: 900 }, 'lysosome'),
+                    h('text', { x: 158, y: 198, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11, fontWeight: 900 }, 'vesicles carry selected cargo \u2192')
+                  ),
+                  h('figcaption', { className: 'pt-2 text-[11px] leading-relaxed text-slate-300' }, 'Membrane continuity and vesicle budding connect the system. Molecular tags help the Golgi sort cargo to the correct destination.')
+                );
+              }              return h('section', { className: 'mt-4 rounded-xl border border-amber-200 bg-white p-4 shadow-sm', 'data-cell-processes-workspace': true, 'aria-labelledby': 'cell-processes-heading' },
+                h('div', { className: 'mb-4 overflow-hidden rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-cyan-50' },
+                  h('div', { className: 'h-1.5', style: { background: 'linear-gradient(90deg,#f59e0b,' + processVisual.accent + ',#06b6d4)' } }),
+                  h('div', { className: 'p-4' },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-3' },
+                      h('div', null,
+                        h('div', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-amber-700' }, 'Connected pathway atlas'),
+                        h('h3', { id: 'cell-processes-heading', className: 'mt-1 text-xl font-black tracking-tight text-slate-950' }, 'Cellular processes'),
+                        h('p', { className: 'mt-1 max-w-3xl text-[13px] leading-relaxed text-slate-700' }, 'Trace matter, energy, electrons, and information across cell compartments. Each arrow names what is moving and where it goes.')
+                      ),
+                      h('span', { className: 'rounded-full border border-amber-200 bg-white px-3 py-1 text-[11px] font-black text-amber-800 shadow-sm' }, PROCESSES.length + ' linked pathways')
+                    )
+                  )
+                ),
+                h('div', { className: 'mb-2 flex flex-wrap items-end justify-between gap-2' },
+                  h('div', null,
+                    h('div', { className: 'text-[11px] font-black uppercase tracking-[0.16em] text-slate-500' }, 'Choose a pathway'),
+                    h('p', { className: 'mt-0.5 text-[11px] text-slate-500' }, 'Arrow keys move between tabs.')
+                  ),
+                  h('span', { className: 'rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wide', style: { background: processVisual.soft, color: processVisual.accent } }, processVisual.eyebrow)
+                ),
+                h('div', { role: 'tablist', 'aria-label': 'Cellular process diagrams', className: 'mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3' },
+                  PROCESSES.map(function(p, index) {
+                    var on = p.id === process.id;
+                    var pv = processVisuals[p.id] || processVisuals.respiration;
+                    return h('button', {
+                      id: 'cell-process-tab-' + p.id, key: p.id, type: 'button', role: 'tab',
+                      'aria-selected': on ? 'true' : 'false', 'aria-controls': 'cell-process-panel', tabIndex: on ? 0 : -1,
+                      onClick: function() { chooseProcess(index, false); }, onKeyDown: function(e) { keyProcess(e, index); },
+                      className: 'group min-h-[72px] rounded-xl border p-2.5 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-offset-2',
+                      style: on ? { borderColor: pv.accent, background: pv.accent, color: '#fff', boxShadow: '0 8px 20px rgba(15,23,42,0.16)' } : { borderColor: '#cbd5e1', background: '#fff', color: '#0f172a' }
+                    },
+                      h('span', { className: 'flex items-start gap-2' },
+                        h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base', style: { background: on ? 'rgba(255,255,255,0.18)' : pv.soft }, 'aria-hidden': 'true' }, p.icon),
+                        h('span', { className: 'min-w-0' },
+                          h('span', { className: 'block text-[11.5px] font-black leading-tight' }, p.name),
+                          h('span', { className: 'mt-1 block text-[11px] font-bold leading-tight', style: { color: on ? 'rgba(255,255,255,0.82)' : '#64748b' } }, p.location)
+                        )
+                      )
+                    );
+                  })
+                ),
+                h('div', { id: 'cell-process-panel', role: 'tabpanel', 'aria-labelledby': 'cell-process-tab-' + process.id, tabIndex: 0, 'aria-live': 'polite', 'aria-atomic': 'true', className: 'overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm' },
+                  h('div', { className: 'p-4 text-white', style: { background: 'linear-gradient(125deg,#0f172a 0%,#1e293b 58%,' + processVisual.accent + ' 150%)' } },
+                    h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                      h('div', null,
+                        h('div', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200' }, processVisual.eyebrow),
+                        h('h4', { className: 'mt-1 text-lg font-black text-white' }, process.icon + ' ' + process.name),
+                        h('div', { className: 'mt-1 text-[11px] font-bold text-slate-200' }, 'Where it happens: ' + process.location)
+                      ),
+                      h('div', { className: 'max-w-xl rounded-lg border border-white/20 bg-white/10 px-3 py-2 font-mono text-[11px] font-bold leading-relaxed text-cyan-50' }, process.equation)
+                    ),
+                    h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' },
+                      h('div', { className: 'rounded-lg border border-white/15 bg-black/15 px-3 py-2' }, h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-slate-300' }, 'Key inputs'), h('div', { className: 'mt-0.5 text-[12px] font-black text-white' }, processVisual.input)),
+                      h('div', { className: 'rounded-lg border border-white/15 bg-black/15 px-3 py-2' }, h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-slate-300' }, 'Key outputs'), h('div', { className: 'mt-0.5 text-[12px] font-black text-white' }, processVisual.output))
+                    )
+                  ),
+                  h('div', { className: 'p-3 sm:p-4' },
+                    h('p', { className: 'mb-3 border-l-4 pl-3 text-[13px] leading-relaxed text-slate-700', style: { borderColor: processVisual.accent } }, process.summary),
+                    h('aside', {
+                      className: 'mb-3 overflow-hidden rounded-xl border',
+                      style: { borderColor: processVisual.accent + '66', background: 'linear-gradient(120deg,' + processVisual.soft + ',#fff)' },
+                      'data-cell-stage-focus': selectedStepIndex,
+                      'aria-labelledby': 'cell-stage-focus-title'
+                    },
+                      h('div', { className: 'flex flex-wrap items-stretch' },
+                        h('div', { className: 'flex min-w-[92px] shrink-0 flex-col items-center justify-center px-3 py-3 text-center text-white', style: { background: processVisual.accent } },
+                          h('span', { className: 'text-[11px] font-black uppercase tracking-wide' }, 'Focus lens'),
+                          h('span', { className: 'mt-1 text-xl font-black' }, focusedProcessStep[0]),
+                          h('span', { className: 'text-[11px] font-bold' }, 'of ' + process.steps.length)
+                        ),
+                        h('div', { className: 'min-w-[220px] flex-1 p-3' },
+                          h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                            h('div', null,
+                              h('div', { className: 'text-[11px] font-black uppercase tracking-wide', style: { color: processVisual.accent } }, 'Look for this in the diagram'),
+                              h('h5', { id: 'cell-stage-focus-title', className: 'mt-0.5 text-[14px] font-black text-slate-950' }, focusedProcessStep[1])
+                            ),
+                            h('span', { className: 'rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-slate-700 shadow-sm' }, focusedProcessStep[2])
+                          ),
+                          h('p', { className: 'mt-2 text-[12px] leading-relaxed text-slate-700' }, focusedProcessStep[3])
+                        )
+                      )
+                    ),                  process.id === 'respiration' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-cyan-200 bg-slate-950 p-2' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                      h('span', null, 'CELLULAR RESPIRATION \u2022 one connected energy pathway'),
+                      h('span', { className: 'flex flex-wrap items-center gap-3' },
+                        h('span', { className: 'text-cyan-200' }, '\u25CF carbon pathway'),
+                        h('span', { className: 'text-amber-200' }, '\u25CF electron carriers'),
+                        h('span', { className: 'text-violet-200' }, '\u25CF ATP')
+                      )
+                    ),
+                    h('svg', { viewBox: '0 0 760 310', role: 'img', 'aria-labelledby': 'cell-respiration-title cell-respiration-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                      h('title', { id: 'cell-respiration-title' }, 'Cellular respiration across the cytosol and mitochondrion'),
+                      h('desc', { id: 'cell-respiration-desc' }, 'Glucose is split by glycolysis in the cytosol. Pyruvate enters the mitochondrial matrix for pyruvate oxidation and the Krebs cycle. Electron carriers deliver electrons to the inner membrane, where oxygen supports oxidative phosphorylation and most ATP is produced.'),
+                      h('defs', null,
+                        h('marker', { id: 'cell-respiration-arrow', markerWidth: 9, markerHeight: 9, refX: 8, refY: 3.5, orient: 'auto' }, h('path', { d: 'M0 0 L0 7 L9 3.5 Z', fill: '#67e8f9' })),
+                        h('marker', { id: 'cell-respiration-energy-arrow', markerWidth: 9, markerHeight: 9, refX: 8, refY: 3.5, orient: 'auto' }, h('path', { d: 'M0 0 L0 7 L9 3.5 Z', fill: '#fbbf24' }))
+                      ),
+                      h('rect', { x: 16, y: 42, width: 196, height: 215, rx: 20, fill: '#083344', stroke: '#22d3ee', strokeWidth: 2 }),
+                      h('rect', { x: 226, y: 42, width: 312, height: 215, rx: 42, fill: '#3f1726', stroke: '#fb7185', strokeWidth: 2 }),
+                      h('rect', { x: 552, y: 42, width: 192, height: 215, rx: 20, fill: '#2e1065', stroke: '#c4b5fd', strokeWidth: 2 }),
+                      h('text', { x: 32, y: 68, fill: '#a5f3fc', fontSize: 12, fontWeight: 900 }, 'CYTOSOL'),
+                      h('text', { x: 248, y: 68, fill: '#fecdd3', fontSize: 12, fontWeight: 900 }, 'MITOCHONDRIAL MATRIX'),
+                      h('text', { x: 570, y: 68, fill: '#ddd6fe', fontSize: 12, fontWeight: 900 }, 'INNER MEMBRANE'),
+                      h('rect', { x: 38, y: 103, width: 148, height: 88, rx: 16, fill: '#155e75', stroke: '#a5f3fc', strokeWidth: 2 }),
+                      h('text', { x: 112, y: 130, textAnchor: 'middle', fill: '#fff', fontSize: 15, fontWeight: 900 }, 'Glycolysis'),
+                      h('text', { x: 112, y: 153, textAnchor: 'middle', fill: '#cffafe', fontSize: 11 }, 'glucose \u2192 2 pyruvate'),
+                      h('text', { x: 112, y: 174, textAnchor: 'middle', fill: '#fde68a', fontSize: 11, fontWeight: 800 }, '+ 2 ATP + NADH'),
+                      h('path', { d: 'M186 147 L264 147', stroke: '#67e8f9', strokeWidth: 4, markerEnd: 'url(#cell-respiration-arrow)' }),
+                      h('text', { x: 222, y: 134, textAnchor: 'middle', fill: '#cffafe', fontSize: 11, fontWeight: 800 }, 'pyruvate'),
+                      h('circle', { cx: 352, cy: 147, r: 65, fill: '#881337', stroke: '#fda4af', strokeWidth: 3 }),
+                      h('path', { d: 'M337 101 C395 103 411 165 373 193 C329 224 282 181 294 137 C299 120 310 110 326 105', fill: 'none', stroke: '#fda4af', strokeWidth: 3, markerEnd: 'url(#cell-respiration-arrow)' }),
+                      h('text', { x: 352, y: 140, textAnchor: 'middle', fill: '#fff', fontSize: 15, fontWeight: 900 }, 'Krebs cycle'),
+                      h('text', { x: 352, y: 163, textAnchor: 'middle', fill: '#fecdd3', fontSize: 11 }, 'CO\u2082 leaves'),
+                      h('text', { x: 352, y: 181, textAnchor: 'middle', fill: '#fde68a', fontSize: 11, fontWeight: 800 }, 'NADH + FADH\u2082'),
+                      h('path', { d: 'M415 130 C466 90 510 92 570 119', fill: 'none', stroke: '#fbbf24', strokeWidth: 4, markerEnd: 'url(#cell-respiration-energy-arrow)' }),
+                      h('text', { x: 492, y: 91, textAnchor: 'middle', fill: '#fde68a', fontSize: 11, fontWeight: 900 }, 'electron carriers'),
+                      h('rect', { x: 574, y: 101, width: 82, height: 91, rx: 14, fill: '#5b21b6', stroke: '#ddd6fe', strokeWidth: 2 }),
+                      h('text', { x: 615, y: 132, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 900 }, 'Electron'),
+                      h('text', { x: 615, y: 150, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 900 }, 'transport'),
+                      h('text', { x: 615, y: 172, textAnchor: 'middle', fill: '#e0e7ff', fontSize: 11 }, 'O\u2082 \u2192 H\u2082O'),
+                      h('path', { d: 'M656 147 L688 147', stroke: '#c4b5fd', strokeWidth: 4, markerEnd: 'url(#cell-respiration-arrow)' }),
+                      h('circle', { cx: 707, cy: 147, r: 28, fill: '#7c3aed', stroke: '#ede9fe', strokeWidth: 2 }),
+                      h('text', { x: 707, y: 143, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 900 }, 'ATP'),
+                      h('text', { x: 707, y: 158, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 900 }, 'synthase'),
+                      h('text', { x: 112, y: 230, textAnchor: 'middle', fill: '#a5f3fc', fontSize: 11, fontWeight: 800 }, 'small ATP yield'),
+                      h('text', { x: 352, y: 230, textAnchor: 'middle', fill: '#fecdd3', fontSize: 11, fontWeight: 800 }, 'carriers loaded'),
+                      h('text', { x: 648, y: 230, textAnchor: 'middle', fill: '#ddd6fe', fontSize: 11, fontWeight: 800 }, 'most ATP produced'),
+                      h('path', { d: 'M45 280 L705 280', stroke: '#334155', strokeWidth: 2 }),
+                      h('text', { x: 375, y: 300, textAnchor: 'middle', fill: '#f8fafc', fontSize: 12, fontWeight: 900 }, 'Chemical energy in glucose \u2192 electron carriers \u2192 proton gradient \u2192 ATP')
+                    ),
+                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Compartment map, not to scale. ATP yield varies by cell and conditions; the diagram emphasizes energy transfer between linked stages.')
+                  ) : null,
+                  process.id === 'photosynthesis' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-emerald-200 bg-slate-950 p-2' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                      h('span', null, 'PHOTOSYNTHESIS \u2022 two coupled systems'),
+                      h('span', { className: 'flex flex-wrap items-center gap-3' },
+                        h('span', { className: 'text-amber-200' }, '\u2600 light energy'),
+                        h('span', { className: 'text-cyan-200' }, '\u25CF ATP + NADPH'),
+                        h('span', { className: 'text-emerald-200' }, '\u25CF carbon fixation')
+                      )
+                    ),
+                    h('svg', { viewBox: '0 0 760 350', role: 'img', 'aria-labelledby': 'cell-photosynthesis-title cell-photosynthesis-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                      h('title', { id: 'cell-photosynthesis-title' }, 'Photosynthesis coupling light reactions and the Calvin cycle'),
+                      h('desc', { id: 'cell-photosynthesis-desc' }, 'Light reactions in the thylakoid membrane use light and water, release oxygen, and produce ATP and NADPH. These energy carriers move into the stroma, where the Calvin cycle fixes carbon dioxide into G3P, a building block for sugars. ADP and NADP plus return to the light reactions.'),
+                      h('defs', null,
+                        h('marker', { id: 'cell-photo-arrow', markerWidth: 9, markerHeight: 9, refX: 8, refY: 3.5, orient: 'auto' }, h('path', { d: 'M0 0 L0 7 L9 3.5 Z', fill: '#67e8f9' })),
+                        h('marker', { id: 'cell-photo-carbon-arrow', markerWidth: 9, markerHeight: 9, refX: 8, refY: 3.5, orient: 'auto' }, h('path', { d: 'M0 0 L0 7 L9 3.5 Z', fill: '#86efac' }))
+                      ),
+                      h('rect', { x: 18, y: 40, width: 724, height: 265, rx: 70, fill: '#052e16', stroke: '#4ade80', strokeWidth: 3 }),
+                      h('text', { x: 380, y: 65, textAnchor: 'middle', fill: '#bbf7d0', fontSize: 12, fontWeight: 900 }, 'CHLOROPLAST'),
+                      h('text', { x: 82, y: 93, fill: '#a7f3d0', fontSize: 12, fontWeight: 900 }, 'THYLAKOID MEMBRANE'),
+                      [0,1,2,3].map(function(i) { return h('rect', { key: 'thylakoid-' + i, x: 82, y: 118 + i * 31, width: 188, height: 22, rx: 11, fill: i % 2 ? '#15803d' : '#166534', stroke: '#86efac', strokeWidth: 2 }); }),
+                      h('circle', { cx: 48, cy: 115, r: 22, fill: '#f59e0b', stroke: '#fde68a', strokeWidth: 3 }),
+                      h('text', { x: 48, y: 120, textAnchor: 'middle', fill: '#451a03', fontSize: 13, fontWeight: 900 }, 'LIGHT'),
+                      h('path', { d: 'M67 127 L110 151', stroke: '#fbbf24', strokeWidth: 4, markerEnd: 'url(#cell-photo-arrow)' }),
+                      h('text', { x: 39, y: 201, fill: '#bae6fd', fontSize: 12, fontWeight: 900 }, 'H\u2082O in'),
+                      h('path', { d: 'M77 196 L112 196', stroke: '#67e8f9', strokeWidth: 3, markerEnd: 'url(#cell-photo-arrow)' }),
+                      h('text', { x: 105, y: 274, fill: '#bbf7d0', fontSize: 12, fontWeight: 900 }, 'O\u2082 released'),
+                      h('path', { d: 'M165 249 L165 271', stroke: '#86efac', strokeWidth: 3, markerEnd: 'url(#cell-photo-carbon-arrow)' }),
+                      h('text', { x: 176, y: 166, textAnchor: 'middle', fill: '#fff', fontSize: 14, fontWeight: 900 }, 'Light reactions'),
+                      h('text', { x: 176, y: 187, textAnchor: 'middle', fill: '#d1fae5', fontSize: 11 }, 'split water + build H\u207A gradient'),
+                      h('path', { d: 'M276 140 C338 100 393 104 448 136', fill: 'none', stroke: '#67e8f9', strokeWidth: 5, markerEnd: 'url(#cell-photo-arrow)' }),
+                      h('text', { x: 362, y: 103, textAnchor: 'middle', fill: '#a5f3fc', fontSize: 12, fontWeight: 900 }, 'ATP + NADPH'),
+                      h('path', { d: 'M448 220 C390 255 333 255 276 218', fill: 'none', stroke: '#94a3b8', strokeWidth: 3, markerEnd: 'url(#cell-photo-arrow)' }),
+                      h('text', { x: 360, y: 275, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11, fontWeight: 800 }, 'ADP + Pi + NADP\u207A return'),
+                      h('circle', { cx: 548, cy: 179, r: 84, fill: '#14532d', stroke: '#86efac', strokeWidth: 3 }),
+                      h('path', { d: 'M548 115 C616 126 627 203 573 242 C518 281 456 230 470 171 C478 137 502 120 531 116', fill: 'none', stroke: '#86efac', strokeWidth: 4, markerEnd: 'url(#cell-photo-carbon-arrow)' }),
+                      h('text', { x: 548, y: 169, textAnchor: 'middle', fill: '#fff', fontSize: 16, fontWeight: 900 }, 'Calvin cycle'),
+                      h('text', { x: 548, y: 191, textAnchor: 'middle', fill: '#dcfce7', fontSize: 11 }, 'carbon fixation in stroma'),
+                      h('text', { x: 548, y: 210, textAnchor: 'middle', fill: '#bbf7d0', fontSize: 11, fontWeight: 800 }, 'CO\u2082 \u2192 G3P'),
+                      h('text', { x: 648, y: 105, fill: '#bbf7d0', fontSize: 12, fontWeight: 900 }, 'CO\u2082 in'),
+                      h('path', { d: 'M690 112 L617 142', stroke: '#86efac', strokeWidth: 3, markerEnd: 'url(#cell-photo-carbon-arrow)' }),
+                      h('text', { x: 646, y: 267, fill: '#fde68a', fontSize: 12, fontWeight: 900 }, 'G3P \u2192 sugars'),
+                      h('path', { d: 'M612 226 L681 251', stroke: '#fbbf24', strokeWidth: 3, markerEnd: 'url(#cell-photo-arrow)' }),
+                      h('text', { x: 380, y: 330, textAnchor: 'middle', fill: '#f8fafc', fontSize: 12, fontWeight: 900 }, 'Light reactions supply energy carriers; the Calvin cycle uses them to build carbohydrate.')
+                    ),
+                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Chloroplast map, not to scale. G3P is the immediate carbon product; cells use it to build glucose and other organic molecules.')
+                  ) : null,
+                  process.id === 'transport' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-sky-200 bg-slate-950 p-2' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                      h('span', null, 'PLASMA MEMBRANE \u2022 four transport strategies'),
+                      h('span', { className: 'flex flex-wrap items-center gap-3' },
+                        h('span', { className: 'text-cyan-200' }, '\u2193 down a gradient'),
+                        h('span', { className: 'text-amber-200' }, '\u2191 against a gradient'),
+                        h('span', { className: 'text-violet-200' }, '\u25CF selective protein')
+                      )
+                    ),
+                    h('svg', { viewBox: '0 0 760 360', role: 'img', 'aria-labelledby': 'cell-transport-title cell-transport-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                      h('title', { id: 'cell-transport-title' }, 'Four ways substances cross the plasma membrane'),
+                      h('desc', { id: 'cell-transport-desc' }, 'A phospholipid bilayer separates extracellular fluid from cytoplasm. Oxygen crosses by simple diffusion, ions cross through a selective channel by facilitated diffusion, water crosses through an aquaporin by osmosis, and a membrane pump uses ATP to move sodium against its concentration gradient.'),
+                      h('defs', null,
+                        h('marker', { id: 'cell-transport-passive-arrow', markerWidth: 9, markerHeight: 9, refX: 8, refY: 3.5, orient: 'auto' }, h('path', { d: 'M0 0 L0 7 L9 3.5 Z', fill: '#67e8f9' })),
+                        h('marker', { id: 'cell-transport-active-arrow', markerWidth: 9, markerHeight: 9, refX: 8, refY: 3.5, orient: 'auto' }, h('path', { d: 'M0 0 L0 7 L9 3.5 Z', fill: '#fbbf24' }))
+                      ),
+                      h('rect', { x: 14, y: 33, width: 732, height: 295, rx: 22, fill: '#082f49', stroke: '#38bdf8', strokeWidth: 2 }),
+                      h('text', { x: 28, y: 56, fill: '#e0f2fe', fontSize: 12, fontWeight: 900 }, 'EXTRACELLULAR FLUID'),
+                      h('text', { x: 28, y: 316, fill: '#e0f2fe', fontSize: 12, fontWeight: 900 }, 'CYTOPLASM'),
+                      h('rect', { x: 24, y: 159, width: 712, height: 54, fill: '#0c4a6e', opacity: 0.8 }),
+                      [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].map(function(i) {
+                        var x = 38 + i * 40;
+                        return h('g', { key: 'lipid-' + i, 'aria-hidden': 'true' },
+                          h('circle', { cx: x, cy: 151, r: 9, fill: '#7dd3fc', stroke: '#e0f2fe', strokeWidth: 2 }),
+                          h('line', { x1: x - 3, y1: 160, x2: x - 6, y2: 184, stroke: '#fbbf24', strokeWidth: 3 }),
+                          h('line', { x1: x + 3, y1: 160, x2: x + 6, y2: 184, stroke: '#fbbf24', strokeWidth: 3 }),
+                          h('circle', { cx: x, cy: 221, r: 9, fill: '#7dd3fc', stroke: '#e0f2fe', strokeWidth: 2 }),
+                          h('line', { x1: x - 3, y1: 212, x2: x - 6, y2: 188, stroke: '#fbbf24', strokeWidth: 3 }),
+                          h('line', { x1: x + 3, y1: 212, x2: x + 6, y2: 188, stroke: '#fbbf24', strokeWidth: 3 })
+                        );
+                      }),
+                      h('text', { x: 105, y: 84, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 900 }, 'Simple diffusion'),
+                      h('text', { x: 105, y: 103, textAnchor: 'middle', fill: '#bae6fd', fontSize: 11 }, 'small nonpolar molecules'),
+                      [[75,119],[96,113],[117,121],[137,111]].map(function(point, i) { return h('circle', { key: 'oxygen-high-' + i, cx: point[0], cy: point[1], r: 7, fill: '#67e8f9', stroke: '#cffafe', strokeWidth: 2 }); }),
+                      [[90,265],[122,278]].map(function(point, i) { return h('circle', { key: 'oxygen-low-' + i, cx: point[0], cy: point[1], r: 7, fill: '#67e8f9', stroke: '#cffafe', strokeWidth: 2 }); }),
+                      h('path', { d: 'M105 127 L105 254', stroke: '#67e8f9', strokeWidth: 4, markerEnd: 'url(#cell-transport-passive-arrow)' }),
+                      h('text', { x: 105, y: 302, textAnchor: 'middle', fill: '#a5f3fc', fontSize: 11, fontWeight: 900 }, 'O\u2082 / CO\u2082: high \u2192 low'),
+                      h('text', { x: 285, y: 84, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 900 }, 'Facilitated diffusion'),
+                      h('text', { x: 285, y: 103, textAnchor: 'middle', fill: '#bae6fd', fontSize: 11 }, 'selective channel'),
+                      h('rect', { x: 250, y: 135, width: 70, height: 104, rx: 25, fill: '#6d28d9', stroke: '#ddd6fe', strokeWidth: 3 }),
+                      h('rect', { x: 278, y: 140, width: 14, height: 94, rx: 7, fill: '#0f172a', stroke: '#e0e7ff', strokeWidth: 2 }),
+                      [[270,116],[287,119],[304,112]].map(function(point, i) { return h('circle', { key: 'ion-high-' + i, cx: point[0], cy: point[1], r: 7, fill: '#c4b5fd', stroke: '#ede9fe', strokeWidth: 2 }); }),
+                      h('circle', { cx: 285, cy: 274, r: 7, fill: '#c4b5fd', stroke: '#ede9fe', strokeWidth: 2 }),
+                      h('path', { d: 'M285 122 L285 258', stroke: '#67e8f9', strokeWidth: 4, markerEnd: 'url(#cell-transport-passive-arrow)' }),
+                      h('text', { x: 285, y: 302, textAnchor: 'middle', fill: '#ddd6fe', fontSize: 11, fontWeight: 900 }, 'ions / glucose: high \u2192 low'),
+                      h('text', { x: 465, y: 84, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 900 }, 'Osmosis'),
+                      h('text', { x: 465, y: 103, textAnchor: 'middle', fill: '#bae6fd', fontSize: 11 }, 'water through aquaporin'),
+                      h('rect', { x: 432, y: 135, width: 66, height: 104, rx: 30, fill: '#0e7490', stroke: '#a5f3fc', strokeWidth: 3 }),
+                      h('path', { d: 'M465 140 C447 161 484 176 465 194 C447 211 485 223 465 235', fill: 'none', stroke: '#cffafe', strokeWidth: 7, strokeLinecap: 'round' }),
+                      [[438,116],[464,119],[489,111]].map(function(point, i) { return h('circle', { key: 'water-high-' + i, cx: point[0], cy: point[1], r: 6, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 2 }); }),
+                      h('path', { d: 'M465 122 L465 258', stroke: '#67e8f9', strokeWidth: 4, markerEnd: 'url(#cell-transport-passive-arrow)' }),
+                      h('text', { x: 465, y: 282, textAnchor: 'middle', fill: '#a5f3fc', fontSize: 11, fontWeight: 900 }, 'H\u2082O follows its gradient'),
+                      h('text', { x: 645, y: 84, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 900 }, 'Active transport'),
+                      h('text', { x: 645, y: 103, textAnchor: 'middle', fill: '#fde68a', fontSize: 11 }, 'ATP-powered pump'),
+                      h('path', { d: 'M610 138 C633 124 677 140 671 166 C665 181 665 194 674 211 C684 234 637 246 614 229 C596 216 608 199 600 184 C590 165 592 149 610 138 Z', fill: '#b45309', stroke: '#fde68a', strokeWidth: 3 }),
+                      [[626,268],[648,278]].map(function(point, i) { return h('circle', { key: 'sodium-low-' + i, cx: point[0], cy: point[1], r: 7, fill: '#fbbf24', stroke: '#fef3c7', strokeWidth: 2 }); }),
+                      [[620,116],[642,121],[666,112],[688,119]].map(function(point, i) { return h('circle', { key: 'sodium-high-' + i, cx: point[0], cy: point[1], r: 7, fill: '#fbbf24', stroke: '#fef3c7', strokeWidth: 2 }); }),
+                      h('path', { d: 'M645 264 L645 120', stroke: '#fbbf24', strokeWidth: 4, markerEnd: 'url(#cell-transport-active-arrow)' }),
+                      h('text', { x: 701, y: 254, textAnchor: 'end', fill: '#fde68a', fontSize: 11, fontWeight: 900 }, 'ATP \u2192 ADP + Pi'),
+                      h('text', { x: 645, y: 302, textAnchor: 'middle', fill: '#fde68a', fontSize: 11, fontWeight: 900 }, 'Na\u207A: low \u2192 high'),
+                      h('text', { x: 380, y: 346, textAnchor: 'middle', fill: '#f8fafc', fontSize: 12, fontWeight: 900 }, 'Passive transport follows a gradient; active transport spends cellular energy to oppose it.')
+                    ),
+                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Conceptual membrane cross-section, not to scale. Real membranes contain many lipids, proteins, carbohydrates, and dynamically moving components.')
+                  ) : null,                  process.id === 'protein' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-violet-200 bg-slate-950 p-2' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                      h('span', null, 'PROTEIN PRODUCTION + SHIPPING \u2022 information to destination'),
+                      h('span', { className: 'flex flex-wrap items-center gap-3' },
+                        h('span', { className: 'text-cyan-200' }, '\u25CF information'),
+                        h('span', { className: 'text-violet-200' }, '\u25CF protein cargo'),
+                        h('span', { className: 'text-emerald-200' }, '\u25CF destination')
+                      )
+                    ),
+                    h('svg', { viewBox: '0 0 760 330', role: 'img', 'aria-labelledby': 'cell-protein-title cell-protein-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                      h('title', { id: 'cell-protein-title' }, 'Protein production and shipping through the endomembrane system'),
+                      h('desc', { id: 'cell-protein-desc' }, 'DNA is transcribed into messenger RNA in the nucleus. Messenger RNA exits through a nuclear pore and is translated by a ribosome on rough endoplasmic reticulum. The protein folds in the ER, travels in a vesicle to the Golgi, and is sorted for the membrane, secretion, or a lysosome.'),
+                      h('defs', null, h('marker', { id: 'cell-protein-arrow', markerWidth: 9, markerHeight: 9, refX: 8, refY: 3.5, orient: 'auto' }, h('path', { d: 'M0 0 L0 7 L9 3.5 Z', fill: '#c4b5fd' }))),
+                      [
+                        ['NUCLEUS',18,42,166,'#164e63','#67e8f9'],
+                        ['ROUGH ER',196,42,196,'#3b0764','#c4b5fd'],
+                        ['GOLGI',404,42,154,'#4c1d95','#ddd6fe'],
+                        ['DESTINATION',570,42,172,'#064e3b','#6ee7b7']
+                      ].map(function(z) { return h('g', { key: z[0] }, h('rect', { x: z[1], y: z[2], width: z[3], height: 222, rx: 20, fill: z[4], stroke: z[5], strokeWidth: 2 }), h('text', { x: z[1] + z[3] / 2, y: 68, textAnchor: 'middle', fill: '#f8fafc', fontSize: 12, fontWeight: 900 }, z[0])); }),
+                      h('path', { d: 'M52 112 C75 92 97 137 120 112 S164 132 166 112', fill: 'none', stroke: '#67e8f9', strokeWidth: 4 }),
+                      h('path', { d: 'M52 126 C75 106 97 151 120 126 S164 146 166 126', fill: 'none', stroke: '#fda4af', strokeWidth: 4 }),
+                      h('text', { x: 109, y: 168, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 900 }, 'DNA \u2192 mRNA'),
+                      h('text', { x: 109, y: 188, textAnchor: 'middle', fill: '#a5f3fc', fontSize: 11 }, 'transcription'),
+                      h('circle', { cx: 190, cy: 153, r: 11, fill: '#0f172a', stroke: '#f8fafc', strokeWidth: 2 }),
+                      h('text', { x: 190, y: 186, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 11, fontWeight: 800 }, 'pore'),
+                      h('path', { d: 'M145 153 L221 153', stroke: '#67e8f9', strokeWidth: 4, markerEnd: 'url(#cell-protein-arrow)' }),
+                      h('text', { x: 260, y: 107, textAnchor: 'middle', fill: '#e9d5ff', fontSize: 12, fontWeight: 900 }, 'ribosome'),
+                      h('circle', { cx: 260, cy: 130, r: 18, fill: '#a855f7', stroke: '#f3e8ff', strokeWidth: 2 }),
+                      [0,1,2].map(function(i) { return h('path', { key: 'er-' + i, d: 'M225 ' + (165 + i * 25) + ' C260 ' + (143 + i * 25) + ' 307 ' + (187 + i * 25) + ' 360 ' + (163 + i * 25), fill: 'none', stroke: '#c4b5fd', strokeWidth: 10, strokeLinecap: 'round' }); }),
+                      h('text', { x: 294, y: 250, textAnchor: 'middle', fill: '#f3e8ff', fontSize: 11, fontWeight: 800 }, 'translate \u2022 fold \u2022 quality check'),
+                      h('path', { d: 'M360 153 L421 153', stroke: '#c4b5fd', strokeWidth: 4, markerEnd: 'url(#cell-protein-arrow)' }),
+                      h('circle', { cx: 391, cy: 130, r: 14, fill: '#7c3aed', stroke: '#ede9fe', strokeWidth: 2 }),
+                      h('text', { x: 391, y: 109, textAnchor: 'middle', fill: '#e9d5ff', fontSize: 11, fontWeight: 800 }, 'vesicle'),
+                      [0,1,2,3].map(function(i) { return h('path', { key: 'golgi-' + i, d: 'M430 ' + (110 + i * 34) + ' Q480 ' + (135 + i * 20) + ' 532 ' + (110 + i * 34), fill: 'none', stroke: i < 2 ? '#c4b5fd' : '#a78bfa', strokeWidth: 13, strokeLinecap: 'round' }); }),
+                      h('text', { x: 481, y: 252, textAnchor: 'middle', fill: '#ede9fe', fontSize: 11, fontWeight: 800 }, 'modify \u2022 tag \u2022 sort'),
+                      h('path', { d: 'M532 153 L600 153', stroke: '#c4b5fd', strokeWidth: 4, markerEnd: 'url(#cell-protein-arrow)' }),
+                      h('circle', { cx: 566, cy: 130, r: 14, fill: '#7c3aed', stroke: '#ede9fe', strokeWidth: 2 }),
+                      h('text', { x: 656, y: 112, textAnchor: 'middle', fill: '#d1fae5', fontSize: 12, fontWeight: 900 }, 'membrane'),
+                      h('text', { x: 656, y: 155, textAnchor: 'middle', fill: '#d1fae5', fontSize: 12, fontWeight: 900 }, 'secretion'),
+                      h('text', { x: 656, y: 198, textAnchor: 'middle', fill: '#d1fae5', fontSize: 12, fontWeight: 900 }, 'lysosome'),
+                      [112,155,198].map(function(y) { return h('circle', { key: 'destination-' + y, cx: 612, cy: y - 4, r: 8, fill: '#10b981', stroke: '#a7f3d0', strokeWidth: 2 }); }),
+                      h('path', { d: 'M600 153 C615 153 618 108 630 108 M600 153 L630 151 M600 153 C615 153 618 194 630 194', fill: 'none', stroke: '#6ee7b7', strokeWidth: 3 }),
+                      h('text', { x: 380, y: 302, textAnchor: 'middle', fill: '#f8fafc', fontSize: 12, fontWeight: 900 }, 'The amino-acid chain stays the same cargo while compartments fold, modify, label, and route it.')
+                    ),
+                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Secreted and membrane proteins typically use this route. Free ribosomes make many proteins that remain in the cytosol or enter other organelles.')
+                  ) : null,
+                  process.id === 'krebs' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-rose-200 bg-slate-950 p-2' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                      h('span', null, 'MATRIX CYCLE \u2022 follow clockwise'),
+                      h('span', { className: 'flex flex-wrap items-center gap-3' },
+                        h('span', null, '\u25CF carbon leaves'),
+                        h('span', { className: 'text-cyan-200' }, '\u2192 electron carriers'),
+                        h('span', { className: 'text-emerald-200' }, '\u2192 ATP/GTP')
+                      )
+                    ),
+                    h('svg', { viewBox: '0 0 720 430', role: 'img', 'aria-labelledby': 'cell-krebs-title cell-krebs-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                      h('title', { id: 'cell-krebs-title' }, 'Krebs cycle in the mitochondrial matrix'),
+                      h('desc', { id: 'cell-krebs-desc' }, 'Acetyl-CoA enters a cycle of eight intermediates. Carbon dioxide leaves, NADH and FADH2 carry electrons to the electron transport chain, ATP or GTP is made, and oxaloacetate is regenerated.'),
+                      h('defs', null, h('marker', { id: 'cell-krebs-arrow', markerWidth: 8, markerHeight: 8, refX: 7, refY: 3, orient: 'auto' }, h('path', { d: 'M0 0 L0 6 L8 3 Z', fill: '#fb7185' }))),
+                      h('circle', { cx: 360, cy: 220, r: 145, fill: 'none', stroke: '#fb7185', strokeWidth: 2, strokeDasharray: '5 9', opacity: 0.55 }),
+                      ['M405 112 Q482 142 486 205','M486 238 Q468 307 404 329','M316 329 Q245 306 232 245','M232 196 Q250 132 316 112'].map(function(path, i) { return h('path', { key: 'cycle-arrow-' + i, d: path, fill: 'none', stroke: '#fb7185', strokeWidth: 3, markerEnd: 'url(#cell-krebs-arrow)' }); }),
+                      [['Citrate',360,55],['Isocitrate',510,105],['α-ketoglutarate',580,220],['Succinyl-CoA',510,335],['Succinate',360,385],['Fumarate',210,335],['Malate',140,220],['Oxaloacetate',210,105]].map(function(n,i){ return h('g',{key:n[0]},h('circle',{cx:n[1],cy:n[2],r:42,fill:i===7?'#0e7490':'#1e293b',stroke:i===7?'#67e8f9':'#fda4af',strokeWidth:2}),h('text',{x:n[1],y:n[2]+4,textAnchor:'middle',fill:'#f8fafc',fontSize:n[0].length>12?11:13,fontWeight:700},n[0])); }),
+                      h('path', { d: 'M360 10 C300 10 265 35 235 75', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, markerEnd: 'url(#cell-krebs-arrow)' }),
+                      h('text', { x: 250, y: 22, fill: '#fde68a', fontSize: 13, fontWeight: 800 }, 'Acetyl-CoA enters'),
+                      h('text', { x: 360, y: 205, textAnchor: 'middle', fill: '#f8fafc', fontSize: 17, fontWeight: 900 }, '2 turns'),
+                      h('text', { x: 360, y: 229, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12 }, 'per glucose'),
+                      h('text', { x: 360, y: 255, textAnchor: 'middle', fill: '#fda4af', fontSize: 12 }, '4 CO₂ out'),
+                      h('text', { x: 610, y: 82, fill: '#93c5fd', fontSize: 12, fontWeight: 700 }, '6 NADH → ETC'),
+                      h('text', { x: 26, y: 350, fill: '#c4b5fd', fontSize: 12, fontWeight: 700 }, '2 FADH₂ → ETC'),
+                      h('text', { x: 535, y: 385, fill: '#86efac', fontSize: 12, fontWeight: 700 }, '2 ATP/GTP')
+                    ),
+                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Stoichiometry shown per glucose (two cycle turns). Intermediates and enzyme reactions are simplified.')
+                  ) : null,
+                  process.id === 'etc' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-cyan-200 bg-slate-950 p-2' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                      h('span', null, 'MEMBRANE ENERGY COUPLING'),
+                      h('span', { className: 'flex flex-wrap items-center gap-3' },
+                        h('span', { className: 'text-cyan-200' }, '\u25CF electrons'),
+                        h('span', { className: 'text-amber-200' }, '\u25CF protons (H\u207A)'),
+                        h('span', { className: 'text-violet-200' }, '\u25CF ATP synthesis')
+                      )
+                    ),
+                    h('svg', { viewBox: '0 0 760 360', role: 'img', 'aria-labelledby': 'cell-etc-title cell-etc-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                      h('title', { id: 'cell-etc-title' }, 'Electron transport chain and ATP synthase in the inner mitochondrial membrane'),
+                      h('desc', { id: 'cell-etc-desc' }, 'Electrons from NADH and FADH2 pass through Complexes I to IV. Complexes I, III, and IV pump protons into the intermembrane space. Oxygen forms water at Complex IV, and protons return to the matrix through ATP synthase, driving ATP production.'),
+                      h('defs', null,
+                        h('marker', { id: 'cell-etc-electron-arrow', markerWidth: 8, markerHeight: 8, refX: 7, refY: 3, orient: 'auto' }, h('path', { d: 'M0 0 L0 6 L8 3 Z', fill: '#67e8f9' })),
+                        h('marker', { id: 'cell-etc-proton-arrow', markerWidth: 8, markerHeight: 8, refX: 7, refY: 3, orient: 'auto' }, h('path', { d: 'M0 0 L0 6 L8 3 Z', fill: '#fbbf24' }))
+                      ),
+                      h('text', { x: 18, y: 25, fill: '#f8fafc', fontSize: 14, fontWeight: 900 }, 'INTERMEMBRANE SPACE: high H\u207A concentration'),
+                      [175,230,290,350,415,475,540,600].map(function(x, i) { return h('g', { key: 'proton-' + i, 'aria-hidden': 'true' }, h('circle', { cx: x, cy: 62 + (i % 2) * 16, r: 11, fill: '#f59e0b', stroke: '#fde68a', strokeWidth: 2 }), h('text', { x: x, y: 66 + (i % 2) * 16, textAnchor: 'middle', fill: '#451a03', fontSize: 11, fontWeight: 900 }, 'H+')); }),
+                      h('rect', { x: 18, y: 130, width: 724, height: 58, rx: 18, fill: '#164e63', stroke: '#67e8f9', strokeWidth: 2 }),
+                      h('text', { x: 380, y: 165, textAnchor: 'middle', fill: '#cffafe', fontSize: 13, fontWeight: 800 }, 'INNER MITOCHONDRIAL MEMBRANE'),
+                      h('text', { x: 18, y: 345, fill: '#f8fafc', fontSize: 14, fontWeight: 900 }, 'MATRIX: lower H\u207A concentration'),
+                      [['I',95],['II',225],['III',365],['IV',505]].map(function(item) { return h('g', { key: item[0] }, h('rect', { x: item[1] - 36, y: 105, width: 72, height: 108, rx: 13, fill: item[0] === 'II' ? '#475569' : '#0e7490', stroke: '#a5f3fc', strokeWidth: 2 }), h('text', { x: item[1], y: 155, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 900 }, 'Complex ' + item[0])); }),
+                      h('g', null,
+                        h('rect', { x: 630, y: 92, width: 86, height: 134, rx: 26, fill: '#7c3aed', stroke: '#ddd6fe', strokeWidth: 2 }),
+                        h('circle', { cx: 673, cy: 248, r: 31, fill: '#5b21b6', stroke: '#ddd6fe', strokeWidth: 2 }),
+                        h('text', { x: 673, y: 145, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 900 }, 'ATP'),
+                        h('text', { x: 673, y: 162, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 900 }, 'synthase')
+                      ),
+                      h('text', { x: 35, y: 277, fill: '#93c5fd', fontSize: 12, fontWeight: 800 }, 'NADH \u2192 I'),
+                      h('text', { x: 175, y: 299, fill: '#c4b5fd', fontSize: 12, fontWeight: 800 }, 'FADH\u2082 \u2192 II'),
+                      h('path', { d: 'M130 236 C190 265 245 240 292 210 S405 235 468 210 S550 238 575 205', fill: 'none', stroke: '#67e8f9', strokeWidth: 4, markerEnd: 'url(#cell-etc-electron-arrow)' }),
+                      h('text', { x: 295, y: 268, fill: '#67e8f9', fontSize: 12, fontWeight: 800 }, 'electron flow: Q \u2192 cytochrome c'),
+                      [[95,88],[365,88],[505,88]].map(function(point) { return h('g', { key: point[0] }, h('path', { d: 'M' + point[0] + ' 106 L' + point[0] + ' 55', stroke: '#fbbf24', strokeWidth: 4, markerEnd: 'url(#cell-etc-proton-arrow)' }), h('text', { x: point[0] + 9, y: 74, fill: '#fde68a', fontSize: 13, fontWeight: 900 }, 'H\u207A')); }),
+                      h('text', { x: 520, y: 292, fill: '#fda4af', fontSize: 12, fontWeight: 800 }, 'O\u2082 + e\u207B + H\u207A \u2192 H\u2082O'),
+                      h('path', { d: 'M673 45 L673 88 M673 226 L673 300', stroke: '#fbbf24', strokeWidth: 5, markerEnd: 'url(#cell-etc-proton-arrow)' }),
+                      h('text', { x: 687, y: 70, fill: '#fde68a', fontSize: 13, fontWeight: 900 }, 'H\u207A returns'),
+                      h('text', { x: 608, y: 325, fill: '#c4b5fd', fontSize: 13, fontWeight: 900 }, 'ADP + Pi \u2192 ATP')
+                    ),
+                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Conceptual diagram, not to scale. Electron transfer, proton pumping, oxygen reduction, and ATP production are coupled but simplified here.')
+                  ) : null,
+                  h('section', { className: 'mt-1', 'aria-labelledby': 'cell-process-stages-heading' },
+                    h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2' },
+                      h('div', null,
+                        h('h5', { id: 'cell-process-stages-heading', className: 'text-[12px] font-black uppercase tracking-wide text-slate-800' }, 'How the pathway unfolds'),
+                        h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Select a stage to focus your study.')
+                      ),
+                      h('span', { className: 'rounded-full px-2.5 py-1 text-[11px] font-black', style: { background: processVisual.soft, color: processVisual.accent }, 'aria-live': 'polite' }, 'Stage ' + (selectedStepIndex + 1) + ' of ' + process.steps.length)
+                    ),
+                    h('div', { role: 'progressbar', 'aria-label': 'Focused pathway stage', 'aria-valuemin': 1, 'aria-valuemax': process.steps.length, 'aria-valuenow': selectedStepIndex + 1, className: 'mb-3 flex gap-1' },
+                      process.steps.map(function(step, index) {
+                        var reached = index <= selectedStepIndex;
+                        return h('span', { key: 'progress-' + step[0], className: 'h-1.5 flex-1 rounded-full', style: { background: reached ? processVisual.accent : '#cbd5e1' }, 'aria-hidden': 'true' });
+                      })
+                    ),
+                    h('ol', { className: 'grid gap-2 md:grid-cols-2', 'aria-label': process.name + ' stages' }, process.steps.map(function(step, stepIndex) {
+                      var stepSelected = stepIndex === selectedStepIndex;
+                      return h('li', {
+                        key: step[0],
+                        className: 'overflow-hidden rounded-xl border bg-white transition-all',
+                        style: stepSelected ? { borderColor: processVisual.accent, boxShadow: '0 8px 22px rgba(15,23,42,0.14)' } : { borderColor: '#cbd5e1' }
+                      },
+                        h('button', {
+                          type: 'button',
+                          onClick: function() { chooseProcessStep(stepIndex); },
+                          'data-cell-process-step': stepIndex,
+                          'aria-pressed': stepSelected ? 'true' : 'false',
+                          'aria-current': stepSelected ? 'step' : undefined,
+                          className: 'w-full p-3 text-left transition-colors focus-visible:ring-2 focus-visible:ring-inset',
+                          style: { background: stepSelected ? processVisual.soft : '#fff' }
+                        },
+                          h('span', { className: 'flex items-start gap-2.5' },
+                            h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[12px] font-black text-white', style: { background: processVisual.accent } }, step[0]),
+                            h('span', { className: 'min-w-0 flex-1' },
+                              h('span', { className: 'flex flex-wrap items-baseline justify-between gap-1' },
+                                h('strong', { className: 'text-[13px] text-slate-900' }, step[1]),
+                                stepSelected ? h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black text-white', style: { background: processVisual.accent } }, 'FOCUS') :
+                                  (stepIndex < process.steps.length - 1 ? h('span', { className: 'text-[11px] font-black', style: { color: processVisual.accent }, 'aria-hidden': 'true' }, 'STEP ' + (stepIndex + 1)) : h('span', { className: 'text-[11px] font-black text-emerald-700' }, 'OUTCOME'))
+                              ),
+                              h('span', { className: 'mt-1 block text-[11px] font-black uppercase tracking-wide', style: { color: processVisual.accent } }, step[2]),
+                              h('span', { className: 'mt-1 block text-[12px] leading-relaxed text-slate-600' }, step[3])
+                            )
+                          )
+                        )
+                      );
+                    }))
+                  ),                  h('nav', { className: 'mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white', 'aria-label': 'Connected pathways from ' + process.name, 'data-cell-process-connections': process.id },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-100 px-3 py-2' },
+                      h('div', null,
+                        h('h5', { className: 'text-[12px] font-black uppercase tracking-wide text-slate-900' }, 'Connected pathways'),
+                        h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Keep following the same matter, energy, or cellular machinery.')
+                      ),
+                      h('span', { className: 'rounded-full bg-white px-2 py-1 text-[11px] font-black text-slate-700 shadow-sm' }, relatedProcesses.length + ' next views')
+                    ),
+                    h('div', { className: 'grid gap-2 p-2 sm:grid-cols-2' },
+                      relatedProcesses.map(function(connection) {
+                        var target = PROCESSES.find(function(p) { return p.id === connection.id; });
+                        var targetVisual = processVisuals[connection.id] || processVisuals.respiration;
+                        if (!target) return null;
+                        return h('button', {
+                          key: connection.id,
+                          type: 'button',
+                          onClick: function() { chooseRelatedProcess(connection.id); },
+                          'data-cell-related-process': connection.id,
+                          'aria-label': 'Open ' + target.name + ': ' + connection.reason,
+                          className: 'group overflow-hidden rounded-lg border bg-white text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-offset-2',
+                          style: { borderColor: targetVisual.accent + '55' }
+                        },
+                          h('span', { className: 'block h-1', style: { background: 'linear-gradient(90deg,' + processVisual.accent + ',' + targetVisual.accent + ')' }, 'aria-hidden': 'true' }),
+                          h('span', { className: 'flex items-start gap-2.5 p-3' },
+                            h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base', style: { background: targetVisual.soft }, 'aria-hidden': 'true' }, target.icon),
+                            h('span', { className: 'min-w-0 flex-1' },
+                              h('span', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                                h('strong', { className: 'text-[12px] text-slate-900' }, connection.label),
+                                h('span', { className: 'text-[11px] font-black', style: { color: targetVisual.accent }, 'aria-hidden': 'true' }, 'OPEN \u2192')
+                              ),
+                              h('span', { className: 'mt-1 block text-[11px] leading-relaxed text-slate-600' }, connection.reason)
+                            )
+                          )
+                        );
+                      })
+                    )
+                  )
+                  )
+                ),
+                h('h4', { className: 'mb-2 mt-4 text-sm font-black text-slate-900' }, 'Organelle deep dives: structure enables function'),
+                h('div', { className: 'grid gap-3 xl:grid-cols-3' }, deepDives.map(function(item) {
+                  return h('article', { key: item.title, className: 'overflow-hidden rounded-xl border bg-white p-3 shadow-sm', style: { borderColor: item.color } },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                      h('h5', { className: 'text-[14px] font-black', style: { color: item.color } }, item.title),
+                      h('span', { className: 'rounded-full px-2 py-1 text-[11px] font-black uppercase tracking-wide', style: { background: item.color + '16', color: item.color } }, 'Structure \u2192 function')
+                    ),
+                    renderOrganelleCutaway(item),
+                    h('div', { className: 'mt-3 text-[11px] font-black uppercase tracking-wide text-slate-500' }, 'Structures to notice'),
+                    h('p', { className: 'mt-1 text-[11px] font-bold leading-relaxed text-slate-600' }, item.parts),
+                    h('div', { className: 'mt-3 border-l-4 pl-3 text-[12px] leading-relaxed text-slate-700', style: { borderColor: item.color } }, item.why)
+                  );
+                }))
+              );
+            })(),
+
+            // ═══════════════════════════════════════════════════════════            // ENCYCLOPEDIA MODE
             // ═══════════════════════════════════════════════════════════
             d.mode === 'encyclopedia' && (function() {
               function getKingdomTheme(k) {

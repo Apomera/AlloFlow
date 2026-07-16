@@ -528,17 +528,17 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: '12px', fontWeight: 700, color: _vdC('#374151'), marginBottom: '8px' } }, '📊 Your Emotion Confusion Patterns'),
             h('p', { style: { fontSize: '10px', color: _vdC('#94a3b8'), marginBottom: '8px' } }, 'Shows which emotions you mix up most often. Brighter = more frequent.'),
             h('div', { style: { overflowX: 'auto' } },
-              h('table', { style: { borderCollapse: 'collapse', fontSize: '10px', width: '100%' } },
+              h('table', { 'aria-label': 'Emotion confusion matrix: target emotion by picked emotion', style: { borderCollapse: 'collapse', fontSize: '10px', width: '100%' } },
                 h('thead', null,
                   h('tr', null,
-                    h('th', { style: { padding: '4px 6px', border: '1px solid ' + _vdC('#e5e7eb'), background: _vdC('#f8fafc'), fontSize: '9px' } }, 'Target ↓ / Picked →'),
-                    emotions.map(function(em) { return h('th', { key: em.id, style: { padding: '4px', border: '1px solid ' + _vdC('#e5e7eb'), background: _vdC('#f8fafc'), textAlign: 'center' } }, em.emoji); })
+                    h('th', { scope: 'col', style: { padding: '4px 6px', border: '1px solid ' + _vdC('#e5e7eb'), background: _vdC('#f8fafc'), fontSize: '9px' } }, 'Target ↓ / Picked →'),
+                    emotions.map(function(em) { return h('th', { key: em.id, scope: 'col', 'aria-label': 'Picked ' + em.label, style: { padding: '4px', border: '1px solid ' + _vdC('#e5e7eb'), background: _vdC('#f8fafc'), textAlign: 'center' } }, em.emoji); })
                   )
                 ),
                 h('tbody', null,
                   emotions.map(function(targetEm) {
                     return h('tr', { key: targetEm.id },
-                      h('td', { style: { padding: '4px 6px', border: '1px solid ' + _vdC('#e5e7eb'), fontWeight: 700, color: targetEm.color } }, targetEm.emoji + ' ' + targetEm.label),
+                      h('th', { scope: 'row', style: { padding: '4px 6px', border: '1px solid ' + _vdC('#e5e7eb'), fontWeight: 700, color: targetEm.color, textAlign: 'left' } }, targetEm.emoji + ' ' + targetEm.label),
                       emotions.map(function(pickedEm) {
                         var key = targetEm.id + '→' + pickedEm.id;
                         var count = confusionMatrix[key] || 0;

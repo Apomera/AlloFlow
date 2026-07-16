@@ -10,7 +10,7 @@
   selection (which includes the *nix CLI launcher + the validation model) rather than a
   hard-coded pack list — so this descriptor stays robust across veraPDF versions that
   rename individual packs. The workflow verifies the launcher actually landed (test -x +
-  --version) before running the gate, so a layout change fails loudly instead of silently
+  a version probe) before running the gate, so a layout change fails loudly instead of silently
   degrading the gate to a vacuous skip.
 -->
 <AutomatedInstallation langpack="eng">

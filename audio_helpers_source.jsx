@@ -312,10 +312,40 @@ const pcmToMp3 = (pcmData, sampleRate = 24000, kbps = 128) => {
   return new Blob(mp3Data, { type: 'audio/mp3' });
 };
 
+// Cooperative variant for background persistence. LAME encoding is CPU-bound;
+// running a whole sentence in one task can delay karaoke state/audio events.
+// Yield between small batches so playback and React updates stay responsive.
+const pcmToMp3Async = async (pcmData, sampleRate = 24000, kbps = 128, options = {}) => {
+  if (!window.lamejs) throw new Error("lamejs not loaded");
+  const int16Samples = new Int16Array(pcmData.buffer, pcmData.byteOffset, pcmData.byteLength / 2);
+  const mp3Encoder = new window.lamejs.Mp3Encoder(1, sampleRate, kbps || 128);
+  const mp3Data = [];
+  const sampleBlockSize = 1152;
+  const blocksPerYield = Math.max(1, Number(options.blocksPerYield) || 8);
+  const yieldToMain = typeof options.yieldToMain === 'function'
+    ? options.yieldToMain
+    : () => new Promise(resolve => setTimeout(resolve, 0));
+  let blocksSinceYield = 0;
+  for (let i = 0; i < int16Samples.length; i += sampleBlockSize) {
+    const sampleChunk = int16Samples.subarray(i, i + sampleBlockSize);
+    const mp3buf = mp3Encoder.encodeBuffer(sampleChunk);
+    if (mp3buf.length > 0) mp3Data.push(mp3buf);
+    blocksSinceYield++;
+    if (i + sampleBlockSize < int16Samples.length && blocksSinceYield >= blocksPerYield) {
+      blocksSinceYield = 0;
+      await yieldToMain();
+    }
+  }
+  const mp3buf = mp3Encoder.flush();
+  if (mp3buf.length > 0) mp3Data.push(mp3buf);
+  return new Blob(mp3Data, { type: 'audio/mp3' });
+};
+
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AudioHelpers = {
   handleDownloadAudio,
   handleCardAudioSequence,
   pcmToWav,
   pcmToMp3,
+  pcmToMp3Async,
 };

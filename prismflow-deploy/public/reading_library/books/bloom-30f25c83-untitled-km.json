@@ -1,0 +1,172 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-30f25c83-untitled-km",
+  "title": "២៣ខ នអើន មពោមពា ក្លាចមពោមពា",
+  "description": "A story of animals being afraid of animals (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/xwWrh3gnDB"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage1.png",
+      "text": "កំពឹសដើរកស៊ីសែ្លជួបនិងត្រី។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage2.png",
+      "text": "កំពឹសខ្លាចត្រីក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage3.png",
+      "text": "ត្រីដើររកស៊ីដង្កូវជួបនិងកង្កែប។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage4.png",
+      "text": "ត្រីខ្លាចកង្កែបក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage5.png",
+      "text": "កង្កែបដើររកស៊ីជន្លេនជួបនិងឈ្លូស។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage6.png",
+      "text": "កង្កែបខ្លាចឈ្លូសក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage7.png",
+      "text": "ឈ្លូសដើររកស៊ីផែ្លពោនជួបនិងជ្រូកព្រៃ។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage8.png",
+      "text": "ឈ្លូសខ្លាចជ្រូកព្រៃក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage9.png",
+      "text": "ជ្រូកព្រៃដើររកស៊ីដំឡូងព្រៃជួបនិងទន្សាយ។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage10.png",
+      "text": "ជ្រូកព្រៃខ្លាចទន្សាយក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage11.png",
+      "text": "ទន្សាយដើររកផឹកទឹកសន្សើមជួបនិងឆ្កែចចក។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage12.png",
+      "text": "ទន្សាយខ្លាចឆ្កែចចកក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage13.png",
+      "text": "ឆ្កែចចកដើររកស៊ីខ្ចងជួបនិងប្រើស។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage14.png",
+      "text": "ឆ្កែចចកខ្លាចប្រើសក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage15.png",
+      "text": "ប្រើសដើររកស៊ីស្មៅជួបនិងខ្ទីង។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage16.png",
+      "text": "ប្រើសខ្លាចខ្ទីងក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage17.png",
+      "text": "ខ្ទីងដើររកស៊ីទំពាំងជួបនិងដំរី។"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage18.png",
+      "text": "ខ្ទីងខ្លាចដំរីក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage19.png",
+      "text": "ដំរីដើររកផឹកទឹកត្រពាំងជួបនិងក្រពើ។"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage20.png",
+      "text": "ដំរីខ្លាចក្រពើក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage21.png",
+      "text": "ក្រពើដើររកស៊ីកន្ត្រងជួបនិងខ្លាឃ្មុំ។"
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage22.png",
+      "text": "ក្រពើខ្លាចខ្លាឃ្មុំក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage23.png",
+      "text": "ខ្លាឃ្មុំដើររកស៊ីម្រោមជួបនិងខ្លា។"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage24.png",
+      "text": "ខ្លាឃ្មុំខ្លាចខ្លាក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage25.png",
+      "text": "ខ្លាដើររកចំនីស៊ីជួបនិងពួកហ្វូងទន្សោង។"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage26.png",
+      "text": "ពួកហ្វូងទន្សោងខ្លាចខ្លាក៏រត់ចេញទៅ។"
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f30f25c83-b542-437f-bb94-ec61664c4e44%2f%e1%9f%a2%e1%9f%a3%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%e2%80%8b+%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9e%b6%e1%9e%85%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage27.png",
+      "text": "ខ្លាក៏រត់តាមខាំទន្សោងទាល់តែបានសាច់ស៊ី៕"
+    }
+  ],
+  "stats": {
+    "pages": 27,
+    "words": 27
+  }
+}

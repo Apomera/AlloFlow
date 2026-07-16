@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3f97de3a-kristmas-kard",
+  "title": "Kristmas Kard",
+  "description": "A Filipino picture book from Bloom Library.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Culture"
+  ],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/OIEYDrWh7H"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/wolfgangwesterheyde%40gmail.com%2f3f97de3a-b60f-44ce-bbfe-d2306c3e4aad%2fTarjeta+navide%c3%b1a%2fmaxresdefault1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/wolfgangwesterheyde%40gmail.com%2f3f97de3a-b60f-44ce-bbfe-d2306c3e4aad%2fTarjeta+navide%c3%b1a%2f329375_gallery_59b894b233e81_jpg.jpg",
+      "text": "Nalalapit na naman ang ang araw ng Pasko.\nIniisip na ni Karla kung ano ang ireregalo niya sa kanyang guro at mga kaklase."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/wolfgangwesterheyde%40gmail.com%2f3f97de3a-b60f-44ce-bbfe-d2306c3e4aad%2fTarjeta+navide%c3%b1a%2f100_8860.jpg",
+      "text": "Sa pag-uwi niya ng kanilang bahay, nakakita siya ng magagandang disenyo ng kristmas kard sa isang magasin. Kaya naman naisipan niya na gumawa ng tulad nito."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/wolfgangwesterheyde%40gmail.com%2f3f97de3a-b60f-44ce-bbfe-d2306c3e4aad%2fTarjeta+navide%c3%b1a%2fe54ef5b0e6914081773de9093bf9f43d_royalty-free-mother-and-daughter-talking-clip-art-vector-images-mother-and-daughter-talking-clipart_612-612.jpg",
+      "text": "\"Inay, bibili po ako ng kartolina, typewriting, at art paper. Gagawa po ako ng kristmas kard para sa aking guro at mga kaklase\", sabi ni Karla sa ina."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/wolfgangwesterheyde%40gmail.com%2f3f97de3a-b60f-44ce-bbfe-d2306c3e4aad%2fTarjeta+navide%c3%b1a%2faf3e8259d26a86ced5fa6f83df35fcd4.jpg",
+      "text": "Kinuha ni Aling Klara ang kanyang pitaka at binigyan ng pera ang anak na pambili ng mga gagamitin sa paggawa ng kristmas kard."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/wolfgangwesterheyde%40gmail.com%2f3f97de3a-b60f-44ce-bbfe-d2306c3e4aad%2fTarjeta+navide%c3%b1a%2f0817b267633c9e7206ee06d25973664d.jpg",
+      "text": "\"Marami pa akong krayola at iba pang pangkulay sa aking bag. Gagamitin ko ang mga iyon upang mas maging maganda ang aking gagawin,\" pabulong na wika ni Karla sa sarili."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/wolfgangwesterheyde%40gmail.com%2f3f97de3a-b60f-44ce-bbfe-d2306c3e4aad%2fTarjeta+navide%c3%b1a%2fgirl-drawing-clipart-57.jpg",
+      "text": "Araw ng Linggo. Nagsimula ng gumawa ng kristmas kard si Karla. Nilagyan niya ito ng pangalan ng kanyang guro at mga kaklase."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/wolfgangwesterheyde%40gmail.com%2f3f97de3a-b60f-44ce-bbfe-d2306c3e4aad%2fTarjeta+navide%c3%b1a%2f00c3c83fb165b6aff22e6b2cb69a903b_illustration-of-a-mother-teaching-her-daughter-how-to-write-stock-_1300-874.jpg",
+      "text": "\"Kayganda ng iyong ginawa, anak. Tiyak matutuwa ang iyong mga guro at kaklase\", sabi ni Aling Klara."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Pagkauwi ng bahay binuksan ni Karla ang kanyang bag. Kinuha niya ang natitirang kard na handog niya sa kanyang ina.\n\"Inay, inay, may ibibigay po ako sa inyo. Heto po\", sabay abot ng krismas kard sa ina.\nBinasa ng ina ang nakasulat sa loob ng kard. Niyakap ni Karla ang kanyang ina at binati ng \"Maligayang Pasko\"."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 226
+  }
+}

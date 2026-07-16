@@ -271,11 +271,11 @@ function BrandProfileEditor(props) {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4" role="presentation" onClick={onClose}>
-      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="brand-settings-title" onClick={function (e) { e.stopPropagation(); }}>
+      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="brand-settings-title" aria-hidden={deleteRequest ? 'true' : undefined} inert={deleteRequest ? '' : undefined} onClick={function (e) { e.stopPropagation(); }}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50 shrink-0">
           <h2 id="brand-settings-title" className="text-lg font-bold text-slate-800 flex items-center gap-2"><span aria-hidden="true">🎨</span> {t('brand.title', 'Brand Settings')}</h2>
-          <button ref={closeButtonRef} onClick={onClose} aria-label={t('common.close', 'Close')} className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors text-xl leading-none">×</button>
+          <button type="button" ref={closeButtonRef} onClick={onClose} aria-label={t('common.close', 'Close')} className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors text-xl leading-none">×</button>
         </div>
 
         {!api ? (
@@ -285,9 +285,9 @@ function BrandProfileEditor(props) {
           {/* ── Left: profile list ───────────────────────────── */}
           <aside className="w-full lg:w-56 shrink-0 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50 flex flex-col max-h-56 lg:max-h-none">
             <div className="p-3 flex flex-col gap-2 border-b border-slate-200">
-              <button onClick={newProfile} className="w-full px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors">+ {t('brand.new', 'New profile')}</button>
-              <button onClick={function () { importInputRef.current && importInputRef.current.click(); }} className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 transition-colors">⬆ {t('brand.import', 'Import JSON')}</button>
-              <input ref={importInputRef} type="file" accept=".json,application/json" onChange={onImportFile} className="hidden" />
+              <button type="button" onClick={newProfile} className="w-full px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors">+ {t('brand.new', 'New profile')}</button>
+              <button type="button" onClick={function () { importInputRef.current && importInputRef.current.click(); }} className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 transition-colors">⬆ {t('brand.import', 'Import JSON')}</button>
+              <input ref={importInputRef} aria-label={t('brand.import_file', 'Import brand profile JSON file')} type="file" accept=".json,application/json" onChange={onImportFile} className="hidden" />
             </div>
             <div className="flex-1 overflow-y-auto p-2">
               {profiles.length === 0 ? (
@@ -298,13 +298,13 @@ function BrandProfileEditor(props) {
                 return (
                   <div key={p.id} className={'mb-1 rounded-lg border px-2 py-2 ' + (isEditing ? 'border-blue-400 bg-blue-50' : 'border-transparent hover:bg-white')}>
                     <div className="flex items-center justify-between gap-1">
-                      <button onClick={function () { editProfile(p); }} className="text-left text-sm font-semibold text-slate-800 truncate flex-1 min-h-6" title={p.name}>{p.name || '(unnamed)'}</button>
+                      <button type="button" onClick={function () { editProfile(p); }} aria-pressed={isEditing} className="text-left text-sm font-semibold text-slate-800 truncate flex-1 min-h-6" title={p.name}>{p.name || '(unnamed)'}</button>
                       {isActive && <span className="text-[10px] font-bold uppercase text-green-700 bg-green-100 px-1.5 py-0.5 rounded">{t('brand.active', 'Active')}</span>}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      {!isActive && <button onClick={function () { makeActive(p.id); }} className="inline-flex min-h-6 items-center text-[11px] text-blue-700 hover:underline">{t('brand.use', 'Set active')}</button>}
-                      <button onClick={function () { exportProfile(p.id); }} className="inline-flex min-h-6 items-center text-[11px] text-slate-600 hover:underline">{t('brand.export', 'Export')}</button>
-                      <button onClick={function (event) { requestRemove(event, p.id, p.name); }} className="inline-flex min-h-6 items-center text-[11px] text-red-600 hover:underline">{t('brand.delete', 'Delete')}</button>
+                      {!isActive && <button type="button" onClick={function () { makeActive(p.id); }} className="inline-flex min-h-6 items-center text-[11px] text-blue-700 hover:underline">{t('brand.use', 'Set active')}</button>}
+                      <button type="button" onClick={function () { exportProfile(p.id); }} className="inline-flex min-h-6 items-center text-[11px] text-slate-600 hover:underline">{t('brand.export', 'Export')}</button>
+                      <button type="button" onClick={function (event) { requestRemove(event, p.id, p.name); }} className="inline-flex min-h-6 items-center text-[11px] text-red-600 hover:underline">{t('brand.delete', 'Delete')}</button>
                     </div>
                   </div>
                 );
@@ -316,7 +316,7 @@ function BrandProfileEditor(props) {
           <div className="flex-1 overflow-y-auto p-5 min-w-0">
             <label className="block mb-4">
               <span className="text-xs font-bold uppercase tracking-wide text-slate-500">{t('brand.name', 'Profile name')}</span>
-              <input value={draft.name} onChange={function (e) { setField('name', e.target.value); }} maxLength={80} placeholder={t('brand.name_ph', 'e.g. King Middle School')} className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-400 outline-none" />
+              <input value={draft.name} aria-label={t('brand.name', 'Profile name')} onChange={function (e) { setField('name', e.target.value); }} maxLength={80} placeholder={t('brand.name_ph', 'e.g. King Middle School')} className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-400 outline-none" />
             </label>
 
             <div className="mb-4">
@@ -330,18 +330,18 @@ function BrandProfileEditor(props) {
                       <input type="color" aria-label={f.label} value={valid ? (val.length === 4 ? val : val.slice(0, 7)) : '#000000'} onChange={function (e) { setColor(f.key, e.target.value); }} className="w-8 h-8 rounded border border-slate-300 shrink-0 cursor-pointer" />
                       <div className="flex-1 min-w-0">
                         <div className="text-[11px] text-slate-600 truncate">{f.label}</div>
-                        <input value={val} aria-label={f.label + ' hex value'} aria-invalid={!valid} onChange={function (e) { setColor(f.key, e.target.value); }} className={'w-full px-1.5 py-0.5 border rounded text-xs font-mono ' + (valid ? 'border-slate-300 text-slate-800' : 'border-red-400 text-red-700')} />
+                        <input value={val} aria-label={f.label + ' hex value'} aria-invalid={!valid} aria-describedby={!valid ? 'brand-validation-status' : undefined} onChange={function (e) { setColor(f.key, e.target.value); }} className={'w-full px-1.5 py-0.5 border rounded text-xs font-mono ' + (valid ? 'border-slate-300 text-slate-800' : 'border-red-400 text-red-700')} />
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <button onClick={autoFix} className="mt-2 px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 text-xs font-bold hover:bg-amber-200 transition-colors">✨ {t('brand.autofix', 'Auto-fix contrast')}</button>
+              <button type="button" onClick={autoFix} className="mt-2 px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 text-xs font-bold hover:bg-amber-200 transition-colors">✨ {t('brand.autofix', 'Auto-fix contrast')}</button>
             </div>
 
             <label className="block mb-4">
               <span className="text-xs font-bold uppercase tracking-wide text-slate-500">{t('brand.font', 'Body font')}</span>
-              <select value={bodyFont} onChange={function (e) { setDraft(function (d) { return Object.assign({}, d, { fonts: Object.assign({}, d.fonts, { body: e.target.value }) }); }); }} className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 bg-white outline-none focus:ring-2 focus:ring-blue-400">
+              <select value={bodyFont} aria-label={t('brand.font', 'Body font')} onChange={function (e) { setDraft(function (d) { return Object.assign({}, d, { fonts: Object.assign({}, d.fonts, { body: e.target.value }) }); }); }} className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 bg-white outline-none focus:ring-2 focus:ring-blue-400">
                 {FONT_CHOICES.concat(FONT_CHOICES.some(function (x) { return x.value === bodyFont; }) ? [] : [{ label: 'Current', value: bodyFont }]).map(function (f) {
                   return <option key={f.value} value={f.value}>{f.label}</option>;
                 })}
@@ -357,9 +357,9 @@ function BrandProfileEditor(props) {
                 ) : null}
                 <div className="flex-1">
                   <div className="flex gap-2">
-                    <button onClick={function () { fileInputRef.current && fileInputRef.current.click(); }} className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-medium hover:bg-slate-100">{draft.logo && draft.logo.src ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')}</button>
-                    {draft.logo && draft.logo.src && <button onClick={removeLogo} className="px-3 py-1.5 rounded-lg text-red-600 text-xs font-medium hover:bg-red-50">{t('brand.logo_remove', 'Remove')}</button>}
-                    <input ref={fileInputRef} type="file" accept="image/*" onChange={onLogoFile} className="hidden" />
+                    <button type="button" onClick={function () { fileInputRef.current && fileInputRef.current.click(); }} className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-medium hover:bg-slate-100">{draft.logo && draft.logo.src ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')}</button>
+                    {draft.logo && draft.logo.src && <button type="button" onClick={removeLogo} className="px-3 py-1.5 rounded-lg text-red-600 text-xs font-medium hover:bg-red-50">{t('brand.logo_remove', 'Remove')}</button>}
+                    <input ref={fileInputRef} aria-label={t('brand.logo_file', 'Upload logo image file')} type="file" accept="image/*" onChange={onLogoFile} className="hidden" />
                   </div>
                   {draft.logo && draft.logo.src && (
                     <input aria-label={t('brand.logo_alt', 'Logo alternative text')} value={draft.logo.alt || ''} onChange={function (e) { setLogoAlt(e.target.value); }} placeholder={t('brand.logo_alt_ph', 'Logo alt text (required) — describe the logo')} className="mt-1 w-full px-2 py-1 border border-slate-300 rounded text-xs text-slate-800 outline-none focus:ring-2 focus:ring-blue-400" />
@@ -396,7 +396,7 @@ function BrandProfileEditor(props) {
                 )}
                 <div style={{ padding: '10px' }}>
                   <div style={{ color: c.heading, fontFamily: headingFont, fontWeight: 800, fontSize: '15px' }}>{t('brand.preview_heading', 'Sample Heading')}</div>
-                  <p style={{ color: c.body, fontSize: '12px', margin: '4px 0' }}>{t('brand.preview_body', 'Body text shows how readable your colors are.')} <a style={{ color: c.accent }}>{t('brand.preview_link', 'a link')}</a>.</p>
+                  <p style={{ color: c.body, fontSize: '12px', margin: '4px 0' }}>{t('brand.preview_body', 'Body text shows how readable your colors are.')} <span style={{ color: c.accent, textDecoration: 'underline' }}>{t('brand.preview_link', 'a link')}</span>.</p>
                   <div style={{ background: c.cardBg, border: '1px solid ' + c.cardBorder, borderRadius: '6px', padding: '6px', marginTop: '4px' }}>
                     <span style={{ color: c.body, fontSize: '11px' }}>{t('brand.preview_card', 'A card / callout box.')}</span>
                   </div>
@@ -409,21 +409,22 @@ function BrandProfileEditor(props) {
               </div>
 
               {/* Validation */}
-              <div className="mt-3 space-y-1" role="status" aria-live="polite" aria-atomic="false">
+              <div id="brand-validation-status" className="mt-3 space-y-1" role="status" aria-live="polite" aria-atomic="false">
                 {validation.errors.map(function (er, i) { return <div key={'e' + i} className="text-[11px] text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">⛔ {er}</div>; })}
                 {validation.warnings.map(function (w, i) { return <div key={'w' + i} className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1">⚠️ {w}</div>; })}
                 {validation.ok && validation.warnings.length === 0 && <div className="text-[11px] text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">✓ {t('brand.passes', 'Meets WCAG AA contrast')}</div>}
               </div>
             </div>
             <div className="p-3 border-t border-slate-200 bg-slate-50 flex flex-col gap-2">
-              <button onClick={save} disabled={!validation.ok} className={'w-full px-3 py-2 rounded-lg text-sm font-bold transition-colors ' + (validation.ok ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed')}>{t('brand.save', 'Save profile')}</button>
-              {draft.id && draft.id !== activeId && <button onClick={function () { makeActive(draft.id); }} className="w-full px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors">{t('brand.set_active', 'Set as active brand')}</button>}
+              <button type="button" onClick={save} disabled={!validation.ok} className={'w-full px-3 py-2 rounded-lg text-sm font-bold transition-colors ' + (validation.ok ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed')}>{t('brand.save', 'Save profile')}</button>
+              {draft.id && draft.id !== activeId && <button type="button" onClick={function () { makeActive(draft.id); }} className="w-full px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors">{t('brand.set_active', 'Set as active brand')}</button>}
             </div>
           </aside>
         </div>
         )}
+      </div>
         {deleteRequest && (
-          <div className="fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4" role="presentation">
+          <div className="fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4" role="presentation" onClick={function (event) { event.stopPropagation(); }}>
             <div
               ref={deleteDialogRef}
               role="alertdialog"
@@ -453,7 +454,6 @@ function BrandProfileEditor(props) {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

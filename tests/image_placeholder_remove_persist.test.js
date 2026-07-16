@@ -11,7 +11,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8')
+  + '\n' + readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
 
 describe('placeholder "×" remove buttons persist the removal', () => {
   it('every figure-remove onclick (f.remove()) also notifies the parent to snapshot the edit', () => {

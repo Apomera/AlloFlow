@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-a62365b9-untitled",
+  "title": "ድመት ፣ ውሻ እና እንቁላል",
+  "description": "A Amharic picture book, readable free at Bloom Library.",
+  "language": "Amharic",
+  "langCode": "am",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "SIL Ethiopia"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL Ethiopia",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/1K2ESadGAi"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/samuel_marew%40sil.org%2fa62365b9-b172-4f42-b2d7-77ec9f8df1f1%2f%e1%8b%b5%e1%88%98%e1%89%b5+%e1%8d%a3+%e1%8b%8d%e1%88%bb+%e1%8a%a5%e1%8a%93+%e1%8a%a5%e1%8a%95%e1%89%81%e1%88%8b%e1%88%8d%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ድመት ፣ ውሻ እና እንቁላል\" (Amharic)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  }
+}

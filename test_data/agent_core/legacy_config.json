@@ -1,0 +1,27 @@
+{
+  "resourcePlan": [
+    { "tool": "lesson-plan", "directive": "Synthesize for the teacher." },
+    { "tool": "analysis", "directive": "Analyze the water cycle text." },
+    { "tool": "glossary", "directive": "Tier 2/3 vocabulary." },
+    { "tool": "quiz", "directive": "Test the golden thread." },
+    { "tool": "image", "directive": "Illustrate evaporation." }
+  ],
+  "recommendedResources": ["lesson-plan", "analysis", "glossary", "quiz", "image"],
+  "toolDirectives": {
+    "lesson-plan": "Synthesize for the teacher.",
+    "analysis": "Analyze the water cycle text.",
+    "glossary": "Tier 2/3 vocabulary.",
+    "quiz": "Test the golden thread.",
+    "image": "Illustrate evaporation."
+  },
+  "lessonDNA": {
+    "essentialQuestion": "How does water move through Earth's systems?",
+    "goldenThread": ["evaporation", "condensation", "precipitation"],
+    "keyTerms": ["evaporation", "condensation", "precipitation", "collection", "runoff"]
+  },
+  "globalSettings": { "gradeLevel": "5th Grade", "tone": "Informative" },
+  "glossaryConfig": { "tier2": 4, "tier3": 6 },
+  "quizConfig": { "count": 5, "dok": "Level 2", "customFocus": "cycle stages" },
+  "outlineConfig": { "type": "Flow Chart" },
+  "visualConfig": { "style": "Default" }
+}

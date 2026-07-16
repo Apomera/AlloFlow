@@ -171,9 +171,9 @@ class ErrorBoundary extends React.Component {
     const t = this.context?.t || ((key) => { const f = { 'errors.component_title': 'Something went wrong', 'errors.default_desc': 'This component encountered an error. Please try again.', 'errors.try_again': 'Try Again', 'common.refresh': 'Refresh', 'common.error_details': 'Error Details' }; return f[key] || key; });
     if (this.state.hasError) {
       return (
-        <div className="w-full h-full min-h-[400px] flex flex-col items-center justify-center p-8 bg-red-50 border-2 border-red-200 rounded-xl text-center animate-in fade-in zoom-in duration-300 relative z-50">
+        <div role="alert" aria-live="assertive" aria-atomic="true" className="w-full h-full min-h-[400px] flex flex-col items-center justify-center p-8 bg-red-50 border-2 border-red-200 rounded-xl text-center animate-in fade-in zoom-in duration-300 motion-reduce:animate-none relative z-50">
           <div className="bg-red-100 p-4 rounded-full text-red-500 mb-4 shadow-sm">
-             <AlertCircle size={48} />
+             <AlertCircle size={48} aria-hidden="true" />
           </div>
           <h2 className="text-xl font-black text-red-800 mb-2">{this.props.title || t('errors.component_title')}</h2>
           <p className="text-sm text-red-600 mb-6 max-w-md font-medium leading-relaxed">
@@ -181,14 +181,15 @@ class ErrorBoundary extends React.Component {
           </p>
           <div className="flex gap-3">
               <button
+                type="button"
                   aria-label={t('common.refresh')}
                 onClick={() => {
                     if (this.props.onRetry) this.props.onRetry();
                     this.setState({ hasError: false, error: null });
                 }}
-                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-lg flex items-center gap-2 active:scale-95"
+                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-lg flex items-center gap-2 active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
               >
-                <RefreshCw size={16} /> {this.props.retryLabel || t('errors.try_again')}
+                <RefreshCw size={16} aria-hidden="true" /> {this.props.retryLabel || t('errors.try_again')}
               </button>
           </div>
           {Boolean(this.state.error) && (

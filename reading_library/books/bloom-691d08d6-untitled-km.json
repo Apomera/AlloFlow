@@ -1,0 +1,195 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-691d08d6-untitled-km",
+  "title": "០៣ ឆាផៅមពោមពា",
+  "description": "Book of animals",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HucjSOeKk9"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage30.png",
+      "text": "នេះគឺជាសត្វក្របី។\nតើក្របីវាស្រែកដូចម្ដេច?\nក្របីវាស្រែកថា៖ “ង៉ែក! ង៉ែក!”"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage1.png",
+      "text": "នេះគឺជាសត្វគោ។\nតើសត្វគោវាស្រែកដូចម្ដេច ?\nសត្វគោវាស្រែកថា៖ “អំមរ! អំមរ!”"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage24.png",
+      "text": "នេះគឺជាជ្រូក។\nតើជ្រូកវាស្រែកដូចម្ដេច?\nជ្រូកវាស្រែកថា៖ “អ៊ូក! អ៊ូក!”"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage8.png",
+      "text": "នេះគឺជាឆែ្ក។\nតើឆ្កែធ្លាប់ព្រូសដូចម្ដេច?\nឆ្កែព្រុសថា៖ “វ៉ូស! វ៉ូស!”"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage13.png",
+      "text": "នេះគឺជាសត្វឈ្លូស។\nតើសត្វឈ្លូសស្រែកដូចម្ដេច?\nសត្វឈ្លូសវាស្រែកថា៖ “ហ៊ូស! ហ៊ូស!”"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage15.png",
+      "text": "នេះគឺជាសត្វសេះ។\nតើសត្វសេះវាស្រែកដូចម្ដេច?\nសត្វសេះវាស្រែកថា៖ “ហែស! ហែស!”"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage21.png",
+      "text": "នេះគឺជាកណ្ដុរ។\nតើកណ្ដុរវាចូលចិត្តស៊ីអ្វីខ្លះ?\nកណ្ដ្កុរចូលចិត្តស៊ីចេកច្រើនជាងគេ។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage12.png",
+      "text": "នេះគឺជាសត្វដំរី។\nតើដំរីវាស្រែកដូចម្ដេច?\nដំរីវាស្រែកថា៖ “រូ ហូ ហូ!”"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage17.png",
+      "text": "នេះគឺជាខ្លារខិន។\nតើខ្លារខិនវាស៊ីអ្វីជាអាហារ?\nខ្លារខិនវាស៊ី ឈ្លូស ប្រើស ជាអាហារ។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage2.png",
+      "text": "នេះគឺជាសត្វខ្លាឃ្មុំ។\nតើសត្វខ្លាឃ្មុំវាស្រែកដូចម្ដេច?\nសត្វខ្លាឃ្មុំវាស្រែកថា៖ “គ្វាក! គ្វាក!”"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage29.png",
+      "text": "នេះគឺជាជ្រូកព្រៃ។\nតើជ្រូកព្រៃនៅតែឯងជាមេឬ?\nជ្រូកព្រៃវាស្រែកថា៖ “អ៊ូក! អ៊ូក!”"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage7.png",
+      "text": "នេះគឺជាសត្វឈ្លូស។\nតើសត្វឈ្លូសស្រែកដូចម្ដេច?\nសត្វឈ្លូសវាស្រែកថា៖ “ហ៊ូស! ហ៊ូស!”"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage14.png",
+      "text": "នេះគឺជាសត្វកាំប្រម៉ា។\nតើសត្វកាំប្រម៉ាវាស៊ីអ្វីជាអាហារ?\nសត្វកាំប្រម៉ាវាស៊ី ដំឡូង ក្ដួច នឹងមើមប្រទាល។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage20.png",
+      "text": "នេះគឺជាសត្វស្វា។\nតើសត្វស្វាវាស៊ីអ្វីជាអាហារ?\nសត្វស្វាវាស៊ីផ្លែឈើជាអាហារ។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage31.png",
+      "text": "នេះគឺជាឆ្កែចចក។\nតើឆ្កែចចកវាលូដូចម្ដេច?\nឆ្កែចចកវាលូថា៖ “ហូស ហូ!”"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage25.png",
+      "text": "នេះគឺជាសត្វទន្សាយ។\nតើសត្វទន្សាយវាស្រែកដូចម្ដេច?\nទន្សាយវាស្រែកថា៖ “កាក! កាក!”"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage28.png",
+      "text": "នេះ​គឺ​ជាឆ្មាបា​។​\nតើឆ្មាបាវាចេះធ្វើអ្វីខ្លះ?\nឆ្មាបាវាចេះហើរដូចសត្វស្លាប។"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage9.png",
+      "text": "នេះគឺជាសត្វទា។\nតើសត្វទាវាស្រែកដូចម្ដេច?\nសត្វទាវាស្រែកថា៖ “កាបៗ! កាបៗ!”"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage26.png",
+      "text": "នេះគឺជាមាន់គក។\nតើមាន់គោកវារងាវដូចម្ដេច?\nមានគកវារងាវថា៖ “ទេតៗ ទើ អោត!”"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage3.png",
+      "text": "នេះគឺជាសត្វលលក។\nតើសត្វលលកវាស្រែកដូចម្ដេច?\nសត្វលលកវាស្រែកថា៖ “គូតៗ គូរូ!”"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage4.png",
+      "text": "នេះគឺជាសត្វក្អែក។\nតើសត្វក្អែកវាស្រែកដូចម្ដេច?\nសត្វក្អែកវាស្រែកថា៖ “អ្វាកៗ អ្វាកៗ”"
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage32.png",
+      "text": "នេះគឺជាសត្វត្រសេះ។\nតើសត្វត្រសេះវាស៊ីចំណីដូចម្ដេច?\nសត្វត្រសេះវាចោះដើមឈើដើម្បីរកចំណី៕"
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage16.png",
+      "text": "នេះគឺជាសត្វកុក។\nតើសត្វកុកវាស្រែកដូចម្ដេច?\nសត្វកុកវាស្រែកថា៖ “ក្វកៗ! ក្វកៗ!”"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage23.png",
+      "text": "នេះគឺជាសត្វសេក។\nតើសត្វសេកវាស្រែកដូចម្ដេច?\nសត្វសេកវាស្រែកថា៖ “គេក! គេក!”"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage22.png",
+      "text": "នេះគឺជាសត្វទីទុយ។\nតើសត្វទីទុយវាស្រែកដូចម្ដេច?\nទីទុយវាស្រែកថា៖ “គូកៗ! គូកៗ!”"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage6.png",
+      "text": "នេះគឺជាសត្វក្រពើ។\nតើសត្វក្រពើវាស៊ីអ្វីជាអាហារ?\nសត្វក្រពើវាស៊ីត្រី ឬសាច់ជាអាហារ។"
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage18.png",
+      "text": "នេះគឺជាសត្វត្រកួត។\nតើសត្វត្រកួតវាស៊ីអ្វីជាអាហារ?\nសត្វត្រកួតវាស៊ីស្រមោច សង្អារ អង្ក្រងជាអាហារ។"
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage19.png",
+      "text": "នេះគឺជាសត្វថ្លែន។\nតើសត្វថ្លែនវាធ្លាប់នៅកន្លែងណា?\nសត្វថ្លែនភាគច្រើនធ្លាប់នៅតាមភ្លឺស្រែ។"
+    },
+    {
+      "n": 29,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage27.png",
+      "text": "នេះគឺពស់ថ្លាន់។\nតើពស់ថ្លាន់វាស៊ីអ្វីជាអាហារ?\nពស់ថ្លាន់វាស៊ី ប្រើស ឈ្លូសជាអាហារ។"
+    },
+    {
+      "n": 30,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage11.png",
+      "text": "នេះគឺជាកង្កែប។\nតើសត្វកង្កែបវាស្រែកដូចម្ដេច?\nកែង្កបវាស្រែកថា៖ “អែបៗ! អោកៗ!”"
+    },
+    {
+      "n": 31,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage10.png",
+      "text": "នេះគឺជាត្រីខ្ជឹង។\nតើត្រីខ្ជឹងវាស្រែកដូចម្ដេច?\nត្រីខ្ជឹងវាស្រែកថា៖ “កែក! កែក!”"
+    },
+    {
+      "n": 32,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f691d08d6-9a0c-47d7-bc24-c309e638b55d%2f%e1%9f%a0%e1%9f%a3+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage5.png",
+      "text": "នេះគឺជាសត្វមុសដែកគោល។\nតើសត្វមុសវាស្រែកយ៉ាងដូចម្ដេច?\nសត្វមុសវាស្រែកថា៖ “ងឺងងឺង!”"
+    }
+  ],
+  "stats": {
+    "pages": 32,
+    "words": 153
+  }
+}

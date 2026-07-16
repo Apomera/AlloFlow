@@ -6,8 +6,10 @@ const source = fs.readFileSync('view_guided_mode_banner_source.jsx', 'utf8');
 describe('Guided full-lesson dialog accessibility', () => {
   it('places named modal semantics on the focus-managed panel', () => {
     expect(source).toContain('<div role="presentation" onClick={() => setShowFullLesson(false)}');
-    expect(source).toContain('ref={_modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="guided-full-lesson-title"');
+    expect(source).toContain('ref={_modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="guided-full-lesson-title" aria-describedby="guided-full-lesson-description"');
     expect(source).toContain('id="guided-full-lesson-title"');
+    expect(source).toContain('id="guided-full-lesson-description"');
+    expect(source).not.toContain("outline: 'none'");
   });
 
   it('retains focus containment, Escape dismissal, and focus return', () => {

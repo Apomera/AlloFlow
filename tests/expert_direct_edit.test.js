@@ -60,10 +60,10 @@ describe('anti-drift: the mini-audit is shared (no drift between Workbench + dir
     expect(src).toContain('_safeAudit(() => runAxeAudit(newHtml)),');
     expect(src).toContain("? _safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml)) : Promise.resolve(null),");
     expect(src).toContain('const _wscore = _computeHeadline(_wvOk ? _wv.score : null, _wdet);');
-    expect(src).toContain("issueResolution: (_wvOk && typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,");
+    expect(src).toContain("issueResolution: (_wvOk && typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(_curFix.issueResolution, _wv) || _curFix.issueResolution) : _curFix.issueResolution,");
     expect(src).toContain('const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);');
-    expect(src).toContain('if (prev.accessibleHtml !== newHtml) return prev;');
-    expect(src).toContain("pdfUaSelfCheck: _sameBoundHtml ? ((prev.verificationCoverage && prev.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',");
+    expect(src).toContain('setPdfFixResult(prev => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);');
+    expect(src).toContain("pdfUaSelfCheck: _sameBoundHtml ? ((_curFix.verificationCoverage && _curFix.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',");
   });
   it('the Expert Workbench now delegates to _reauditAndScore (the old inline copy is gone)', () => {
     expect(src).toMatch(/const _ra = await _reauditAndScore\(result\.html, \(entry\) => setAgentActivityLog/);
@@ -93,7 +93,9 @@ describe('S1 (2026-06-23): scope → intent → AGENT apply, blast-radius-bounde
   });
   it('unwraps a <body> the agent might add, then splices the edited region back via _spliceBlock', () => {
     expect(h).toMatch(/<body\[\\s>\]\/i\.test\(edited\)/);
-    expect(h).toMatch(/const sp = _spliceBlock\(pdfFixResult\.accessibleHtml, original, edited\)/);
+    expect(h).toMatch(/const _commitToken = _captureAsyncHtmlToken\(\)/);
+    expect(h).toMatch(/const sp = _spliceBlock\(_sourceHtml, original, edited\)/);
+    expect(h).toMatch(/_commitAsyncHtmlIfCurrent\(_commitToken,/);
   });
   it('snapshots _preCmdHtml for one-click revert and re-audits via the shared mini-audit', () => {
     expect(h).toMatch(/accessibleHtml: sp\.html, _preCmdHtml: _before/);

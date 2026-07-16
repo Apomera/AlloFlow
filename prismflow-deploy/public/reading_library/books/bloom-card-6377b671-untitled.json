@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-6377b671-untitled",
+  "title": "ໄຂ່ກົບ",
+  "description": "A Lao picture book, readable free at Bloom Library.",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "USAID"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "USAID",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/JBvhTxYJLY"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/JBvhTxYJLY%2f1752232091154%2f%e0%bb%84%e0%ba%82%e0%bb%88%e0%ba%81%e0%ba%bb%e0%ba%9a%2fexport202304151600301160-7.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ໄຂ່ກົບ\" (Lao)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 56
+  }
+}

@@ -2,6 +2,112 @@
 // 5 text/glossary helpers: highlightGlossaryTerms, repairGeneratedText,
 // getReadableContent, generateHelpfulHint, generateWordSearch.
 
+// Glossary term with its definition/picture tooltip. The tooltip renders
+// through a portal to document.body with position:fixed because the term can
+// sit inside containers that defeat an absolutely-positioned child tooltip:
+// line-focus mode wraps paragraphs in scale()/blur()/opacity effects (which
+// trap z-index in a local stacking context and dim/blur descendants), the
+// immersive reader is a z-[200] overlay that painted over the old z-[100]
+// inline tooltip, and scroll containers clip whatever overflows them.
+// zIndex 300 clears the immersive reader (200) and its lifted popups (220).
+let _glossaryTipSeq = 0;
+const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode, children }) => {
+  const [tip, setTip] = React.useState(null);
+  const tipIdRef = React.useRef(null);
+  if (!tipIdRef.current) tipIdRef.current = `allo-glossary-tip-${++_glossaryTipSeq}`;
+  const show = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = 256; // matches w-64
+    const margin = 8;
+    const centerX = rect.left + rect.width / 2;
+    const left = Math.max(margin, Math.min(centerX - width / 2, window.innerWidth - width - margin));
+    // Flip below the term when there isn't room for title+picture+definition above.
+    const placeAbove = rect.top > 320;
+    setTip({ left, top: placeAbove ? rect.top - 10 : rect.bottom + 10, placeAbove });
+  };
+  const hide = () => setTip(null);
+  React.useEffect(() => {
+    if (!tip) return undefined;
+    const close = () => setTip(null);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [!!tip]);
+  const lightStyle = isLineFocusMode
+    ? 'text-indigo-300 border-indigo-500 hover:bg-indigo-900'
+    : 'text-indigo-600 border-indigo-400 hover:bg-indigo-50';
+  const darkStyle = 'text-yellow-300 border-yellow-300/50 hover:bg-white/20 font-bold';
+  const canPortal = typeof ReactDOM !== 'undefined' && ReactDOM.createPortal && typeof document !== 'undefined';
+  return (
+    <span
+      onClick={(e) => e.stopPropagation()}
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onFocus={show}
+      onBlur={hide}
+      onKeyDown={(e) => { if (e.key === 'Escape') hide(); }}
+      tabIndex={0}
+      aria-describedby={tip ? tipIdRef.current : undefined}
+      className={`cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block ${isDarkBg ? darkStyle : lightStyle}`}
+    >
+      {children}
+      {tip && canPortal && ReactDOM.createPortal(
+        <span
+          id={tipIdRef.current}
+          role="tooltip"
+          className="fixed block w-64 p-3 bg-slate-800 text-xs rounded shadow-xl pointer-events-none text-left leading-relaxed"
+          style={{
+            left: tip.left + 'px',
+            top: tip.top + 'px',
+            transform: tip.placeAbove ? 'translateY(-100%)' : 'none',
+            zIndex: 300,
+            color: '#ffffff'
+          }}
+        >
+          {/* Inline color overrides the reading-theme `* { color: inherit }`
+              cascade that would otherwise pull the term title toward the
+              container's theme color (brown, green, etc.) instead of gold.
+              Term name is sized up (text-sm vs. inherited text-xs) and
+              centered with tracking so it reads as a proper card title.
+              Definition and translation stay left-aligned — center-aligned
+              multi-line prose is harder to scan, especially for readers
+              with dyslexia. */}
+          <strong
+              className="block mb-1.5 pb-1.5 text-sm font-black text-center tracking-wide border-b border-slate-600/60"
+              style={{ color: '#fde047' }}
+          >
+              {item.term}
+          </strong>
+          {item.image && (
+              <img
+                  src={item.image}
+                  alt={item.term}
+                  className="block mb-2 w-full rounded border border-slate-600 bg-white"
+                  style={{ maxHeight: '115px', objectFit: 'contain' }}
+                  loading="lazy"
+              />
+          )}
+          <span style={{ color: '#ffffff' }}>{item.def}</span>
+          {leveledTextLanguage !== 'English' && item.translations && item.translations[leveledTextLanguage] && (
+              <span className="block mt-2 pt-2 border-t border-slate-600 italic" style={{ color: '#c7d2fe' }}>
+                  {item.translations[leveledTextLanguage]}
+              </span>
+          )}
+          <svg
+              className="absolute text-slate-800 h-2 w-full left-0"
+              style={tip.placeAbove ? { top: '100%' } : { bottom: '100%', transform: 'scaleY(-1)' }}
+              x="0px" y="0px" viewBox="0 0 255 255" xmlSpace="preserve" aria-hidden="true"
+          ><polygon className="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
+        </span>,
+        document.body
+      )}
+    </span>
+  );
+};
+
 const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = false, deps) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms, repairGeneratedText, getReadableContent, generateHelpfulHint } = deps;
   try { if (window._DEBUG_PHASE_M) console.log("[PhaseM] highlightGlossaryTerms fired"); } catch(_) {}
@@ -50,50 +156,16 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
                       />
                   );
               }
-              const lightStyle = isLineFocusMode
-                ? 'text-indigo-300 border-indigo-500 hover:bg-indigo-900'
-                : 'text-indigo-600 border-indigo-400 hover:bg-indigo-50';
-              const darkStyle = 'text-yellow-300 border-yellow-300/50 hover:bg-white/20 font-bold';
               return (
-                  <span
+                  <GlossaryTermSpan
                     key={i}
-                    role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}
-                    className={`relative group/tooltip cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block ${isDarkBg ? darkStyle : lightStyle}`}
+                    item={item}
+                    leveledTextLanguage={leveledTextLanguage}
+                    isDarkBg={isDarkBg}
+                    isLineFocusMode={isLineFocusMode}
                   >
                       {part}
-                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-slate-800 text-xs rounded shadow-xl opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-[100] text-left leading-relaxed" style={{ color: '#ffffff' }}>
-                          {/* Inline color overrides the reading-theme `* { color: inherit }`
-                              cascade that would otherwise pull the term title toward the
-                              container's theme color (brown, green, etc.) instead of gold.
-                              Term name is sized up (text-sm vs. inherited text-xs) and
-                              centered with tracking so it reads as a proper card title.
-                              Definition and translation stay left-aligned — center-aligned
-                              multi-line prose is harder to scan, especially for readers
-                              with dyslexia. */}
-                          <strong
-                              className="block mb-1.5 pb-1.5 text-sm font-black text-center tracking-wide border-b border-slate-600/60"
-                              style={{ color: '#fde047' }}
-                          >
-                              {item.term}
-                          </strong>
-                          {item.image && (
-                              <img
-                                  src={item.image}
-                                  alt={item.term}
-                                  className="block mb-2 w-full rounded border border-slate-600 bg-white"
-                                  style={{ maxHeight: '115px', objectFit: 'contain' }}
-                                  loading="lazy"
-                              />
-                          )}
-                          <span style={{ color: '#ffffff' }}>{item.def}</span>
-                          {leveledTextLanguage !== 'English' && item.translations && item.translations[leveledTextLanguage] && (
-                              <span className="block mt-2 pt-2 border-t border-slate-600 italic" style={{ color: '#c7d2fe' }}>
-                                  {item.translations[leveledTextLanguage]}
-                              </span>
-                          )}
-                          <svg className="absolute text-slate-800 h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255" xmlSpace="preserve" aria-hidden="true"><polygon className="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
-                      </span>
-                  </span>
+                  </GlossaryTermSpan>
               );
           }
           return part;
@@ -409,3 +481,40 @@ window.AlloModules.TextUtilityHelpers = {
   generateHelpfulHint,
   generateWordSearch,
 };
+
+// ── TEMPORARY device-storage probe bootstrap (2026-07-13) ──────────────
+// Rides this module only because it is already in every surface's loadModule
+// list and Cloudflare Pages serves current content for existing module URLs —
+// so this reaches the Canvas app on its next reload without republishing the
+// monolith. Remove once allo_device_storage_module.js gets its own loadModule
+// line. Ctrl+Alt+Shift+D (or window.__alloOpenDeviceStorageProbe()) lazy-loads
+// the device-storage module from the CDN and opens its on-screen probe panel.
+try {
+  if (typeof document !== 'undefined' && !window.__alloDeviceStorageProbeArmed) {
+    window.__alloDeviceStorageProbeArmed = true;
+    const openDeviceStorageProbe = () => {
+      const ready = () => {
+        try { window.alloDeviceStorage.__openProbePanel(); }
+        catch (e) { console.warn('[DeviceStorage] probe panel failed:', e); }
+      };
+      if (window.alloDeviceStorage) { ready(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=' + Date.now();
+      s.onload = () => {
+        // Pages answers missing files with its SPA index as an HTML 200
+        // (the lame.min.js lesson) — verify the global actually appeared.
+        if (window.alloDeviceStorage) ready();
+        else console.warn('[DeviceStorage] module URL answered but global missing (CDN miss?)');
+      };
+      s.onerror = () => console.warn('[DeviceStorage] failed to load module from CDN');
+      document.head.appendChild(s);
+    };
+    window.__alloOpenDeviceStorageProbe = openDeviceStorageProbe;
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+        e.preventDefault();
+        openDeviceStorageProbe();
+      }
+    });
+  }
+} catch (_) {}

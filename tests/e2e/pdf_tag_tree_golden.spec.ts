@@ -666,6 +666,14 @@ test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
       'round-trip should pass; failures: ' + JSON.stringify((ocrSummary.roundTrip.checks || []).filter((c: any) => c.status === 'fail'))
     ).toBe(true);
     expect(ocrSummary.roundTrip.structElemsSaved, 'saved file must contain StructElem objects').toBeGreaterThan(0);
+    // Reading-order calibration pin (2026-07-13): a correctly tagged single-flow doc
+    // must re-extract in near-source order. This is the clean side of the fail-tier
+    // calibration — the <50% catastrophic tier folds into roundTrip.ok, so a false
+    // fire here would break this assertion first.
+    const _rtDiff = (ocrSummary.roundTrip as any).textDiff;
+    if (_rtDiff && typeof _rtDiff.readingOrderRatio === 'number') {
+      expect(_rtDiff.readingOrderRatio, 'clean fixture must re-extract in near-source order (calibration floor)').toBeGreaterThanOrEqual(90);
+    }
     // Post-save verification now covers the full structural rule set against the shipped bytes.
     const _rtRules = (ocrSummary.roundTrip.checks || []).map((c: any) => c.rule);
     expect(_rtRules, 'verifies page→tag-tree linkage on the saved bytes').toContain('Pages link to tag tree (StructParents)');

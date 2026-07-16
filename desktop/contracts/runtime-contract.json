@@ -1,7 +1,7 @@
 {
   "name": "AlloFlow Desktop Runtime Contract",
-  "version": "0.1.0-foundation",
-  "status": "foundation",
+  "version": "0.3.0-isolated-preview",
+  "status": "hardened-foundation",
   "defaultPorts": {
     "commandCenter": 32170,
     "alloflowLocalEngine": 32173,
@@ -31,12 +31,16 @@
     "defaultMode": "auto",
     "bundledRoute": "/app/",
     "fallbackDevUrl": "http://localhost:3000",
-    "behavior": "Use the bundled static app build when desktop/app-build/index.html exists; otherwise start or connect to the configured local web app URL."
+    "behavior": "Use the bundled static app build when desktop/app-build/index.html exists; otherwise start or connect to the configured local web app URL.",
+    "staticTransport": "Files are streamed from disk with MIME hardening, ETag and Last-Modified validators, HEAD support, cache policy, and single byte-range responses for seekable classroom media."
   },
+    "previewOrigin": "The packaged command center uses 127.0.0.1 while its bundled app iframe uses localhost on the same private port. The different hostnames create distinct browser origins without exposing another network listener.",
+    "previewBridge": "A versioned postMessage bridge accepts only configuration sync, capability status, Kokoro download/test, and SD-Turbo download. Both sides verify frame identity, loopback origin, protocol version, request identifiers, and response correlation.",
   "updates": {
     "defaultChannel": "latest",
     "channels": ["latest", "beta"],
-    "behavior": "Packaged Electron builds can switch update checks between latest and beta. Beta release workflow runs use prerelease package versions so update metadata stays separate."
+    "behavior": "Packaged Electron builds can switch update checks between latest and beta. Beta release workflow runs use prerelease package versions so update metadata stays separate.",
+    "releaseDrill": "CI opens both x64 and ARM64 packaged app layouts, validates their native launchers, ASAR runtime and Electron entry points, exact version, hardened private API and download-integrity code, rebuilt scoped-token web adapter, and external app/School Box resources before validating installer/updater artifacts."
   },
   "liveSession": {
     "defaultMode": "schoolbox-lan",
@@ -50,23 +54,30 @@
       "alloflow-demo-cloud": "Explicit demo-only cloud mode; not intended for real student data."
     },
     "lanBridge": {
-      "status": "foundation",
+      "status": "hardened-foundation",
       "storage": "in-memory with TTL",
       "defaultTtlMinutes": 480,
       "defaultShareUrl": "http://{teacher-lan-ip}:32175",
       "networkReachability": "Local by default while the Desktop command center is bound to 127.0.0.1. Cross-device student joining uses an explicit LAN Share listener that exposes only /app/, /join/{code}, and LAN session bridge endpoints.",
       "joinRoute": "/join/{code}",
       "sessionRoutes": ["/api/lan-sessions", "/api/lan-sessions/{code}", "/api/lan-sessions/{code}/events"],
+      "authRoute": "POST /api/lan-auth exchanges the current join PIN once for an HMAC-signed, session-scoped participant bearer token with an eight-hour maximum lifetime.",
+      "resourceCeilings": {
+        "sessions": "128 sessions, 2 MiB per session, 32 MiB total",
+        "eventStreams": "128 subscribers per session, 512 total",
+        "publicRates": "120 writes/minute and 600 reads/minute per device/token",
+        "server": "768 simultaneous sockets with bounded headers, requests, keep-alive reuse, and token-expiring event streams"
+      },
       "docRoutes": {
         "routes": ["/api/lan-docs/{key}"],
         "purpose": "Chunked session assets (resources manifests, ref:: images) written by the app's uploadSessionAssets externalization and read back by student hydration — the LAN stand-in for the Firestore session_assets collection.",
         "keyFormat": "[A-Za-z0-9_-]{1,512}; invalid keys are rejected, never rewritten",
-        "publicAccess": "GET only, behind the same join PIN as session endpoints; create/replace/delete are private-runtime (teacher) only",
-        "storage": "in-memory with the same TTL as LAN sessions; capped at 4000 docs (writes fail loudly when full)"
+        "publicAccess": "GET only with a valid scoped participant token; create/replace/delete are private-runtime (teacher) only",
+        "storage": "in-memory with the same TTL as LAN sessions; capped at 4000 docs, 2 MiB per doc, and 64 MiB total (writes fail loudly when full)"
       },
       "joinPin": {
         "configKey": "liveSession.lan.pin",
-        "behavior": "Optional classroom join PIN. Latched onto the share listener when LAN sharing starts (change the PIN, then restart sharing to apply). When latched, the public join page asks for the PIN before serving the app link + session config, and public session read/patch/events endpoints require it via ?pin= or the x-allo-lan-pin header (401 with pinRequired:true otherwise). The validated PIN is forwarded to the app inside alloflow_live_session_config as lanPin for the future in-app LAN adapter.",
+        "behavior": "A six-digit PIN is generated automatically unless the teacher configured one. The PIN is latched when sharing starts and is used only on the join page or POST /api/lan-auth. Successful entry mints a short-lived, HMAC-signed token scoped to one class session; API requests never replay the PIN. The token binds to one participant identifier on first write, public reads project roster and response maps to that participant, and participant writes are restricted to the same Tier-1 field policy as the school mailbox bridge.",
         "notEnforcedOn": ["/api/health", "/api/live-session/status", "/api/lan-session/status", "/app/"]
       },
       "presenterRoute": "/present/{code} (PRIVATE runtime only): projector page with giant class code, QR of the join link, the join PIN when set, and same-network guidance. Never served by the public LAN Share listener."
@@ -146,11 +157,12 @@
     { "method": "POST", "path": "/api/lan-share/stop", "purpose": "Stop the student-safe LAN share listener" },
     { "method": "GET", "path": "/api/lan-session/status", "purpose": "Local classroom session bridge status and join base URLs" },
     { "method": "POST", "path": "/api/lan-sessions", "purpose": "Create or replace an in-memory LAN classroom session" },
+    { "method": "POST", "path": "/api/lan-auth", "purpose": "Exchange the current join PIN once for a signed, expiring participant bearer token" },
     { "method": "GET", "path": "/api/lan-sessions/{code}", "purpose": "Read a LAN classroom session document" },
     { "method": "PATCH", "path": "/api/lan-sessions/{code}", "purpose": "Apply dotted-field classroom session updates" },
     { "method": "DELETE", "path": "/api/lan-sessions/{code}", "purpose": "End a LAN classroom session" },
     { "method": "GET", "path": "/api/lan-sessions/{code}/events", "purpose": "Subscribe to LAN classroom session updates with server-sent events" },
-    { "method": "GET", "path": "/api/lan-docs/{key}", "purpose": "Read a chunked session asset doc (public LAN share: PIN-gated)" },
+    { "method": "GET", "path": "/api/lan-docs/{key}", "purpose": "Read a chunked session asset doc (public LAN share: scoped participant-token gated)" },
     { "method": "PUT", "path": "/api/lan-docs/{key}", "purpose": "Create or replace a session asset doc (private runtime only; POST accepted as alias)" },
     { "method": "DELETE", "path": "/api/lan-docs/{key}", "purpose": "Delete a session asset doc (private runtime only; TTL cleans up otherwise)" },
     { "method": "GET", "path": "/api/schoolbox/status", "purpose": "Optional School Box Docker server stack readiness and service status" },
@@ -167,12 +179,14 @@
   ],
   "security": {
     "bindHost": "127.0.0.1",
-    "lanShare": "The optional LAN Share listener binds separately and exposes only app files, join pages, and LAN session endpoints. It does not expose config, diagnostics, readiness, provider, secret, app-management, or School Box control APIs.",
-    "configResponse": "secrets are redacted",
+    "lanShare": "The optional LAN Share listener binds separately and exposes only streamed app files, join pages, token exchange, and LAN session endpoints. It does not expose config, diagnostics, readiness, provider, secret, process-management, or School Box control APIs.",
+    "privateApi": "Packaged Electron creates a cryptographically random per-launch credential. The runtime requires it for privileged command-center routes. Electron strips renderer-supplied copies on both loopback origins and injects the real credential only for top-level command-center requests. The bundled app keeps access only to the explicit embedded-app route allowlist.",
+    "rendererIsolation": "The bundled app preview is cross-origin from the command center, cannot read its DOM or storage, and has no private API credential. A narrow response-correlated bridge replaces former direct frame access without exposing config, secret, process, update, or School Box control APIs.",
+    "configResponse": "Secrets are redacted; packaged provider keys use OS-backed Electron safeStorage.",
+    "downloadProvenance": "All five built-in remote artifacts use immutable release/revision URLs and mandatory SHA-256 verification before installation. HTTPS is rechecked after redirects. Administrators may configure custom URLs with an explicit SHA-256, or use local files.",
     "next": [
-      "Move secrets into the OS keychain before production packaging.",
-      "Gate non-loopback access behind explicit admin approval.",
-      "Add signed update and model provenance checks before bundling model files.",
+      "Keep the isolated preview bridge capability list closed by default and add new actions only with frame-origin checks and end-to-end denial tests.",
+      "Run clean-machine installer, upgrade, rollback, reboot, firewall, and offline-start drills on supported Windows and macOS images before each stable release.",
       "Keep desktop live sessions in school-controlled backends unless the teacher explicitly chooses a cloud mode."
     ]
   }

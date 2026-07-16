@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-67eca7c7-untitled",
+  "title": "ແບ້ກັບໝາແລະງົວ",
+  "description": "Why do cows stand on the road and goats run away?",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tv2rAaxWgB"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tv2rAaxWgB%2f1752227441126%2f%e0%bb%81%e0%ba%9a%e0%bb%89%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%9d%e0%ba%b2%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%87%e0%ba%bb%e0%ba%a7%2fGoat+Dog+Cow+Cover.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tv2rAaxWgB%2f1752227441126%2f%e0%bb%81%e0%ba%9a%e0%bb%89%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%9d%e0%ba%b2%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%87%e0%ba%bb%e0%ba%a7%2fGoat+Dog+Cow+1.png",
+      "text": "ແບ້ກັບໝາແລະງົວ ເປັນໝູ່ສະໜິດກັນ.\nມີມື້ໜຶ່ງ ພວກເຂົາໄດ້ຈ້າງລົດໂດຍສານ\nໄປຫລິ້ນນຳກັນ."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tv2rAaxWgB%2f1752227441126%2f%e0%bb%81%e0%ba%9a%e0%bb%89%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%9d%e0%ba%b2%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%87%e0%ba%bb%e0%ba%a7%2fGoat+Dog+Cow+2.png",
+      "text": "ເມື່ອຮອດບ່ອນຫລິ້ນ ຄົນຂັບລົດກໍ່ເກັບຄ່າໂດຍສານ.\nງົວກໍຈ່າຍສ່ວນຂອງຕົນເອງຄົບ."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tv2rAaxWgB%2f1752227441126%2f%e0%bb%81%e0%ba%9a%e0%bb%89%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%9d%e0%ba%b2%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%87%e0%ba%bb%e0%ba%a7%2fGoat+Dog+Cow+3.png",
+      "text": "ໝາກໍຈ່າຍສ່ວນຂອງຕົນເອງ\nແຕ່ຈ່າຍເກີນເພາະບໍ່ມີເງິນຍ່ອຍ."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tv2rAaxWgB%2f1752227441126%2f%e0%bb%81%e0%ba%9a%e0%bb%89%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%9d%e0%ba%b2%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%87%e0%ba%bb%e0%ba%a7%2fGoat+Dog+Cow+4.png",
+      "text": "ເມື່ອຄົນຂັບລົດໂດຍສານກຳລັງຊິເອົາເງິນຖອນໃຫ້ໝາ,\nທັນໃດນັ້ນ ແບ້ກໍ່ແລ່ນຫນີທັງທີ່ຍັງບໍ່ໄດ້ຈ່າຍເງິນຄ່າໂດຍສານ."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tv2rAaxWgB%2f1752227441126%2f%e0%bb%81%e0%ba%9a%e0%bb%89%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%9d%e0%ba%b2%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%87%e0%ba%bb%e0%ba%a7%2fGoat+Dog+Cow+5.png",
+      "text": "ເຮັດໃຫ້ຄົນຂັບລົດໂດຍສານບໍ່ພໍໃຈເລີຍ. ລາວຈຶ່ງຂັບລົດອອກໄປ\nທັງທີ່ຍັງບໍ່ໄດ້ຖອນເງິນໃຫ້ໝາ."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tv2rAaxWgB%2f1752227441126%2f%e0%bb%81%e0%ba%9a%e0%bb%89%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%9d%e0%ba%b2%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%87%e0%ba%bb%e0%ba%a7%2fGoat+Dog+Cow+6.jpg",
+      "text": "ນີ້ເປັນເຫດຜົນທີ່ໝາ ມັກຈະແລ່ນນຳລົດ ຊອກຫາຄົນຂັບລົດໂດຍສານນັ້ນ\nເພື່ອເອົາເງິນຖອນ."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tv2rAaxWgB%2f1752227441126%2f%e0%bb%81%e0%ba%9a%e0%bb%89%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%9d%e0%ba%b2%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%87%e0%ba%bb%e0%ba%a7%2fGoat+Dog+Cow+7.png",
+      "text": "ແລະນີ້ເປັນເຫດຜົນທີ່ແບ້ແລ່ນຫນີ ເມື່ອຍິນສຽງລົດ. ແບ້ຢ້ານວ່າຄົນຂັບລົດໂດຍສານ ຊິຈັບໄປຄັງຄຸກ ເພາະຕົນບໍ່ໄດ້ຈ່າຍຄ່າໂດຍສານ."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tv2rAaxWgB%2f1752227441126%2f%e0%bb%81%e0%ba%9a%e0%bb%89%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%9d%e0%ba%b2%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%87%e0%ba%bb%e0%ba%a7%2fGoat+Dog+Cow+8.png",
+      "text": "ແລະນີ້ເປັນເຫດຜົນທີ່ງົວ ຍ່າງຂ້າມທາງ ຊ້າໆບໍ່ສົນໃຈລົດ. ເພາະງົວຮູ້ວ່າລາວໄດ້ຈ່າຍຄ່າໂດຍສານຄົບແລ້ວ."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 29
+  }
+}

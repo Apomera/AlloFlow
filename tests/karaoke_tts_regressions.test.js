@@ -55,6 +55,7 @@ beforeAll(() => {
 
   loadAlloModule('immersive_reader_module.js');
   loadAlloModule('tts_module.js');
+  loadAlloModule('karaoke_audio_store_module.js');
   KaraokeReaderOverlay = window.AlloModules.KaraokeReaderOverlay;
   createTTS = window.AlloModules.createTTS;
   if (!KaraokeReaderOverlay) throw new Error('KaraokeReaderOverlay did not register');
@@ -79,6 +80,10 @@ afterEach(() => {
   delete window._piperTTS;
   delete window.__ttsGeminiAuthFailed;
   delete window.__ttsGeminiQuotaFailed;
+  if (window.AlloModules && window.AlloModules.KaraokeAudioStore) {
+    window.AlloModules.KaraokeAudioStore.current = null;
+    window.AlloModules.KaraokeAudioStore.currentResourceId = null;
+  }
 });
 
 function renderKaraoke(props) {
@@ -156,6 +161,261 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
     expect(audioInstances).toHaveLength(1);
     expect(audioInstances[0].src).toBe('blob:on-demand-sentence');
     expect(audioInstances[0].play).toHaveBeenCalledTimes(1);
+  });
+
+  it('captures the actively played sentence into durable karaoke storage', async () => {
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    const capture = vi.fn(async () => true);
+    window.__alloCaptureKaraokeAudio = capture;
+    const getAudioUrl = vi.fn(sentence => Promise.resolve('blob:' + sentence));
+
+    renderKaraoke(karaokeProps({
+      text: 'Capture this sentence.',
+      getAudioUrl,
+      captureOn: true,
+    }));
+
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(capture).toHaveBeenCalledWith('Capture this sentence.', 'blob:Capture this sentence.');
+  });
+
+  it('persists look-ahead sentences instead of leaving them only in the temporary TTS cache', async () => {
+    vi.useFakeTimers();
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    const capture = vi.fn(async () => true);
+    window.__alloCaptureKaraokeAudio = capture;
+    const getAudioUrl = vi.fn(sentence => Promise.resolve('blob:' + sentence));
+
+    renderKaraoke(karaokeProps({ getAudioUrl, captureOn: true }));
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+      await Promise.resolve();
+    });
+
+    expect(capture).toHaveBeenCalledWith('First sentence.', 'blob:First sentence.');
+    expect(capture).toHaveBeenCalledWith('Second sentence.', 'blob:Second sentence.');
+    expect(capture).toHaveBeenCalledWith('Third sentence.', 'blob:Third sentence.');
+    expect(capture).toHaveBeenCalledWith('Fourth sentence.', 'blob:Fourth sentence.');
+  });
+
+  it('uses the canonical leveled-text sentence list when supplied', async () => {
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    const getAudioUrl = vi.fn(sentence => Promise.resolve('blob:' + sentence));
+
+    renderKaraoke(karaokeProps({
+      text: 'Heading First sentence.',
+      sentenceList: ['Heading', 'First sentence.'],
+      getAudioUrl,
+      captureOn: false,
+    }));
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(getAudioUrl).toHaveBeenCalledWith('Heading');
+    expect(getAudioUrl).not.toHaveBeenCalledWith('Heading First sentence.');
+  });
+
+  it('offers a bounded retry when a played clip fails to save', async () => {
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    const capture = vi.fn()
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    window.__alloCaptureKaraokeAudio = capture;
+    const getAudioUrl = vi.fn(() => Promise.resolve('blob:retryable-clip'));
+
+    renderKaraoke(karaokeProps({
+      text: 'Retry this save.',
+      sentenceList: ['Retry this save.'],
+      getAudioUrl,
+      isTeacher: true,
+      captureOn: true,
+    }));
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const retryButton = Array.from(host.querySelectorAll('button')).find((candidate) =>
+      candidate.textContent.includes('Retry failed saves'));
+    expect(retryButton).toBeTruthy();
+
+    await act(async () => {
+      retryButton.click();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(capture).toHaveBeenCalledTimes(2);
+    expect(getAudioUrl).toHaveBeenCalledTimes(2);
+    expect(Array.from(host.querySelectorAll('button')).some((candidate) =>
+      candidate.textContent.includes('Retry failed saves'))).toBe(false);
+  });
+  it('plays a serialized and rehydrated clip without invoking TTS generation', async () => {
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => 'blob:rehydrated-read-aloud'),
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(),
+    });
+
+    const KS = window.AlloModules.KaraokeAudioStore;
+    const writer = KS.createStore();
+    writer.put('Already saved.', Buffer.from('saved audio').toString('base64'), 'audio/mpeg', 'ai-played', {
+      voice: 'Kore',
+      speed: 1,
+      language: 'English',
+      provider: 'played-tts-mp3',
+    });
+    const transferred = JSON.parse(JSON.stringify({ karaokeAudio: writer.serialize() }));
+    const reader = KS.createStore();
+    reader.hydrate(transferred.karaokeAudio);
+    KS.current = reader;
+
+    const synthesize = vi.fn(() => Promise.resolve('blob:unexpected-new-tts'));
+    const getAudioUrl = vi.fn((sentence) => {
+      const stored = reader.get(sentence);
+      return stored ? Promise.resolve(stored) : synthesize(sentence);
+    });
+
+    renderKaraoke(karaokeProps({
+      text: 'Already saved.',
+      sentenceList: ['Already saved.'],
+      getAudioUrl,
+      captureOn: false,
+    }));
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(getAudioUrl).toHaveBeenCalledWith('Already saved.');
+    expect(synthesize).not.toHaveBeenCalled();
+    expect(audioInstances).toHaveLength(1);
+    expect(audioInstances[0].src).toBe('blob:rehydrated-read-aloud');
+  });
+});
+
+describe('complete clip and shared-request contracts', () => {
+  it('uses a complete Kokoro clip for generic read-aloud callers', async () => {
+    const speak = vi.fn(() => Promise.resolve('blob:complete-kokoro-sentence'));
+    const speakStreaming = vi.fn(() => Promise.resolve('blob:first-chunk-only'));
+    window._kokoroTTS = { ready: true, speak, speakStreaming };
+    const state = {
+      queue: Promise.resolve(),
+      botQueue: Promise.resolve(),
+      urlCache: new Map(),
+      rateLimitedUntil: 0,
+    };
+    const { callTTS } = createTTS({
+      state,
+      apiKey: 'test-key',
+      GEMINI_MODELS: { tts: 'test-tts-model' },
+      AVAILABLE_VOICES: ['Puck'],
+      _isCanvasEnv: false,
+      languageToTTSCode: () => 'en',
+      isGlobalMuted: () => false,
+      warnLog: () => {},
+      debugLog: () => {},
+      getLeveledTextLanguage: () => 'English',
+      getCurrentUiLanguage: () => 'English',
+      getAiUserConfig: () => ({}),
+      getAi: () => null,
+      setShowKokoroOfferModal: () => {},
+    });
+
+    const sentence = 'This deliberately long sentence exceeds the local streaming threshold, but karaoke must receive every word in one playable clip.';
+    const url = await callTTS(sentence, 'af_bella', 1, 0, 'English');
+
+    expect(url).toBe('blob:complete-kokoro-sentence');
+    expect(speak).toHaveBeenCalledTimes(1);
+    expect(speakStreaming).not.toHaveBeenCalled();
+  });
+
+  it('deduplicates a non-Canvas warm/current race before the URL cache is populated', async () => {
+    let releaseFetch;
+    const fetchGate = new Promise((resolveGate) => { releaseFetch = resolveGate; });
+    const fetchMock = vi.fn(async () => {
+      await fetchGate;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ inlineData: { data: 'AQI=' } }] } }],
+        }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => 'blob:shared-non-canvas-tts'),
+    });
+    const state = {
+      queue: Promise.resolve(),
+      botQueue: Promise.resolve(),
+      urlCache: new Map(),
+      rateLimitedUntil: 0,
+    };
+    const { callTTS } = createTTS({
+      state,
+      apiKey: 'test-key',
+      GEMINI_MODELS: { tts: 'test-tts-model' },
+      AVAILABLE_VOICES: ['Puck'],
+      _isCanvasEnv: false,
+      languageToTTSCode: () => 'en',
+      isGlobalMuted: () => false,
+      warnLog: () => {},
+      debugLog: () => {},
+      getLeveledTextLanguage: () => 'English',
+      getCurrentUiLanguage: () => 'English',
+      getAiUserConfig: () => ({}),
+      getAi: () => null,
+      setShowKokoroOfferModal: () => {},
+    });
+
+    const warmed = callTTS('Share this in-flight request.', 'Puck', 1, 0, 'English');
+    const current = callTTS('Share this in-flight request.', 'Puck', 1, 0, 'English');
+    await Promise.resolve();
+    await Promise.resolve();
+    releaseFetch();
+    const [warmedUrl, currentUrl] = await Promise.all([warmed, current]);
+
+    expect(warmedUrl).toBe('blob:shared-non-canvas-tts');
+    expect(currentUrl).toBe(warmedUrl);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
   });
 });
 

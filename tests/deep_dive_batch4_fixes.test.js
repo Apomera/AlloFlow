@@ -96,7 +96,9 @@ describe('M10 — settings honesty', () => {
 
 describe('M21/M22 — fidelity panel honesty', () => {
   it('M21: quality-only notes get a quality lead, not a text-loss warning', () => {
-    expect(view).toContain('const _qualityKinds = { altQuality: 1, activeContent: 1, lowOcrAccuracy: 1, lowOcrConfidence: 1, ocrDupeCollapse: 1, pageEdge: 1 };');
+    // 2026-07-13: ocrColumnOrder joined the quality set (column-aware OCR reorders are
+    // quality flags, not text loss) — the pin tracks the current list.
+    expect(view).toContain('const _qualityKinds = { altQuality: 1, activeContent: 1, lowOcrAccuracy: 1, lowOcrConfidence: 1, ocrDupeCollapse: 1, pageEdge: 1, ocrColumnOrder: 1 };');
     expect(view).toContain('the notes below are QUALITY flags');
     // text-loss concern still uses the original warning copy
     expect(view).toContain('some source text may not have carried over');

@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-9b0f774a-untitled",
+  "title": "တဘု တဘု တဘု",
+  "description": "လော်င်ဘည်ဘာည်းတဘုတိုဆံတ်ကဲ။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "2021,RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "2021,RBTT & NTC",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ogZLm9S3u9"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b0f774a-efa8-40f7-9905-3acee6b0a8f6%2f%e1%80%90%e1%80%98%e1%80%af+%e1%80%90%e1%80%98%e1%80%af+%e1%80%90%e1%80%98%e1%80%af%2f01+-+Run+Run+Run.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"တဘု တဘု တဘု\" (Burmese). လော်င်ဘည်ဘာည်းတဘုတိုဆံတ်ကဲ။"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T15:00:15.850Z",
+  "packId": "praxis-teaching-reading-5205",
+  "standard": {
+    "label": "AlloFlow Teaching Reading 5205 source, structure, feedback, safety, and linkage QA v1",
+    "limitation": "Not ETS, ILA, IDA, or IES approval; independent elementary literacy, dyslexia, multilingual-family, accessibility, and psychometric validation remain pending."
+  },
+  "summary": {
+    "totalItems": 200,
+    "passedItems": 200,
+    "diagnosticBanks": 2,
+    "bankSize": 100,
+    "simulationItems": 90,
+    "findings": [],
+    "status": "pass"
+  }
+}

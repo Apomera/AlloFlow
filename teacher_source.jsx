@@ -237,8 +237,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           <span className="text-slate-600 font-mono w-10 text-right">{(value || 1).toFixed(2)}x</span>
         </div>
       ) : type === 'toggle' ? (
-        <button onClick={() => handleUpdateGroupProfile(gId, field, !value)}
-          className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${value ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
+        <button type="button" onClick={() => handleUpdateGroupProfile(gId, field, !value)}
+          className={`px-3 py-1 rounded-full text-xs font-bold transition-all motion-reduce:transition-none ${value ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
           {value ? 'On' : 'Off'}
         </button>
       ) : (
@@ -249,8 +249,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     </div>
   );
   return (
-    <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="teacher-roster-panel-title" className="fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in zoom-in-95 duration-200">
+    <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="teacher-roster-panel-title" className="fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-5 border-b border-slate-100">
           <div data-help-key="roster_panel_header">
             <h2 id="teacher-roster-panel-title" className="text-lg font-black text-slate-800 flex items-center gap-2">
@@ -258,24 +258,24 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             </h2>
             <p className="text-xs text-slate-600 mt-0.5">{isParentMode ? 'Manage family member profiles and track learning progress' : (isIndependentMode ? 'Manage your learning profile and track your progress' : (t('roster.subtitle') || 'Organize student groups with differentiated profiles for instruction'))}</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 transition-colors" aria-label={t('common.close')}>
+          <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 transition-colors motion-reduce:transition-none" aria-label={t('common.close')}>
             <X size={20} className="text-slate-600" />
           </button>
         </div>
         <div className="flex flex-wrap gap-2 px-5 py-3 border-b border-slate-50 bg-slate-50/50">
-          <button onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center gap-1.5">
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5">
             <Upload size={14} /> {t('roster.import') || 'Import JSON'}
           </button>
-          <button onClick={handleExport} disabled={!rosterKey} className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors flex items-center gap-1.5 disabled:opacity-40">
+          <button type="button" onClick={handleExport} disabled={!rosterKey} className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
             <Download size={14} /> {t('roster.export') || 'Export JSON'}
           </button>
-          <button
+          <button type="button"
             onClick={requestOfflineSubmissionSetup}
             disabled={!rosterKey}
             title={rosterKey?.submissionKey?.publicJwk
               ? 'Offline submissions are active for this class. Click to regenerate (invalidates the existing key).'
               : 'Generate a class keypair so students can save HTML worksheets back to you.'}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 disabled:opacity-40 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 ${
               rosterKey?.submissionKey?.publicJwk
                 ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'
                 : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
@@ -287,22 +287,22 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               : (t('roster.setup_submissions') || 'Set up offline submissions')}
           </button>
           {typeof onOpenSubmissionInbox === 'function' && (
-            <button
+            <button type="button"
               onClick={onOpenSubmissionInbox}
               disabled={!rosterKey?.submissionKey?.publicJwk}
               title={rosterKey?.submissionKey?.publicJwk
                 ? 'Open the submission inbox to decrypt and review student-submitted HTML files.'
                 : 'Set up offline submissions first to use the inbox.'}
-              className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors flex items-center gap-1.5 disabled:opacity-40"
+              className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40"
             >
               📥 {t('roster.import_submissions') || 'Import submissions'}
             </button>
           )}
-          <button onClick={() => setShowBatchConfig(true)} disabled={!rosterKey || Object.keys(rosterKey?.groups || {}).length === 0} className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 border border-amber-200">
+          <button type="button" onClick={() => setShowBatchConfig(true)} disabled={!rosterKey || Object.keys(rosterKey?.groups || {}).length === 0} className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 border border-amber-200">
             <Layers size={14} /> {t('roster.batch_generate') || 'Differentiate by Group'}
           </button>
           {activeSessionCode && (
-            <button onClick={onSyncToSession} disabled={!rosterKey || groupIds.length === 0} title="Update this live session's group choices and differentiation settings from the roster." className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 ml-auto">
+            <button type="button" onClick={onSyncToSession} disabled={!rosterKey || groupIds.length === 0} title="Update this live session's group choices and differentiation settings from the roster." className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 ml-auto">
               <RefreshCw size={14} /> {t('roster.sync_session') || 'Sync to Live Session'}
             </button>
           )}
@@ -331,15 +331,15 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             const gStudents = getStudentsInGroup(gId);
             const isExpanded = expandedGroup === gId;
             return (
-              <div key={gId} className="border border-slate-400 rounded-xl overflow-hidden transition-all hover:border-indigo-200">
-                <button onClick={() => setExpandedGroup(isExpanded ? null : gId)}
-                  className="w-full flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left">
+              <div key={gId} className="border border-slate-400 rounded-xl overflow-hidden transition-all motion-reduce:transition-none hover:border-indigo-200">
+                <button type="button" onClick={() => setExpandedGroup(isExpanded ? null : gId)}
+                  className="w-full flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 transition-colors motion-reduce:transition-none text-left">
                   <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: group.color || '#4F46E5' }} />
                   <div className="flex-1 min-w-0">
                     <div className="font-bold text-sm text-slate-800 truncate">{group.name}</div>
                     <div className="text-[11px] text-slate-600">{gStudents.length} student{gStudents.length !== 1 ? 's' : ''} · {group.profile?.gradeLevel || '—'} · {group.profile?.leveledTextLanguage || '—'}</div>
                   </div>
-                  <ChevronDown size={16} className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={16} className={`text-slate-400 transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                 </button>
                 {isExpanded && (
                   <div className="p-4 space-y-3 border-t border-slate-100 bg-white">
@@ -349,8 +349,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                         className="flex-1 px-2 py-1 rounded-lg border border-slate-400 text-sm font-bold focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
                       <div className="flex gap-1">
                         {COLORS.map(c => (
-                          <button key={c} onClick={() => handleUpdateGroupMeta(gId, 'color', c)}
-                            className={`w-6 h-6 rounded-full border-2 transition-all ${group.color === c ? 'border-slate-800 scale-110' : 'border-transparent hover:scale-105'}`}
+                          <button type="button" key={c} onClick={() => handleUpdateGroupMeta(gId, 'color', c)}
+                            className={`w-6 h-6 rounded-full border-2 transition-all motion-reduce:transition-none ${group.color === c ? 'border-slate-800 scale-110' : 'border-transparent hover:scale-105'}`}
                             style={{ backgroundColor: c }}
                             aria-label={(t('roster.set_group_color') || 'Set group color') + ' ' + c}
                             aria-pressed={group.color === c} />
@@ -379,7 +379,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                                 {rosterKey.progressHistory[name].length}s
                               </span>
                             )}
-                            <button onClick={() => handleMoveStudent(name, '')} className="w-6 h-6 inline-flex items-center justify-center hover:text-red-500 transition-colors ml-0.5 rounded-full" aria-label={'Remove ' + name}>
+                            <button type="button" onClick={() => handleMoveStudent(name, '')} className="w-6 h-6 inline-flex items-center justify-center hover:text-red-500 transition-colors motion-reduce:transition-none ml-0.5 rounded-full" aria-label={'Remove ' + name}>
                               <X size={12} />
                             </button>
                           </span>
@@ -388,10 +388,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       </div>
                     </div>
                     <div className="flex gap-2 pt-2 border-t border-slate-100">
-                      <button onClick={() => onApplyGroup(gId)} className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center gap-1.5">
+                      <button type="button" onClick={() => onApplyGroup(gId)} className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-1.5">
                         <Sparkles size={12} /> {t('roster.apply_to_generator') || 'Apply to Generator'}
                       </button>
-                      <button onClick={() => handleRemoveGroup(gId)} className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors ml-auto flex items-center gap-1.5">
+                      <button type="button" onClick={() => handleRemoveGroup(gId)} className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors motion-reduce:transition-none ml-auto flex items-center gap-1.5">
                         <Trash2 size={12} /> {t('roster.delete_group') || 'Delete Group'}
                       </button>
                     </div>
@@ -400,7 +400,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               </div>
             );
           })}
-          <div className="flex gap-2 items-center p-3 border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-300 transition-colors">
+          <div className="flex gap-2 items-center p-3 border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-300 transition-colors motion-reduce:transition-none">
             <input type="text" value={newGroupName} onChange={e => setNewGroupName(e.target.value)}
               placeholder={t('roster.new_group_placeholder') || 'New group name...'}
               aria-label={t('roster.new_group_placeholder') || 'New group name'}
@@ -408,15 +408,15 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               className="flex-1 px-3 py-1.5 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
             <div className="flex gap-1">
               {COLORS.slice(0, 4).map(c => (
-                <button key={c} onClick={() => setNewGroupColor(c)}
+                <button type="button" key={c} onClick={() => setNewGroupColor(c)}
                   className={`w-6 h-6 rounded-full border-2 ${newGroupColor === c ? 'border-slate-800' : 'border-transparent'}`}
                   style={{ backgroundColor: c }}
                   aria-label={(t('roster.new_group_color') || 'New group color') + ' ' + c}
                   aria-pressed={newGroupColor === c} />
               ))}
             </div>
-            <button onClick={handleAddGroup} disabled={!newGroupName.trim()}
-              className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-40 flex items-center gap-1">
+            <button type="button" onClick={handleAddGroup} disabled={!newGroupName.trim()}
+              className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none disabled:opacity-40 flex items-center gap-1">
               <Plus size={14} /> {t('roster.add_group') || 'Add'}
             </button>
           </div>
@@ -426,12 +426,12 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
              </div>
              <div className="flex flex-col gap-2">
                <div className="flex items-center gap-2 text-[11px]">
-                 <button onClick={() => { setUseCustomName(false); if (!rosterAdj || !rosterAnimal) randomizeRosterName(); }}
-                   className={`px-2 py-1 rounded-full font-bold transition-all ${!useCustomName ? 'bg-teal-100 text-teal-800 border border-teal-600' : 'text-slate-400 hover:text-slate-600'}`}>
+                 <button type="button" onClick={() => { setUseCustomName(false); if (!rosterAdj || !rosterAnimal) randomizeRosterName(); }}
+                   className={`px-2 py-1 rounded-full font-bold transition-all motion-reduce:transition-none ${!useCustomName ? 'bg-teal-100 text-teal-800 border border-teal-600' : 'text-slate-400 hover:text-slate-600'}`}>
                    🎲 Codename Only
                  </button>
-                 <button onClick={() => setUseCustomName(true)}
-                   className={`px-2 py-1 rounded-full font-bold transition-all ${useCustomName ? 'bg-teal-100 text-teal-800 border border-teal-600' : 'text-slate-400 hover:text-slate-600'}`}>
+                 <button type="button" onClick={() => setUseCustomName(true)}
+                   className={`px-2 py-1 rounded-full font-bold transition-all motion-reduce:transition-none ${useCustomName ? 'bg-teal-100 text-teal-800 border border-teal-600' : 'text-slate-400 hover:text-slate-600'}`}>
                    ✏️ Codename + Real Name
                  </button>
                </div>
@@ -450,7 +450,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                          <option value="">{t('codenames.pick_animal') || '— Animal —'}</option>
                          {rosterAnimals.map(a => <option key={a} value={a}>{a}</option>)}
                        </select>
-                       <button onClick={randomizeRosterName} title={t('common.randomize') || 'Randomize'} className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
+                       <button type="button" onClick={randomizeRosterName} title={t('common.randomize') || 'Randomize'} className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors motion-reduce:transition-none">
                          <RefreshCw size={12} />
                        </button>
                      </div>
@@ -468,8 +468,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                    <option value="">{t('roster.unassigned') || 'Unassigned'}</option>
                    {groupIds.map(gId => <option key={gId} value={gId}>{groups[gId].name}</option>)}
                  </select>
-                 <button onClick={handleAddStudent} disabled={!rosterAdj || !rosterAnimal}
-                   className="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center gap-1">
+                 <button type="button" onClick={handleAddStudent} disabled={!rosterAdj || !rosterAnimal}
+                   className="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors motion-reduce:transition-none disabled:opacity-40 flex items-center gap-1">
                    <Plus size={14} /> {t('roster.add_student') || 'Add'}
                  </button>
                </div>
@@ -500,7 +500,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       <option value="">→</option>
                       {groupIds.map(gId => <option key={gId} value={gId}>{groups[gId].name}</option>)}
                     </select>
-                    <button onClick={() => handleRemoveStudent(name)} className="hover:text-red-500 transition-colors" aria-label={'Remove ' + name}>
+                    <button type="button" onClick={() => handleRemoveStudent(name)} className="hover:text-red-500 transition-colors motion-reduce:transition-none" aria-label={'Remove ' + name}>
                       <X size={12} />
                     </button>
                   </span>
@@ -583,7 +583,7 @@ const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
   const gap = (chartWidth - (barWidth * data.length)) / (data.length + 1);
   return (
     <div className="w-full h-full flex items-center justify-center select-none">
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto max-h-[160px]" preserveAspectRatio="xMidYMid meet">
+      <svg role="img" aria-label={data.map(d => `${d.label}: ${d.value}`).join(', ')} viewBox={`0 0 ${width} ${height}`} className="w-full h-auto max-h-[160px]" preserveAspectRatio="xMidYMid meet">
         {data.map((d, i) => {
           const barHeight = (d.value / maxValue) * chartHeight;
           const x = gap + i * (barWidth + gap);
@@ -596,13 +596,13 @@ const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
                 width={barWidth}
                 height={barHeight}
                 rx="4"
-                className={`fill-${color}-500 group-hover:fill-${color}-600 transition-all duration-300`}
+                className={`fill-${color}-500 group-hover:fill-${color}-600 transition-all motion-reduce:transition-none duration-300`}
               />
               <text
                 x={x + barWidth / 2}
                 y={y - 5}
                 textAnchor="middle"
-                className="fill-slate-500 text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                className="fill-slate-500 text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none"
               >
                 {d.value}
               </text>
@@ -630,9 +630,9 @@ const SimpleDonutChart = ({ percentage, label, color = "indigo" }) => {
   const safePercent = Math.min(100, Math.max(0, percentage || 0));
   const offset = circumference - (safePercent / 100) * circumference;
   return (
-    <div className="flex flex-col items-center justify-center select-none">
+    <div role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(safePercent)} className="flex flex-col items-center justify-center select-none">
       <div className="relative w-24 h-24">
-        <svg viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90 w-full h-full">
+        <svg aria-hidden="true" focusable="false" viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90 w-full h-full">
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -644,7 +644,7 @@ const SimpleDonutChart = ({ percentage, label, color = "indigo" }) => {
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            className={`stroke-${color}-500 fill-none transition-all duration-1000 ease-out`}
+            className={`stroke-${color}-500 fill-none transition-all motion-reduce:transition-none duration-1000 ease-out`}
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             strokeDashoffset={offset}
@@ -671,7 +671,7 @@ const ConfettiEffect = ({ isActive }) => {
     duration: Math.random() * 2 + 2
   }));
   return (
-    <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden" aria-hidden="true">
+    <div className="absolute inset-0 motion-reduce:hidden pointer-events-none z-[10001] overflow-hidden" aria-hidden="true">
       <style>{`
         @keyframes confetti-fall {
           0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
@@ -681,6 +681,9 @@ const ConfettiEffect = ({ isActive }) => {
           position: absolute;
           top: -20px;
           animation: confetti-fall linear forwards;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .confetti-particle { animation: none !important; display: none !important; }
         }
       `}</style>
       {particles.map(p => (
@@ -861,9 +864,9 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   };
   if (!userTeam) {
     return (
-      <div ref={escapeStateScreenRef} tabIndex={-1} role="status" aria-live="polite" aria-busy="true" className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center focus:outline-none">
+      <div ref={escapeStateScreenRef} tabIndex={-1} role="status" aria-live="polite" aria-busy="true" className="fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white">
         <div className="text-center text-white">
-          <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-700" aria-hidden="true" />
+          <RefreshCw className="w-12 h-12 animate-spin motion-reduce:animate-none mx-auto mb-4 text-purple-700" aria-hidden="true" />
           <p className="text-xl font-bold">{t('escape_room.waiting_host')}</p>
         </div>
       </div>
@@ -871,9 +874,9 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   }
   if (escapeState.isGameOver) {
     return (
-      <div ref={escapeStateScreenRef} tabIndex={-1} role="alert" aria-labelledby="escape-room-game-over-title" aria-describedby="escape-room-game-over-description" className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center focus:outline-none">
-        <div className="text-center text-white animate-in zoom-in duration-500">
-          <div className="text-9xl mb-6 animate-pulse">💀</div>
+      <div ref={escapeStateScreenRef} tabIndex={-1} role="alert" aria-labelledby="escape-room-game-over-title" aria-describedby="escape-room-game-over-description" className="fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white">
+        <div className="text-center text-white animate-in motion-reduce:animate-none zoom-in duration-500">
+          <div className="text-9xl mb-6 animate-pulse motion-reduce:animate-none">💀</div>
           <h2 id="escape-room-game-over-title" className="text-5xl font-black mb-4 text-red-600">{t('escape_room.game_over')}</h2>
           <p id="escape-room-game-over-description" className="text-2xl text-slate-300 mb-6">{t('escape_room.life_lost')}</p>
           <div className="flex gap-4 justify-center text-lg">
@@ -893,10 +896,10 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       escapeState.teamProgress?.[team]?.isEscaped
     ).length === 1;
     return (
-      <div ref={escapeStateScreenRef} tabIndex={-1} role="status" aria-labelledby="escape-room-escaped-title" aria-describedby="escape-room-escaped-description" className="fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center focus:outline-none">
+      <div ref={escapeStateScreenRef} tabIndex={-1} role="status" aria-labelledby="escape-room-escaped-title" aria-describedby="escape-room-escaped-description" className="fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white">
         <ConfettiEffect isActive={showConfetti} />
-        <div className="text-center text-white animate-in zoom-in duration-500">
-          <div className="text-9xl mb-6 animate-bounce">{isFirstToEscape ? '🏆' : '🎉'}</div>
+        <div className="text-center text-white animate-in motion-reduce:animate-none zoom-in duration-500">
+          <div className="text-9xl mb-6 animate-bounce motion-reduce:animate-none">{isFirstToEscape ? '🏆' : '🎉'}</div>
           <h2 id="escape-room-escaped-title" className="text-5xl font-black mb-4">
             {isCoopMode ? t('escape_room.class_escaped') : (isFirstToEscape ? t('escape_room.first_escape') : t('escape_room.escaped'))}
           </h2>
@@ -914,7 +917,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   }
   const currentPuzzle = selectedPuzzle ? puzzles.find(p => p.linkedObjectId === selectedPuzzle || p.id === selectedPuzzle) : null;
   return (
-    <div ref={escapeMainRef} tabIndex={-1} role="region" aria-labelledby="escape-room-active-title" className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto focus:outline-none">
+    <div ref={escapeMainRef} tabIndex={-1} role="region" aria-labelledby="escape-room-active-title" className="fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white">
       <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
@@ -944,11 +947,11 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               <span className="text-white text-xs font-bold">{escapeState.hintsRemaining || 0}</span>
             </div>
             {(escapeState.streak || 0) >= 3 && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse" data-help-key="escape_room_streak">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse motion-reduce:animate-none" data-help-key="escape_room_streak">
                 🔥 x{escapeState.streak}
               </div>
             )}
-            <div className={`px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? 'bg-red-500 text-white animate-pulse' : 'bg-slate-700 text-white'}`} data-help-key="escape_room_timer">
+            <div className={`px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? 'bg-red-500 text-white animate-pulse motion-reduce:animate-none' : 'bg-slate-700 text-white'}`} data-help-key="escape_room_timer">
               <Clock size={14} className="inline mr-1" />
               {formatTime(timeRemaining)}
             </div>
@@ -970,7 +973,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                 <span className="text-slate-400">{solved}/{puzzles.length}</span>
               </div>
               <div className="w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
-                <div className={`h-full ${colors.bg} transition-all duration-300`} style={{ width: `${percent}%` }} />
+                <div className={`h-full ${colors.bg} transition-all motion-reduce:transition-none duration-300`} style={{ width: `${percent}%` }} />
               </div>
               {escaped && <span className="text-xs text-green-700">🏆 {t('escape_room.escaped')}</span>}
             </div>
@@ -984,13 +987,13 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             const puzzle = puzzles.find(p => p.linkedObjectId === obj.id) || puzzles[idx];
             const isSolved = puzzle && solvedPuzzlesSet.has(puzzle.id);
             return (
-              <button
+              <button type="button"
                 key={obj.id}
                 onClick={event => !isSolved && puzzle && openPuzzleDialog(event, obj.id)}
                 disabled={isSolved}
                 data-help-key="escape_room_object"
                 className={`
-                  aspect-square rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all
+                  aspect-square rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all motion-reduce:transition-none
                   border-2 ${isSolved
                     ? 'bg-green-900/50 border-green-500/50 cursor-default'
                     : 'bg-slate-800 border-purple-500/30 hover:border-purple-400 hover:scale-105 cursor-pointer'
@@ -1038,12 +1041,12 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             {currentPuzzle.hint && (
               <div className="mb-4">
                 {escapeState.revealedHints?.[currentPuzzle.id] ? (
-                  <div className="p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in fade-in">
+                  <div className="p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in motion-reduce:animate-none fade-in">
                     <Lightbulb size={14} className="inline mr-2 text-yellow-400" />
                     {currentPuzzle.hint}
                   </div>
                 ) : (
-                  <button
+                  <button type="button"
                     onClick={async () => {
                       if ((escapeState.hintsRemaining || 0) <= 0) return;
                       try {
@@ -1061,7 +1064,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                     }}
                     disabled={(escapeState.hintsRemaining || 0) <= 0}
                     data-help-key="escape_room_hint_button"
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors motion-reduce:transition-none whitespace-nowrap ${
                       (escapeState.hintsRemaining || 0) > 0
                         ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/40'
                         : 'bg-slate-700 text-slate-300 cursor-not-allowed'
@@ -1076,11 +1079,11 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             {(!currentPuzzle.type || currentPuzzle.type === 'mcq') && currentPuzzle.options && (
               <div className="space-y-3">
                 {currentPuzzle.options.map((opt, idx) => (
-                  <button
+                  <button type="button"
                     key={idx}
                     onClick={() => handleSubmitAnswer(currentPuzzle.id, idx, 'mcq')}
                     data-help-key="escape_room_mcq_option"
-                    className="w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors border-2 border-transparent hover:border-purple-400"
+                    className="w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors motion-reduce:transition-none border-2 border-transparent hover:border-purple-400"
                   >
                     <span className="inline-block w-8 font-bold text-purple-400">{String.fromCharCode(65+idx)}.</span>
                     {opt}
@@ -1103,10 +1106,10 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                   data-help-key="escape_room_cipher_input"
                   className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
                 />
-                <button
+                <button type="button"
                   onClick={() => handleSubmitAnswer(currentPuzzle.id, userInput, 'cipher')}
                   data-help-key="escape_room_cipher_submit"
-                  className="w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+                  className="w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
                 >
                   {t('escape_room.submit_answer')}
                 </button>
@@ -1124,10 +1127,10 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                     <p className="text-xs text-slate-400 text-center uppercase font-bold">{t('escape_room.select_word') || 'Select the correct word:'}</p>
                     <div className="flex flex-wrap gap-2 justify-center">
                       {currentPuzzle.wordbank.map((word, idx) => (
-                        <button
+                        <button type="button"
                           key={idx}
                           onClick={() => setUserInput(word)}
-                          className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                          className={`px-4 py-2 rounded-lg font-bold transition-all motion-reduce:transition-none ${
                             userInput === word
                               ? 'bg-purple-600 text-white ring-2 ring-purple-300'
                               : 'bg-slate-700 text-white hover:bg-slate-600'
@@ -1148,11 +1151,11 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                     className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
                   />
                 )}
-                <button
+                <button type="button"
                   onClick={() => handleSubmitAnswer(currentPuzzle.id, userInput, 'fillin')}
                   disabled={!userInput}
                   data-help-key="escape_room_fillin_submit"
-                  className="w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
+                  className="w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50"
                 >
                   {t('escape_room.submit_answer')}
                 </button>
@@ -1175,10 +1178,10 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                   data-help-key="escape_room_scramble_input"
                   className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 text-center font-mono text-xl uppercase"
                 />
-                <button
+                <button type="button"
                   onClick={() => handleSubmitAnswer(currentPuzzle.id, userInput, 'scramble')}
                   data-help-key="escape_room_scramble_submit"
-                  className="w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+                  className="w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
                 >
                   {t('escape_room.check_word')}
                 </button>
@@ -1199,7 +1202,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                           <span className="w-8 h-8 flex items-center justify-center bg-purple-600 rounded-full font-bold" aria-hidden="true">{idx + 1}</span>
                           <span className="flex-1">{item}</span>
                           <div className="flex gap-1" role="group" aria-label={t('escape_room.reorder_buttons') || 'Reorder buttons'}>
-                            <button
+                            <button type="button"
                               onClick={() => {
                                 if (idx > 0) {
                                   const newOrder = [...sequenceOrder];
@@ -1212,7 +1215,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                               title={t('escape_room.move_up') || 'Move up'}
                               className="w-8 h-8 bg-slate-600 hover:bg-slate-500 text-white rounded disabled:opacity-30 focus:ring-2 focus:ring-purple-400 focus:outline-none"
                             >↑</button>
-                            <button
+                            <button type="button"
                               onClick={() => {
                                 if (idx < sequenceOrder.length - 1) {
                                   const newOrder = [...sequenceOrder];
@@ -1231,21 +1234,21 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                   }
                 </div>
                 {sequenceOrder.length === 0 && (
-                  <button
+                  <button type="button"
                     onClick={() => setSequenceOrder(currentPuzzle.shuffledItems || currentPuzzle.items || [])}
-                    className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+                    className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
                   >
                     {t('escape_room.start_ordering') || 'Start Ordering'}
                   </button>
                 )}
                 {sequenceOrder.length > 0 && (
-                  <button
+                  <button type="button"
                     onClick={() => {
                       const originalItems = currentPuzzle.items || [];
                       const orderIndices = sequenceOrder.map(item => originalItems.indexOf(item));
                       handleSubmitAnswer(currentPuzzle.id, orderIndices, 'sequence');
                     }}
-                    className="w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
+                    className="w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
                   >
                     {t('escape_room.check_sequence')}
                   </button>
@@ -1261,7 +1264,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                       const isMatched = matchingPairs.some(p => p.left === item);
                       const isSelected = matchingSelected?.side === 'left' && matchingSelected?.item === item;
                       return (
-                        <button
+                        <button type="button"
                           key={idx}
                           onClick={() => {
                             if (isMatched) return;
@@ -1274,7 +1277,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                           }}
                           disabled={isMatched}
                           aria-label={isMatched ? `${item} - ${t('escape_room.matched') || 'matched'}` : isSelected ? `${item} - ${t('escape_room.selected') || 'selected'}` : item}
-                          className={`w-full p-3 rounded-lg text-left font-medium transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ${
+                          className={`w-full p-3 rounded-lg text-left font-medium transition-all motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-purple-400 ${
                             isMatched ? 'bg-green-700 text-white opacity-60' :
                             isSelected ? 'bg-purple-500 text-white ring-2 ring-purple-300' :
                             'bg-slate-700 text-white hover:bg-slate-600'
@@ -1290,7 +1293,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                       const isMatched = matchingPairs.some(p => p.right === item);
                       const isSelected = matchingSelected?.side === 'right' && matchingSelected?.item === item;
                       return (
-                        <button
+                        <button type="button"
                           key={idx}
                           onClick={() => {
                             if (isMatched) return;
@@ -1303,7 +1306,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                           }}
                           disabled={isMatched}
                           aria-label={isMatched ? `${item} - ${t('escape_room.matched') || 'matched'}` : isSelected ? `${item} - ${t('escape_room.selected') || 'selected'}` : item}
-                          className={`w-full p-3 rounded-lg text-left font-medium transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ${
+                          className={`w-full p-3 rounded-lg text-left font-medium transition-all motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-purple-400 ${
                             isMatched ? 'bg-green-700 text-white opacity-60' :
                             isSelected ? 'bg-purple-500 text-white ring-2 ring-purple-300' :
                             'bg-slate-700 text-white hover:bg-slate-600'
@@ -1326,9 +1329,9 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                   </div>
                 )}
                 {matchingPairs.length >= (currentPuzzle.pairs?.length || 4) && (
-                  <button
+                  <button type="button"
                     onClick={() => handleSubmitAnswer(currentPuzzle.id, matchingPairs, 'matching')}
-                    className="w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
+                    className="w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
                   >
                     {t('escape_room.submit_answer')}
                   </button>
@@ -1342,8 +1345,22 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         </div>
       )}
       {isPaused && (
-        <div ref={pauseDialogRef} tabIndex={-1} role="alertdialog" aria-modal="true" aria-labelledby="escape-room-paused-title" aria-describedby="escape-room-paused-description" className="fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm focus:outline-none">
-          <div className="text-center text-white animate-pulse">
+        <div
+          ref={pauseDialogRef}
+          tabIndex={-1}
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="escape-room-paused-title"
+          aria-describedby="escape-room-paused-description"
+          onKeyDown={(event) => {
+            if (event.key === 'Tab') {
+              event.preventDefault();
+              pauseDialogRef.current?.focus();
+            }
+          }}
+          className="fixed top-0 right-0 bottom-0 left-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white"
+        >
+          <div className="text-center text-white animate-pulse motion-reduce:animate-none">
             <div className="text-8xl mb-6">⏸️</div>
             <h2 id="escape-room-paused-title" className="text-4xl font-black mb-3">{t('escape_room.game_paused')}</h2>
             <p id="escape-room-paused-description" className="text-xl text-slate-300">{t('escape_room.waiting_resume')}</p>
@@ -1351,7 +1368,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         </div>
       )}
       {teamEscapeToast && (
-        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300">
+        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in motion-reduce:animate-none slide-in-from-bottom duration-300">
           <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${teamColors[teamEscapeToast]?.border || 'border-purple-500'} bg-slate-900`}>
             <span className="text-3xl">🚪</span>
             <div>
@@ -1463,7 +1480,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
             </span>
           )}
           {isPaused && (
-            <span className="text-xs bg-yellow-200 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse">
+            <span className="text-xs bg-yellow-200 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse motion-reduce:animate-none">
               ⏸️ {t('escape_room.game_paused')}
             </span>
           )}
@@ -1476,15 +1493,15 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
             <Clock size={12} className="inline mr-1" />
             {formatTime(escapeState.timeRemaining || 0)}
           </span>
-          <button
+          <button type="button"
             onClick={handlePauseToggle}
-            className={`px-4 py-2 rounded-full font-bold text-sm transition-colors whitespace-nowrap ${isPaused ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-yellow-500 hover:bg-yellow-600 text-white'}`}
+            className={`px-4 py-2 rounded-full font-bold text-sm transition-colors motion-reduce:transition-none whitespace-nowrap ${isPaused ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-yellow-500 hover:bg-yellow-600 text-white'}`}
           >
             {isPaused ? '▶️ ' + t('escape_room.resume') : '⏸️ ' + t('escape_room.pause')}
           </button>
-          <button
+          <button type="button"
             onClick={requestEndGame}
-            className="px-4 py-2 rounded-full font-bold text-sm bg-red-500 hover:bg-red-600 text-white transition-colors whitespace-nowrap"
+            className="px-4 py-2 rounded-full font-bold text-sm bg-red-500 hover:bg-red-600 text-white transition-colors motion-reduce:transition-none whitespace-nowrap"
           >
             {t('escape_room.end_game')}
           </button>
@@ -1505,7 +1522,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
                 <span className="text-xs text-slate-600">{memberCount} 👤</span>
               </div>
               <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden mb-2">
-                <div className={`h-full ${colors.bg} transition-all duration-500`} style={{ width: `${percent}%` }} />
+                <div className={`h-full ${colors.bg} transition-all motion-reduce:transition-none duration-500`} style={{ width: `${percent}%` }} />
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-600">{solved}/{totalPuzzles}</span>
@@ -1551,10 +1568,10 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
             </h4>
             <p id="escape-room-end-game-description" className="text-slate-600 mb-4">{t('escape_room.end_game_confirm')}</p>
             <div className="flex gap-3">
-              <button type="button" data-safe-default="true" onClick={closeEndGameDialog} className="flex-1 min-h-11 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <button type="button" data-safe-default="true" onClick={closeEndGameDialog} className="flex-1 min-h-11 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 {t('cancel')}
               </button>
-              <button type="button" onClick={handleEndGame} className="flex-1 min-h-11 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+              <button type="button" onClick={handleEndGame} className="flex-1 min-h-11 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                 {t('escape_room.end_game')}
               </button>
             </div>
@@ -1756,7 +1773,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         };
     });
     const renderAnalytics = () => (
-        <div className="flex flex-col h-full w-full animate-in fade-in duration-300">
+        <div className="flex flex-col h-full w-full animate-in motion-reduce:animate-none fade-in duration-300">
             <div className="w-full h-48 mb-6 shrink-0">
                 <SimpleBarChart data={detailedStats} color="indigo" />
             </div>
@@ -1764,7 +1781,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 {detailedStats.map((stat, i) => (
                     <div
                         key={i}
-                        className={`flex items-center justify-between p-3 rounded-lg border text-xs transition-all ${
+                        className={`flex items-center justify-between p-3 rounded-lg border text-xs transition-all motion-reduce:transition-none ${
                             phase === 'revealed' && stat.isCorrect
                             ? 'bg-green-50 border-green-200 ring-1 ring-green-300'
                             : 'bg-white border-slate-100 hover:border-indigo-200'
@@ -2013,7 +2030,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     const availableResources = generatedContent?.data.resources || [];
     const activeGroups = useMemo(() => Object.entries(groups).filter(([_, g]) => g !== null), [groups]);
     return (
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-400 overflow-hidden mb-6 animate-in slide-in-from-top-4 duration-500">
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-400 overflow-hidden mb-6 animate-in motion-reduce:animate-none slide-in-from-top-4 duration-500">
             <div className="bg-indigo-900 text-white p-4 flex justify-between items-center flex-wrap gap-4">
                 <h3 className="font-bold flex items-center gap-2"><MonitorPlay size={20} className="text-teal-700"/> {t('quiz.live_control_center')}</h3>
                 <div className="flex items-center gap-4">
@@ -2044,10 +2061,10 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                          </select>
                      )}
                      {mode !== 'live-pulse' && (
-                         <button
+                         <button type="button"
                              aria-label={t('common.start_game')}
                              onClick={() => setShowLocalStats(prev => !prev)} data-help-key="quiz_local_stats_btn"
-                             className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 border ${showLocalStats ? 'bg-yellow-400 text-indigo-900 border-yellow-500' : 'bg-indigo-800 text-indigo-200 border-indigo-600 hover:bg-indigo-700'}`}
+                             className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors motion-reduce:transition-none flex items-center gap-2 border ${showLocalStats ? 'bg-yellow-400 text-indigo-900 border-yellow-500' : 'bg-indigo-800 text-indigo-200 border-indigo-600 hover:bg-indigo-700'}`}
                              title={t('quiz.toggle_stats_tooltip')}
                          >
                              {showLocalStats ? <Gamepad2 size={14}/> : <Layout size={14}/>}
@@ -2061,13 +2078,13 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                             percent: percentage
                         })}
                      </div>
-                     <button onClick={handleEndQuiz} className="text-xs bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-white">
+                     <button type="button" onClick={handleEndQuiz} className="text-xs bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full font-bold transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-white">
                         {t('quiz.end_quiz')}
                      </button>
                 </div>
             </div>
             <div className="w-full h-1.5 bg-slate-100 relative">
-                <div className="bg-teal-500 h-full transition-all duration-500 ease-out" style={{ width: `${percentage}%` }}></div>
+                <div className="bg-teal-500 h-full transition-all motion-reduce:transition-none duration-500 ease-out" style={{ width: `${percentage}%` }}></div>
             </div>
             <div className="bg-slate-50 border-b border-slate-200 p-4">
                 <div className="flex flex-col md:flex-row gap-4">
@@ -2081,7 +2098,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                 placeholder={t('groups.new_group_placeholder')}
                                 className="text-sm p-1.5 rounded border border-slate-400 flex-1"
                              />
-                             <button
+                             <button type="button"
                                 onClick={handleCreateGroup} data-help-key="quiz_add_group_btn"
                                 disabled={!newGroupName.trim()}
                                 className="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded hover:bg-indigo-700 disabled:opacity-50 font-bold"
@@ -2095,7 +2112,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-bold text-indigo-900">{group.name}</span>
-                                            <button onClick={() => handleDeleteGroup(gid)} className="text-[11px] text-red-600 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded">{t('groups.remove_button')}</button>
+                                            <button type="button" onClick={() => handleDeleteGroup(gid)} className="text-[11px] text-red-600 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded">{t('groups.remove_button')}</button>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -2113,7 +2130,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         </select>
                                         {isPushingResource[gid] === 'pushing' && (
                                             <span className="flex items-center gap-1 text-[10px] text-purple-600 font-bold whitespace-nowrap">
-                                                <RefreshCw size={11} className="animate-spin" /> {t('groups.pushing') || 'Pushing…'}
+                                                <RefreshCw size={11} className="animate-spin motion-reduce:animate-none" /> {t('groups.pushing') || 'Pushing…'}
                                             </span>
                                         )}
                                         {isPushingResource[gid] === 'success' && (
@@ -2263,7 +2280,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                          <h2 className="text-2xl font-bold text-slate-800 leading-tight">{question.question}</h2>
                      </div>
                      <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-2">
-                         <button
+                         <button type="button"
                              onClick={() => setShowQuizRoutingPanel(v => !v)}
                              className="flex items-center gap-2 text-xs font-bold text-amber-800 hover:text-amber-900"
                              aria-expanded={showQuizRoutingPanel}
@@ -2308,7 +2325,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                                <option value="">— pick group —</option>
                                                {groupEntriesForRouting.map(([gid, g]) => <option key={gid} value={gid}>{g.name || gid}</option>)}
                                              </select>
-                                             <button
+                                             <button type="button"
                                                  onClick={() => removeQuizRoutingRule(rule.id)}
                                                  aria-label="Remove confidence rule"
                                                  className="ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
@@ -2332,7 +2349,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                              {across.length < 2 && (
                                                <span className="ml-1 text-[10px] text-red-700 italic">— needs ≥2 items to fire</span>
                                              )}
-                                             <button
+                                             <button type="button"
                                                  onClick={() => removeQuizRoutingRule(rule.id)}
                                                  aria-label="Remove aggregation rule"
                                                  className="ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
@@ -2380,7 +2397,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                                  <option key={gid} value={gid}>{g.name || gid}</option>
                                              ))}
                                          </select>
-                                         <button
+                                         <button type="button"
                                              onClick={() => removeQuizRoutingRule(rule.id)}
                                              aria-label={t('teacher.quiz_routing.remove_rule_aria') || 'Remove rule'}
                                              className="ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
@@ -2434,18 +2451,18 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                    </div>
                                  ) : (
                                    <div className="flex flex-wrap gap-1">
-                                     <button
+                                     <button type="button"
                                          onClick={addQuizRoutingRule}
                                          disabled={groupEntriesForRouting.length === 0}
                                          className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-amber-500 text-amber-800 hover:bg-amber-100'}`}
                                      >+ Add rule</button>
-                                     <button
+                                     <button type="button"
                                          onClick={() => addConfidencePatternRule('fragile')}
                                          disabled={groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2}
                                          title="Route students who are getting answers right while reporting 'I guessed' (≥2 items) — consolidation support, not a label"
                                          className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${(groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2) ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-sky-500 text-sky-800 hover:bg-sky-100'}`}
                                      >+ 🌱 Fragile-knowledge rule</button>
-                                     <button
+                                     <button type="button"
                                          onClick={() => addConfidencePatternRule('confident-wrong')}
                                          disabled={groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2}
                                          title="Route students who are answering wrong while reporting 'I knew it' (≥2 items) — misconception conference list"
@@ -2458,32 +2475,32 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                      </div>
                      <div className="space-y-3 mt-auto">
                          {phase === 'answering' ? (
-                             <button aria-label={t('common.toggle_visibility')}
+                             <button type="button" aria-label={t('common.toggle_visibility')}
                                 onClick={handleRevealResults} data-help-key="quiz_reveal_btn"
-                                className="w-full py-4 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-indigo-900 font-black text-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+                                className="w-full py-4 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-indigo-900 font-black text-xl shadow-lg transition-transform motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2"
                              >
                                  <Eye size={24}/> {t('quiz.reveal_results')}
                              </button>
                          ) : (
-                             <button aria-label={t('common.play')}
+                             <button type="button" aria-label={t('common.play')}
                                 onClick={handleStartQuestion} data-help-key="quiz_start_question_btn"
-                                className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+                                className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl shadow-lg transition-transform motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2"
                              >
                                  <Play size={24} className="fill-current"/> {phase === 'revealed' ? t('quiz.restart_question') : t('quiz.start_question')}
                              </button>
                          )}
                          <div className="flex gap-3 pt-2">
-                             <button
+                             <button type="button"
                                 onClick={handlePrevQuestion} data-help-key="quiz_prev_question_btn"
                                 disabled={currentQuestionIndex === 0}
-                                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                             >
                                 <ArrowDown className="rotate-90" size={16}/> {t('common.prev')}
                              </button>
-                             <button
+                             <button type="button"
                                 onClick={handleNextQuestion} data-help-key="quiz_next_question_btn"
                                 disabled={currentQuestionIndex >= generatedContent?.data.questions.length - 1}
-                                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                             >
                                 {t('common.next')} <ArrowDown className="-rotate-90" size={16}/>
                              </button>
@@ -2501,19 +2518,19 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                      ) : (
                          <>
                             {mode === 'boss-battle' && bossStats ? (
-                                <div className="w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 relative">
+                                <div className="w-full h-full flex flex-col items-center justify-center animate-in motion-reduce:animate-none fade-in zoom-in duration-300 relative">
                                      {phase === 'boss-defeated' && (
-                                         <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500">
+                                         <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in motion-reduce:animate-none zoom-in duration-500">
                                              <ConfettiEffect isActive={true} />
                                              <div className="text-center p-8">
-                                                 <div className="text-7xl mb-4 animate-bounce">🎉</div>
+                                                 <div className="text-7xl mb-4 animate-bounce motion-reduce:animate-none">🎉</div>
                                                  <h2 className="text-4xl font-black text-white mb-2 drop-shadow-lg">{t('quiz.boss.victory_msg')}</h2>
                                                  <p className="text-lg text-green-200">{bossStats?.name || "Boss"} has been defeated!</p>
                                              </div>
                                          </div>
                                      )}
                                      {phase === 'class-defeated' && (
-                                         <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500">
+                                         <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg rounded-xl animate-in motion-reduce:animate-none zoom-in duration-500">
                                              <div className="text-center p-8">
                                                  <div className="text-7xl mb-4">💀</div>
                                                  <h2 className="text-4xl font-black text-white mb-2 drop-shadow-lg">{t('quiz.boss.class_defeat_msg')}</h2>
@@ -2521,7 +2538,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                              </div>
                                          </div>
                                      )}
-                                     <div className={`relative mb-6 ${phase === 'revealed' && bossStats.lastDamage > 0 ? 'animate-shake' : ''}`}>
+                                     <div className={`relative mb-6 ${phase === 'revealed' && bossStats.lastDamage > 0 ? 'animate-shake motion-reduce:animate-none' : ''}`}>
                                          {bossStats.image ? (
                                              <img loading="lazy"
                                                 src={bossStats.image}
@@ -2531,19 +2548,19 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                              />
                                          ) : (
                                              <div className="w-32 h-32 bg-red-100 rounded-full border-4 border-red-500 flex items-center justify-center text-6xl shadow-xl relative z-10">
-                                                 {bossStats.isGenerating ? <RefreshCw className="animate-spin text-red-500"/> : "👾"}
+                                                 {bossStats.isGenerating ? <RefreshCw className="animate-spin motion-reduce:animate-none text-red-500"/> : "👾"}
                                              </div>
                                          )}
                                          {phase === 'revealed' && bossStats.lastDamage > 0 && (
-                                             <div className={`absolute top-0 right-[-20px] font-black z-20 stroke-white drop-shadow-md animate-[bounce_0.5s_infinite] ${bossStats.lastDamage >= (bossStats.maxHP || 1000) * 0.15 ? 'text-yellow-500 text-6xl' : 'text-red-600 text-4xl'}`}>
+                                             <div className={`absolute top-0 right-[-20px] font-black z-20 stroke-white drop-shadow-md animate-[bounce_0.5s_infinite] motion-reduce:animate-none ${bossStats.lastDamage >= (bossStats.maxHP || 1000) * 0.15 ? 'text-yellow-500 text-6xl' : 'text-red-600 text-4xl'}`}>
                                                  {bossStats.lastDamage >= (bossStats.maxHP || 1000) * 0.15 ? '💥 ' : ''}-{bossStats.lastDamage}
                                              </div>
                                          )}
                                      </div>
                                      <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest mb-2">{bossStats.name || t('quiz.boss.default_name')}</h3>
-                                     <div className={`w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 relative overflow-hidden shadow-inner mb-2 ${bossStats.currentHP > 0 && (bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'border-red-500 animate-pulse' : 'border-slate-400'}`}>
+                                     <div className={`w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 relative overflow-hidden shadow-inner mb-2 ${bossStats.currentHP > 0 && (bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'border-red-500 animate-pulse motion-reduce:animate-none' : 'border-slate-400'}`}>
                                          <div
-                                            className={`h-full transition-all duration-1000 ease-out ${(bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'bg-gradient-to-r from-red-700 to-red-500' : 'bg-gradient-to-r from-red-600 to-orange-500'}`}
+                                            className={`h-full transition-all motion-reduce:transition-none duration-1000 ease-out ${(bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'bg-gradient-to-r from-red-700 to-red-500' : 'bg-gradient-to-r from-red-600 to-orange-500'}`}
                                             style={{ width: `${(bossStats.currentHP / bossStats.maxHP) * 100}%` }}
                                          ></div>
                                          <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md">
@@ -2552,7 +2569,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                      </div>
                                      <div className="w-full max-w-sm bg-slate-300 h-6 rounded-full border-4 border-slate-400 relative overflow-hidden shadow-inner mb-2">
                                          <div
-                                            className="h-full bg-gradient-to-r from-green-600 to-emerald-400 transition-all duration-1000 ease-out"
+                                            className="h-full bg-gradient-to-r from-green-600 to-emerald-400 transition-all motion-reduce:transition-none duration-1000 ease-out"
                                             style={{ width: `${((bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100)) * 100}%` }}
                                          ></div>
                                          <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md">
@@ -2560,16 +2577,16 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                          </div>
                                      </div>
                                      {phase === 'revealed' && bossStats.lastClassDamage > 0 && (
-                                         <div className="text-orange-600 font-bold text-sm mb-2 animate-pulse">
+                                         <div className="text-orange-600 font-bold text-sm mb-2 animate-pulse motion-reduce:animate-none">
                                              {t('quiz.boss.counter_attack_msg', { damage: bossStats.lastClassDamage })}
                                          </div>
                                      )}
                                      {phase === 'revealed' && (
                                          <div className="mt-2 text-center">
                                              {(bossStats.classHP ?? 100) <= 0 ? (
-                                                 <div className="text-red-600 font-black text-2xl animate-bounce">{t('quiz.boss.class_defeat_msg')}</div>
+                                                 <div className="text-red-600 font-black text-2xl animate-bounce motion-reduce:animate-none">{t('quiz.boss.class_defeat_msg')}</div>
                                              ) : bossStats.currentHP <= 0 ? (
-                                                 <div className="text-green-600 font-black text-2xl animate-bounce">{t('quiz.boss.victory_msg')}</div>
+                                                 <div className="text-green-600 font-black text-2xl animate-bounce motion-reduce:animate-none">{t('quiz.boss.victory_msg')}</div>
                                              ) : bossStats.lastDamage > 0 ? (
                                                  <div className="text-red-500 font-bold">{t('quiz.boss.attack_msg', { damage: bossStats.lastDamage })}</div>
                                              ) : (
@@ -2592,12 +2609,12 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                                  <div key={team} className="flex flex-col items-center justify-end h-full w-16 group relative">
                                                      <span className="mb-1 font-black text-slate-700 text-sm">{score}</span>
                                                      <div
-                                                        className={`w-full rounded-t-lg transition-all duration-700 ease-out ${colors[team]} shadow-lg`}
+                                                        className={`w-full rounded-t-lg transition-all motion-reduce:transition-none duration-700 ease-out ${colors[team]} shadow-lg`}
                                                         style={{ height: `${height}%` }}
                                                      ></div>
                                                      <span className="mt-2 text-xs font-bold uppercase text-slate-600">{t(`quiz.teams.${team.toLowerCase()}`)}</span>
                                                      {phase === 'revealed' && sessionData.quizState.lastRoundStats?.[team]?.points > 0 && (
-                                                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-300 text-indigo-900 text-xs font-black px-2 py-1 rounded shadow-sm animate-bounce whitespace-nowrap z-10">
+                                                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-300 text-indigo-900 text-xs font-black px-2 py-1 rounded shadow-sm animate-bounce motion-reduce:animate-none whitespace-nowrap z-10">
                                                              +{sessionData.quizState.lastRoundStats[team].points}
                                                          </div>
                                                      )}
@@ -2611,7 +2628,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                          </>
                      )}
                      {phase === 'revealed' && (
-                         <div className="mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in slide-in-from-bottom-2 shadow-sm z-10">
+                         <div className="mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 shadow-sm z-10">
                              <span className="block text-[11px] font-black uppercase tracking-widest text-green-600 mb-1">{t('quiz.correct_answer_label')}</span>
                              <span className="text-lg font-bold">{question.correctAnswer}</span>
                          </div>
@@ -2726,12 +2743,12 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
         return `${x},${y}`;
     }).join(" ");
     return (
-        <div className="w-full bg-white p-6 rounded-xl border border-slate-400 shadow-sm mt-6 animate-in slide-in-from-bottom-2">
+        <div className="w-full bg-white p-6 rounded-xl border border-slate-400 shadow-sm mt-6 animate-in motion-reduce:animate-none slide-in-from-bottom-2">
             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-6 flex items-center gap-2">
                 <Trophy size={14} className="text-yellow-500"/> {t('dashboard.progress_chart.title')}
             </h4>
             <div className="w-full overflow-x-auto">
-                <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-w-[500px] overflow-visible">
+                <svg role="img" aria-label={(t('dashboard.progress_chart.title') || 'Progress over time') + ': ' + logs.map(l => `${new Date(l.timestamp).toLocaleDateString()}, ${l.xp} XP`).join('; ')} viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-w-[500px] overflow-visible">
                     <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#e2e8f0" strokeWidth="2" />
                     <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#e2e8f0" strokeWidth="2" />
                     <polyline
@@ -2748,8 +2765,8 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
                          const y = height - padding - ((l.xp / maxXP) * (height - (padding * 2)));
                          return (
                              <g key={i} className="group cursor-pointer">
-                                 <circle cx={x} cy={y} r="5" className="fill-white stroke-indigo-600 stroke-2 transition-all duration-300 group-hover:r-7 group-hover:fill-indigo-50" />
-                                 <foreignObject x={Math.min(width - 120, Math.max(0, x - 60))} y={y - 50} width="120" height="50" className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                 <circle cx={x} cy={y} r="5" className="fill-white stroke-indigo-600 stroke-2 transition-all motion-reduce:transition-none duration-300 group-hover:r-7 group-hover:fill-indigo-50" />
+                                 <foreignObject x={Math.min(width - 120, Math.max(0, x - 60))} y={y - 50} width="120" height="50" className="opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none pointer-events-none z-10">
                                      <div className="bg-slate-800 text-white text-[11px] px-3 py-2 rounded-lg text-center shadow-xl">
                                          <div className="font-bold">{new Date(l.timestamp).toLocaleDateString()}</div>
                                          <div className="text-yellow-300 font-mono">{l.xp} XP</div>
@@ -3363,9 +3380,9 @@ const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAd
   };
   if (list.length === 0 && !expanded) {
       return (
-          <button
+          <button type="button"
               onClick={() => setExpanded(true)}
-              className="mt-3 text-xs font-bold text-slate-500 hover:text-indigo-700 flex items-center gap-1.5 transition-colors"
+              className="mt-3 text-xs font-bold text-slate-500 hover:text-indigo-700 flex items-center gap-1.5 transition-colors motion-reduce:transition-none"
               data-help-key="dashboard_teacher_comment_add"
               aria-label={t('dashboard.comments.add_aria') || 'Add a private teacher comment to this resource'}
           >
@@ -3386,9 +3403,9 @@ const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAd
                       <li key={c.id} className="bg-amber-50/50 border-l-4 border-amber-400 rounded-r-md p-2 group">
                           <div className="flex items-start justify-between gap-2">
                               <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap flex-1">{c.text}</div>
-                              <button
+                              <button type="button"
                                   onClick={() => onDelete(studentId, resourceId, c.id)}
-                                  className="text-slate-600 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                                  className="text-slate-600 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none text-xs"
                                   aria-label={t('dashboard.comments.delete_aria') || 'Delete this comment'}
                                   title={t('dashboard.comments.delete_tooltip') || 'Delete this comment'}
                               >✕</button>
@@ -3581,7 +3598,7 @@ Return ONLY JSON:
         <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider flex items-center gap-2">
           📓 {t('dashboard.class_notebook.title') || 'Class Notebook Activity'}
         </h4>
-        <button
+        <button type="button"
           onClick={handleGenerateClassInsights}
           disabled={insightsLoading || agg.studentsWithNotebook < 2}
           className="px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
@@ -3658,7 +3675,7 @@ Return ONLY JSON:
       )}
       {insightsLoading ? (
         <div className="text-center py-8">
-          <div className="text-4xl mb-2 animate-pulse">📓</div>
+          <div className="text-4xl mb-2 animate-pulse motion-reduce:animate-none">📓</div>
           <p className="text-sm text-slate-600 font-bold">{t('dashboard.class_notebook.loading') || 'AI is reading across the class...'}</p>
         </div>
       ) : insights ? (
@@ -3739,7 +3756,7 @@ const LearnerProgressView = React.memo(({
         ? (selectedChild ? selectedChild + "'s Learning Journey" : "Your Child's Learning Journey")
         : "My Learning Progress";
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500" data-help-key="learner_progress_panel">
+        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500" data-help-key="learner_progress_panel">
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl md:text-3xl font-black text-slate-800 flex items-center gap-3">
@@ -3753,9 +3770,9 @@ const LearnerProgressView = React.memo(({
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button
+                    <button type="button"
                         onClick={() => setShowDiagnostics(prev => !prev)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all motion-reduce:transition-none ${
                             showDiagnostics
                                 ? 'bg-indigo-100 text-indigo-700 ring-1 ring-indigo-300'
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -3767,7 +3784,7 @@ const LearnerProgressView = React.memo(({
                         {showDiagnostics ? 'Details On' : 'Details'}
                     </button>
                     {onClose && (
-                        <button onClick={onClose} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
+                        <button type="button" onClick={onClose} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors motion-reduce:transition-none">
                             <X size={18} />
                         </button>
                     )}
@@ -3779,19 +3796,19 @@ const LearnerProgressView = React.memo(({
                         <Users size={14} /> Family Members
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                        <button
+                        <button type="button"
                             onClick={() => setSelectedChild(null)}
-                            className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${
+                            className={`px-4 py-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none ${
                                 !selectedChild ? 'bg-white text-indigo-700 shadow-md ring-2 ring-indigo-300' : 'bg-white/60 text-slate-600 hover:bg-white'
                             }`}
                         >
                             Everyone
                         </button>
                         {childProfiles.map(child => (
-                            <button
+                            <button type="button"
                                 key={child.name}
                                 onClick={() => setSelectedChild(child.name)}
-                                className={`px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+                                className={`px-4 py-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                     selectedChild === child.name ? 'bg-white text-indigo-700 shadow-md ring-2 ring-indigo-300' : 'bg-white/60 text-slate-600 hover:bg-white'
                                 }`}
                             >
@@ -3807,7 +3824,7 @@ const LearnerProgressView = React.memo(({
                 </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow motion-reduce:transition-none">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-indigo-900 shadow-lg relative">
                             <Trophy size={28} className="text-indigo-900 fill-current" />
@@ -3879,7 +3896,7 @@ const LearnerProgressView = React.memo(({
                             <span>{Math.round(globalProgress)}%</span>
                         </div>
                         <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 rounded-full" style={{ width: `${Math.max(5, globalProgress)}%` }} />
+                            <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all motion-reduce:transition-none duration-1000 rounded-full" style={{ width: `${Math.max(5, globalProgress)}%` }} />
                         </div>
                         <div className="flex justify-between text-[11px] font-mono text-slate-600">
                             <span>{currentLevelXP} XP</span>
@@ -3887,7 +3904,7 @@ const LearnerProgressView = React.memo(({
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" data-help-key="learner_progress_activities_card">
+                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow motion-reduce:transition-none" data-help-key="learner_progress_activities_card">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-1.5">
                         <Activity size={14} /> Activities Completed
                     </h3>
@@ -3906,7 +3923,7 @@ const LearnerProgressView = React.memo(({
                         ))}
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" data-help-key="learner_progress_skills_chart">
+                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow motion-reduce:transition-none" data-help-key="learner_progress_skills_chart">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                         <Target size={14} /> Skills Progress
                     </h3>
@@ -3927,7 +3944,7 @@ const LearnerProgressView = React.memo(({
                                     </div>
                                     <div className="w-full bg-slate-100 rounded-full h-2.5">
                                         <div
-                                            className={`h-full rounded-full transition-all duration-500 ${stats.wsAccuracy >= 80 ? 'bg-green-500' : stats.wsAccuracy >= 60 ? 'bg-yellow-500' : 'bg-orange-400'}`}
+                                            className={`h-full rounded-full transition-all motion-reduce:transition-none duration-500 ${stats.wsAccuracy >= 80 ? 'bg-green-500' : stats.wsAccuracy >= 60 ? 'bg-yellow-500' : 'bg-orange-400'}`}
                                             style={{ width: `${stats.wsAccuracy}%` }}
                                         />
                                     </div>
@@ -3969,7 +3986,7 @@ const LearnerProgressView = React.memo(({
                         </div>
                     )}
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow motion-reduce:transition-none">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                         <Award size={14} /> Achievements
                     </h3>
@@ -3991,7 +4008,7 @@ const LearnerProgressView = React.memo(({
                                 {earned.length > 0 && (
                                     <div className="flex flex-wrap gap-2">
                                         {earned.map(m => (
-                                            <div key={m.name} className="bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2 text-center min-w-[80px] hover:shadow-sm transition-shadow" title={m.desc}>
+                                            <div key={m.name} className="bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2 text-center min-w-[80px] hover:shadow-sm transition-shadow motion-reduce:transition-none" title={m.desc}>
                                                 <div className="text-xl">{m.icon}</div>
                                                 <div className="text-[11px] font-bold text-yellow-800 mt-0.5">{m.name}</div>
                                             </div>
@@ -4110,7 +4127,7 @@ const LearnerProgressView = React.memo(({
                 );
             })()}
             {studentProgressLog.length >= 2 && (
-                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" data-help-key="learner_progress_growth_chart">
+                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow motion-reduce:transition-none" data-help-key="learner_progress_growth_chart">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                         <TrendingUp size={14} /> Growth Over Time
                     </h3>
@@ -4118,7 +4135,7 @@ const LearnerProgressView = React.memo(({
                 </div>
             )}
             {showDiagnostics && (
-                <div className="bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in slide-in-from-top-2 duration-300" data-help-key="learner_progress_diagnostics_panel">
+                <div className="bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-300" data-help-key="learner_progress_diagnostics_panel">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                         <BarChart3 size={14} /> Detailed Metrics
                     </h3>
@@ -4156,7 +4173,7 @@ const LearnerProgressView = React.memo(({
                 </div>
             )}
             <div className="flex flex-wrap justify-center gap-3 pt-2">
-                <button
+                <button type="button"
                     onClick={() => {
                         const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                         const metricBar = (label, value, max, unit, icon) => {
@@ -4220,20 +4237,20 @@ const LearnerProgressView = React.memo(({
                           `</div></div>` +
                           `<div class="footer">Generated ${date} &bull; Created with AlloFlow &bull; Learning Progress Report</div>` +
                           `</div>` +
-                          `<button class="print-btn" onclick="window.print()">🖨️ Print This Report</button>` +
+                          `<button type="button" class="print-btn" onclick="window.print()">🖨️ Print This Report</button>` +
                           `</body></html>`;
                         const w = window.open('', '_blank');
                         if (w) { w.document.write(html); w.document.close(); }
                     }}
-                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm"
+                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none hover:scale-[1.02] flex items-center gap-2 text-sm"
                     data-help-key="learner_progress_print_report_btn"
                 >
                     <Printer size={16} /> Print Progress Report
                 </button>
                 {isParentMode && onShareWithTeacher && (
-                    <button
+                    <button type="button"
                         onClick={onShareWithTeacher}
-                        className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm"
+                        className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none hover:scale-[1.02] flex items-center gap-2 text-sm"
                         data-help-key="learner_progress_share_teacher_btn"
                     >
                         <Share2 size={16} /> Share Progress with Teacher
@@ -4643,11 +4660,11 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
-                        <th style="text-align: left; padding: 6px 8px;">${t('research.construct')}</th>
-                        <th style="text-align: center; padding: 6px 8px;">n</th>
-                        <th style="text-align: center; padding: 6px 8px;">M</th>
-                        <th style="text-align: center; padding: 6px 8px;">SD</th>
-                        <th style="text-align: center; padding: 6px 8px;">${t('research.scale')}</th>
+                        <th scope="col" style="text-align: left; padding: 6px 8px;">${t('research.construct')}</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">n</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">M</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">SD</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">${t('research.scale')}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -4678,10 +4695,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
-                        <th style="text-align: left; padding: 6px 8px;">${t('research.measure')}</th>
-                        <th style="text-align: center; padding: 6px 8px;">n</th>
-                        <th style="text-align: center; padding: 6px 8px;">M</th>
-                        <th style="text-align: center; padding: 6px 8px;">SD</th>
+                        <th scope="col" style="text-align: left; padding: 6px 8px;">${t('research.measure')}</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">n</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">M</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">SD</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -4709,8 +4726,8 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
-                        <th style="text-align: left; padding: 6px 8px;">${t('research.metric')}</th>
-                        <th style="text-align: center; padding: 6px 8px;">${t('research.value')}</th>
+                        <th scope="col" style="text-align: left; padding: 6px 8px;">${t('research.metric')}</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">${t('research.value')}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -5020,11 +5037,11 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
   const quizHistory = useMemo(() => selectedStudent?.history?.filter(h => h.type === 'quiz') || [], [selectedStudent?.history]);
   return (
     <div
+        className="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in motion-reduce:animate-none fade-in duration-300"
         ref={modalRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="teacher-grading-dashboard-title"
-        className="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300"
     >
       <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10 flex flex-col">
           <div className="p-3 sm:p-4 flex flex-wrap justify-between items-center gap-2">
@@ -5036,17 +5053,17 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                 {dashboardData.length > 0 && (<>
-                    <button
+                    <button type="button"
                         onClick={handleExportCSV} data-help-key="dashboard_export_csv_btn"
-                        className="text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-green-200 shadow-sm flex items-center gap-1"
+                        className="text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none border border-green-200 shadow-sm flex items-center gap-1"
                         title={t('dashboard.export_csv_tooltip')}
                         aria-label={t('dashboard.export_csv_tooltip')}
                     >
                         <FileDown size={14} /> <span className="hidden sm:inline">{t('dashboard.export_csv')}</span><span className="sm:hidden">CSV</span>
                     </button>
-                    <button
+                    <button type="button"
                         onClick={handleExportResearchPDF} data-help-key="dashboard_export_research_btn"
-                        className="text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-purple-200 shadow-sm flex items-center gap-1"
+                        className="text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none border border-purple-200 shadow-sm flex items-center gap-1"
                         title={t('research.export_apa_title')}
                         aria-label={t('teacher.research.export_btn_aria') || 'Export Research Report'}
                     >
@@ -5054,18 +5071,18 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                     </button>
                 </>)}
                 {dashboardData.length > 0 && (
-                    <button
+                    <button type="button"
                         onClick={handleClearAll} data-help-key="dashboard_clear_all_btn"
-                        className="text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-transparent hover:border-red-100"
+                        className="text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none border border-transparent hover:border-red-100"
                         title={t('dashboard.reset_tooltip')}
                         aria-label={t('dashboard.reset_tooltip')}
                     >
                         <span className="hidden sm:inline">{t('dashboard.clear_all')}</span><span className="sm:hidden">Clear</span>
                     </button>
                 )}
-                <button
+                <button type="button"
                 onClick={onClose}
-                className="p-2 rounded-full text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors shrink-0"
+                className="p-2 rounded-full text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none shrink-0"
                 autoFocus
                 aria-label={t('common.close_dashboard')}
                 >
@@ -5075,27 +5092,27 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
           </div>
           {dashboardData.length > 0 && dashboardView === 'list' && (
               <div role="tablist" aria-label={t('dashboard.sections') || 'Dashboard sections'} className="flex px-3 sm:px-6 gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap">
-                  <button ref={element => { dashboardTabRefs.current.students = element; }} type="button" role="tab" id="teacher-dashboard-tab-students" aria-selected={activeTab === 'students'} aria-controls="teacher-dashboard-panel-students" tabIndex={activeTab === 'students' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'students')}
+                  <button type="button" ref={element => { dashboardTabRefs.current.students = element; }} role="tab" id="teacher-dashboard-tab-students" aria-selected={activeTab === 'students'} aria-controls="teacher-dashboard-panel-students" tabIndex={activeTab === 'students' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'students')}
                       onClick={() => setActiveTab('students')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'students' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all motion-reduce:transition-none shrink-0 ${activeTab === 'students' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_students')} ({dashboardData.length})
                   </button>
-                  <button ref={element => { dashboardTabRefs.current.insights = element; }} type="button" role="tab" id="teacher-dashboard-tab-insights" aria-selected={activeTab === 'insights'} aria-controls="teacher-dashboard-panel-insights" tabIndex={activeTab === 'insights' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'insights')}
+                  <button type="button" ref={element => { dashboardTabRefs.current.insights = element; }} role="tab" id="teacher-dashboard-tab-insights" aria-selected={activeTab === 'insights'} aria-controls="teacher-dashboard-panel-insights" tabIndex={activeTab === 'insights' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'insights')}
                       onClick={() => setActiveTab('insights')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'insights' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all motion-reduce:transition-none shrink-0 ${activeTab === 'insights' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_insights')}
                   </button>
-                  <button ref={element => { dashboardTabRefs.current.behavior = element; }} type="button" role="tab" id="teacher-dashboard-tab-behavior" aria-selected={activeTab === 'behavior'} aria-controls="teacher-dashboard-panel-behavior" tabIndex={activeTab === 'behavior' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'behavior')}
+                  <button type="button" ref={element => { dashboardTabRefs.current.behavior = element; }} role="tab" id="teacher-dashboard-tab-behavior" aria-selected={activeTab === 'behavior'} aria-controls="teacher-dashboard-panel-behavior" tabIndex={activeTab === 'behavior' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'behavior')}
                       onClick={() => setActiveTab('behavior')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'behavior' ? 'border-orange-600 text-orange-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all motion-reduce:transition-none shrink-0 ${activeTab === 'behavior' ? 'border-orange-600 text-orange-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       🔍 {t('behavior_lens.hub.title') || 'Behavior'}
                   </button>
-                  <button ref={element => { dashboardTabRefs.current.stems = element; }} type="button" role="tab" id="teacher-dashboard-tab-stems" aria-selected={activeTab === 'stems'} aria-controls="teacher-dashboard-panel-stems" tabIndex={activeTab === 'stems' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'stems')}
+                  <button type="button" ref={element => { dashboardTabRefs.current.stems = element; }} role="tab" id="teacher-dashboard-tab-stems" aria-selected={activeTab === 'stems'} aria-controls="teacher-dashboard-panel-stems" tabIndex={activeTab === 'stems' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'stems')}
                       onClick={() => setActiveTab('stems')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'stems' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all motion-reduce:transition-none shrink-0 ${activeTab === 'stems' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       🔬 STEM Stations
                   </button>
@@ -5104,13 +5121,13 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       </div>
       <div className="flex-grow p-6 overflow-y-auto bg-slate-100">
          {dashboardView === 'detail' && selectedStudent ? (
-             <div className="max-w-5xl mx-auto h-full flex flex-col animate-in slide-in-from-right-8 duration-300">
+             <div className="max-w-5xl mx-auto h-full flex flex-col animate-in motion-reduce:animate-none slide-in-from-right-8 duration-300">
                  <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-6 mb-6 border-b border-slate-200 pb-4 sm:pb-6 sticky top-0 bg-slate-50 z-10 pt-2">
                      <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
-                         <button
+                         <button type="button"
                              aria-label={t('common.check')}
                             onClick={() => setDashboardView('list')}
-                            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white text-slate-600 font-bold rounded-full shadow-sm border border-slate-400 hover:bg-slate-50 transition-colors shrink-0 text-xs sm:text-sm"
+                            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white text-slate-600 font-bold rounded-full shadow-sm border border-slate-400 hover:bg-slate-50 transition-colors motion-reduce:transition-none shrink-0 text-xs sm:text-sm"
                          >
                              <ArrowDown className="rotate-90" size={16}/> <span className="hidden sm:inline">{t('dashboard.back_button')}</span>
                          </button>
@@ -5152,7 +5169,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                              </div>
                          </div>
                      </div>
-                     <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-full border-2 transition-all select-none shadow-sm ${gradedIds.has(selectedStudent.id) ? 'bg-green-50 border-green-500 text-green-800' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
+                     <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-full border-2 transition-all motion-reduce:transition-none select-none shadow-sm ${gradedIds.has(selectedStudent.id) ? 'bg-green-50 border-green-500 text-green-800' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
                         <input aria-label={t('common.text_field')}
                             type="checkbox"
                             className="hidden"
@@ -5323,7 +5340,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                  )}
                  <div className="flex-grow overflow-y-auto custom-scrollbar space-y-6 pb-10">
                      {(selectedStudent.history || []).map((item, idx) => (
-                        <div key={item.id || idx} className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-300 transition-colors">
+                        <div key={item.id || idx} className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-300 transition-colors motion-reduce:transition-none">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
                                     <h3 className="font-bold text-lg text-slate-800">{item.title || "Untitled Resource"}</h3>
@@ -5368,12 +5385,12 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     ) : (
              <>
                  {dashboardData.length === 0 ? (
-                     <div className="relative flex flex-col items-center justify-center h-full text-slate-600 gap-4 border-4 border-dashed border-slate-300 rounded-3xl hover:bg-slate-100 hover:border-indigo-300 hover:text-indigo-500 transition-all cursor-pointer group min-h-[400px] bg-white">
-                         <div className="bg-slate-50 p-6 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform">
+                     <div className="relative flex flex-col items-center justify-center h-full text-slate-600 gap-4 border-4 border-dashed border-slate-300 rounded-3xl hover:bg-slate-100 hover:border-indigo-300 hover:text-indigo-500 transition-all motion-reduce:transition-none cursor-pointer group min-h-[400px] bg-white">
+                         <div className="bg-slate-50 p-6 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform motion-reduce:transition-none">
                               <Upload size={48} className="text-slate-600 group-hover:text-indigo-500" />
                          </div>
                          <h3 className="text-2xl font-black text-slate-600 group-hover:text-indigo-700">{t('dashboard.drop_files')}</h3>
-                         <p className="text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">{t('dashboard.batch_supported')}</p>
+                         <p className="text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors motion-reduce:transition-none">{t('dashboard.batch_supported')}</p>
                          <input aria-label={t('common.upload_json_file')}
                             type="file"
                             multiple
@@ -5385,7 +5402,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                  ) : (
                     <>
                      {activeTab === 'students' && (
-                     <div role="tabpanel" id="teacher-dashboard-panel-students" aria-labelledby="teacher-dashboard-tab-students" tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-left-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                     <div role="tabpanel" id="teacher-dashboard-panel-students" aria-labelledby="teacher-dashboard-tab-students" tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-left-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4">
                                  <div className="bg-blue-100 p-3 rounded-full text-blue-600"><Users size={24}/></div>
@@ -5394,7 +5411,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                      <div className="text-xs font-bold text-slate-600 uppercase">{t('dashboard.stats.students_loaded')}</div>
                                  </div>
                              </div>
-                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 relative group cursor-pointer hover:border-indigo-300 transition-colors">
+                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 relative group cursor-pointer hover:border-indigo-300 transition-colors motion-reduce:transition-none">
                                  <div className="bg-green-100 p-3 rounded-full text-green-600"><Upload size={24}/></div>
                                  <div>
                                      <div className="text-sm font-bold text-green-700">{t('dashboard.stats.add_files')}</div>
@@ -5407,7 +5424,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                     onChange={handleBatchUpload} data-help-key="dashboard_add_file_btn_input" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                  />
                              </div>
-                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors" onClick={handleClearAll} role="button" tabIndex="0" aria-label={t('dashboard.stats.clear_dashboard')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleClearAll(e))}>
+                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors motion-reduce:transition-none" onClick={handleClearAll} role="button" tabIndex="0" aria-label={t('dashboard.stats.clear_dashboard')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleClearAll(e))}>
                                  <div className="bg-red-100 p-3 rounded-full text-red-600"><Trash2 size={24}/></div>
                                  <div>
                                      <div className="text-sm font-bold text-red-700">{t('dashboard.stats.clear_dashboard')}</div>
@@ -5425,26 +5442,26 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                      <span className="text-[10px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider pl-1 sm:pl-2 pr-1 w-full sm:w-auto">
                                          {t('dashboard.bulk.label') || 'Bulk actions'} ({filteredCount}):
                                      </span>
-                                     <button
+                                     <button type="button"
                                          onClick={handleBulkMarkGraded}
-                                         className="text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors"
+                                         className="text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors motion-reduce:transition-none"
                                          title={t('dashboard.bulk.mark_graded_tooltip') || 'Mark all currently-filtered students as graded'}
                                      ><span className="hidden sm:inline">✅ Mark all graded</span><span className="sm:hidden">✅ Mark</span></button>
-                                     <button
+                                     <button type="button"
                                          onClick={handleBulkUnmarkGraded}
-                                         className="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors"
+                                         className="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors motion-reduce:transition-none"
                                          title={t('dashboard.bulk.unmark_graded_tooltip') || 'Clear graded flag on all currently-filtered students'}
                                      ><span className="hidden sm:inline">⬜ Clear graded</span><span className="sm:hidden">⬜ Clear</span></button>
-                                     <button
+                                     <button type="button"
                                          onClick={handleBulkExportNotebooksPDF}
                                          disabled={filteredNotebookCount === 0}
-                                         className="text-xs font-bold text-violet-800 bg-violet-50 hover:bg-violet-100 border border-violet-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                         className="text-xs font-bold text-violet-800 bg-violet-50 hover:bg-violet-100 border border-violet-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-40 disabled:cursor-not-allowed"
                                          title={filteredNotebookCount === 0 ? (t('dashboard.bulk.no_notebook_in_filter') || 'No filtered students have notebook entries') : (t('dashboard.bulk.export_notebooks_tooltip') || 'Export all filtered students\' notebooks as one PDF (cut-apart classroom set)')}
                                      ><span className="hidden sm:inline">📓 Export notebooks ({filteredNotebookCount})</span><span className="sm:hidden">📓 PDF ({filteredNotebookCount})</span></button>
-                                     <button
+                                     <button type="button"
                                          onClick={handleBulkGenerateFeedback}
                                          disabled={filteredNotebookCount === 0}
-                                         className="text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                         className="text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-40 disabled:cursor-not-allowed"
                                          title={filteredNotebookCount === 0 ? (t('dashboard.bulk.no_notebook_in_filter') || 'No filtered students have notebook entries') : (t('dashboard.bulk.feedback_tooltip') || 'AI generates one short feedback note per student, ready to print + hand back')}
                                      ><span className="hidden sm:inline">💬 AI feedback sheets ({filteredNotebookCount})</span><span className="sm:hidden">💬 AI ({filteredNotebookCount})</span></button>
                                  </div>
@@ -5459,8 +5476,8 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                  ["graded", "✅ Graded", dashboardData.filter(s => gradedIds.has(s.id)).length],
                                  ["ungraded", "⬜ Ungraded", dashboardData.filter(s => !gradedIds.has(s.id)).length],
                              ].map(([key, label, count]) => (
-                                 <button key={key} onClick={() => setStudentFilter(key)}
-                                     className={"text-xs font-bold px-3 py-1.5 rounded-full transition-all border " + (studentFilter === key ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50")}
+                                 <button type="button" key={key} onClick={() => setStudentFilter(key)}
+                                     className={"text-xs font-bold px-3 py-1.5 rounded-full transition-all motion-reduce:transition-none border " + (studentFilter === key ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50")}
                                  >{label} ({count})</button>
                              ))}
                          </div>
@@ -5468,11 +5485,11 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                              <table className="w-full text-left text-sm text-slate-600 min-w-[600px]">
                                  <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-600">
                                      <tr>
-                                         <th className="p-4">{t('dashboard.header_nickname')}</th>
-                                         <th className="p-4">{t('dashboard.header_date')}</th>
-                                         <th className="p-4">{t('dashboard.header_progress')}</th>
-                                         <th className="p-4">{t('dashboard.header_level')}</th>
-                                         <th className="p-4 text-right">{t('dashboard.header_actions')}</th>
+                                         <th scope="col" className="p-4">{t('dashboard.header_nickname')}</th>
+                                         <th scope="col" className="p-4">{t('dashboard.header_date')}</th>
+                                         <th scope="col" className="p-4">{t('dashboard.header_progress')}</th>
+                                         <th scope="col" className="p-4">{t('dashboard.header_level')}</th>
+                                         <th scope="col" className="p-4 text-right">{t('dashboard.header_actions')}</th>
                                      </tr>
                                  </thead>
                                  <tbody className="divide-y divide-slate-100">
@@ -5480,7 +5497,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                          const level = getStudentLevel(student.history);
                                          const isGraded = gradedIds.has(student.id);
                                          return (
-                                             <tr key={idx} className={`hover:bg-slate-50 transition-colors ${isGraded ? 'bg-green-50/30' : ''}`}>
+                                             <tr key={idx} className={`hover:bg-slate-50 transition-colors motion-reduce:transition-none ${isGraded ? 'bg-green-50/30' : ''}`}>
                                                  <td className="p-4 font-bold text-indigo-900 flex items-center gap-2">
                                                      <div className="relative">
                                                          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs">
@@ -5526,12 +5543,12 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                      )}
                                                  </td>
                                                  <td className="p-4 text-right">
-                                                     <button
+                                                     <button type="button"
                                                         onClick={() => {
                                                             setSelectedStudentId(student.id);
                                                             setDashboardView('detail');
                                                         }} data-help-key="dashboard_review_btn"
-                                                        className="text-indigo-600 hover:text-indigo-800 font-bold text-xs px-3 py-1 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition-all"
+                                                        className="text-indigo-600 hover:text-indigo-800 font-bold text-xs px-3 py-1 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition-all motion-reduce:transition-none"
                                                      >
                                                          {t('dashboard.table.review_work')}
                                                      </button>
@@ -5545,16 +5562,16 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                      </div>
                      )}
                      {activeTab === 'insights' && (
-                         <div role="tabpanel" id="teacher-dashboard-panel-insights" aria-labelledby="teacher-dashboard-tab-insights" tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                         <div role="tabpanel" id="teacher-dashboard-panel-insights" aria-labelledby="teacher-dashboard-tab-insights" tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-right-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-400">
                                 <div>
                                     <h3 className="font-bold text-lg text-slate-800">{t('dashboard.insights.class_performance')}</h3>
                                     <p className="text-xs text-slate-600">{t('dashboard.insights.generated_date')} {new Date().toLocaleDateString()}</p>
                                 </div>
-                                <button
+                                <button type="button"
                                     aria-label={t('common.export_file')}
                                     onClick={handleExportAnalyticsPDF} data-help-key="dashboard_export_pdf_btn"
-                                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm"
+                                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none shadow-sm"
                                 >
                                     <FileDown size={14} /> {t('dashboard.insights.export_report')}
                                 </button>
@@ -5705,7 +5722,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                             React.createElement('span', { className: 'text-3xl font-black ' + c.color }, c.avg),
                                                             React.createElement('span', { className: 'text-xs text-slate-600 mb-1' }, '/ 5.0')),
                                                         React.createElement('div', { className: 'w-full bg-slate-200 rounded-full h-2 mt-2 overflow-hidden' },
-                                                            React.createElement('div', { className: 'h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all', style: { width: (parseFloat(c.avg) / 5 * 100) + '%' } })),
+                                                            React.createElement('div', { className: 'h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all motion-reduce:transition-none', style: { width: (parseFloat(c.avg) / 5 * 100) + '%' } })),
                                                         React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' }, 'n = ' + c.n + ' responses')
                                                     )
                                                 )
@@ -5770,14 +5787,14 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                         </div>
                      )}
                      {activeTab === 'behavior' && (
-                         <div role="tabpanel" id={`teacher-dashboard-panel-${activeTab}`} aria-labelledby={`teacher-dashboard-tab-${activeTab}`} tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                         <div role="tabpanel" id={`teacher-dashboard-panel-${activeTab}`} aria-labelledby={`teacher-dashboard-tab-${activeTab}`} tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                              <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-400 text-center">
                                  <div className="text-4xl sm:text-5xl mb-4">🔍</div>
                                  <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">{t('behavior_lens.hub.title') || 'BehaviorLens'}</h3>
                                  <p className="text-sm text-slate-600 mb-6 max-w-md mx-auto">{t('behavior_lens.hub.subtitle') || 'Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.'}</p>
-                                 <button
+                                 <button type="button"
                                      onClick={() => { if (onOpenBehaviorLens) onOpenBehaviorLens(); }}
-                                     className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all text-sm flex items-center gap-2 mx-auto"
+                                     className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all motion-reduce:transition-none text-sm flex items-center gap-2 mx-auto"
                                  >
                                      🔍 {t('behavior_lens.hub.open_btn') || 'Open BehaviorLens'}
                                  </button>
@@ -5785,7 +5802,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                          </div>
                      )}
                      {activeTab === 'stems' && (
-                         <div role="tabpanel" id={`teacher-dashboard-panel-${activeTab}`} aria-labelledby={`teacher-dashboard-tab-${activeTab}`} tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                         <div role="tabpanel" id={`teacher-dashboard-panel-${activeTab}`} aria-labelledby={`teacher-dashboard-tab-${activeTab}`} tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                              <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400">
                                  <h3 className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2 mb-4">
                                      {t('teacher.stem_stations.section_title') || '🔬 STEM Station Activity'}
@@ -5826,7 +5843,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                  const stationXP = xpLog.filter(e => e.stationId === st.id);
                                                  const totalXP = stationXP.reduce((s, e) => s + (e.xp || 0), 0);
                                                  return (
-                                                     <div key={st.id} className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-400 hover:border-emerald-300 transition-all">
+                                                     <div key={st.id} className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-400 hover:border-emerald-300 transition-all motion-reduce:transition-none">
                                                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                                                              <div className="flex items-center gap-2 flex-wrap min-w-0">
                                                                  <span className="text-lg shrink-0">📌</span>
@@ -5873,10 +5890,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
          )}
       </div>
       {showClearConfirm && (
-          <div role="presentation" className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200" onMouseDown={(event) => { if (event.target === event.currentTarget) closeClearConfirm(); }}>
+          <div role="presentation" className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in motion-reduce:animate-none fade-in duration-200" onMouseDown={(event) => { if (event.target === event.currentTarget) closeClearConfirm(); }}>
               <div
                   ref={clearConfirmDialogRef}
-                  className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200"
+                  className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in motion-reduce:animate-none zoom-in-95 duration-200"
                   role="alertdialog"
                   aria-modal="true"
                   aria-labelledby="teacher-clear-confirm-title"
@@ -5898,10 +5915,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                   </div>
                   <p id="teacher-clear-confirm-description" className="text-slate-600 mb-6">{t('dashboard.clear_confirm')}</p>
                   <div className="flex gap-3">
-                      <button type="button" data-safe-default="true" onClick={closeClearConfirm} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                      <button type="button" data-safe-default="true" onClick={closeClearConfirm} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-indigo-500">
                           {t('common.cancel')}
                       </button>
-                      <button type="button" onClick={confirmClearAll} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-red-700 hover:bg-red-800 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                      <button type="button" onClick={confirmClearAll} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-red-700 hover:bg-red-800 transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                           {t('common.confirm')}
                       </button>
                   </div>

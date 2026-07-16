@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-99b68c21-untitled-ne",
+  "title": "दिशा",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/sbVHPynFji"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f99b68c21-09d8-4bc2-95bd-207dea3ccda0%2f%e0%a4%a6%e0%a4%bf%e0%a4%b6%e0%a4%be%2fAOR_finger-1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f99b68c21-09d8-4bc2-95bd-207dea3ccda0%2f%e0%a4%a6%e0%a4%bf%e0%a4%b6%e0%a4%be%2fAOR_Eag00033.png",
+      "text": "उदाउँछ सूर्य सधैँ पूर्व दिशामा। अस्ताउँछ सूर्य सधैँ पिश्चम दिशामा। पूर्व फर्किहेर्दा उत्तर, कता पर्छ? अनि बायाँ तिर कुन दिशा पर्छ?"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f99b68c21-09d8-4bc2-95bd-207dea3ccda0%2f%e0%a4%a6%e0%a4%bf%e0%a4%b6%e0%a4%be%2fAOR_MOUNT.png",
+      "text": "पूर्व फर्कि हेर्दा बायाँ उत्तर। अिन दायाँतिर पर्छ दक्षिण। पश्चिम फर्कि हेर्दा दाँया उत्तर।\nअिन बायाँतिर पर्छ दक्षिण।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f99b68c21-09d8-4bc2-95bd-207dea3ccda0%2f%e0%a4%a6%e0%a4%bf%e0%a4%b6%e0%a4%be%2fAOR_STRING5S.png",
+      "text": "लौ भन साथी हो दिशाको नाम। पूर्व, पश्चिम, उत्तर र दक्षिण।\nफेरि भन साथी हो दिशाको नाम। उत्तर र दक्षिण पूर्व र पश्चिम।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f99b68c21-09d8-4bc2-95bd-207dea3ccda0%2f%e0%a4%a6%e0%a4%bf%e0%a4%b6%e0%a4%be%2fAOR_Eag000331.png",
+      "text": "उत्तर फर्कि हेर्दा दायाँ के पर्छ?\nसूर्य उदाउने पूर्व दिशा पर्छ।\nबायाँतिर भने कुन दिशा पर्छ?\nसूर्य अस्ताउने पश्चिम पो पर्छ।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f99b68c21-09d8-4bc2-95bd-207dea3ccda0%2f%e0%a4%a6%e0%a4%bf%e0%a4%b6%e0%a4%be%2fAOR_E-1-441.png",
+      "text": "उत्तर फर्कि हेर्दा दायाँ कुन पर्छ? सूर्य अस्ताउने पश्चिम नै पर्छ। भन दायाँतिर कुन दिशा पर्छ? सूर्य उदाउने पूर्व दिशा पर्छ।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f99b68c21-09d8-4bc2-95bd-207dea3ccda0%2f%e0%a4%a6%e0%a4%bf%e0%a4%b6%e0%a4%be%2fAOR_Eag000332.png",
+      "text": "सूर्य पूर्व उदाउने पश्चिम अस्ताउने। उत्तर, दक्षिण अर्को दिशा भनी बताउने। चार दिशाको नाम थाहा पाएँ आज।\nभन्न सक्छु अब सबैको माझ।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f99b68c21-09d8-4bc2-95bd-207dea3ccda0%2f%e0%a4%a6%e0%a4%bf%e0%a4%b6%e0%a4%be%2fAOR_ock002m.png",
+      "text": "भन्छु चार दिशाको नाम गनी।\nउत्तर, दक्षिण, पूर्व, पश्चिम भनी । गाउँछु म चार दिशाको गीत।\nरमाइ रमाइ गाउँछु म साथीसित।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f99b68c21-09d8-4bc2-95bd-207dea3ccda0%2f%e0%a4%a6%e0%a4%bf%e0%a4%b6%e0%a4%be%2fAOR_Eag000333.png",
+      "text": "पूर्व दिशा कता पर्छ?\nपूर्व दिशा यता पर्छ।\nपश्चिम दिशा कता पर्छ?\nपश्चिम दिशा यता पर्छ।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f99b68c21-09d8-4bc2-95bd-207dea3ccda0%2f%e0%a4%a6%e0%a4%bf%e0%a4%b6%e0%a4%be%2fAOR_E-1-219.png",
+      "text": "उत्तर दिशा कता पर्छ?\nउत्तर दिशा यता पर्छ।\nदक्षिण दिशा कता पर्छ?\nदक्षिण दिशा यता पर्छ।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f99b68c21-09d8-4bc2-95bd-207dea3ccda0%2f%e0%a4%a6%e0%a4%bf%e0%a4%b6%e0%a4%be%2fAOR_pms052.png",
+      "text": "पूर्वतिर फर्कि बस।\nपश्चिमतिर फर्कि बस।\nउत्तरतिर फर्कि बस।\nदक्षिणतिर फर्कि बस।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 191
+  }
+}

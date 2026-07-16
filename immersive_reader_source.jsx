@@ -14,6 +14,50 @@ var useContext = React.useContext; var useMemo = React.useMemo; var useCallback 
 // can never reach its fallback (a literal key is truthy). safeT detects that
 // case and returns the human-readable fallback instead.
 const safeT = (t, key, fb) => { const r = t(key); return (r && r !== key) ? r : fb; };
+
+const isInteractiveShortcutTarget = (target) => !!(target && target.closest && target.closest('button, input, select, textarea, a[href], [contenteditable="true"]'));
+
+const useOverlayDialogFocus = (isOpen) => {
+    const dialogRef = useRef(null);
+    const restoreFocusRef = useRef(null);
+    useEffect(() => {
+        if (!isOpen) return;
+        const dialog = dialogRef.current;
+        if (!dialog) return;
+        restoreFocusRef.current = document.activeElement;
+        const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'));
+        const focusTimer = setTimeout(() => {
+            const focusable = getFocusable();
+            (focusable[0] || dialog).focus();
+        }, 0);
+        const containFocus = (e) => {
+            if (e.key !== 'Tab') return;
+            const focusable = getFocusable();
+            if (focusable.length === 0) {
+                e.preventDefault();
+                dialog.focus();
+                return;
+            }
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        };
+        document.addEventListener('keydown', containFocus, true);
+        return () => {
+            clearTimeout(focusTimer);
+            document.removeEventListener('keydown', containFocus, true);
+            const previous = restoreFocusRef.current;
+            if (previous && typeof previous.focus === 'function' && document.contains(previous)) previous.focus();
+        };
+    }, [isOpen]);
+    return dialogRef;
+};
 var _lazyIcon = function(name) { return function(props) { var I = window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
 var ArrowLeft = _lazyIcon('ArrowLeft');
 var ArrowRight = _lazyIcon('ArrowRight');
@@ -38,6 +82,7 @@ var Zap = _lazyIcon('Zap');
 // ============================================================================
 const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
+    const dialogRef = useOverlayDialogFocus(isOpen);
     const [words, setWords] = useState([]);
     const [chunkIdx, setChunkIdx] = useState(0);
     const [chunkSize, setChunkSize] = useState(1);
@@ -157,6 +202,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     useEffect(() => {
         const handler = (e) => {
             if (!isOpen) return;
+            if (e.key !== 'Escape' && isInteractiveShortcutTarget(e.target)) return;
             if (e.code === 'Space') { e.preventDefault(); handlePlayToggle(); }
             else if (e.code === 'ArrowLeft') setChunkIdx(p => Math.max(0, p - 1));
             else if (e.code === 'ArrowRight') setChunkIdx(p => Math.min(chunks.length - 1, p + 1));
@@ -194,14 +240,14 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg }}>
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="focus-reader-dialog-title" tabIndex={-1} className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none" style={{ backgroundColor: c.bg }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <button onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.strong }}>
+                    <button type="button" onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.strong }}>
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex flex-col">
-                        <span className="font-bold text-base" style={{ color: c.strong }}>{safeT(t, 'immersive.focus_mode', 'Focus Mode')}</span>
+                        <h2 id="focus-reader-dialog-title" className="font-bold text-base" style={{ color: c.strong }}>{safeT(t, 'immersive.focus_mode', 'Focus Mode')}</h2>
                         <span className="text-xs" style={{ color: c.light }}>
                             {chunkIdx + 1} / {chunks.length} · {rsvp ? 'single-word RSVP' : `${chunkSize}-word chunks · bold-assist`}
                         </span>
@@ -226,7 +272,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                             <option value="sepia">📜 Sepia</option>
                         </select>
                     </label>
-                    <button
+                    <button type="button"
                         onClick={() => setPunctPauses(v => !v)}
                         aria-pressed={punctPauses}
                         title={punctPauses ? 'Punctuation-aware pauses on (P to toggle) — commas slow slightly, sentence ends longer' : 'Punctuation pauses off — constant cadence (P to toggle)'}
@@ -240,7 +286,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                             <span style={{ color: c.light }}>FOCUS</span>
                             <div className="flex gap-1">
                                 {colorOptions.map(opt => (
-                                    <button
+                                    <button type="button"
                                         key={opt.value}
                                         onClick={() => setFocusColor(opt.value)}
                                         aria-label={`Focus color ${opt.name}`}
@@ -334,7 +380,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     toggleSetting('showSyllables');
   }, [onGenerateSyllables, onGeneratePOS, syllablesReady, posReady, isGeneratingSyllables, isGeneratingPOS, toggleSetting]);
   const ToggleButton = React.memo(({ active, onClick, settingKey, title, children, activeColor = "bg-indigo-600 text-white", ...props }) => (
-    <button
+    <button type="button"
       onClick={settingKey ? () => toggleSetting(settingKey) : onClick}
       title={title}
       className={`px-2.5 py-1 text-xs font-bold rounded-full transition-all disabled:opacity-60 disabled:cursor-wait ${
@@ -444,7 +490,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>
           <div className="flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5" role="group" aria-label={safeT(t, 'immersive.tap_mode', 'Tap action')}>
             <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2">{safeT(t, 'immersive.tap_mode', 'Tap')}</span>
-            <button
+            <button type="button"
               onClick={() => setInteractionMode('read')}
               aria-pressed={interactionMode !== 'define' && interactionMode !== 'phonics'}
               title={safeT(t, 'immersive.tap_speak', 'Tap a word to hear it')}
@@ -452,7 +498,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             >
               <Volume2 size={12}/> {safeT(t, 'immersive.speak', 'Speak')}
             </button>
-            <button
+            <button type="button"
               onClick={() => setInteractionMode('define')}
               aria-pressed={interactionMode === 'define'}
               title={safeT(t, 'immersive.tap_define', 'Tap a word to see its definition and picture')}
@@ -467,11 +513,11 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
           <>
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>
           <div className="flex items-center gap-2 shrink-0">
-            <button onClick={() => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1))} disabled={chunkReaderIdx <= 0} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.previous', 'Previous') + ' (← / Home)'}><ChevronLeft size={14}/></button>
+            <button type="button" onClick={() => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1))} disabled={chunkReaderIdx <= 0} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.previous', 'Previous') + ' (← / Home)'}><ChevronLeft size={14}/></button>
             <span className="text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center">{chunkReaderIdx + 1} / {totalSentences}</span>
-            <button onClick={() => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1))} disabled={chunkReaderIdx >= totalSentences - 1} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.next', 'Next') + ' (→ / End)'}><ChevronRight size={14}/></button>
+            <button type="button" onClick={() => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1))} disabled={chunkReaderIdx >= totalSentences - 1} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.next', 'Next') + ' (→ / End)'}><ChevronRight size={14}/></button>
             <div className="h-4 w-px bg-slate-200"></div>
-            <button onClick={() => setChunkReaderAutoPlay(!chunkReaderAutoPlay)} className={`px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title={(chunkReaderAutoPlay ? safeT(t, 'common.pause', 'Pause') : safeT(t, 'common.auto_play', 'Auto')) + ' (Space) · Esc exits · Enter skips typewriter reveal'}>
+            <button type="button" onClick={() => setChunkReaderAutoPlay(!chunkReaderAutoPlay)} className={`px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title={(chunkReaderAutoPlay ? safeT(t, 'common.pause', 'Pause') : safeT(t, 'common.auto_play', 'Auto')) + ' (Space) · Esc exits · Enter skips typewriter reveal'}>
               {chunkReaderAutoPlay ? <Pause size={12} className="inline"/> : <Play size={12} className="inline"/>}
             </button>
             <div className="flex items-center gap-1">
@@ -482,7 +528,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             {onToggleChunkReaderReadAlong && (
               <>
                 <div className="h-4 w-px bg-slate-200"></div>
-                <button
+                <button type="button"
                   onClick={onToggleChunkReaderReadAlong}
                   aria-pressed={!!chunkReaderReadAlong}
                   title={chunkReaderReadAlong ? 'Read-along OFF: return to timer-based advance' : 'Read-along ON: play each sentence with a colored gradient that sweeps across the text in sync with the audio'}
@@ -624,7 +670,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             </div>
         </div>
       </div>
-      <button aria-label={t('common.close_word_wall')}
+      <button type="button" aria-label={t('common.close_word_wall')}
         onClick={onClose}
         title={t('immersive.close')}
         className="ms-4 shrink-0 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 transition-colors"
@@ -647,6 +693,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
 // ============================================================================
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
+    const dialogRef = useOverlayDialogFocus(isOpen);
     // Persist user's preferred speed / palette / ambient across sessions so each
     // open doesn't reset to defaults. Direct localStorage with try/catch — same
     // lightweight pattern used elsewhere (no safeGetItem dep needed).
@@ -808,6 +855,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     useEffect(() => {
         if (!isOpen) return;
         const handler = (e) => {
+            if (e.key !== 'Escape' && isInteractiveShortcutTarget(e.target)) return;
             if (e.code === 'Space') { e.preventDefault(); setIsPlaying(pl => !pl); }
             else if (e.key === 'Escape') onClose();
             else if (e.key === 'r' || e.key === 'R') { resetCrawl(); setIsPlaying(true); }
@@ -827,13 +875,13 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     };
 
     return (
-        <div data-help-key="perspective_crawl_overlay_panel" className="fixed inset-0 z-[300] flex flex-col" style={{ backgroundColor: p.bg, color: p.text }}>
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="perspective-crawl-dialog-title" tabIndex={-1} data-help-key="perspective_crawl_overlay_panel" className="fixed inset-0 z-[300] flex flex-col" style={{ backgroundColor: p.bg, color: p.text }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.55)' }}>
                 <div className="flex items-center gap-3">
-                    <button data-help-key="perspective_crawl_exit_btn" onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full" style={{ color: p.text }}>
+                    <button type="button" data-help-key="perspective_crawl_exit_btn" onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full" style={{ color: p.text }}>
                         <ArrowLeft size={22} />
                     </button>
-                    <span className="font-bold text-base">{safeT(t, 'immersive.cinematic_crawl', 'Cinematic Crawl')}</span>
+                    <h2 id="perspective-crawl-dialog-title" className="font-bold text-base">{safeT(t, 'immersive.cinematic_crawl', 'Cinematic Crawl')}</h2>
                 </div>
                 <div className="flex items-center gap-3 text-xs font-bold flex-wrap">
                     <label className="flex items-center gap-2">
@@ -849,7 +897,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                             <option value="paper">Paper</option>
                         </select>
                     </label>
-                    <button
+                    <button type="button"
                         data-help-key="perspective_crawl_ambient_toggle"
                         onClick={() => setAmbientOn(a => !a)}
                         aria-pressed={ambientOn}
@@ -860,10 +908,10 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                     >
                         {ambientOn ? '♪' : '♪̸'}
                     </button>
-                    <button data-help-key="perspective_crawl_play_pause_btn" onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'} className="px-3 py-1 rounded" style={{ background: p.text + '22', color: p.text }}>
+                    <button type="button" data-help-key="perspective_crawl_play_pause_btn" onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'} className="px-3 py-1 rounded" style={{ background: p.text + '22', color: p.text }}>
                         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                     </button>
-                    <button data-help-key="perspective_crawl_restart_btn" onClick={() => { resetCrawl(); setIsPlaying(true); }} aria-label={t("a11y.restart_crawl")} className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
+                    <button type="button" data-help-key="perspective_crawl_restart_btn" onClick={() => { resetCrawl(); setIsPlaying(true); }} aria-label={t("a11y.restart_crawl")} className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
                         ↺ Restart
                     </button>
                 </div>
@@ -964,8 +1012,9 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
 // (Compatible with Gemini TTS, which returns audio-only with no timepoint
 // metadata. See plan.md for rationale.)
 // ============================================================================
-const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, isTeacher }) => {
+const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, getAudioUrl, isTeacher, captureOn: captureOnProp, onCaptureChange }) => {
     const { t } = useContext(LanguageContext);
+    const dialogRef = useOverlayDialogFocus(isOpen);
     const [sentences, setSentences] = useState([]);
     const [sentenceIdx, setSentenceIdx] = useState(0);
     // Teacher read-aloud vetting: regenerate the current sentence, or prepare
@@ -973,7 +1022,14 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     // globals; the player picks up the new audio through the shared store.
     const [regenBusy, setRegenBusy] = useState(false);
     const [prepState, setPrepState] = useState(null); // { busy, done, total, bytes } | null
-    const [captureOn, setCaptureOn] = useState(() => { try { return localStorage.getItem('allo_save_karaoke_audio') !== '0'; } catch (_) { return true; } });
+    const [localCaptureOn, setLocalCaptureOn] = useState(() => { try { return localStorage.getItem('allo_save_karaoke_audio') !== '0'; } catch (_) { return true; } });
+    const captureOn = typeof captureOnProp === 'boolean' ? captureOnProp : localCaptureOn;
+    const setCaptureOn = useCallback((value) => {
+        const next = !!value;
+        setLocalCaptureOn(next);
+        try { localStorage.setItem('allo_save_karaoke_audio', next ? '1' : '0'); } catch (_) {}
+        try { if (typeof onCaptureChange === 'function') onCaptureChange(next); } catch (_) {}
+    }, [onCaptureChange]);
     const [recording, setRecording] = useState(false);
     const [studentTakeTick, setStudentTakeTick] = useState(0);
     const _recRef = useRef(null);
@@ -1020,6 +1076,30 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     // callTTS caches on the shared urlCache, so a warmed sentence is an instant
     // cache hit when the player later requests it — zero perceived latency.
     const warmedRef = useRef(new Set());
+    // A warmed URL is only an in-memory cache entry. Track which look-ahead
+    // sentences also reached the durable per-resource store so turning capture
+    // on after warming can persist the cached URL without re-synthesis.
+    const capturedWarmRef = useRef(new Set());
+    const captureRetryRef = useRef(new Map());
+    const capturePendingRef = useRef(new Set());
+    const captureIssueRef = useRef({ limit: false, message: '' });
+    const [captureSaveState, setCaptureSaveState] = useState({ pending: 0, failed: 0, limit: false, message: '' });
+    const [captureRetrying, setCaptureRetrying] = useState(false);
+    const refreshCaptureSaveState = useCallback(() => {
+        setCaptureSaveState({
+            pending: capturePendingRef.current.size,
+            failed: captureRetryRef.current.size,
+            limit: !!captureIssueRef.current.limit,
+            message: captureIssueRef.current.message || ''
+        });
+    }, []);
+    const captureKeyFor = useCallback((sentenceText) => {
+        try {
+            const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+            if (KS && typeof KS.keyFor === 'function') return KS.keyFor(sentenceText);
+        } catch (e) {}
+        return String(sentenceText || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    }, []);
     const reducedMotion = typeof window !== 'undefined' && window.matchMedia
         ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
         : false;
@@ -1038,28 +1118,96 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     // student→student), so capturing simply makes their replays instant. Human
     // recordings are a separate explicit flow and are unaffected.
     const scheduleCaptureForStorage = useCallback((sentenceText, url) => {
-        if (!captureOn || !sentenceText || !url) return;
-        if (typeof window === 'undefined' || typeof window.__alloCaptureKaraokeAudio !== 'function') return;
-        const run = () => {
-            try {
-                const result = window.__alloCaptureKaraokeAudio(sentenceText, url);
-                if (result && typeof result.catch === 'function') result.catch(() => {});
-            } catch (e) {}
-        };
+        if (!captureOn || !sentenceText || !url) return Promise.resolve(false);
+        if (typeof window === 'undefined' || typeof window.__alloCaptureKaraokeAudio !== 'function') return Promise.resolve(false);
+        const key = captureKeyFor(sentenceText);
+        capturePendingRef.current.add(key);
+        refreshCaptureSaveState();
+        // Invoke immediately so the persistence helper can snapshot the blob URL
+        // before playback cleanup. It defers only the heavy MP3 encode after it
+        // owns the bytes.
+        let request;
         try {
-            if (typeof window.requestIdleCallback === 'function') {
-                window.requestIdleCallback(run, { timeout: 1200 });
-            } else {
-                setTimeout(run, 250);
-            }
+            request = Promise.resolve(window.__alloCaptureKaraokeAudio(sentenceText, url));
         } catch (e) {
-            setTimeout(run, 250);
+            request = Promise.resolve(false);
         }
-    }, [captureOn]);
+        return request.then((saved) => {
+            let stored = false;
+            try {
+                const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+                stored = !!(st && st.has(sentenceText));
+            } catch (e) {}
+            capturePendingRef.current.delete(key);
+            if (saved || stored) {
+                captureRetryRef.current.delete(key);
+                if (captureRetryRef.current.size === 0) captureIssueRef.current = { limit: false, message: '' };
+            } else {
+                captureRetryRef.current.set(key, { sentence: sentenceText, url });
+                if (!captureIssueRef.current.message) captureIssueRef.current = { limit: false, message: 'Some played audio could not be saved.' };
+            }
+            refreshCaptureSaveState();
+            return !!(saved || stored);
+        }).catch(() => {
+            capturePendingRef.current.delete(key);
+            captureRetryRef.current.set(key, { sentence: sentenceText, url });
+            captureIssueRef.current = { limit: false, message: 'Some played audio could not be saved.' };
+            refreshCaptureSaveState();
+            return false;
+        });
+    }, [captureOn, captureKeyFor, refreshCaptureSaveState]);
+
+    useEffect(() => {
+        if (!isOpen || typeof window === 'undefined') return;
+        const onCaptureStatus = (event) => {
+            const detail = event && event.detail ? event.detail : {};
+            if (detail.status !== 'error' && detail.status !== 'limit') return;
+            const key = captureKeyFor(detail.sentence);
+            if (!key || !sentences.some(sentence => captureKeyFor(sentence) === key)) return;
+            captureIssueRef.current = {
+                limit: detail.status === 'limit',
+                message: detail.reason || (detail.status === 'limit' ? 'Saved read-aloud storage is full.' : 'Some played audio could not be saved.')
+            };
+            refreshCaptureSaveState();
+        };
+        window.addEventListener('alloflow:karaoke-audio-capture', onCaptureStatus);
+        return () => window.removeEventListener('alloflow:karaoke-audio-capture', onCaptureStatus);
+    }, [isOpen, sentences, captureKeyFor, refreshCaptureSaveState]);
+
+    const retryFailedCaptures = useCallback(async () => {
+        if (captureRetrying || captureRetryRef.current.size === 0 || captureIssueRef.current.limit) return;
+        setCaptureRetrying(true);
+        const failed = Array.from(captureRetryRef.current.values());
+        const resolver = getAudioUrlRef.current;
+        for (let i = 0; i < failed.length; i++) {
+            const item = failed[i];
+            let retryUrl = item.url;
+            try {
+                if (typeof resolver === 'function') retryUrl = (await resolver(item.sentence)) || retryUrl;
+            } catch (e) {}
+            if (retryUrl) await scheduleCaptureForStorage(item.sentence, retryUrl);
+        }
+        setCaptureRetrying(false);
+        refreshCaptureSaveState();
+    }, [captureRetrying, scheduleCaptureForStorage, refreshCaptureSaveState]);
 
     // Split text into sentences once (self-contained — parent's splitTextToSentences isn't exported)
     useEffect(() => {
         setCurrentAudioReadyIdx(-1);
+        captureRetryRef.current.clear();
+        capturePendingRef.current.clear();
+        captureIssueRef.current = { limit: false, message: '' };
+        setCaptureSaveState({ pending: 0, failed: 0, limit: false, message: '' });
+        const canonicalSentences = (Array.isArray(sentenceList) ? sentenceList : [])
+            .map(s => String(s || '').trim())
+            .filter(Boolean);
+        if (canonicalSentences.length) {
+            setSentences(canonicalSentences);
+            setSentenceIdx(0); setSweepPct(0);
+            warmedRef.current = new Set();
+            capturedWarmRef.current = new Set();
+            return;
+        }
         if (!text) { setSentences([]); return; }
         const cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
         // Prefer the SHARED splitter (KaraokeAudioStore) so stored/vetted
@@ -1070,7 +1218,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         if (_KS && typeof _KS.splitSentences === 'function') {
             const _shared = _KS.splitSentences(text);
             setSentences(_shared.length > 0 ? _shared : [cleaned]);
-            setSentenceIdx(0); setSweepPct(0); warmedRef.current = new Set();
+            setSentenceIdx(0); setSweepPct(0); warmedRef.current = new Set(); capturedWarmRef.current = new Set();
             return;
         }
         // Preserve terminal punctuation in each sentence; split on "punct + whitespace"
@@ -1092,7 +1240,8 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         setSentenceIdx(0);
         setSweepPct(0);
         warmedRef.current = new Set(); // new text → nothing warmed yet
-    }, [text]);
+        capturedWarmRef.current = new Set();
+    }, [text, sentenceList]);
 
     // ── Zero-latency pre-warm (2026-07-06) ──────────────────────────────
     // Whenever the active sentence changes, quietly fetch the NEXT few
@@ -1116,23 +1265,53 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         const run = async () => {
             for (let i = sentenceIdx + 1; i <= sentenceIdx + LOOKAHEAD && i < sentences.length; i++) {
                 if (cancelled) return;
-                if (warmedRef.current.has(i)) continue;
-                warmedRef.current.add(i);
+                const alreadyWarmed = warmedRef.current.has(i);
+                const needsDurableCapture = captureOn && !capturedWarmRef.current.has(i);
+                if (alreadyWarmed && !needsDurableCapture) continue;
+                if (!alreadyWarmed) warmedRef.current.add(i);
                 // Fire through the player's own audio resolver; we ignore the
-                // returned URL — the point is the cache side-effect. A failure
-                // clears the mark so a later pass can retry.
+                // returned URL for playback, but when capture is enabled the same
+                // bytes must also enter the durable resource store.
                 try {
                     const warmedUrl = await resolver(sentences[i]);
-                    if (!warmedUrl) warmedRef.current.delete(i);
+                    if (cancelled) return;
+                    if (!warmedUrl) {
+                        warmedRef.current.delete(i);
+                        capturedWarmRef.current.delete(i);
+                    } else if (needsDurableCapture) {
+                        // Persistence must never hold up generation of the next
+                        // look-ahead clip. Snapshot/save runs independently and
+                        // reports completion through the shared store/events.
+                        scheduleCaptureForStorage(sentences[i], warmedUrl).then((captured) => {
+                            let stored = false;
+                            try {
+                                const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+                                stored = !!(st && st.has(sentences[i]));
+                            } catch (e) {}
+                            if (captured || stored) capturedWarmRef.current.add(i);
+                        });
+                    }
                 }
-                catch (e) { warmedRef.current.delete(i); }
+                catch (e) { warmedRef.current.delete(i); capturedWarmRef.current.delete(i); }
             }
         };
         // Small defer so the current sentence's on-demand fetch always wins
         // the queue; pre-warm fills in behind it.
         const timer = setTimeout(run, 200);
         return () => { cancelled = true; clearTimeout(timer); };
-    }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx]);
+    }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx, captureOn, scheduleCaptureForStorage]);
+
+    // If saving is enabled while a sentence is already playing, capture that
+    // current clip instead of waiting for the next sentence.
+    const previousCaptureOnRef = useRef(captureOn);
+    useEffect(() => {
+        const justEnabled = !previousCaptureOnRef.current && captureOn;
+        previousCaptureOnRef.current = captureOn;
+        if (!justEnabled || !isOpen || !isPlaying) return;
+        const audio = audioRef.current;
+        const sentence = sentences[sentenceIdx];
+        if (audio && audio.src && sentence) scheduleCaptureForStorage(sentence, audio.src);
+    }, [captureOn, isOpen, isPlaying, sentences, sentenceIdx, scheduleCaptureForStorage]);
 
     // Hard teardown when the overlay closes or the component unmounts
     useEffect(() => {
@@ -1195,7 +1374,6 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         if (token !== playTokenRef.current) return;
 
         if (url) {
-            scheduleCaptureForStorage(sentenceText, url);
             const audio = new Audio(url);
             audio.playbackRate = playbackSpeedRef.current || 1;
             audioRef.current = audio;
@@ -1229,6 +1407,9 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
             });
             try {
                 await audio.play();
+                // Let playback win the main-thread/startup race; capture snapshots
+                // immediately afterward and performs conversion in the background.
+                scheduleCaptureForStorage(sentenceText, url);
                 return;
             } catch (e) {
                 if (token !== playTokenRef.current) return;
@@ -1302,7 +1483,15 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         setPrepState({ busy: true, done: 0, total: sentences.length });
         try {
             const res = await window.__alloPrepareReadAloud(sentences, function (done, total) { setPrepState({ busy: true, done: done, total: total }); });
-            setPrepState({ busy: false, done: (res && res.generated) || 0, total: (res && res.total) || 0, bytes: (res && res.bytes) || 0 });
+            setPrepState({
+                busy: false,
+                done: (res && res.generated) || 0,
+                total: (res && res.total) || 0,
+                failed: (res && res.failed) || 0,
+                remaining: (res && res.remaining) || 0,
+                bytes: (res && res.bytes) || 0,
+                failure: res && res.failure
+            });
         } catch (e) { setPrepState(null); }
     }, [prepState, sentences]);
     // Record the teacher’s own voice for the CURRENT sentence, sentence by
@@ -1376,6 +1565,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     useEffect(() => {
         if (!isOpen) return;
         const handler = (e) => {
+            if (e.key !== 'Escape' && isInteractiveShortcutTarget(e.target)) return;
             if (e.code === 'Space') { e.preventDefault(); setIsPlaying(p => !p); }
             else if (e.code === 'ArrowRight') { setSentenceIdx(i => Math.min(sentences.length - 1, i + 1)); setSweepPct(0); }
             else if (e.code === 'ArrowLeft')  { setSentenceIdx(i => Math.max(0, i - 1)); setSweepPct(0); }
@@ -1505,14 +1695,14 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
 
     const hasStudentTake = studentTakeTick >= 0 && (() => { try { const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.studentCurrent; return !!(st && st.has(sentences[sentenceIdx])); } catch (e) { return false; } })();
     return (
-        <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg, color: c.ink }}>
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="karaoke-reader-dialog-title" tabIndex={-1} className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none" style={{ backgroundColor: c.bg, color: c.ink }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => { hardStop(); onClose(); }} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
+                    <button type="button" onClick={() => { hardStop(); onClose(); }} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex flex-col">
-                        <span className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</span>
+                        <h2 id="karaoke-reader-dialog-title" className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</h2>
                         <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep{(() => { try { const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current; return _st && _st.sourceOf(sentences[sentenceIdx]) === 'human-teacher'; } catch (e) { return false; } })() ? ' · \uD83C\uDFA4 your voice' : ''}</span>
                         {isGeneratingAudio && (
                             <span className="text-xs font-semibold" role="status" aria-live="polite" style={{ color: c.sweep }}>Generating audio...</span>
@@ -1523,10 +1713,32 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                     {isTeacher && (
                         <div className="flex items-center gap-2" role="group" aria-label={safeT(t, 'immersive.teacher_audio_tools', 'Read-aloud tools')}>
                             <label className="flex items-center gap-1.5 cursor-pointer" title={safeT(t, 'immersive.save_readaloud_tip', 'Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.')}>
-                                <input type="checkbox" checked={captureOn} onChange={e => { const v = e.target.checked; setCaptureOn(v); try { localStorage.setItem("allo_save_karaoke_audio", v ? "1" : "0"); } catch (_) {} }} aria-label={safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen")} />
+                                <input type="checkbox" checked={captureOn} onChange={e => setCaptureOn(e.target.checked)} aria-label={safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen")} />
                                 <span>{'💾'} {safeT(t, 'immersive.save_readaloud', 'Save read-aloud')}</span>
                             </label>
-                            <button
+                            {captureSaveState.pending > 0 && (
+                                <span role="status" aria-live="polite" style={{ color: c.sweep }}>
+                                    {safeT(t, 'immersive.saving_readaloud', 'Saving')} {captureSaveState.pending}
+                                </span>
+                            )}
+                            {captureSaveState.failed > 0 && captureSaveState.limit && (
+                                <span role="alert" title={captureSaveState.message} style={{ color: '#b45309' }}>
+                                    {safeT(t, 'immersive.readaloud_limit', 'Storage limit reached')} · {captureSaveState.failed}
+                                </span>
+                            )}
+                            {captureSaveState.failed > 0 && !captureSaveState.limit && (
+                                <button
+                                    type="button"
+                                    onClick={retryFailedCaptures}
+                                    disabled={captureRetrying}
+                                    title={captureSaveState.message || safeT(t, 'immersive.retry_readaloud_tip', 'Retry audio that could not be saved.')}
+                                    className="px-2.5 py-1 rounded-full transition-all"
+                                    style={{ background: 'transparent', color: '#b91c1c', border: '1px solid #fca5a5', opacity: captureRetrying ? 0.65 : 1 }}
+                                >
+                                    {captureRetrying ? '…' : '↻'} {safeT(t, 'immersive.retry_failed_saves', 'Retry failed saves')} · {captureSaveState.failed}
+                                </button>
+                            )}
+                            <button type="button"
                                 onClick={regenerateCurrent}
                                 disabled={regenBusy}
                                 title={safeT(t, 'immersive.regenerate_sentence_tip', 'Re-generate the audio for this sentence if it sounds off. Students hear your vetted version.')}
@@ -1535,7 +1747,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                             >
                                 {regenBusy ? '…' : '🔄'} {safeT(t, 'immersive.regenerate_sentence', 'Regenerate this sentence')}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={recordCurrent}
                                 title={safeT(t, 'immersive.record_sentence_tip', 'Record your own voice for this sentence. Students hear your recording instead of the computer voice.')}
                                 className="px-2.5 py-1 rounded-full transition-all flex items-center gap-1"
@@ -1543,7 +1755,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                             >
                                 {recording ? `⏹ ${safeT(t, 'immersive.stop_recording', 'Stop recording')}` : `🎤 ${safeT(t, 'immersive.record_sentence', 'Record my voice')}`}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => { if (prepState && prepState.busy) { window.__alloPrepareReadAloudCancel = true; return; } prepareAll(); }}
                                 title={prepState && prepState.busy
                                     ? safeT(t, 'immersive.prepare_readaloud_stop', 'Stop after the current sentence (already-saved audio is kept).')
@@ -1553,15 +1765,17 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                             >
                                 {prepState && prepState.busy
                                     ? `… ${prepState.done}/${prepState.total} ✕`
-                                    : (prepState && !prepState.busy)
-                                        ? `✓ ${safeT(t, 'immersive.readaloud_saved', 'Saved')}${prepState.bytes ? ' · ' + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + ' MB' : ''}`
-                                        : `💾 ${safeT(t, 'immersive.prepare_readaloud', 'Prepare read-aloud for students')}`}
+                                    : (prepState && !prepState.busy && prepState.remaining)
+                                        ? `↻ ${safeT(t, 'immersive.retry_failed_saves', 'Retry failed saves')} · ${prepState.remaining}`
+                                        : (prepState && !prepState.busy)
+                                            ? `✓ ${safeT(t, 'immersive.readaloud_saved', 'Saved')}${prepState.bytes ? ' · ' + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + ' MB' : ''}`
+                                            : `💾 ${safeT(t, 'immersive.prepare_readaloud', 'Prepare read-aloud for students')}`}
                             </button>
                         </div>
                     )}
                     {!isTeacher && (
                         <div className="flex items-center gap-2" role="group" aria-label={safeT(t, 'immersive.student_reading_tools', 'My reading')}>
-                            <button
+                            <button type="button"
                                 onClick={recordCurrent}
                                 title={safeT(t, 'immersive.record_reading_tip', 'Record yourself reading this sentence, then hear it back. The teacher\u2019s read-along stays your reference.')}
                                 className="px-2.5 py-1 rounded-full transition-all flex items-center gap-1"
@@ -1569,7 +1783,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                             >
                                 {recording ? `⏹ ${safeT(t, 'immersive.stop_recording', 'Stop recording')}` : `🎤 ${safeT(t, 'immersive.record_reading', 'Record my reading')}`}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={playStudentTake}
                                 disabled={!hasStudentTake}
                                 title={safeT(t, 'immersive.hear_my_reading_tip', 'Play back your own recording of this sentence.')}
@@ -1591,7 +1805,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                     <div className="flex items-center gap-1" role="group" aria-label={t('immersive.playback_speed_aria') || 'Playback speed'}>
                         <span style={{ color: c.dim }}>SPEED</span>
                         {[0.75, 1, 1.25, 1.5].map(rate => (
-                            <button
+                            <button type="button"
                                 key={rate}
                                 onClick={() => setPlaybackSpeed(rate)}
                                 aria-pressed={playbackSpeed === rate}
@@ -1616,12 +1830,12 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                             <option value="sepia">📜 Sepia</option>
                         </select>
                     </label>
-                    <button onClick={() => { if (isPlaying) { hardStop(); setIsPlaying(false); } else { setIsPlaying(true); } }}
+                    <button type="button" onClick={() => { if (isPlaying) { hardStop(); setIsPlaying(false); } else { setIsPlaying(true); } }}
                         aria-label={isGeneratingAudio ? 'Stop generating audio' : isPlaying ? 'Pause' : 'Play'} aria-pressed={isPlaying} aria-busy={isGeneratingAudio}
                         className="px-3 py-1.5 rounded-full" style={{ background: c.accent, color: c.ink }}>
                         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                     </button>
-                    <button onClick={() => { hardStop(); setSentenceIdx(0); setSweepPct(0); setIsPlaying(false); }}
+                    <button type="button" onClick={() => { hardStop(); setSentenceIdx(0); setSweepPct(0); setIsPlaying(false); }}
                         className="px-3 py-1 rounded text-xs" style={{ background: c.dim + '33', color: c.ink }} aria-label={t("a11y.restart_first_sentence")}>
                         ↺ Restart
                     </button>

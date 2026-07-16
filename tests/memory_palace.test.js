@@ -415,3 +415,28 @@ describe('MemoryPalace - decoration SR labels (accessibility parity)', () => {
     h.destroy();
   });
 });
+
+describe('MemoryPalace - live 3D organizer HUD contract', () => {
+  it('keeps route controls accessible and provides a persistent visual route companion', () => {
+    const source = readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');
+    expect(source).toContain("hud.setAttribute('role', 'toolbar')");
+    expect(source).toContain("var routeBtn = mkBtn('Route'");
+    expect(source).toContain("routePanel.hidden = !routeVisible");
+    expect(source).toContain("routeBtn.setAttribute('aria-pressed'");
+    expect(source).toContain("button.setAttribute('data-route-index', String(index))");
+    expect(source).toContain("button.setAttribute('aria-current', 'step')");
+    expect(source).toContain('goTo(index)');
+    expect(source).toContain('function setRouteVisible(visible, moveFocus)');
+    expect(source).toContain("routeBtn.setAttribute('aria-expanded'");
+    expect(source).toContain("routePanel.addEventListener('keydown', onRouteKeyDown)");
+    expect(source).toContain("if (e.key !== 'Escape') return");
+    expect(source).toContain("routePanel.querySelector('[aria-current=\"step\"]')");
+    expect(source).toContain("button.style.backgroundColor = button.hasAttribute('aria-current')");
+    expect(source).toContain("routePanel.removeEventListener('keydown', onRouteKeyDown)");
+    expect(source).toContain("progress.textContent = curIdx === 0 ? 'Entrance'");
+    expect(source).toContain("ovBtn.setAttribute('aria-pressed'");
+    expect(source).toContain('min-width:44px;min-height:44px');
+    expect(source).not.toContain("routePanel.setAttribute('aria-hidden', 'true')");
+    expect(source).not.toContain("[hud].forEach(function (nd) { try { nd.setAttribute('aria-hidden', 'true')");
+  });
+});

@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-6fc6c913-yon-b-f-se-zanmi-m",
+  "title": "Yon bèf se zanmi m'",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "African Storybook Project"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "African Storybook Project",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Xlc3oPCfrj"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6fc6c913-5ad8-4427-9d13-cd828b81b85d%2fYon+b%c3%a8f+se+zanmi+m'1%2fM_ASP_2_A_cow_is_my_friend_Page_1_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6fc6c913-5ad8-4427-9d13-cd828b81b85d%2fYon+b%c3%a8f+se+zanmi+m'1%2fM_ASP_2_A_cow_is_my_friend_Page_2_Image_0001.png",
+      "text": "Manman Bèf, m'renmen w' Bèf."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6fc6c913-5ad8-4427-9d13-cd828b81b85d%2fYon+b%c3%a8f+se+zanmi+m'1%2fM_ASP_2_A_cow_is_my_friend_Page_3_Image_0001.png",
+      "text": "Yè, ou ban m' lèt."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6fc6c913-5ad8-4427-9d13-cd828b81b85d%2fYon+b%c3%a8f+se+zanmi+m'1%2fM_ASP_2_A_cow_is_my_friend_Page_5_Image_0001.png",
+      "text": "Papa m' achte vyann chak samdi.\nManman m' gen yon bèl sak, e mwen gen bon jan soulye."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6fc6c913-5ad8-4427-9d13-cd828b81b85d%2fYon+b%c3%a8f+se+zanmi+m'1%2fM_ASP_2_A_cow_is_my_friend_Page_6_Image_0001.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 4,
+    "words": 28
+  }
+}

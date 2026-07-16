@@ -1,0 +1,160 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-166be51a-untitled",
+  "title": "ပကျိူဝ်းကာည်းမှိုက်ႏ",
+  "description": "လော်င်ပကျိူဝ်းကာည်း မှိုက်ႏ ပံင်ဇီုဝ်ႈ ဒဲႈကူန်ကာည်းမာ။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "2021,RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "2021,RBTT & NTC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/nuHq6hEcZ5"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Cover.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Page+021.jpg",
+      "text": "ယေးပါ်ပည်မေဲႈ တံန်တောႇဟာဝ်းဒို့ ပါ့်ပ္လေါ်ည်းက လာႈ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2faudio%2fdec3b9aa-5aef-4540-95e6-f8740d7e4dfb.mp3",
+          "dur": 3.749637
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Page+031.jpg",
+      "text": "ကူန်ဇိူဝ်ႈဒဲႈ စံမ်ငါည်းဒါး တာ့်ပီဒါင်း အီးခီုက်အန်း။ မာစီဇိူဝ်ႈဒဲႈ တာ့်အဝ်း မှိုက်ႏလ အီးချှီႇအန်း။ အီးမိုႈႎါးအီးပဲန့် စီဘိူန်းပ္လါ်ည်းကငါမ်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2faudio%2fi6ae4a76e-1291-4a85-a42b-197cf00a359b.mp3",
+          "dur": 10.631654
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Page+041.jpg",
+      "text": "ဇိုဂီဟာဝ်းတာ် တောႇအီုန်ဒါန်း နံင်ႎီး ပါ့်ခလေဲပ်ယေးစီ ကညားလာ် ခူးဒါင်း ဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2faudio%2fi7fec9c2f-3a92-4ba8-9c96-952747cf741a.mp3",
+          "dur": 6.634988
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Page+051.jpg",
+      "text": "မှိုက်ႏအံဝ်းဒီး စီဟာဝ်းႎှံက်ဂေါ်ည်းအူန်း တံင်ရားတင်း ဟာ်ည်းဒါင်းဒီး အူဒီဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2faudio%2fi49820c67-b5c2-4c13-a4ef-959ce803335f.mp3",
+          "dur": 5.929694
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Page+061.jpg",
+      "text": "ဂေါႇမိုႈအံဝ်းနောႈဒဲ့ယာဝ်း၊ အံဝ်းစီမအေဲႈရိုင်းယာမ်း ပေါႇဒါင်းဒါင်း။ ပိုမ်းမှေဲဝ်းမာ် အံဝ်းစီဘူဆီင်ဟိုမ်းမ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2faudio%2fi9be1e084-552b-471a-a875-de7268db6e59.mp3",
+          "dur": 8.347188
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Page+071.jpg",
+      "text": "တီင်ဆေဲမ်းဒီး အီးမိုႈပကျိူဝ်းမာ် စီဟည်ပ္လါင်လေႈဒေဲႈ။ အန်းစီဂီတိူဝ်ႈလာ် မှိုက်ႏလချှီႇအံဝ်း အန်းအီးႎှံက် ဂေါ်ည်းအူန်း တံင်တေဲင်းတင်းဟာ်ည်းဒါင်းဒီး\nဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2faudio%2fi82f16e0c-c97d-47fd-8858-cf489c2e7ad5.mp3",
+          "dur": 11.833266
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Page+081.jpg",
+      "text": "ပကျိူဝ်းဒီး စီချှေဲပ်တိူဝ်ႈပေါႇ မှိုက်ႏအံဝ်း။ ႎါည်းဒီး အန်းဟည်မအေဲႈ အေဲဝ်းခိုည်းပေါႇအခည်းဟာ့်။ အံဝ်းမာ် အေဲဝ်းတောႇပေါႇအန်းဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2faudio%2fi0fad15ff-554b-4f0f-8111-e60c3c6b3d56.mp3",
+          "dur": 9.325554
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Page+091.jpg",
+      "text": "ႎါည်းဒီးအူဆငည်း ဘိူဝ်လေႈဒေဲႈအံဝ်းတာ် ဒစော်င်း၊ မာအံဝ်း စီဇိူဝ်ႈဒဲႈဘိုး တာ့်အံဝ်း မှိုက်ႏရာ်န်းအူပိုင်။ မာစီဒါ်ႈလာ် တာ့်အံဝ်း “ပကျိူဝ်း တိုန်းလေႈဒဲႈ တာ့်မည်း ကော်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2faudio%2fi11fffafc-7696-45cf-89a9-7fe483660d58.mp3",
+          "dur": 11.14229
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Page+101.jpg",
+      "text": "ဆေဲမ်းဒီး ယာည်းပကျိူဝ်းမာ် ဟည်ချေဲပ်လာ်ဒါးမှိုက်ႏ ဆိမှိုက်ႏအန်း၊ စီလည်အေဲဝ်း။ ယာည်းမအေဲႈခိုည်း ပျော်ပေါႇ အခည်းဟာ့်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2faudio%2fi3de4f2b2-ce9c-4b94-9b85-59e329955fc5.mp3",
+          "dur": 8.332918
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Page+111.jpg",
+      "text": "မည်းထာင်လာ် ဆငည်းမာ် နံင်လိုမှိုက်ႏ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2faudio%2ff7076b12-1a7c-4e75-a03e-54955c859a0c.mp3",
+          "dur": 2.821176
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2fThe+Moon+and+The+Cap_Page+121.jpg",
+      "text": "အီုန်ဒီႈနီး မည်းထာင် အံဝ်းနံင်ချေဲပ် မှိုက်ႏပိုင်မှေဲ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f166be51a-0d96-47c2-82d9-00d4ec3c98e2%2f%e1%80%95%e1%80%80%e1%80%bb%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%be%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%82%8f%2faudio%2fba23bd24-5337-439b-8b07-250521eded81.mp3",
+          "dur": 3.749637
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 76
+  }
+}

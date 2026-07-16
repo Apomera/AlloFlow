@@ -1,0 +1,92 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-cfbb896c-untitled-km",
+  "title": "១៣ នអើន កាអុចអ្វាញ់យោក",
+  "description": "The fish who wanted to see the mountains (Easy Reader - Level 2)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/h93flnIcbb"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage1.png",
+      "text": "ត្រី​ចង់​មើល​​ភ្នំ"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage2.png",
+      "text": "មានថ្ងៃមួយត្រីបានឃើញឆ្មាឡើងដើមឈើ។ ឆ្មាប្រាប់ទៅត្រីថា៖ “អូ! ព្រៃព្រឹក្សាទាំងឡាយនោះល្អណាស់ ហើយខ្ញុំបានឃើញភ្នំធំផងដែរ”។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage3.png",
+      "text": "ត្រីថា៖ “ខ្ញុំចង់មើលដែរ”។ បន្ទាប់មកត្រីក៏លោតចេញពីទឹកយ៉ាងខ្ពស់ វាក៏បានឃើញស្លឹកឈើនៅជិតអូរនោះ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage4.png",
+      "text": "ពេលនោះត្រីបានឃើញសត្វបក្សីមួយហើរនៅលើមេឃ។ ហើយបាននិយាយថា៖ “អូ! ព្រៃប្រឹក្សានេះល្អណាស់ ហើយខ្ញុំបានឃើញភ្នំធំផងដែរ”។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage5.png",
+      "text": "ត្រីនិយាយថា៖ “ខ្ញុំចង់មើលដែរ”។ បន្ទាប់មកត្រីក៏លោតចេញពីលើទឹកយ៉ាងខ្ពស់ វាក៏បានឃើញស្លឹកឈើនៅជិតអូរនោះ។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage6.png",
+      "text": "ពេលនោះត្រីបានឃើញពស់មួយវារឡើងដើមឈើថា៖ “អូ! ព្រៃប្រឹក្សានោះល្អណាស់ ហើយខ្ញុំបានឃើញភ្នំធំផងដែរ”។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage7.png",
+      "text": "ត្រីថា៖ “ខ្ញុំចង់មើលដែរ”។ បន្ទាប់មកត្រីក៏លោតចេញពីលើទឹកយ៉ាងខ្ពស់ វាក៏បានឃើញស្លឹកឈើនៅជិតអូរនោះទៀត។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage8.png",
+      "text": "ហើយត្រីក៏អស់កម្លាំងផងដែរ ដោយសារតែវាបានលោតចុះលោតឡើងច្រើនដងពេក។ វាមិនឈប់មិនសំរាកសោះ ត្រីវាមានការខូចចិត្តជាខ្លាំងពីព្រោះតែវាមិនបានឃើញភ្នំធំ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage9.png",
+      "text": "ពេលនោះមានកុកមួយបានចឹកត្រីនោះ រួចក៏ហើរទៅលើអាកាស។ ត្រីនោះក៏មានការភ័យខ្លាចយ៉ាងខ្លាំង វាស្មានថាកុកនោះស៊ីវា។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage10.png",
+      "text": "ត្រីមើលទៅក្រោមឃើញព្រៃប្រឹក្សា និងភ្នំស្អាតណាស់។ ពេលនោះត្រីវាត្រេកអរខ្លាំងពេក កុកចឹកត្រីនោះមិនជាប់ក៏ធ្លាក់ទៅក្នុងទឹកវិញ។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fcfbb896c-246d-4445-a447-8e3db37da21d%2f%e1%9f%a1%e1%9f%a3+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9e%b6%e1%9e%a2%e1%9e%bb%e1%9e%85%e1%9e%a2%e1%9f%92%e1%9e%9c%e1%9e%b6%e1%9e%89%e1%9f%8b%e1%9e%99%e1%9f%84%e1%9e%80%2fimage11.png",
+      "text": "ឥឡូវនេះត្រីមានសេចក្ដីត្រេចអរយ៉ាងខ្លាំង ដោយសារវាបានឃើញព្រៃភ្នំល្អៗ ដូចឆ្មា បក្សី និងពស់ដែរ៕"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 44
+  }
+}

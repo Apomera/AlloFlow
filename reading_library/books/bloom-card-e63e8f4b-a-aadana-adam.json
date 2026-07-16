@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-e63e8f4b-a-aadana-adam",
+  "title": "A AADANA ADAM",
+  "description": "This is the first draft of the first  lesson in a Somali to English transition primer.  Questions and suggestions for improvement are welcome!",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Primer"
+  ],
+  "authors": [
+    "SALT Somali Adult Literacy Training"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SALT Somali Adult Literacy Training",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/bqQh1t1WuM"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/salt%40arriveministries.org%2fe63e8f4b-4491-496f-aba3-6713451b8794%2fA++++AADAN++A++++ADAM%2fADAM.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"A AADANA ADAM\" (Somali). This is the first draft of the first  lesson in a Somali to English transition primer.  Questions and suggestions for improvement are welcome!"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 81
+  }
+}

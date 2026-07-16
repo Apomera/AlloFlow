@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-9986e41f-untitled",
+  "title": "कुकुर र घोडा",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/x4pDKnvPHA"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_Horse2.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_CMB0247.png",
+      "text": "एउटा गाउँमा घोडा र कुकुर बस्दथे। उनीहरू अत्यन्तै मिल्ने साथी थिए। दुवैले बेलाबेला गीत गाउने गर्थे।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fimage2.png",
+      "text": "उनीहरू गाउँदै भन्थे, \"तिम्रो मेरो मित्रता।\" प्यारो प्यारो यो कथा। दुनियाँलाई देखाउनु छ। हाँसी हाँसी बाँच्नु छ।\""
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_OCI003.png",
+      "text": "एकदिन दुवै सहर घुम्न निस्किए। करीब २ घन्टा हिँडेपछि सहर पुगे। सहरको झिलिमिली उनीहरूलाई रमाइलो लाग्यो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_OCI006.png",
+      "text": "सहरमा गाडीहरू देखेर उनीहरू दङ्ग परे। गाडीहरूको फरक आवाज सुनेर अचम्म माने।\nघोडालाई देखेर मानिसहरूले वरिपरीबाट घेरे।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fimage.png",
+      "text": "उता कुकुरलाई भने सहरका कुकुरहरूले खेदे। अरू कुकुरहरूले झम्टेर, घाउ बनाइदिए। एउटा कुनामा गएर कुकुर लुकेर बस्यो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_pa109m.png",
+      "text": "घोडा भीडबाट बाहिर आउन खोज्यो। एउटा धनी मान्छेले घोडालाई घरमा लग्यो। उसले माया गरेर राख्यो।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_Nab1591.png",
+      "text": "घोडा कुकुरसँग छुट्टिनुपरेकोमा दुःखी भयो। आफ्नो साथी नहुँदा घोडा चिन्तित थियो।\nउसले खाना पनि खाएन।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_SUD00124.png",
+      "text": "घोडा साथीको पीरले रोइरह्यो। कुकुर पनि साथीको खोजीमा घुमिरह्यो। कुकुर र घोडा दुवै दुःखी थिए।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_pa107m.png",
+      "text": "घोडा दिनदिनै दुब्लाउँदै गयो।\nखाना खान छोड्यो। धनी मानिसले घोडा बिरामी भएको ठान्यो। डाक्टर बोलाएर घोडाको उपचार गरायो।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_pa107m.png",
+      "text": "घोडाले अचानक पुरानो गीत सम्झ्यो। उसले गीत गुनगुनायो। \"तिम्रो मेरो मित्रता।\nप्यारो प्यारो यो कथा। दुनियाँलाई देखाउनु छ।\" हाँसी हाँसी बाँच्नु छ।"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_adb037.png",
+      "text": "अचानक त्यो गीत कुकुरले सुन्यो। मेरो साथी यहि घरमा रहेछ। भन्ने थाहा पायो। कुकुर खुसी हुँदै घोडा नजिक गयो।"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_ahb027m.png",
+      "text": "अचानक कुकुर देखेर सबै डराए। लखेटेर बाहिर निकाल्न खोजे। कुकुर बाहिर जान मानेन। घोडाको वरिपरि बसिरह्यो।"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fimage1.png",
+      "text": "कुकुर बाहिर निस्किन नमानेपछि त्यत्तिकै छोडिदिए। धनी मानिसले कुकुर पाल्ने विचार गर्‍यो। उसले कुकुरलाई बाँधेर राख्यो।"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f9986e41f-72ae-46e7-b110-d67598acb7ca%2f%e0%a4%95%e0%a5%81%e0%a4%95%e0%a5%81%e0%a4%b0+%e0%a4%b0+%e0%a4%98%e0%a5%8b%e0%a4%a1%e0%a4%be%2fAOR_AN19.png",
+      "text": "घोडा र कुकुर सँगै बस्न पाए। उनीहरू खुसीभए। अब सधैँभरि सँगसँगै रहने वाचा गरे। सँगसँगै पहिलाको गीत गाउँदै रमाए।"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 238
+  }
+}

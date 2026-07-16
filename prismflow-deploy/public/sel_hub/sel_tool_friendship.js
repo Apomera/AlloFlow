@@ -482,7 +482,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: '13px', fontWeight: 700, color: AMBER_DARK, marginBottom: '8px' } }, '\uD83D\uDCDD Friendship Journal'),
             h('p', { style: { fontSize: '11px', color: _frC('#94a3b8'), margin: '0 0 8px' } }, 'Write about a friendship moment \u2014 something kind someone did, a fun memory, or something you\u2019re grateful for.'),
             h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
-              h('input', {
+              h('input', { 'aria-label': 'Friendship journal entry',
                 type: 'text', value: newNote,
                 onChange: function(ev) { upd('newNote', ev.target.value); },
                 onKeyDown: function(ev) {
@@ -493,10 +493,10 @@ window.SelHub = window.SelHub || {
                   }
                 },
                 placeholder: band === 'elementary' ? 'Today my friend...' : 'A friendship moment I want to remember...',
-                'aria-label': 'Friendship journal entry',
                 style: { flex: 1, border: '1px solid #fde68a', borderRadius: '8px', padding: '8px 10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box' }
               }),
               h('button', {
+                'aria-label': 'Add friendship journal entry',
                 onClick: function() { if (!newNote.trim()) return; upd({ friendNotes: [{ id: Date.now().toString(), text: newNote.trim(), date: new Date().toLocaleDateString() }].concat(friendNotes), newNote: '' }); if (soundEnabled) sfxHeart(); },
                 disabled: !newNote.trim(),
                 style: { padding: '8px 14px', background: newNote.trim() ? AMBER : '#d1d5db', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: newNote.trim() ? 'pointer' : 'not-allowed', fontSize: '12px' }
@@ -618,7 +618,7 @@ window.SelHub = window.SelHub || {
             })
           ),
           h('div', { style: { display: 'flex', gap: '8px' } },
-            h('input', {
+            h('input', { 'aria-label': 'Friendship practice message',
               type: 'text', value: coachInput,
               onChange: function(ev) { upd('coachInput', ev.target.value); },
               onKeyDown: function(ev) {
@@ -640,10 +640,10 @@ window.SelHub = window.SelHub || {
               },
               disabled: coachLoading || !callGemini,
               placeholder: coachLoading ? 'Thinking...' : 'Describe a friendship situation...',
-              'aria-label': 'Friendship practice message',
               style: { flex: 1, border: '2px solid #fde68a', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
+              'aria-label': coachLoading ? 'Friendship coach is responding' : 'Send message to friendship coach',
               onClick: function() {
                 if (!coachInput.trim() || coachLoading || !callGemini) return;
                 var userMsg = coachInput.trim();
@@ -1009,6 +1009,7 @@ window.SelHub = window.SelHub || {
             !fRpEnded && h('div', { style: { marginTop: 10 } },
               h('textarea', {
                 id: 'f-rp-input', value: fRpInput,
+                'aria-label': 'Your friendship role-play response',
                 onChange: function(ev) { upd('fRpInput', ev.target.value); },
                 placeholder: 'What would you actually say? Keep it short — say one thing, then listen.',
                 rows: 2, disabled: fRpLoading,

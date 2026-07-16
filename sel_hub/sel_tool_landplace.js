@@ -350,9 +350,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
 
             // Part 1: Where
             h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #0ea5e9' } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: _lanFg('#7dd3fc'), marginBottom: 4 } }, '1. Where you are'),
-              h('div', { style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Be specific. A town, a neighborhood, a building, a watershed.'),
-              h('textarea', { value: ack.where, onChange: function(e) { updateAck('where', e.target.value); },
+              h('label', { htmlFor: 'land-ack-where', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#7dd3fc'), marginBottom: 4 } }, '1. Where you are'),
+              h('div', { id: 'land-ack-where-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Be specific. A town, a neighborhood, a building, a watershed.'),
+              h('textarea', { id: 'land-ack-where', 'aria-describedby': 'land-ack-where-help', value: ack.where, onChange: function(e) { updateAck('where', e.target.value); },
                 placeholder: 'I am writing this from...',
                 style: { width: '100%', minHeight: 40, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
@@ -360,9 +360,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
 
             // Part 2: Whose land
             h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #16a34a' } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: _lanFg('#86efac'), marginBottom: 4 } }, '2. Whose land it is'),
-              h('div', { style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Name the nation(s). For Maine: the Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, or Abenaki, depending on where you specifically are. Multiple nations may have ties to the same place.'),
-              h('textarea', { value: ack.whose, onChange: function(e) { updateAck('whose', e.target.value); },
+              h('label', { htmlFor: 'land-ack-whose', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#86efac'), marginBottom: 4 } }, '2. Whose land it is'),
+              h('div', { id: 'land-ack-whose-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Name the nation(s). For Maine: the Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, or Abenaki, depending on where you specifically are. Multiple nations may have ties to the same place.'),
+              h('textarea', { id: 'land-ack-whose', 'aria-describedby': 'land-ack-whose-help', value: ack.whose, onChange: function(e) { updateAck('whose', e.target.value); },
                 placeholder: 'This is the ancestral homeland of...',
                 style: { width: '100%', minHeight: 40, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
@@ -370,9 +370,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
 
             // Part 3: Honesty
             h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #f59e0b' } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: _lanFg('#fbbf24'), marginBottom: 4 } }, '3. Honesty about what acknowledgment is'),
-              h('div', { style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Name that an acknowledgment is not the same as returning land or honoring treaties. Refuse to use this moment to feel good without committing to anything.'),
-              h('textarea', { value: ack.honesty, onChange: function(e) { updateAck('honesty', e.target.value); },
+              h('label', { htmlFor: 'land-ack-honesty', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#fbbf24'), marginBottom: 4 } }, '3. Honesty about what acknowledgment is'),
+              h('div', { id: 'land-ack-honesty-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Name that an acknowledgment is not the same as returning land or honoring treaties. Refuse to use this moment to feel good without committing to anything.'),
+              h('textarea', { id: 'land-ack-honesty', 'aria-describedby': 'land-ack-honesty-help', value: ack.honesty, onChange: function(e) { updateAck('honesty', e.target.value); },
                 placeholder: 'I want to be honest that an acknowledgment by itself...',
                 style: { width: '100%', minHeight: 50, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
@@ -380,9 +380,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
 
             // Part 4: Commitment
             h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #a855f7' } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: _lanFg('#c4b5fd'), marginBottom: 4 } }, '4. A specific commitment you can keep'),
-              h('div', { style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'One concrete action. Follow a Wabanaki-led organization, donate, attend an event, support a policy, learn the treaty history. Specific is better than grand.'),
-              h('textarea', { value: ack.commit, onChange: function(e) { updateAck('commit', e.target.value); },
+              h('label', { htmlFor: 'land-ack-commit', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#c4b5fd'), marginBottom: 4 } }, '4. A specific commitment you can keep'),
+              h('div', { id: 'land-ack-commit-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'One concrete action. Follow a Wabanaki-led organization, donate, attend an event, support a policy, learn the treaty history. Specific is better than grand.'),
+              h('textarea', { id: 'land-ack-commit', 'aria-describedby': 'land-ack-commit-help', value: ack.commit, onChange: function(e) { updateAck('commit', e.target.value); },
                 placeholder: 'I am committing to...',
                 style: { width: '100%', minHeight: 50, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })

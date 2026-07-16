@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-cf4f00dc-untitled",
+  "title": "ကဲဟာဝ်းဒို့ပါ့်နား",
+  "description": "ကော်န်းဒဲ့ ကာည်း တိုဆံတ်ကဲ ဂီဟာဝ်းလှယ် ညျာနား",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RBTT & NTC",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Zf04MPdY7t"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fcf4f00dc-1cdc-4c5a-8845-128a8021c67f%2f%e1%80%80%e1%80%b2%e1%80%9f%e1%80%ac%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%92%e1%80%ad%e1%80%af%e1%80%b7%e1%80%95%e1%80%ab%e1%80%b7%e1%80%ba%e1%80%94%e1%80%ac%e1%80%b8%2f01They+Go+to+The+Field2.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ကဲဟာဝ်းဒို့ပါ့်နား\" (Burmese). ကော်န်းဒဲ့ ကာည်း တိုဆံတ်ကဲ ဂီဟာဝ်းလှယ် ညျာနား"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 61
+  }
+}

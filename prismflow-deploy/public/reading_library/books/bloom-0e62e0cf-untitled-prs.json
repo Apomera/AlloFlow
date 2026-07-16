@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-0e62e0cf-untitled-prs",
+  "title": "نصیحت پدر",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/niXTWfPCcz"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f0e62e0cf-aaad-440f-a779-041eca6f2069%2f%d9%86%d8%b5%db%8c%d8%ad%d8%aa+%d9%be%d8%af%d8%b1%2f11111.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f0e62e0cf-aaad-440f-a779-041eca6f2069%2f%d9%86%d8%b5%db%8c%d8%ad%d8%aa+%d9%be%d8%af%d8%b1%2f211.jpg",
+      "text": "روزِ زمستانی بود.\nذکریا و فاطمه بازی می کردند."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "مادر در آشپزخانه غذا را آماده می کرد.\nذکریا و فاطمه به مادر کمک می کردند.\nغذا آماده شد."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f0e62e0cf-aaad-440f-a779-041eca6f2069%2f%d9%86%d8%b5%db%8c%d8%ad%d8%aa+%d9%be%d8%af%d8%b1%2f311.jpg",
+      "text": "ذکریا با عجله شروع به خوردن غذا کرد.\nپدر به سوی ذکریا می دید."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "پدر گفت:\nپسرم! چرا این قسم غذا می خوری؟\nذکریا گفت: گرسنه استم."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f0e62e0cf-aaad-440f-a779-041eca6f2069%2f%d9%86%d8%b5%db%8c%d8%ad%d8%aa+%d9%be%d8%af%d8%b1%2f411.jpg",
+      "text": "پدر گفت:\nپسرم! با عجله غذا خوردن دُرست نیست."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "پسرم!\nآداب غذا خوردن این قسم است:\nدست هایت را با آب و صابون بشوی.\nبعد)بسم الله( بگو."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f0e62e0cf-aaad-440f-a779-041eca6f2069%2f%d9%86%d8%b5%db%8c%d8%ad%d8%aa+%d9%be%d8%af%d8%b1%2f511.jpg",
+      "text": "با دست راست غذا بخور!\nدر خوردن غذا عجله نکن!"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "وقتی سیر شدی، باید از خداوند شکرگزار باشی.\nذکریا آداب غذا خوردن را یاد گرفت.\nذکریا از پدر تشکر کرد."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 112
+  }
+}

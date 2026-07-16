@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-1dd28f5b-untitled",
+  "title": "ጉማሬ ለመርዳት ሞከረ",
+  "description": "A Amharic picture book, readable free at Bloom Library.",
+  "language": "Amharic",
+  "langCode": "am",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Spiritual"
+  ],
+  "authors": [
+    "BTL Kenya"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "BTL Kenya",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ybucFG1dHi"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/musie_menna%40sil.org%2f1dd28f5b-3ad8-4fdb-a201-821ce63ae413%2f%e1%8c%89%e1%88%9b%e1%88%ac+%e1%88%88%e1%88%98%e1%88%ad%e1%8b%b3%e1%89%b5+%e1%88%9e%e1%8a%a8%e1%88%a8%2fs4k1smud.p3t.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ጉማሬ ለመርዳት ሞከረ\" (Amharic)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

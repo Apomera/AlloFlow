@@ -1101,6 +1101,21 @@ function AIBackendModal(props) {
                 {/* ─── Section 5: AI Model Diagnostics (shared with Canvas modal) ─── */}
                 <ModelDiagnosticsSection t={t} _isCanvasEnv={_isCanvasEnv} GEMINI_MODELS={GEMINI_MODELS} />
 
+                {/* ─── Section 6: Device Storage (parity with the Canvas Advanced
+                     Settings modal, 2026-07-14) — opens the on-device storage
+                     manager (review/export/erase). On this deployed surface the
+                     backend is the app origin's own IndexedDB; same panel. */}
+                <div className="border-t border-slate-100 pt-4">
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</label>
+                    <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.device_storage_hint') || 'Work and settings are saved on this device only — nothing goes to a server. Review, export, or erase what is stored here.'}</p>
+                    <button
+                        onClick={() => { if (typeof window.__alloOpenDeviceStorageProbe === 'function') window.__alloOpenDeviceStorageProbe(); }}
+                        className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
+                    >
+                        🔌 {t('canvas_settings.device_storage_btn') || 'Manage device storage'}
+                    </button>
+                </div>
+
                 {/* ─── Active Config Summary ─── */}
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <p className="text-[11px] text-slate-600 font-medium leading-relaxed">

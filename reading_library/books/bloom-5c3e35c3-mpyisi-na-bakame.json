@@ -1,0 +1,122 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-5c3e35c3-mpyisi-na-bakame",
+  "title": "Mpyisi na Bakame",
+  "description": "N'ubwo bari inshuti bwose,  Bakame yagiye yungukira mu bucucu bwa Mpyisi. Gusa n'ubwo Bakame ari inyaryenge,  ntabwo azakomeza guhenda ubwenge Mpyisi ubuziraherezo.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Mutugi Kamundi"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4EUHhyr0HL"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage17.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage1.png",
+      "text": "Mpyisi na Bakame\nKera Bakame na Mpyisi bari inshuti magara. Ibintu byinshi babikoreraga hamwe. Baririmbiraga hamwe ndetse bakanabyinira hamwe."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage2.png",
+      "text": "Umunsi umwe, Bakame aravuga ati: \"Nshuti yanjye Mpyisi, reka dutangire guhingira hamwe, hanyuma tuzabe abakire.\" Mpyisi arasubiza ati: \"Rwose ibyo ni byo, dushobora guhinga ibiribwa byinshi, tukabisarura, hanyuma tukabigurisha abandi.\" Nuko Bakame irabaza iti: \"Ariko se tuzahinga iki?\""
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage3.png",
+      "text": "Mpyisi atanga igitekerezo ko byaba byiza bahinze ibigori. Bakame arabyemera. Bakame anavuga ko byaba byiza bagabanye imirimo bazakora mu murima. Bakame aravuga ati: \"Umurimo wanjye uzaba uwo kurinda inyoni zizaza kona ibigori.\" Nuko ibwira impyisi ko izarima, igatera imbuto kandi ikanabagara."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage4.png",
+      "text": "Mpyisi aratongana ko yahawe imirimo myinshi. Ariko Bakame abwira Mpyisi ko umurimo wo kurinda inyoni ari wo ukomeye cyane kandi ufite akamaro gakomeye. Ibyo Bakame abisobanura agira ati: \"Umurimo wanjye ntabwo woroshye. Nzurira ibiti kugira ngo nirukane inyoni, ku manywa na n'ijoro. Kandi wowe ntabwo ushobora kurira igiti."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage5.png",
+      "text": "Nuko Mpyisi anyurwa n'amagambo Bakame amubwiye. Yemera guhinga umurima wenyine. Kari akazi kenshi. Bakame nta kintu yamufashijeho na gito. Amaze guhinga, atera ibigori mu murima wose, kandi wenyine."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage6.png",
+      "text": "Igihe ibyatsi bibi byari bimaze kumera mu murima, Mpyisi yakoresheje isuka arabibagara. Kari akazi kenshi. Bakame yicaraga ku rutare akaririmba agira ati: \"Inshuti yanjye ni umukozi, njyewe ndi umujyanama we. Akora nk'imashini, njyewe ndi umuyobozi we. Ubutaka arabusanza, imisozi arayihingagura, imbuto arayitera, ibyatsi bibi arabirandura, hanyuma ibigori tukabisarura.\""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage7.png",
+      "text": "Mu gihe ibigori byari bigiye kwera, Bakame yishimiraga kuririmba ari mu murima, arinze inyoni. Kurinda inyoni ntabwo kari akazi gakomeye. Ntibyigeze bimubiza icyuya na gato."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage8.png",
+      "text": "Hanyuma ibigori bigera igihe cyo gusarurwa. Bakame abwira Mpyisi ko bazagabana umusaruro. Bakame ati: \"Ngewe nzasarura ikintu cyose kiri hejuru y'ubutaka, naho wowe uzasarure ikintu cyose kiri munsi y'ubutaka.\" Mpyisi yumva ko ari igitekerezo cyiza."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage9.png",
+      "text": "Bakame aravuga ati: \"Nzabanza gusarura ibyanjye, hanyuma nawe ubone gusarura ibyawe.\" Nuko Bakame asarura ibigori byose byari mu murima, abishyira mu kigega ke."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage10.png",
+      "text": "Mpyisi ajya gusarura ibyari munsi y'ubutaka. Aracukura yizeye gukuramo umusaruro mwinshi. Gusa icyo yasanze munsi y'ubutaka yari imizi gusa. Aracukura ahantu hose; abura icyo asarura."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage11.png",
+      "text": "Mpyisi abona ko bamuhenze ubwenge. Ararakara. Asubira mu rugo afite ibitebo birimo ubusa. Ku mugoroba ajya kwa Bakame afite agahinda kenshi. Abwira Bakame ati: \"Reka twongere duhingire hamwe nshuti yange.\""
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage12.png",
+      "text": "Mpyisi yungamo ati: \"Kuri iyi nshuro, nge nzasarura ikintu cyose kiri hejuru y'ubutaka, hanyuma wowe uzasarure ikintu cyose kizerera munsi y'ubutaka.\" Bakame arabyemera. Abwira Mpyisi ko aho kongera guhinga ibigori, byaba byiza bahinduye igihingwa. Nuko bemeranya gutera ibirayi."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage13.png",
+      "text": "Magurijana akimara kugenda, inzoka iba igeze kwa Maguru. Isaba Maguru ivuga iti: \"Nyamuna Maguru mpa amaguru nibura make.\""
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage14.png",
+      "text": "Mpyisi kandi ashimangira ko noneho bagomba guhingira hamwe, bagatera kandi bakabagara bombi. Bakame arabyemera. Nuko bakorera hamwe i, baririmba."
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage15.png",
+      "text": "Bakame asarura ibirayi byinshi kandi binini. Abishyira mu buhunikiro bwayo. Mpyisi abonye umusaruro wa Bakame, agira umujinya cyane. Nuko abaza Bakame ati: \"Kuki wampenze ubwenge?\" Bakame amusobanurira ko ari, we ubwe wihitiyemo gusarura ibiri hejuru y'ubutaka."
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage16.png",
+      "text": "Mpyisi ararakara cyane. Yirukankana Bakame agira ngo amwihimureho. Bakame ariruka cyane arahunga. Kuva icyo gihe, Bakame na Mpyisi bahindutse abanzi."
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fimage8.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 17,
+    "words": 491
+  }
+}

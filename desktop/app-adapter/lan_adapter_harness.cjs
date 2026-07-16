@@ -120,7 +120,7 @@ function seedConfig(port, extra = {}) {
     firestoreAllowed: false,
     cloudSessionAllowed: false,
     lanApiBase: 'http://127.0.0.1:' + port,
-    lanPin: 'HARNESS-PIN',
+    lanToken: 'HARNESS-TOKEN',
     source: 'harness',
     ...extra,
   }));
@@ -195,17 +195,17 @@ async function main() {
     const confirmGone = await A.getDoc(sRef);
     check('deleteDoc really deleted', confirmGone.exists() === false);
 
-    // 8. The PIN travels as the x-allo-lan-pin header on fetches.
-    let seenPin = null;
+    // 8. The scoped token travels as a bearer credential on fetches.
+    let seenAuthorization = null;
     const echo = http.createServer((req, res) => {
-      seenPin = req.headers['x-allo-lan-pin'] || null;
+      seenAuthorization = req.headers.authorization || null;
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end('{}');
     });
     await new Promise((resolve) => echo.listen(0, '127.0.0.1', resolve));
     seedConfig(echo.address().port);
     await A.getDoc(A.doc(...sessionArgs));
-    check('PIN header sent on bridge reads', seenPin === 'HARNESS-PIN');
+    check('scoped token sent on bridge reads', seenAuthorization === 'Bearer HARNESS-TOKEN');
     await new Promise((resolve) => echo.close(resolve));
 
     // 9. Explicit cloud opt-in is honored even with a lanApiBase present.

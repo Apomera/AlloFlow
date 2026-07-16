@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-eed7a735-untitled",
+  "title": "እንዴት ደህንነቴን መጠበቅ እችላለው?",
+  "description": "A Amharic picture book, readable free at Bloom Library.",
+  "language": "Amharic",
+  "langCode": "am",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "SIL Ethiopia"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL Ethiopia",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tBsxoLWZk2"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/samuel_marew%40sil.org%2feed7a735-19e1-4b25-9d57-ad35a529e1af%2f%e1%8a%a5%e1%8a%95%e1%8b%b4%e1%89%b5+%e1%8b%b0%e1%88%85%e1%8a%95%e1%8a%90%e1%89%b4%e1%8a%95+%e1%88%98%e1%8c%a0%e1%89%a0%e1%89%85+%e1%8a%a5%e1%89%bd%e1%88%8b%e1%88%88%e1%8b%8d%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"እንዴት ደህንነቴን መጠበቅ እችላለው?\" (Amharic)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

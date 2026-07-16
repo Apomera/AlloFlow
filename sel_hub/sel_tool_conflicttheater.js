@@ -660,6 +660,70 @@ window.SelHub = window.SelHub || {
       var coachHintDismissed = !!d.coachHintDismissed;
       // Per-scenario history of past attempts (for compare-to-previous)
       var attemptHistory = d.attemptHistory || [];
+      var memoryResetConfirm = !!d.memoryResetConfirm;
+
+      function focusConflictControl(id) {
+        setTimeout(function() {
+          var target = document.getElementById(id);
+          if (target && target.focus) target.focus();
+        }, 50);
+      }
+      function openMemoryResetConfirm() {
+        upd('memoryResetConfirm', true);
+        focusConflictControl('cft-memory-reset-cancel');
+      }
+      function closeMemoryResetConfirm() {
+        upd('memoryResetConfirm', false);
+        focusConflictControl('cft-memory-reset-trigger');
+      }
+      function commitMemoryReset() {
+        if (!memoryResetConfirm) return;
+        upd({ memoryResetConfirm: false, memory: {} });
+        announceSR('All character memories cleared.');
+        focusConflictControl('cft-scenario-heading');
+      }
+      function handleMemoryResetKeyDown(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeMemoryResetConfirm();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var buttons = event.currentTarget.querySelectorAll('button:not([disabled])');
+        if (!buttons.length) return;
+        var first = buttons[0];
+        var last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+      function renderMemoryResetConfirm() {
+        if (!memoryResetConfirm) return null;
+        return h('div', {
+          id: 'cft-memory-reset-confirm',
+          role: 'alertdialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'cft-memory-reset-title',
+          'aria-describedby': 'cft-memory-reset-description',
+          onKeyDown: handleMemoryResetKeyDown,
+          style: { position: 'fixed', inset: 0, zIndex: 10003, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(2,6,23,0.82)' }
+        }, h('div', { style: { width: '100%', maxWidth: 500, padding: 22, borderRadius: 14, border: '2px solid #f87171', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), boxShadow: '0 20px 60px rgba(0,0,0,0.45)' } },
+          h('h2', { id: 'cft-memory-reset-title', style: { margin: '0 0 8px', fontSize: 19, fontWeight: 900, color: _cftFg('#f1f5f9') } }, 'Reset all character memory?'),
+          h('p', { id: 'cft-memory-reset-description', style: { margin: '0 0 18px', fontSize: 13, lineHeight: 1.6, color: _cftFg('#cbd5e1') } }, 'This permanently removes every character memory from your past conversations. This cannot be undone.'),
+          h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
+            h('button', { id: 'cft-memory-reset-cancel', onClick: closeMemoryResetConfirm,
+              style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #64748b', background: _cftBg('#1e293b'), color: _cftFg('#e2e8f0'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            }, 'Cancel'),
+            h('button', { onClick: commitMemoryReset,
+              style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #f87171', background: '#b91c1c', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+            }, 'Reset character memory')
+          )
+        ));
+      }
 
       // ──────────────────────────────────────────────────────────
       // Helper: ensure portrait exists for (characterId, mood)
@@ -1032,6 +1096,7 @@ window.SelHub = window.SelHub || {
       if (mode === 'select') {
         var scenarioList = Object.keys(SCENARIOS).map(function(k) { return SCENARIOS[k]; });
         return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
+          renderMemoryResetConfirm(),
           // ── Early-preview banner (Tier 1 #7: beta-gate ConflictTheater) ──
           h('div', {
             role: 'note',
@@ -1043,7 +1108,7 @@ window.SelHub = window.SelHub || {
           ),
           h('div', { style: { textAlign: 'center', marginBottom: 18 } },
             h('div', { style: { fontSize: 48, marginBottom: 4 } }, '🎭'),
-            h('h2', { style: { fontSize: 22, fontWeight: 800, color: _cftFg('#f1f5f9'), marginBottom: 4 } }, 'Conflict Theater'),
+            h('h2', { id: 'cft-scenario-heading', tabIndex: -1, style: { fontSize: 22, fontWeight: 800, color: _cftFg('#f1f5f9'), marginBottom: 4 } }, 'Conflict Theater'),
             h('p', { style: { fontSize: 12, color: _cftFg('#94a3b8'), margin: 0, maxWidth: 520, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 } },
               'Pick a conflict to mediate. Each scenario has two AI characters with their own personalities, moods, and reasons. Practice acknowledging feelings, making space, naming harm, and proposing repair.'
             )
@@ -1082,12 +1147,10 @@ window.SelHub = window.SelHub || {
               'Characters remember ' + Object.keys(memory).length + ' past conversation' + (Object.keys(memory).length === 1 ? '' : 's') + ' with you.'
             ),
             h('button', {
+              id: 'cft-memory-reset-trigger',
               'aria-label': 'Make characters forget our past conversations',
-              onClick: function() {
-                var ok = (typeof window.confirm === 'function') ? window.confirm('Make all characters forget your past conversations? This cannot be undone.') : true;
-                if (ok) { upd('memory', {}); announceSR('All character memories cleared.'); }
-              },
-              style: { padding: '4px 10px', background: 'transparent', color: _cftFg('#64748b'), border: '1px solid #334155', borderRadius: 8, fontSize: 10, cursor: 'pointer' }
+              onClick: openMemoryResetConfirm,
+              style: { padding: '4px 10px', minHeight: 24, background: 'transparent', color: _cftFg('#64748b'), border: '1px solid #334155', borderRadius: 8, fontSize: 10, cursor: 'pointer' }
             }, '🧹 Reset all character memory')
           ),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
@@ -1488,12 +1551,11 @@ window.SelHub = window.SelHub || {
 
       // Input + send
       var inputRow = h('div', { style: { display: 'flex', gap: 8 } },
-        h('textarea', {
+        h('textarea', { 'aria-label': 'Your message',
           value: studentInput,
           onChange: function(e) { upd('studentInput', e.target.value); },
           onKeyDown: function(e) { if (e.key === 'Enter' && !e.shiftKey && studentInput.trim() && !loading) { e.preventDefault(); sendTurn(); } },
           placeholder: addressing === 'both' ? 'Say something to both of them...' : 'Say something to ' + (CAST[addressing] ? CAST[addressing].name : '...'),
-          'aria-label': 'Your message',
           rows: 2,
           disabled: loading,
           style: { flex: 1, padding: 10, borderRadius: 10, border: '1px solid #334155', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }

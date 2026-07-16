@@ -1,0 +1,122 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-7e136c37-untitled",
+  "title": "៤៦ខ នអើន ក៝នឆែញច៝អ្យើតអ្យើង",
+  "description": "A story of children riding stilts (Easy Reader - Level 2)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/cYQj7Z5eHy"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage1.png",
+      "text": "​ព្រលឹម​ស្រាងៗ ពើតដើរ​​ទៅ​ផ្ទះរបស់​មើវ។​\nពើត​ចង់បបួលមើវ​ ដើម្បី​ធ្វើ​ជើង​ឫស្សី​ជីះលេង​។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage2.png",
+      "text": "ពេល​ពួកគេ​​ជជែកត្រូវរូវ​គ្នា​ហើយ ក៏នាំគ្នាទៅដោយលួចលាក់​ពីឪពុកម្តាយ​។​"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage3.png",
+      "text": "ពួក​គេនាំ​គ្នា​ដើររកឫស្សី​ក្នុង​ព្រៃ ដោយ​​កាន់​ផ្គាក់ និង​ស្ពាយ​សាស​ទៅ​ជាមួយ​ផង​។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage4.png",
+      "text": "ខណៈពេលកំពុង​តែរក​ឫស្សី​ ពួកគេជួប​នឹងដំរី​ឈ្មោល​មួយក្បាល​ដែលកំពុងស៊ីឫស្សីជាចំណី។ ​"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage5.png",
+      "text": "ពេល​ឃើញ​ដំរីអ្នកស្រុក​នោះ ពួកគេ​នាំ​គ្នារើសដុំថ្ម​ចោល​ដំរី​លេង​​។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage6.png",
+      "text": "ដំរី​ឈឺ​ដោយសារត្រូវ​ដុំថ្ម​ដែល​ពួកគេចោល​ នោះវា​ក៏ខឹង​​ ហើយ​ដេញតាមពួកគេទៅ។ ​"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage7.png",
+      "text": "​ពួកគេ​រត់​​រំលង​ផុតពីរបីភ្នំ ទើបដំរី​នោះឈប់​ដេញ​។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage8.png",
+      "text": "ក្រោយ​មក​ពួកគេក៏នាំគ្នាដើររកឫស្សីបន្ត ដើម្បីធ្វើជើង​ឫស្សី។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage9.png",
+      "text": "ពួក​គេ​ប្រទះ​ឃើញ​ដើម​ឫស្សី​មួយ​គុម្ពដែលល្អ រួច​ក៏នាំគ្នា​កាប់​ឫស្សីនោះទៅ។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage10.png",
+      "text": "ក្រោយ​ពេល​​កាប់លះ​ស្លឹកចេញ​ ម្នាក់​ៗបាន​ឫស្សីបួន​ដើម​ដែលមាន​ប្រវែង​បួនមែត្រ។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage11.png",
+      "text": "ពួកគេ​នាំ​គ្នា​លីឫស្សី​ទាំង​នោះ​មកផ្ទះ​វិញ​ ដើម្បី​ទុកអោយ​វាស្ងួត​។ ​"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage12.png",
+      "text": "ដល់​ពេល​ឫស្សី​នោះ​ស្ងួត​ហើយ​ ពួកគេ​ក៏នាំគ្នាធ្វើជាជើង​ឫស្សី​ដើម្បីជិះលេង​។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage13.png",
+      "text": "មាន​ថ្ងៃ​មួយ​ពួក​គេ​បាននាំគ្នាជិះជើង​ឫស្សីនោះបង្អួត​ដល់អ្នកភូមិ​។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage14.png",
+      "text": "ពេលដែលកំពុង​ជិះបង្ហាញនោះ ពួកគេ​ជិះធ្វើរត់ប្រជែង​គ្នា​ស្រាប់​តែបាន​ជាន់​កូនឆ្កែអ្នកភូមិ​ធ្លាយ​ពោះវៀន​។ ​​​"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage15.png",
+      "text": "​បន្ទាប់មក​ម្ចាស់​កូនឆ្កែ ក៏ស្តី​ដល់ពួកគេ​ទាំង​ពីរយ៉ាង​ខ្លាំង​ ​និង​អោយ​សងកូនឆ្កែ​ដែលងាប់នោះទៀត​។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage16.png",
+      "text": "ពេលមកដល់ផ្ទះឪពុកម្តាយ​ពើត​ និង​ឪពុកម្តាយ​មើវ​ស្តីបន្ទោស​ និងប្រៀនប្រដៅពួកគេមិនអោយ​ជិះជើង​ឫស្សីនោះតទៀត​ទេ​។"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f7e136c37-4ddd-48f6-ac72-3d61ecb39978%2f%e1%9f%a4%e1%9f%a6%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%89%e1%9e%85%e1%9f%9d%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%8f%e2%80%8b%e1%9e%a2%e1%9f%92%e1%9e%99%e1%9e%be%e1%9e%84%2fimage17.png",
+      "text": "ចាប់​ពីពេលនោះមក​ ពួកគេ​នាំគ្នាលេងអ្វីៗ​ដែលឪពុកម្តាយ​អ៊ុំពូមីង​បាន​ណែនាំ​៕​"
+    }
+  ],
+  "stats": {
+    "pages": 17,
+    "words": 43
+  }
+}

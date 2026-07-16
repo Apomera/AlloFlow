@@ -1,0 +1,122 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d9b20300-untitled",
+  "title": "៦១ ងក៝ចយៅ លុក្លេរ «រាអី»",
+  "description": "A History of Lu Kleer Ra-ii Mountain with Khmer translation.",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Culture"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/2ZIS6XBU4K"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fimage1.png",
+      "text": ""
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fimage2.png",
+      "text": ""
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fimage3.png",
+      "text": ""
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fBhrii+dhak+Ret+4.png",
+      "text": ""
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fBhrii+dhak+Ret+5.png",
+      "text": ""
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fBhrii+dhak+Ret+6.png",
+      "text": ""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fBhrii+dhak+Ret+7.png",
+      "text": ""
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fBhrii+dhak+Ret+8.png",
+      "text": ""
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fBhrii+dhak+Ret+9.png",
+      "text": ""
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fBhrii+dhak+Ret+10.png",
+      "text": ""
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fBhrii+dhak+Ret+11.png",
+      "text": ""
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fBhrii+dhak+Ret+12.png",
+      "text": ""
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd9b20300-407c-440f-bd8a-4a8dec16839c%2f%e1%9f%a6%e1%9f%a1+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%99%e1%9f%85+%e1%9e%9b%e1%9e%bb%e1%9e%80%e1%9f%92%e1%9e%9b%e1%9f%81%e1%9e%9a+%c2%ab%e1%9e%9a%e1%9e%b6%e1%9e%a2%e1%9e%b8%c2%bb%2fimage.jpg",
+      "text": ""
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "ប្រវត្តនៃរឿងថ្មដារ៉ាអ៊‌ី​\n​\nកាលពីព្រេងនាយមានក្រមុំម្នាក់ឈ្មោះថាអ៊‌ី។ នៅពេលនោះនាងពុំទាន់មានគូរដណ្ដឹងនៅឡើយទេ។ មានថ្ងៃមួយនោះ នៅក្នុងគ្រួសារលោកយាយតូ ម៉ូកឹង ដើម្បីភ្ជាប់ពាក់ជាមួយនាងអ៊‌ី និងកូនប្រុសរបស់ខ្លួនឈ្មោះប្រ៉ង ហើយភាគីទាំងសង្ខាងបានព្រមព្រៀងគ្នា។ ចាប់តាំងពីពេលនោះមកអ្នកទាំងពីរបានក្លាយជាគូរដណ្ដឹងនិងគ្នា ជាច្រើនខែឆ្នាំមកហើយ។ លុះដល់រដូវធ្វើចំការហើយ ពួកគេតាមចាស់ៗធ្វើស្រែកាប់ចំការសុខសប្បាយជាធម្មតា ពេលព្រឹកទៅចំការ លុះដល់ពេលល្ងាចត្រឡប់មកភូមិដូចរាល់ដង។ ដល់យប់មួយ នៅក្បែរផ្ទះមួយនោះមានគេផឹកស្រា នាងអ៊‌ីជាគូរដណ្ដឹងប្រ៉ងក៏ទៅផឹកជាមួយអ្នកភូមិទាំងនោះដែរ ឯចំណែកប្រ៉ងវិញ គាត់មិនបានទៅចូលរួមជាមួយពួកគេទេ។ មានកម្លោះផ្សេងតាមស្រលាញ់គូរដណ្ដឹងប្រ៉ង ពួកគេបានស្រលាញ់គ្នាយ៉ាងអស់ពីចិត្ត តែអ្នកទាំងពីរបានលាក់រឿងទាំងនោះ មិនឲ្យប្រ៉ងដឹងឡើយ។"
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "លុះដល់ថ្ងៃស្អែកឡើង នៅពេលពួកគេជំរះក្នុងចំការ ប្រ៉ងបានប្រើគូរដណ្ដឹងឲ្យយកទឹក តែនាងមិនព្រមយកឲ្យទេ លុះដល់កម្លោះត្រាយប្រើ ឲ្យនាងយកទឹកបែជានាងយល់ព្រមទៅវិញ។ កាលពីមុននាងតែងតែយកទឹកទៅឲ្យរហូត តាំងពីថ្ងៃនោះទេដែលនាងបានធ្វើដូច្នោះ។លុះទៅដល់ផ្ទះវិញប្រ៉ងបានគិតថា៖ “ហ៊ឺ! ប្រហែលជាគូរដណ្ដឹងខ្ញុំនេះ មានប្រុសផ្សេងហើយបានជានាងធ្វើដូច្នេះ ពីមុនគ្មានអ៊៉ីចឹងទេ តែយប់នេះខ្ញុំតាមដាននាងលមើល៍ ដើម្បីឲ្យដឹងច្បាស់ តើនាងពិតជាស្រលាញ់បុរសនោះមែនឬមិនមែន?” នៅយប់នោះអ្នកភូមិមានកម្មវិធី ពួកគេផឹកស្រា គូរដណ្ដឹងរបស់ប្រ៉ងទៅកន្លែងនោះដែរ ដើម្បីជួបនិងកម្លោះត្រាយ។ ប្រ៉ងតាមដានបានឃើញដូច្នោះមែន។ ឃើញដូច្នោះគាត់ខឹងណាស់និងកម្លោះត្រាយហើយនិងគូរដណ្ដឹងរបស់ខ្លួន ការទាំងនោះធ្វើឲ្យវាលែងមានសេចក្ដីសុខក្នុងចិត្ត ព្រោះនឹកដល់គូរដណ្ដឹងរបស់ខ្លួន។ កម្មវិធីនោះត្រូវបញ្ចប់ហើយ អ្នកទាំងពីរបានបណ្ដើរគ្នាតាមផ្លូវ និងជជែកគ្នាលេងពីរឿងផ្សេងៗ។"
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "ប្រ៉ងតាមដានពីក្រោយមិនឲ្យពួកគេឃើញឡើយ។ លុះដល់ដីដំបូកមួយនោះហើយ ពួកគេនិយាយលេងជជែកគ្នាលេងដូចរបៀបកម្លោះក្រមុំ តែមិនចាប់អារម្មទេថា ប្រ៉ងតាមពីក្រោយពួកគេឡើយ។ ពេលប្រ៉ងឃើញដូចនោះក៏ដកដាវចេញពីស្រោមហើយដេញកាប់កម្លោះត្រាយ តែកម្លោះត្រាយបានរត់គេចចេញពីកន្លែងនេះបាត់ទៅ។ ចំណែកនាងអ៊‌ីត្រូវប្រ៉ងចាប់បាន។ ប្រ៉ងបានសួរទៅគូរដណ្ដឹង ដើម្បីឲ្យនាងប្រាប់ទាំងអស់។ ពេលប្រ៉ងដឹងរឿងរ៉ាវទាំងនោះអស់ហើយ ប្រ៉ងមានចិត្តខឹងយ៉ាងខ្លាំង។ប្រ៉ងបាននិយាយទៅនាងថា៖ “ហេតុអ្វីបានជានាងធ្វើអ៊‌ីុចឹង ឥឡូវនេះខ្ញុំនិងកាប់នាងឯងចោល បើសិនបើខ្ញុំធ្វើយ៉ាងនេះចំពោះនាង តើនាងសុខចិត្តដែរឬ?”។ ក្រោយមកប្រ៉ងបានទាញគូរដណ្ដឹងរបស់ខ្លួន ហើយចាប់ចង គាត់សំលៀងដាវយ៉ាងមុតសូម្បី តែរុយទំក៏ដាច់ជាពីរដែរ។"
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "បន្ទាប់ពីសំលៀងដាវរូចគាត់កាប់នាងអ៊‌ីនោះចោលហើយក្បាលរបស់នាងគាត់ទម្លាក់ក្នុងទឹក ឯចំណែកខ្លួនរបស់នាងគាត់ទុកចោលនៅលើដីដំបូកនោះ។ តាំងពីពេលនោះមកដល់សព្វថ្ងៃនេះ គេហៅកន្លែងនោះថា (ក្លេររ៉ាអ៊៉ី)។ កាលពីដើមកន្លែងនេះគេពុំទាន់ហៅឈ្មោះក្លេរ៉ាអ៊៉ីដូចសព្វថ្ងៃនេះទេ។ នៅជំនាន់មុនមានតែដីអិដ្ធប៉ុណ្ណោះ ហូតមកដល់សព្វថ្ងៃនោះក្លាយជាថ្មទាំងអស់ហើយ។ ចាប់តាំងពីប្រ៉ងកាប់នាងអ៊‌ីនោះ គេហៅកន្លែងនោះថា (ក្លេររ៉ាអ៊‌ីមកដល់សព្វថ្ងៃ។ បើបងប្អូនបានទៅដល់កន្លែងនោះ ហើយបងប្អូនឹងបានឃើញថ្មរ៉ាអ៊‌ីនោះជាមិនខាន បើយើងចេញពីឃុំប៊ូស្រា មិនឆ្ងាយប៉ុន្មានទេដល់ទីនោះ។ ឯកន្លែងនោះរហូតសព្វថ្ងៃក្លាយជាថ្មអស់ហើយ នៅបន្សល់ទុកស្នាមថ្មសំលៀងប៉ុណ្ណោះ។ មានមនុយ្សជាច្រើនបាននិយាយថា៖ «បើម្នាក់បានឃើញស្នាមថ្មសំលៀងនោះ ក្នុងភូមិច្បាស់ជាមានហេតុការណ៌អ្វីកើតឡើង»៕"
+    }
+  ],
+  "stats": {
+    "pages": 17,
+    "words": 91
+  }
+}

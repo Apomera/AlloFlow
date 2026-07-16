@@ -1,0 +1,282 @@
+#!/usr/bin/env node
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+
+const root = path.resolve(__dirname, '..');
+const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
+const deployRoot = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_legacy');
+const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
+const docket = readJson(path.join(sourceRoot, 'next_review_docket.json'));
+const priorIds = new Set(['01', '02', '03', '04', '05'].flatMap((batch) => readJson(path.join(sourceRoot, `adjudication_batch_${batch}.json`)).items.map((item) => item.legacyId)));
+
+const sources = {
+  lateralization: {
+    title: 'Cortical, subcortical, and cerebellar contributions to language processing: A meta-analytic review of 403 neuroimaging experiments',
+    organization: 'NeuroImage, peer-reviewed meta-analysis indexed by PubMed (2023)',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/37768610/',
+    credibility: 'This large peer-reviewed neuroimaging meta-analysis identifies left-weighted specializations alongside bilateral, subcortical, and cerebellar contributions, directly countering a single-hemisphere account of language and reasoning.',
+  },
+  lateralizationVariation: {
+    title: 'Multi-factorial modulation of hemispheric specialization and plasticity for language in healthy and pathological conditions: A review',
+    organization: 'Cortex, peer-reviewed review indexed by PubMed (2016)',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/27321148/',
+    credibility: 'This peer-reviewed review synthesizes individual, developmental, anatomical, and clinical variation in language lateralization and documents that typical left dominance is a probabilistic pattern rather than an invariant rule.',
+  },
+  ekman: {
+    title: 'Constants across cultures in the face and emotion',
+    organization: 'Paul Ekman and Wallace V. Friesen, Journal of Personality and Social Psychology, 17(2), 124-129 (1971)',
+    url: 'https://doi.org/10.1037/h0030377',
+    credibility: 'This is the primary cross-cultural study underlying the classic universality claim. Its forced-choice story-and-photograph method is essential context for understanding both the finding and its inference limits.',
+  },
+  emotionCulture: {
+    title: 'Facial expressions of emotion are not culturally universal',
+    organization: 'Rachael E. Jack, Oliver G. B. Garrod, Hui Yu, Roberto Caldara, and Philippe G. Schyns, Proceedings of the National Academy of Sciences, 109(19), 7241-7244 (2012)',
+    url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3358835/',
+    credibility: 'This peer-reviewed cross-cultural study models how observers use facial information and reports culture-specific patterns, showing why recognition findings should not be taught as identical expression or interpretation in every context.',
+  },
+  janis: {
+    title: 'Groupthink: Psychological Studies of Policy Decisions and Fiascoes, Second Edition',
+    organization: 'Irving L. Janis, Houghton Mifflin (1982)',
+    url: 'https://search.worldcat.org/title/25271697',
+    credibility: 'This is the primary monograph defining the groupthink model and proposing multiple safeguards, including impartial leadership, independent subgroups, outside expertise, critical evaluation, and reconsideration meetings.',
+  },
+  groupthinkReview: {
+    title: 'Beyond fiasco: A reappraisal of the groupthink phenomenon and a new model of group decision processes',
+    organization: 'Ramon J. Aldag and Sally Riggs Fuller, Psychological Bulletin, 113(3), 533-552 (1993)',
+    url: 'https://doi.org/10.1037/0033-2909.113.3.533',
+    credibility: 'This peer-reviewed review in an APA journal evaluates the evidence for Janis\'s model and cautions that the proposed antecedents and poor-outcome link are not supported as a simple deterministic package.',
+  },
+  cognitiveAging: {
+    title: 'Normal Cognitive Aging',
+    organization: 'Caroline N. Harada, Marissa C. Natelson Love, and Kristen Triebel, Clinics in Geriatric Medicine, 29(4), 737-752 (2013)',
+    url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4015335/',
+    credibility: 'This clinician-authored, peer-reviewed review distinguishes crystallized knowledge from fluid abilities and summarizes average trajectories, later-life limits, and substantial heterogeneity among cognitively healthy adults.',
+  },
+  hrnb: {
+    title: 'Factor structure of the Halstead-Reitan neuropsychological battery: A review and integration',
+    organization: 'Sylvia An Ross, Daniel N. Allen, and Gerald Goldstein, Applied Neuropsychology: Adult, 20(2), 120-135 (2013)',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/23397998/',
+    credibility: 'This peer-reviewed review examines the constructs sampled by current Halstead-Reitan versions and emphasizes their multidimensional, factorially complex character rather than treating the battery as one pure brain-damage score.',
+  },
+  neuropsychAssessment: {
+    title: 'Neuropsychological Assessment',
+    organization: 'StatPearls, NCBI Bookshelf, U.S. National Library of Medicine',
+    url: 'https://www.ncbi.nlm.nih.gov/books/NBK513310/',
+    credibility: 'This clinician-authored NCBI Bookshelf chapter describes comprehensive evaluation as integration of interview, records, observations, validity assessment, appropriate norms, test patterns, and other medical evidence.',
+  },
+  testingStandards: {
+    title: 'Standards for Educational and Psychological Testing',
+    organization: 'American Educational Research Association, American Psychological Association, and National Council on Measurement in Education (2014)',
+    url: 'https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf',
+    credibility: 'These jointly published professional standards are the field\'s authoritative framework for validity, fairness, accessibility, score interpretation, and investigation of measurement and prediction differences across relevant groups.',
+  },
+  clozapine: {
+    title: 'FDA removes Risk Evaluation and Mitigation Strategy (REMS) program for the antipsychotic drug Clozapine',
+    organization: 'U.S. Food and Drug Administration, Drug Safety Communication (August 27, 2025)',
+    url: 'https://www.fda.gov/drugs/drug-safety-and-availability/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine',
+    credibility: 'The FDA regulates U.S. prescription-drug labeling and safety programs. This current communication states the June 2025 REMS removal while retaining the severe-neutropenia warning and label-based ANC monitoring recommendation.',
+  },
+  erp: {
+    title: 'Clinical practice guidelines for obsessive-compulsive disorder: 2025 update',
+    organization: 'Peer-reviewed clinical guideline archived by PubMed Central (2025)',
+    url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12900050/',
+    credibility: 'This current peer-reviewed guideline grades cognitive-behavioral therapy with exposure and response prevention as a first-line psychotherapy for OCD and distinguishes exposure from ritual or response prevention.',
+  },
+  delirium: {
+    title: 'Delirium - StatPearls',
+    organization: 'StatPearls, NCBI Bookshelf, U.S. National Library of Medicine',
+    url: 'https://www.ncbi.nlm.nih.gov/books/NBK470399/',
+    credibility: 'This current clinician-authored NCBI Bookshelf review states the acute, fluctuating attention-and-awareness criteria, medical or substance etiologies, and frequent coexistence of delirium with a baseline neurocognitive disorder.',
+  },
+  apaRecords: {
+    title: 'Ethical Principles of Psychologists and Code of Conduct: Standards 6.01 and 6.02',
+    organization: 'American Psychological Association',
+    url: 'https://www.apa.org/ethics/code',
+    credibility: 'The APA publishes the profession\'s ethics code. Its enforceable record standards address purposes, confidentiality, maintenance, dissemination, and disposal but do not create one universal seven-year retention period for every jurisdiction.',
+  },
+  jurisdictionExample: {
+    title: 'Oklahoma State Board of Examiners of Psychologists: Laws and Rules',
+    organization: 'Oklahoma State Board of Examiners of Psychologists',
+    url: 'https://oklahoma.gov/psychology/about-the-board/laws-rules.html',
+    credibility: 'This official psychology-board page currently requires six years after the last service unless a longer period is required by law, providing direct regulatory evidence that retention periods are jurisdiction-specific.',
+  },
+};
+
+const revisions = [
+  {
+    legacyId: 'legacy-da4ef0734ff60e5b', decision: 'major-rewrite', sourceVerification: 'language-lateralization-supported-global-left-analytic-profile-rejected',
+    findings: ['Language is left-lateralized in many people, but language tasks recruit bilateral cortical, subcortical, and cerebellar networks and lateralization varies among individuals.', 'The legacy bundle of language, logic, mathematics, sequential processing, and an “analytical” thinking style turns task-specific asymmetries into the unsupported popular left-brain personality myth.'],
+    sources: [sources.lateralization, sources.lateralizationVariation],
+    prompt: 'Which statement best reflects current evidence about hemispheric specialization?',
+    choices: ['Many people show left-weighted language processing, but complex cognition uses interacting bilateral networks and lateralization varies across people and tasks.', 'The left hemisphere independently performs all language, logic, and mathematics while the right hemisphere contributes only creativity.', 'Each person has one globally dominant hemisphere that determines an analytical or artistic personality and preferred learning style.', 'Because both hemispheres communicate, no reliable functional asymmetries have ever been observed for language or other tasks.'], answerIndex: 0,
+    rationale: 'Hemispheric specialization is real but task-specific and probabilistic. Language is left-lateralized in many people, yet language and other complex abilities depend on distributed, interacting networks in both hemispheres and beyond the cortex. Individual variation and plasticity are substantial. These findings do not support labeling a person globally “left-brained” or assigning logic, mathematics, and creativity to isolated halves.',
+    choiceRationales: ['This preserves the replicated left-weighted language pattern while correctly describing distributed networks, interhemispheric cooperation, and individual variation.', 'Language subfunctions can be lateralized, but neither hemisphere works independently and broad domains such as mathematics and creativity are not confined to opposite halves.', 'Evidence does not support a whole-person hemisphere type that determines personality or learning style; this popular inference exceeds task-level neuroscience findings.', 'Functional asymmetries are measurable, especially for aspects of language, so bilateral interaction does not imply that the hemispheres are identical in every task.'],
+  },
+  {
+    legacyId: 'legacy-b00109d3a7aa27f5', decision: 'major-rewrite', sourceVerification: 'classic-six-emotion-account-historically-supported-unqualified-universality-rejected',
+    findings: ['Ekman and Friesen reported cross-cultural matching of posed faces to emotion stories, supporting a classic set including happiness, sadness, anger, fear, disgust, and surprise.', 'Later work identifies cultural and task-method variation in production and perception, so “universal” should not imply one invariant facial signal, interpretation, or exhaustive emotion list across all cultures and contexts.'],
+    sources: [sources.ekman, sources.emotionCulture],
+    prompt: 'How should a psychologist describe the classic “six universal emotions” claim today?',
+    choices: ['It is an influential basic-emotion hypothesis with cross-cultural recognition evidence, but expression and interpretation also vary with culture, context, and study method.', 'It proves that every culture expresses and labels exactly six emotions with identical facial movements in every natural situation.', 'It shows that emotion recognition is entirely learned within each culture and that no cross-cultural similarities have been observed.', 'It establishes that a posed facial photograph reveals a person\'s true internal emotion with diagnostic certainty.'], answerIndex: 0,
+    rationale: 'The classic Ekman tradition found cross-cultural agreement linking some posed facial configurations with emotion stories or labels, often summarized as six basic emotions. That is an influential empirical claim, not proof of complete invariance. Cultural display rules, context, spontaneous behavior, task format, and differences in how observers sample facial information all affect production and interpretation.',
+    choiceRationales: ['This recognizes the historical evidence while retaining the methodological and cultural qualifications needed for a current one-best-answer item.', 'The original and later studies do not establish identical natural expression, labeling, or exhaustive emotion categories in every culture and circumstance.', 'Cross-cultural similarities have been reported, so an entirely culture-specific account is as absolute and unsupported as complete invariance.', 'A facial configuration is contextual evidence, not a mind-reading test; people can pose, mask, regulate, or display emotions in culturally shaped ways.'],
+  },
+  {
+    legacyId: 'legacy-accd00488c78c4e4', decision: 'major-rewrite', sourceVerification: 'devils-advocate-one-safeguard-multi-procedure-and-evidence-limits-added',
+    findings: ['Janis proposed a devil\'s advocate as one of several decision-process safeguards, alongside impartial leadership, independent subgroups, outside expertise, open criticism, and a second-chance meeting.', 'Later reviews question a deterministic groupthink model, so no single technique can be called the universally best or guaranteed prevention.'],
+    sources: [sources.janis, sources.groupthinkReview],
+    prompt: 'A highly cohesive leadership team wants to reduce premature consensus on a high-stakes decision. Which process best reflects groupthink-prevention principles?',
+    choices: ['Have the leader withhold an initial preference, invite independent analysis and outside critique, assign genuine critical evaluation, and revisit the decision before finalizing it.', 'Assign one nominal devil\'s advocate after the decision is final while keeping information, alternatives, and outside experts away from the group.', 'Require public unanimity at the start of discussion so dissent cannot delay implementation.', 'Let the directive leader frame the only acceptable option and treat member self-censorship as evidence of agreement.'], answerIndex: 0,
+    rationale: 'Janis proposed multiple safeguards intended to improve critical evaluation rather than one magic technique. These include impartial leadership, independent subgroups, outside experts, an empowered critical evaluator, discussion with trusted outsiders, and a later reconsideration meeting. Empirical critiques also caution that groupthink antecedents do not mechanically produce failure, so the target is a robust decision process, not a guaranteed label or cure.',
+    choiceRationales: ['This combines several independent checks and protects dissent before commitment, matching the procedural intent of the proposed safeguards.', 'A symbolic objection after closure cannot test assumptions or alternatives, and isolating the group preserves conditions the safeguards were designed to counter.', 'Demanding early unanimity increases pressure to self-censor and prevents the open comparison of evidence and alternatives needed for sound decisions.', 'Directive framing and interpreting silence as agreement suppress independent judgment and make it harder to discover unshared information or legitimate objections.'],
+  },
+  {
+    legacyId: 'legacy-e9a4afe155c89b97', decision: 'minor-revision', sourceVerification: 'average-crystallized-resilience-supported-lifespan-and-individual-qualification-added',
+    findings: ['Vocabulary and accumulated knowledge are crystallized abilities that, on average, remain stable or improve through much of adulthood and are more age-resilient than processing speed and many fluid abilities.', 'The pattern is an average trajectory, not indefinite improvement or an individual diagnostic rule; late-life decline, disease, cohort, education, practice, and substantial individual variability matter.'],
+    sources: [sources.cognitiveAging],
+    prompt: 'Which average cognitive-aging pattern is most consistent with research on healthy adults?',
+    choices: ['Vocabulary and accumulated knowledge often remain stable or improve through much of adulthood, while processing speed and some fluid abilities tend to decline earlier.', 'Every crystallized ability increases continuously until death, regardless of disease, education, experience, or individual variation.', 'All cognitive abilities decline at the same age and rate because fluid and crystallized intelligence are interchangeable.', 'Processing speed reliably improves throughout late life while vocabulary necessarily begins declining in early adulthood.'], answerIndex: 0,
+    rationale: 'Crystallized intelligence draws on accumulated knowledge and experience; vocabulary and general knowledge often remain stable or improve through much of adulthood. Processing speed and several fluid abilities tend to show earlier average decline. These are group trends with substantial heterogeneity, not rules for an individual. Very late age, neurologic disease, health, education, cohort, and measurement can alter the observed course.',
+    choiceRationales: ['This states the comparative average pattern without turning resilience of crystallized skills into a universal or lifelong guarantee.', 'Crystallized performance can plateau or decline, particularly in very late life or disease, and experience and measurement differ across individuals.', 'Fluid and crystallized abilities are distinguishable constructs with different average trajectories, although their changes can be related within a person.', 'The typical comparison runs in the opposite direction: processing speed is generally more age-sensitive than vocabulary and accumulated knowledge.'],
+  },
+  {
+    legacyId: 'legacy-4cb1b02fed1d4884', decision: 'major-rewrite', sourceVerification: 'fixed-neuropsychological-battery-purpose-supported-standalone-brain-damage-diagnosis-rejected',
+    findings: ['The Halstead-Reitan is a fixed neuropsychological battery sampling multiple cognitive, language, sensory-perceptual, and motor functions relevant to brain-behavior assessment.', 'Scores do not diagnose or localize “brain damage” by themselves; comprehensive interpretation integrates referral question, history, observations, appropriate norms, performance validity, medical data, and alternative explanations.'],
+    sources: [sources.hrnb, sources.neuropsychAssessment],
+    prompt: 'What is the most defensible role of the Halstead-Reitan Neuropsychological Battery in a contemporary evaluation?',
+    choices: ['It provides a standardized multidomain performance pattern that a qualified clinician integrates with history, validity evidence, norms, observations, and other clinical data.', 'It is a single definitive test that independently proves the presence, cause, and exact location of brain damage without other information.', 'It is primarily a self-report personality inventory designed to diagnose one specific personality disorder.', 'It replaces medical examination and neuroimaging whenever a person reports cognitive or neurologic symptoms.'], answerIndex: 0,
+    rationale: 'The Halstead-Reitan is a historically influential fixed battery that samples several neuropsychological functions. Its results can contribute to identifying strengths, weaknesses, and patterns relevant to brain-behavior questions. Contemporary neuropsychological inference is integrative: no battery score alone establishes etiology or precise lesion location, and interpretation must consider validity, norms, culture, education, history, observations, medical findings, and competing explanations.',
+    choiceRationales: ['This correctly describes the battery as one standardized component within a comprehensive, validity-aware neuropsychological evaluation.', 'Complex test performance is multiply determined, so one battery cannot independently establish presence, cause, and exact anatomic location of injury.', 'The battery contains performance-based neuropsychological measures across multiple domains and is not a disorder-specific self-report personality inventory.', 'Neuropsychological testing can complement medical and imaging data, but it does not supersede neurologic evaluation or other indicated diagnostic procedures.'],
+  },
+  {
+    legacyId: 'legacy-16804bc7e333c706', decision: 'major-rewrite', sourceVerification: 'fairness-and-bias-multifaceted-universal-minority-unfairness-claim-rejected',
+    findings: ['Testing standards treat fairness and bias as evidence-based questions about valid interpretation, access, administration, measurement invariance, item functioning, and prediction for intended groups and uses.', 'A group mean difference alone does not establish bias, while a DIF flag alone is not a final substantive verdict; the construct, criterion, context, consequences, and alternative explanations require review.'],
+    sources: [sources.testingStandards],
+    prompt: 'Which finding would most directly support investigating bias in a test\'s intended use?',
+    choices: ['After relevant ability is accounted for, scores or items function differently across groups in a way that threatens the intended interpretation or prediction.', 'One group has a lower raw-score mean, with no analysis of construct relevance, opportunity, measurement, prediction, or administration conditions.', 'The test is challenging and produces a wide score distribution for every group in the intended population.', 'Some examinees dislike the test format even though accessibility, validity, item functioning, and prediction evidence are equivalent.'], answerIndex: 0,
+    rationale: 'Bias is not synonymous with any group difference or difficulty. It concerns systematic construct-irrelevant distortion or differential validity of the intended score interpretation or use. Evidence may include differential item or test functioning, lack of measurement invariance, differential prediction, inaccessible administration, or construct-irrelevant barriers. Statistical flags require substantive review, and fairness also includes access and consequences beyond one statistic.',
+    choiceRationales: ['This identifies a residual group difference tied to the validity of the intended inference, making it direct evidence for a focused bias investigation.', 'Mean differences can arise from many sources and cannot by themselves locate construct-irrelevant measurement or prediction error.', 'Difficulty and score spread are not inherently biased when the construct, population, administration, access, and interpretation are supported by evidence.', 'Preference may inform usability, but dislike alone does not establish systematic measurement error or differential validity of the score interpretation.'],
+  },
+  {
+    legacyId: 'legacy-da2f10ad0c34a4ca', decision: 'major-rewrite', sourceVerification: 'treatment-resistant-role-and-neutropenia-risk-supported-2025-rems-status-updated',
+    findings: ['Clozapine has a distinctive evidence-based role for treatment-resistant schizophrenia and carries a potentially fatal risk of severe neutropenia.', 'The FDA removed the mandatory Clozapine REMS effective June 13, 2025; removal did not eliminate the risk, boxed warning, Medication Guide, or label-based ANC monitoring recommendation.'],
+    sources: [sources.clozapine],
+    prompt: 'Which statement accurately reflects current U.S. clozapine safety guidance?',
+    choices: ['Clozapine remains important for treatment-resistant schizophrenia and can cause severe neutropenia; the FDA removed the REMS in 2025 but still recommends ANC monitoring under current labeling.', 'Removal of the REMS means severe neutropenia is no longer a recognized risk and blood-count monitoring has no clinical role.', 'The REMS remains a mandatory national dispensing registry, and pharmacies must reject every prescription lacking a reported ANC in that system.', 'Clozapine is distinguished mainly as a first-line drug for uncomplicated insomnia without serious hematologic or other monitoring considerations.'], answerIndex: 0,
+    rationale: 'Clozapine can be particularly valuable for people whose schizophrenia remains symptomatic despite other treatments, but severe neutropenia remains a serious, potentially fatal risk. The FDA removed the mandatory REMS program in June 2025 after concluding that labeling could manage the risk and the registry burden impeded access. The agency still recommends ANC monitoring according to current prescribing information; regulatory removal is not risk removal.',
+    choiceRationales: ['This accurately separates clozapine\'s clinical role and continuing hematologic risk from the current status of the former dispensing program.', 'The FDA explicitly states that severe-neutropenia risk remains and that ANC monitoring should continue under the prescribing information.', 'Since June 2025, enrollment and ANC reporting to the former REMS are no longer federal prerequisites for dispensing clozapine.', 'Clozapine is an antipsychotic with major safety considerations, not routine first-line monotherapy for uncomplicated sleep difficulty.'],
+  },
+  {
+    legacyId: 'legacy-94395834fab90351', decision: 'minor-revision', sourceVerification: 'first-line-psychotherapy-supported-mechanism-and-treatment-choice-qualified',
+    findings: ['Exposure and response prevention is a first-line evidence-based psychotherapy for obsessive-compulsive disorder.', 'ERP involves planned contact with obsessional cues while refraining from compulsive rituals; treatment is collaborative and individualized, and first-line does not mean universally sufficient or the only evidence-based option.'],
+    sources: [sources.erp],
+    prompt: 'Which intervention most specifically represents exposure and response prevention for obsessive-compulsive disorder?',
+    choices: ['Collaboratively approaching obsession-triggering cues while refraining from the usual compulsion long enough to learn that the ritual is not required.', 'Avoiding every trigger permanently so that obsession-related distress can never occur during treatment.', 'Performing the compulsion immediately after each exposure to guarantee rapid anxiety reduction.', 'Using supportive discussion alone while agreeing never to test feared predictions or alter ritual behavior.'], answerIndex: 0,
+    rationale: 'ERP combines planned exposure to obsession-triggering thoughts, images, objects, or situations with prevention of the compulsive response. Repeated practice supports new learning about distress, uncertainty, feared outcomes, and the nonnecessity of rituals. It is a first-line psychotherapy for OCD, but delivery should be collaborative, paced, culturally responsive, and adapted to comorbidity, risk, preferences, developmental needs, and treatment access.',
+    choiceRationales: ['This includes both essential components—contact with the relevant cue and prevention of the ritual—within a collaborative learning process.', 'Global avoidance maintains the cue-threat association and prevents the corrective learning that planned exposure is intended to support.', 'Completing the ritual provides short-term relief that can negatively reinforce compulsive behavior, directly opposing response prevention.', 'Support can aid engagement, but discussion without exposure or ritual change does not constitute the specific ERP intervention described in the stem.'],
+  },
+  {
+    legacyId: 'legacy-b5947a089621a3e7', decision: 'major-rewrite', sourceVerification: 'acute-fluctuating-attention-supported-dementia-course-and-coexistence-qualified',
+    findings: ['Delirium is defined by an acute and fluctuating disturbance of attention and awareness with an additional cognitive change and evidence of a medical, substance, or toxic cause.', 'Many major neurocognitive disorders are chronic, but course varies and delirium commonly occurs on top of preexisting dementia; onset speed alone should not be used as an exclusive diagnostic rule.'],
+    sources: [sources.delirium],
+    prompt: 'An older adult with established dementia develops new inattention and fluctuating alertness over two days during a urinary infection. What is the best interpretation?',
+    choices: ['Evaluate for delirium superimposed on dementia because the acute, fluctuating change in attention is not explained by the stable baseline diagnosis.', 'Exclude delirium because delirium and a major neurocognitive disorder cannot occur in the same person.', 'Assume ordinary dementia progression because any new cognitive symptom in a person with dementia must have the same cause.', 'Diagnose a new personality disorder because infection-related changes in attention are not medically relevant.'], answerIndex: 0,
+    rationale: 'The defining signal for delirium is an acute change from baseline with fluctuating attention and awareness, accompanied by cognitive disturbance and attributable to a medical condition, substance, withdrawal, medication, or toxin. Dementia is a major risk factor rather than an exclusion: delirium frequently occurs superimposed on a neurocognitive disorder. Clinicians must establish baseline, search urgently for causes, and avoid reducing the distinction to one simple onset slogan.',
+    choiceRationales: ['This recognizes the acute attention change and common coexistence of delirium with dementia, prompting evaluation of the reversible precipitant.', 'A baseline neurocognitive disorder increases delirium vulnerability; the diagnoses can coexist when the acute disturbance exceeds the person\'s usual status.', 'Attributing every acute change to dementia can miss infection, medication effects, metabolic problems, or other urgent and potentially treatable causes.', 'Abrupt inattention during infection is a medical and neuropsychiatric warning sign, not evidence for a newly developed enduring personality pattern.'],
+  },
+  {
+    legacyId: 'legacy-e6e3e5b4bbadaedb', decision: 'major-rewrite', sourceVerification: 'universal-seven-year-rule-rejected-jurisdiction-specific-policy-required',
+    findings: ['The APA Ethics Code requires appropriate creation, maintenance, confidentiality, retention, and disposal of records for professional, institutional, billing, continuity, and legal purposes, but it does not set one seven-year term for every psychologist.', 'Jurisdictional rules, client age, record type, payer or institution requirements, limitation periods, litigation holds, and other law can produce different and sometimes longer schedules; an official Oklahoma rule, for example, currently uses six years unless law requires longer.'],
+    sources: [sources.apaRecords, sources.jurisdictionExample],
+    prompt: 'A psychologist is creating a clinical-record retention policy. Which approach is most defensible?',
+    choices: ['Identify every applicable jurisdictional, federal, contractual, institutional, and professional requirement, address minors and holds, and follow the controlling longest applicable period with secure disposal.', 'Use seven years for every record in every jurisdiction because the APA Ethics Code establishes that single universal legal deadline.', 'Destroy all records immediately after termination so confidentiality can never be breached by later access.', 'Retain every record forever without evaluating privacy risk, client access, storage security, governing law, or lawful disposal.'], answerIndex: 0,
+    rationale: 'There is no single U.S. retention number that safely answers every psychology-practice scenario. The APA Ethics Code describes why psychologists create, maintain, retain, and securely dispose of records but does not impose a universal seven-year duration. The controlling schedule depends on jurisdiction and can also be affected by minors, record type, payer or institution rules, limitation periods, audits, subpoenas, and litigation holds. Current local authority and risk consultation are essential.',
+    choiceRationales: ['This begins with the controlling authorities, resolves overlapping requirements conservatively, and includes confidentiality and lawful disposal throughout the record life cycle.', 'Seven years appears in some guidance and rules, but it is not one nationwide Ethics Code deadline and can be shorter or longer than controlling requirements.', 'Immediate destruction can impair continuity, access, billing support, legal compliance, and defense of care, and may violate mandatory retention or hold duties.', 'Indefinite retention can create avoidable confidentiality and security exposure and is not automatically required when lawful, documented disposal is permitted.'],
+  },
+];
+
+const docketById = new Map(docket.items.map((item) => [item.legacyId, item]));
+const answerPositions = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1];
+const moveKey = (values, fromIndex, toIndex) => {
+  const reordered = values.slice();
+  const [keyedValue] = reordered.splice(fromIndex, 1);
+  reordered.splice(toIndex, 0, keyedValue);
+  return reordered;
+};
+const items = revisions.map((revision, index) => {
+  const candidate = docketById.get(revision.legacyId);
+  if (!candidate) throw new Error(`Missing docket candidate ${revision.legacyId}`);
+  if (priorIds.has(revision.legacyId)) throw new Error(`Candidate already adjudicated: ${revision.legacyId}`);
+  const targetAnswerIndex = answerPositions[index];
+  return {
+    adjudicationPosition: index + 1,
+    legacyId: revision.legacyId,
+    domainId: candidate.domainId,
+    originalPrompt: candidate.prompt,
+    originalAnswerIndex: candidate.answerIndex,
+    decision: revision.decision,
+    sourceVerification: revision.sourceVerification,
+    findings: revision.findings,
+    workflowStage: 'editorial-adjudicated-quarantine',
+    learnerVisibleInNativeBank: false,
+    independentExpertStatus: 'not-started',
+    productionStatus: 'not-production-validated',
+    revisedItem: {
+      prompt: revision.prompt,
+      choices: moveKey(revision.choices, revision.answerIndex, targetAnswerIndex),
+      answerIndex: targetAnswerIndex,
+      rationale: revision.rationale,
+      choiceRationales: moveKey(revision.choiceRationales, revision.answerIndex, targetAnswerIndex),
+      sourceDetails: revision.sources,
+    },
+  };
+});
+
+const expectedDomains = { biological: 1, 'cognitive-affective': 1, 'social-cultural': 1, lifespan: 1, assessment: 2, intervention: 2, research: 1, professional: 1 };
+const actualDomains = Object.fromEntries(Object.keys(expectedDomains).map((domain) => [domain, items.filter((item) => item.domainId === domain).length]));
+if (JSON.stringify(actualDomains) !== JSON.stringify(expectedDomains)) throw new Error(`Unexpected domain distribution: ${JSON.stringify(actualDomains)}`);
+for (const item of items) {
+  const q = item.revisedItem;
+  if (q.choices.length !== 4 || q.choiceRationales.length !== 4) throw new Error(`${item.legacyId} must have four choices and explanations.`);
+  if (new Set(q.choices).size !== 4 || q.choices.some((choice) => choice.trim().length < 20)) throw new Error(`${item.legacyId} must have four distinct, substantive choices.`);
+  if (!Number.isInteger(q.answerIndex) || q.answerIndex < 0 || q.answerIndex > 3) throw new Error(`${item.legacyId} has an invalid key.`);
+  if (q.rationale.length < 140 || q.choiceRationales.some((text) => text.length < 90)) throw new Error(`${item.legacyId} has incomplete feedback.`);
+  if (!q.sourceDetails.length || q.sourceDetails.some((source) => source.title.length < 12 || source.organization.length < 12 || !/^https:\/\//.test(source.url) || source.credibility.length < 120)) throw new Error(`${item.legacyId} has incomplete provenance.`);
+}
+
+const summary = {
+  adjudicatedCandidates: items.length,
+  minorRevision: items.filter((item) => item.decision === 'minor-revision').length,
+  majorRewrite: items.filter((item) => item.decision === 'major-rewrite').length,
+  promotedToNativeBank: 0,
+  independentExpertValidated: 0,
+  domainDistribution: actualDomains,
+};
+const report = {
+  schemaVersion: 1,
+  generatedAt: new Date().toISOString(),
+  currentSourceReviewDate: '2026-07-14',
+  status: 'editorial-adjudication-complete-still-quarantined',
+  purpose: 'Adjudicate ten EPPP legacy candidates selected for neuroscience myths, cultural overgeneralization, psychometric inference errors, current medication regulation, diagnostic oversimplification, and jurisdiction-sensitive record retention without treating editorial revision as expert approval.',
+  reviewMethod: [
+    'Verify every key, distractor, and inference boundary against authoritative, official, primary, or peer-reviewed sources.',
+    'Separate historical theories and average group patterns from current consensus, individual diagnosis, or universal claims.',
+    'Check current regulatory status and distinguish professional guidance from controlling jurisdictional law.',
+    'Require four distinct substantive options and a complete explanation for every option.',
+    'Keep every revised item quarantined pending independent qualified review in the relevant specialty.',
+  ],
+  summary,
+  items,
+};
+
+const rows = items.map((item) => `| ${item.adjudicationPosition} | ${item.legacyId} | ${item.domainId} | ${item.decision} | ${item.sourceVerification} |`).join('\n');
+const markdown = `# EPPP editorial adjudication batch 06\n\nGenerated: ${report.generatedAt}\n\n**Status: editorial adjudication complete; all items remain quarantined.**\n\n${report.purpose}\n\n## Outcome\n\n- ${summary.adjudicatedCandidates} candidates reviewed across all eight EPPP domains.\n- ${summary.minorRevision} required minor corrections.\n- ${summary.majorRewrite} required major rewriting.\n- ${summary.promotedToNativeBank} were promoted to the learner-facing bank.\n- Independent qualified review remains pending for every item.\n- Current regulatory and jurisdiction-sensitive sources were checked through ${report.currentSourceReviewDate}.\n\n| # | Legacy ID | Domain | Decision | Source finding |\n| ---: | --- | --- | --- | --- |\n${rows}\n\n## Review method\n\n${report.reviewMethod.map((step) => `- ${step}`).join('\n')}\n\nThe JSON companion preserves the original prompt and key, item-specific findings, the complete revised item, explanation of every option, and full source provenance.\n`;
+
+for (const outputRoot of [sourceRoot, deployRoot]) {
+  fs.writeFileSync(path.join(outputRoot, 'adjudication_batch_06.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
+  fs.writeFileSync(path.join(outputRoot, 'adjudication_batch_06.md'), markdown, 'utf8');
+}
+
+console.log(`EPPP adjudication batch 06: ${summary.adjudicatedCandidates} reviewed, ${summary.minorRevision} minor revisions, ${summary.majorRewrite} major rewrites, 0 released.`);

@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-8db0e4fa-untitled",
+  "title": "ໜຶ່ງ ສອງ ສາມ",
+  "description": "Count in your own language!",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Lao"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Lao",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/fM3YxsaS2P"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fM3YxsaS2P%2f1753672484116%2f%e0%bb%9c%e0%ba%b6%e0%bb%88%e0%ba%87+%e0%ba%aa%e0%ba%ad%e0%ba%87+%e0%ba%aa%e0%ba%b2%e0%ba%a1%2fBeans+Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fM3YxsaS2P%2f1753672484116%2f%e0%bb%9c%e0%ba%b6%e0%bb%88%e0%ba%87+%e0%ba%aa%e0%ba%ad%e0%ba%87+%e0%ba%aa%e0%ba%b2%e0%ba%a1%2f1+Beans+copy+(Large).jpg",
+      "text": "ໜຶ່ງ"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fM3YxsaS2P%2f1753672484116%2f%e0%bb%9c%e0%ba%b6%e0%bb%88%e0%ba%87+%e0%ba%aa%e0%ba%ad%e0%ba%87+%e0%ba%aa%e0%ba%b2%e0%ba%a1%2f2+Beans+copy+(Large).jpg",
+      "text": "ສອງ"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fM3YxsaS2P%2f1753672484116%2f%e0%bb%9c%e0%ba%b6%e0%bb%88%e0%ba%87+%e0%ba%aa%e0%ba%ad%e0%ba%87+%e0%ba%aa%e0%ba%b2%e0%ba%a1%2f3+Beans+copy+(Large).jpg",
+      "text": "ສາມ"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fM3YxsaS2P%2f1753672484116%2f%e0%bb%9c%e0%ba%b6%e0%bb%88%e0%ba%87+%e0%ba%aa%e0%ba%ad%e0%ba%87+%e0%ba%aa%e0%ba%b2%e0%ba%a1%2f4+Beans+copy+(Large).jpg",
+      "text": "ສີ່"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fM3YxsaS2P%2f1753672484116%2f%e0%bb%9c%e0%ba%b6%e0%bb%88%e0%ba%87+%e0%ba%aa%e0%ba%ad%e0%ba%87+%e0%ba%aa%e0%ba%b2%e0%ba%a1%2f5+Beans+copy+(Large).jpg",
+      "text": "ຫ້າ"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fM3YxsaS2P%2f1753672484116%2f%e0%bb%9c%e0%ba%b6%e0%bb%88%e0%ba%87+%e0%ba%aa%e0%ba%ad%e0%ba%87+%e0%ba%aa%e0%ba%b2%e0%ba%a1%2f6+Beans+copy+(Large).jpg",
+      "text": "ຫົກ"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fM3YxsaS2P%2f1753672484116%2f%e0%bb%9c%e0%ba%b6%e0%bb%88%e0%ba%87+%e0%ba%aa%e0%ba%ad%e0%ba%87+%e0%ba%aa%e0%ba%b2%e0%ba%a1%2f7+Beans+copy+(Large).jpg",
+      "text": "ເຈັດ"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fM3YxsaS2P%2f1753672484116%2f%e0%bb%9c%e0%ba%b6%e0%bb%88%e0%ba%87+%e0%ba%aa%e0%ba%ad%e0%ba%87+%e0%ba%aa%e0%ba%b2%e0%ba%a1%2f8+Beans+copy+(Large).jpg",
+      "text": "ແປດ"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fM3YxsaS2P%2f1753672484116%2f%e0%bb%9c%e0%ba%b6%e0%bb%88%e0%ba%87+%e0%ba%aa%e0%ba%ad%e0%ba%87+%e0%ba%aa%e0%ba%b2%e0%ba%a1%2f9+Beans+copy+(Large).jpg",
+      "text": "ເກົ້າ"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fM3YxsaS2P%2f1753672484116%2f%e0%bb%9c%e0%ba%b6%e0%bb%88%e0%ba%87+%e0%ba%aa%e0%ba%ad%e0%ba%87+%e0%ba%aa%e0%ba%b2%e0%ba%a1%2f10+Beans+copy+(Large).jpg",
+      "text": "ສິບ"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 10
+  }
+}

@@ -392,10 +392,12 @@ function BrandProfileEditor(props) {
   }, /*#__PURE__*/React.createElement("div", {
     ref: dialogRef,
     tabIndex: -1,
-    className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden focus:outline-none",
+    className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "brand-settings-title",
+    "aria-hidden": deleteRequest ? 'true' : undefined,
+    inert: deleteRequest ? '' : undefined,
     onClick: function (e) {
       e.stopPropagation();
     }
@@ -407,6 +409,7 @@ function BrandProfileEditor(props) {
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "\uD83C\uDFA8"), " ", t('brand.title', 'Brand Settings')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     ref: closeButtonRef,
     onClick: onClose,
     "aria-label": t('common.close', 'Close'),
@@ -420,15 +423,18 @@ function BrandProfileEditor(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "p-3 flex flex-col gap-2 border-b border-slate-200"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: newProfile,
     className: "w-full px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors"
   }, "+ ", t('brand.new', 'New profile')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: function () {
       importInputRef.current && importInputRef.current.click();
     },
     className: "w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 transition-colors"
   }, "\u2B06 ", t('brand.import', 'Import JSON')), /*#__PURE__*/React.createElement("input", {
     ref: importInputRef,
+    "aria-label": t('brand.import_file', 'Import brand profile JSON file'),
     type: "file",
     accept: ".json,application/json",
     onChange: onImportFile,
@@ -446,9 +452,11 @@ function BrandProfileEditor(props) {
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center justify-between gap-1"
     }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
       onClick: function () {
         editProfile(p);
       },
+      "aria-pressed": isEditing,
       className: "text-left text-sm font-semibold text-slate-800 truncate flex-1 min-h-6",
       title: p.name
     }, p.name || '(unnamed)'), isActive && /*#__PURE__*/React.createElement("span", {
@@ -456,16 +464,19 @@ function BrandProfileEditor(props) {
     }, t('brand.active', 'Active'))), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mt-1"
     }, !isActive && /*#__PURE__*/React.createElement("button", {
+      type: "button",
       onClick: function () {
         makeActive(p.id);
       },
       className: "inline-flex min-h-6 items-center text-[11px] text-blue-700 hover:underline"
     }, t('brand.use', 'Set active')), /*#__PURE__*/React.createElement("button", {
+      type: "button",
       onClick: function () {
         exportProfile(p.id);
       },
       className: "inline-flex min-h-6 items-center text-[11px] text-slate-600 hover:underline"
     }, t('brand.export', 'Export')), /*#__PURE__*/React.createElement("button", {
+      type: "button",
       onClick: function (event) {
         requestRemove(event, p.id, p.name);
       },
@@ -479,6 +490,7 @@ function BrandProfileEditor(props) {
     className: "text-xs font-bold uppercase tracking-wide text-slate-500"
   }, t('brand.name', 'Profile name')), /*#__PURE__*/React.createElement("input", {
     value: draft.name,
+    "aria-label": t('brand.name', 'Profile name'),
     onChange: function (e) {
       setField('name', e.target.value);
     },
@@ -513,12 +525,14 @@ function BrandProfileEditor(props) {
       value: val,
       "aria-label": f.label + ' hex value',
       "aria-invalid": !valid,
+      "aria-describedby": !valid ? 'brand-validation-status' : undefined,
       onChange: function (e) {
         setColor(f.key, e.target.value);
       },
       className: 'w-full px-1.5 py-0.5 border rounded text-xs font-mono ' + (valid ? 'border-slate-300 text-slate-800' : 'border-red-400 text-red-700')
     })));
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: autoFix,
     className: "mt-2 px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 text-xs font-bold hover:bg-amber-200 transition-colors"
   }, "\u2728 ", t('brand.autofix', 'Auto-fix contrast'))), /*#__PURE__*/React.createElement("label", {
@@ -527,6 +541,7 @@ function BrandProfileEditor(props) {
     className: "text-xs font-bold uppercase tracking-wide text-slate-500"
   }, t('brand.font', 'Body font')), /*#__PURE__*/React.createElement("select", {
     value: bodyFont,
+    "aria-label": t('brand.font', 'Body font'),
     onChange: function (e) {
       setDraft(function (d) {
         return Object.assign({}, d, {
@@ -562,15 +577,18 @@ function BrandProfileEditor(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: function () {
       fileInputRef.current && fileInputRef.current.click();
     },
     className: "px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-medium hover:bg-slate-100"
   }, draft.logo && draft.logo.src ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')), draft.logo && draft.logo.src && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: removeLogo,
     className: "px-3 py-1.5 rounded-lg text-red-600 text-xs font-medium hover:bg-red-50"
   }, t('brand.logo_remove', 'Remove')), /*#__PURE__*/React.createElement("input", {
     ref: fileInputRef,
+    "aria-label": t('brand.logo_file', 'Upload logo image file'),
     type: "file",
     accept: "image/*",
     onChange: onLogoFile,
@@ -681,9 +699,10 @@ function BrandProfileEditor(props) {
       fontSize: '12px',
       margin: '4px 0'
     }
-  }, t('brand.preview_body', 'Body text shows how readable your colors are.'), " ", /*#__PURE__*/React.createElement("a", {
+  }, t('brand.preview_body', 'Body text shows how readable your colors are.'), " ", /*#__PURE__*/React.createElement("span", {
     style: {
-      color: c.accent
+      color: c.accent,
+      textDecoration: 'underline'
     }
   }, t('brand.preview_link', 'a link')), "."), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -708,6 +727,7 @@ function BrandProfileEditor(props) {
       justifyContent: 'space-between'
     }
   }, /*#__PURE__*/React.createElement("span", null, draft.footer.text), draft.footer.showPageNumber && /*#__PURE__*/React.createElement("span", null, t('brand.preview_page', 'Page 1')))), /*#__PURE__*/React.createElement("div", {
+    id: "brand-validation-status",
     className: "mt-3 space-y-1",
     role: "status",
     "aria-live": "polite",
@@ -727,17 +747,22 @@ function BrandProfileEditor(props) {
   }, "\u2713 ", t('brand.passes', 'Meets WCAG AA contrast')))), /*#__PURE__*/React.createElement("div", {
     className: "p-3 border-t border-slate-200 bg-slate-50 flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: save,
     disabled: !validation.ok,
     className: 'w-full px-3 py-2 rounded-lg text-sm font-bold transition-colors ' + (validation.ok ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed')
   }, t('brand.save', 'Save profile')), draft.id && draft.id !== activeId && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: function () {
       makeActive(draft.id);
     },
     className: "w-full px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors"
-  }, t('brand.set_active', 'Set as active brand'))))), deleteRequest && /*#__PURE__*/React.createElement("div", {
+  }, t('brand.set_active', 'Set as active brand')))))), deleteRequest && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4",
-    role: "presentation"
+    role: "presentation",
+    onClick: function (event) {
+      event.stopPropagation();
+    }
   }, /*#__PURE__*/React.createElement("div", {
     ref: deleteDialogRef,
     role: "alertdialog",
@@ -788,7 +813,7 @@ function BrandProfileEditor(props) {
     type: "button",
     onClick: confirmRemove,
     className: "min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-  }, t('brand.delete', 'Delete')))))));
+  }, t('brand.delete', 'Delete'))))));
 }
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.BrandProfileEditor = BrandProfileEditor;

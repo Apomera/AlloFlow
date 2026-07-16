@@ -1,0 +1,354 @@
+{
+  "schemaVersion": 1,
+  "waveId": "eppp-memory-aid-review-wave-01",
+  "generatedAt": "2026-07-15T15:45:56.473Z",
+  "status": "source-reviewed-editorial-pass-independent-expert-review-pending",
+  "summary": {
+    "items": 16,
+    "domains": 8,
+    "itemsPerDomain": 2
+  },
+  "safeguards": [
+    "Legacy text remains preserved; reviewed replacements are applied by the native catalog builder.",
+    "Every released item names an authoritative source and explains why it is reputable.",
+    "Independent qualified expert review and production validation remain pending."
+  ],
+  "items": [
+    {
+      "title": "Glial Cells",
+      "domainId": 1,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Glia support, regulate, defend, and myelinate?do not reduce them to passive ?glue.?** Astrocytes help regulate the extracellular environment, metabolism, synapses, and blood?brain-barrier functions. Oligodendrocytes form CNS myelin and can support segments on multiple axons; Schwann cells myelinate PNS segments and support repair. Microglia are resident immune-surveillance and response cells. Ependymal cells line ventricles and participate in cerebrospinal-fluid physiology. Cell counts and roles vary by region; avoid the outdated ?glia outnumber neurons 10:1 everywhere? shortcut.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK10869/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Neuroscience, 2nd edition: ?Glial Cells?",
+          "organization": "NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK10869/",
+          "whyReputable": "A scholarly neuroscience textbook hosted by the U.S. National Library of Medicine."
+        }
+      ],
+      "reviewNote": "Removed passive-glue and universal 10:1 claims.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-2d80e59718d3de5d"
+    },
+    {
+      "title": "Action Potential Steps",
+      "domainId": 1,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Threshold ? rising phase ? falling phase ? afterhyperpolarization ? recovery.** At threshold, voltage-gated sodium conductance rises; sodium-channel inactivation and delayed potassium conductance then drive repolarization. Continued potassium conductance can briefly make the membrane more negative than rest. The absolute refractory period reflects unavailable sodium channels; during the relative refractory period another spike needs stronger input. Myelin permits saltatory propagation between excitable nodes. Exact voltages and timing vary?memorize the mechanism, not one universal number.",
+      "references": [
+        "https://openstax.org/books/biology-2e/pages/35-2-how-neurons-communicate"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Biology 2e, Section 35.2: How Neurons Communicate",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/biology-2e/pages/35-2-how-neurons-communicate",
+          "whyReputable": "An expert-authored, peer-reviewed open textbook from nonprofit Rice University."
+        }
+      ],
+      "reviewNote": "Corrected phase names, refractory mechanisms, and universal voltage claims.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-53a52aa301b81106"
+    },
+    {
+      "title": "Negative Reinforcement vs. Punishment",
+      "domainId": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Classify a consequence with two questions:** Was a stimulus added (+) or removed (?)? Did the future probability of behavior increase (reinforcement) or decrease (punishment)? Positive reinforcement adds and increases; negative reinforcement removes/avoids and increases; positive punishment adds and decreases; negative punishment removes and decreases. Positive/negative do not mean good/bad, and the label depends on observed behavior change?not intention. Escape and avoidance are common negative-reinforcement arrangements; response cost is one form of negative punishment.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 6.3: Operant Conditioning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+          "whyReputable": "An expert-authored, peer-reviewed open textbook from nonprofit Rice University."
+        }
+      ],
+      "reviewNote": "Made classification functional and corrected the time-out/response-cost equivalence.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-9e82a078f0f1652a"
+    },
+    {
+      "title": "Short-Term vs Working Memory",
+      "domainId": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Short-term memory emphasizes brief retention; working memory emphasizes temporary maintenance plus controlled use.** In Baddeley?s model, the phonological loop supports speech-based information, the visuospatial sketchpad supports visual/spatial information, the central executive coordinates attention, and the limited-capacity episodic buffer integrates information across systems and long-term memory. ?7 ? 2? came from particular span tasks and is not a universal working-memory capacity. Different models define working memory differently; name the model and task instead of treating one architecture as settled fact.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/11058819/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The episodic buffer: a new component of working memory?",
+          "organization": "Alan Baddeley, Trends in Cognitive Sciences",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11058819/",
+          "whyReputable": "A peer-reviewed article by the originator of the influential multicomponent model."
+        }
+      ],
+      "reviewNote": "Removed universal 7?2 and passive-versus-active claims; bounded the model.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-6d25e9aece50a964"
+    },
+    {
+      "title": "Attribution Theory",
+      "domainId": 3,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Kelley cue: consensus, consistency, distinctiveness?evidence, not a deterministic table.** Consensus asks whether others respond similarly; consistency asks whether this person responds similarly across occasions; distinctiveness asks whether this person responds differently to other targets. Patterns support person, entity, circumstance, or mixed hypotheses, but missing cues limit inference. Correspondence bias concerns over-weighting dispositions in some contexts. Do not pair it with a universal actor?observer rule: a meta-analysis found essentially no overall asymmetry, with moderator and valence effects.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/17073526/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The actor-observer asymmetry in attribution: a (surprising) meta-analysis",
+          "organization": "Bertram F. Malle, Psychological Bulletin",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17073526/",
+          "whyReputable": "A peer-reviewed meta-analysis of 173 studies that directly tests a widely taught shortcut."
+        }
+      ],
+      "reviewNote": "Removed the universal actor-observer claim and deterministic covariation verdict.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-d0be7b76c2ced3a3"
+    },
+    {
+      "title": "Cognitive Dissonance",
+      "domainId": 3,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Cognitive dissonance is aversive inconsistency among relevant cognitions, commitments, or behavior.** People may reduce it by changing behavior or attitude, adding consonant reasons, trivializing, or reframing responsibility and importance. In Festinger and Carlsmith?s classic study, participants paid $1 later rated a dull task more favorably than those paid $20, consistent with insufficient external justification under those conditions. This is not proof that every mismatch must cause attitude change; choice, commitment, consequences, culture, and available justification matter.",
+      "references": [
+        "https://doi.org/10.1037/h0041593"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Cognitive consequences of forced compliance",
+          "organization": "Leon Festinger and James M. Carlsmith, Journal of Abnormal and Social Psychology",
+          "url": "https://doi.org/10.1037/h0041593",
+          "whyReputable": "The landmark peer-reviewed primary experiment behind the insufficient-justification example."
+        }
+      ],
+      "reviewNote": "Preserved the primary study while removing inevitability.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-59b232effad0d762"
+    },
+    {
+      "title": "Vygotsky's ZPD",
+      "domainId": 4,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**ZPD: what a learner cannot yet do independently but can accomplish with appropriate guidance or collaboration.** Cue: can do independently; can do with well-matched assistance (ZPD); cannot yet do even with current assistance. Scaffolding is a later instructional metaphor for contingent support that changes as competence grows; it is related to, but not identical with, Vygotsky?s original construct. Effective support responds to the learner and fades or changes when no longer needed. Avoid ?all learning happens only here.?",
+      "references": [
+        "https://openstax.org/books/lifespan-development/pages/5-3-cognition-in-early-childhood"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Lifespan Development, Section 5.3: Cognition in Early Childhood",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/lifespan-development/pages/5-3-cognition-in-early-childhood",
+          "whyReputable": "An expert-authored, peer-reviewed lifespan-development text from nonprofit Rice University."
+        }
+      ],
+      "reviewNote": "Distinguished ZPD from scaffolding and removed an exclusive-learning claim.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-d224f260cac7462f"
+    },
+    {
+      "title": "Erikson's 8 Stages",
+      "domainId": 4,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Erikson?s historical sequence:** trust?mistrust; autonomy?shame/doubt; initiative?guilt; industry?inferiority; identity?role confusion; intimacy?isolation; generativity?stagnation; integrity?despair. The order is useful, but age bands are approximate teaching conventions?not diagnostic deadlines. Erikson proposed that each period makes a tension salient; themes can recur and later development can revise their resolution. Use the model to organize questions, not infer pathology from age or assume one culturally universal life course.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 9.2: Lifespan Theories",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+          "whyReputable": "An expert-reviewed text that presents historical stage theories with developmental context."
+        }
+      ],
+      "reviewNote": "Retained the sequence while removing rigid ages and universal-path claims.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-9b6b5983a642694a"
+    },
+    {
+      "title": "Reliability vs. Validity",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Reliability/precision asks how consistent or precise scores are; validity asks whether evidence and theory support an intended score interpretation and use.** Internal consistency, interrater agreement, stability, and conditional precision answer different questions. Validity belongs to a proposed use in a population and context?not ?the test? in the abstract. Imprecision limits defensible interpretation, but the dartboard slogan ?validity is accuracy? is incomplete: modern validity requires a broader evidence argument and plausible alternatives.",
+      "references": [
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Standards for Educational and Psychological Testing (2014)",
+          "organization": "AERA, APA, and NCME",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+          "whyReputable": "The joint professional consensus framework for validity, precision, fairness, and test use."
+        }
+      ],
+      "reviewNote": "Replaced the accuracy-only dartboard rule with the unified validity framework.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-89105cc23ac46bea"
+    },
+    {
+      "title": "Sensitivity, Specificity, PPV, NPV",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Read the 2?2 table:** Sensitivity = TP/(TP+FN), among people with the condition who tests positive. Specificity = TN/(TN+FP), among people without it who tests negative. PPV = TP/(TP+FP), among positive results who has the condition. NPV = TN/(TN+FN), among negative results who does not. Sensitivity and specificity can vary with threshold, spectrum, setting, and verification. Predictive values depend strongly on prevalence: the same test can have much lower PPV in a low-prevalence population.",
+      "references": [
+        "https://archive.cdc.gov/www_cdc_gov/csels/dsepd/ss1978/lesson3/section2.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Principles of Epidemiology in Public Health Practice, Third Edition: Lesson 3",
+          "organization": "Centers for Disease Control and Prevention (CDC)",
+          "url": "https://archive.cdc.gov/www_cdc_gov/csels/dsepd/ss1978/lesson3/section2.html",
+          "whyReputable": "The U.S. federal public-health authority?s training text for diagnostic-test measures."
+        }
+      ],
+      "reviewNote": "Added exact denominators and context/base-rate boundaries.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-b3e0e08491d9100d"
+    },
+    {
+      "title": "CBT Core Concepts",
+      "domainId": 6,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**CBT uses a collaborative, testable formulation linking situations, interpretations, emotion/physiology, and behavior.** Methods can include behavioral activation, exposure or experiments, skills practice, monitoring, problem solving, and examining the usefulness and evidence for appraisals. The aim is not forced positive thinking; it is more accurate, flexible responding and goal-linked behavior change. Protocols differ by problem and population, and technique should follow assessment, risk, culture, accessibility, preferences, and evidence.",
+      "references": [
+        "https://www.apa.org/ptsd-guideline"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Clinical Practice Guideline for the Treatment of PTSD in Adults",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ptsd-guideline",
+          "whyReputable": "An APA guideline based on systematic evidence review and transparent recommendation methods."
+        }
+      ],
+      "reviewNote": "Removed positive-thinking and one-way-causation shortcuts.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-975f2d9055198688"
+    },
+    {
+      "title": "Motivational Interviewing",
+      "domainId": 6,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**MI spirit: partnership, acceptance, compassion, and evocation. Processes: engaging ? focusing ? evoking ? planning.** OARS?open questions, affirmations, reflections, summaries?supports conversation, but MI is not a bag of techniques. The practitioner listens for and strengthens the person?s own language for change while respecting autonomy; sustain talk is explored rather than argued away. Planning follows sufficient readiness and shared focus. MI is collaborative and directional, not persuasion by stealth or a guarantee of change.",
+      "references": [
+        "https://www.motivationalinterviewing.org/sites/default/files/elfinder_uploads/ColleenMarshall/Glossary%20of%20MI%20Terms.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Glossary of Motivational Interviewing Terms",
+          "organization": "Motivational Interviewing Network of Trainers (MINT)",
+          "url": "https://www.motivationalinterviewing.org/sites/default/files/elfinder_uploads/ColleenMarshall/Glossary%20of%20MI%20Terms.pdf",
+          "whyReputable": "Terminology from the international professional network devoted to fidelity-consistent MI."
+        }
+      ],
+      "reviewNote": "Aligned the cue with current MI spirit and processes.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-b77f88b5b4c35b7a"
+    },
+    {
+      "title": "Type I vs. Type II Errors",
+      "domainId": 7,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Type I:** reject a true null. Chosen ? controls the long-run Type I rate under the model and plan; p < .05 is not a 5% probability that the null is true. **Type II:** fail to reject a false null for a specified alternative; probability ?. **Power = 1 ? ?** for a specified alternative, design, variability, and analysis. Fail to reject is not prove no effect. Multiplicity, optional stopping, assumption violations, and selective reporting can make nominal rates misleading. Balance errors by consequences; neither is always worse.",
+      "references": [
+        "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The ASA Statement on p-Values: Context, Process, and Purpose",
+          "organization": "American Statistical Association",
+          "url": "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf",
+          "whyReputable": "An expert consensus statement correcting common hypothesis-testing errors."
+        }
+      ],
+      "reviewNote": "Corrected conditional probabilities and added power and multiplicity boundaries.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-32ef54e1330c4314"
+    },
+    {
+      "title": "Standard Error of Measurement",
+      "domainId": 7,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Classical-test-theory SEM** is a score-unit estimate of measurement error, often approximated as SD ? ?(1 ? reliability) for the relevant distribution and reliability estimate. Higher reliability generally yields smaller SEM with other terms fixed. A score interval needs an appropriate multiplier and assumptions; ??1 SEM guarantees a 68% true-score range? is too strong. Precision can vary across scores, forms, groups, and purposes. Comparing scores requires the standard error of the difference and a decision rule?not simply a difference greater than one SEM.",
+      "references": [
+        "https://ncme.org/resources-publications/professional-learning/glossary"
+      ],
+      "sourceDetails": [
+        {
+          "title": "NCME Glossary of Important Assessment and Measurement Terms",
+          "organization": "National Council on Measurement in Education",
+          "url": "https://ncme.org/resources-publications/professional-learning/glossary",
+          "whyReputable": "Field-standard definitions from a leading professional measurement organization."
+        }
+      ],
+      "reviewNote": "Corrected confidence-interval and score-comparison shortcuts.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-cafad3c2f0114ed7"
+    },
+    {
+      "title": "APA Ethical Standards vs Principles",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**APA Code:** General Principles A?E are aspirational ideals; Ethical Standards contain potentially enforceable rules. A: Beneficence and Nonmaleficence; B: Fidelity and Responsibility; C: Integrity; D: Justice; E: Respect for People?s Rights and Dignity. Principles still guide reasoning when rules leave judgment. APA ethics findings, licensing-board actions, civil liability, employment discipline, and criminal law are different processes; an alleged Standard violation does not automatically mean loss of license. Identify the authority, current provision, jurisdiction, and facts.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA?s official primary text for the General Principles and enforceable Ethical Standards."
+        }
+      ],
+      "reviewNote": "Corrected automatic-sanction language and distinguished governing authorities.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-bb7f154d8734f48e"
+    },
+    {
+      "title": "Test Security & Release",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Distinguish test data from test materials, then identify authority and risk.** Test data include scores, client responses, and examination notes. Under APA Standard 9.04, psychologists generally provide data pursuant to a client/patient release, with a narrow option to refrain for likely substantial harm or substantial misuse/misrepresentation; absent release, provide only as required by law or court order. Test materials include manuals, instruments, protocols, and questions/stimuli; Standard 9.11 calls for reasonable security efforts consistent with law and contract. Avoid blanket never-release rules.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA?s official primary text for the General Principles and enforceable Ethical Standards."
+        }
+      ],
+      "reviewNote": "Corrected blanket unqualified-recipient and never-release rules.",
+      "reviewDate": "2026-07-15",
+      "reviewMode": "claim-level-source-and-editorial-review",
+      "legacyId": "memory-aid-4827bf719ada6db6"
+    }
+  ]
+}

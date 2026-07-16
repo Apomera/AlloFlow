@@ -7,6 +7,8 @@
     app: null,
     appLogs: [],
     appFocusMode: false,
+    appBridgeReady: false,
+    appBridgeStatus: null,
     providers: [],
     update: null,
     liveSession: null,
@@ -26,6 +28,9 @@
   const BUNDLED_AI_CONFIG_KEY = 'alloflow_ai_config';
   const BUNDLED_LIVE_SESSION_CONFIG_KEY = 'alloflow_live_session_config';
   const APP_FOCUS_IDLE_MS = 2200;
+  const APP_BRIDGE_CHANNEL = 'alloflow-desktop-bridge';
+  const APP_BRIDGE_VERSION = 1;
+  const APP_BRIDGE_TIMEOUT_MS = 15000;
   const PROVIDER_BACKENDS = {
     gemini: 'gemini',
     lmstudio: 'lmstudio',
@@ -48,6 +53,103 @@
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+  const appBridgePending = new Map();
+  let appBridgeSequence = 0;
+
+  function expectedAppOrigin() {
+    try {
+      const parsed = new URL(state.health?.appUrl || '');
+      if (parsed.protocol !== 'http:' || !/^(localhost|127\.0\.0\.1|\[?::1\]?)$/i.test(parsed.hostname)) return '';
+      if (parsed.origin === window.location.origin) return '';
+      return parsed.origin;
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function getAppBridgeTarget() {
+    const frame = $('#app-frame');
+    const origin = expectedAppOrigin();
+    if (!frame || !frame.contentWindow || !origin) return null;
+    try {
+      const appUrl = new URL(state.health?.appUrl || '');
+      if (!appUrl.pathname.startsWith('/app/')) return null;
+    } catch (_) {
+      return null;
+    }
+    return { frame, window: frame.contentWindow, origin };
+  }
+
+  function appBridgeRequest(action, payload = {}, options = {}) {
+    const target = getAppBridgeTarget();
+    if (!target || !state.appBridgeReady) {
+      return Promise.reject(new Error('The isolated AlloFlow app bridge is not ready.'));
+    }
+    const id = 'cc_' + Date.now().toString(36) + '_' + (++appBridgeSequence).toString(36);
+    return new Promise((resolve, reject) => {
+      const timeoutMs = Math.max(1000, Math.min(4 * 60 * 60 * 1000, Number(options.timeoutMs) || APP_BRIDGE_TIMEOUT_MS));
+      const timer = setTimeout(() => {
+        appBridgePending.delete(id);
+        reject(new Error('The AlloFlow app did not answer the desktop request.'));
+      }, timeoutMs);
+      appBridgePending.set(id, {
+        resolve,
+        reject,
+        timer,
+        onProgress: typeof options.onProgress === 'function' ? options.onProgress : null,
+      });
+      target.window.postMessage({
+        channel: APP_BRIDGE_CHANNEL,
+        version: APP_BRIDGE_VERSION,
+        kind: 'request',
+        id,
+        action,
+        payload,
+      }, target.origin);
+    });
+  }
+
+  function handleAppBridgeMessage(event) {
+    const target = getAppBridgeTarget();
+    const data = event && event.data;
+    if (!target || event.source !== target.window || event.origin !== target.origin) return;
+    if (!data || data.channel !== APP_BRIDGE_CHANNEL || data.version !== APP_BRIDGE_VERSION) return;
+    if (data.kind === 'ready') {
+      state.appBridgeReady = true;
+      pushBundledAppConfig();
+      setTimeout(() => inspectKokoroVoice().catch(() => {}), 100);
+      target.frame.dataset.bridgeReady = 'true';
+      return;
+    }
+    const pending = appBridgePending.get(String(data.id || ''));
+    if (!pending) return;
+    if (data.kind === 'progress') {
+      if (pending.onProgress) {
+        try { pending.onProgress(data.progress || {}); } catch (_) {}
+      }
+      return;
+    }
+    if (data.kind !== 'response') return;
+    clearTimeout(pending.timer);
+    appBridgePending.delete(String(data.id || ''));
+    if (data.ok) pending.resolve(data.result);
+    else pending.reject(new Error(String(data.error || 'The AlloFlow app bridge request failed.')));
+  }
+
+  function resetAppBridge() {
+    state.appBridgeReady = false;
+    state.appBridgeStatus = null;
+    for (const pending of appBridgePending.values()) {
+      clearTimeout(pending.timer);
+    const frame = $('#app-frame');
+    if (frame) delete frame.dataset.bridgeReady;
+      pending.reject(new Error('The AlloFlow app view reloaded.'));
+    }
+    appBridgePending.clear();
+  }
+
+  window.addEventListener('message', handleAppBridgeMessage);
 
   async function api(path, options = {}) {
     const response = await fetch(path, {
@@ -219,7 +321,12 @@
     setText('#app-status', appStatus);
     $('#app-url').value = state.health.appUrl || '';
     $('#open-app-link').href = state.health.appUrl || '#';
-    $('#app-frame').src = state.health.appReachable ? state.health.appUrl : 'about:blank';
+    const frame = $('#app-frame');
+    const nextFrameUrl = state.health.appReachable ? state.health.appUrl : 'about:blank';
+    if (frame && frame.src !== nextFrameUrl) {
+      resetAppBridge();
+      frame.src = nextFrameUrl;
+    }
     setText('#app-managed-status', appManager.status);
     setText('#app-owner', appManager.pid ? 'Desktop' : (appManager.reachable ? 'External' : 'None'));
     setText('#app-pid', appManager.pid);
@@ -578,6 +685,12 @@
     if (pinInput && document.activeElement !== pinInput) {
       pinInput.value = state.config?.liveSession?.lan?.pin || '';
     }
+    const pinHint = $('#lan-pin-hint');
+    if (pinHint && diag.share?.active && diag.activePin) {
+      pinHint.textContent = (diag.pinAutoGenerated ? 'Generated PIN: ' : 'Active PIN: ')
+        + diag.activePin
+        + '. It is also shown in Presenter view.';
+    }
     const joinUrl = classroomJoinUrl();
     const linkNode = $('#join-link');
     if (linkNode) linkNode.textContent = joinUrl || (classroomCode() ? 'Start LAN Share to get a join link.' : '');
@@ -604,7 +717,6 @@
     const liveSession = state.liveSession || {};
     const mode = liveSession.mode || state.config?.liveSession?.mode || '';
     const shareActive = Boolean(liveSession.lanBridge?.share?.active || state.lanDiagnostics?.share?.active);
-    const pinConfigured = Boolean(state.lanDiagnostics?.pinConfigured || state.config?.liveSession?.lan?.pin);
     const steps = [
       {
         done: mode === 'schoolbox-lan',
@@ -615,10 +727,10 @@
       },
       {
         done: shareActive,
-        title: 'Start LAN Share (and set a PIN if you want one)',
+        title: 'Start LAN Share (protected by a PIN)',
         detail: shareActive
-          ? 'Students on this network can reach the join page.' + (pinConfigured ? ' A join PIN is set.' : ' Tip: a join PIN keeps drop-ins out on busy networks.')
-          : 'Press Start LAN Share. Set a Join PIN first if you want one â€” it latches when sharing starts.',
+          ? 'Students on this network can reach the join page. A join PIN is active.'
+          : 'Press Start LAN Share. A fresh six-digit PIN is generated unless you save a custom one first.',
       },
       {
         done: false,
@@ -686,7 +798,7 @@
     const joinUrl = classroomJoinUrl();
     const share = diag?.share || liveSession.lanBridge?.share || {};
     const addresses = Array.isArray(diag?.addresses) ? diag.addresses : [];
-    const pinConfigured = Boolean(diag?.pinConfigured || state.config?.liveSession?.lan?.pin);
+    const pinConfigured = Boolean(diag?.pinActive || diag?.pinConfigured || state.config?.liveSession?.lan?.pin);
     const pinActive = Boolean(diag?.pinActive);
     const shareActive = Boolean(share.active);
     const warnings = [...(diag?.warnings || [])];
@@ -699,7 +811,6 @@
     if (!shareActive) nextActions.push('Press Start LAN Share before students join from other devices.');
     if (!code) nextActions.push('Type a class code before showing the QR or copying the join link.');
     if (shareActive && code && joinUrl) nextActions.push('Show the QR or copy the join link for students on the same network.');
-    if (shareActive && !pinConfigured) nextActions.push('Optional: set a Join PIN, then restart LAN Share, for busy or shared networks.');
 
     return {
       generatedAt: new Date().toISOString(),
@@ -769,6 +880,7 @@
       if (localFallback) nextConfig.localFallback = localFallback;
       else delete nextConfig.localFallback;
       localStorage.setItem(BUNDLED_AI_CONFIG_KEY, JSON.stringify(nextConfig));
+      if (state.appBridgeReady) appBridgeRequest('config.apply', { aiConfig: nextConfig }).catch(() => {});
       return true;
     } catch (_) {
       // Best effort only; the runtime config remains the source of truth.
@@ -797,6 +909,7 @@
         source: 'alloflow-desktop',
         updatedAt: new Date().toISOString(),
       }));
+      if (state.appBridgeReady) appBridgeRequest('config.apply', { liveSessionConfig: JSON.parse(localStorage.getItem(BUNDLED_LIVE_SESSION_CONFIG_KEY)) }).catch(() => {});
       return true;
     } catch (_) {
       return false;
@@ -809,10 +922,16 @@
     return syncBundledAppAiConfig(provider, '', provider.baseUrl);
   }
 
+  function pushBundledAppConfig() {
+    syncSelectedProviderForBundledApp();
+    syncBundledAppLiveSessionConfig();
+  }
+
   function reloadAppFrame() {
     const frame = $('#app-frame');
     if (!frame || !state.health?.appUrl) return;
     frame.src = 'about:blank';
+    resetAppBridge();
     setTimeout(() => {
       frame.src = state.health.appUrl;
     }, 30);
@@ -850,7 +969,46 @@
     if (download) download.disabled = voice.status === 'loading' || voice.status === 'ready';
   }
 
-  function inspectKokoroVoice() {
+  async function inspectKokoroVoice() {
+    if (state.appBridgeReady) {
+      try {
+        const status = await appBridgeRequest('status.get');
+        state.appBridgeStatus = status;
+        const kokoro = status?.kokoro || {};
+        if (kokoro.ready) {
+          setVoiceState({
+            status: 'ready',
+            detail: 'Kokoro is ready inside the isolated AlloFlow app.',
+            quality: kokoro.quality || 'fast',
+            voices: kokoro.voices || 0,
+          });
+        } else if (kokoro.downloading) {
+          setVoiceState({
+            status: 'loading',
+            detail: 'The isolated app is preparing the Kokoro voice model.',
+            quality: kokoro.quality || 'fast',
+            voices: kokoro.voices || 0,
+          });
+        } else if (kokoro.cacheEntries > 0) {
+          setVoiceState({
+            status: 'downloaded',
+            detail: 'Kokoro is cached and will load when first used.',
+            quality: kokoro.quality || 'fast',
+            voices: kokoro.voices || 0,
+          });
+        } else {
+          setVoiceState({
+            status: kokoro.available ? 'available' : 'waiting',
+            detail: kokoro.available ? 'Kokoro can be downloaded and cached now.' : 'Waiting for the app voice loader.',
+            quality: kokoro.quality || '',
+            voices: kokoro.voices || 0,
+          });
+        }
+      } catch (error) {
+        setVoiceState({ status: 'bridge error', detail: error.message || 'Could not read isolated app voice status.' });
+      }
+      return;
+    }
     const appWindow = getBundledAppWindow();
     if (!appWindow) {
       setVoiceState({
@@ -915,6 +1073,34 @@
   }
 
   async function downloadKokoroVoice() {
+    if (state.appBridgeReady) {
+      setVoiceState({
+        status: 'loading',
+        detail: 'Starting Kokoro voice model download in the isolated app...',
+        quality: 'fast',
+      });
+      try {
+        await appBridgeRequest('kokoro.download', {}, {
+          timeoutMs: 4 * 60 * 60 * 1000,
+          onProgress: (progress) => {
+            const pct = Math.round((Number(progress?.pct) || 0) * 100);
+            setVoiceState({
+              status: 'loading',
+              detail: (progress?.stage || 'Downloading voice model') + ' - ' + pct + '%',
+              quality: 'fast',
+            });
+          },
+        });
+        await inspectKokoroVoice();
+      } catch (error) {
+        setVoiceState({
+          status: 'error',
+          detail: error.message || 'Kokoro download failed.',
+        });
+      }
+      return;
+    }
+
     const appWindow = getBundledAppWindow();
     if (!appWindow) {
       setVoiceState({
@@ -1299,6 +1485,13 @@
 
   async function collectBrowserReadiness() {
     const appWindow = getBundledAppWindow();
+    let isolatedStatus = null;
+    if (state.appBridgeReady) {
+      try {
+        isolatedStatus = await appBridgeRequest('status.get');
+        state.appBridgeStatus = isolatedStatus;
+      } catch (_) {}
+    }
     let microphone = 'unknown';
     try {
       if (navigator.permissions && navigator.permissions.query) {
@@ -1307,14 +1500,16 @@
     } catch (_) {
       microphone = 'unknown';
     }
-    const webGpuReady = await _webGpuAdapterOk();
-    const sdCacheEntries = await cacheEntryCount('allo-sd-turbo');
-    const kokoroCacheEntries = await cacheEntryCount('transformers-cache', 'Kokoro-82M');
+    const webGpuReady = isolatedStatus?.sdTurbo ? Boolean(isolatedStatus.sdTurbo.webGpuReady) : await _webGpuAdapterOk();
+    const sdCacheEntries = isolatedStatus?.sdTurbo ? Number(isolatedStatus.sdTurbo.cacheEntries || 0) : await cacheEntryCount('allo-sd-turbo');
+    const kokoroCacheEntries = isolatedStatus?.kokoro ? Number(isolatedStatus.kokoro.cacheEntries || 0) : await cacheEntryCount('transformers-cache', 'Kokoro-82M');
     return {
       generatedAt: new Date().toISOString(),
       appFrame: {
         loadedSameOrigin: Boolean(appWindow),
-        href: appWindow ? appWindow.location.href : '',
+        loadedIsolatedOrigin: Boolean(isolatedStatus),
+        href: isolatedStatus?.href || (appWindow ? appWindow.location.href : ''),
+        origin: isolatedStatus?.origin || window.location.origin,
       },
       localImages: {
         webGpuReady,
@@ -1322,10 +1517,10 @@
         status: !webGpuReady ? 'unsupported' : (sdCacheEntries > 0 ? 'downloaded' : 'available-not-downloaded'),
       },
       localVoice: {
-        kokoroReady: Boolean(appWindow && appWindow._kokoroTTS && appWindow._kokoroTTS.ready),
-        kokoroDownloading: Boolean(appWindow && appWindow.__kokoroTTSDownloading),
+        kokoroReady: isolatedStatus?.kokoro ? Boolean(isolatedStatus.kokoro.ready) : Boolean(appWindow && appWindow._kokoroTTS && appWindow._kokoroTTS.ready),
+        kokoroDownloading: isolatedStatus?.kokoro ? Boolean(isolatedStatus.kokoro.downloading) : Boolean(appWindow && appWindow.__kokoroTTSDownloading),
         kokoroCacheEntries,
-        lastRoute: appWindow ? (appWindow.__ttsLastRoute || null) : null,
+        lastRoute: isolatedStatus?.kokoro?.lastRoute || (appWindow ? (appWindow.__ttsLastRoute || null) : null),
       },
       microphone: {
         permission: microphone,
@@ -1619,6 +1814,35 @@
     const appWindow = getBundledAppWindow();
     if (appWindow && appWindow._sdTurbo && appWindow._sdTurbo.ready) {
       setText('#sd-status', 'ready');
+    }
+    if (state.appBridgeReady) {
+      try {
+        const status = await appBridgeRequest('status.get');
+        state.appBridgeStatus = status;
+        const sd = status?.sdTurbo || {};
+        setText('#sd-gpu', sd.webGpuReady ? 'WebGPU ready' : 'No WebGPU adapter');
+        if (sd.ready) {
+          setText('#sd-status', 'ready');
+          $('#sd-result').textContent = 'SD-Turbo is loaded inside the isolated app.';
+        } else if (!sd.webGpuReady) {
+          setText('#sd-status', 'not supported');
+          $('#sd-result').textContent = 'This computer has no WebGPU graphics adapter, so local image generation cannot run here.';
+        } else if (sd.downloading) {
+          setText('#sd-status', 'downloading');
+          $('#sd-result').textContent = 'The isolated app is preparing SD-Turbo.';
+        } else if (sd.cacheEntries > 0) {
+          setText('#sd-status', 'downloaded');
+          $('#sd-result').textContent = 'Model files are cached for the isolated app and load when first used.';
+        } else {
+          setText('#sd-status', sd.available ? 'not downloaded' : 'waiting');
+        }
+      } catch (error) {
+        setText('#sd-status', 'bridge error');
+        $('#sd-result').textContent = error.message || 'Could not inspect isolated app image status.';
+      }
+      return;
+    }
+    if (appWindow && appWindow._sdTurbo && appWindow._sdTurbo.ready) {
       $('#sd-result').textContent = 'SD-Turbo is loaded â€” images generate on this device.';
       return;
     }
@@ -1636,6 +1860,27 @@
   }
 
   async function downloadSdTurbo() {
+    if (state.appBridgeReady) {
+      $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time) in the isolated app...';
+      try {
+        const result = await appBridgeRequest('sd.download', {}, {
+          timeoutMs: 4 * 60 * 60 * 1000,
+          onProgress: (progress) => {
+            const pct = Math.round((Number(progress?.pct) || 0) * 100);
+            $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time)... ' + pct + '%';
+          },
+        });
+        $('#sd-result').textContent = result?.ready
+          ? 'SD-Turbo ready - images generate on this device.'
+          : 'The download did not complete - check the connection and try again.';
+      } catch (error) {
+        $('#sd-result').textContent = 'Download failed: ' + (error?.message || error);
+      }
+      await inspectSdTurbo();
+      refreshSetupHealth().catch(() => {});
+      return;
+    }
+
     const appWindow = getBundledAppWindow();
     if (!appWindow) {
       $('#sd-result').textContent = 'Switch the app URL to the bundled /app/ address, then try again.';
@@ -1669,6 +1914,24 @@
   // separates "engine can synthesize" from "the app routed elsewhere" in one
   // click, with the router's own breadcrumb shown for the app half.
   async function testKokoroVoice() {
+    if (state.appBridgeReady) {
+      try {
+        const status = await appBridgeRequest('status.get');
+        const kokoro = status?.kokoro || {};
+        if (!kokoro.ready) {
+          $('#voice-result').textContent = 'The Kokoro engine is not ready yet. Download it first, then retry.';
+          return;
+        }
+        const result = await appBridgeRequest('kokoro.test', { voice: kokoro.voicePreference || 'af_heart' }, { timeoutMs: 120000 });
+        const lastRoute = result?.lastRoute;
+        $('#voice-result').textContent = 'You should be hearing the Kokoro voice now. Last in-app read-aloud route: '
+          + (lastRoute ? lastRoute.route + ' (voice ' + (lastRoute.voice || result.voice) + ')' : 'none recorded yet.');
+      } catch (error) {
+        $('#voice-result').textContent = 'Playback failed: ' + (error?.message || error);
+      }
+      return;
+    }
+
     const appWindow = getBundledAppWindow();
     if (!appWindow) {
       $('#voice-result').textContent = 'Switch the app URL to the bundled /app/ address, then try again.';
@@ -1750,7 +2013,25 @@
     // is on disk.
     try {
       const w = getBundledAppWindow();
-      if (w && w._kokoroTTS && w._kokoroTTS.ready) {
+      if (state.appBridgeReady) {
+        const status = await appBridgeRequest('status.get');
+        state.appBridgeStatus = status;
+        const voice = status?.kokoro || {};
+        const lastRoute = voice.lastRoute || null;
+        if (voice.ready && lastRoute && lastRoute.route && lastRoute.route !== 'kokoro' && lastRoute.route !== 'provider') {
+          setHealthRow('#health-voice', 'warn', 'Ready, but last read-aloud fell back (' + lastRoute.route + (lastRoute.voice ? ', voice ' + lastRoute.voice : '') + ')');
+        } else if (voice.ready) {
+          setHealthRow('#health-voice', 'ok', 'Ready - reads aloud inside the isolated app' + (voice.voicePreference ? ' (' + voice.voicePreference + ')' : ''));
+        } else if (voice.downloading) {
+          setHealthRow('#health-voice', 'busy', 'Preparing voice model...');
+        } else if (voice.cacheEntries > 0) {
+          setHealthRow('#health-voice', 'ok', 'Downloaded - loads shortly after the app opens');
+        } else if (voice.available) {
+          setHealthRow('#health-voice', 'warn', 'Not downloaded yet (~88 MB, one time)', 'Download', () => downloadKokoroVoice());
+        } else {
+          setHealthRow('#health-voice', 'warn', 'Voice loader is still starting');
+        }
+      } else if (w && w._kokoroTTS && w._kokoroTTS.ready) {
         // Engine READY is necessary but not sufficient â€” show what the last
         // read-aloud actually did (window.__ttsLastRoute breadcrumb from the
         // TTS router) so "ready but I hear the robot voice" is diagnosable
@@ -1790,6 +2071,20 @@
       if (navigator.gpu && typeof navigator.gpu.requestAdapter === 'function') {
         try { adapter = await navigator.gpu.requestAdapter(); } catch (_) { adapter = null; }
       }
+      if (state.appBridgeReady) {
+        const status = await appBridgeRequest('status.get');
+        state.appBridgeStatus = status;
+        const sd = status?.sdTurbo || {};
+        if (!sd.webGpuReady) {
+          setHealthRow('#health-images', 'err', 'Not supported on this computer (no WebGPU)');
+        } else if (sd.ready || sd.cacheEntries > 0) {
+          setHealthRow('#health-images', 'ok', sd.ready ? 'Ready - images generate inside the isolated app' : 'Downloaded - loads when first used');
+        } else if (sd.downloading) {
+          setHealthRow('#health-images', 'busy', 'Preparing local image model...');
+        } else {
+          setHealthRow('#health-images', 'warn', 'Available - enable in the app AI Settings (~2 GB once)');
+        }
+      } else {
       if (!adapter) {
         setHealthRow('#health-images', 'err', 'Not supported on this computer (no WebGPU)');
       } else {
@@ -1803,6 +2098,7 @@
         } else {
           setHealthRow('#health-images', 'warn', 'Available â€” enable in the appâ€™s AI Settings (~2 GB once)');
         }
+      }
       }
     } catch (_) {
       setHealthRow('#health-images', 'warn', 'Could not check');
@@ -2067,7 +2363,7 @@
       if (hint) {
         hint.textContent = pin
           ? 'PIN saved. It applies when LAN sharing (re)starts â€” stop and start sharing to use it now.'
-          : 'PIN cleared. Restart LAN sharing to open the join page without a PIN.';
+          : 'Custom PIN cleared. A fresh six-digit PIN will be generated the next time LAN sharing starts.';
       }
       await refresh();
     });
@@ -2333,8 +2629,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
-    bindEvents();
     try {
+      bindEvents();
       await refresh();
       await hydrateUpdateStatus();
     } catch (error) {

@@ -1,6 +1,7 @@
 'use strict';
 
 const path = require('path');
+const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('electron');
@@ -39,7 +40,7 @@ try {
   updaterLoadError = error;
 }
 
-// ── Renderer capability switches (probe-verified 2026-07-06, Electron 37) ──
+// ── Renderer capability switches (probe-verified 2026-07-06, Electron 39) ──
 // The desktop shell is a local, trusted surface, and two Chromium defaults
 // silently break shipped features inside it:
 // 1. Gesture-gated autoplay: read-aloud audio starts AFTER multi-second
@@ -56,6 +57,7 @@ app.commandLine.appendSwitch('enable-unsafe-webgpu');
 const DEFAULT_HOST = process.env.ALLOFLOW_DESKTOP_HOST || '127.0.0.1';
 const DEFAULT_PORT = Number(process.env.ALLOFLOW_DESKTOP_PORT || 32170);
 const MAX_PORT_ATTEMPTS = 20;
+const PRIVATE_API_TOKEN = crypto.randomBytes(32).toString('base64url');
 
 let mainWindow = null;
 let runtimeServer = null;
@@ -91,7 +93,11 @@ function getCommandCenterUrl() {
   return commandCenterUrl;
 }
 
+function getBundledAppOrigin() {
+  return 'http://localhost:' + runtimePort;
+}
 function setRuntimePort(port) {
+
   runtimePort = port;
   commandCenterUrl = `http://${DEFAULT_HOST}:${runtimePort}`;
   process.env.ALLOFLOW_DESKTOP_PORT = String(runtimePort);
@@ -292,7 +298,10 @@ function isExpectedRuntime(health) {
 function fetchJson(url, timeoutMs = 900) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(url, { signal: controller.signal })
+  return fetch(url, {
+    headers: { 'X-Allo-Desktop-Token': PRIVATE_API_TOKEN },
+    signal: controller.signal,
+  })
     .then((response) => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.json();
@@ -305,7 +314,7 @@ function postJson(url, timeoutMs = 35000) {
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   return fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Allo-Desktop-Token': PRIVATE_API_TOKEN },
     body: '{}',
     signal: controller.signal,
   })
@@ -337,7 +346,8 @@ async function ensureRuntime() {
 
     try {
       const existingHealth = await fetchJson(url + '/api/health', 700);
-      if (isExpectedRuntime(existingHealth)) {
+      if (isExpectedRuntime(existingHealth) && existingHealth.privateApiAuth === 'launch-token') {
+        await fetchJson(url + '/api/config', 700);
         setRuntimePort(port);
         logLine(`Using existing packaged runtime at ${url}`);
         return existingHealth;
@@ -418,6 +428,31 @@ function openExternalIfSafe(url) {
   return false;
 }
 
+function configurePrivateApiRequestHeaders(targetWindow) {
+  const filter = {
+    urls: [getCommandCenterUrl() + '/api/*', getBundledAppOrigin() + '/api/*'],
+  };
+  targetWindow.webContents.session.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
+    const requestHeaders = { ...(details.requestHeaders || {}) };
+    for (const key of Object.keys(requestHeaders)) {
+      if (key.toLowerCase() === 'x-allo-desktop-token') delete requestHeaders[key];
+    }
+    let fromCommandCenterMainFrame = false;
+    try {
+      fromCommandCenterMainFrame = Boolean(
+        details.webContentsId === targetWindow.webContents.id &&
+        details.frame &&
+        details.frame.parent === null &&
+        isSameOrigin(details.frame.url, getCommandCenterUrl())
+      );
+    } catch (_) {
+      fromCommandCenterMainFrame = false;
+    }
+    if (fromCommandCenterMainFrame) requestHeaders['X-Allo-Desktop-Token'] = PRIVATE_API_TOKEN;
+    callback({ requestHeaders });
+  });
+}
+
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1320,
@@ -466,6 +501,7 @@ function createMainWindow() {
     }
   });
 
+  configurePrivateApiRequestHeaders(mainWindow);
   mainWindow.loadURL(getCommandCenterUrl());
 }
 
@@ -643,6 +679,7 @@ async function ensureAdminServerPosture() {
 
 app.whenReady().then(async () => {
   configureDesktopSecretStorage();
+  runtime.configurePrivateApiToken(PRIVATE_API_TOKEN);
   prepareDesktopRuntimeHome();
   logLine('Launching AlloFlow Desktop' + (DESKTOP_EDITION ? ` (${DESKTOP_EDITION} edition)` : ''));
   logLine('Runtime data dir: ' + runtime.getDataDir());

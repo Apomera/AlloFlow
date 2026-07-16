@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-cd355e92-anansi-ak-t-ti-an",
+  "title": "Anansi ak tòti an",
+  "description": "An African Storybook:  Anansi learns a lesson from Turtle",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "African Storybook Iniative"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "African Storybook Iniative",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/hT2h8pcAJS"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fcd355e92-235a-4592-b838-2df40d2e88ee%2fAnansi+ak+t%c3%b2ti+an%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fcd355e92-235a-4592-b838-2df40d2e88ee%2fAnansi+ak+t%c3%b2ti+an%2fimage1.jpg",
+      "text": "Yon jou, Anansi zareyen an pran kèk yanm soti nan jaden l' yo.\nYo te bèl bon yanm gou, se konsa li konn kwit yo nan fou ak anpil atansyon nan dife.\nAprè sa, li chita, li manje yo."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fcd355e92-235a-4592-b838-2df40d2e88ee%2fAnansi+ak+t%c3%b2ti+an%2fimage2.jpg",
+      "text": "Menm jan Anansi te sou yo mete premye bouche an nan bouch li, li te tande yon frape nan pòt li a. << O, non! » te di Anansi. << Ki moun li dwe ye? » Men, li te louvri pòt la.\nTe gen tòti a, ki te gen lè trè fatige. Tòti an di konsa, << Anansi, tanpri kite m' antre. Mwen te mache byen lwen pou jodi a, e mwen fatige e grangou. »\nSe konsa, sa Anansi te kapab fè kitel antre?"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fcd355e92-235a-4592-b838-2df40d2e88ee%2fAnansi+ak+t%c3%b2ti+an%2fimage3.jpg",
+      "text": "Anansi te twò egoyis li pate vle pataje bèl yanm gou ak okenn lòt moun. Se konsa, li te vini ak yon plan mechan.\nMenm jan tòti chita bò tab la e te ap ret tann kek yanm, Anansi di tòti konsa: << men ou yo tout sal! Ou pa ka manje avèk men ou tout sal! Ale lave yo. >>\nMen tòti an te sal vre. Li ranpe ale nan rivyè a, pou li te ka lave men li, pi ranpe pou li tounen."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fcd355e92-235a-4592-b838-2df40d2e88ee%2fAnansi+ak+t%c3%b2ti+an%2fimage4.jpg",
+      "text": "Men, pandan se tan, Anansi te kòmanse manje yanm yo. Depi lè a tòti te tounen, li pat jwenn yanm yo.\nTòti an gade Anansi . << Mèsi dèske ou te envite m ' nan dine. Si yon jou ou ta pre lakay mwen, tanpri vini pou m' ka retounen ou favè a , >> te di tòti.\nApre sa, tòti an te kòmanse rale tou dousman pou ale lakay li."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fcd355e92-235a-4592-b838-2df40d2e88ee%2fAnansi+ak+t%c3%b2ti+an%2fimage5.jpg",
+      "text": "Piti piti, Anansi te kòmanse panse sou ki jan tòti te pwomèt ba l' manje yon dine gratis. Se konsa, yon jou a li te mache al nan kay tòti a.\nAnansi te rive nan kay tòti nan lè soupe, kòm Solèy tapral desann sou larivyè a. Tòti te kouche sou yon wòch nan solèy la, ap chofe, jan tòti yo toujou fè.\nLè tòti wè Anansi, li te di, «Bonjou, Anansi, ou vini manje avè m '? >> Epi Anansi di, «Wi, ki ta ka trè bèl, mwen di ou mèsi. >> Li te vini bien grangou."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fcd355e92-235a-4592-b838-2df40d2e88ee%2fAnansi+ak+t%c3%b2ti+an%2fimage6.jpg",
+      "text": "Se konsa, tòti an plonje desann anba a nan larivyè a, li mete tab la pou dine a epi pou tout bagay pare. Anansi te rete ap tann sou wòch la bò rivaj la.\nAprè sa tòti an tap naje tounen moute, li di: «O Anansi, tout bagay pare kounye a, tanpri rantre non pou dine. \" Epi tòti plonje desann ankò, li kòmanse manje fèy vèt la kite la ki te pare pou dine a."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fcd355e92-235a-4592-b838-2df40d2e88ee%2fAnansi+ak+t%c3%b2ti+an%2fimage7.jpg",
+      "text": "Anansi te eseye plonje desann anba a nan larivyè a, men li te yon zarenyen, li pa yon tòti, li pa t' kapab plonje twò fon. Li te ap flote li te tounen moute nan sifas la ankò.\nLi te eseye sote, e li te eseye plonje, men anyen pat mache. Li pa t' kapab desann nan dine an."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fcd355e92-235a-4592-b838-2df40d2e88ee%2fAnansi+ak+t%c3%b2ti+an%2fimage8.jpg",
+      "text": "Finalman Anansi te gen yon lide. Li mete anpil wòch nan pòch rad li, epi finalman li te lou ase pou koule desann nan fon larivyè a.\nEntelijan ke li te ye!\nLi wè tab tòti an, plen ak fèy vèt ak anpil lòt manje bon jan gou. bouch Anansi te kouri dlo."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fcd355e92-235a-4592-b838-2df40d2e88ee%2fAnansi+ak+t%c3%b2ti+an%2fimage9.jpg",
+      "text": "Menm, lè Anansi te rive pou pran kèk nan manje ki bon jan gou yo, tòti an te retel. << Anansi, siman w' ap pa pral manje dine a ak rad ou sou? Se pa konsa nou fè bagay yo lakay mwen.>>\nAnansi, san li pa reflechi, di konsa, << O, se vre ou gen rezon, tòti an, se sa ke mwen panse? \" Li wete rad li."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fcd355e92-235a-4592-b838-2df40d2e88ee%2fAnansi+ak+t%c3%b2ti+an%2fimage10.jpg",
+      "text": "Men, san wòch yo nan pòch li pou te kenbel, Anansi t'ap flote tounen monte nan sifas larivyè a ankò, li soti nan dlo a.\nAnansi Malerezman mete tèt li desann nan dlo a ap gade tòti an manje tout manje gou!"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 676
+  }
+}

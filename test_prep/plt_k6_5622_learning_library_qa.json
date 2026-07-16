@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T14:59:57.928Z",
+  "libraryId": "praxis-plt-k6-5622-learning-library",
+  "packId": "praxis-plt-k6-5622",
+  "standard": {
+    "label": "AlloFlow Praxis PLT K–6 5622 learning-library QA v1",
+    "meaning": "A pass confirms complete chapter and workshop counts, substantive sections and checks, allowlisted references, stable linkage, review metadata, and explicit scoring, disability, privacy, reporting, safety, and professional-decision boundaries.",
+    "limitation": "This is not ETS or CCSSO approval, independent practicing K–6 educator validation, psychometric validation, official constructed-response scoring, legal advice, a disability, reporting, licensure, or employment decision, or an emergency directive."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "constructedResponseWorkshops": 8,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "sourceReviewedConstructedResponseWorkshops": 8,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "findings": [],
+    "status": "pass"
+  }
+}

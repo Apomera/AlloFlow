@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T15:03:41.603Z",
+  "libraryId": "praxis-special-education-5355-learning-library",
+  "standard": {
+    "label": "AlloFlow Praxis Special Education 5355 learning-library source and editorial review v1",
+    "meaning": "A pass confirms release counts, stable identifiers, authoritative-source allowlisting, substantive native lessons, one-best-answer knowledge checks, complete card and aid metadata, and item-compatible skills.",
+    "limitation": "This is not ETS approval, independent educator validation, psychometric validation, legal advice, or a substitute for current federal, state, and local requirements."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "findings": [],
+    "status": "pass"
+  },
+  "chapters": [
+    {
+      "id": "sp5355-ch-01",
+      "title": "Development, Context, and Learner Variability",
+      "domainId": "development-differences",
+      "skillId": "development-milestones-context",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 1,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5355-ch-02",
+      "title": "Disability Characteristics and Educational Impact",
+      "domainId": "development-differences",
+      "skillId": "disability-characteristics-impact",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 1,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5355-ch-03",
+      "title": "Adaptive, Sensory, Physical, and Health Supports",
+      "domainId": "development-differences",
+      "skillId": "adaptive-sensory-health-supports",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5355-ch-04",
+      "title": "Individualized Planning, IEPs, LRE, and Transition",
+      "domainId": "planning-instruction-environment",
+      "skillId": "individualized-planning-transition",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5355-ch-05",
+      "title": "Explicit Instruction and Curriculum Access",
+      "domainId": "planning-instruction-environment",
+      "skillId": "explicit-instruction-curriculum-access",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5355-ch-06",
+      "title": "Behavior, Engagement, and Productive Environments",
+      "domainId": "planning-instruction-environment",
+      "skillId": "behavior-environments-engagement",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5355-ch-07",
+      "title": "Assessment Purpose, Quality, and Access",
+      "domainId": "assessment",
+      "skillId": "assessment-quality-selection",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5355-ch-08",
+      "title": "Evaluation, Eligibility, and Intervention",
+      "domainId": "assessment",
+      "skillId": "evaluation-eligibility-intervention",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5355-ch-09",
+      "title": "Progress Monitoring and Data-Based Decisions",
+      "domainId": "assessment",
+      "skillId": "progress-monitoring-data-decisions",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5355-ch-10",
+      "title": "Law, Ethics, Safeguards, and Equity",
+      "domainId": "professional-practice-collaboration",
+      "skillId": "law-ethics-equity",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5355-ch-11",
+      "title": "Collaboration with Families and School Teams",
+      "domainId": "professional-practice-collaboration",
+      "skillId": "collaboration-families-teams",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sp5355-ch-12",
+      "title": "Professional Learning, Advocacy, and Boundaries",
+      "domainId": "professional-practice-collaboration",
+      "skillId": "professional-learning-advocacy",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    }
+  ]
+}

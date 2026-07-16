@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4a7d975a-untitled",
+  "title": "कछुवा र खरायो",
+  "description": "Story",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/m9IHFhg8cK"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f4a7d975a-2bd1-4282-bf08-351818d4b0d9%2f%e0%a4%95%e0%a4%9b%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%2f7.1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f4a7d975a-2bd1-4282-bf08-351818d4b0d9%2f%e0%a4%95%e0%a4%9b%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%2f7.11.png",
+      "text": "कछुवा र खरायो जङ्गलमा बस्थे। कछुवाले दौडमा म जित्छु भन्यो। खरायोले पनि म जित्छु भन्यो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f4a7d975a-2bd1-4282-bf08-351818d4b0d9%2f%e0%a4%95%e0%a4%9b%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%2fimage3.png",
+      "text": "त्यसो भए दुवैले दौडने निर्णय गरे। दुवै दौडन सुरू गरे। दुवै आफ्नो सकेजति बल लगाएर दौडे।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f4a7d975a-2bd1-4282-bf08-351818d4b0d9%2f%e0%a4%95%e0%a4%9b%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%2f7.2.png",
+      "text": "खरायोले दौड जित्यो। कछुवालाई चिन्ता पर्‍यो। उसले फेरि दौडने प्रस्ताव राख्यो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f4a7d975a-2bd1-4282-bf08-351818d4b0d9%2f%e0%a4%95%e0%a4%9b%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%2fAOR_Turtle311.png",
+      "text": "अब दौडँदा केही शर्त पूरा गर्नुपर्दछ। जितेको खरायोले शर्त मान्छु भन्यो। शर्त खोला पारीसम्म दौडने थियो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f4a7d975a-2bd1-4282-bf08-351818d4b0d9%2f%e0%a4%95%e0%a4%9b%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%2fimage4.png",
+      "text": "दुवै दौडन थाले। खोलासम्म खरायो दौड्यो। खोला तर्न सकेन।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f4a7d975a-2bd1-4282-bf08-351818d4b0d9%2f%e0%a4%95%e0%a4%9b%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%2f7.5.png",
+      "text": "कछुवा आफ्नो गतिले हिँडिरह्यो। खोला सजिलै तरेर दौड जित्यो। कछुवा र खरायो दुवै फर्केर आए।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f4a7d975a-2bd1-4282-bf08-351818d4b0d9%2f%e0%a4%95%e0%a4%9b%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%2f7.13.png",
+      "text": "दुवैले मिलेर दौडने सल्‍लाह गरे। जमिनमा खरायोले कछुवालाई बोकेर दौडने। नदीको पानीमा कछुवाले खरायोलाई बोकेर दौडने।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f4a7d975a-2bd1-4282-bf08-351818d4b0d9%2f%e0%a4%95%e0%a4%9b%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%2fimage2.jpg",
+      "text": "शर्तअनुसार दुवैले दुवैलाई बोकेर दौडिए। दुवैसँगै तोकिएको ठाँउमा पुगे। सो दौडमा दुवैले जित हासिल पारे।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f4a7d975a-2bd1-4282-bf08-351818d4b0d9%2f%e0%a4%95%e0%a4%9b%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%2fimage2.png",
+      "text": "दौडमा पहिले जितेको खरायोले पनि हार्‍यो। हारेको कछुवाले पनि पछि जित्यो। अन्तमा दुवै मिलेर दुवैले जिते।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sachin.kit%40gmail.com%2f4a7d975a-2bd1-4282-bf08-351818d4b0d9%2f%e0%a4%95%e0%a4%9b%e0%a5%81%e0%a4%b5%e0%a4%be+%e0%a4%b0+%e0%a4%96%e0%a4%b0%e0%a4%be%e0%a4%af%e0%a5%8b%2f7.15.png",
+      "text": "हामीले पनि बल भन्दा बुद्धि लगाउनुपर्छ। सबैले मिलेर काम गर्नुपर्छ। अनि मात्र सफलता प्राप्त गर्न सकिन्छ।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 145
+  }
+}

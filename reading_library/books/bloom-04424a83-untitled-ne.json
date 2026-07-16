@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-04424a83-untitled-ne",
+  "title": "तस्वीर बोल्यो",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/z5es0tCqRU"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f04424a83-6f0e-4a98-9e6e-316ae340ec04%2f%e0%a4%a4%e0%a4%b8%e0%a5%8d%e0%a4%b5%e0%a5%80%e0%a4%b0+%e0%a4%ac%e0%a5%8b%e0%a4%b2%e0%a5%8d%e0%a4%af%e0%a5%8b%2fimage71.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f04424a83-6f0e-4a98-9e6e-316ae340ec04%2f%e0%a4%a4%e0%a4%b8%e0%a5%8d%e0%a4%b5%e0%a5%80%e0%a4%b0+%e0%a4%ac%e0%a5%8b%e0%a4%b2%e0%a5%8d%e0%a4%af%e0%a5%8b%2fimage7.png",
+      "text": "किशोर कोठामा एक्लै थिए। ऊ कोठाको भित्तामा हेरिरहेका थिए। भित्तामा पुरानो फोटो थियो। फोटोको अनुहार उनले चिनेका थिएनन्। हेर्दाहेर्दै फोटो बोल्न थाल्यो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f04424a83-6f0e-4a98-9e6e-316ae340ec04%2f%e0%a4%a4%e0%a4%b8%e0%a5%8d%e0%a4%b5%e0%a5%80%e0%a4%b0+%e0%a4%ac%e0%a5%8b%e0%a4%b2%e0%a5%8d%e0%a4%af%e0%a5%8b%2fAOR_CMB0595.png",
+      "text": "\"किशोर मलाई चिन्यौ?\" फोटोको अनुहार बोल्यो। किशोरलाई अनौठो लाग्यो। \"अहँ मैले चिनिन त।\" किशोरले टाउको हल्‍लायो। फोटो मुसुक्‍क हाँस्यो।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f04424a83-6f0e-4a98-9e6e-316ae340ec04%2f%e0%a4%a4%e0%a4%b8%e0%a5%8d%e0%a4%b5%e0%a5%80%e0%a4%b0+%e0%a4%ac%e0%a5%8b%e0%a4%b2%e0%a5%8d%e0%a4%af%e0%a5%8b%2fAOR_father-1.png",
+      "text": "हेर्दाहेर्दै फोटाको अनुहार ठुलो भयो। ठुलो मान्छे भएर तल आयो। किशोरको कुममा हात राख्यो। \"म तिम्रो हजुरबुबा !\" मलाई चिनेनौं।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f04424a83-6f0e-4a98-9e6e-316ae340ec04%2f%e0%a4%a4%e0%a4%b8%e0%a5%8d%e0%a4%b5%e0%a5%80%e0%a4%b0+%e0%a4%ac%e0%a5%8b%e0%a4%b2%e0%a5%8d%e0%a4%af%e0%a5%8b%2fAOR_CMB0322.png",
+      "text": "किशोरले हजुरबुबालाई ढोग गरे। हजुरबुबा खुसी हुनुभयो। \"मलाई तिम्रो असाध्यै माया लाग्छ।\" हजुरबुबाले भन्नुभयो। यो सुनेर किशोर पनि खुसी भए।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f04424a83-6f0e-4a98-9e6e-316ae340ec04%2f%e0%a4%a4%e0%a4%b8%e0%a5%8d%e0%a4%b5%e0%a5%80%e0%a4%b0+%e0%a4%ac%e0%a5%8b%e0%a4%b2%e0%a5%8d%e0%a4%af%e0%a5%8b%2fimage3.png",
+      "text": "\"तिमीले यो के गरेको? हेर त कोठा कति फोहर छ। यस्तो फोहरमा पनि बस्ने हो?\" भन्दै हजुबा कोठा सफा गर्न लाग्नुभयो।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f04424a83-6f0e-4a98-9e6e-316ae340ec04%2f%e0%a4%a4%e0%a4%b8%e0%a5%8d%e0%a4%b5%e0%a5%80%e0%a4%b0+%e0%a4%ac%e0%a5%8b%e0%a4%b2%e0%a5%8d%e0%a4%af%e0%a5%8b%2fimage8.png",
+      "text": "\"हेर फोहरमा बस्नु हुँदैन रोग लाग्छ। यो कोठा तिम्रै होइन र? यो घर तिम्रै होइन र?\" हजुरबुबाले सोध्नु भयो। \"हो हजुरबुबा।\" किशोर डराई डराई बोले।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f04424a83-6f0e-4a98-9e6e-316ae340ec04%2f%e0%a4%a4%e0%a4%b8%e0%a5%8d%e0%a4%b5%e0%a5%80%e0%a4%b0+%e0%a4%ac%e0%a5%8b%e0%a4%b2%e0%a5%8d%e0%a4%af%e0%a5%8b%2fimage9.png",
+      "text": "\"कोठा फोहोर हुँदा मलाई नरमाइलो लाग्छ। फोहोर गन्ध आउँछ। के तिमीलाई यस्तो मनपर्छ?\" हजुरबुबाले सोध्नुभयो। \"अहँ मलाई पनि फोहोर मन पर्दैन।\" किशोरले भने।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f04424a83-6f0e-4a98-9e6e-316ae340ec04%2f%e0%a4%a4%e0%a4%b8%e0%a5%8d%e0%a4%b5%e0%a5%80%e0%a4%b0+%e0%a4%ac%e0%a5%8b%e0%a4%b2%e0%a5%8d%e0%a4%af%e0%a5%8b%2fAOR_CMB0043.png",
+      "text": "\"अनि सफा राख्नु पर्दैन त?\" \"अब देखि सफा राख्छु हजुरबुबा।\" किशोरले भने। \"आमाबुबाले नभ्याउँदा तिमीले सफा गर्नुपर्छ। यो घर तिम्रै त हो नि।\" हजुरबुबाले सम्झाउनु भयो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f04424a83-6f0e-4a98-9e6e-316ae340ec04%2f%e0%a4%a4%e0%a4%b8%e0%a5%8d%e0%a4%b5%e0%a5%80%e0%a4%b0+%e0%a4%ac%e0%a5%8b%e0%a4%b2%e0%a5%8d%e0%a4%af%e0%a5%8b%2fAOR_CMB0030.png",
+      "text": "\"किशोर, किशोर उठ्दैनौ? स्कुल जाने बेला भयो।\" आमाले बोलाउनुभयो। आमाको स्वरले किशोर झस्किए। उनी निन्द्राबाट झल्याँस्स ब्युँझिए। ए यो त सपना पो रहेछ।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f04424a83-6f0e-4a98-9e6e-316ae340ec04%2f%e0%a4%a4%e0%a4%b8%e0%a5%8d%e0%a4%b5%e0%a5%80%e0%a4%b0+%e0%a4%ac%e0%a5%8b%e0%a4%b2%e0%a5%8d%e0%a4%af%e0%a5%8b%2fAOR_th01331b.png",
+      "text": "हस् उठेँ! भन्दै किशोर उठे। उनी कोठा सफा गर्न थाले। आमाले अनौठो मानेर एकोहोरो हेरिरहनुभयो।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 214
+  }
+}

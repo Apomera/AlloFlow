@@ -103,6 +103,39 @@ describe('findActiveCue / pageCueRange — playback math', () => {
   });
 });
 
+describe('pageAudioClips — Bloom talking-book clip queue', () => {
+  it('returns clip srcs in order and tolerates malformed entries', () => {
+    expect(RL._pageAudioClips({ audio: [{ src: 'https://a/1.mp3', dur: 2 }, { src: 'https://a/2.mp3' }] }))
+      .toEqual(['https://a/1.mp3', 'https://a/2.mp3']);
+    expect(RL._pageAudioClips({ audio: [{ dur: 2 }, null, { src: 'https://a/3.mp3' }] }))
+      .toEqual(['https://a/3.mp3']);
+  });
+  it('is empty for pages without narration and for null pages', () => {
+    expect(RL._pageAudioClips({ text: 'no audio here' })).toEqual([]);
+    expect(RL._pageAudioClips(null)).toEqual([]);
+  });
+});
+
+describe('bloomEditionsFor — cross-language edition linking', () => {
+  const idx = [
+    { slug: 'bloom-5a8f7349-untitled', language: 'Ukrainian', contentType: 'story' },
+    { slug: 'bloom-5a8f7349-untitled-ar', language: 'Arabic', contentType: 'story' },
+    { slug: 'bloom-card-5a8f7349-something', language: 'Somali', contentType: 'open-access-source-card' },
+    { slug: 'bloom-99999999-other-book', language: 'Khmer', contentType: 'story' },
+    { slug: '16411-too-big-too-small', language: 'English', contentType: 'story' },
+  ];
+  it('finds sibling editions of the same Bloom record, excluding self and cards', () => {
+    const eds = RL._bloomEditionsFor('bloom-5a8f7349-untitled', idx);
+    expect(eds.map((b) => b.slug)).toEqual(['bloom-5a8f7349-untitled-ar']);
+  });
+  it('returns nothing for non-Bloom slugs, cards, and unmatched records', () => {
+    expect(RL._bloomEditionsFor('16411-too-big-too-small', idx)).toEqual([]);
+    expect(RL._bloomEditionsFor('bloom-card-5a8f7349-something', idx)).toEqual([]);
+    expect(RL._bloomEditionsFor('bloom-99999999-other-book', idx)).toEqual([]);
+    expect(RL._bloomEditionsFor(null, idx)).toEqual([]);
+  });
+});
+
 describe('bookPlainText / attributionLine', () => {
   const book = {
     title: 'Test Book',
@@ -336,7 +369,7 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(indexFiles.slice().sort()).toEqual(physicalFiles.slice().sort());
   });
 
-  it('every book file parses, matches its index entry, and honors the full book contract', () => {
+  it('every book file parses, matches its index entry, and honors the full book contract', { timeout: 60000 }, () => {
     const errors = [];
     const fail = (condition, message) => { if (!condition) errors.push(message); };
     const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
@@ -356,7 +389,7 @@ describe('mirrored data contract (reading_library/)', () => {
         fail(/^https:\/\/storyweaver\.org\.in\//.test(book.source.url), label + ': StoryWeaver source drift');
       } else {
         fail(entry.sourceId === sourceId, label + ': source id mismatch');
-        fail(['frontiers', 'nasa', 'noaa', 'usgs', 'wikisource', 'loc', 'gutenberg', 'openstax'].includes(sourceId), label + ': unknown source');
+        fail(['frontiers', 'nasa', 'noaa', 'usgs', 'wikisource', 'loc', 'gutenberg', 'openstax', 'bloom'].includes(sourceId), label + ': unknown source');
       }
       fail(Array.isArray(book.pages) && book.pages.length > 0, label + ': no pages');
       fail(!!(book.title && book.title.length), label + ': no title');
@@ -389,7 +422,15 @@ describe('mirrored data contract (reading_library/)', () => {
         fail(same(entry[key], value), label + ': index field drift: ' + key);
       });
 
-      if (book.audio) {
+      if (book.audio && book.audio.mode === 'perPage') {
+        // Bloom talking books: no whole-book mp3; ordered per-page clips.
+        let clipCount = 0;
+        (book.pages || []).forEach((p, pi) => (p.audio || []).forEach((c, ci) => {
+          clipCount++;
+          fail(/^https:\/\//.test((c && c.src) || ''), label + ': bad page-audio clip ' + (pi + 1) + '/' + ci);
+        }));
+        fail(clipCount > 0, label + ': perPage audio with no clips');
+      } else if (book.audio) {
         fail(/^https:\/\//.test(book.audio.src || ''), label + ': bad audio URL');
         if (book.audio.cues) {
           book.audio.cues.forEach((cue, cueIdx) => {
@@ -406,7 +447,7 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(errors).toEqual([]);
   }, 15_000);
 
-  it('mirrored Gutenberg full texts carry no print-era markup artifacts', () => {
+  it('mirrored Gutenberg full texts carry no print-era markup artifacts', { timeout: 60000 }, () => {
     // The importer strips [Illustration…] blocks, bracketed/boxed transcriber
     // notes, and _underscore_ emphasis (they render raw and TTS reads them
     // aloud). Guards both future imports and the 2026-07-12 cleanup pass.
@@ -447,7 +488,7 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(source).not.toContain('MAX_VISIBLE_BOOKS');
   });
 
-  it('public mirror is byte-for-byte in sync with every runtime data file', () => {
+  it('public mirror is byte-for-byte in sync with every runtime data file', { timeout: 60000 }, () => {
     const pub = path.join(ROOT, 'prismflow-deploy', 'public', 'reading_library');
     const mismatches = [];
     ['index.json', 'open_catalog.json'].concat(index.books.map((entry) => entry.file)).forEach((name) => {

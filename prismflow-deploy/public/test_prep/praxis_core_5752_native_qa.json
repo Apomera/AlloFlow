@@ -1,0 +1,906 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T15:00:06.170Z",
+  "packId": "praxis-core-5752",
+  "standard": {
+    "label": "AlloFlow independent Praxis Core 5752 source, structure, feedback, originality, and linkage QA v1",
+    "meaning": "A pass confirms exact diagnostic allocation, balanced answer positions, independently authored prompts, official-sample fragment screening, authoritative sources, substantive feedback, stable identifiers, and complete learning links.",
+    "limitation": "This is not ETS approval, independent literacy, writing, mathematics, accessibility, or psychometric validation, field testing, a scaled-score model, official essay scoring, a pass prediction, an admission or licensure decision, or an accommodation decision."
+  },
+  "blueprint": {
+    "officialSelectedResponseCount": 152,
+    "officialEssayCount": 2,
+    "officialTotalTimeMinutes": 275,
+    "selectedResponseMinutes": 215,
+    "simulationSubjects": {
+      "reading": 56,
+      "writing": 40,
+      "mathematics": 56
+    },
+    "subtests": {
+      "reading5713": {
+        "questions": 56,
+        "minutes": 85
+      },
+      "writing5723": {
+        "selectedResponseQuestions": 40,
+        "selectedResponseMinutes": 40,
+        "essays": 2,
+        "essayMinutesEach": 30
+      },
+      "mathematics5733": {
+        "questions": 56,
+        "minutes": 90
+      }
+    }
+  },
+  "diagnosticBatch": {
+    "batchCount": 2,
+    "batchSize": 100,
+    "subjectAllocation": {
+      "reading": 37,
+      "writing": 26,
+      "mathematics": 37
+    },
+    "categories": {
+      "reading-key-ideas-details": 13,
+      "reading-craft-structure-language": 11,
+      "reading-integration-knowledge-ideas": 13,
+      "writing-text-types-production": 8,
+      "writing-language-research": 18,
+      "math-number-quantity": 13,
+      "math-data-statistics-probability": 12,
+      "math-algebra-geometry": 12
+    },
+    "batches": [
+      {
+        "batchNumber": 1,
+        "domains": {
+          "reading-key-ideas-details": 13,
+          "reading-craft-structure-language": 11,
+          "reading-integration-knowledge-ideas": 13,
+          "writing-text-types-production": 8,
+          "writing-language-research": 18,
+          "math-number-quantity": 13,
+          "math-data-statistics-probability": 12,
+          "math-algebra-geometry": 12
+        },
+        "answerPositions": [
+          25,
+          25,
+          25,
+          25
+        ]
+      },
+      {
+        "batchNumber": 2,
+        "domains": {
+          "reading-key-ideas-details": 13,
+          "reading-craft-structure-language": 11,
+          "reading-integration-knowledge-ideas": 13,
+          "writing-text-types-production": 8,
+          "writing-language-research": 18,
+          "math-number-quantity": 13,
+          "math-data-statistics-probability": 12,
+          "math-algebra-geometry": 12
+        },
+        "answerPositions": [
+          25,
+          25,
+          25,
+          25
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "totalItems": 200,
+    "passedItems": 200,
+    "reviewRequiredItems": 0,
+    "findings": 0,
+    "status": "pass"
+  },
+  "findings": [],
+  "items": [
+    {
+      "id": "core5752-b1-001",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-002",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-003",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-004",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-005",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-006",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-007",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-008",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-009",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-010",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-011",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-012",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-013",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-014",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-015",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-016",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-017",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-018",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-019",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-020",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-021",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-022",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-023",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-024",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-025",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-026",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-027",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-028",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-029",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-030",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-031",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-032",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-033",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-034",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-035",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-036",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-037",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-038",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-039",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-040",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-041",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-042",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-043",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-044",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-045",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-046",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-047",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-048",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-049",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-050",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-051",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-052",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-053",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-054",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-055",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-056",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-057",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-058",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-059",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-060",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-061",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-062",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-063",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-064",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-065",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-066",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-067",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-068",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-069",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-070",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-071",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-072",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-073",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-074",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-075",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-076",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-077",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-078",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-079",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-080",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-081",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-082",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-083",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-084",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-085",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-086",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-087",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-088",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-089",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-090",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-091",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-092",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-093",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-094",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-095",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-096",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-097",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-098",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-099",
+      "findings": []
+    },
+    {
+      "id": "core5752-b1-100",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-001",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-038",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-064",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-002",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-039",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-065",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-003",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-040",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-066",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-004",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-041",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-067",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-005",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-042",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-068",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-006",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-043",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-069",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-007",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-044",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-070",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-008",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-045",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-071",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-009",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-046",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-072",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-010",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-047",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-073",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-011",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-048",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-074",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-012",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-049",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-075",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-013",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-050",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-076",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-014",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-051",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-077",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-015",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-078",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-016",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-079",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-017",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-080",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-018",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-081",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-019",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-082",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-020",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-052",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-083",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-021",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-053",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-084",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-022",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-054",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-085",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-023",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-055",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-086",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-024",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-056",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-087",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-025",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-057",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-088",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-026",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-058",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-089",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-027",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-059",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-090",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-028",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-060",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-091",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-029",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-061",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-092",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-030",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-062",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-093",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-031",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-063",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-094",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-032",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-095",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-033",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-096",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-034",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-097",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-035",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-098",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-036",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-099",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-037",
+      "findings": []
+    },
+    {
+      "id": "core5752-b2-100",
+      "findings": []
+    }
+  ]
+}

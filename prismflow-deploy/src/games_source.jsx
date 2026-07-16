@@ -12,6 +12,8 @@ var scrambleWord = function(word) {
 
 const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
+const getGameDialogFocusable = (dialog) => dialog ? Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter((element) => element.getClientRects().length > 0 && element.getAttribute('aria-hidden') !== 'true') : [];
+
 // Shared focus management for full-screen game workspaces.
 const useGameDialogFocus = (dialogRef, initialFocusRef, onClose) => {
   const closeHandlerRef = useRef(onClose);
@@ -20,7 +22,7 @@ const useGameDialogFocus = (dialogRef, initialFocusRef, onClose) => {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    const getFocusable = () => getGameDialogFocusable(dialog);
     (initialFocusRef?.current || getFocusable()[0] || dialog).focus();
     const onKeyDown = event => {
       if (event.key === 'Escape') { event.preventDefault(); closeHandlerRef.current?.(); return; }
@@ -29,7 +31,8 @@ const useGameDialogFocus = (dialogRef, initialFocusRef, onClose) => {
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
     dialog.addEventListener('keydown', onKeyDown);
@@ -65,12 +68,12 @@ const GameThemeToggle = () => {
   return (
     <button
       onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
-      className="p-2 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1 text-white"
+      className="min-w-11 min-h-11 p-2 hover:bg-white/20 rounded-full transition-colors flex items-center justify-center gap-1 text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-700"
       aria-label={(typeof window !== 'undefined' && window.__alloT) ? window.__alloT("a11y.toggle_theme_full") : "Toggle theme"}
       title={isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'}
       type="button"
     >
-      <span>{isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F'}</span>
+      <span aria-hidden="true">{isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F'}</span>
       <span className="text-[11px] font-bold">{isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light'}</span>
     </button>
   );
@@ -119,25 +122,26 @@ const SpeakButton = ({ text, size = 13, className = "" }) => {
   return (
     <button
       onClick={handleClick}
-      className={`inline-flex items-center justify-center w-7 h-7 rounded-full shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors ${isThisPlaying ? 'bg-rose-100 hover:bg-rose-200 text-rose-600 animate-pulse' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-600'} ${className}`}
+      className={`inline-flex items-center justify-center w-11 h-11 rounded-full shrink-0 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors ${isThisPlaying ? 'bg-rose-100 hover:bg-rose-200 text-rose-600 motion-safe:animate-pulse' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-600'} ${className}`}
       aria-label={ariaLabel}
       aria-pressed={isThisPlaying}
       title={title}
       type="button"
     >
-      {isThisPlaying ? <StopCircle size={size} /> : <Volume2 size={size} />}
+      {isThisPlaying ? <StopCircle size={size} aria-hidden="true" /> : <Volume2 size={size} aria-hidden="true" />}
     </button>
   );
 };
 
 // ── Post-game review screen ──
 const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
+  const reviewTitleId = React.useId();
   const correct = items.filter(i => i.status === 'correct').length;
   const total = items.length;
   return (
-    <div className={`mt-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-lg overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in slide-in-from-bottom-2 duration-300'}`}>
+    <div role="region" aria-labelledby={reviewTitleId} className={`mt-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-lg overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in slide-in-from-bottom-2 duration-300'}`}>
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 text-white text-center">
-        <h3 className="text-xl font-black">{title || "Review"}</h3>
+        <h3 id={reviewTitleId} className="text-xl font-black">{title || "Review"}</h3>
         <div className="flex items-center justify-center gap-4 mt-2">
           <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">{score} pts</span>
           <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">{correct}/{total} {t('common.correct') || 'correct'}</span>
@@ -149,11 +153,12 @@ const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
             <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
               item.status === 'correct' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
             }`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black ${
+              <div aria-hidden="true" className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black ${
                 item.status === 'correct' ? 'bg-green-700 text-white' : 'bg-red-700 text-white'
               }`}>
                 {item.status === 'correct' ? '\u2713' : '\u2717'}
               </div>
+              <span className="sr-only">{item.status === 'correct' ? (t('common.correct') || 'Correct') : (t('common.incorrect') || 'Incorrect')}</span>
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm text-slate-800 truncate">{item.label}</div>
                 {item.detail && <div className="text-xs text-slate-600 truncate">{item.detail}</div>}
@@ -164,10 +169,10 @@ const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
         </div>
       </div>
       <div className="p-3 border-t border-slate-200 flex gap-2 justify-center">
-        <button onClick={onPlayAgain} className="px-5 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center gap-2">
-          <RefreshCw size={14} /> {t('memory.play_again') || 'Play Again'}
+        <button type="button" onClick={onPlayAgain} className="min-h-11 px-5 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          <RefreshCw size={14} aria-hidden="true" /> {t('memory.play_again') || 'Play Again'}
         </button>
-        <button onClick={onClose} className="px-5 py-2 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+        <button type="button" onClick={onClose} className="min-h-11 px-5 py-2 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
           {t('common.close') || 'Close'}
         </button>
       </div>
@@ -193,6 +198,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   const gridRef = useRef(null);
   const modeSelectRef = useRef(null);
   const modeDialogRef = useRef(null);
+  const memoryPlayAgainRef = useRef(null);
   const scoreDeltaTimerRef = useRef(null);
   const flashScoreDelta = (delta) => {
     if (scoreDeltaTimerRef.current) clearTimeout(scoreDeltaTimerRef.current);
@@ -363,6 +369,8 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   useEffect(() => {
     if (!isWon && cards.length > 0 && matchedPairs.size === cards.length / 2) {
       setIsWon(true);
+      setAnnouncement(t('memory.victory'));
+      requestAnimationFrame(() => memoryPlayAgainRef.current?.focus());
       if (onScoreUpdate) onScoreUpdate(score, "Memory Match Complete");
       if (onGameComplete) {
         onGameComplete('memory', {
@@ -377,19 +385,19 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   const totalPairs = cards.length / 2;
   const progressPct = totalPairs > 0 ? Math.round((matchedPairs.size / totalPairs) * 100) : 0;
   return (
-    <div className={`p-6 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900' : 'rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative bg-slate-100'}`}>
+    <section role="region" aria-labelledby="memory-game-title" className={`p-6 motion-safe:transition-all motion-safe:duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900' : 'rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative bg-slate-100'}`}>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 ${isFullscreen ? 'sticky top-0 z-30 bg-slate-900/70 backdrop-blur-md py-3 px-2 -mx-2 rounded-xl border border-white/10' : ''}`}>
         <div>
-          <h3 className={`font-bold text-lg flex items-center gap-2 ${isFullscreen ? 'text-white' : 'text-indigo-900'}`}>
-            <Brain size={20} /> {t('memory.title')}
+          <h3 id="memory-game-title" className={`font-bold text-lg flex items-center gap-2 ${isFullscreen ? 'text-white' : 'text-indigo-900'}`}>
+            <Brain size={20} aria-hidden="true" /> {t('memory.title')}
           </h3>
           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
               <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-white/10 text-slate-100 border-white/20' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
-                <RefreshCw size={10} className={isFullscreen ? 'text-slate-300' : 'text-slate-600'} /> {t('memory.moves')}: {moves}
+                <RefreshCw size={10} className={isFullscreen ? 'text-slate-300' : 'text-slate-600'} aria-hidden="true" /> {t('memory.moves')}: {moves}
               </span>
-              <span className={`relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full transition-all ${scoreDelta !== null ? (scoreDelta > 0 ? 'ring-2 ring-emerald-400 scale-105' : 'ring-2 ring-red-400 scale-105') : ''} ${isFullscreen ? 'bg-indigo-500/20 text-indigo-100 border-indigo-400/40' : 'bg-indigo-100 text-indigo-700 border-indigo-200'}`}>
-                <Trophy size={10} className="text-yellow-500" /> {t('memory.score')}: {score}
+              <span className={`relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${!useReducedMotion() ? 'transition-all' : ''} ${scoreDelta !== null ? (scoreDelta > 0 ? `ring-2 ring-emerald-400 ${!useReducedMotion() ? 'scale-105' : ''}` : `ring-2 ring-red-400 ${!useReducedMotion() ? 'scale-105' : ''}`) : ''} ${isFullscreen ? 'bg-indigo-500/20 text-indigo-100 border-indigo-400/40' : 'bg-indigo-100 text-indigo-700 border-indigo-200'}`}>
+                <Trophy size={10} className="text-yellow-500" aria-hidden="true" /> {t('memory.score')}: {score}
                 {scoreDelta !== null && (
                   <span className={`absolute -top-5 right-0 text-[11px] font-black pointer-events-none ${scoreDelta > 0 ? 'text-emerald-500' : 'text-red-500'} ${!useReducedMotion() ? 'animate-in fade-in slide-in-from-bottom-1 duration-300' : ''}`}>
                     {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta}
@@ -397,7 +405,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
                 )}
               </span>
               <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-emerald-500/20 text-emerald-100 border-emerald-400/40' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
-                <CheckCircle2 size={10} className="text-emerald-500" /> {t('memory.pairs')}: {matchedPairs.size}/{totalPairs}
+                <CheckCircle2 size={10} className="text-emerald-500" aria-hidden="true" /> {t('memory.pairs')}: {matchedPairs.size}/{totalPairs}
               </span>
           </div>
         </div>
@@ -405,7 +413,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           <select ref={modeSelectRef} aria-label={t('common.selection')}
             value={gameMode}
             onChange={requestModeChange}
-            className={`text-xs font-bold rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer ${isFullscreen ? 'bg-white/10 text-white border-0 [&>option]:text-slate-800' : 'bg-transparent text-indigo-700 border-0'}`}
+            className={`min-h-11 text-xs font-bold rounded-full px-3 py-1.5 focus:ring-2 focus:ring-indigo-300 cursor-pointer ${isFullscreen ? 'bg-white/10 text-white border-0 [&>option]:text-slate-800' : 'bg-transparent text-indigo-700 border-0'}`}
             data-help-key="memory_mode_select"
           >
             <option value="smart">{t('memory.modes.smart')}</option>
@@ -414,24 +422,25 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
             <option value="image-def">{t('memory.modes.image_def')}</option>
             <option value="mixed">{t('memory.modes.mixed')}</option>
           </select>
-          <button
+          <button type="button"
             onClick={initializeGame}
-            className={`text-xs flex items-center gap-1 px-3 py-1.5 rounded-full font-bold transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-indigo-600 hover:bg-indigo-50'}`}
+            className={`min-h-11 text-xs flex items-center gap-1 px-3 py-1.5 rounded-full font-bold transition-colors focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-indigo-600 hover:bg-indigo-50'}`}
             aria-label={t('memory.reset')}
             data-help-key="memory_reset_btn"
           >
-            <RefreshCw size={14}/> {t('memory.reset')}
+            <RefreshCw size={14} aria-hidden="true"/> {t('memory.reset')}
           </button>
-          <button
+          <button type="button"
             onClick={() => setIsFullscreen(prev => !prev)}
-            className={`p-1.5 rounded-full transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}
+            className={`min-w-11 min-h-11 p-1.5 rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}
             title={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
+            aria-pressed={isFullscreen}
             aria-label={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
             data-help-key="memory_fullscreen_btn"
           >
-            {isFullscreen ? <Minimize size={18}/> : <Maximize size={18}/>}
+            {isFullscreen ? <Minimize size={18} aria-hidden="true"/> : <Maximize size={18} aria-hidden="true"/>}
           </button>
-          <button onClick={onClose} className={`p-1.5 rounded-full transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-700 hover:bg-slate-100'}`} aria-label={t('memory.close_aria')}><X size={18}/></button>
+          <button type="button" onClick={onClose} className={`min-w-11 min-h-11 p-1.5 rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-700 hover:bg-slate-100'}`} aria-label={t('memory.close_aria')}><X size={18} aria-hidden="true"/></button>
         </div>
       </div>
       {!isWon && totalPairs > 0 && (
@@ -461,10 +470,10 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           const labelColor = isFullscreen ? 'text-slate-300' : 'text-slate-600';
           const valueColor = isFullscreen ? 'text-white' : 'text-slate-900';
           return (
-          <div className={`flex flex-col items-center justify-center py-8 px-4 text-center${useReducedMotion() ? '' : ' animate-in zoom-in duration-300'}`}>
+          <div role="status" className={`flex flex-col items-center justify-center py-8 px-4 text-center${useReducedMotion() ? '' : ' animate-in zoom-in duration-300'}`}>
             {!useReducedMotion() && <ConfettiExplosion />}
             <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg ${isFullscreen ? 'bg-yellow-400/20 text-yellow-300 ring-2 ring-yellow-400/40' : 'bg-yellow-100 text-yellow-600'}`}>
-              <Trophy size={40} className="fill-current" />
+              <Trophy size={40} className="fill-current" aria-hidden="true" />
             </div>
             <h2 className={`text-2xl font-black mb-3 ${isFullscreen ? 'text-white' : 'text-slate-800'}`}>{t('memory.victory')}</h2>
             <div className={`flex items-center gap-1 mb-4 ${!useReducedMotion() ? 'animate-in zoom-in duration-500' : ''}`} aria-label={`${stars} out of 3 stars`}>
@@ -474,6 +483,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
                   size={32}
                   className={i < stars ? 'text-yellow-400 fill-yellow-400 drop-shadow-md' : (isFullscreen ? 'text-white/20' : 'text-slate-300')}
                   strokeWidth={1.5}
+                  aria-hidden="true"
                 />
               ))}
             </div>
@@ -493,9 +503,11 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
             </div>
             <p className={`text-sm mb-6 ${isFullscreen ? 'text-slate-300' : 'text-slate-600'}`}>{t('memory.cleared_message', { moves })}</p>
             <button
-                aria-label={t('common.start_game')}
+              ref={memoryPlayAgainRef}
+              type="button"
+              aria-label={t('common.start_game')}
               onClick={initializeGame}
-              className="bg-gradient-to-br from-indigo-600 to-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 transition-all active:scale-95"
+              className="min-h-11 bg-gradient-to-br from-indigo-600 to-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-500/30 motion-safe:hover:shadow-indigo-500/50 motion-safe:hover:scale-105 motion-safe:transition-all motion-safe:active:scale-95 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               {t('memory.play_again')}
             </button>
@@ -506,7 +518,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           ref={gridRef}
           className="grid gap-2 sm:gap-3"
           style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${isFullscreen ? '130px' : '110px'}, 1fr))` }}
-          role="grid"
+          role="group"
           aria-label={t('memory.board_aria')}
         >
           {cards.map((card, index) => {
@@ -531,16 +543,16 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
                 role="button"
                 aria-label={ariaLabel}
                 aria-disabled={isFlipped || isMatched}
-                className={`aspect-square cursor-pointer perspective-1000 group relative ${isMatched ? 'opacity-100 cursor-default' : ''} ${isMismatch && !useReducedMotion() ? 'animate-shake' : ''} ${isMatched && !useReducedMotion() ? 'animate-[pop_0.45s_ease-out]' : ''} focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 rounded-xl transition-transform ${!isFlipped && !isMatched ? 'hover:-translate-y-1 hover:scale-[1.03]' : ''}`}
+                className={`aspect-square cursor-pointer perspective-1000 group relative ${isMatched ? 'opacity-100 cursor-default' : ''} ${isMismatch && !useReducedMotion() ? 'animate-shake' : ''} ${isMatched && !useReducedMotion() ? 'animate-[pop_0.45s_ease-out]' : ''} focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 rounded-xl ${!useReducedMotion() ? 'transition-transform' : ''} ${!isFlipped && !isMatched && !useReducedMotion() ? 'hover:-translate-y-1 hover:scale-[1.03]' : ''}`}
                 data-help-key="memory_card_item"
               >
-                <div className={`w-full h-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] transform-style-3d rounded-xl border-2 ${isFlipped ? `rotate-y-180 ${isMismatch ? 'border-red-400 shadow-lg shadow-red-200' : isMatched ? 'border-green-400 shadow-lg shadow-green-200' : 'border-indigo-300 shadow-md'}` : 'rotate-y-0 border-slate-200 bg-white shadow-sm group-hover:shadow-md'}`}>
+                <div className={`w-full h-full ${!useReducedMotion() ? 'transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]' : ''} transform-style-3d rounded-xl border-2 ${isFlipped ? `rotate-y-180 ${isMismatch ? 'border-red-400 shadow-lg shadow-red-200' : isMatched ? 'border-green-400 shadow-lg shadow-green-200' : 'border-indigo-300 shadow-md'}` : 'rotate-y-0 border-slate-200 bg-white shadow-sm group-hover:shadow-md'}`}>
                   <div className="absolute inset-0 backface-hidden flex items-center justify-center rounded-xl overflow-hidden bg-gradient-to-br from-indigo-100 via-indigo-100 to-indigo-200 group-hover:from-indigo-200 group-hover:to-indigo-300 transition-colors">
                     <div className="absolute inset-0 opacity-40" style={{
                       backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.6) 0, transparent 40%), radial-gradient(circle at 80% 80%, rgba(99,102,241,0.25) 0, transparent 45%)'
                     }}></div>
                     <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-indigo-600 shadow-inner ring-1 ring-indigo-200/60">
-                      <HelpCircle size={20} strokeWidth={2.25} />
+                      <HelpCircle size={20} strokeWidth={2.25} aria-hidden="true" />
                     </div>
                   </div>
                   <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-xl flex items-center justify-center p-2 text-center overflow-hidden ${isMismatch ? 'bg-red-50' : isMatched ? 'bg-green-50' : 'bg-white'}`}>
@@ -577,7 +589,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
             onKeyDown={event => {
               if (event.key === 'Escape') { event.preventDefault(); closeModeDialog(); return; }
               if (event.key !== 'Tab') return;
-              const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+              const focusable = getGameDialogFocusable(event.currentTarget);
               if (!focusable.length) { event.preventDefault(); return; }
               const first = focusable[0];
               const last = focusable[focusable.length - 1];
@@ -589,13 +601,13 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
             <h3 id="memory-mode-dialog-title" className="text-lg font-black text-slate-900">{t('memory.mode_switch_title') || 'Restart with a different mode?'}</h3>
             <p id="memory-mode-dialog-description" className="mt-3 text-sm text-slate-700">{t('memory.mode_switch_confirm') || 'Changing the mode will restart this round. Your current moves and matched pairs will be cleared.'}</p>
             <div className="mt-6 flex flex-wrap justify-end gap-3">
-              <button type="button" data-safe-default="true" onClick={closeModeDialog} className="min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.cancel') || 'Cancel'}</button>
-              <button type="button" onClick={confirmModeChange} className="min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">{t('memory.restart') || 'Restart round'}</button>
+              <button type="button" data-safe-default="true" onClick={closeModeDialog} className="min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500">{t('common.cancel') || 'Cancel'}</button>
+              <button type="button" onClick={confirmModeChange} className="min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:ring-2 focus:ring-red-500 focus:ring-offset-2">{t('memory.restart') || 'Restart round'}</button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 });
 const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
@@ -784,7 +796,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       setAnnouncement('');
   };
   return (
-    <div ref={matchingDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="matching-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden focus:outline-none${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+    <div ref={matchingDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="matching-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
         <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
         <div className="bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm no-print z-20 relative">
             <div>
@@ -804,7 +816,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                  </div>
             </div>
             <div className="flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-400 shadow-sm self-end sm:self-auto">
-                <button
+                <button type="button"
                     onClick={reset}
                     className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
                     title={t('matching.reset_aria')}
@@ -817,7 +829,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                     ref={matchingCloseRef}
                     type="button"
                     onClick={onClose}
-                    className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-red-50 rounded-full text-slate-600 hover:text-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-red-50 rounded-full text-slate-600 hover:text-red-500 transition-colors focus:ring-2 focus:ring-indigo-500"
                     title={t('common.close')}
                     aria-label={t('matching.close_aria')}
                 >
@@ -923,7 +935,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                         role="button"
                                         aria-label={`${t('matching.select_term_aria')}: ${item.term}`}
                                         aria-pressed={keyboardSelectedTerm === item.id}
-                                        className={`bg-indigo-50 border-2 border-indigo-100 p-3 rounded-lg w-full shadow-sm text-sm font-bold text-indigo-900 flex items-center justify-center text-center h-full print:border-slate-300 print:bg-white select-none cursor-pointer hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all ${keyboardSelectedTerm === item.id ? 'ring-4 ring-yellow-200 border-yellow-400 bg-yellow-50' : ''}`}
+                                        className={`bg-indigo-50 border-2 border-indigo-100 p-3 rounded-lg w-full shadow-sm text-sm font-bold text-indigo-900 flex items-center justify-center text-center h-full print:border-slate-300 print:bg-white select-none cursor-pointer hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-400 transition-all ${keyboardSelectedTerm === item.id ? 'ring-4 ring-yellow-200 border-yellow-400 bg-yellow-50' : ''}`}
                                         data-help-key="matching_term_item"
                                     >
                                         {item.term}
@@ -938,9 +950,9 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                         role="button"
                                         aria-label={`${t('matching.select_term_aria')}: ${item.term}`}
                                         aria-pressed={keyboardSelectedTerm === item.id}
-                                        className={`w-6 h-6 bg-white border-4 rounded-full cursor-pointer touch-none hover:scale-110 transition-transform ms-4 print:bg-black print:border-black print:w-4 print:h-4 print:scale-100 focus:outline-none focus:ring-4 focus:ring-indigo-300 ${
+                                        className={`w-6 h-6 bg-white border-4 rounded-full cursor-pointer touch-none hover:scale-110 transition-transform ms-4 print:bg-black print:border-black print:w-4 print:h-4 print:scale-100 focus:ring-4 focus:ring-indigo-300 ${
                                             (tempLine && tempLine.termId === item.id) || keyboardSelectedTerm === item.id
-                                            ? 'border-yellow-500 ring-4 ring-yellow-200 scale-110 animate-pulse'
+                                            ? 'border-yellow-500 ring-4 ring-yellow-200 scale-110 animate-pulse motion-reduce:animate-none'
                                             : 'border-indigo-300'
                                         }`}
                                     ></div>
@@ -957,7 +969,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                         tabIndex={0}
                                         role="button"
                                         aria-label={`${t('matching.connect_def_aria')}: ${def.text}`}
-                                        className={`def-dot w-6 h-6 bg-white border-4 rounded-full cursor-pointer transition-all me-4 print:bg-black print:border-black print:w-4 print:h-4 focus:outline-none focus:ring-4 focus:ring-indigo-300 ${snapTarget === def.id ? 'border-green-500 scale-125 bg-green-50' : 'border-slate-300 hover:border-slate-500'}`}
+                                        className={`def-dot w-6 h-6 bg-white border-4 rounded-full cursor-pointer transition-all me-4 print:bg-black print:border-black print:w-4 print:h-4 focus:ring-4 focus:ring-indigo-300 ${snapTarget === def.id ? 'border-green-500 scale-125 bg-green-50' : 'border-slate-300 hover:border-slate-500'}`}
                                     ></div>
                                     <div
                                         onClick={() => {
@@ -978,7 +990,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                         tabIndex={0}
                                         role="button"
                                         aria-label={`${t('matching.connect_def_aria')}: ${def.text}`}
-                                        className={`bg-white border border-slate-400 p-3 rounded-lg w-full shadow-sm text-xs text-slate-600 flex items-center h-full overflow-y-auto leading-snug print:border-slate-300 select-none cursor-pointer hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors ${keyboardSelectedTerm ? 'hover:border-indigo-300 hover:shadow-md' : ''}`}
+                                        className={`bg-white border border-slate-400 p-3 rounded-lg w-full shadow-sm text-xs text-slate-600 flex items-center h-full overflow-y-auto leading-snug print:border-slate-300 select-none cursor-pointer hover:bg-slate-50 focus:ring-2 focus:ring-indigo-400 transition-colors ${keyboardSelectedTerm ? 'hover:border-indigo-300 hover:shadow-md' : ''}`}
                                         data-help-key="matching_def_item"
                                     >
                                         {def.text}
@@ -1030,7 +1042,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                      </div>
                  )}
              </div>
-             <button
+             <button type="button"
                  aria-label={t('common.check_answers')}
                 onClick={checkAnswers}
                 disabled={isChecked || connections.length === 0}
@@ -1099,6 +1111,7 @@ const indexTimelineItems = (itemsArray) => itemsArray.map((item, i) => ({
 }));
 const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, onExplainIncorrect, initialImageSize }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const [items, setItems] = useState([]);
   const [isWon, setIsWon] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -1121,6 +1134,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const [hintHidden, setHintHidden] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const itemRefs = useRef([]);
+  const itemButtonRefs = useRef([]);
   const normalizedItemsRef = useRef([]);
   const timelineDialogRef = useRef(null);
   const timelineCloseRef = useRef(null);
@@ -1147,7 +1161,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   }, [data]);
   useEffect(() => {
     if (keyboardLiftedIdx === null) return;
-    const el = itemRefs.current[keyboardLiftedIdx];
+    const el = itemButtonRefs.current[keyboardLiftedIdx];
     if (el && typeof el.focus === 'function') el.focus();
   }, [keyboardLiftedIdx, items]);
   useEffect(() => {
@@ -1223,20 +1237,19 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
         if (playSound) playSound('click');
     }
   };
+  const toggleKeyboardLift = (index) => {
+      if (isWon) return;
+      if (keyboardLiftedIdx === index) {
+          setKeyboardLiftedIdx(null);
+          setAnnouncement(t('timeline.game.dropped', { item: items[index].event }));
+      } else {
+          setKeyboardLiftedIdx(index);
+          setAnnouncement(t('timeline.game.lifted', { item: items[index].event }));
+      }
+      if (playSound) playSound('click');
+  };
   const handleKeyDown = (e, index) => {
       if (isWon) return;
-      if (e.key === ' ' || e.key === 'Enter') {
-          e.preventDefault();
-          if (keyboardLiftedIdx === index) {
-              setKeyboardLiftedIdx(null);
-              setAnnouncement(t('timeline.game.dropped', { item: items[index].event }));
-              if (playSound) playSound('click');
-          } else {
-              setKeyboardLiftedIdx(index);
-              setAnnouncement(t('timeline.game.lifted', { item: items[index].event }));
-              if (playSound) playSound('click');
-          }
-      }
       if (keyboardLiftedIdx === index) {
           if (e.key === 'ArrowUp') {
               e.preventDefault();
@@ -1349,21 +1362,21 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
      // bestScore intentionally preserved across resets within the same game session.
   };
   return (
-    <div ref={timelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="timeline-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+    <div ref={timelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="timeline-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in fade-in duration-300'}`}>
        <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
+       <div className="p-4 bg-indigo-600 text-white flex flex-wrap justify-between items-center gap-3 shrink-0 shadow-md z-20">
            <div>
                <h3 id="timeline-game-title" className="font-bold text-lg flex items-center gap-2">
-                   <ListOrdered size={20} className="text-yellow-300"/> {t('timeline.game.header')}
+                   <ListOrdered size={20} className="text-yellow-300" aria-hidden="true"/> {t('timeline.game.header')}
                </h3>
                <p className="text-xs text-indigo-200">{t('timeline.game.desc')}</p>
            </div>
-           <div className="flex items-center gap-4">
+           <div className="flex flex-wrap items-center gap-3">
                <div className="bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2">
-                   <Trophy size={14} className="text-yellow-300"/>
+                   <Trophy size={14} className="text-yellow-300" aria-hidden="true"/>
                    <span className="font-bold text-sm">{score} pts</span>
                </div>
-               <label className="hidden sm:flex items-center gap-1.5 text-[10px] text-indigo-100 bg-indigo-800/50 px-2.5 py-1.5 rounded-full border border-indigo-500 cursor-pointer" title={t('timeline.game.image_size_title') || 'Adjust card image size for accessibility'}>
+               <label className="min-h-11 flex items-center gap-1.5 text-[10px] text-indigo-100 bg-indigo-800/50 px-2.5 py-1.5 rounded-full border border-indigo-500 cursor-pointer" title={t('timeline.game.image_size_title') || 'Adjust card image size for accessibility'}>
                    <span className="font-bold uppercase tracking-wider text-[9px]">{t('timeline.game.image_size_label') || 'Image'}</span>
                    <input
                        type="range" min={64} max={300} step={16}
@@ -1375,11 +1388,11 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                    <span className="font-bold w-7 text-end tabular-nums">{imageSize}</span>
                </label>
                <GameThemeToggle />
-               <button ref={timelineCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('timeline.game.close_aria')}><X size={24} aria-hidden="true"/></button>
+               <button ref={timelineCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-white" aria-label={t('timeline.game.close_aria')}><X size={24} aria-hidden="true"/></button>
            </div>
        </div>
        <div className="flex-grow overflow-y-auto p-6 bg-slate-100 relative custom-scrollbar">
-           {isWon && !answerRevealed && !useReducedMotion() && <ConfettiExplosion />}
+           {isWon && !answerRevealed && !reducedMotion && <ConfettiExplosion />}
            {answerRevealed && (
                <div className="max-w-3xl mx-auto mb-4 px-4 py-3 bg-slate-100 border border-slate-400 rounded-lg text-slate-700 text-sm font-medium text-center">
                    👁 {t('timeline.game.answer_revealed_banner') || 'Answer revealed — no points this round. Play again to try for a score.'}
@@ -1388,11 +1401,11 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
            <div className="max-w-3xl mx-auto relative min-h-full pb-20">
                {!isWon && (
                    <div className="sticky top-0 z-30 flex flex-col items-center gap-2 mb-8">
-                       <div className={`bg-white/90 backdrop-blur-sm px-6 py-2 rounded-full border border-indigo-100 shadow-sm text-indigo-600 text-xs font-bold uppercase tracking-wider flex items-center gap-2${useReducedMotion() ? '' : ' animate-in slide-in-from-top-2'}`}>
-                           <ArrowDown size={14} /> {t('timeline.game.arrange_instruction')} <ArrowDown size={14} />
+                       <div className={`bg-white/90 backdrop-blur-sm px-6 py-2 rounded-full border border-indigo-100 shadow-sm text-indigo-600 text-xs font-bold uppercase tracking-wider flex items-center gap-2${reducedMotion ? '' : ' animate-in slide-in-from-top-2'}`}>
+                           <ArrowDown size={14} aria-hidden="true" /> {t('timeline.game.arrange_instruction')} <ArrowDown size={14} aria-hidden="true" />
                        </div>
                        {progressionLabel && (
-                           <div className={`bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex flex-col items-center gap-0.5 shadow-md${useReducedMotion() ? '' : ' animate-in slide-in-from-top-3'}`}>
+                           <div className={`bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex flex-col items-center gap-0.5 shadow-md${reducedMotion ? '' : ' animate-in slide-in-from-top-3'}`}>
                                <div className="flex items-center gap-2">
                                    <span className="opacity-70">{t('timeline.order_by')}</span> {progressionLabel}
                                </div>
@@ -1421,7 +1434,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                        {!hintHidden && attempts === 0 && keyboardLiftedIdx === null && items.length > 0 && (
                            <div className="text-[11px] text-slate-600 italic flex items-center gap-2">
                                <span>{t('timeline.game.keyboard_hint') || 'Keyboard: Enter to lift, ↑/↓ to move, Enter to drop.'}</span>
-                               <button onClick={() => setHintHidden(true)} className="underline hover:text-slate-700" aria-label={t('common.dismiss') || 'Dismiss'}>×</button>
+                               <button type="button" onClick={() => setHintHidden(true)} className="min-w-11 min-h-11 rounded underline hover:text-slate-700 focus:ring-2 focus:ring-indigo-500" aria-label={t('common.dismiss') || 'Dismiss'}>×</button>
                            </div>
                        )}
                    </div>
@@ -1438,12 +1451,8 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                            <div
                                key={item.id}
                                ref={el => itemRefs.current[idx] = el}
-                               tabIndex={isWon ? -1 : 0}
                                role="listitem"
-                               aria-roledescription="draggable item"
-                               aria-pressed={isLifted}
-                               aria-label={`${item.event}. ${t('timeline.game.position_aria', {pos: idx + 1, total: items.length})}. ${isLifted ? t('timeline.game.lifted_aria') : t('timeline.game.lift_aria')}`}
-                               onKeyDown={(e) => handleKeyDown(e, idx)}
+                               aria-roledescription="draggable timeline item"
                                draggable={!isWon}
                                onDragStart={(e) => handleDragStart(e, idx)}
                                onDragOver={(e) => handleDragOver(e, idx)}
@@ -1451,21 +1460,21 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                onTouchStart={(e) => handleTouchStart(e, idx)}
                                onTouchMove={handleTouchMove}
                                onTouchEnd={handleTouchEnd}
-                               className={`relative z-10 sm:flex sm:items-center sm:justify-between group transition-all duration-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 focus:ring-offset-4 ${isDragging ? 'opacity-20 scale-95' : 'opacity-100'} ${isLifted ? 'z-50 scale-105 ring-4 ring-yellow-400 ring-offset-4 shadow-2xl' : ''}`}
+                               className={`relative z-10 sm:flex sm:items-center sm:justify-between group rounded-2xl ${reducedMotion ? '' : 'transition-all duration-300'} ${isDragging ? `opacity-20 ${reducedMotion ? '' : 'scale-95'}` : 'opacity-100'} ${isLifted ? `z-50 ring-4 ring-yellow-400 ring-offset-4 shadow-2xl ${reducedMotion ? '' : 'scale-105'}` : ''}`}
                                data-help-key="timeline_draggable_item"
                            >
                                <div className={`hidden sm:block sm:w-1/2 ${!isLeft ? 'order-1' : 'order-2'}`}></div>
-                               <div style={isWon && !useReducedMotion() ? { transitionDelay: `${Math.min(idx * 60, 600)}ms` } : undefined} className={`absolute left-3 sm:left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-white shadow-sm z-20 transition-all duration-300 ${isWon && item.originalIndex === idx ? 'bg-green-500 scale-110' : 'bg-indigo-300 group-hover:bg-indigo-500'}`}>
+                               <div style={isWon && !reducedMotion ? { transitionDelay: `${Math.min(idx * 60, 600)}ms` } : undefined} className={`absolute left-3 sm:left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-white shadow-sm z-20 ${reducedMotion ? '' : 'transition-all duration-300'} ${isWon && item.originalIndex === idx ? `bg-green-500 ${reducedMotion ? '' : 'scale-110'}` : 'bg-indigo-300 group-hover:bg-indigo-500'}`}>
                                    {isWon && item.originalIndex === idx && (
-                                       <div className={`absolute -right-1 -top-1 text-green-500 opacity-75${useReducedMotion() ? '' : ' animate-ping'}`}><CheckCircle2 size={24}/></div>
+                                       <div className={`absolute -right-1 -top-1 text-green-500 opacity-75${reducedMotion ? '' : ' animate-ping motion-reduce:animate-none'}`}><CheckCircle2 size={24} aria-hidden="true"/></div>
                                    )}
                                </div>
-                               <div className={`sm:w-1/2 ps-10 sm:ps-0 ${isLeft ? 'sm:pe-12 sm:text-end order-1' : 'sm:ps-12 sm:text-start order-2'} transition-all duration-300`}>
-                                   <div style={isWon && !useReducedMotion() ? { transitionDelay: `${Math.min(idx * 60, 600)}ms` } : undefined} className={`
-                                       relative p-5 rounded-2xl border-2 shadow-sm transition-all transform duration-200
+                               <div className={`sm:w-1/2 ps-10 sm:ps-0 ${isLeft ? 'sm:pe-12 sm:text-end order-1' : 'sm:ps-12 sm:text-start order-2'} ${reducedMotion ? '' : 'transition-all duration-300'}`}>
+                                   <div style={isWon && !reducedMotion ? { transitionDelay: `${Math.min(idx * 60, 600)}ms` } : undefined} className={`
+                                       relative p-5 rounded-2xl border-2 shadow-sm
                                        ${isWon
                                            ? 'bg-green-50 border-green-200 opacity-90'
-                                           : `${colorClass} hover:-translate-y-1 hover:shadow-md cursor-grab active:cursor-grabbing`
+                                           : `${colorClass} hover:shadow-md cursor-grab active:cursor-grabbing ${reducedMotion ? '' : 'transition-all transform duration-200 hover:-translate-y-1'}`
                                        }
                                    `}>
                                        <div className={`absolute top-3 ${isLeft ? 'right-3 sm:left-3 sm:right-auto' : 'right-3'} w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black ${isWon ? 'bg-green-200 text-green-800' : 'bg-black/5 text-slate-600'}`}>
@@ -1473,7 +1482,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                        </div>
                                        <div className="pe-6 sm:px-2">
                                            {isWon && (item.date || item.date_en) && (
-                                               <div className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider mb-2 bg-green-100 text-green-800 animate-in zoom-in`}>
+                                               <div className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider mb-2 bg-green-100 text-green-800 ${reducedMotion ? '' : 'animate-in zoom-in'}`}>
                                                    {item.date}
                                                </div>
                                            )}
@@ -1487,8 +1496,24 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                                />
                                            )}
                                            <div className={`text-sm font-bold leading-snug flex items-center gap-1 ${isWon ? 'text-green-900' : ''}`}>
-                                               {item.event}
-                                               {!isWon && <SpeakButton text={item.event} size={11} />}
+                                               {isWon ? (
+                                                   <span>{item.event}</span>
+                                               ) : (
+                                                   <>
+                                                       <button
+                                                           ref={el => itemButtonRefs.current[idx] = el}
+                                                           type="button"
+                                                           aria-pressed={isLifted}
+                                                           aria-label={`${item.event}. ${t('timeline.game.position_aria', {pos: idx + 1, total: items.length})}. ${isLifted ? t('timeline.game.lifted_aria') : t('timeline.game.lift_aria')}`}
+                                                           onKeyDown={(event) => handleKeyDown(event, idx)}
+                                                           onClick={() => toggleKeyboardLift(idx)}
+                                                           className="min-h-11 flex-1 rounded-lg px-2 py-2 text-start focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                       >
+                                                           {item.event}
+                                                       </button>
+                                                       <SpeakButton text={item.event} size={11} />
+                                                   </>
+                                               )}
                                            </div>
                                            {item.event_en && (
                                                <div className={`text-xs italic mt-1 ${isWon ? 'text-green-700/70' : 'text-slate-600'}`}>
@@ -1498,8 +1523,9 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                            {onExplainIncorrect && !isWon && lastCorrectCount !== null && item.originalIndex !== idx && (
                                                <>
                                                    <button
+                                                       type="button"
                                                        onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
-                                                       className="mt-2 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-white/70 border border-indigo-200 hover:border-indigo-400 rounded px-2 py-0.5 transition-colors inline-flex items-center gap-1"
+                                                       className="min-h-11 mt-2 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-white/70 border border-indigo-200 hover:border-indigo-400 rounded px-3 py-2 transition-colors inline-flex items-center gap-1 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                                        aria-label={t('timeline.game.why_aria') || 'Explain why this is out of place'}
                                                        aria-busy={explanations[item.originalIndex] === 'loading'}
                                                    >
@@ -1519,13 +1545,13 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                        </div>
                                        {!isWon && (
                                            <div className="absolute top-1/2 -translate-y-1/2 right-2 text-black/10 p-1 group-hover:text-black/20">
-                                               <GripVertical size={20} />
+                                               <GripVertical size={20} aria-hidden="true" />
                                            </div>
                                        )}
                                        {!isWon && (
-                                            <div className="absolute -right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1 sm:hidden opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-full p-1 shadow-sm">
-                                                <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-600 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_up')} data-help-key="timeline_move_up"><ArrowUp size={14}/></button>
-                                                <button onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="p-1 text-slate-600 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_down')} data-help-key="timeline_move_down"><ArrowDown size={14}/></button>
+                                            <div className="absolute -right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1 sm:hidden opacity-100 bg-white/90 rounded-full p-1 shadow-sm">
+                                                <button type="button" onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="min-w-11 min-h-11 inline-flex items-center justify-center text-slate-700 hover:text-indigo-700 disabled:opacity-0 focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_up')} data-help-key="timeline_move_up"><ArrowUp size={14} aria-hidden="true"/></button>
+                                                <button type="button" onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="min-w-11 min-h-11 inline-flex items-center justify-center text-slate-700 hover:text-indigo-700 disabled:opacity-0 focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_down')} data-help-key="timeline_move_down"><ArrowDown size={14} aria-hidden="true"/></button>
                                             </div>
                                        )}
                                    </div>
@@ -1552,23 +1578,25 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
              </div>
            )}
        </div>
-       <div className="p-4 bg-white border-t border-slate-200 flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+       <div className="p-4 bg-white border-t border-slate-200 flex flex-wrap justify-between items-center gap-3 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
            <div className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-               {isWon ? <span className="text-green-600 flex items-center gap-1"><CheckCircle2 size={16}/> {t('timeline.game.complete')}</span> : t('timeline.game.attempts', { attempts })}
+               {isWon ? <span className="text-green-600 flex items-center gap-1"><CheckCircle2 size={16} aria-hidden="true"/> {t('timeline.game.complete')}</span> : t('timeline.game.attempts', { attempts })}
            </div>
-           <div className="flex gap-3">
+           <div className="flex flex-wrap gap-3">
                <button
+                    type="button"
                     onClick={reset}
-                    className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors flex items-center gap-2"
+                    className="min-h-11 px-5 py-2.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     aria-label={t('timeline.game.reset_aria')}
                     data-help-key="timeline_reset_btn"
                >
-                   <RefreshCw size={14}/> {t('timeline.game.reset')}
+                   <RefreshCw size={14} aria-hidden="true"/> {t('timeline.game.reset')}
                </button>
                {!isWon && items.length > 0 && hintsUsed < Math.ceil(items.length / 3) && (
                    <button
+                       type="button"
                        onClick={useHint}
-                       className="px-5 py-2.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-2"
+                       className="min-h-11 px-5 py-2.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2"
                        aria-label={t('timeline.game.hint_aria') || 'Use a hint'}
                        title={t('timeline.game.hint_tooltip') || 'Move one item to its correct position (-15 pts)'}
                        data-help-key="timeline_hint_btn"
@@ -1578,8 +1606,9 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                )}
                {!isWon && (
                    <button
+                       type="button"
                        onClick={revealAnswer}
-                       className="px-5 py-2.5 rounded-full text-xs font-bold bg-slate-50 text-slate-600 border border-slate-400 hover:bg-slate-100 transition-colors flex items-center gap-2"
+                       className="min-h-11 px-5 py-2.5 rounded-full text-xs font-bold bg-slate-50 text-slate-700 border border-slate-400 hover:bg-slate-100 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                        aria-label={t('timeline.game.reveal_aria') || 'Show the correct answer (no points awarded)'}
                        title={t('timeline.game.reveal_tooltip') || 'Reveal the correct order — no points awarded'}
                        data-help-key="timeline_reveal_btn"
@@ -1589,9 +1618,10 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                )}
                {!isWon && (
                    <button
+                       type="button"
                        aria-label={t('common.check_order')}
                         onClick={checkOrder}
-                        className="px-6 py-2.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all active:scale-95 flex items-center gap-2"
+                        className="min-h-11 px-6 py-2.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 flex items-center gap-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         data-help-key="timeline_check_btn"
                    >
                        <CheckCircle2 size={16} /> {t('timeline.game.check_order')}
@@ -1892,7 +1922,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         aria-pressed={keyboardSelectedItemId === item.id}
         aria-label={`${item.content}. ${item.currentContainer === 'deck' ? t('concept_sort.unsorted_aria') : t('concept_sort.sorted_aria')}. ${t('concept_sort.move_aria')}`}
         className={`
-            relative p-3 rounded-lg shadow-sm cursor-grab active:cursor-grabbing transition-all transform hover:scale-105 mb-2 animate-in zoom-in duration-200
+            relative p-3 rounded-lg shadow-sm cursor-grab active:cursor-grabbing transition-all transform hover:scale-105 mb-2 animate-in motion-reduce:animate-none zoom-in duration-200
             ${statusClass} ${isChecked ? 'cursor-default' : ''} ${draggedItem && draggedItem.id === item.id ? 'opacity-30 scale-95' : ''}
         `}
         data-help-key="concept_sort_card_item"
@@ -1928,7 +1958,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                  ✗ → {buckets.find(b => b.id === item.categoryId)?.label}
                </div>
                {onExplainIncorrect && (
-                 <button
+                 <button type="button"
                    onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
                    className="mt-1 w-full text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:border-indigo-400 rounded px-1 py-0.5 transition-colors"
                    aria-label={t('games.explain_incorrect_aria') || 'Explain why this was incorrect'}
@@ -1985,7 +2015,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       return () => clearTimeout(id);
   }, [hasUsedKeyboardCard, hintAutoHidden]);
   return (
-    <div ref={conceptSortDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="concept-sort-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`} data-help-key="concept_sort_game">
+    <div ref={conceptSortDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="concept-sort-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`} data-help-key="concept_sort_game">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</div>
       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
         <div>
@@ -2000,7 +2030,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                 <span className="font-bold text-sm">{score} pts</span>
             </div>
             <GameThemeToggle />
-            <button ref={conceptSortCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('concept_sort.close_aria')}><X size={24} aria-hidden="true"/></button>
+            <button ref={conceptSortCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-white" aria-label={t('concept_sort.close_aria')}><X size={24} aria-hidden="true"/></button>
         </div>
       </div>
       <div className="flex-grow overflow-y-auto p-6 relative">
@@ -2025,10 +2055,10 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                )}
                            </div>
                            {keyboardSelectedItemId && (
-                               <button
+                               <button type="button"
                                     data-move-here="true"
                                     onClick={() => handleKeyboardMove(bucket.id)}
-                                    className="w-full mt-2 py-2 bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg border-2 border-indigo-200 hover:bg-indigo-200 hover:border-indigo-300 animate-pulse"
+                                    className="w-full mt-2 py-2 bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg border-2 border-indigo-200 hover:bg-indigo-200 hover:border-indigo-300 animate-pulse motion-reduce:animate-none"
                                >
                                    {t('concept_sort.move_here')}
                                </button>
@@ -2105,7 +2135,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                    <span className="text-[10px] font-mono text-indigo-700 min-w-[2.5em] text-end">{_imgScale.toFixed(2)}×</span>
                                </div>
                            )}
-                           <button
+                           <button type="button"
                                 data-help-key="concept_sort_reset"
                                 onClick={reset}
                                 className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-400 transition-colors"
@@ -2113,7 +2143,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            >
                                {t('concept_sort.reset_board')}
                            </button>
-                           <button
+                           <button type="button"
                                aria-label={t('common.check_answers')}
                                 data-help-key="concept_sort_check_answers"
                                 onClick={checkAnswers}
@@ -2127,7 +2157,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                    <div ref={deckScrollRef} className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px] relative">
                        <div className="min-w-[160px] w-[160px] h-[120px] bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center p-3 shrink-0 hover:border-indigo-300 transition-colors group">
                            {isAdding ? (
-                               <div className="text-center text-indigo-500 text-xs font-bold animate-pulse">{t('concept_sort.generating_item')}</div>
+                               <div className="text-center text-indigo-500 text-xs font-bold animate-pulse motion-reduce:animate-none">{t('concept_sort.generating_item')}</div>
                            ) : (
                                <>
                                    <input
@@ -2137,10 +2167,10 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                        onChange={(e) => setNewItemText(e.target.value)}
                                        onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
                                        placeholder={t('concept_sort.add_item_placeholder')}
-                                       className="w-full text-xs text-center p-1 bg-transparent border-b border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2"
+                                       className="w-full text-xs text-center p-1 bg-transparent border-b border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 mb-2"
                                        aria-label={t('concept_sort.add_item_placeholder')}
                                    />
-                                    <button aria-label={t('common.add')}
+                                    <button type="button" aria-label={t('common.add')}
                                         onClick={handleAddItem}
                                         disabled={!newItemText.trim()}
                                         className="bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 rounded-full p-1.5 shadow-sm disabled:opacity-50"
@@ -2163,7 +2193,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                        )}
                    </div>
                    {deckCanScrollLeft && (
-                       <button
+                       <button type="button"
                            onClick={() => {
                                const el = deckScrollRef.current;
                                if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
@@ -2175,7 +2205,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                        </button>
                    )}
                    {deckCanScrollRight && (
-                       <button
+                       <button type="button"
                            onClick={() => {
                                const el = deckScrollRef.current;
                                if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
@@ -2207,6 +2237,7 @@ const makeSortScoreTracker = () => {
 
 const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { setA: { text: "Set A" }, setB: { text: "Set B" } }, primaryLanguage = "English" }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
@@ -2227,6 +2258,11 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
   const vennPlayAgainRef = useRef(null);
   useGameDialogFocus(vennDialogRef, vennCloseRef, onClose);
   useEffect(() => { if (isWon) vennPlayAgainRef.current?.focus(); }, [isWon]);
+  useEffect(() => () => {
+      if (hintTimerRef.current) {
+          clearTimeout(hintTimerRef.current);
+      }
+  }, []);
   const showZoneHint = (correctZone) => {
       if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
       setLastHint(correctZone);
@@ -2263,23 +2299,34 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
     setScore(0);
     setIsWon(false);
   }, [data]);
-  const handleItemKeyDown = (e, item) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          e.stopPropagation();
-          if (keyboardSelectedItemId === item.id) {
-              setKeyboardSelectedItemId(null);
-              setAnnouncement(t('concept_map.venn.selection_cancelled'));
-          } else {
-              setKeyboardSelectedItemId(item.id);
-              setAnnouncement(t('concept_map.venn.item_selected', { item: getText(item) }));
-              if (playSound) playSound('click');
-          }
+  const focusVennItem = (itemId) => {
+      window.setTimeout(() => {
+          const candidates = Array.from(vennDialogRef.current?.querySelectorAll('[data-venn-item-id]') || []);
+          const itemControl = candidates.find(node => node.dataset.vennItemId === itemId);
+          itemControl?.focus();
+      }, 0);
+  };
+  const cancelKeyboardSelection = () => {
+      const selectedId = keyboardSelectedItemId;
+      setKeyboardSelectedItemId(null);
+      setAnnouncement(t('concept_map.venn.selection_cancelled'));
+      if (selectedId) focusVennItem(selectedId);
+  };
+  const toggleKeyboardSelection = (event, item) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (keyboardSelectedItemId === item.id) {
+          cancelKeyboardSelection();
+      } else {
+          setKeyboardSelectedItemId(item.id);
+          setAnnouncement(t('concept_map.venn.item_selected', { item: getText(item) }));
+          if (playSound) playSound('click');
       }
   };
   const handleKeyboardMove = (targetZone) => {
       if (!keyboardSelectedItemId) return;
-      const itemIndex = items.findIndex(i => i.id === keyboardSelectedItemId);
+      const selectedId = keyboardSelectedItemId;
+      const itemIndex = items.findIndex(i => i.id === selectedId);
       if (itemIndex === -1) return;
       const item = items[itemIndex];
       const itemName = item ? getText(item) : "Item";
@@ -2299,10 +2346,11 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
                if(playSound) playSound('incorrect');
                showZoneHint(item.correctZone);
-               setAnnouncement(t('concept_map.venn.move_incorrect', { item: itemName }));
+               setAnnouncement(`${t('concept_map.venn.move_incorrect', { item: itemName })} ${t('games.ce_sort.hint_try') || 'Try'}: ${getTitle(item.correctZone)}.`);
            }
       }
       setKeyboardSelectedItemId(null);
+      focusVennItem(selectedId);
   };
   const handleDragStart = (e, item) => {
     setDraggedItem(item);
@@ -2325,18 +2373,21 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
           if (playSound) playSound('correct');
           setItems(prev => prev.map(i => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
           const delta = scoreTrackerRef.current.correct(draggedItem.id);
-       if (delta > 0) setScore(s => s + delta);
+          if (delta > 0) setScore(s => s + delta);
+          setAnnouncement(t('concept_map.venn.move_correct', { item: getText(draggedItem), zone: getTitle(targetZone) }));
       } else {
           if (playSound) playSound('incorrect');
           setAttempts(a => a + 1);
           setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(draggedItem.id)));
           showZoneHint(draggedItem.correctZone);
+          setAnnouncement(`${t('concept_map.venn.move_incorrect', { item: getText(draggedItem) })} ${t('games.ce_sort.hint_try') || 'Try'}: ${getTitle(draggedItem.correctZone)}.`);
       }
       setDraggedItem(null);
   };
   useEffect(() => {
       if (!isWon && items.length > 0 && items.every(i => i.currentZone !== 'bank')) {
           setIsWon(true);
+          setAnnouncement(`${t('concept_map.venn.victory_title') || 'Perfect!'}. ${t('common.score') || 'Score'}: ${score}.`);
           if(onScoreUpdate) onScoreUpdate(score, "Venn Diagram Sort");
           if (playSound) playSound('correct');
           if (onGameComplete) {
@@ -2350,9 +2401,14 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       }
   }, [items, score, onScoreUpdate, playSound, isWon]);
   const resetVennGame = () => {
+      if (hintTimerRef.current) {
+          clearTimeout(hintTimerRef.current);
+          hintTimerRef.current = null;
+      }
       const shuffled = items.map(item => ({ ...item, currentZone: 'bank' }));
       for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
       setItems(shuffled); setScore(0); setAttempts(0); setIsWon(false); setKeyboardSelectedItemId(null);
+      setLastHint(null);
       setAnnouncement(t('concept_map.venn.restarted') || 'Venn sort restarted.');
       window.setTimeout(() => vennDialogRef.current?.focus(), 0);
   };
@@ -2378,30 +2434,40 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       if (gameLang === 'english' && t.trans) return t.trans;
       return t.text || "";
   };
+  const getTitleLang = (key) => {
+      const value = titles[key];
+      const showsEnglishTranslation = gameLang === 'english' && value && typeof value === 'object' && value.trans;
+      if (showsEnglishTranslation) return 'en';
+      try {
+          return (window.AlloFlowLang && window.AlloFlowLang.bcp47(primaryLanguage)) || 'en';
+      } catch (_) {
+          return 'en';
+      }
+  };
   const hasTranslations = items.some(i => i.translation);
   const vennSetA = useMemo(() => items.filter(i => i.currentZone === 'setA'), [items]);
   const vennSetB = useMemo(() => items.filter(i => i.currentZone === 'setB'), [items]);
   const vennShared = useMemo(() => items.filter(i => i.currentZone === 'shared'), [items]);
   const vennBank = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
   return (
-      <div ref={vennDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="venn-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in zoom-in-95'}`} data-help-key="venn_game_container">
+      <div ref={vennDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="venn-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in zoom-in-95'}`} data-help-key="venn_game_container">
           <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-          <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md z-30">
+          <div className="bg-indigo-600 p-3 sm:p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
               <h3 id="venn-game-title" className="font-bold text-xl flex items-center gap-2" data-help-key="venn_header">
-                  <Layout size={24}/> {t('common.venn_sort_title')}
+                  <Layout size={24} aria-hidden="true"/> {t('common.venn_sort_title')}
               </h3>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                   {hasTranslations && (
                       <select aria-label={t('common.selection')}
                           value={gameLang}
                           onChange={(e) => setGameLang(e.target.value)}
-                          className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer shadow-sm"
+                          className="min-h-11 text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600 cursor-pointer shadow-sm"
                       >
                           <option value="primary">{primaryLanguage}</option>
                           <option value="english">{t('languages.english')}</option>
                       </select>
                   )}
-                  <div className="bg-indigo-800 px-4 py-1 rounded-full font-bold text-yellow-200 border border-indigo-500">
+                  <div className="min-h-11 flex items-center bg-indigo-800 px-4 py-1 rounded-full font-bold text-yellow-200 border border-indigo-500">
                       {t('common.score')}: {score}
                   </div>
                   <GameThemeToggle />
@@ -2411,78 +2477,94 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                       ref={vennCloseRef}
                        type="button"
                        data-help-key="venn_back_btn"
-                      className="min-h-11 flex items-center gap-1 text-xs font-bold bg-indigo-700 hover:bg-indigo-500 px-3 py-1.5 rounded-full transition-colors border border-indigo-400 focus:outline-none focus:ring-2 focus:ring-white"
+                      className="min-h-11 flex items-center gap-1 text-xs font-bold bg-indigo-700 hover:bg-indigo-500 px-3 py-1.5 rounded-full transition-colors border border-indigo-400 focus:ring-2 focus:ring-white"
                   >
-                      <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor')}
+                      <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('concept_map.venn.back_to_editor')}
                   </button>
               </div>
           </div>
-          <div className="flex-grow relative bg-slate-100 overflow-hidden flex flex-col items-center justify-center">
+          <div className="flex-grow relative bg-slate-100 overflow-auto flex flex-col items-center justify-start md:justify-center">
               <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
               {isWon && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" role="presentation">
                     <div ref={vennVictoryRef} role="dialog" aria-modal="true" aria-labelledby="venn-victory-title" aria-describedby="venn-victory-description"
                       onKeyDown={event => {
+                        event.stopPropagation();
                         if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
                         if (event.key !== 'Tab') return;
-                        const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                        const focusable = getGameDialogFocusable(event.currentTarget);
                         if (!focusable.length) { event.preventDefault(); return; }
                         const first = focusable[0], last = focusable[focusable.length - 1];
                         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-in zoom-in-95 duration-300' : ''}`}>
+                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!reducedMotion ? 'animate-in zoom-in-95 duration-300' : ''}`}>
                         <h2 id="venn-victory-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
                         <p id="venn-victory-description" className="text-slate-600">{t('concept_map.venn.victory_desc')}</p>
                         <div className="mt-6 flex flex-wrap justify-center gap-3">
-                          <button ref={vennPlayAgainRef} type="button" onClick={resetVennGame} className="min-h-11 rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.bucket_sort.play_again') || 'Play again'}</button>
-                          <button type="button" onClick={onClose} className="min-h-11 rounded-lg bg-slate-200 px-4 py-2 font-bold text-slate-800 hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
+                          <button ref={vennPlayAgainRef} type="button" onClick={resetVennGame} className="min-h-11 rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.bucket_sort.play_again') || 'Play again'}</button>
+                          <button type="button" onClick={onClose} className="min-h-11 rounded-lg bg-slate-200 px-4 py-2 font-bold text-slate-800 hover:bg-slate-300 focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
                         </div>
                     </div>
-                    {!useReducedMotion() && <ConfettiExplosion />}
+                    {!reducedMotion && <ConfettiExplosion />}
                 </div>
               )}
               {lastHint && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
-                    <HelpCircle size={16} /> Try: {lastHint === 'shared' ? (getTitle('shared') || 'Both') : getTitle(lastHint)}
+                <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-2${reducedMotion ? '' : ' animate-in fade-in slide-in-from-top-2 duration-300'}`}>
+                    <HelpCircle size={16} aria-hidden="true" /> {t('games.ce_sort.hint_try') || 'Try'}: <span lang={getTitleLang(lastHint)}>{lastHint === 'shared' ? (getTitle('shared') || 'Both') : getTitle(lastHint)}</span>
                 </div>
               )}
               {keyboardSelectedItemId && (
                 <div
-                    className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center"
-                    onClick={() => setKeyboardSelectedItemId(null)}
+                    role="presentation"
+                    className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center p-4"
+                    onClick={cancelKeyboardSelection}
                 >
                     <div
                         ref={moveMenuRef}
-                        className="bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 animate-in zoom-in duration-200"
+                        className={`bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
                         role="dialog"
                         aria-modal="true"
-                        aria-label={t('concept_map.venn.choose_dest_aria')}
+                        aria-labelledby="venn-move-menu-title"
                         onClick={e => e.stopPropagation()}
+                        onKeyDown={event => {
+                            event.stopPropagation();
+                            if (event.key === 'Escape') {
+                                event.preventDefault();
+                                cancelKeyboardSelection();
+                                return;
+                            }
+                            if (event.key !== 'Tab') return;
+                            const focusable = getGameDialogFocusable(event.currentTarget);
+                            if (!focusable.length) { event.preventDefault(); return; }
+                            const first = focusable[0], last = focusable[focusable.length - 1];
+                            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+                        }}
                     >
-                        <h4 className="text-sm font-bold text-slate-700 text-center mb-2">{t('concept_map.venn.move_menu_title')}</h4>
+                        <h4 id="venn-move-menu-title" className="text-sm font-bold text-slate-700 text-center mb-2">{t('concept_map.venn.move_menu_title')}</h4>
                         <div className="grid grid-cols-2 gap-3">
-                            <button data-help-key="venn_move_a" onClick={() => handleKeyboardMove('setA')} className="px-4 py-3 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-xl font-bold text-xs transition-colors border border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-500">
-                                {getTitle('setA')}
+                            <button type="button" data-help-key="venn_move_a" onClick={() => handleKeyboardMove('setA')} className="min-h-11 px-4 py-3 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-xl font-bold text-xs transition-colors border border-rose-300 focus:ring-2 focus:ring-rose-500 focus:ring-offset-2">
+                                <span lang={getTitleLang('setA')}>{getTitle('setA')}</span>
                             </button>
-                            <button data-help-key="venn_move_b" onClick={() => handleKeyboardMove('setB')} className="px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-xl font-bold text-xs transition-colors border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                {getTitle('setB')}
+                            <button type="button" data-help-key="venn_move_b" onClick={() => handleKeyboardMove('setB')} className="min-h-11 px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-xl font-bold text-xs transition-colors border border-blue-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <span lang={getTitleLang('setB')}>{getTitle('setB')}</span>
                             </button>
-                            <button data-help-key="venn_move_shared" onClick={() => handleKeyboardMove('shared')} className="col-span-2 px-4 py-3 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-xl font-bold text-xs transition-colors border border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                {getTitle('shared') || t('concept_map.venn.shared_fallback')}
+                            <button type="button" data-help-key="venn_move_shared" onClick={() => handleKeyboardMove('shared')} className="col-span-2 min-h-11 px-4 py-3 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-xl font-bold text-xs transition-colors border border-purple-300 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                                <span lang={getTitleLang('shared')}>{getTitle('shared') || t('concept_map.venn.shared_fallback')}</span>
                             </button>
-                            <button data-help-key="venn_move_bank" onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 mt-2 focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <button type="button" data-help-key="venn_move_bank" onClick={() => handleKeyboardMove('bank')} className="col-span-2 min-h-11 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 mt-2 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">
                                 {t('concept_map.venn.return_bank')}
                             </button>
                         </div>
-                        <button data-help-key="venn_move_cancel" onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection')}</button>
+                        <button type="button" data-help-key="venn_move_cancel" onClick={cancelKeyboardSelection} className="min-h-11 mt-2 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 rounded">{t('concept_map.venn.cancel_selection')}</button>
                     </div>
                 </div>
               )}
               <div className="w-full max-w-[800px] flex justify-between px-4 md:px-12 mb-2 z-20 pointer-events-none">
-                  <div className="bg-rose-100/90 backdrop-blur-sm border-2 border-rose-300 text-rose-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform -rotate-2">
+                  <div lang={getTitleLang('setA')} className="bg-rose-100/90 backdrop-blur-sm border-2 border-rose-300 text-rose-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform -rotate-2">
                       {getTitle('setA')}
                   </div>
-                  <div className="bg-blue-100/90 backdrop-blur-sm border-2 border-blue-300 text-blue-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform rotate-2">
+                  <div lang={getTitleLang('setB')} className="bg-blue-100/90 backdrop-blur-sm border-2 border-blue-300 text-blue-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform rotate-2">
                       {getTitle('setB')}
                   </div>
               </div>
@@ -2491,25 +2573,24 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                       onDrop={(e) => handleDrop(e, 'setA')}
                       onDragOver={(e) => handleDragOver(e, 'setA')}
                       onDragLeave={handleDragLeave}
-                      className={`absolute left-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-start justify-center ps-24 transition-all duration-300
-                        ${activeDropZone === 'setA' ? 'bg-rose-200/60 border-rose-500 scale-[1.02] z-10 shadow-[0_0_30px_rgba(244,63,94,0.3)]' : 'bg-gradient-to-br from-rose-100/50 to-rose-200/30 border-rose-300'}
+                      className={`absolute left-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-start justify-center ps-24 ${reducedMotion ? '' : 'transition-all duration-300'}
+                        ${activeDropZone === 'setA' ? `bg-rose-200/60 border-rose-500 ${reducedMotion ? '' : 'scale-[1.02]'} z-10 shadow-[0_0_30px_rgba(244,63,94,0.3)]` : 'bg-gradient-to-br from-rose-100/50 to-rose-200/30 border-rose-300'}
                       `}
                       data-help-key="venn_drop_zone_a"
                   >
                       <div className="flex flex-wrap gap-2 w-64 content-center justify-center pe-12 h-64 overflow-y-auto custom-scrollbar">
                           {vennSetA.map(item => (
-                              <div
+                              <button
                                 key={item.id}
-                                tabIndex={0}
-                                role="button"
+                                type="button"
+                                data-venn-item-id={item.id}
                                 aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: getTitle('setA') })}
                                 aria-pressed={keyboardSelectedItemId === item.id}
-                                onKeyDown={(e) => handleItemKeyDown(e, item)}
-                                onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                                data-help-key="venn_sorted_item" className={`bg-white text-rose-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-rose-200 animate-in zoom-in cursor-pointer hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                                onClick={(event) => toggleKeyboardSelection(event, item)}
+                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-rose-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-rose-200 cursor-pointer hover:bg-rose-50 focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
                               >
                                 <span lang={getTextLang(item)}>{getText(item)}</span>
-                              </div>
+                              </button>
                           ))}
                       </div>
                   </div>
@@ -2517,25 +2598,24 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                       onDrop={(e) => handleDrop(e, 'setB')}
                       onDragOver={(e) => handleDragOver(e, 'setB')}
                       onDragLeave={handleDragLeave}
-                      className={`absolute right-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-end justify-center pe-24 transition-all duration-300
-                        ${activeDropZone === 'setB' ? 'bg-blue-200/60 border-blue-500 scale-[1.02] z-10 shadow-[0_0_30px_rgba(59,130,246,0.3)]' : 'bg-gradient-to-bl from-blue-100/50 to-blue-200/30 border-blue-300'}
+                      className={`absolute right-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-end justify-center pe-24 ${reducedMotion ? '' : 'transition-all duration-300'}
+                        ${activeDropZone === 'setB' ? `bg-blue-200/60 border-blue-500 ${reducedMotion ? '' : 'scale-[1.02]'} z-10 shadow-[0_0_30px_rgba(59,130,246,0.3)]` : 'bg-gradient-to-bl from-blue-100/50 to-blue-200/30 border-blue-300'}
                       `}
                       data-help-key="venn_drop_zone_b"
                   >
                       <div className="flex flex-wrap gap-2 w-64 content-center justify-center ps-12 h-64 overflow-y-auto custom-scrollbar">
                           {vennSetB.map(item => (
-                              <div
+                              <button
                                 key={item.id}
-                                tabIndex={0}
-                                role="button"
+                                type="button"
+                                data-venn-item-id={item.id}
                                 aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: getTitle('setB') })}
                                 aria-pressed={keyboardSelectedItemId === item.id}
-                                onKeyDown={(e) => handleItemKeyDown(e, item)}
-                                onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                                data-help-key="venn_sorted_item" className={`bg-white text-blue-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-blue-200 animate-in zoom-in cursor-pointer hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                                onClick={(event) => toggleKeyboardSelection(event, item)}
+                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-blue-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-blue-200 cursor-pointer hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
                               >
                                 <span lang={getTextLang(item)}>{getText(item)}</span>
-                              </div>
+                              </button>
                           ))}
                       </div>
                   </div>
@@ -2543,26 +2623,25 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                       onDrop={(e) => handleDrop(e, 'shared')}
                       onDragOver={(e) => handleDragOver(e, 'shared')}
                       onDragLeave={handleDragLeave}
-                      className={`absolute w-[180px] h-[340px] z-20 flex flex-col items-center justify-center rounded-[50%] transition-all duration-300
-                        ${activeDropZone === 'shared' ? 'bg-purple-200/40 border-2 border-purple-500 scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)]' : 'hover:bg-purple-100/20'}
+                      className={`absolute w-[180px] h-[340px] z-20 flex flex-col items-center justify-center rounded-[50%] ${reducedMotion ? '' : 'transition-all duration-300'}
+                        ${activeDropZone === 'shared' ? `bg-purple-200/40 border-2 border-purple-500 ${reducedMotion ? '' : 'scale-105'} shadow-[0_0_40px_rgba(168,85,247,0.4)]` : 'hover:bg-purple-100/20'}
                       `}
                       data-help-key="venn_drop_zone_shared"
                   >
-                      <h4 className="font-black text-purple-800 uppercase tracking-widest bg-white/90 px-3 py-1 rounded-full mb-2 shadow-sm text-[11px] border border-purple-100 opacity-60 hover:opacity-100 transition-opacity">{t('concept_map.venn.shared_label')}</h4>
+                      <h4 lang={getTitleLang('shared')} className="font-black text-purple-800 uppercase tracking-widest bg-white/90 px-3 py-1 rounded-full mb-2 shadow-sm text-[11px] border border-purple-100 opacity-60 hover:opacity-100 transition-opacity">{getTitle('shared') || t('concept_map.venn.shared_label')}</h4>
                       <div className="flex flex-wrap gap-1.5 justify-center w-full overflow-y-auto max-h-[80%] p-2 custom-scrollbar">
                           {vennShared.map(item => (
-                              <div
+                              <button
                                 key={item.id}
-                                tabIndex={0}
-                                role="button"
+                                type="button"
+                                data-venn-item-id={item.id}
                                 aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: t('concept_map.venn.shared_label') })}
                                 aria-pressed={keyboardSelectedItemId === item.id}
-                                onKeyDown={(e) => handleItemKeyDown(e, item)}
-                                onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                                data-help-key="venn_sorted_item" className={`bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[11px] font-bold border-b-2 border-purple-200 animate-in zoom-in cursor-pointer hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                                onClick={(event) => toggleKeyboardSelection(event, item)}
+                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[11px] font-bold border-b-2 border-purple-200 cursor-pointer hover:bg-purple-50 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
                               >
                                 <span lang={getTextLang(item)}>{getText(item)}</span>
-                              </div>
+                              </button>
                           ))}
                       </div>
                   </div>
@@ -2574,18 +2653,22 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                   {vennBank.map(item => (
                       <div
                           key={item.id}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, item)}
-                          onDragEnd={() => setDraggedItem(null)}
-                          tabIndex={0}
-                          role="button"
-                          aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: t('concept_sort.unsorted_aria') })}
-                          aria-pressed={keyboardSelectedItemId === item.id}
-                          onKeyDown={(e) => handleItemKeyDown(e, item)}
-                          onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                          data-help-key="venn_bank_item" className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''} ${draggedItem && draggedItem.id === item.id ? 'opacity-30 scale-95' : ''}`}
+                          className={`min-h-11 bg-white rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center ${reducedMotion ? '' : 'animate-in zoom-in duration-300'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 border-yellow-500 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''} ${draggedItem && draggedItem.id === item.id ? `opacity-30 ${reducedMotion ? '' : 'scale-95'}` : ''}`}
                       >
-                          <span lang={getTextLang(item)}>{getText(item)}</span>
+                          <button
+                              type="button"
+                              draggable
+                              onDragStart={(event) => handleDragStart(event, item)}
+                              onDragEnd={() => setDraggedItem(null)}
+                              data-venn-item-id={item.id}
+                              aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: t('concept_sort.unsorted_aria') })}
+                              aria-pressed={keyboardSelectedItemId === item.id}
+                              onClick={(event) => toggleKeyboardSelection(event, item)}
+                              data-help-key="venn_bank_item"
+                              className={`min-h-11 flex-1 px-4 py-2 rounded-xl cursor-grab active:cursor-grabbing focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${reducedMotion ? '' : 'active:translate-y-1 transition-transform'}`}
+                          >
+                              <span lang={getTextLang(item)}>{getText(item)}</span>
+                          </button>
                           <SpeakButton text={getText(item)} size={11} />
                       </div>
                   ))}
@@ -2601,6 +2684,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
 });
 const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
@@ -2625,6 +2709,10 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     if (isWon && playAgainRef.current) playAgainRef.current.focus();
   }, [isWon]);
   const confirmResetTimerRef = useRef(null);
+  useEffect(() => () => {
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+      if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
+  }, []);
   const showZoneHint = (correctZone) => {
       if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
       setLastHint(correctZone);
@@ -2667,23 +2755,35 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setIsWon(false);
     setAttempts(0);
   }, [dataFingerprint]);
-  const handleItemKeyDown = (e, item) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          e.stopPropagation();
-          if (keyboardSelectedItemId === item.id) {
-              setKeyboardSelectedItemId(null);
-              setAnnouncement('Selection cancelled.');
-          } else {
-              setKeyboardSelectedItemId(item.id);
-              setAnnouncement(`Selected: ${item.text}. Choose Causes or Effects to sort.`);
-              if (playSound) playSound('click');
-          }
+  const focusCauseEffectItem = (itemId) => {
+      window.setTimeout(() => {
+          const candidates = Array.from(gameContainerRef.current?.querySelectorAll('[data-cause-effect-item-id]') || []);
+          const itemControl = candidates.find(node => node.dataset.causeEffectItemId === itemId);
+          itemControl?.focus();
+      }, 0);
+  };
+  const cancelCauseEffectSelection = () => {
+      const selectedId = keyboardSelectedItemId;
+      setKeyboardSelectedItemId(null);
+      setAnnouncement(t('concept_map.venn.selection_cancelled') || 'Selection cancelled.');
+      if (selectedId) focusCauseEffectItem(selectedId);
+  };
+  const toggleCauseEffectSelection = (event, item) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (keyboardSelectedItemId === item.id) {
+          cancelCauseEffectSelection();
+      } else {
+          setKeyboardSelectedItemId(item.id);
+          setAnnouncement(`Selected: ${item.text}. Choose Causes or Effects to sort.`);
+          if (playSound) playSound('click');
       }
   };
+
   const handleKeyboardMove = (targetZone) => {
       if (!keyboardSelectedItemId) return;
-      const item = items.find(i => i.id === keyboardSelectedItemId);
+      const selectedId = keyboardSelectedItemId;
+      const item = items.find(i => i.id === selectedId);
       if (!item) return;
       if (targetZone === 'bank') {
            setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: 'bank' } : i));
@@ -2701,10 +2801,11 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
                if(playSound) playSound('incorrect');
                showZoneHint(item.correctZone);
-               setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}.`);
+               setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}. ${t('games.ce_sort.hint_try') || 'Try'}: ${item.correctZone === 'causes' ? (t('games.ce_sort.causes_label') || 'Causes') : (t('games.ce_sort.effects_label') || 'Effects')}.`);
            }
       }
       setKeyboardSelectedItemId(null);
+      focusCauseEffectItem(selectedId);
   };
   const handleDragStart = (e, item) => {
     setDraggedItem(item);
@@ -2727,18 +2828,21 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
           if (playSound) playSound('correct');
           setItems(prev => prev.map(i => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
           const delta = scoreTrackerRef.current.correct(draggedItem.id);
-       if (delta > 0) setScore(s => s + delta);
+          if (delta > 0) setScore(s => s + delta);
+          setAnnouncement(`Correct! "${draggedItem.text}" is a ${targetZone === 'causes' ? 'Cause' : 'Effect'}.`);
       } else {
           if (playSound) playSound('incorrect');
           setAttempts(a => a + 1);
           setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(draggedItem.id)));
           showZoneHint(draggedItem.correctZone);
+          setAnnouncement(`Incorrect. "${draggedItem.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}. ${t('games.ce_sort.hint_try') || 'Try'}: ${draggedItem.correctZone === 'causes' ? (t('games.ce_sort.causes_label') || 'Causes') : (t('games.ce_sort.effects_label') || 'Effects')}.`);
       }
       setDraggedItem(null);
   };
   useEffect(() => {
       if (!isWon && items.length > 0 && items.every(i => i.currentZone !== 'bank')) {
           setIsWon(true);
+          setAnnouncement(`${t('concept_map.venn.victory_title') || 'Perfect!'}. ${t('common.score') || 'Score'}: ${score}.`);
           if(onScoreUpdate) onScoreUpdate(score, "Cause & Effect Sort");
           if (playSound) playSound('correct');
           if (onGameComplete) {
@@ -2753,6 +2857,14 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, isWon]);
   const reset = () => {
+      if (hintTimerRef.current) {
+          clearTimeout(hintTimerRef.current);
+          hintTimerRef.current = null;
+      }
+      if (confirmResetTimerRef.current) {
+          clearTimeout(confirmResetTimerRef.current);
+          confirmResetTimerRef.current = null;
+      }
       const shuffled = [...items].map(i => ({ ...i, currentZone: 'bank' }));
       for (let i = shuffled.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -2763,6 +2875,9 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       setIsWon(false);
       setAttempts(0);
       setLastHint(null);
+      setKeyboardSelectedItemId(null);
+      setConfirmingReset(false);
+      setAnnouncement(t('games.bucket_sort.reset_announcement') || 'Board reset. All items returned to the bank.');
       window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
   const handleResetClick = () => {
@@ -2775,23 +2890,52 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       setConfirmingReset(true);
       setAnnouncement(t('games.ce_sort.reset_confirm_aria') || 'Press Reset again to confirm clearing the board, or wait to cancel.');
       if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
-      confirmResetTimerRef.current = setTimeout(() => setConfirmingReset(false), 3000);
+      confirmResetTimerRef.current = setTimeout(() => {
+          setConfirmingReset(false);
+          setAnnouncement(t('games.bucket_sort.reset_cancelled') || 'Reset cancelled.');
+      }, 3000);
   };
   const causesItems = useMemo(() => items.filter(i => i.currentZone === 'causes'), [items]);
   const effectsItems = useMemo(() => items.filter(i => i.currentZone === 'effects'), [items]);
   const bankItems = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
+  const renderCauseEffectItem = (item, zone) => {
+      const isBank = zone === 'bank';
+      const toneClass = zone === 'causes' ? 'text-orange-800 border-orange-400' : zone === 'effects' ? 'text-teal-800 border-teal-400' : 'text-slate-700 border-slate-300';
+      const zoneLabel = zone === 'causes' ? (t('games.ce_sort.causes_label') || 'Causes') : zone === 'effects' ? (t('games.ce_sort.effects_label') || 'Effects') : (t('concept_sort.unsorted_aria') || 'Unsorted');
+      return (
+          <div
+              key={item.id}
+              className={`min-h-11 bg-white rounded-xl shadow-sm border-2 ${toneClass} flex items-center justify-center gap-1.5 text-center ${reducedMotion ? '' : 'animate-in zoom-in duration-300'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''} ${draggedItem && draggedItem.id === item.id ? `opacity-30 ${reducedMotion ? '' : 'scale-95'}` : ''}`}
+          >
+              <button
+                  type="button"
+                  draggable={isBank}
+                  onDragStart={isBank ? (event) => handleDragStart(event, item) : undefined}
+                  onDragEnd={isBank ? () => setDraggedItem(null) : undefined}
+                  data-cause-effect-item-id={item.id}
+                  aria-label={`${item.text}, ${zoneLabel}. ${t('concept_map.venn.item_selected_instruction') || 'Activate to choose a destination.'}`}
+                  aria-pressed={keyboardSelectedItemId === item.id}
+                  onClick={(event) => toggleCauseEffectSelection(event, item)}
+                  className={`min-h-11 flex-1 px-3 py-2 rounded-lg font-bold text-sm focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${isBank ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} ${reducedMotion ? '' : 'transition-transform active:translate-y-0.5'}`}
+              >
+                  {item.text}
+              </button>
+              <SpeakButton text={item.text} size={11} />
+          </div>
+      );
+  };
   return (
-      <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="cause-effect-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in zoom-in-95'}`}>
+      <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="cause-effect-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in zoom-in-95'}`}>
           <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-          <div className="bg-gradient-to-r from-orange-600 to-teal-600 p-4 text-white flex justify-between items-center shadow-md z-30">
+          <div className="bg-gradient-to-r from-orange-600 to-teal-600 p-3 sm:p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
               <div>
                   <h3 id="cause-effect-game-title" className="font-bold text-xl flex items-center gap-2">
-                      <ArrowRight size={24}/> {t('games.ce_sort.title') || 'Cause & Effect Sort'}
+                      <ArrowRight size={24} aria-hidden="true"/> {t('games.ce_sort.title') || 'Cause & Effect Sort'}
                   </h3>
                   {topicTitle && <p className="text-xs text-white/70 mt-0.5">{topicTitle}</p>}
               </div>
-              <div className="flex items-center gap-4">
-                  <div className="bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                  <div className="min-h-11 flex items-center bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">
                       {t('common.score') || 'Score'}: {score}
                   </div>
                   <GameThemeToggle />
@@ -2800,64 +2944,76 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                        type="button"
                        aria-label={t('common.close') || 'Close'}
                       onClick={onClose}
-                      className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:outline-none focus:ring-2 focus:ring-white"
+                      className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white"
                   >
-                      <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor') || 'Back'}
+                      <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('concept_map.venn.back_to_editor') || 'Back'}
                   </button>
               </div>
           </div>
-          <div className="flex-grow relative overflow-hidden flex flex-col lg:flex-row items-stretch">
+          <div className="flex-grow relative overflow-auto flex flex-col lg:flex-row items-stretch">
               <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
               {isWon && (
                 <div role="presentation" className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div ref={causeEffectWinRef} role="dialog" aria-modal="true" aria-labelledby="cause-effect-win-title" aria-describedby="cause-effect-win-description"
                       onKeyDown={event => {
+                        event.stopPropagation();
                         if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
                         if (event.key !== 'Tab') return;
-                        const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                        const focusable = getGameDialogFocusable(event.currentTarget);
                         if (!focusable.length) { event.preventDefault(); return; }
                         const first = focusable[0], last = focusable[focusable.length - 1];
                         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce' : ''}`}>
+                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!reducedMotion ? 'animate-in zoom-in-95 duration-300' : ''}`}>
                         <h2 id="cause-effect-win-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title') || 'Perfect!'}</h2>
                         <p id="cause-effect-win-description" className="text-slate-600">{t('games.ce_sort.victory_desc') || 'You sorted all causes and effects correctly!'}</p>
                         <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
                         <div className="flex gap-3 mt-4 justify-center">
-                            <button ref={playAgainRef} type="button" onClick={reset} className="min-h-11 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"><RefreshCw size={14} aria-hidden="true"/> {t('games.bucket_sort.play_again') || 'Play Again'}</button>
-                            <button type="button" onClick={onClose} className="min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
+                            <button ref={playAgainRef} type="button" onClick={reset} className="min-h-11 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"><RefreshCw size={14} aria-hidden="true"/> {t('games.bucket_sort.play_again') || 'Play Again'}</button>
+                            <button type="button" onClick={onClose} className="min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
                         </div>
                     </div>
-                    {!useReducedMotion() && <ConfettiExplosion />}
+                    {!reducedMotion && <ConfettiExplosion />}
                 </div>
               )}
               {lastHint && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
-                    <HelpCircle size={16} /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHint === 'causes' ? (t('games.ce_sort.causes_label') || '🔶 Causes') : (t('games.ce_sort.effects_label') || '🟦 Effects')}
+                <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-2${reducedMotion ? '' : ' animate-in fade-in slide-in-from-top-2 duration-300'}`}>
+                    <HelpCircle size={16} aria-hidden="true" /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHint === 'causes' ? (t('games.ce_sort.causes_label') || '🔶 Causes') : (t('games.ce_sort.effects_label') || '🟦 Effects')}
                 </div>
               )}
               {keyboardSelectedItemId && (
-                <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
+                <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-[2px] p-4" onClick={cancelCauseEffectSelection}>
                     <div
                         ref={moveMenuRef}
-                        className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto"
+                        className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
                         role="dialog"
                         aria-modal="true"
-                        aria-label={t('games.choose_zone_aria') || 'Choose a zone'}
+                        aria-labelledby="cause-effect-move-menu-title"
+                        onClick={event => event.stopPropagation()}
+                        onKeyDown={event => {
+                            event.stopPropagation();
+                            if (event.key === 'Escape') { event.preventDefault(); cancelCauseEffectSelection(); return; }
+                            if (event.key !== 'Tab') return;
+                            const focusable = getGameDialogFocusable(event.currentTarget);
+                            if (!focusable.length) { event.preventDefault(); return; }
+                            const first = focusable[0], last = focusable[focusable.length - 1];
+                            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+                        }}
                     >
-                        <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a zone above, or pick one here:'}</h4>
+                        <h4 id="cause-effect-move-menu-title" className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Choose a destination:'}</h4>
                         <div className="grid grid-cols-2 gap-2">
-                            <button onClick={() => handleKeyboardMove('causes')} className="px-4 py-3 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-xl font-bold text-xs transition-colors border border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                            <button type="button" onClick={() => handleKeyboardMove('causes')} className="min-h-11 px-4 py-3 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-xl font-bold text-xs transition-colors border border-orange-300 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
                                 🔶 {t('games.ce_sort.causes_label') || 'Causes'}
                             </button>
-                            <button onClick={() => handleKeyboardMove('effects')} className="px-4 py-3 bg-teal-100 hover:bg-teal-200 text-teal-800 rounded-xl font-bold text-xs transition-colors border border-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <button type="button" onClick={() => handleKeyboardMove('effects')} className="min-h-11 px-4 py-3 bg-teal-100 hover:bg-teal-200 text-teal-800 rounded-xl font-bold text-xs transition-colors border border-teal-300 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
                                 🟦 {t('games.ce_sort.effects_label') || 'Effects'}
                             </button>
-                            <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <button type="button" onClick={() => handleKeyboardMove('bank')} className="col-span-2 min-h-11 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">
                                 {t('concept_map.venn.return_bank') || 'Return to bank'}
                             </button>
                         </div>
-                        <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
+                        <button type="button" onClick={cancelCauseEffectSelection} className="min-h-11 mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
                     </div>
                 </div>
               )}
@@ -2866,35 +3022,18 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   onDrop={(e) => handleDrop(e, 'causes')}
                   onDragOver={(e) => handleDragOver(e, 'causes')}
                   onDragLeave={handleDragLeave}
-                  onClick={keyboardSelectedItemId ? () => handleKeyboardMove('causes') : undefined}
-                  role={keyboardSelectedItemId ? 'button' : undefined}
-                  tabIndex={keyboardSelectedItemId ? 0 : undefined}
-                  aria-label={keyboardSelectedItemId ? 'Place selected item into Causes' : undefined}
-                  onKeyDown={keyboardSelectedItemId ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove('causes'); } } : undefined}
-                  className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10
-                    ${activeDropZone === 'causes' ? 'bg-orange-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(251,146,60,0.3)]' : 'bg-gradient-to-b from-orange-50/80 to-orange-100/40'}
-                    ${keyboardSelectedItemId ? 'cursor-pointer ring-2 ring-yellow-300/60' : ''}
+                  role="group"
+                  aria-label="Causes drop zone"
+                  className={`flex-1 flex flex-col items-center justify-start p-6 relative z-10 ${reducedMotion ? '' : 'transition-all duration-300'}
+                    ${activeDropZone === 'causes' ? `bg-orange-200/60 ${reducedMotion ? '' : 'scale-[1.01]'} shadow-[inset_0_0_40px_rgba(251,146,60,0.3)]` : 'bg-gradient-to-b from-orange-50/80 to-orange-100/40'}
+
                   `}
               >
-                  <div className={`bg-orange-200/80 backdrop-blur-sm border-2 border-orange-300 text-orange-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform -rotate-1 ${keyboardSelectedItemId ? 'ring-4 ring-yellow-300' : ''}`}>
+                  <div className="bg-orange-200/80 backdrop-blur-sm border-2 border-orange-300 text-orange-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform -rotate-1">
                       🔶 {t('games.ce_sort.causes_label') || 'Causes'}
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
-                      {causesItems.map(item => (
-                          <div
-                            key={item.id}
-                            tabIndex={0}
-                            role="button"
-                            aria-label={`${item.text}, sorted into Causes`}
-                            aria-pressed={keyboardSelectedItemId === item.id}
-                            onKeyDown={(e) => handleItemKeyDown(e, item)}
-                            onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                            className={`bg-white text-orange-800 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-s-4 border-orange-400 animate-in zoom-in cursor-pointer hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500 flex items-center gap-1.5 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
-                          >
-                            {item.text}
-                            <SpeakButton text={item.text} size={11} />
-                          </div>
-                      ))}
+                      {causesItems.map(item => renderCauseEffectItem(item, 'causes'))}
                       {causesItems.length === 0 && (
                           <div className="text-orange-700 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop causes here'}</div>
                       )}
@@ -2904,7 +3043,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
               <div className="hidden lg:flex flex-col items-center justify-center w-16 z-20 relative">
                   <div className="w-0.5 h-full bg-slate-200"></div>
                   <div className="absolute top-1/2 -translate-y-1/2 bg-white p-2 rounded-full border-2 border-slate-200 shadow-sm">
-                      <ArrowRight size={20} className="text-slate-600" />
+                      <ArrowRight size={20} className="text-slate-600" aria-hidden="true" />
                   </div>
               </div>
               {/* Effects drop zone */}
@@ -2912,35 +3051,18 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   onDrop={(e) => handleDrop(e, 'effects')}
                   onDragOver={(e) => handleDragOver(e, 'effects')}
                   onDragLeave={handleDragLeave}
-                  onClick={keyboardSelectedItemId ? () => handleKeyboardMove('effects') : undefined}
-                  role={keyboardSelectedItemId ? 'button' : undefined}
-                  tabIndex={keyboardSelectedItemId ? 0 : undefined}
-                  aria-label={keyboardSelectedItemId ? 'Place selected item into Effects' : undefined}
-                  onKeyDown={keyboardSelectedItemId ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove('effects'); } } : undefined}
-                  className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10
-                    ${activeDropZone === 'effects' ? 'bg-teal-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(45,212,191,0.3)]' : 'bg-gradient-to-b from-teal-50/80 to-teal-100/40'}
-                    ${keyboardSelectedItemId ? 'cursor-pointer ring-2 ring-yellow-300/60' : ''}
+                  role="group"
+                  aria-label="Effects drop zone"
+                  className={`flex-1 flex flex-col items-center justify-start p-6 relative z-10 ${reducedMotion ? '' : 'transition-all duration-300'}
+                    ${activeDropZone === 'effects' ? `bg-teal-200/60 ${reducedMotion ? '' : 'scale-[1.01]'} shadow-[inset_0_0_40px_rgba(45,212,191,0.3)]` : 'bg-gradient-to-b from-teal-50/80 to-teal-100/40'}
+
                   `}
               >
-                  <div className={`bg-teal-200/80 backdrop-blur-sm border-2 border-teal-300 text-teal-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform rotate-1 ${keyboardSelectedItemId ? 'ring-4 ring-yellow-300' : ''}`}>
+                  <div className="bg-teal-200/80 backdrop-blur-sm border-2 border-teal-300 text-teal-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform rotate-1">
                       🟦 {t('games.ce_sort.effects_label') || 'Effects'}
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
-                      {effectsItems.map(item => (
-                          <div
-                            key={item.id}
-                            tabIndex={0}
-                            role="button"
-                            aria-label={`${item.text}, sorted into Effects`}
-                            aria-pressed={keyboardSelectedItemId === item.id}
-                            onKeyDown={(e) => handleItemKeyDown(e, item)}
-                            onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                            className={`bg-white text-teal-800 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-e-4 border-teal-400 animate-in zoom-in cursor-pointer hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center gap-1.5 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
-                          >
-                            {item.text}
-                            <SpeakButton text={item.text} size={11} />
-                          </div>
-                      ))}
+                      {effectsItems.map(item => renderCauseEffectItem(item, 'effects'))}
                       {effectsItems.length === 0 && (
                           <div className="text-teal-700 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop effects here'}</div>
                       )}
@@ -2961,8 +3083,9 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                       </div>
                       <div className="flex gap-2 items-center">
                           <button
+                               type="button"
                                onClick={handleResetClick}
-                               className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${confirmingReset ? `bg-rose-600 text-white border-rose-700 hover:bg-rose-700 ${!useReducedMotion() ? 'animate-pulse' : ''}` : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
+                               className={`min-h-11 px-4 py-1.5 rounded-full text-xs font-bold border transition-colors focus:ring-2 focus:ring-rose-600 focus:ring-offset-2 ${confirmingReset ? `bg-rose-600 text-white border-rose-700 hover:bg-rose-700 ${!reducedMotion ? 'animate-pulse motion-reduce:animate-none' : ''}` : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
                                aria-label={confirmingReset ? (t('games.ce_sort.reset_confirm') || 'Confirm reset — clears the whole board') : 'Reset board'}
                           >
                               {confirmingReset ? (t('games.ce_sort.reset_confirm_label') || 'Click again to confirm') : (t('concept_sort.reset_board') || 'Reset')}
@@ -2970,23 +3093,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                       </div>
                   </div>
                   <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-8 pt-2">
-                      {bankItems.map(item => (
-                          <div
-                              key={item.id}
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, item)}
-                              tabIndex={0}
-                              role="button"
-                              aria-label={`${item.text}, unsorted. Press Enter to select.`}
-                              aria-pressed={keyboardSelectedItemId === item.id}
-                              onKeyDown={(e) => handleItemKeyDown(e, item)}
-                              onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                              className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''}`}
-                          >
-                              {item.text}
-                              <SpeakButton text={item.text} size={11} />
-                          </div>
-                      ))}
+                      {bankItems.map(item => renderCauseEffectItem(item, 'bank'))}
                       {bankItems.length === 0 && !isWon && (
                           <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">
                               {t('concept_map.venn.bank_empty') || 'All items sorted!'}
@@ -3022,8 +3129,13 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
   const playAgainRef = useRef(null);
   const tChartCloseRef = useRef(null);
   const tChartWinRef = useRef(null);
+  const reducedMotion = useReducedMotion();
   useGameDialogFocus(gameContainerRef, tChartCloseRef, onClose);
   useEffect(() => { if (isWon && playAgainRef.current) playAgainRef.current.focus(); }, [isWon]);
+  useEffect(() => () => {
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
+  }, []);
   const leftTitle = data?.leftTitle || 'Left';
   const rightTitle = data?.rightTitle || 'Right';
   const showZoneHint = (zone) => {
@@ -3060,6 +3172,10 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
     setScore(0);
     setIsWon(false);
     setAttempts(0);
+    setKeyboardSelectedItemId(null);
+    setLastHint(null);
+    setConfirmingReset(false);
+    setAnnouncement(`T-Chart ready. ${all.length} items are in the unsorted bank.`);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataFingerprint]);
   useEffect(() => {
@@ -3086,28 +3202,36 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
       setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
       if (playSound) playSound('incorrect');
       showZoneHint(item.correctZone);
-      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'left' ? leftTitle : rightTitle}.`);
+      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'left' ? leftTitle : rightTitle}. Try ${item.correctZone === 'left' ? leftTitle : rightTitle}.`);
     }
   };
-  const handleItemKeyDown = (e, item) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault(); e.stopPropagation();
-      if (keyboardSelectedItemId === item.id) {
-        setKeyboardSelectedItemId(null);
-        setAnnouncement('Selection cancelled.');
-      } else {
-        setKeyboardSelectedItemId(item.id);
-        setAnnouncement(`Selected: ${item.text}. Choose ${leftTitle} or ${rightTitle}.`);
-        if (playSound) playSound('click');
-      }
+  const focusTChartItem = (itemId) => {
+    window.setTimeout(() => gameContainerRef.current?.querySelector(`[data-tchart-item-id="${itemId}"]`)?.focus(), 0);
+  };
+  const cancelTChartSelection = () => {
+    const itemId = keyboardSelectedItemId;
+    setKeyboardSelectedItemId(null);
+    setAnnouncement('Selection cancelled.');
+    if (itemId) focusTChartItem(itemId);
+  };
+  const toggleTChartSelection = (event, item) => {
+    event.stopPropagation();
+    if (keyboardSelectedItemId === item.id) {
+      cancelTChartSelection();
+      return;
     }
+    setKeyboardSelectedItemId(item.id);
+    setAnnouncement(`Selected: ${item.text}. Choose ${leftTitle}, ${rightTitle}, or return it to the bank.`);
+    if (playSound) playSound('click');
   };
   const handleKeyboardMove = (zone) => {
     if (!keyboardSelectedItemId) return;
     const item = items.find(i => i.id === keyboardSelectedItemId);
     if (!item) return;
+    const itemId = item.id;
     placeItem(item, zone);
     setKeyboardSelectedItemId(null);
+    focusTChartItem(itemId);
   };
   const handleDragStart = (e, item) => {
     setDraggedItem(item);
@@ -3129,6 +3253,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
         setIsWon(true);
         if (onScoreUpdate) onScoreUpdate(score, 'T-Chart Sort');
         if (playSound) playSound('correct');
+        setAnnouncement(`Complete! Every item is correctly sorted. Final score: ${score} points.`);
         if (onGameComplete) {
           onGameComplete('tchartSort', { score, itemsSorted: items.length, totalItems: items.length, incorrectAttempts: attempts });
         }
@@ -3137,12 +3262,16 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, isWon]);
   const reset = () => {
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
     const shuffled = [...items].map(i => ({ ...i, currentZone: 'bank' }));
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     setItems(shuffled); setScore(0); setIsWon(false); setAttempts(0); setLastHint(null);
+    setKeyboardSelectedItemId(null); setConfirmingReset(false);
+    setAnnouncement('Board reset. All items returned to the unsorted bank.');
     window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
   const handleResetClick = () => {
@@ -3155,11 +3284,38 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
     setConfirmingReset(true);
     setAnnouncement('Press Reset again to confirm clearing the board, or wait to cancel.');
     if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
-    confirmResetTimerRef.current = setTimeout(() => setConfirmingReset(false), 3000);
+    confirmResetTimerRef.current = setTimeout(() => {
+      setConfirmingReset(false);
+      setAnnouncement('Reset cancelled.');
+    }, 3000);
   };
   const leftItems = useMemo(() => items.filter(i => i.currentZone === 'left'), [items]);
   const rightItems = useMemo(() => items.filter(i => i.currentZone === 'right'), [items]);
   const bankItems = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
+  const renderTChartItem = (item, zone, title, colorClasses = null) => {
+    const selected = keyboardSelectedItemId === item.id;
+    const inBank = zone === 'bank';
+    return (
+      <div
+        key={item.id}
+        draggable={inBank}
+        onDragStart={inBank ? (event) => handleDragStart(event, item) : undefined}
+        className={`flex items-center gap-1.5 rounded-xl ${inBank ? 'bg-white shadow-sm border-b-4 border-slate-200' : 'bg-white shadow-sm'} ${selected ? 'ring-4 ring-yellow-400 border-yellow-500 z-30' : ''} ${reducedMotion ? '' : 'animate-in zoom-in duration-300'}`}
+      >
+        <button
+          type="button"
+          data-tchart-item-id={item.id}
+          aria-label={`${item.text}, ${inBank ? 'unsorted' : `sorted into ${title}`}. Press to ${selected ? 'cancel selection' : 'select and move'}.`}
+          aria-pressed={selected}
+          onClick={(event) => toggleTChartSelection(event, item)}
+          className={`min-h-11 flex-1 px-3 py-2 rounded-lg font-bold cursor-pointer text-center focus:ring-2 focus:ring-offset-2 ${inBank ? 'text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-900 focus:ring-indigo-500' : `text-xs ${colorClasses.chip}`} ${selected && !reducedMotion ? 'scale-105' : ''}`}
+        >
+          {item.text}
+        </button>
+        <SpeakButton text={item.text} size={11} />
+      </div>
+    );
+  };
   const renderColumn = (zone, title, items, colorClasses) => {
     const hasSelection = !!keyboardSelectedItemId;
     return (
@@ -3167,32 +3323,13 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
       onDrop={(e) => handleDrop(e, zone)}
       onDragOver={(e) => handleDragOver(e, zone)}
       onDragLeave={handleDragLeave}
-      onClick={hasSelection ? () => handleKeyboardMove(zone) : undefined}
-      role={hasSelection ? 'button' : undefined}
-      tabIndex={hasSelection ? 0 : undefined}
-      aria-label={hasSelection ? `Place selected item into ${title}` : undefined}
-      onKeyDown={hasSelection ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove(zone); } } : undefined}
-      className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10 ${activeDropZone === zone ? colorClasses.active : colorClasses.idle} ${hasSelection ? 'cursor-pointer ring-2 ring-yellow-300/60' : ''}`}
+      className={`flex-1 flex flex-col items-center justify-start p-6 relative z-10 ${reducedMotion ? '' : 'transition-all duration-300'} ${activeDropZone === zone ? colorClasses.active : colorClasses.idle}`}
     >
       <div className={`backdrop-blur-sm border-2 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 ${colorClasses.header} ${hasSelection ? 'ring-4 ring-yellow-300 ring-offset-2' : ''}`}>
         {title}
       </div>
       <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
-        {items.map(item => (
-          <div
-            key={item.id}
-            tabIndex={0}
-            role="button"
-            aria-label={`${item.text}, sorted into ${title}`}
-            aria-pressed={keyboardSelectedItemId === item.id}
-            onKeyDown={(e) => handleItemKeyDown(e, item)}
-            onClick={() => { if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-            className={`bg-white px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold animate-in zoom-in cursor-pointer focus:outline-none focus:ring-2 flex items-center gap-1.5 ${colorClasses.chip} ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
-          >
-            {item.text}
-            <SpeakButton text={item.text} size={11} />
-          </div>
-        ))}
+        {items.map(item => renderTChartItem(item, zone, title, colorClasses))}
         {items.length === 0 && (
           <div className="text-slate-600 italic text-xs mt-8 text-center w-full">{hasSelection ? (t('concept_sort.tap_to_place') || `Tap here to place in ${title}`) : (t('concept_sort.drop_placeholder') || 'Drop here')}</div>
         )}
@@ -3201,29 +3338,29 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
   );
   };
   const leftColors = {
-    active: 'bg-cyan-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(6,182,212,0.3)]',
+    active: `bg-cyan-200/60 shadow-[inset_0_0_40px_rgba(6,182,212,0.3)] ${reducedMotion ? '' : 'scale-[1.01]'}`,
     idle: 'bg-gradient-to-b from-cyan-50/80 to-cyan-100/40',
     header: 'bg-cyan-200/80 border-cyan-300 text-cyan-800 transform -rotate-1',
     chip: 'text-cyan-800 border-s-4 border-cyan-400 hover:bg-cyan-50 focus:ring-cyan-500'
   };
   const rightColors = {
-    active: 'bg-indigo-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(99,102,241,0.3)]',
+    active: `bg-indigo-200/60 shadow-[inset_0_0_40px_rgba(99,102,241,0.3)] ${reducedMotion ? '' : 'scale-[1.01]'}`,
     idle: 'bg-gradient-to-b from-indigo-50/80 to-indigo-100/40',
     header: 'bg-indigo-200/80 border-indigo-300 text-indigo-800 transform rotate-1',
     chip: 'text-indigo-800 border-s-4 border-indigo-400 hover:bg-indigo-50 focus:ring-indigo-500'
   };
   return (
-    <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tchart-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in zoom-in-95'}` }>
+    <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tchart-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in zoom-in-95'}` }>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <div className="bg-gradient-to-r from-cyan-600 to-indigo-600 p-4 text-white flex justify-between items-center shadow-md z-30">
+      <div className="bg-gradient-to-r from-cyan-600 to-indigo-600 p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
         <div>
           <h3 id="tchart-game-title" className="font-bold text-xl flex items-center gap-2">
-            <ArrowRight size={24}/> {t('games.tchart_sort.title') || 'T-Chart Sort'}
+            <ArrowRight size={24} aria-hidden="true"/> {t('games.tchart_sort.title') || 'T-Chart Sort'}
           </h3>
           {topicTitle && <p className="text-xs text-white/70 mt-0.5">{topicTitle}</p>}
         </div>
-        <div className="flex items-center gap-4">
-          <div className="bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="min-h-11 flex items-center bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">
             {t('common.score') || 'Score'}: {score}
           </div>
           <GameThemeToggle />
@@ -3232,52 +3369,70 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
              type="button"
              aria-label={t('common.close') || 'Close'}
             onClick={onClose}
-            className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:outline-none focus:ring-2 focus:ring-white"
+            className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white"
           >
-            <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor') || 'Back'}
+            <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('concept_map.venn.back_to_editor') || 'Back'}
           </button>
         </div>
       </div>
-      <div className="flex-grow relative overflow-hidden flex flex-col lg:flex-row items-stretch">
+      <div className="flex-grow relative overflow-auto flex flex-col lg:flex-row items-stretch">
         <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
         {isWon && (
           <div role="presentation" className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div ref={tChartWinRef} role="dialog" aria-modal="true" aria-labelledby="tchart-victory-title" aria-describedby="tchart-victory-description"
               onKeyDown={event => {
+                event.stopPropagation();
                 if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
                 if (event.key !== 'Tab') return;
-                const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                const focusable = getGameDialogFocusable(event.currentTarget);
                 if (!focusable.length) { event.preventDefault(); return; }
                 const first = focusable[0], last = focusable[focusable.length - 1];
                 if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                 else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-              }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce' : ''}`}>
+              }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${reducedMotion ? '' : 'animate-bounce motion-reduce:animate-none'}`}>
               <h2 id="tchart-victory-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title') || 'Perfect!'}</h2>
               <p id="tchart-victory-description" className="text-slate-600">{t('games.tchart_sort.victory_desc') || 'You sorted every item into the correct column!'}</p>
               <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
               <div className="flex gap-3 mt-4 justify-center">
-                <button ref={playAgainRef} type="button" onClick={reset} className="min-h-11 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"><RefreshCw size={14} aria-hidden="true"/> {t('games.bucket_sort.play_again') || 'Play Again'}</button>
-                <button type="button" onClick={onClose} className="min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
+                <button ref={playAgainRef} type="button" onClick={reset} className="min-h-11 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"><RefreshCw size={14} aria-hidden="true"/> {t('games.bucket_sort.play_again') || 'Play Again'}</button>
+                <button type="button" onClick={onClose} className="min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
               </div>
             </div>
-            {!useReducedMotion() && <ConfettiExplosion />}
+            {!reducedMotion && <ConfettiExplosion />}
           </div>
         )}
         {lastHint && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
-            <HelpCircle size={16} /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHint === 'left' ? leftTitle : rightTitle}
+          <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-2 ${reducedMotion ? '' : 'animate-in fade-in slide-in-from-top-2 duration-300'}`}>
+            <HelpCircle size={16} aria-hidden="true" /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHint === 'left' ? leftTitle : rightTitle}
           </div>
         )}
         {keyboardSelectedItemId && (
-          <div className="absolute inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
-            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 pointer-events-auto max-w-md w-full" role="dialog" aria-modal="true" aria-label={t('games.choose_column_aria') || 'Choose a column'}>
-              <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a column above, or pick one here:'}</h4>
+          <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={cancelTChartSelection}>
+            <div
+              ref={moveMenuRef}
+              className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full ${reducedMotion ? '' : 'animate-in zoom-in duration-200'}`}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="tchart-move-menu-title"
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                event.stopPropagation();
+                if (event.key === 'Escape') { event.preventDefault(); cancelTChartSelection(); return; }
+                if (event.key !== 'Tab') return;
+                const focusable = getGameDialogFocusable(event.currentTarget);
+                if (!focusable.length) { event.preventDefault(); return; }
+                const first = focusable[0], last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+              }}
+            >
+              <h4 id="tchart-move-menu-title" className="text-sm font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Choose a column for the selected item:'}</h4>
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => handleKeyboardMove('left')} className="px-4 py-3 bg-cyan-100 hover:bg-cyan-200 text-cyan-800 rounded-xl font-bold text-xs transition-colors border border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">{leftTitle}</button>
-                <button onClick={() => handleKeyboardMove('right')} className="px-4 py-3 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl font-bold text-xs transition-colors border border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">{rightTitle}</button>
-                <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500">{t('concept_map.venn.return_bank') || 'Return to bank'}</button>
+                <button type="button" onClick={() => handleKeyboardMove('left')} className="min-h-11 px-4 py-3 bg-cyan-100 hover:bg-cyan-200 text-cyan-800 rounded-xl font-bold text-xs transition-colors border border-cyan-300 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">{leftTitle}</button>
+                <button type="button" onClick={() => handleKeyboardMove('right')} className="min-h-11 px-4 py-3 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl font-bold text-xs transition-colors border border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{rightTitle}</button>
+                <button type="button" onClick={() => handleKeyboardMove('bank')} className="col-span-2 min-h-11 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">{t('concept_map.venn.return_bank') || 'Return to bank'}</button>
               </div>
-              <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
+              <button type="button" onClick={cancelTChartSelection} className="min-h-11 mt-1 text-xs text-slate-700 hover:text-slate-900 underline text-center focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
             </div>
           </div>
         )}
@@ -3285,7 +3440,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
         <div className="hidden lg:flex flex-col items-center justify-center w-16 z-20 relative">
           <div className="w-0.5 h-full bg-slate-200"></div>
           <div className="absolute top-1/2 -translate-y-1/2 bg-white p-2 rounded-full border-2 border-slate-200 shadow-sm">
-            <ArrowRight size={20} className="text-slate-600" />
+            <ArrowRight size={20} className="text-slate-600" aria-hidden="true" />
           </div>
         </div>
         {renderColumn('right', rightTitle, rightItems, rightColors)}
@@ -3300,31 +3455,16 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
               )}
             </div>
             <button
+              type="button"
               onClick={handleResetClick}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${confirmingReset ? `bg-rose-600 text-white border-rose-700 hover:bg-rose-700 ${!useReducedMotion() ? 'animate-pulse' : ''}` : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
+              className={`min-h-11 px-4 py-1.5 rounded-full text-xs font-bold border focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${reducedMotion ? '' : 'transition-colors'} ${confirmingReset ? `bg-rose-600 text-white border-rose-700 hover:bg-rose-700 ${reducedMotion ? '' : 'animate-pulse motion-reduce:animate-none'}` : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
               aria-label={confirmingReset ? 'Confirm reset — clears the whole board' : 'Reset board'}
             >
-              {confirmingReset ? 'Click again to confirm' : (t('concept_sort.reset_board') || 'Reset')}
+              {confirmingReset ? 'Press again to confirm' : (t('concept_sort.reset_board') || 'Reset')}
             </button>
           </div>
           <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-4 pt-2">
-            {bankItems.map(item => (
-              <div
-                key={item.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, item)}
-                tabIndex={0}
-                role="button"
-                aria-label={`${item.text}, unsorted. Press Enter to select.`}
-                aria-pressed={keyboardSelectedItemId === item.id}
-                onKeyDown={(e) => handleItemKeyDown(e, item)}
-                onClick={() => { if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''}`}
-              >
-                {item.text}
-                <SpeakButton text={item.text} size={11} />
-              </div>
-            ))}
+            {bankItems.map(item => renderTChartItem(item, 'bank', 'unsorted items'))}
             {bankItems.length === 0 && !isWon && (
               <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">{t('concept_map.venn.bank_empty') || 'All items sorted!'}</div>
             )}
@@ -3340,6 +3480,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
 // theme: { headerGradient, accentColor (tailwind suffix like 'cyan'), title }
 const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey = "multiBucket" }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
@@ -3360,6 +3501,10 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
   const multiBucketCloseRef = useRef(null);
   const multiBucketWinRef = useRef(null);
   useGameDialogFocus(gameContainerRef, multiBucketCloseRef, onClose);
+  useEffect(() => () => {
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
+  }, []);
   useEffect(() => { if (isWon && playAgainRef.current) playAgainRef.current.focus(); }, [isWon]);
   const buckets = useMemo(() => Array.isArray(data?.buckets) ? data.buckets : [], [data]);
   const showZoneHint = (bucketId) => {
@@ -3384,7 +3529,9 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
       [all[i], all[j]] = [all[j], all[i]];
     }
     setItems(all);
-    setScore(0); setIsWon(false); setAttempts(0);
+    setScore(0); setIsWon(false); setAttempts(0); setKeyboardSelectedItemId(null);
+    setLastHint(null); setConfirmingReset(false);
+    setAnnouncement(`${titleText} ready. ${all.length} items are in the bank.`);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataFingerprint]);
   useEffect(() => {
@@ -3413,28 +3560,34 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
       setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
       if (playSound) playSound('incorrect');
       showZoneHint(item.correctBucketId);
-      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${bucketLabel}.`);
+      const correctLabel = buckets.find(b => b.id === item.correctBucketId)?.title || item.correctBucketId;
+      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${bucketLabel}. Try ${correctLabel}.`);
     }
   };
-  const handleItemKeyDown = (e, item) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault(); e.stopPropagation();
-      if (keyboardSelectedItemId === item.id) {
-        setKeyboardSelectedItemId(null);
-        setAnnouncement('Selection cancelled.');
-      } else {
-        setKeyboardSelectedItemId(item.id);
-        setAnnouncement(`Selected: ${item.text}. Choose a destination.`);
-        if (playSound) playSound('click');
-      }
-    }
+  const focusMultiBucketItem = (itemId) => {
+    window.setTimeout(() => gameContainerRef.current?.querySelector(`[data-multi-bucket-item-id="${itemId}"]`)?.focus(), 0);
+  };
+  const cancelMultiBucketSelection = () => {
+    const itemId = keyboardSelectedItemId;
+    setKeyboardSelectedItemId(null);
+    setAnnouncement('Selection cancelled.');
+    if (itemId) focusMultiBucketItem(itemId);
+  };
+  const toggleMultiBucketSelection = (event, item) => {
+    event.stopPropagation();
+    if (keyboardSelectedItemId === item.id) { cancelMultiBucketSelection(); return; }
+    setKeyboardSelectedItemId(item.id);
+    setAnnouncement(`Selected: ${item.text}. Choose a destination.`);
+    if (playSound) playSound('click');
   };
   const handleKeyboardMove = (bucketId) => {
     if (!keyboardSelectedItemId) return;
     const item = items.find(i => i.id === keyboardSelectedItemId);
     if (!item) return;
+    const itemId = item.id;
     placeItem(item, bucketId);
     setKeyboardSelectedItemId(null);
+    focusMultiBucketItem(itemId);
   };
   const handleDragStart = (e, item) => { setDraggedItem(item); e.dataTransfer.effectAllowed = 'move'; };
   const handleDragOver = (e, bucketId) => { e.preventDefault(); setActiveDropZone(bucketId); };
@@ -3451,6 +3604,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
       const allCorrect = items.every(i => i.currentBucketId === i.correctBucketId);
       if (allCorrect) {
         setIsWon(true);
+        setAnnouncement(`${t('concept_map.venn.victory_title') || 'Perfect!'}. ${t('common.score') || 'Score'}: ${score}`);
         if (onScoreUpdate) onScoreUpdate(score, theme?.title || 'Sort');
         if (playSound) playSound('correct');
         if (onGameComplete) {
@@ -3467,6 +3621,8 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     setItems(shuffled); setScore(0); setIsWon(false); setAttempts(0); setLastHint(null);
+    setKeyboardSelectedItemId(null); setConfirmingReset(false);
+    setAnnouncement(t('games.bucket_sort.reset_announcement') || 'Board reset. All items returned to the bank.');
     window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
   const handleResetClick = () => {
@@ -3479,7 +3635,10 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
     setConfirmingReset(true);
     setAnnouncement('Press Reset again to confirm clearing the board, or wait to cancel.');
     if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
-    confirmResetTimerRef.current = setTimeout(() => setConfirmingReset(false), 3000);
+    confirmResetTimerRef.current = setTimeout(() => {
+      setConfirmingReset(false);
+      setAnnouncement(t('games.bucket_sort.reset_cancelled') || 'Reset cancelled.');
+    }, 3000);
   };
   const bankItems = useMemo(() => items.filter(i => i.currentBucketId === 'bank'), [items]);
   const itemsByBucket = useMemo(() => {
@@ -3492,19 +3651,42 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
   const headerGradient = theme?.headerGradient || `from-${accent}-600 to-purple-600`;
   const titleText = theme?.title || (t('games.bucket_sort.title') || 'Sort');
   const lastHintLabel = lastHint ? (buckets.find(b => b.id === lastHint)?.title || '') : '';
+  const renderMultiBucketItem = (item, locationLabel, isBank = false) => {
+    const selected = keyboardSelectedItemId === item.id;
+    return (
+      <div
+        key={item.id}
+        draggable={isBank}
+        onDragStart={isBank ? (event) => handleDragStart(event, item) : undefined}
+        className={`flex items-center gap-1 rounded-lg bg-white shadow-sm ${selected ? 'ring-4 ring-yellow-400 border-yellow-500 z-30' : ''} ${reducedMotion ? '' : 'animate-in zoom-in duration-300'}`}
+      >
+        <button
+          type="button"
+          data-multi-bucket-item-id={item.id}
+          aria-pressed={selected}
+          aria-label={`${item.text}, ${locationLabel}. Press to ${selected ? 'cancel selection' : 'select and move'}.`}
+          onClick={(event) => toggleMultiBucketSelection(event, item)}
+          className={`min-h-11 flex-1 px-3 py-2 rounded-lg text-center font-bold focus:ring-2 focus:ring-offset-2 ${isBank ? 'text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-900 focus:ring-indigo-500' : `text-xs text-${accent}-800 border-s-4 border-${accent}-400 hover:bg-${accent}-50 focus:ring-${accent}-500`} ${selected && !reducedMotion ? 'scale-105' : ''}`}
+        >
+          {item.text}
+        </button>
+        <SpeakButton text={item.text} size={11} />
+      </div>
+    );
+  };
   return (
-    <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="multi-bucket-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in zoom-in-95'}` }>
+    <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="multi-bucket-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in zoom-in-95'}` }>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <div className={`bg-gradient-to-r ${headerGradient} p-4 text-white flex justify-between items-center shadow-md z-30`}>
+      <div className={`bg-gradient-to-r ${headerGradient} p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30`}>
         <div>
           <h3 id="multi-bucket-game-title" className="font-bold text-xl flex items-center gap-2"><ArrowRight size={24} aria-hidden="true"/> {titleText}</h3>
           {topicTitle && <p className="text-xs text-white/70 mt-0.5">{topicTitle}</p>}
         </div>
-        <div className="flex items-center gap-4">
-          <div className="bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">{t('common.score') || 'Score'}: {score}</div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="min-h-11 flex items-center bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">{t('common.score') || 'Score'}: {score}</div>
           <GameThemeToggle />
-          <button ref={multiBucketCloseRef} type="button" aria-label={t('common.close') || 'Close'} onClick={onClose} className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:outline-none focus:ring-2 focus:ring-white">
-            <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor') || 'Back'}
+          <button ref={multiBucketCloseRef} type="button" aria-label={t('common.close') || 'Close'} onClick={onClose} className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white">
+            <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('concept_map.venn.back_to_editor') || 'Back'}
           </button>
         </div>
       </div>
@@ -3514,79 +3696,78 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
           <div role="presentation" className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div ref={multiBucketWinRef} role="dialog" aria-modal="true" aria-labelledby="mb-victory-title" aria-describedby="mb-victory-description"
               onKeyDown={event => {
+                event.stopPropagation();
                 if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
                 if (event.key !== 'Tab') return;
-                const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                const focusable = getGameDialogFocusable(event.currentTarget);
                 if (!focusable.length) { event.preventDefault(); return; }
                 const first = focusable[0], last = focusable[focusable.length - 1];
                 if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                 else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-              }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce' : ''}`}>
+              }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!reducedMotion ? 'animate-bounce motion-reduce:animate-none' : ''}`}>
               <h2 id="mb-victory-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title') || 'Perfect!'}</h2>
               <p id="mb-victory-description" className="text-slate-600">{t('games.bucket_sort.victory_desc') || 'You sorted every item correctly!'}</p>
               <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
               <div className="flex gap-3 mt-4 justify-center">
-                <button ref={playAgainRef} type="button" onClick={reset} className="min-h-11 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"><RefreshCw size={14} aria-hidden="true"/> {t('games.memory.play_again') || 'Play Again'}</button>
-                <button type="button" onClick={onClose} className="min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
+                <button ref={playAgainRef} type="button" onClick={reset} className="min-h-11 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"><RefreshCw size={14} aria-hidden="true"/> {t('games.memory.play_again') || 'Play Again'}</button>
+                <button type="button" onClick={onClose} className="min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
               </div>
             </div>
-            {!useReducedMotion() && <ConfettiExplosion />}
+            {!reducedMotion && <ConfettiExplosion />}
           </div>
         )}
         {lastHint && lastHintLabel && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
-            <HelpCircle size={16} /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHintLabel}
+          <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-2${reducedMotion ? '' : ' animate-in fade-in slide-in-from-top-2 duration-300'}`}>
+            <HelpCircle size={16} aria-hidden="true" /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHintLabel}
           </div>
         )}
         {keyboardSelectedItemId && (
-          <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
-            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto" role="dialog" aria-modal="true" aria-label={t('games.choose_destination_aria') || 'Choose a destination'}>
-              <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a bucket above, or pick one here:'}</h4>
-              <div className="grid grid-cols-2 gap-2">
+          <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={cancelMultiBucketSelection}>
+            <div
+              ref={moveMenuRef}
+              className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="multi-bucket-move-title"
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                event.stopPropagation();
+                if (event.key === 'Escape') { event.preventDefault(); cancelMultiBucketSelection(); return; }
+                if (event.key !== 'Tab') return;
+                const focusable = getGameDialogFocusable(event.currentTarget);
+                if (!focusable.length) { event.preventDefault(); return; }
+                const first = focusable[0], last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+              }}
+            >
+              <h4 id="multi-bucket-move-title" className="text-sm font-bold text-slate-700 text-center mb-1">{t('games.choose_destination_aria') || 'Choose a destination'}</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {buckets.map(b => (
-                  <button key={b.id} onClick={() => handleKeyboardMove(b.id)} className={`px-4 py-3 bg-${accent}-100 hover:bg-${accent}-200 text-${accent}-800 rounded-xl font-bold text-xs transition-colors border border-${accent}-300 focus:outline-none focus:ring-2 focus:ring-${accent}-500`}>{b.title}</button>
+                  <button key={b.id} type="button" onClick={() => handleKeyboardMove(b.id)} className={`min-h-11 px-4 py-3 bg-${accent}-100 hover:bg-${accent}-200 text-${accent}-800 rounded-xl font-bold text-xs transition-colors border border-${accent}-300 focus:ring-2 focus:ring-${accent}-500 focus:ring-offset-2`}>{b.title}</button>
                 ))}
-                <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400">{t('concept_map.venn.return_bank') || 'Return to bank'}</button>
+                <button type="button" onClick={() => handleKeyboardMove('bank')} className="min-h-11 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('concept_map.venn.return_bank') || 'Return to bank'}</button>
+                <button type="button" onClick={cancelMultiBucketSelection} className="min-h-11 px-4 py-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-md text-slate-700 hover:text-slate-900 underline text-center">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
               </div>
-              <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
             </div>
           </div>
-        )}
-        <div className={`p-4 grid gap-4 ${buckets.length <= 2 ? 'grid-cols-1 md:grid-cols-2' : buckets.length <= 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
+        )}        <div className={`p-4 grid gap-4 ${buckets.length <= 2 ? 'grid-cols-1 md:grid-cols-2' : buckets.length <= 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
           {buckets.map(b => {
             const placed = itemsByBucket[b.id] || [];
             const isActive = activeDropZone === b.id;
-            const hasSelection = !!keyboardSelectedItemId;
             return (
               <div
                 key={b.id}
+                role="group"
+                aria-label={`Bucket: ${b.title}`}
                 onDrop={(e) => handleDrop(e, b.id)}
                 onDragOver={(e) => handleDragOver(e, b.id)}
                 onDragLeave={handleDragLeave}
-                onClick={hasSelection ? () => handleKeyboardMove(b.id) : undefined}
-                role={hasSelection ? 'button' : undefined}
-                tabIndex={hasSelection ? 0 : undefined}
-                aria-label={hasSelection ? `Place selected item into ${b.title}` : undefined}
-                onKeyDown={hasSelection ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove(b.id); } } : undefined}
-                className={`flex flex-col items-stretch p-4 rounded-2xl border-2 min-h-[140px] transition-all relative z-10 bg-white shadow-sm ${isActive ? `border-${accent}-500 ring-4 ring-${accent}-200 scale-[1.02] shadow-md` : `border-${accent}-200`} ${hasSelection ? 'cursor-pointer ring-2 ring-yellow-300/60' : ''}`}
+                className={`flex flex-col items-stretch p-4 rounded-2xl border-2 min-h-[140px] relative z-10 bg-white shadow-sm ${!reducedMotion ? 'transition-all' : ''} ${isActive ? `border-${accent}-500 ring-4 ring-${accent}-200 ${!reducedMotion ? 'scale-[1.02]' : ''} shadow-md` : `border-${accent}-200`}`}
               >
-                <div className={`text-center font-black uppercase tracking-wider text-sm py-1 mb-2 rounded-md bg-${accent}-100 text-${accent}-800 border border-${accent}-200 ${hasSelection ? 'ring-2 ring-yellow-300' : ''}`}>{b.title}</div>
+                <div className={`text-center font-black uppercase tracking-wider text-sm py-1 mb-2 rounded-md bg-${accent}-100 text-${accent}-800 border border-${accent}-200`}>{b.title}</div>
                 <div className="flex flex-wrap gap-1.5 justify-center content-start flex-grow p-1">
-                  {placed.map(item => (
-                    <div
-                      key={item.id}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={`${item.text}, sorted into ${b.title}`}
-                      aria-pressed={keyboardSelectedItemId === item.id}
-                      onKeyDown={(e) => handleItemKeyDown(e, item)}
-                      onClick={() => { if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                      className={`bg-white px-2.5 py-1 rounded-md shadow-sm text-xs font-bold animate-in zoom-in cursor-pointer focus:outline-none focus:ring-2 flex items-center gap-1 text-${accent}-800 border-s-4 border-${accent}-400 hover:bg-${accent}-50 focus:ring-${accent}-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
-                    >
-                      {item.text}
-                      <SpeakButton text={item.text} size={11} />
-                    </div>
-                  ))}
+                  {placed.map(item => renderMultiBucketItem(item, `sorted into ${b.title}`))}
                   {placed.length === 0 && <div className="text-slate-600 italic text-[11px] mt-3 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop here'}</div>}
                 </div>
               </div>
@@ -3604,31 +3785,16 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
               )}
             </div>
             <button
+              type="button"
               onClick={handleResetClick}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${confirmingReset ? `bg-rose-600 text-white border-rose-700 hover:bg-rose-700 ${!useReducedMotion() ? 'animate-pulse' : ''}` : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
+              className={`min-h-11 px-4 py-1.5 rounded-full text-xs font-bold border transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${confirmingReset ? `bg-rose-600 text-white border-rose-700 hover:bg-rose-700 ${!reducedMotion ? 'animate-pulse motion-reduce:animate-none' : ''}` : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
               aria-label={confirmingReset ? 'Confirm reset — clears the whole board' : 'Reset board'}
             >
-              {confirmingReset ? 'Click again to confirm' : (t('concept_sort.reset_board') || 'Reset')}
+              {confirmingReset ? 'Press again to confirm' : (t('concept_sort.reset_board') || 'Reset')}
             </button>
           </div>
           <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-4 pt-2">
-            {bankItems.map(item => (
-              <div
-                key={item.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, item)}
-                tabIndex={0}
-                role="button"
-                aria-label={`${item.text}, unsorted. Press Enter to select.`}
-                aria-pressed={keyboardSelectedItemId === item.id}
-                onKeyDown={(e) => handleItemKeyDown(e, item)}
-                onClick={() => { if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''}`}
-              >
-                {item.text}
-                <SpeakButton text={item.text} size={11} />
-              </div>
-            ))}
+            {bankItems.map(item => renderMultiBucketItem(item, 'unsorted in the bank', true))}
             {bankItems.length === 0 && !isWon && (
               <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">{t('concept_map.venn.bank_empty') || 'All items sorted!'}</div>
             )}
@@ -4068,7 +4234,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   if (shuffledSteps.length === 0) return null;
 
   return (
-    <div ref={pipelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="pipeline-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in zoom-in-95'}` }>
+    <div ref={pipelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="pipeline-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in zoom-in-95'}` }>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
       <div className="bg-gradient-to-r from-indigo-700 via-purple-600 to-indigo-700 p-4 text-white flex justify-between items-center shadow-md z-30">
         <div>
@@ -4090,7 +4256,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
              type="button"
              aria-label={t('common.close') || 'Close'}
             onClick={onClose}
-            className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:outline-none focus:ring-2 focus:ring-white"
+            className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white"
           >
             <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor') || 'Back'}
           </button>
@@ -4106,18 +4272,18 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
               onKeyDown={event => {
                 if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
                 if (event.key !== 'Tab') return;
-                const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                const focusable = getGameDialogFocusable(event.currentTarget);
                 if (!focusable.length) { event.preventDefault(); return; }
                 const first = focusable[0], last = focusable[focusable.length - 1];
                 if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                 else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-              }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce' : ''}`}>
+              }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce motion-reduce:animate-none' : ''}`}>
               <h2 id="pipeline-victory-title" className="text-4xl font-black text-indigo-600 mb-2">{t('games.pipeline.complete_title') || 'Pipeline Complete!'}</h2>
               <p id="pipeline-victory-description" className="text-slate-600">{t('games.pipeline.victory_desc') || 'You built the entire process flow correctly!'}</p>
               <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
               <div className="flex gap-3 mt-4 justify-center">
-                <button ref={pipelinePlayAgainRef} type="button" onClick={handleReset} className="min-h-11 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"><RefreshCw size={14} aria-hidden="true"/> {t('games.bucket_sort.play_again') || 'Play Again'}</button>
-                <button type="button" onClick={onClose} className="min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
+                <button ref={pipelinePlayAgainRef} type="button" onClick={handleReset} className="min-h-11 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"><RefreshCw size={14} aria-hidden="true"/> {t('games.bucket_sort.play_again') || 'Play Again'}</button>
+                <button type="button" onClick={onClose} className="min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
               </div>
             </div>
             {!useReducedMotion() && <ConfettiExplosion />}
@@ -4125,13 +4291,13 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
         )}
 
         {connectingFrom && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-indigo-600 text-white px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
-            <ArrowRight size={16} className={!useReducedMotion() ? 'animate-pulse' : ''}/> Click the NEXT step to connect
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-indigo-600 text-white px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
+            <ArrowRight size={16} className={!useReducedMotion() ? 'animate-pulse motion-reduce:animate-none' : ''}/> Click the NEXT step to connect
           </div>
         )}
 
         {keyboardSelectedId && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-purple-600 text-white px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-purple-600 text-white px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
             <ArrowRight size={16}/> Press Enter on another step to connect
           </div>
         )}
@@ -4164,7 +4330,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   strokeDasharray={result ? 'none' : '8 4'}
                   fill="none"
                   markerEnd={`url(#${markerId})`}
-                  className={`transition-all duration-300 ${result?.correct === false ? 'animate-pulse' : ''}`}
+                  className={`transition-all duration-300 ${result?.correct === false ? 'animate-pulse motion-reduce:animate-none' : ''}`}
                 />
               );
             })}
@@ -4203,7 +4369,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                       : 'border-slate-200 bg-white hover:border-indigo-300 hover:shadow-lg'
                     }
                     ${checked && isCorrect ? 'border-green-400 bg-green-50 ring-2 ring-green-200' : ''}
-                    ${checked && isIncorrect ? 'border-red-400 bg-red-50 animate-pulse' : ''}
+                    ${checked && isIncorrect ? 'border-red-400 bg-red-50 animate-pulse motion-reduce:animate-none' : ''}
                     ${isComplete ? 'border-green-300 bg-green-50/50' : ''}
                   `}
                 >
@@ -4228,7 +4394,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   {/* Branching badge */}
                   {isBranching && (
                     <div className={`absolute -right-2 -top-2 z-30 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-black shadow-md border-2 border-white
-                      ${currentOutCount >= outCount ? 'bg-green-500 text-white' : `bg-amber-400 text-amber-900 ${!useReducedMotion() ? 'animate-pulse' : ''}`}
+                      ${currentOutCount >= outCount ? 'bg-green-500 text-white' : `bg-amber-400 text-amber-900 ${!useReducedMotion() ? 'animate-pulse motion-reduce:animate-none' : ''}`}
                     `}>
                       <GitMerge size={10}/> {currentOutCount}/{outCount}
                     </div>
@@ -4236,7 +4402,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
 
                   {/* Input port (left) */}
                   <div className={`absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-[3px] z-20 transition-all flex items-center justify-center
-                    ${connectingFrom && connectingFrom !== step.id ? 'bg-purple-100 border-purple-500 scale-125 animate-pulse shadow-lg shadow-purple-200' : connTo ? 'bg-purple-500 border-purple-600' : 'bg-white border-slate-300'}
+                    ${connectingFrom && connectingFrom !== step.id ? 'bg-purple-100 border-purple-500 scale-125 animate-pulse motion-reduce:animate-none shadow-lg shadow-purple-200' : connTo ? 'bg-purple-500 border-purple-600' : 'bg-white border-slate-300'}
                   `}>
                     {connTo && <div className="w-2.5 h-2.5 bg-white rounded-full"/>}
                   </div>
@@ -4278,14 +4444,14 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={handleReset}
               className="flex items-center gap-1 px-4 py-2 rounded-full text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors border border-slate-300"
             >
               <RefreshCw size={12}/> Reset
             </button>
             {!isComplete && (
-              <button
+              <button type="button"
                 onClick={handleCheck}
                 disabled={connections.length === 0 || checked}
                 className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
@@ -4301,6 +4467,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
 });
 const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const [grid, setGrid] = useState([]);
   const [clues, setClues] = useState({ across: [], down: [] });
   const [userState, setUserState] = useState({});
@@ -4312,6 +4479,10 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
   const [hintsUsed, setHintsUsed] = useState(0);
   const [announcement, setAnnouncement] = useState('');
   const [crosswordLang, setCrosswordLang] = useState('English');
+  const crosswordDialogRef = useRef(null);
+  const crosswordCloseRef = useRef(null);
+  const crosswordGridRef = useRef(null);
+  useGameDialogFocus(crosswordDialogRef, crosswordCloseRef, onClose);
   const availableLangs = React.useMemo(() => {
     const langs = new Set();
     if (data) {
@@ -4457,6 +4628,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
   }, [data, crosswordLang]);
   const handleCellClick = (r, c) => {
     if (!grid[r][c]) return;
+    crosswordGridRef.current?.focus();
     if (selectedCell?.r === r && selectedCell?.c === c) {
       const newDir = direction === 'across' ? 'down' : 'across';
       setDirection(newDir);
@@ -4527,7 +4699,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
            setSelectedCell({ r: prevR, c });
            setAnnouncement(t('games.crossword.selected_cell', { r: prevR + 1, c: c + 1 }));
        }
-    } else if (e.key === 'Tab' || e.key === 'Enter' || e.key === ' ') {
+    } else if (e.key === 'Enter' || e.key === ' ') {
        e.preventDefault();
        const newDir = direction === 'across' ? 'down' : 'across';
        setDirection(newDir);
@@ -4537,6 +4709,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
   const checkPuzzle = () => {
     setShowErrors(true);
     let correct = true;
+    let incorrectCount = 0;
     let currentScore = 0;
     for(let r=0; r<grid.length; r++) {
       for(let c=0; c<grid[r].length; c++) {
@@ -4545,12 +4718,14 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                currentScore += 2;
             } else {
                correct = false;
+               incorrectCount += 1;
             }
          }
       }
     }
     if (correct) {
         setIsWon(true);
+        setAnnouncement(t('games.crossword.announce_complete'));
         currentScore += 100;
         if (playSound) playSound('correct');
         if (onScoreUpdate) onScoreUpdate(currentScore, "Crossword Challenge Complete");
@@ -4562,6 +4737,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
             });
         }
     } else {
+        setAnnouncement(t('games.crossword.announce_incorrect_count', { count: incorrectCount }) || `${incorrectCount} square${incorrectCount === 1 ? '' : 's'} need attention.`);
         if (playSound) playSound('incorrect');
     }
     setScore(currentScore);
@@ -4578,6 +4754,13 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     setUserState(autoFill);
     setIsWon(true);
     setScore(0);
+    setAnnouncement(t('games.crossword.announce_revealed') || 'Puzzle revealed. Score set to zero.');
+  };
+  const selectCrosswordClue = (clue, clueDirection) => {
+    setSelectedCell({ r: clue.row, c: clue.col });
+    setDirection(clueDirection);
+    setAnnouncement(`${clueDirection === 'across' ? t('games.crossword.across') : t('games.crossword.down')} ${clue.number}: ${clue.clue}`);
+    crosswordGridRef.current?.focus();
   };
   const revealHint = () => {
     const emptyCells = [];
@@ -4598,13 +4781,13 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     if (playSound) playSound('click');
   };
   return (
-    <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in duration-300" data-help-key="crossword_game_container">
+    <div ref={crosswordDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="crossword-game-title" className="fixed inset-0 z-[100] bg-white flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300" data-help-key="crossword_game_container">
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md shrink-0">
-         <h2 className="text-xl font-bold flex items-center gap-2"><Gamepad2 /> {t('games.crossword_title')}</h2>
-         <div className="flex items-center gap-4">
+      <div className="bg-indigo-600 p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md shrink-0">
+         <h2 id="crossword-game-title" className="text-xl font-bold flex items-center gap-2"><Gamepad2 aria-hidden="true" /> {t('games.crossword_title')}</h2>
+         <div className="flex flex-wrap items-center gap-3">
              {isWon && (
-                 <div className="bg-indigo-800 px-4 py-1 rounded-full text-yellow-300 text-sm font-bold border border-indigo-500 animate-in zoom-in">
+                 <div className="bg-indigo-800 px-4 py-1 rounded-full text-yellow-300 text-sm font-bold border border-indigo-500 animate-in motion-reduce:animate-none zoom-in">
                      {t('common.score')}: {score}
                  </div>
              )}
@@ -4617,7 +4800,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                 <select aria-label={t('common.selection')}
                     value={crosswordLang}
                     onChange={(e) => setCrosswordLang(e.target.value)}
-                    className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer shadow-sm"
+                    className="min-h-11 text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-700 cursor-pointer shadow-sm"
                 >
                     <option value="English">{t('languages.english')}</option>
                     {availableLangs.map(lang => (
@@ -4626,14 +4809,22 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                 </select>
              )}
              <GameThemeToggle />
-             <button data-help-key="crossword_close_btn" onClick={onClose} className="hover:bg-indigo-500 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('games.crossword.close_puzzle_aria')}><X size={24}/></button>
+             <button ref={crosswordCloseRef} type="button" data-help-key="crossword_close_btn" onClick={onClose} className="min-w-11 min-h-11 hover:bg-indigo-500 p-2 rounded-full focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700 transition-colors" aria-label={t('games.crossword.close_puzzle_aria')}><X size={24} aria-hidden="true" /></button>
          </div>
       </div>
       <div className="flex-grow overflow-hidden flex flex-col md:flex-row">
          <div className="flex-grow p-4 overflow-auto bg-slate-100 flex justify-center items-start relative">
-            {isWon && <ConfettiExplosion />}
+            {isWon && !reducedMotion && <ConfettiExplosion />}
             <div
-              className="grid gap-px bg-slate-300 border-2 border-slate-400 p-1 shadow-xl"
+              ref={crosswordGridRef}
+              tabIndex={0}
+              role="grid"
+              aria-label={t('games.crossword.grid_capture_aria')}
+              aria-rowcount={grid.length}
+              aria-colcount={grid.length}
+              aria-activedescendant={selectedCell ? `crossword-cell-${selectedCell.r}-${selectedCell.c}` : undefined}
+              onKeyDown={handleKeyDown}
+              className="grid gap-px bg-slate-300 border-2 border-slate-400 p-1 shadow-xl focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2"
               style={{
                  gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))`,
                  width: 'fit-content',
@@ -4641,8 +4832,9 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
               data-help-key="crossword_grid"
             >
                {grid.map((row, r) => (
-                  row.map((cell, c) => {
-                     if (!cell) return <div key={`${r}-${c}`} className="w-8 h-8 sm:w-10 sm:h-10 bg-transparent"></div>;
+                  <div key={`crossword-row-${r}`} role="row" className="contents">
+                  {row.map((cell, c) => {
+                     if (!cell) return <div key={`${r}-${c}`} role="gridcell" aria-disabled="true" aria-rowindex={r + 1} aria-colindex={c + 1} aria-label={t('games.crossword.blocked_square') || 'Blocked square'} className="w-8 h-8 sm:w-10 sm:h-10 bg-transparent"></div>;
                      const isSelected = selectedCell?.r === r && selectedCell?.c === c;
                      const isActiveWord = selectedCell && (
                         (direction === 'across' && selectedCell.r === r) ||
@@ -4654,6 +4846,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                      return (
                         <div
                           key={`${r}-${c}`}
+                          id={`crossword-cell-${r}-${c}`}
                           onClick={() => handleCellClick(r, c)}
                           className={`
                              w-8 h-8 sm:w-10 sm:h-10 bg-white relative flex items-center justify-center text-lg font-bold uppercase cursor-pointer select-none
@@ -4662,14 +4855,17 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                              ${isError ? 'text-red-500 bg-red-50' : isCorrect ? 'text-green-600' : 'text-slate-800'}
                           `}
                           role="gridcell"
+                          aria-rowindex={r + 1}
+                          aria-colindex={c + 1}
                           aria-selected={isSelected}
                           aria-label={`Row ${r+1} Column ${c+1} ${cell.number ? 'Clue ' + cell.number : ''} ${userChar ? 'Value ' + userChar : 'Empty'}`}
                         >
                            {cell.number && <span className="absolute top-0.5 left-0.5 text-[11px] sm:text-[11px] leading-none text-slate-600 font-normal">{cell.number}</span>}
-                           {userChar && <span key={userChar} className="inline-block animate-in zoom-in duration-200">{userChar}</span>}
+                           {userChar && <span key={userChar} className="inline-block animate-in motion-reduce:animate-none zoom-in duration-200">{userChar}</span>}
                         </div>
                      );
-                  })
+                  })}
+                  </div>
                ))}
             </div>
          </div>
@@ -4679,9 +4875,9 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                     {clues.across.length + clues.down.length} {t('games.crossword.clues')}
                  </div>
                  <div className="flex gap-2" data-help-key="crossword_controls">
-                     {!isWon && <button onClick={revealHint} className="px-3 py-1 bg-amber-100 text-amber-700 rounded text-xs font-bold hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 flex items-center gap-1" aria-label={t('games.crossword.reveal_letter_hint_aria') || 'Reveal one letter hint'}><HelpCircle size={12}/> {t('games.crossword.hint_button') || 'Hint'}{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>}
-                     <button onClick={checkPuzzle} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('games.crossword.check')}</button>
-                     <button onClick={revealPuzzle} className="px-3 py-1 bg-red-100 text-red-700 rounded text-xs font-bold hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">{t('games.crossword.reveal')}</button>
+                     {!isWon && <button type="button" onClick={revealHint} className="min-h-11 px-3 py-2 bg-amber-100 text-amber-800 rounded text-xs font-bold hover:bg-amber-200 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2 flex items-center gap-1" aria-label={t('games.crossword.reveal_letter_hint_aria') || 'Reveal one letter hint'}><HelpCircle size={12} aria-hidden="true"/> {t('games.crossword.hint_button') || 'Hint'}{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>}
+                     <button type="button" onClick={checkPuzzle} className="min-h-11 px-3 py-2 bg-indigo-100 text-indigo-800 rounded text-xs font-bold hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.crossword.check')}</button>
+                     <button type="button" onClick={revealPuzzle} className="min-h-11 px-3 py-2 bg-red-100 text-red-800 rounded text-xs font-bold hover:bg-red-200 focus:ring-2 focus:ring-red-500 focus:ring-offset-2">{t('games.crossword.reveal')}</button>
                  </div>
              </div>
              <div className="flex-grow overflow-y-auto p-4 space-y-6">
@@ -4689,18 +4885,15 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                      <h4 className="font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1">{t('games.crossword.across')}</h4>
                      <ul className="space-y-2 text-sm">
                          {clues.across.map(c => (
-                             <li
-                               key={`a-${c.number}`}
-                               className={`cursor-pointer hover:text-indigo-600 p-1 rounded transition-colors ${selectedCell && direction === 'across' && selectedCell.r === c.row && selectedCell.c >= c.col && selectedCell.c < c.col + c.word.length ? 'bg-yellow-100 font-bold' : ''}`}
-                               onClick={() => {
-                                   setSelectedCell({ r: c.row, c: c.col });
-                                   setDirection('across');
-                               }}
-                             >
-                                 <div className="flex items-center gap-1">
-                                     <span className="flex-1"><span className="font-bold me-1">{c.number}.</span> {c.clue}</span>
-                                     <SpeakButton text={c.clue} size={11} />
-                                 </div>
+                             <li key={'a-' + c.number} className="flex items-center gap-1">
+                               <button
+                                 type="button"
+                                 className={'min-h-11 flex-1 text-start cursor-pointer hover:text-indigo-700 p-2 rounded transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ' + (selectedCell && direction === 'across' && selectedCell.r === c.row && selectedCell.c >= c.col && selectedCell.c < c.col + c.word.length ? 'bg-yellow-100 font-bold' : '')}
+                                 onClick={() => selectCrosswordClue(c, 'across')}
+                               >
+                                 <span className="font-bold me-1">{c.number}.</span> {c.clue}
+                               </button>
+                               <SpeakButton text={c.clue} size={11} />
                              </li>
                          ))}
                      </ul>
@@ -4709,44 +4902,26 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                      <h4 className="font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1">{t('games.crossword.down')}</h4>
                      <ul className="space-y-2 text-sm">
                          {clues.down.map(c => (
-                             <li
-                               key={`d-${c.number}`}
-                               className={`cursor-pointer hover:text-indigo-600 p-1 rounded transition-colors ${selectedCell && direction === 'down' && selectedCell.c === c.col && selectedCell.r >= c.row && selectedCell.r < c.row + c.word.length ? 'bg-yellow-100 font-bold' : ''}`}
-                               onClick={() => {
-                                   setSelectedCell({ r: c.row, c: c.col });
-                                   setDirection('down');
-                               }}
-                             >
-                                 <div className="flex items-center gap-1">
-                                     <span className="flex-1"><span className="font-bold me-1">{c.number}.</span> {c.clue}</span>
-                                     <SpeakButton text={c.clue} size={11} />
-                                 </div>
+                             <li key={'d-' + c.number} className="flex items-center gap-1">
+                               <button
+                                 type="button"
+                                 className={'min-h-11 flex-1 text-start cursor-pointer hover:text-indigo-700 p-2 rounded transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ' + (selectedCell && direction === 'down' && selectedCell.c === c.col && selectedCell.r >= c.row && selectedCell.r < c.row + c.word.length ? 'bg-yellow-100 font-bold' : '')}
+                                 onClick={() => selectCrosswordClue(c, 'down')}
+                               >
+                                 <span className="font-bold me-1">{c.number}.</span> {c.clue}
+                               </button>
+                               <SpeakButton text={c.clue} size={11} />
                              </li>
                          ))}
                      </ul>
                  </div>
              </div>
-             <input aria-label={t('common.hidden_input')}
-                type="text"
-                className="opacity-0 absolute h-0 w-0"
-                autoFocus
-                onKeyDown={handleKeyDown}
-                onBlur={(e) => e.target.focus()}
-                aria-hidden="true"
-             />
              <div className="p-2 bg-slate-50 text-[11px] text-center text-slate-600 border-t">
                  {t('games.crossword.footer_tip')}
              </div>
              {isWon && <div className="p-3"><GameReviewScreen score={score} title={t('games.crossword_title')} items={[...clues.across, ...clues.down].map(c => ({ label: c.word, detail: c.clue, status: 'correct' }))} onPlayAgain={() => { setIsWon(false); setScore(0); setUserState({}); }} onClose={onClose} t={t} /></div>}
          </div>
       </div>
-      <div
-        tabIndex={0}
-        onKeyDown={handleKeyDown}
-        className="absolute inset-0 pointer-events-none focus:outline-none"
-        autoFocus
-        aria-label={t('games.crossword.grid_capture_aria')}
-      />
     </div>
   );
 });
@@ -4826,7 +5001,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
       playSound('incorrect');
       const btn = document.getElementById('check-btn');
       if(btn) {
-          btn.classList.add('animate-shake');
+          if (!useReducedMotion()) btn.classList.add('animate-shake');
           btn.style.backgroundColor = '#dc2626';
           setTimeout(() => { btn.classList.remove('animate-shake'); btn.style.backgroundColor = ''; }, 500);
       }
@@ -4838,13 +5013,13 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
   if (sentences.length === 0) return null;
   return (
     <div role="presentation" className={`fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4${useReducedMotion() ? '' : ' animate-in zoom-in-95'}` }>
-      <div ref={syntaxDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="syntax-game-title" className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] focus:outline-none">
+      <div ref={syntaxDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="syntax-game-title" className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="bg-indigo-600 p-4 text-white flex justify-between items-center">
            <h3 id="syntax-game-title" className="font-bold text-xl flex items-center gap-2"><Layout size={24} aria-hidden="true"/> {t('games.syntax.title')}</h3>
            <div className="flex items-center gap-4">
                <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold text-yellow-300 border border-indigo-500">{t('memory.score')}: {score}</div>
                <GameThemeToggle />
-               <button ref={syntaxCloseRef} type="button" data-help-key="syntax_close" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('common.close')}><X size={24} aria-hidden="true"/></button>
+               <button ref={syntaxCloseRef} type="button" data-help-key="syntax_close" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full focus:ring-2 focus:ring-white" aria-label={t('common.close')}><X size={24} aria-hidden="true"/></button>
            </div>
         </div>
         <div className="p-8 flex-grow flex flex-col items-center justify-center bg-slate-50 gap-8 overflow-y-auto">
@@ -4854,7 +5029,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                    <Trophy size={64} className="text-yellow-500 mx-auto mb-4" aria-hidden="true"/>
                    <h2 id="syntax-complete-title" className="text-3xl font-black text-slate-800 mb-2">{t('games.syntax.complete')}</h2>
                    <p className="text-slate-600 mb-6">{t('games.syntax.summary', { count: sentences.length })}</p>
-                    <button ref={syntaxFinishRef} type="button" data-help-key="syntax_finish" onClick={onClose} className="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-indigo-300">{t('games.syntax.finish')}</button>
+                    <button ref={syntaxFinishRef} type="button" data-help-key="syntax_finish" onClick={onClose} className="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform focus:ring-2 focus:ring-indigo-300">{t('games.syntax.finish')}</button>
                </div>
            ) : (
                <>
@@ -4865,11 +5040,11 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                 <div className={`w-full min-h-[80px] p-4 rounded-xl border-2 border-dashed flex flex-wrap gap-2 items-center justify-center transition-colors ${gameStatus === 'correct' ? 'bg-green-50 border-green-400' : 'bg-white border-slate-300'}`}>
                     {userOrder.length === 0 && <span className="text-slate-600 italic pointer-events-none select-none">{t('games.syntax.empty_zone')}</span>}
                     {userOrder.map((word) => (
-                        <button
+                        <button type="button"
                             aria-label={t('common.continue')}
                             key={`placed-${word.id}`}
                             data-help-key="syntax_dropped_word" onClick={() => handleWordClick(word, false)}
-                            className={`px-3 py-2 rounded-lg font-bold shadow-sm transition-all animate-in zoom-in duration-200 ${gameStatus === 'correct' ? 'bg-green-100 text-green-800 border border-green-200 cursor-default' : 'bg-indigo-100 text-indigo-800 border border-indigo-200 hover:bg-red-100 hover:text-red-800 hover:border-red-200'}`}
+                            className={`px-3 py-2 rounded-lg font-bold shadow-sm transition-all animate-in motion-reduce:animate-none zoom-in duration-200 ${gameStatus === 'correct' ? 'bg-green-100 text-green-800 border border-green-200 cursor-default' : 'bg-indigo-100 text-indigo-800 border border-indigo-200 hover:bg-red-100 hover:text-red-800 hover:border-red-200'}`}
                         >
                             {word.text}
                         </button>
@@ -4877,15 +5052,15 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                 </div>
                 <div className="h-12">
                     {gameStatus === 'correct' ? (
-                        <button aria-label={t('common.next')}
+                        <button type="button" aria-label={t('common.next')}
                             data-help-key="syntax_next" onClick={nextRound}
                             autoFocus
-                            className="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-in bounce-in"
+                            className="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-in motion-reduce:animate-none bounce-in"
                         >
                             {t('games.syntax.next')} <ArrowRight size={18}/>
                         </button>
                     ) : (
-                        <button
+                        <button type="button"
                             aria-label={t('common.check_answer')}
                             id="check-btn" data-help-key="syntax_check"
                             onClick={checkAnswer}
@@ -4898,7 +5073,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                 </div>
                 <div className="flex flex-wrap gap-3 justify-center p-4 bg-slate-200/50 rounded-xl w-full border border-slate-400 min-h-[100px]">
                     {shuffledWords.map((word) => (
-                        <button
+                        <button type="button"
                             key={word.id}
                             data-help-key="syntax_pool_word" onClick={() => handleWordClick(word, true)}
                             className="bg-white text-slate-700 border-b-4 border-slate-300 px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-indigo-50 hover:border-indigo-300 hover:-translate-y-1 active:border-b-0 active:translate-y-0 transition-all"
@@ -4928,6 +5103,10 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [callDelay, setCallDelay] = useState(8);
   const [isHistoryVisible, setIsHistoryVisible] = useState(true);
+  const [announcement, setAnnouncement] = useState('');
+  const bingoDialogRef = useRef(null);
+  const bingoCloseRef = useRef(null);
+  useGameDialogFocus(bingoDialogRef, bingoCloseRef, onClose);
   const callerAudioRef = useRef(null);
   const autoPlayTimerRef = useRef(null);
   const startCaller = () => {
@@ -4938,6 +5117,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       setIsAutoPlaying(false);
       setIsAudioPlaying(false);
       setIsHistoryVisible(true);
+      setAnnouncement(t('bingo.ready'));
   };
   const playCurrentClue = async (index) => {
       if (index < 0 || index >= callerQueue.length) return;
@@ -4979,6 +5159,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       if (currentCallIndex < callerQueue.length - 1) {
           const nextIdx = currentCallIndex + 1;
           setCurrentCallIndex(nextIdx);
+          setAnnouncement(`${t('bingo.current_clue')}: ${callerQueue[nextIdx].def}`);
           playCurrentClue(nextIdx);
       } else {
           setIsAutoPlaying(false);
@@ -4988,12 +5169,14 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       if (currentCallIndex > 0) {
           const prevIdx = currentCallIndex - 1;
           setCurrentCallIndex(prevIdx);
+          setAnnouncement(`${t('bingo.current_clue')}: ${callerQueue[prevIdx].def}`);
           playCurrentClue(prevIdx);
       }
   };
   const toggleAutoPlay = () => {
       const newState = !isAutoPlaying;
       setIsAutoPlaying(newState);
+      setAnnouncement(newState ? t('bingo.start_auto') : t('bingo.stop_auto'));
       if (newState && !isAudioPlaying) {
           if (currentCallIndex === -1) {
               nextCall();
@@ -5025,19 +5208,21 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       };
   }, []);
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+    <div ref={bingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="bingo-generator-title" className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
         <div className="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] p-6 relative bingo-modal-container">
+            <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
             <button
+                ref={bingoCloseRef}
+                type="button"
                 onClick={onClose}
-                className="absolute top-4 right-4 text-slate-600 hover:text-slate-900 transition-colors no-print rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                autoFocus
+                className="absolute top-4 right-4 min-w-11 min-h-11 text-slate-600 hover:text-slate-900 transition-colors no-print rounded-full p-2 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 data-help-key="bingo_close_btn" aria-label={t('bingo.close_generator')}
             >
-                <X size={24} />
+                <X size={24} aria-hidden="true" />
             </button>
             <div className="text-center mb-4 no-print">
-                <h2 className="text-2xl font-black text-slate-800 mb-1 flex items-center justify-center gap-2">
-                    <Gamepad2 className="text-rose-500" /> {isCallerMode ? t('bingo.caller_title') : t('bingo.generator_title')}
+                <h2 id="bingo-generator-title" className="text-2xl font-black text-slate-800 mb-1 flex items-center justify-center gap-2">
+                    <Gamepad2 className="text-rose-500" aria-hidden="true" /> {isCallerMode ? t('bingo.caller_title') : t('bingo.generator_title')}
                 </h2>
                 <p className="text-slate-600 text-sm">{isCallerMode ? t('bingo.teacher_mode_desc') : t('bingo.generated_desc').replace('{count}', bingoState.cards ? bingoState.cards.length : 0)}</p>
             </div>
@@ -5045,14 +5230,15 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 {!isCallerMode ? (
                     <>
                         <div className="flex items-center gap-2">
-                            <label className="text-sm font-bold text-slate-600">{t('bingo.card_count')}</label>
+                            <label htmlFor="bingo-card-count" className="text-sm font-bold text-slate-600">{t('bingo.card_count')}</label>
                             <input
+                                id="bingo-card-count"
                                 type="number"
                                 min="1"
                                 max="50"
                                 value={settings.cardCount}
                                 onChange={(e) => setSettings({...settings, cardCount: Math.max(1, Math.min(50, parseInt(e.target.value) || 20))})}
-                                className="w-16 p-1.5 border border-slate-400 rounded-lg text-center font-bold text-slate-700 focus:ring-2 focus:ring-rose-200 focus:outline-none"
+                                className="w-16 p-1.5 border border-slate-400 rounded-lg text-center font-bold text-slate-700 focus:ring-2 focus:ring-rose-200"
                                 data-help-key="bingo_card_count_input" aria-label={t('bingo.card_count')}
                             />
                         </div>
@@ -5065,51 +5251,52 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 data-help-key="bingo_images_chk" aria-label={t('bingo.include_pictures')}
                             />
                             <div className="flex items-center gap-1">
-                                <ImageIcon size={14} className="text-rose-700"/> {t('bingo.include_pictures')}
+                                <ImageIcon size={14} className="text-rose-700" aria-hidden="true"/> {t('bingo.include_pictures')}
                             </div>
                         </label>
-                        <button
+                        <button type="button"
                             onClick={onGenerate}
-                            className="flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm active:scale-95"
+                            className="flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm motion-safe:active:scale-95"
                             data-help-key="bingo_regenerate_btn" aria-label={t('bingo.regenerate')}
                         >
-                            <RefreshCw size={14}/> {t('bingo.regenerate')}
+                            <RefreshCw size={14} aria-hidden="true"/> {t('bingo.regenerate')}
                         </button>
                         <div className="w-px h-6 bg-slate-300 mx-2"></div>
-                        <button
+                        <button type="button"
                             onClick={() => {
                                 if (alloBotRef && alloBotRef.current) {
                                     alloBotRef.current.speak("Printing your Bingo cards! Have fun playing!", "excited");
                                 }
                                 window.print();
                             }}
-                            className="bg-indigo-600 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 active:scale-95"
+                            className="bg-indigo-600 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 motion-safe:active:scale-95"
                             data-help-key="bingo_print_btn" aria-label={t('bingo.print_cards')}
                         >
-                            <Printer size={16}/> {t('bingo.print_cards')}
+                            <Printer size={16} aria-hidden="true"/> {t('bingo.print_cards')}
                         </button>
                         <div className="w-px h-6 bg-slate-300 mx-2"></div>
-                        <button
+                        <button type="button"
                             onClick={startCaller}
-                            className="bg-teal-700 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-teal-800 transition-colors flex items-center gap-2 active:scale-95"
+                            className="bg-teal-700 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-teal-800 transition-colors flex items-center gap-2 motion-safe:active:scale-95"
                             data-help-key="bingo_launch_caller_btn" aria-label={t('bingo.launch_caller_aria')}
                         >
-                            <Mic size={16}/> {t('bingo.launch_caller')}
+                            <Mic size={16} aria-hidden="true"/> {t('bingo.launch_caller')}
                         </button>
                     </>
                 ) : (
                     <div className="flex items-center gap-4 w-full justify-between">
-                         <button
+                         <button type="button"
                             onClick={() => setIsCallerMode(false)}
-                            className="flex items-center gap-2 text-slate-600 hover:text-slate-700 font-bold text-xs"
+                            className="min-h-11 px-3 flex items-center gap-2 text-slate-600 hover:text-slate-700 font-bold text-xs rounded-lg focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                             data-help-key="bingo_exit_caller_btn" aria-label={t('bingo.exit_caller_aria')}
                         >
-                            <ArrowDown className="rotate-90" size={14}/> {t('bingo.exit_caller')}
+                            <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('bingo.exit_caller')}
                         </button>
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-400 shadow-sm">
-                                <span className="text-xs font-bold text-slate-600 uppercase">{t('bingo.speed')}</span>
+                                <label htmlFor="bingo-call-speed" className="text-xs font-bold text-slate-600 uppercase">{t('bingo.speed')}</label>
                                 <input
+                                    id="bingo-call-speed"
                                     type="range"
                                     min="3" max="15" step="1"
                                     value={callDelay}
@@ -5120,38 +5307,38 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 />
                                 <span className="text-xs font-mono w-8 text-end">{callDelay}s</span>
                             </div>
-                            <button
+                            <button type="button"
                                 onClick={() => setIsHistoryVisible(prev => !prev)}
-                                className={`p-2 rounded-full transition-colors ${isHistoryVisible ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}
+                                className={`min-w-11 min-h-11 p-2 rounded-full transition-colors focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 ${isHistoryVisible ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}
                                 title={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
-                                data-help-key="bingo_toggle_history" aria-label={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
+                                data-help-key="bingo_toggle_history" aria-expanded={isHistoryVisible} aria-controls="bingo-called-history" aria-label={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
                             >
-                                {isHistoryVisible ? <Eye size={20}/> : <EyeOff size={20}/>}
+                                {isHistoryVisible ? <Eye size={20} aria-hidden="true"/> : <EyeOff size={20} aria-hidden="true"/>}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={prevCall}
                                 disabled={currentCallIndex <= 0}
-                                className="p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30"
+                                className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                                 data-help-key="bingo_prev_clue" aria-label={t('bingo.prev_clue')}
                                 title={t('bingo.prev_clue')}
                             >
-                                <ArrowDown className="rotate-90" size={20}/>
+                                <ArrowDown className="rotate-90" size={20} aria-hidden="true"/>
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={toggleAutoPlay}
                                 className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all ${isAutoPlaying ? 'bg-red-700 text-white hover:bg-red-600' : 'bg-teal-700 text-white hover:bg-teal-800'}`}
-                                data-help-key="bingo_toggle_autoplay" aria-label={isAutoPlaying ? t('bingo.stop_auto') : t('bingo.start_auto')}
+                                data-help-key="bingo_toggle_autoplay" aria-pressed={isAutoPlaying} aria-label={isAutoPlaying ? t('bingo.stop_auto') : t('bingo.start_auto')}
                             >
-                                {isAutoPlaying ? <span className="flex items-center gap-2"><StopCircle size={16}/> {t('bingo.stop_auto')}</span> : <span className="flex items-center gap-2"><MonitorPlay size={16}/> {t('bingo.start_auto')}</span>}
+                                {isAutoPlaying ? <span className="flex items-center gap-2"><StopCircle size={16} aria-hidden="true"/> {t('bingo.stop_auto')}</span> : <span className="flex items-center gap-2"><MonitorPlay size={16} aria-hidden="true"/> {t('bingo.start_auto')}</span>}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => { setIsAutoPlaying(false); nextCall(); }} data-help-key="bingo_next_clue"
                                 disabled={currentCallIndex >= callerQueue.length - 1}
-                                className="p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30"
+                                className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                                 aria-label={t('bingo.next_clue')}
                                 title={t('bingo.next_clue')}
                             >
-                                <ArrowDown className="-rotate-90" size={20}/>
+                                <ArrowDown className="-rotate-90" size={20} aria-hidden="true"/>
                             </button>
                         </div>
                         <div className="text-xs font-bold text-slate-600">
@@ -5164,7 +5351,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 <div className="flex-grow flex gap-6 overflow-hidden">
                     <div className="flex-grow bg-slate-100 rounded-2xl border-4 border-teal-500 flex flex-col items-center justify-center p-8 text-center relative shadow-inner">
                         {currentCallIndex >= 0 ? (
-                            <div className="animate-in zoom-in duration-300 max-w-3xl">
+                            <div role="status" aria-live="polite" className="motion-safe:animate-in motion-safe:zoom-in motion-safe:duration-300 max-w-3xl">
                                 <div className="mb-6">
                                     <span className="bg-teal-100 text-teal-800 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full border border-teal-200">{t('bingo.current_clue')}</span>
                                 </div>
@@ -5181,14 +5368,14 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                     </div>
                                 )}
                                 {isAudioPlaying && (
-                                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-teal-600 animate-pulse font-bold">
-                                        <Volume2 size={24}/> {t('status.reading')}
+                                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-teal-600 motion-safe:animate-pulse font-bold">
+                                        <Volume2 size={24} aria-hidden="true"/> {t('status.reading')}
                                     </div>
                                 )}
                                 {isAutoPlaying && !isAudioPlaying && (
                                     <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 h-1 bg-slate-200 rounded-full overflow-hidden">
                                         <div
-                                            className="h-full bg-teal-500 animate-indeterminate-slide"
+                                            className="h-full bg-teal-500 motion-safe:animate-indeterminate-slide"
                                             style={{ animationDuration: `${callDelay}s` }}
                                         ></div>
                                     </div>
@@ -5206,11 +5393,11 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             <span>{t('bingo.called_terms')}</span>
                             <span className="bg-white/50 px-2 py-0.5 rounded text-slate-600">{currentCallIndex + 1}</span>
                         </div>
-                        <div className="flex-grow overflow-y-auto p-2 custom-scrollbar space-y-1 relative">
+                        <div id="bingo-called-history" className="flex-grow overflow-y-auto p-2 custom-scrollbar space-y-1 relative">
                             {isHistoryVisible ? (
                                 <>
                                     {callerQueue.slice(0, currentCallIndex + 1).reverse().map((item, i) => (
-                                        <div key={currentCallIndex - i} className={`bg-white p-3 rounded border shadow-sm flex items-center justify-between animate-in slide-in-from-left-2 ${i === 0 ? 'border-teal-400 ring-1 ring-teal-200' : 'border-slate-400'}`}>
+                                        <div key={currentCallIndex - i} className={`bg-white p-3 rounded border shadow-sm flex items-center justify-between motion-safe:animate-in motion-safe:slide-in-from-left-2 ${i === 0 ? 'border-teal-400 ring-1 ring-teal-200' : 'border-slate-400'}`}>
                                             <span className="font-bold text-slate-800 text-sm">{item.term}</span>
                                             <span className="text-[11px] text-slate-600 font-mono">#{currentCallIndex - i + 1}</span>
                                         </div>
@@ -5219,7 +5406,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 </>
                             ) : (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600/50">
-                                    <EyeOff size={48} className="mb-2"/>
+                                    <EyeOff size={48} className="mb-2" aria-hidden="true"/>
                                     <p className="text-sm font-bold">{t('bingo.hide_list')}</p>
                                 </div>
                             )}
@@ -5272,7 +5459,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 ) : (
                     <div className="flex-grow flex items-center justify-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 m-4 h-64" role="status" aria-busy="true" aria-live="polite">
                          <div className="flex flex-col items-center gap-3 text-slate-600">
-                             <RefreshCw size={32} className="animate-spin text-rose-700" aria-hidden="true"/>
+                             <RefreshCw size={32} className="animate-spin motion-reduce:animate-none text-rose-700" aria-hidden="true"/>
                              <span className="font-bold text-sm">{t('bingo.initializing_board')}</span>
                          </div>
                     </div>
@@ -5532,6 +5719,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
 });
 const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const [grid, setGrid] = useState([]);
   const [marks, setMarks] = useState(new Set());
   const [isWon, setIsWon] = useState(false);
@@ -5539,6 +5727,10 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
   // Play Bingo (matches the teacher batch-generator's default). Local state so
   // students can flip pictures off mid-game without affecting the parent.
   const [showImages, setShowImages] = useState(true);
+  const [announcement, setAnnouncement] = useState('');
+  const studentBingoDialogRef = useRef(null);
+  const studentBingoCloseRef = useRef(null);
+  useGameDialogFocus(studentBingoDialogRef, studentBingoCloseRef, onClose);
   useEffect(() => {
       if (grid.length > 0) return; // Lock: don't regenerate if card already exists this session
       if (!data || !Array.isArray(data) || data.length === 0) return;
@@ -5574,6 +5766,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
       setGrid(newGrid);
       setMarks(new Set(['2-2']));
       setIsWon(false);
+      setAnnouncement(t('bingo.card_ready_announcement') || 'Bingo card ready. Select a square to mark or unmark it.');
   }, [data]);
   const toggleCell = (r, c) => {
       const key = `${r}-${c}`;
@@ -5604,6 +5797,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
           }
       }
       setMarks(newMarks);
+      setAnnouncement(`${grid[r][c].text} ${newMarks.has(key) ? 'marked' : 'unmarked'}`);
       checkWin(newMarks);
   };
   const checkWin = (currentMarks) => {
@@ -5619,6 +5813,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
       if ([0,1,2,3,4].every(i => isMarked(i, 4-i))) win = true;
       if (win && !isWon) {
           setIsWon(true);
+          setAnnouncement(t('bingo.win_message'));
           if(playSound) playSound('correct');
           if (onGameComplete) {
             onGameComplete('bingo', {
@@ -5630,84 +5825,83 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
       }
   };
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-300">
-        {isWon && <ConfettiExplosion />}
+    <div ref={studentBingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="student-bingo-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-2 sm:p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-300">
+        <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
+        {isWon && !reducedMotion && <ConfettiExplosion />}
         <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-indigo-500 flex flex-col max-h-[90vh]">
-            <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shrink-0">
-                 <div className="flex items-center gap-3">
-                     <div className="bg-white/20 p-2 rounded-full"><Gamepad2 size={24} /></div>
+            <div className="bg-indigo-600 p-4 text-white flex flex-wrap justify-between items-center gap-3 shrink-0">
+                 <div className="flex items-center gap-3 min-w-0">
+                     <div className="bg-white/20 p-2 rounded-full"><Gamepad2 size={24} aria-hidden="true" /></div>
                      <div>
-                         <h2 className="font-black text-2xl uppercase tracking-widest">{t('bingo.student_title')}</h2>
+                         <h2 id="student-bingo-title" className="font-black text-xl sm:text-2xl uppercase tracking-wider sm:tracking-widest break-words">{t('bingo.student_title')}</h2>
                          <p className="text-indigo-200 text-xs font-bold">{t('bingo.click_hint')}</p>
                      </div>
                  </div>
+                 <div className="flex items-center gap-2">
                  <button
+                    type="button"
                     onClick={() => setShowImages(v => !v)}
-                    className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${showImages ? 'bg-white/20 hover:bg-white/30' : 'hover:bg-indigo-500'}`}
+                    className={`min-w-11 min-h-11 p-2 rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700 ${showImages ? 'bg-white/20 hover:bg-white/30' : 'hover:bg-indigo-500'}`}
                     aria-pressed={showImages}
                     aria-label={t('bingo.toggle_images_aria') || 'Toggle picture cards'}
                     title={showImages ? (t('bingo.hide_images_title') || 'Hide pictures') : (t('bingo.show_images_title') || 'Show pictures')}
                  >
-                    <ImageIcon size={20} className={showImages ? 'text-white' : 'text-indigo-200'} />
+                    <ImageIcon size={20} aria-hidden="true" className={showImages ? 'text-white' : 'text-indigo-200'} />
                  </button>
                  <GameThemeToggle />
-                 <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('bingo.close_game_aria')}>
-                     <X size={24} />
+                 <button ref={studentBingoCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700" aria-label={t('bingo.close_game_aria')}>
+                     <X size={24} aria-hidden="true" />
                  </button>
+                 </div>
             </div>
-            <div className="p-6 overflow-y-auto custom-scrollbar bg-indigo-50 flex-grow flex items-center justify-center">
-                <div className="grid grid-cols-5 gap-2 w-full aspect-square max-w-[600px]">
+            <div className="p-2 sm:p-6 overflow-auto custom-scrollbar bg-indigo-50 flex-grow flex items-center justify-center">
+                <div role="group" aria-label={t('bingo.student_title')} className="grid grid-cols-5 gap-2 w-full aspect-square max-w-[600px]">
                     {grid.map((row, r) => (
                         row.map((cell, c) => {
-                            const isMarked = marks.has(`${r}-${c}`);
-                            return (
-                                <div
-                                    key={`${r}-${c}`}
-                                    onClick={() => toggleCell(r, c)}
-                                    role="button"
-                                    tabIndex={0}
-                                    aria-label={`${cell.text}${isMarked ? ' (marked)' : ''}`}
-                                    aria-pressed={isMarked}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            e.preventDefault();
-                                            toggleCell(r, c);
-                                        }
-                                    }}
-                                    className={`
-                                        relative border-2 rounded-lg flex items-center justify-center text-center p-1 cursor-pointer transition-all duration-200 select-none shadow-sm
-                                        ${cell.type === 'free'
-                                            ? 'bg-indigo-200 border-indigo-400 text-indigo-800 font-black'
-                                            : isMarked
-                                                ? 'bg-white border-indigo-500'
-                                                : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-md'
-                                        }
-                                    `}
-                                >
+                            const key = `${r}-${c}`;
+                            const isMarked = marks.has(key);
+                            const cellContent = (
+                                <>
                                     {showImages && cell.imageUrl && (
-                                        <img src={cell.imageUrl} alt={cell.text} className={`w-8 h-8 sm:w-10 sm:h-10 object-contain rounded mb-0.5 ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`} />
+                                        <img src={cell.imageUrl} alt="" aria-hidden="true" className={`w-8 h-8 sm:w-10 sm:h-10 object-contain rounded mb-0.5 ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`} />
                                     )}
                                     <span className={`text-[11px] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`}>
                                         {cell.text}
                                     </span>
                                     {isMarked && (
-                                        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                                        <span className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none" aria-hidden="true">
                                             {cell.type === 'free' ? (
-                                                <Star size={32} className="text-yellow-500 fill-yellow-400 drop-shadow-sm animate-in zoom-in duration-300" />
+                                                <Star size={32} className="text-yellow-500 fill-yellow-400 drop-shadow-sm motion-safe:animate-in motion-safe:zoom-in motion-safe:duration-300" />
                                             ) : (
-                                                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-red-500/80 border-4 border-red-600/50 shadow-lg backdrop-blur-[1px] animate-[stamp_0.3s_ease-out_forwards]"></div>
+                                                <span className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-red-500/80 border-4 border-red-600/50 shadow-lg backdrop-blur-[1px] motion-safe:animate-[stamp_0.3s_ease-out_forwards]"></span>
                                             )}
-                                        </div>
+                                        </span>
                                     )}
-                                </div>
+                                </>
+                            );
+                            const cellClasses = `relative min-w-11 min-h-11 border-2 rounded-lg flex flex-col items-center justify-center text-center p-1 select-none shadow-sm ${cell.type === 'free' ? 'cursor-default bg-indigo-200 border-indigo-400 text-indigo-800 font-black' : `cursor-pointer focus:ring-4 focus:ring-indigo-600 focus:ring-offset-2 ${isMarked ? 'bg-white border-indigo-500' : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-md'}`}`;
+                            if (cell.type === 'free') {
+                                return <div key={key} className={cellClasses}>{cellContent}</div>;
+                            }
+                            return (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => toggleCell(r, c)}
+                                    aria-label={`${cell.text}${isMarked ? ' (marked)' : ' (unmarked)'}`}
+                                    aria-pressed={isMarked}
+                                    className={cellClasses}
+                                >
+                                    {cellContent}
+                                </button>
                             );
                         })
                     ))}
                 </div>
             </div>
             {isWon && (
-                <div className="p-4 bg-green-100 border-t border-green-200 text-center animate-in slide-in-from-bottom-4 duration-300">
-                    <h3 className="text-2xl font-black text-green-700 animate-bounce">{t('bingo.win_header')}</h3>
+                <div role="status" className="p-4 bg-green-100 border-t border-green-200 text-center motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-300">
+                    <h3 className="text-2xl font-black text-green-700 motion-safe:animate-bounce">{t('bingo.win_header')}</h3>
                     <p className="text-green-800 text-sm">{t('bingo.win_message')}</p>
                 </div>
             )}
@@ -5726,6 +5920,10 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
   const [isGameOver, setIsGameOver] = useState(false);
   const [hintLevel, setHintLevel] = useState(0);
   const [results, setResults] = useState([]);
+  const [announcement, setAnnouncement] = useState('');
+  const scrambleDialogRef = useRef(null);
+  const scrambleInputRef = useRef(null);
+  useGameDialogFocus(scrambleDialogRef, scrambleInputRef, onClose);
   useEffect(() => {
     if (!data) return;
     const items = data.filter(item => item.term && item.term.length > 2);
@@ -5752,8 +5950,11 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
           setGuess('');
           setFeedback('idle');
           setHintLevel(0);
+          setAnnouncement(t('games.scramble.progress', { current: nextIdx + 1, total: gameItems.length }));
+          requestAnimationFrame(() => scrambleInputRef.current?.focus());
       } else {
           setIsGameOver(true);
+          setAnnouncement(`${t('games.syntax.complete')}. ${t('games.scramble.score')}: ${currentScore}`);
           if (onScoreUpdate) onScoreUpdate(currentScore, "Word Scramble Complete");
           if (playSound) playSound('correct');
       }
@@ -5766,6 +5967,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
       if (userGuess === target) {
           if (playSound) playSound('correct');
           setFeedback('correct');
+          setAnnouncement(t('games.scramble.correct') || 'Correct');
           setResults(prev => [...prev, { term: currentItem.term, def: currentItem.def, correct: true }]);
           const newScore = score + 10;
           setScore(newScore);
@@ -5775,12 +5977,16 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
       } else {
           if (playSound) playSound('incorrect');
           setFeedback('incorrect');
+          setAnnouncement(t('games.scramble.incorrect') || 'Incorrect. Try again.');
           setTimeout(() => setFeedback('idle'), 800);
       }
   };
   const handleSkip = () => {
       const currentItem = gameItems[currentIndex];
-      if (currentItem) setResults(prev => [...prev, { term: currentItem.term, def: currentItem.def, correct: false }]);
+      if (currentItem) {
+          setResults(prev => [...prev, { term: currentItem.term, def: currentItem.def, correct: false }]);
+          setAnnouncement(`${currentItem.term}. ${t('common.skip')}`);
+      }
       nextRound(score);
   };
   const useHint = () => {
@@ -5789,6 +5995,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
       const maxHints = Math.max(1, currentItem.term.length - 1);
       if (hintLevel >= maxHints) return;
       setHintLevel(h => h + 1);
+      setAnnouncement(`${t('games.scramble.hint_label')}: ${currentItem.term.slice(0, hintLevel + 1).toUpperCase()}`);
       setScore(s => Math.max(0, s - 3));
       if (playSound) playSound('click');
   };
@@ -5796,27 +6003,29 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
       ? gameItems[currentIndex].term.slice(0, hintLevel).toUpperCase() + '_ '.repeat(gameItems[currentIndex].term.length - hintLevel).trim()
       : null;
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95">
+    <div ref={scrambleDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="word-scramble-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-safe:zoom-in-95">
         <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col relative p-8 text-center border-4 border-indigo-500">
+            <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
             <button
+                type="button"
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors"
+                className="absolute top-4 right-4 min-w-11 min-h-11 p-2 rounded-full text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                 aria-label={t('common.close')}
             >
-                <X size={24} />
+                <X size={24} aria-hidden="true" />
             </button>
             <div className="mb-6">
                 <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
-                    <Type size={32} />
+                    <Type size={32} aria-hidden="true" />
                 </div>
-                <h2 className="text-3xl font-black text-indigo-900 mb-2">{t('games.scramble.title')}</h2>
+                <h2 id="word-scramble-title" className="text-3xl font-black text-indigo-900 mb-2">{t('games.scramble.title')}</h2>
                 <p className="text-slate-600 font-medium">{t('games.scramble.subtitle')}</p>
             </div>
             <div className="flex-grow flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 p-6 gap-6">
                 {isGameOver ? (
-                    <div className="text-center animate-in zoom-in">
+                    <div role="status" className="text-center motion-safe:animate-in motion-safe:zoom-in">
                         <ConfettiExplosion />
-                        <Trophy size={64} className="text-yellow-500 mx-auto mb-4"/>
+                        <Trophy size={64} className="text-yellow-500 mx-auto mb-4" aria-hidden="true"/>
                         <h2 className="text-3xl font-black text-slate-800 mb-2">{t('games.syntax.complete')}</h2>
                         <div className="text-lg font-bold text-indigo-600 mb-6 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100 inline-block">
                             {t('games.scramble.score')}: {score}
@@ -5837,7 +6046,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                              <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm">{t('flashcards.score_label')} {score}</div>
                         </div>
                         <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm max-w-lg w-full">
-                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Search size={12}/> {t('games.scramble.hint_label')}</h4>
+                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Search size={12} aria-hidden="true"/> {t('games.scramble.hint_label')}</h4>
                             <div className="flex items-center justify-center gap-2">
                                 <p className="text-lg font-medium text-slate-700 leading-relaxed">"{gameItems[currentIndex].def}"</p>
                                 <SpeakButton text={gameItems[currentIndex].def} />
@@ -5847,7 +6056,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                             {scrambled.split('').map((char, idx) => (
                                 <div
                                     key={`${currentIndex}-${idx}`}
-                                    className="w-12 h-12 sm:w-16 sm:h-16 bg-white border-b-4 border-indigo-300 rounded-lg flex items-center justify-center text-2xl sm:text-4xl font-black text-indigo-900 shadow-sm animate-in zoom-in"
+                                    className="w-12 h-12 sm:w-16 sm:h-16 bg-white border-b-4 border-indigo-300 rounded-lg flex items-center justify-center text-2xl sm:text-4xl font-black text-indigo-900 shadow-sm motion-safe:animate-in motion-safe:zoom-in"
                                     style={{ animationDelay: `${idx * 50}ms` }}
                                 >
                                     {char.toUpperCase()}
@@ -5855,42 +6064,42 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                             ))}
                         </div>
                         {hintText && (
-                            <div className="bg-amber-50 border-2 border-amber-300 text-amber-800 px-4 py-2 rounded-xl font-mono text-xl tracking-[0.3em] font-bold animate-in fade-in">
+                            <div className="bg-amber-50 border-2 border-amber-300 text-amber-800 px-4 py-2 rounded-xl font-mono text-xl tracking-[0.3em] font-bold motion-safe:animate-in motion-safe:fade-in">
                                 {hintText}
                             </div>
                         )}
-                        <div className="flex flex-col gap-3 w-full max-w-xs animate-in slide-in-from-bottom-4 fade-in">
+                        <div className="flex flex-col gap-3 w-full max-w-xs motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:fade-in">
                             <input
+                                ref={scrambleInputRef}
                                 type="text"
                                 value={guess}
                                 onChange={(e) => setGuess(e.target.value.toUpperCase())}
                                 onKeyDown={(e) => e.key === 'Enter' && handleCheck()}
-                                className={`w-full text-center text-2xl font-black p-3 rounded-xl border-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all uppercase tracking-widest ${
+                                className={`w-full text-center text-2xl font-black p-3 rounded-xl border-4 focus:ring-2 focus:ring-indigo-400 transition-all uppercase tracking-widest ${
                                     feedback === 'correct' ? 'border-green-500 bg-green-50 text-green-800' :
-                                    feedback === 'incorrect' ? 'border-red-400 bg-red-50 text-red-800 animate-shake' :
+                                    feedback === 'incorrect' ? 'border-red-400 bg-red-50 text-red-800 motion-safe:animate-shake' :
                                     'border-indigo-200 focus:border-indigo-400 text-indigo-900 bg-white'
                                 }`}
                                 placeholder={t('games.scramble.input_placeholder')}
                                 disabled={feedback === 'correct'}
-                                autoFocus
                                 aria-label={t('games.scramble.input_placeholder')}
                             />
                             <div className="flex gap-2 w-full">
-                                <button onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1" aria-label={t('games.scramble.get_hint_aria') || 'Get a hint'}>
-                                    <HelpCircle size={14}/> {t('games.scramble.hint_button') || 'Hint'}
+                                <button type="button" onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2" aria-label={t('games.scramble.get_hint_aria') || 'Get a hint'}>
+                                    <HelpCircle size={14} aria-hidden="true"/> {t('games.scramble.hint_button') || 'Hint'}
                                 </button>
-                                <button data-help-ignore="true"
+                                <button type="button" data-help-ignore="true"
                                     aria-label={t('common.skip')}
                                     data-help-key="wizard_skip_btn"
                     onClick={handleSkip}
-                                    className="flex-1 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                                    className="flex-1 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                                 >
                                     {t('games.scramble.skip')}
                                 </button>
-                                <button
+                                <button type="button"
                                     aria-label={t('common.check')}
                                     onClick={handleCheck}
-                                    className="flex-[2] py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition-all active:scale-95"
+                                    className="flex-[2] py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition-all motion-safe:active:scale-95 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                                 >
                                     {t('games.scramble.submit')}
                                 </button>
@@ -5925,6 +6134,7 @@ const _MultiZoneColorMap = {
 };
 const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey, gameLabel, zoneConfig, layoutMode = 'columns', captionText = "" }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
@@ -5936,18 +6146,11 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
   const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
   const [announcement, setAnnouncement] = useState('');
   const gameContainerRef = useRef(null);
-  const triggerElRef = useRef(null);
+  const closeButtonRef = useRef(null);
   const playAgainRef = useRef(null);
   const winDialogRef = useRef(null);
-  useEffect(() => {
-    triggerElRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
-    if (gameContainerRef.current) gameContainerRef.current.focus();
-    return () => {
-      if (triggerElRef.current && typeof triggerElRef.current.focus === 'function') {
-        try { triggerElRef.current.focus(); } catch (_) {}
-      }
-    };
-  }, []);
+  const moveMenuRef = useRef(null);
+  useGameDialogFocus(gameContainerRef, closeButtonRef, onClose);
   useEffect(() => { if (isWon && playAgainRef.current) playAgainRef.current.focus(); }, [isWon]);
   const dataFingerprint = useMemo(() => {
     if (!data || !data.zones) return '';
@@ -5977,6 +6180,8 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
     setScore(0);
     setIsWon(false);
     setAttempts(0);
+    setKeyboardSelectedItemId(null);
+    setAnnouncement(`${gameLabel} ready. ${all.length} items are in the bank.`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataFingerprint]);
   const placeItem = (item, targetZone) => {
@@ -5997,30 +6202,40 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
       setAttempts(a => a + 1);
       setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
       if (playSound) playSound('incorrect');
-      setAnnouncement(`Not quite. "${item.text}" does not belong in ${zoneLabel}. Try another zone.`);
+      const correctLabel = (zoneConfig.find(z => z.id === item.correctZone) || {}).label || item.correctZone;
+      setAnnouncement(`Not quite. "${item.text}" does not belong in ${zoneLabel}. Try ${correctLabel}.`);
     }
   };
-  const handleItemKeyDown = (e, item) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault(); e.stopPropagation();
-      if (keyboardSelectedItemId === item.id) {
-        setKeyboardSelectedItemId(null);
-        setAnnouncement('Selection cancelled.');
-      } else {
-        setKeyboardSelectedItemId(item.id);
-        const zoneNames = zoneConfig.map(z => z.label).join(', ');
-        setAnnouncement(`Selected: ${item.text}. Choose a zone: ${zoneNames}.`);
-        if (playSound) playSound('click');
-      }
-    }
+  const focusMultiZoneItem = (itemId) => {
+    window.setTimeout(() => gameContainerRef.current?.querySelector(`[data-multi-zone-item-id="${itemId}"]`)?.focus(), 0);
+  };
+  const cancelMultiZoneSelection = () => {
+    const itemId = keyboardSelectedItemId;
+    setKeyboardSelectedItemId(null);
+    setAnnouncement('Selection cancelled.');
+    if (itemId) focusMultiZoneItem(itemId);
+  };
+  const toggleMultiZoneSelection = (event, item) => {
+    event.stopPropagation();
+    if (keyboardSelectedItemId === item.id) { cancelMultiZoneSelection(); return; }
+    setKeyboardSelectedItemId(item.id);
+    const zoneNames = zoneConfig.map(z => z.label).join(', ');
+    setAnnouncement(`Selected: ${item.text}. Choose a destination: ${zoneNames}, or Bank.`);
+    if (playSound) playSound('click');
   };
   const handleKeyboardMove = (zone) => {
     if (!keyboardSelectedItemId) return;
     const item = items.find(i => i.id === keyboardSelectedItemId);
     if (!item) return;
+    const itemId = item.id;
     placeItem(item, zone);
     setKeyboardSelectedItemId(null);
+    focusMultiZoneItem(itemId);
   };
+  useEffect(() => {
+    if (!keyboardSelectedItemId || !moveMenuRef.current) return;
+    moveMenuRef.current.querySelector('button')?.focus();
+  }, [keyboardSelectedItemId]);
   const handleDragStart = (e, item) => { setDraggedItem(item); e.dataTransfer.effectAllowed = 'move'; };
   const handleDragOver = (e, zone) => { e.preventDefault(); setActiveDropZone(zone); };
   const handleDragLeave = () => setActiveDropZone(null);
@@ -6036,6 +6251,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
       const allCorrect = items.every(i => i.currentZone === i.correctZone);
       if (allCorrect) {
         setIsWon(true);
+        setAnnouncement(`${t('games.bucket_sort.all_sorted') || 'All sorted!'}. ${t('games.bucket_sort.final_score_label') || 'Final score:'} ${score}`);
         if (onScoreUpdate) onScoreUpdate(score, gameLabel);
         if (playSound) playSound('correct');
         if (onGameComplete) onGameComplete(gameKey, { score, itemsSorted: items.length, totalItems: items.length, incorrectAttempts: attempts });
@@ -6050,48 +6266,49 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     setItems(shuffled);
-    setScore(0); setIsWon(false); setAttempts(0);
+    setScore(0); setIsWon(false); setAttempts(0); setKeyboardSelectedItemId(null);
+    setAnnouncement('Board reset. All items returned to the bank.');
     window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
   const bankItems = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
-  const zoneCountClass = layoutMode === 'grid-2x2' ? 'grid-cols-2' : (zoneConfig.length === 3 ? 'grid-cols-1 md:grid-cols-3' : zoneConfig.length === 5 ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-5' : 'grid-cols-1 md:grid-cols-3');
+
+  const zoneCountClass = layoutMode === 'grid-2x2' ? 'grid-cols-1 sm:grid-cols-2' : (zoneConfig.length === 3 ? 'grid-cols-1 md:grid-cols-3' : zoneConfig.length === 5 ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-5' : 'grid-cols-1 md:grid-cols-3');
+  const renderMultiZoneItem = (item, zoneLabel, borderClass = 'border-slate-300') => {
+    const selected = keyboardSelectedItemId === item.id;
+    return (
+      <div key={item.id} draggable onDragStart={(event) => handleDragStart(event, item)} className={`rounded-lg shadow-sm ${selected ? 'ring-4 ring-yellow-400' : ''}`}>
+        <button
+          type="button"
+          data-multi-zone-item-id={item.id}
+          aria-pressed={selected}
+          aria-label={`${item.text}, ${zoneLabel}. Press to ${selected ? 'cancel selection' : 'select and move'}.`}
+          onClick={(event) => toggleMultiZoneSelection(event, item)}
+          className={`min-h-11 w-full bg-white border-2 ${borderClass} rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:border-indigo-400 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${reducedMotion ? '' : 'transition-colors'}`}
+        >
+          {item.text}
+        </button>
+      </div>
+    );
+  };
   const renderZone = (zone) => {
     const c = _MultiZoneColorMap[zone.color] || _MultiZoneColorMap.indigo;
     const zoneItems = items.filter(i => i.currentZone === zone.id);
     const isActive = activeDropZone === zone.id;
-    const hasSelection = !!keyboardSelectedItemId;
     return (
       <div
         key={zone.id}
+        role="group"
         onDrop={(e) => handleDrop(e, zone.id)}
         onDragOver={(e) => handleDragOver(e, zone.id)}
         onDragLeave={handleDragLeave}
-        onClick={hasSelection ? () => handleKeyboardMove(zone.id) : undefined}
-        role={hasSelection ? 'button' : undefined}
-        tabIndex={hasSelection ? 0 : undefined}
-        onKeyDown={hasSelection ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove(zone.id); } } : undefined}
         aria-label={`Drop zone: ${zone.label}`}
-        className={`${c.panel} border-2 ${c.border} rounded-xl p-3 min-h-[140px] transition-all ${isActive ? `ring-4 ${c.ring} scale-[1.02]` : ''} ${hasSelection ? 'cursor-pointer hover:ring-4 hover:' + c.ring : ''}`}
+        className={`${c.panel} border-2 ${c.border} rounded-xl p-3 min-h-[140px] ${!reducedMotion ? 'transition-all' : ''} ${isActive ? `ring-4 ${c.ring} ${!reducedMotion ? 'scale-[1.02]' : ''}` : ''}`}
       >
         <h4 className={`${c.header} font-black text-sm uppercase tracking-wide text-center py-1.5 px-2 rounded-md mb-2`}>
           {zone.label}
         </h4>
         <div className="space-y-1.5">
-          {zoneItems.map(item => (
-            <div
-              key={item.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, item)}
-              tabIndex={0}
-              role="button"
-              aria-pressed={keyboardSelectedItemId === item.id}
-              onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-              onKeyDown={(e) => handleItemKeyDown(e, item)}
-              className={`bg-white border ${c.border} rounded-md px-2 py-1.5 text-xs text-slate-700 cursor-grab active:cursor-grabbing shadow-sm animate-in zoom-in duration-300 ${keyboardSelectedItemId === item.id ? `ring-2 ${c.ring}` : ''}`}
-            >
-              {item.text}
-            </div>
-          ))}
+          {zoneItems.map(item => renderMultiZoneItem(item, `sorted into ${zone.label}`, c.border))}
         </div>
       </div>
     );
@@ -6100,33 +6317,35 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
     <div
       ref={gameContainerRef}
       tabIndex={-1}
-      className="fixed inset-0 z-[200] bg-slate-900/85 backdrop-blur-sm flex items-center justify-center p-4 outline-none"
+      className="fixed inset-0 z-[200] bg-slate-900/85 backdrop-blur-sm flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
-      aria-label={`${gameLabel} sorting game`}
+      aria-labelledby="multi-zone-game-title"
     >
       <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[92vh] overflow-y-auto p-5">
-        <div className="flex justify-between items-start gap-4 mb-3">
+        <div className="flex flex-wrap justify-between items-start gap-4 mb-3">
           <div>
-            <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
-              <Gamepad2 size={22} className="text-indigo-600" />
+            <h2 id="multi-zone-game-title" className="text-xl font-black text-slate-800 flex items-center gap-2">
+              <Gamepad2 size={22} className="text-indigo-600" aria-hidden="true" />
               {gameLabel}
             </h2>
             {topicTitle ? <p className="text-xs text-slate-500 mt-0.5">Topic: <strong>{topicTitle}</strong></p> : null}
             {captionText ? <p className="text-xs text-slate-500 italic mt-1">{captionText}</p> : null}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="bg-slate-100 px-3 py-1.5 rounded-full text-sm font-bold text-slate-700">Score: <span className="text-indigo-600">{score}</span></div>
-            <button onClick={reset} className="px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100">Reset</button>
-            <button onClick={onClose} className="px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 rounded-md hover:bg-slate-200">Close</button>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="min-h-11 flex items-center bg-slate-100 px-3 py-1.5 rounded-full text-sm font-bold text-slate-700">Score: <span className="text-indigo-600">{score}</span></div>
+            <button type="button" onClick={reset} className="min-h-11 px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2">Reset</button>
+            <button ref={closeButtonRef} type="button" onClick={onClose} className="min-h-11 px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 rounded-md hover:bg-slate-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Close</button>
           </div>
         </div>
         <div className="sr-only" aria-live="polite">{announcement}</div>
         {/* Bank */}
         <div
+          role="group"
           onDrop={(e) => handleDrop(e, 'bank')}
           onDragOver={(e) => handleDragOver(e, 'bank')}
           onDragLeave={handleDragLeave}
+          aria-label={t('games.bucket_sort.bank_label') || 'Unsorted item bank'}
           className={`bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-3 mb-3 ${activeDropZone === 'bank' ? 'ring-4 ring-slate-300' : ''}`}
         >
           <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 text-center">
@@ -6136,21 +6355,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
             {bankItems.length === 0 ? (
               <span className="text-xs italic text-slate-600">{t('games.bucket_sort.bank_empty') || 'All items placed.'}</span>
             ) : (
-              bankItems.map(item => (
-                <div
-                  key={item.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, item)}
-                  tabIndex={0}
-                  role="button"
-                  aria-pressed={keyboardSelectedItemId === item.id}
-                  onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                  onKeyDown={(e) => handleItemKeyDown(e, item)}
-                  className={`bg-white border-2 border-slate-300 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 cursor-grab active:cursor-grabbing shadow-sm hover:border-indigo-400 ${keyboardSelectedItemId === item.id ? 'ring-2 ring-indigo-400' : ''}`}
-                >
-                  {item.text}
-                </div>
-              ))
+              bankItems.map(item => renderMultiZoneItem(item, 'in the bank'))
             )}
           </div>
         </div>
@@ -6158,10 +6363,43 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
         <div className={`grid ${zoneCountClass} gap-3`}>
           {zoneConfig.map(renderZone)}
         </div>
+        {keyboardSelectedItemId && (
+          <div role="presentation" className="fixed inset-0 z-[205] bg-slate-900/60 flex items-center justify-center p-4" onClick={cancelMultiZoneSelection}>
+            <div
+              ref={moveMenuRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="multi-zone-move-title"
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                event.stopPropagation();
+                if (event.key === 'Escape') { event.preventDefault(); cancelMultiZoneSelection(); return; }
+                if (event.key !== 'Tab') return;
+                const focusable = getGameDialogFocusable(event.currentTarget);
+                if (!focusable.length) { event.preventDefault(); return; }
+                const first = focusable[0], last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+              }}
+              className={`bg-white rounded-2xl shadow-2xl border-2 border-indigo-500 p-5 max-w-lg w-full ${reducedMotion ? '' : 'animate-in zoom-in-95 duration-200'}`}
+            >
+              <h3 id="multi-zone-move-title" className="font-black text-slate-800 text-center mb-3">Choose a destination</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {zoneConfig.map(zone => (
+                  <button key={zone.id} type="button" onClick={() => handleKeyboardMove(zone.id)} className="min-h-11 px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-300 text-indigo-900 font-bold focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    {zone.label}
+                  </button>
+                ))}
+                <button type="button" onClick={() => handleKeyboardMove('bank')} className="min-h-11 px-4 py-2 rounded-lg bg-slate-100 border border-slate-400 text-slate-800 font-bold focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Bank</button>
+                <button type="button" onClick={cancelMultiZoneSelection} className="min-h-11 px-4 py-2 rounded-lg text-slate-700 underline font-bold focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Win modal */}
         {isWon && (
           <div role="presentation" className="fixed inset-0 z-[210] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
-            {!useReducedMotion() && <ConfettiExplosion />}
+            {!reducedMotion && <ConfettiExplosion />}
             <div
               ref={winDialogRef}
               role="dialog"
@@ -6169,23 +6407,24 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
               aria-labelledby="multi-zone-win-title"
               aria-describedby="multi-zone-win-description"
               onKeyDown={event => {
+                event.stopPropagation();
                 if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
                 if (event.key !== 'Tab') return;
-                const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                const focusable = getGameDialogFocusable(event.currentTarget);
                 if (!focusable.length) { event.preventDefault(); return; }
                 const first = focusable[0];
                 const last = focusable[focusable.length - 1];
                 if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                 else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
               }}
-              className={`bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center${useReducedMotion() ? '' : ' animate-in zoom-in-95 duration-300'}`}
+              className={`bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center${reducedMotion ? '' : ' animate-in zoom-in-95 duration-300'}`}
             >
               <div className="text-5xl mb-3" aria-hidden="true">🎉</div>
               <h3 id="multi-zone-win-title" className="text-2xl font-black text-slate-800 mb-2">{t('games.bucket_sort.all_sorted') || 'All sorted!'}</h3>
               <p id="multi-zone-win-description" className="text-sm text-slate-600 mb-4">{t('games.bucket_sort.final_score_label') || 'Final score:'} <strong className="text-indigo-600">{score}</strong>{attempts > 0 ? ` (with ${attempts} incorrect ${attempts === 1 ? 'attempt' : 'attempts'})` : ''}</p>
               <div className="flex gap-2 justify-center">
-                <button ref={playAgainRef} type="button" onClick={reset} className="min-h-11 px-4 py-2 bg-indigo-600 text-white rounded-md font-bold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.bucket_sort.play_again') || 'Play again'}</button>
-                <button type="button" onClick={onClose} className="min-h-11 px-4 py-2 bg-slate-200 text-slate-800 rounded-md font-bold hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
+                <button ref={playAgainRef} type="button" onClick={reset} className="min-h-11 px-4 py-2 bg-indigo-600 text-white rounded-md font-bold hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.bucket_sort.play_again') || 'Play again'}</button>
+                <button type="button" onClick={onClose} className="min-h-11 px-4 py-2 bg-slate-200 text-slate-800 rounded-md font-bold hover:bg-slate-300 focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
               </div>
             </div>
           </div>

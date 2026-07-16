@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-2fa30e3f-untitled",
+  "title": "मोबाइल",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/J9ohYzbA5q"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f2fa30e3f-257d-4291-a5dc-a8a2ac968cde%2f%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fmobile cartoon.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f2fa30e3f-257d-4291-a5dc-a8a2ac968cde%2f%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fmobile+cartoon1.jpg",
+      "text": "म मोबाइल हुँ। म सबैको साथी हुँ। मलाई सबैले साथमा राख्छन्।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f2fa30e3f-257d-4291-a5dc-a8a2ac968cde%2f%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fmobile223.jpg",
+      "text": "मेरो सहयोगमा सबैले कुरा गर्छन्। सञ्चो बिसञ्चो थाहा पाउँछन्। म सबैलाई समाचार सुनाउँछु।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f2fa30e3f-257d-4291-a5dc-a8a2ac968cde%2f%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fmobile+cartoon2.jpg",
+      "text": "म गीत सुनाउँछु। म भिडियो पनि देखाउँछु। मानिस भिडियो हेरेर खुसी हुन्छन्। कुनै भिडियो दु:खी बनाउने खालका हुन्छन्।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f2fa30e3f-257d-4291-a5dc-a8a2ac968cde%2f%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage.jpg",
+      "text": "मलाई प्रयोग गरेर फेसबुक चलाउँछन्। युट्युबमा भिडियो हेर्छन। म्यासेन्जर र इमोबाट भिडियो फोन गर्छन्।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f2fa30e3f-257d-4291-a5dc-a8a2ac968cde%2f%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage1.jpg",
+      "text": "मानिसहरु इन्टरनेट चलाउन मलाई प्रयोग गर्छन्। इन्टरनेटमा धेरै ज्ञानका कुरा हुन्छन्। यसबाट संसारका कुरा थाहा पाउन सकिन्छ।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f2fa30e3f-257d-4291-a5dc-a8a2ac968cde%2f%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage.png",
+      "text": "मसँग क्याल्कुलेटर पनि छ।\nयसबाट हिसाब गर्न मिल्छ। जोड, घटाउ, गुणन, भाग यसैमा गर्न मिल्छ।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f2fa30e3f-257d-4291-a5dc-a8a2ac968cde%2f%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage1.png",
+      "text": "म घडी पनि हुँ। म तिमीहरूको स्कुल जाने समय बताउँछु । मभित्र क्यालेन्डर पनि हुन्छ । तिमीहरूले मिति, गते, बार हेर्न सक्छौ ।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f2fa30e3f-257d-4291-a5dc-a8a2ac968cde%2f%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage2.png",
+      "text": "मसँग क्यामरा पनि छ। क्यामाराले फोटो खिच्ने काम गर्छ। यसले भिडियो बनाउने काम पनि गर्छ।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f2fa30e3f-257d-4291-a5dc-a8a2ac968cde%2f%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage2.jpg",
+      "text": "मेरो सहयोगमा रेकर्ड गर्न पनि मिल्छ। मसँग लाइट पनि छ । अँध्यारोमा बत्ती बाल्न सकिन्छ।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f2fa30e3f-257d-4291-a5dc-a8a2ac968cde%2f%e0%a4%ae%e0%a5%8b%e0%a4%ac%e0%a4%be%e0%a4%87%e0%a4%b2%2fimage3.jpg",
+      "text": "साना नानीहरू मलाई खेलौना सम्झन्छन्। उनीहरू मलाई खेल्न पाएर मख्ख पर्छन्। तिमीहरू पनि भिडियो गेम खेल्छौ। कार्टुन चित्र हेर्छौ र रमाउँछौ।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 162
+  }
+}

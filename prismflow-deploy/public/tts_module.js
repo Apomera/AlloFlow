@@ -472,7 +472,10 @@ const createTTS = deps => {
       if (ttsLang === 'en') {
         try {
           if (window._kokoroTTS) {
-            const url = await window._kokoroTTS.speakStreaming(localTtsText, voiceName, speed);
+            // callTTS promises one COMPLETE playable URL. The streaming
+            // API returns only its first chunk and requires chainPlay,
+            // which karaoke and most read-aloud callers do not use.
+            const url = await window._kokoroTTS.speak(localTtsText, voiceName, speed);
             if (url) return url;
           }
         } catch (e) {
@@ -545,7 +548,10 @@ const createTTS = deps => {
         _kokoroDeferredToGemini = true;
       } else if (window._kokoroTTS && window._kokoroTTS.ready) {
         try {
-          const kokoroUrl = await window._kokoroTTS.speakStreaming(cleanTextForLocalTTS(text), voiceName, speed);
+          // Generic callTTS callers consume a single URL, so return a
+          // complete WAV instead of silently dropping later stream chunks.
+          // AlloBot keeps using callTTSDirect + chainPlay for true streaming.
+          const kokoroUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed);
           if (kokoroUrl) {
             _routeNote('kokoro', _kokoroPreferred ? 'kokoro voice selected' : 'keyless reroute');
             return kokoroUrl;
@@ -625,13 +631,30 @@ const createTTS = deps => {
       debugLog("⚡ callTTS cache HIT:", text?.substring(0, 30));
       return state.urlCache.get(cacheKey);
     }
+    const fetchSharedTTSBytes = async () => {
+      if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal);
+      let inFlight = callTTSInFlight.get(cacheKey);
+      if (!inFlight) {
+        inFlight = fetchTTSBytes(text, voiceName, speed, _language, null);
+        callTTSInFlight.set(cacheKey, inFlight);
+      } else {
+        debugLog('callTTS in-flight JOIN:', text?.substring(0, 30));
+      }
+      try {
+        return await inFlight;
+      } finally {
+        if (callTTSInFlight.get(cacheKey) === inFlight) callTTSInFlight.delete(cacheKey);
+      }
+    };
     let lastError = null;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const ttsResult = await fetchTTSBytes(text, voiceName, speed, _language, _signal);
+        const ttsResult = await fetchSharedTTSBytes();
         if (!ttsResult) {
           throw new Error("[TTS] fetchTTSBytes returned no audio data");
         }
+        // The owner of a joined request may already have cached its URL.
+        if (state.urlCache.has(cacheKey)) return state.urlCache.get(cacheKey);
         const {
           bytes: pcmBytes
         } = ttsResult;

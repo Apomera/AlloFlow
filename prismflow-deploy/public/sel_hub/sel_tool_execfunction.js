@@ -256,8 +256,92 @@ window.SelHub = window.SelHub || {
       var coachInput   = d.coachInput || '';
       var coachHistory = d.coachHistory || [];
       var coachLoading = d.coachLoading || false;
+      var confirmAction = d.confirmAction || null;
 
       var CYAN = '#0891b2'; var CYAN_LIGHT = _efC('#ecfeff'); var CYAN_DARK = _efC('#155e75');
+      function focusExecControl(id) {
+        setTimeout(function() {
+          var target = document.getElementById(id);
+          if (target && target.focus) target.focus();
+        }, 50);
+      }
+      function openDestructiveConfirm(action) {
+        upd('confirmAction', action);
+        focusExecControl('ef-confirm-cancel');
+      }
+      function closeDestructiveConfirm() {
+        var triggerId = confirmAction && confirmAction.triggerId;
+        upd('confirmAction', null);
+        if (triggerId) focusExecControl(triggerId);
+      }
+      function commitDestructiveAction() {
+        if (!confirmAction) return;
+        if (confirmAction.type === 'clear-distractions') {
+          upd({ confirmAction: null, distractions: [] });
+          if (announceToSR) announceToSR('All distraction entries cleared.');
+          focusExecControl('ef-distraction-heading');
+        } else if (confirmAction.type === 'remove-habit') {
+          upd({
+            confirmAction: null,
+            habits: (d.habits || []).filter(function(habit) { return habit.id !== confirmAction.habitId; })
+          });
+          if (announceToSR) announceToSR('Habit removed.');
+          focusExecControl('ef-habits-heading');
+        }
+      }
+      function handleConfirmKeyDown(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeDestructiveConfirm();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var buttons = event.currentTarget.querySelectorAll('button:not([disabled])');
+        if (!buttons.length) return;
+        var first = buttons[0];
+        var last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+      function renderDestructiveConfirm() {
+        if (!confirmAction) return null;
+        var clearing = confirmAction.type === 'clear-distractions';
+        var title = clearing ? 'Clear all distraction entries?' : 'Remove this habit?';
+        var description = clearing
+          ? 'This permanently deletes all ' + (d.distractions || []).length + ' distraction log entries. This cannot be undone.'
+          : 'This permanently removes “' + (confirmAction.habitLabel || 'this habit') + '” and its tracking history. This cannot be undone.';
+        return h('div', {
+          id: 'ef-destructive-confirm',
+          role: 'alertdialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'ef-confirm-title',
+          'aria-describedby': 'ef-confirm-description',
+          onKeyDown: handleConfirmKeyDown,
+          style: { position: 'fixed', inset: 0, zIndex: 10003, background: 'rgba(15,23,42,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }
+        },
+          h('div', { style: { width: '100%', maxWidth: 500, borderRadius: 14, border: '2px solid ' + CYAN, background: _efC('#fff'), color: _efC('#0f172a'), padding: 22, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' } },
+            h('h3', { id: 'ef-confirm-title', style: { margin: '0 0 8px', fontSize: 18, fontWeight: 900, color: CYAN_DARK } }, title),
+            h('p', { id: 'ef-confirm-description', style: { margin: '0 0 18px', fontSize: 13, lineHeight: 1.6, color: _efC('#475569') } }, description),
+            h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
+              h('button', {
+                id: 'ef-confirm-cancel',
+                'data-primary-action': 'true',
+                onClick: closeDestructiveConfirm,
+                style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #cbd5e1', background: _efC('#f8fafc'), color: _efC('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+              }, 'Cancel'),
+              h('button', {
+                onClick: commitDestructiveAction,
+                style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #dc2626', background: '#dc2626', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+              }, clearing ? 'Clear all entries' : 'Remove habit')
+            )
+          )
+        );
+      }
 
       var TABS = [
         { id: 'map',     icon: '🗺️', label: 'Map' },
@@ -847,7 +931,7 @@ window.SelHub = window.SelHub || {
           // Ring + readout
           h('div', { style: { display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', marginBottom: 14 } },
             h('div', { style: { position: 'relative', width: ringSize, height: ringSize } },
-              h('svg', { width: ringSize, height: ringSize, style: { transform: 'rotate(-90deg)' } },
+              h('svg', { width: ringSize, height: ringSize, 'aria-hidden': 'true', focusable: 'false', style: { transform: 'rotate(-90deg)' } },
                 h('circle', { cx: ringSize / 2, cy: ringSize / 2, r: ringR, fill: 'none', stroke: _efC('#e2e8f0'), strokeWidth: ringStroke }),
                 h('circle', { cx: ringSize / 2, cy: ringSize / 2, r: ringR, fill: 'none', stroke: ringColor, strokeWidth: ringStroke, strokeLinecap: 'round',
                   strokeDasharray: ringC, strokeDashoffset: ringOffset, style: { transition: 'stroke-dashoffset 0.4s ease' } })
@@ -917,7 +1001,7 @@ window.SelHub = window.SelHub || {
           if (soundOn) sfxClick();
         }
         function removeDistraction(id) { upd({ distractions: distractions.filter(function(d) { return d.id !== id; }) }); }
-        function clearAll() { if (confirm('Clear all distraction log? This cannot be undone.')) upd({ distractions: [] }); }
+        function clearAll() { openDestructiveConfirm({ type: 'clear-distractions', triggerId: 'ef-clear-distractions' }); }
 
         // Patterns
         var byTrigger = {};
@@ -932,7 +1016,7 @@ window.SelHub = window.SelHub || {
           .sort(function(a, b) { return b.count - a.count; })[0];
 
         return h('div', { className: 'selh-execfunction', style: { padding: '14px', overflowY: 'auto', flex: 1 } },
-          h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, marginBottom: '10px' } }, '📊 Distraction Logger'),
+          h('h3', { id: 'ef-distraction-heading', tabIndex: -1, style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, marginBottom: '10px' } }, '📊 Distraction Logger'),
           h('p', { style: { fontSize: '12px', color: _efC('#475569'), marginBottom: '14px', lineHeight: 1.6 } }, 'Catch yourself pulled off-task? Tap the trigger. Two seconds max. After a week, patterns appear — most students don\'t realize their phone is hitting them 30+ times a day until they see it.'),
 
           // Quick log buttons
@@ -1017,11 +1101,12 @@ window.SelHub = window.SelHub || {
                 );
               })
             ),
-            h('button', { onClick: clearAll, style: { marginTop: 10, padding: '6px 12px', borderRadius: 6, border: '1px solid #ef4444', background: _efC('#fff'), color: '#ef4444', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Clear all entries')
+            h('button', { id: 'ef-clear-distractions', onClick: clearAll, style: { marginTop: 10, padding: '6px 12px', borderRadius: 6, border: '1px solid #ef4444', background: _efC('#fff'), color: '#ef4444', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Clear all entries')
           ),
 
           distractions.length === 0 && h('div', { style: { padding: 20, textAlign: 'center', color: _efC('#64748b'), fontSize: 13, background: _efC('#fff'), borderRadius: 10, border: '1px dashed #cbd5e1' } },
-            'No distractions logged yet. Tap a trigger button above each time you catch yourself pulled.')
+            'No distractions logged yet. Tap a trigger button above each time you catch yourself pulled.'),
+          renderDestructiveConfirm()
         );
       }
 
@@ -1045,7 +1130,7 @@ window.SelHub = window.SelHub || {
           });
           upd({ habits: nh });
         }
-        function removeHabit(hid) { if (confirm('Remove this habit?')) upd({ habits: habits.filter(function(h2) { return h2.id !== hid; }) }); }
+        function removeHabit(hid, label) { openDestructiveConfirm({ type: 'remove-habit', habitId: hid, habitLabel: label, triggerId: 'ef-remove-habit-' + hid }); }
 
         // Last 14 days
         var days14 = [];
@@ -1056,10 +1141,10 @@ window.SelHub = window.SelHub || {
         }
 
         return h('div', { className: 'selh-execfunction', style: { padding: '14px', overflowY: 'auto', flex: 1 } },
-          h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, marginBottom: '10px' } }, '✅ Habit Tracker'),
+          h('h3', { id: 'ef-habits-heading', tabIndex: -1, style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, marginBottom: '10px' } }, '✅ Habit Tracker'),
           h('p', { style: { fontSize: '12px', color: _efC('#475569'), marginBottom: '14px', lineHeight: 1.6 } }, 'Small habits, tracked daily. Missed days are gray — they don\'t break anything; this is rhythm, not streak. Best for things tied to a clear cue (morning, after school, before bed).'),
 
-          h('button', { onClick: addHabit, style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: CYAN, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', marginBottom: 14 } }, '+ Add a habit'),
+          h('button', { id: 'ef-add-habit', onClick: addHabit, style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: CYAN, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', marginBottom: 14 } }, '+ Add a habit'),
 
           habits.length === 0 && h('div', { style: { padding: 20, textAlign: 'center', color: _efC('#64748b'), fontSize: 13, background: _efC('#fff'), borderRadius: 10, border: '1px dashed #cbd5e1' } },
             'No habits yet. Tap "Add a habit" to start. Good starters: "Empty my bag at the kitchen table when I get home", "Write tomorrow\'s top 3 before I leave my last class", "10-minute review before bed".'),
@@ -1072,7 +1157,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 14, fontWeight: 700, color: CYAN_DARK } }, hb.label),
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8 } },
                   h('span', { style: { fontSize: 11, color: _efC('#475569'), fontFamily: 'ui-monospace, Menlo, monospace' } }, thisWindowDays + ' of 14 days · total ' + totalDays),
-                  h('button', { onClick: function() { removeHabit(hb.id); }, 'aria-label': 'Remove habit', style: { background: 'transparent', border: 'none', color: _efC('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
+                  h('button', { id: 'ef-remove-habit-' + hb.id, onClick: function() { removeHabit(hb.id, hb.label); }, 'aria-label': 'Remove habit ' + hb.label, style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _efC('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
                 )
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(28px, 1fr))', gap: 4 } },
@@ -1090,7 +1175,8 @@ window.SelHub = window.SelHub || {
                 })
               )
             );
-          })
+          }),
+          renderDestructiveConfirm()
         );
       }
 
@@ -1196,7 +1282,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             h('div', { style: { display: 'flex', gap: '8px' } },
-              h('input', {
+              h('input', { 'aria-label': 'Tell the coach what is hard',
                 type: 'text', value: coachInput,
                 onChange: function(ev) { upd('coachInput', ev.target.value); },
                 onKeyDown: function(ev) {
@@ -1214,7 +1300,6 @@ window.SelHub = window.SelHub || {
                 },
                 disabled: coachLoading || !callGemini,
                 placeholder: coachLoading ? 'Coach is thinking...' : 'What is hard right now?',
-                'aria-label': 'Tell the coach what is hard',
                 style: { flex: 1, border: '2px solid #cffafe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
               }),
               h('button', {

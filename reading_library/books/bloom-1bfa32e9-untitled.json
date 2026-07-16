@@ -1,0 +1,95 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1bfa32e9-untitled",
+  "title": "ຮ່າງກາຍຂອງຂ້ອຍ",
+  "description": "An early reader that explores action words",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Lao"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Lao",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/gTvJBz5A3o"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/gTvJBz5A3o%2f1753068272310%2f%e0%ba%ae%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b2%e0%ba%8d%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%2fMBimageCV.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gTvJBz5A3o%2f1753068272310%2f%e0%ba%ae%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b2%e0%ba%8d%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%2fMBimage1.jpg",
+      "text": "ຂ້ອຍສາມາດແລ່ນໄປກັບມັນໄດ້."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gTvJBz5A3o%2f1753068272310%2f%e0%ba%ae%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b2%e0%ba%8d%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%2fMBimage2.jpg",
+      "text": "ຂ້ອຍສາມາດກະໂດດໄປກັບມັນໄດ້."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gTvJBz5A3o%2f1753068272310%2f%e0%ba%ae%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b2%e0%ba%8d%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%2fMBimage3.jpg",
+      "text": "ຂ້ອຍສາມາດເຕັ້ນໄປກັບມັນໄດ້."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gTvJBz5A3o%2f1753068272310%2f%e0%ba%ae%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b2%e0%ba%8d%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%2fMBimage4.jpg",
+      "text": "ຂ້ອຍສາມາດລອຍນໍ້າໄປກັບມັນໄດ້."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gTvJBz5A3o%2f1753068272310%2f%e0%ba%ae%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b2%e0%ba%8d%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%2fMBimage6.jpg",
+      "text": "ຂ້ອຍສາມາດເຕະບານໄປກັບມັນໄດ້."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gTvJBz5A3o%2f1753068272310%2f%e0%ba%ae%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b2%e0%ba%8d%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%2fMBimage7.jpg",
+      "text": "ຂ້ອຍສາມາດປົບໜີໄປກັບມັນໄດ້."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gTvJBz5A3o%2f1753068272310%2f%e0%ba%ae%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b2%e0%ba%8d%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%2fMBimage5.jpg",
+      "text": "ຂ້ອຍສາມາດເຕັ້ນຂ້າມໄປກັບມັນໄດ້."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/gTvJBz5A3o%2f1753068272310%2f%e0%ba%ae%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b2%e0%ba%8d%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%2fMBimage8.jpg",
+      "text": "ແຕ່ວ່າ ຂ້ອຍບໍ່ເຄີຍບິນໄປກັບມັນໄດ."
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "ຄໍາຖາມເພື່ອຄວາມເຂົ້າໃຈ:\n1. ໃຫ້ຂຽນກິດຈະກໍາຢ່າງຫນ້ອຍສາມຢ່າງທີ່ເຈົ້າສາມາດເຮັດໄດ້ກັບຮ່າງກາຍຂອງເຈົ້າ."
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "ກວດສອບຄວາມເຂົ້າໃຈຂອງເຈົ້າ\n2. ສິ່ງຫນຶ່ງທີ່ບໍ່ສາມາດເຮັດໄດ້ກັບຮ່າງກາຍຂອງເຮົາຄືອັນໃດ?\nການລອຍນໍ້າ\nການແລ່ນ\nການບິນ\nການເຕັ້ນ\nການຈັບ\nການຟ້ອນ"
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "ກວດສອບຄວາມເຂົ້າໃຈຂອງເຈົ້າ\n3. ສັດປະເພດໃດພວມບິນຢູ່ໃນຮູບສຸດທ້າຍ?\nໂຕແມງກະເບື້ອ\nໂຕຍຸງ\nໂຕນົກ\nໂຕແມງມຸມ\nໂຕແມງວັນ\nໂຕຕັກກະແຕນ"
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "ກວດສອບຄວາມເຂົ້າໃຈຂອງເຈົ້າ\n4. ເຈົ້າສາມາດເຮັດຫຍັງໄດ້ອີກກັບຮ່າງກາຍຂອງເຈົ້າ?"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 33
+  }
+}

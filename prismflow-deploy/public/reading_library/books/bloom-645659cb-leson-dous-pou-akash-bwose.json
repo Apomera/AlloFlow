@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-645659cb-leson-dous-pou-akash-bwose",
+  "title": "Leson Dous pou Akash Bwose",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Nisha Sridhar"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Nisha Sridhar",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/EOZYZSgxHD"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f645659cb-0393-43ea-9e23-25c89a4ae208%2fLeson+Dous+pou%c2%a0Akash+Bwose1%2fSWPB_299-akash-s-sweet-lesson-to-brush_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f645659cb-0393-43ea-9e23-25c89a4ae208%2fLeson+Dous+pou%c2%a0Akash+Bwose1%2fSWPB_299-akash-s-sweet-lesson-to-brush_Page_02_Image_0001.png",
+      "text": "Akash se yon ti gason ki renmen bagay dous. Li renmen bonbon ki gou, gato yo, ak desè yo.\nAkash est un petit garçon qui aime les bonbons. Il aime les bonbons délicieux, les petits gâteaux, et les dessert."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f645659cb-0393-43ea-9e23-25c89a4ae208%2fLeson+Dous+pou%c2%a0Akash+Bwose1%2fSWPB_299-akash-s-sweet-lesson-to-brush_Page_03_Image_0001.png",
+      "text": "Li pale de sa ak zanmi l' e li pase menl li pran kèk bon ti gato li al nan kabann li.\nIl en parle à ses amis et prend des petits gâteaux délicieux dans son lit."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f645659cb-0393-43ea-9e23-25c89a4ae208%2fLeson+Dous+pou%c2%a0Akash+Bwose1%2fSWPB_299-akash-s-sweet-lesson-to-brush_Page_04_Image_0001.png",
+      "text": "Li pa janm sispann fè rèv sou sa. Tout sa li ka panse se pasyon li pou bagay dous.\nIl n'a jamais cessé de rêver de cela. Il ne pense qu'à sa passion pour les sucreries."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f645659cb-0393-43ea-9e23-25c89a4ae208%2fLeson+Dous+pou%c2%a0Akash+Bwose1%2fSWPB_299-akash-s-sweet-lesson-to-brush_Page_05_Image_0001.png",
+      "text": "Li ale an kachèt chak swa pou li ka jwenn sik.\nIl se cache chaque nuit pour avoir du sucre."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f645659cb-0393-43ea-9e23-25c89a4ae208%2fLeson+Dous+pou%c2%a0Akash+Bwose1%2fSWPB_299-akash-s-sweet-lesson-to-brush_Page_06_Image_0001.png",
+      "text": "Li imajine yon gato kap rete tann li nan dòmi. Epoutan, li refize bwose dan l' lannwit menm si manman ak papa te avèti l' de mons dan an.\nIl imagine un gâteau que pour lui dans son rêve. Cependant, il refuse de brosser ses dents la nuit bien que sa maman et son papa l'aient averti du monstre de dents."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f645659cb-0393-43ea-9e23-25c89a4ae208%2fLeson+Dous+pou%c2%a0Akash+Bwose1%2fSWPB_299-akash-s-sweet-lesson-to-brush_Page_07_Image_0001.png",
+      "text": "Yon jou, li te ale nan kabann li, jis kòm dabitid reve de gato li an, li te wè yon gwo mons ki antre nan bouch li panm li te pè. Mons lan di « Mwen pral manje tout dan w siw pa bwose. »\nUn jour, il est allé se coucher, comme d'habitude rêvant de son gâteau, il a vu qu'un monstre énorme est allé zoum dans sa bouche et l'a effrayé. Le monstre lui a dit « Je vais prendre toutes tes dents si tu ne te brosses pas les dents. »"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f645659cb-0393-43ea-9e23-25c89a4ae208%2fLeson+Dous+pou%c2%a0Akash+Bwose1%2fSWPB_299-akash-s-sweet-lesson-to-brush_Page_08_Image_0001.png",
+      "text": "Akash leve tout an kriye, li kouri al jwenn paran l'. Li di « manman ak papa, mwen pap ale nan kabann san mw pa bwose dan m', mw pa vle mons dan an. »\nAkash s'est réveillé en pleurant et a couru frénétiquement à ses parents. Il a dit « maman et papa, je n'irai pas me coucher sans brosser mes dents dorénavant, je ne veux pas le monstre de dents. »"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f645659cb-0393-43ea-9e23-25c89a4ae208%2fLeson+Dous+pou%c2%a0Akash+Bwose1%2fSWPB_299-akash-s-sweet-lesson-to-brush_Page_09_Image_0001.png",
+      "text": "Se pa sèlman jou sa Akash te kòmanse bwose chak maten, chak aswè pou l' ka jwi tout bagay dous li yo san li pa enkyete l' de mikwòb yo. Babay mikwòb.\nNon seulement ce jour-là Akash a commencé le brossage matin et soir pour qu'il puisse jouir de tous ses bonbons sans se soucier de microbes. Au revoir microbes."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 420
+  }
+}

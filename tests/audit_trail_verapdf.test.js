@@ -110,7 +110,8 @@ describe('anti-drift: source wires verdict-to-bytes binding + clears stale verdi
     const typesetStart = audit.indexOf('const _typesetArtifact = _selectTaggedArtifact(taggedBytes)');
     const typeset = audit.slice(typesetStart, audit.indexOf('const _rt =', typesetStart));
     expect(typeset).toMatch(/veraPdf: null,[\s\S]{0,80}veraPdfAt: null,[\s\S]{0,80}veraPdfBytesHash: null/);
-    expect(typeset).toMatch(/if \(!_taggedArtifactTicketIsCurrent\(_typesetArtifact\)[\s\S]{0,180}_typesetSourceHtml\) return;/);
+    expect(typeset).toMatch(/if \(!_taggedArtifactTicketIsCurrent\(_typesetArtifact\)\) return;/);
+    expect(typeset).toMatch(/if \(String\(\(pdfFixResultRef\.current[\s\S]{0,160}!== _typesetSourceHtml\) \{/);
     expect(typeset).toMatch(/_viewAttachTaggedArtifactProof\(_typesetValidation, _typesetArtifact\)/);
   });
   it('the stale path is surfaced honestly (withheld, re-validate) in payload + visible row', () => {

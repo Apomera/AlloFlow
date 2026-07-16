@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-76ada786-untitled",
+  "title": "هفت آرزو",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/a73yEMtkHC"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f76ada786-57c5-44d4-b83f-b368e4a32fb9%2f%d9%87%d9%81%d8%aa+%d8%a2%d8%b1%d8%b2%d9%88%2fجلد.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f76ada786-57c5-44d4-b83f-b368e4a32fb9%2f%d9%87%d9%81%d8%aa+%d8%a2%d8%b1%d8%b2%d9%88%2f02.jpg",
+      "text": "روزی، هفت دوست نَزدیک دریایی نِشَسته بودند.\nناگهان صدایی شَنیدند، نِجات، نِجات!\nآن ها دویدند؛ دیدند که پِسَر پادشاه در حال غرق شدن است."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "آن ها پِسَر پادشاه را نِجات دادند.\nروزِ دیگر، پادشاه آن ها را به دربار خواست.\nاو گفت: بگویید، چه می خواهید؟\nدوستِ اولی گفت: من یک قَصر می خواهم."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f76ada786-57c5-44d4-b83f-b368e4a32fb9%2f%d9%87%d9%81%d8%aa+%d8%a2%d8%b1%d8%b2%d9%88%2ftrtr2.jpg",
+      "text": "دوستِ دومی گفت: من یک اسپِ قشنگ می خواهم.\nدوستِ سومی گفت: من سکه های طلا می خواهم.\nدوستِ چهارمی گفت: من وظیفه می خواهم."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "دوستِ پنجمی گفت: من زمین برای کِشت و کار می خواهم.\nدوستِ ششمی گفت: مرا سپه سالار بسازید.\nدوستِ هفتمی گفت: دوست دارَم برایم یک کتابخانه بدهید."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f76ada786-57c5-44d4-b83f-b368e4a32fb9%2f%d9%87%d9%81%d8%aa+%d8%a2%d8%b1%d8%b2%d9%88%2f03.jpg",
+      "text": "پادشاه قبول کرد و هرکدام به آرزوی خود رسید.\nسال های زیادی گُذشت.\nدوستِ هفتمی که کتابخانه خواسته بود؛\nیک دانِشمَند مشهور شده بود."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "مَردُم برای کَسبِ دانش نزد او می آمدند.\nاو شاگردانِ زیادی داشت.\nروزی، شش دوستِ دیگر به دیدنِ دوستِ هفتمی آمدند."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f76ada786-57c5-44d4-b83f-b368e4a32fb9%2f%d9%87%d9%81%d8%aa+%d8%a2%d8%b1%d8%b2%d9%88%2f01.jpg",
+      "text": "دوستِ دانشمند، همه را دعوت کرد.\nدوستان از دیدنِ همدیگر، خوشحال شدند."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "شش دوست گفتند:\nرفیق، تو بهترین آرزو داشتی و بهترین انتخاب!\nما یک یک چیز را به دست آوردیم، تو همه چیزها را.\nتو، هم مَردُم را با خود داری و هم بهترین ثَروت را.\nبهترین ثَروت دانش تو است."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 203
+  }
+}

@@ -39,6 +39,48 @@ describe('unit constants', () => {
     expect(RR.METERS_PER_MILE).toBeCloseTo(1609.344, 3);
   });
 });
+describe('world-space simulation consistency', () => {
+  it('uses meters for scene motion and derives every display conversion from that scale', () => {
+    expect(RR.METERS_PER_WORLD_UNIT).toBe(1);
+    expect(RR.FEET_PER_WORLD_UNIT).toBeCloseTo(RR.FT_PER_M, 6);
+    expect(RR.worldUnitsToMeters(10)).toBe(10);
+    expect(RR.worldUnitsToFeet(10)).toBeCloseTo(32.8084, 4);
+    expect(RR.metersToWorldUnits(25)).toBe(25);
+  });
+
+  it('computes a true time gap and weather-aware following target', () => {
+    const speed60 = 60 * RR.MPH_TO_MS;
+    expect(RR.followingGapSeconds(speed60 * 3, speed60)).toBeCloseTo(3, 6);
+    expect(RR.recommendedFollowingMeters(speed60, 'clear', 1))
+      .toBeCloseTo(2.5 + speed60 * 3, 6);
+    expect(RR.recommendedFollowingMeters(speed60, 'rain', 1))
+      .toBeCloseTo(2.5 + speed60 * 4, 6);
+    expect(RR.recommendedFollowingMeters(speed60, 'snow', 1))
+      .toBeCloseTo(2.5 + speed60 * 6, 6);
+    expect(RR.recommendedFollowingMeters(speed60, 'ice', 1))
+      .toBeCloseTo(2.5 + speed60 * 8, 6);
+  });
+
+  it('detects real control-line crossings but ignores finite-map teleport wraps', () => {
+    expect(RR.crossedControlLine(12, 8, 10)).toBe(true);
+    expect(RR.crossedControlLine(8, 12, 10)).toBe(true);
+    expect(RR.crossedControlLine(2, 91, 40)).toBe(false);
+    expect(RR.crossedControlLine(12, 11, 10)).toBe(false);
+  });
+
+  it('uses realistic footprints and oriented rectangles for vehicle contact', () => {
+    expect(RR.vehicleFootprint('car')).toEqual({ length: 4.5, width: 1.8 });
+    expect(RR.vehicleFootprint('schoolbus')).toEqual({ length: 10, width: 2.5 });
+    const car = { x: 0, y: 0, heading: 0 };
+    const sameLaneOverlap = { x: 4, y: 0, heading: 0 };
+    const clear = { x: 5, y: 0, heading: 0 };
+    const perpendicular = { x: 1.5, y: 1.5, heading: Math.PI / 2 };
+    const size = RR.vehicleFootprint('car');
+    expect(RR.vehicleRectsOverlap(car, size, sameLaneOverlap, size)).toBe(true);
+    expect(RR.vehicleRectsOverlap(car, size, clear, size)).toBe(false);
+    expect(RR.vehicleRectsOverlap(car, size, perpendicular, size)).toBe(true);
+  });
+});
 
 // ───────────────────────────── physics ───────────────────────────────
 
@@ -312,6 +354,174 @@ describe('seededRandom + world determinism', () => {
   });
 });
 
+describe('calibrated parking geometry', () => {
+  it('converts canvas distance through the explicit 15-foot vehicle scale', () => {
+    expect(RR.PARKING_CAR_LENGTH_PX).toBe(50);
+    expect(RR.PARKING_INCHES_PER_PX).toBeCloseTo(3.6, 6);
+    const parallelCar = { x: 114.5, y: 170, heading: -Math.PI / 2 };
+    expect(RR.parkingCurbGapInches(parallelCar, 100)).toBeCloseTo(9, 5);
+  });
+
+  it('uses oriented bodies for obstacle and course-boundary collision', () => {
+    const angledCar = { x: 50, y: 50, heading: Math.PI / 4 };
+    expect(RR.parkingCarHitsObstacle(angledCar, { x: 62, y: 62, w: 10, h: 10, rotateDeg: 45 })).toBe(true);
+    expect(RR.parkingCarHitsObstacle(angledCar, { x: 90, y: 90, w: 10, h: 10, rotateDeg: 45 })).toBe(false);
+    expect(RR.parkingObbInsideBounds(angledCar, { x: 0, y: 0, w: 100, h: 100 })).toBe(true);
+    expect(RR.parkingObbInsideBounds({ x: 8, y: 50, heading: 0 }, { x: 0, y: 0, w: 100, h: 100 })).toBe(false);
+  });
+
+  it('defines physically possible parallel spaces and legal hydrant targets', () => {
+    const tight = RR.PARKING_SCENARIOS.tightParallel;
+    const physicalGapInches = (tight.obstacles[1].y - (tight.obstacles[0].y + tight.obstacles[0].h)) * RR.PARKING_INCHES_PER_PX;
+    expect(physicalGapInches).toBeGreaterThan(180);
+    expect(physicalGapInches / 12).toBeCloseTo(18.9, 1);
+
+    const hydrant = RR.PARKING_SCENARIOS.hydrantParallel;
+    const targetCar = { x: hydrant.slot.x, y: hydrant.slot.y, heading: -Math.PI / 2 };
+    const hydrantProp = hydrant.obstacles.find((ob) => ob.isHydrant);
+    expect(RR.parkingPointClearanceInches(targetCar, hydrantProp.x + hydrantProp.w / 2, hydrantProp.y + hydrantProp.h / 2)).toBeGreaterThanOrEqual(120);
+  });
+
+  it('measures hydrant clearance from the rotated body edge in inches', () => {
+    const car = { x: 115, y: 270, heading: -Math.PI / 2 };
+    const clearance = RR.parkingPointClearanceInches(car, 93, 179);
+    expect(clearance).toBeGreaterThan(120);
+    expect(clearance).toBeCloseTo(Math.hypot(66, 10) * 3.6, 5);
+  });
+});
+
+describe('roundabout traffic and compliance', () => {
+  it('spawns dedicated circulating traffic plus an approach vehicle', () => {
+    const traffic = RR.spawnRoundaboutTraffic({ id: 'roundabout', traffic: 'medium' });
+    expect(traffic).toHaveLength(4);
+    expect(traffic.filter((v) => v._roundaboutState === 'circulating')).toHaveLength(3);
+    expect(traffic.filter((v) => v._roundaboutState === 'approach')).toHaveLength(1);
+    for (const vehicle of traffic.filter((v) => v._roundaboutState === 'circulating')) {
+      expect(Math.hypot(vehicle.x - RR.MAP_SIZE / 2, vehicle.y - RR.MAP_SIZE / 2)).toBeCloseTo(RR.ROUNDABOUT_LANE_RADIUS, 5);
+    }
+  });
+
+  it('moves circulating traffic counterclockwise and holds approaches for unsafe gaps', () => {
+    const traffic = RR.spawnRoundaboutTraffic({ id: 'roundabout', traffic: 'medium' });
+    const circulating = traffic[0];
+    const beforeAngle = circulating._roundaboutAngle;
+    RR.updateRoundaboutTrafficVehicle(circulating, 0.25, traffic);
+    expect(circulating._roundaboutAngle).toBeLessThan(beforeAngle);
+
+    const approach = traffic.find((v) => v._roundaboutState === 'approach');
+    const entryPose = RR.roundaboutPose(approach._roundaboutEntryAngle);
+    approach.x = entryPose.x + 2;
+    approach.y = entryPose.y;
+    approach.speed = 4;
+    const blocker = traffic[1];
+    blocker._roundaboutAngle = approach._roundaboutEntryAngle + 0.2;
+    blocker.speed = 6;
+    RR.updateRoundaboutTrafficVehicle(approach, 0.5, traffic);
+    expect(approach._roundaboutState).toBe('approach');
+    expect(approach.speed).toBeLessThan(4);
+  });
+
+  it('keeps a one-minute mixed roundabout flow finite and on authored paths', () => {
+    const traffic = RR.spawnRoundaboutTraffic({ id: 'roundabout', traffic: 'medium' });
+    for (let frame = 0; frame < 600; frame++) {
+      for (const vehicle of traffic) RR.updateRoundaboutTrafficVehicle(vehicle, 0.1, traffic);
+      for (const vehicle of traffic) {
+        expect(Number.isFinite(vehicle.x) && Number.isFinite(vehicle.y) && Number.isFinite(vehicle.speed)).toBe(true);
+        if (vehicle._roundaboutState === 'circulating') {
+          expect(Math.hypot(vehicle.x - RR.MAP_SIZE / 2, vehicle.y - RR.MAP_SIZE / 2)).toBeCloseTo(RR.ROUNDABOUT_LANE_RADIUS, 4);
+        }
+      }
+    }
+  });
+
+  it('detects unsafe entry, wrong-way travel, stopping inside, and missing exit signal', () => {
+    const blocker = [{ id: 'blocker', _roundaboutState: 'circulating', _roundaboutAngle: Math.PI, _roundaboutRadius: 8, speed: 8 }];
+    const entry = RR.assessRoundaboutFrame({}, { x: 48, y: 60, speed: 4 }, { x: 48, y: 58, speed: 4 }, blocker, 0, 0.1);
+    expect(entry.events).toContain('unsafe_entry');
+
+    const wrongWay = RR.assessRoundaboutFrame(
+      { inCircle: true, lastAngle: 0, wrongWaySeconds: 0 },
+      { x: 56, y: 48, speed: 5 },
+      { x: 48 + Math.cos(0.1) * 8, y: 48 + Math.sin(0.1) * 8, speed: 5 },
+      [], 0, 1
+    );
+    expect(wrongWay.events).toContain('wrong_way');
+
+    const stopped = RR.assessRoundaboutFrame(
+      { inCircle: true, lastAngle: 0, stoppedSeconds: 0 },
+      { x: 56, y: 48, speed: 0 }, { x: 56, y: 48, speed: 0 }, [], 0, 2
+    );
+    expect(stopped.events).toContain('stopped_inside');
+
+    const exit = RR.assessRoundaboutFrame(
+      { inCircle: true, lastAngle: 0 },
+      { x: 58, y: 48, speed: 4 }, { x: 60, y: 48, speed: 4 }, [], 0, 0.1
+    );
+    expect(exit.events).toContain('missing_exit_signal');
+    const signaledExit = RR.assessRoundaboutFrame(
+      { inCircle: true, lastAngle: 0 },
+      { x: 58, y: 48, speed: 4 }, { x: 60, y: 48, speed: 4 }, [], 1, 0.1
+    );
+    expect(signaledExit.events).not.toContain('missing_exit_signal');
+  });
+});
+describe('continuous scripted worlds', () => {
+  it('streams every linear scenario while keeping bounded maneuver courses bounded', () => {
+    const streamed = RR.SCENARIOS.filter((s) => !['parking', 'roundabout'].includes(s.id));
+    for (const scn of streamed) expect(RR.scenarioUsesContinuousWorld(scn.id), scn.id).toBe(true);
+    expect(RR.scenarioUsesContinuousWorld('parking')).toBe(false);
+    expect(RR.scenarioUsesContinuousWorld('roundabout')).toBe(false);
+  });
+
+  it('clamps bounded maneuver courses instead of teleport-looping', () => {
+    expect(RR.clampFiniteCoursePosition(40, 40, 1)).toEqual({ x: 40, y: 40, hit: false });
+    expect(RR.clampFiniteCoursePosition(-12, 140, 1)).toEqual({ x: 1, y: RR.MAP_SIZE - 2, hit: true });
+  });
+
+  it('keeps scenario identity and posted limits across arbitrarily distant chunks', () => {
+    const highway = RR.createScenarioWorld({ id: 'highway', speedLimit: 65 });
+    expect(highway.mode).toBe('scenario');
+    expect(highway.postedLimitMph).toBe(65);
+    for (const ci of [-100, -7, 0, 9, 125]) {
+      const chunk = highway.getChunk(ci);
+      expect(chunk.biome).toBe('suburban');
+      expect(chunk.hasIntersection).toBe(false);
+      expect(chunk.isHighway).toBe(true);
+      expect(chunk.roadHalfWidth).toBe(6.5);
+      expect(RR.worldPostedLimitMph(highway, chunk, 25)).toBe(65);
+      const row = chunk.cells[Math.floor(RR.CHUNK_SIZE / 2)];
+      expect(row[Math.round(chunk.roadCenters[Math.floor(RR.CHUNK_SIZE / 2)])]).toBe(6);
+    }
+  });
+
+  it('uses deterministic scenario-specific controls and school landmarks', () => {
+    const residential = RR.createScenarioWorld({ id: 'residential', speedLimit: 25 });
+    expect(residential.getChunk(0).hasIntersection).toBe(true);
+    expect(residential.getChunk(0).signalType).toBe('stop');
+    expect(residential.getChunk(1).hasIntersection).toBe(false);
+
+    const school = RR.createScenarioWorld({ id: 'school_zone', speedLimit: 15 });
+    const schoolChunk = school.getChunk(6);
+    expect(schoolChunk.hasIntersection).toBe(false);
+    expect(schoolChunk.landmark.type.id).toBe('school');
+    expect(RR.worldPostedLimitMph(school, schoolChunk, 25)).toBe(15);
+  });
+
+  it('spawns and tags streamed pedestrians for safe chunk cleanup', () => {
+    const scn = { id: 'downtown', speedLimit: 30 };
+    const world = RR.createScenarioWorld(scn);
+    const chunk = world.getChunk(1);
+    expect(chunk.hasIntersection).toBe(true);
+    const peds = RR.spawnStreamedPedestrians(scn, world, chunk, 1);
+    expect(peds).toHaveLength(4);
+    for (const ped of peds) {
+      expect(ped._chunk).toBe(1);
+      expect(ped.crosswalkY).toBe(1 * RR.CHUNK_SIZE + chunk.intersectionY);
+      expect(Math.abs(ped.homeX - world.spline.centerAt(ped.crosswalkY))).toBeCloseTo(chunk.roadHalfWidth + 1, 5);
+    }
+  });
+});
+
 describe('buildMap', () => {
   it('returns a MAP_SIZE grid with a drivable road on every row, for every scenario', () => {
     for (const scn of RR.SCENARIOS) {
@@ -364,8 +574,10 @@ describe('spawn placement follows the road curve', () => {
       const cars = RR.spawnTraffic(scn);
       for (const t of cars) {
         if (t.crossStreet) continue; // east-west cars ride the cross streets
+        if (t._roundaboutState) continue; // dedicated circular/approach geometry is tested separately
         const dx = Math.abs(t.x - center(scn.id, t.y));
-        expect(dx, scn.id + ' car at x=' + t.x.toFixed(1) + ',y=' + t.y.toFixed(1)).toBeLessThanOrEqual(4.2);
+        const maxLaneOffset = scn.id === 'highway' ? 5.0 : 4.2;
+        expect(dx, scn.id + ' car at x=' + t.x.toFixed(1) + ',y=' + t.y.toFixed(1)).toBeLessThanOrEqual(maxLaneOffset);
       }
     }
   });

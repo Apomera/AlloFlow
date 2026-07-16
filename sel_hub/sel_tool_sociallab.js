@@ -744,11 +744,10 @@ window.SelHub = window.SelHub || {
           chatFeedback && chatFeedback.error && h('p', { style: { color: _slC('#dc2626'), fontSize: '12px' } }, chatFeedback.error),
           // Input bar
           !chatFeedback && h('div', { style: { display: 'flex', gap: '8px', flexShrink: 0 } },
-            h('input', { type: 'text', value: chatInput, onChange: function(ev) { setChatInput(ev.target.value); },
+            h('input', { type: 'text', 'aria-label': 'Your response', value: chatInput, onChange: function(ev) { setChatInput(ev.target.value); },
               onKeyDown: function(ev) { if (ev.key === 'Enter' && chatInput.trim() && !chatLoading) sendChat(chatInput); },
               placeholder: 'Type what you would say...', disabled: chatLoading,
-              style: { flex: 1, padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', outline: 'none' },
-              'aria-label': 'Your response' }),
+              style: { flex: 1, padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px' }, }),
             // Speech-to-text button — Phase 3v.M migrated to shared
             // window.AlloFlowVoice.initWebSpeechCapture when available;
             // inline fallback retained for race-tolerance on first paint.
@@ -772,7 +771,7 @@ window.SelHub = window.SelHub || {
               rec.start();
               addToast && addToast('Listening... speak now!', 'info');
             }, disabled: chatLoading, style: btn(_slC('#f1f5f9'), _slC('#374151'), chatLoading), 'aria-label': 'Voice input' }, '🎤'),
-            h('button', { onClick: function() { if (chatInput.trim()) sendChat(chatInput); }, disabled: !chatInput.trim() || chatLoading,
+            h('button', { 'aria-label': 'Send social skills response', onClick: function() { if (chatInput.trim()) sendChat(chatInput); }, disabled: !chatInput.trim() || chatLoading,
               style: btn(PURPLE, '#fff', !chatInput.trim() || chatLoading) }, '→')
           ),
           // Get feedback + export buttons

@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-03a68c61-yon-mouch",
+  "title": "Yon Mouch",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Health"
+  ],
+  "authors": [
+    "Kabubbu pilot site"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Kabubbu pilot site",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/iy32O8WMwj"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f03a68c61-0c5a-44f9-b022-229ece2faa7c%2fYon+Mouche%2fA_FLY_Page_1_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f03a68c61-0c5a-44f9-b022-229ece2faa7c%2fYon+Mouche%2fASP_62_a_fly_Page_2_Image_0001.jpg",
+      "text": "Yon mouch se yon ensèk."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f03a68c61-0c5a-44f9-b022-229ece2faa7c%2fYon+Mouche%2fASP_62_a_fly_Page_3_Image_0001.jpg",
+      "text": "Yon mouch viv kote ki sal."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f03a68c61-0c5a-44f9-b022-229ece2faa7c%2fYon+Mouche%2fA_FLY_Page_4_Image_0001.png",
+      "text": "Nan twalèt, poubèl fatra, ak nan manje."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f03a68c61-0c5a-44f9-b022-229ece2faa7c%2fYon+Mouche%2fA_FLY_Page_5_Image_0001.png",
+      "text": "Yo vole sot kote ki sal pou vini lakay nou."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f03a68c61-0c5a-44f9-b022-229ece2faa7c%2fYon+Mouche%2fA_FLY_Page_6_Image_0001.png",
+      "text": "Yo tonbe nan manje nou e fè li sal."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f03a68c61-0c5a-44f9-b022-229ece2faa7c%2fYon+Mouche%2fA_FLY_Page_7_Image_0001.png",
+      "text": "Lè ou manje manje sal, li ba ou lestomak fè mal."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f03a68c61-0c5a-44f9-b022-229ece2faa7c%2fYon+Mouche%2fA_FLY_Page_8_Image_0001.png",
+      "text": "Yon mouch vrèman danjere."
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 52
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-30696c76-untitled-prs",
+  "title": "جواد و بچه ها",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/djPNcXMZwm"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f30696c76-49f9-4f83-96ef-c421fe470004%2f%d8%ac%d9%88%d8%a7%d8%af+%d9%88+%d8%a8%da%86%d9%87+%d9%87%d8%a7%2fpark1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f30696c76-49f9-4f83-96ef-c421fe470004%2f%d8%ac%d9%88%d8%a7%d8%af+%d9%88+%d8%a8%da%86%d9%87+%d9%87%d8%a7%2fpark11.jpg",
+      "text": "جواد بعضی روزها با مادرش به پارک می رفت.\nاو جرأت نداشت با بچه ها بازی کند."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "چرا که دست راست او معلول بود.\nجواد از این که دستش معلول بود، احساس کمی می کرد.\nمادرش هرچه دلداری می داد، فایده ای نداشت."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f30696c76-49f9-4f83-96ef-c421fe470004%2f%d8%ac%d9%88%d8%a7%d8%af+%d9%88+%d8%a8%da%86%d9%87+%d9%87%d8%a7%2f2.jpg",
+      "text": "جواد، بچه ها را از دور نگاه می کرد.\nاو می ترسید، اگر کسی دستش را ببیند،مسخره اش می کند."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "چند روز بعد، وقتی جواد با مادرش به پارک آمد.\nمادر جواد، نزدیک بچه ها رفت و گفت:\nعزیزانم! جوادجان، پسر من است.\nاو می خواهد با شما بازی کند."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f30696c76-49f9-4f83-96ef-c421fe470004%2f%d8%ac%d9%88%d8%a7%d8%af+%d9%88+%d8%a8%da%86%d9%87+%d9%87%d8%a7%2fpark2.jpg",
+      "text": "یکی از بچه ها نزدیکتر آمد و گفت:\nسلام جواد جان! اسم من احسان است.\nبیا با دوستانم معرفی ات کنم."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "آن ها از جواد خواستند تا همرای شان بازی کند.\nجواد هم قبول کرد.\nجواد و بچه ها یکجا سرگرم بازی شدند.\nبعد از مدتی جواد با خوشحالی به طرف مادرش آمد.\nمادرش پرسید: چه خبر است جواد جان؟"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f30696c76-49f9-4f83-96ef-c421fe470004%2f%d8%ac%d9%88%d8%a7%d8%af+%d9%88+%d8%a8%da%86%d9%87+%d9%87%d8%a7%2fpark33.jpg",
+      "text": "جواد گفت: مادرجان!\nمن با بچه ها بازی کردم و خیلی خوش گذشت.\nهیچ کس مرا مسخره نکرد."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "مادرش گفت: دیدی پسرم!\nتوهم می توانی با بچه ها بازی کنی.\nنباید احساس کمی کنی.\nاز آن روز به بعد جواد بابچه ها بازی می کرد.\nاو بسیار خوشحال و فعال بود."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 204
+  }
+}

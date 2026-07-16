@@ -1,0 +1,107 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-59fa85e6-mukiza-yatabaye-se",
+  "title": "Mukiza yatabaye se",
+  "description": "Se wa Mukiza yabaga yasinze buri joro maze yataha agatabaza abeshya ko atewe n'impyisi. Ariko noneho umunsi umwe aterwa n'impyisi koko. Ese hari umuntu uri bumutabare?",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Traditional Story"
+  ],
+  "authors": [
+    "Kanyiva Sandi"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/mDveikYivv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f1.png",
+      "text": "Kera habayeho umwana muto w'umuhungu witwaga Mukiza akabana na se witwaga Senzoga."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f2.png",
+      "text": "Senzoga yagoroberezaga mu kabari akageza mu gicuku ku buryo Mukiza yamubonaga gake cyane."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f3.png",
+      "text": "Igihe se wa Mukiza yabaga atashye yaratabazaga ati: \"Bavandimwe nimuntabare! Impyisi irandiye.\""
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f4.png",
+      "text": "Igihe abaturage bumvaga Senzoga atabaza, bahururaga bitwaje amacumu, imyambi n'imihoro bagira ngo bamutabare.\nAriko bahagera bagasanga yasinze ari ukubakinisha gusa."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f5.png",
+      "text": "Se wa Mukiza yakomeje kunywa, gusinda no gutabaza asaba abantu kumutabara mu gicuku. Abaturanyi bakomeje kujya baza kumutabara bitwaje amacumu, imyambi ndetse n'imihoro.\nAriko buri gihe bagasanga ni kwa kundi. Buri gihe yabaga abakinisha."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f6.png",
+      "text": "Igiuhe cyose se wa Mukiza yabaga atashye bwije, Karisa yakangurwaga n'induru ya se atabaza.\nMukiza yari azi ijwi rya se neza cyane. Yashoboraga kumva se igihe yabaga agenda munzira kugeza igihe agereye ku muryango w'inzu yabo."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f7.png",
+      "text": "Ijoro rimwe, Senzoga yatashye yasinze nk'uko yari amenyereye. Ariko noneho impyisi yari yihishe hafi y'inzu ye.\nIgihe Senzoga yavuzaga induru, impyisi yamusimbukiye n'uburakari bwinshi."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f8a.jpg",
+      "text": "Senzoga avuza induru cyane, ariko abaturanyi baravuga bati: \"Turambiwe imikino ya Senzoga.\" Bisubirira mu buriri barisinzirira."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f9.png",
+      "text": "Nk'uko bisanzwe, induru ya Senzoga yakanguye umuhungu we, Mukiza. Mukiza yategereje intambwe za se nk'uko bisanzwe.\nAriko noneho ntiyumva se aza agana ku nzu. Mukiza yahagurutse bwangu atega amatwi yitonze."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f10a.jpg",
+      "text": "Mukiza aribwira ati: \"Data ari mu byago nta kabuza.\" Ubu noneho ntabwo ari gukinisha abantu."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f11.png",
+      "text": "Mukiza abaduka ku buriri bwe.\nYashikuje igishirira cyaka umuriro mu ziko asohoka mu nzu bwangu."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f12.png",
+      "text": "Arahamagara ati: \"Data we! Data we!\" Ukwezi kwaramurikaga, maze Mukiza abona se arwana n'inyamaswa. Mukiza azamura cya gishirira.\nImpyisi ngo ikibone iriruka."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f13.png",
+      "text": "Kuva icyo gihe, Senzoga ntiyongeye kunywa inzoga.\nAhubwo igihe cye agikoresha abwira abanyeshuri inkuru zishimishije."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2fimage5.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 264
+  }
+}

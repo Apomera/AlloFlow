@@ -19821,9 +19821,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
             // Branch: actionable
             d.worryActionable === true ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: _anxFg('#bbf7d0'), marginBottom: 8 } }, '✓ Make a plan'),
+              h('label', { htmlFor: 'a-worry-action', style: { display: 'block', fontSize: 13, fontWeight: 800, color: _anxFg('#bbf7d0'), marginBottom: 8 } }, '✓ Make a plan'),
               h('div', { style: { fontSize: 12, color: _anxFg('#94a3b8'), marginBottom: 8, fontStyle: 'italic', lineHeight: 1.55 } }, 'What is the next concrete step? Not "study more"; "spend 20 minutes on practice problems #5-10 after dinner tonight."'),
-              h('textarea', { value: d.worryAction || '',
+              h('textarea', { id: 'a-worry-action', value: d.worryAction || '',
                 placeholder: 'The next concrete step is...',
                 onChange: function(e) { setA({ worryAction: e.target.value }); },
                 style: { width: '100%', minHeight: 90, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } }),
@@ -19835,9 +19835,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
             // Branch: not actionable
             d.worryActionable === false ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: _anxFg('#e9d5ff'), marginBottom: 8 } }, '⤴ Let it go (for now)'),
+              h('label', { htmlFor: 'a-worry-redirect', style: { display: 'block', fontSize: 13, fontWeight: 800, color: _anxFg('#e9d5ff'), marginBottom: 8 } }, '⤴ Let it go (for now)'),
               h('div', { style: { fontSize: 12, color: _anxFg('#94a3b8'), marginBottom: 8, fontStyle: 'italic', lineHeight: 1.55 } }, 'If there is nothing you can do RIGHT NOW, more worrying will not make you safer or smarter; it will just make you exhausted. The move is to redirect. Park it for worry time later (if you want), or use a grounding skill.'),
-              h('textarea', { value: d.worryLetGoNotes || '',
+              h('textarea', { id: 'a-worry-redirect', value: d.worryLetGoNotes || '',
                 placeholder: 'What will you redirect to? A specific activity, a coping skill, a person to text.',
                 onChange: function(e) { setA({ worryLetGoNotes: e.target.value }); },
                 style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } }),
@@ -19923,8 +19923,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _anxBg('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { fontSize: 10, color: _anxFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', minWidth: 75 } }, w.date),
                 h('span', { style: { flex: 1, fontSize: 13, color: _anxFg('#e2e8f0') } }, w.text),
-                h('button', { onClick: function() { removeWorry(i); }, 'aria-label': 'Remove worry',
-                  style: { background: 'transparent', border: '1px solid #475569', color: _anxFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                h('button', { onClick: function() { removeWorry(i); }, 'aria-label': 'Remove worry: ' + w.text,
+                  style: { minWidth: 24, minHeight: 24, background: 'transparent', border: '1px solid #475569', color: _anxFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: 'pointer', fontSize: 10 } }, '✕')
               );
             })
           ) : null,
@@ -20102,8 +20102,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               items.map(function(s, i) {
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 14, background: _anxBg('#1e293b'), border: '1px solid ' + color + '44', fontSize: 12, color: _anxFg('#e2e8f0') } },
                   h('span', null, s),
-                  h('button', { onClick: function() { removeItem(i); }, 'aria-label': 'Remove',
-                    style: { background: 'transparent', border: 'none', color: _anxFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕')
+                  h('button', { onClick: function() { removeItem(i); }, 'aria-label': 'Remove grounding item: ' + s,
+                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _anxFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕')
                 );
               })
             ) : null,

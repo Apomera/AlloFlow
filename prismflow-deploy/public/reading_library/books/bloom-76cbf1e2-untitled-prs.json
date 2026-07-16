@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-76cbf1e2-untitled-prs",
+  "title": "دختر منظم",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/1j2pqP1Lzt"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f76cbf1e2-d537-4d33-8e57-cd83e4f649f6%2f%d8%af%d8%ae%d8%aa%d8%b1+%d9%85%d9%86%d8%b8%d9%85%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f76cbf1e2-d537-4d33-8e57-cd83e4f649f6%2f%d8%af%d8%ae%d8%aa%d8%b1+%d9%85%d9%86%d8%b8%d9%85%2f%db%b32.jpg",
+      "text": "مریم با صدای مادر از خواب بیدار شد.\nوقتی چشمانش را باز کرد که وقت نماز بود.\nبعد از ادای نماز قرآنکریم تلاوت کرد.\nاندکی بعد آماده گی گرفت.\nباید آمادۀ رفتن به مکتب می شد."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "مریم بستر خوابش را منظم کرد و از اتاقش بیرون شد.\nپدر و مادر مصروف آماده کردن صبحانه بودند.\nاو به مادر و پدر سلام و صبح بخیر گفت."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f76cbf1e2-d537-4d33-8e57-cd83e4f649f6%2f%d8%af%d8%ae%d8%aa%d8%b1+%d9%85%d9%86%d8%b8%d9%85%2f%db%b21.jpg",
+      "text": "مریم دندان هایش را مسواک زد.\nدست و صورتش را با صابون شُست.\nجوراب و لباس اُتو کرده اش را پوشید.\nچادرش را بسر کرد."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "مریم بکس تمیز و منظمش را برداشت و به مکتب رفت.\nهمصنفی های مریم او را دوست داشتند.\nاو همیشه نظافت را رعایت می کرد.\nمریم دختر تمیز و لایقی بود.\nنظافت مریم باعث می شد که همه با او دوست باشند."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f76cbf1e2-d537-4d33-8e57-cd83e4f649f6%2f%d8%af%d8%ae%d8%aa%d8%b1+%d9%85%d9%86%d8%b8%d9%85%2f%db%b4.jpg",
+      "text": "مریم وقتی ازمکتب به خانه برمی گشت.\nلباس های مکتب اش را داخل الماری می گذاشت.\nاو چادر و جوراب هایش را می شست، تا برای فردا آماده باشد."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "مریم دختر منظمی بود.\nاو همیشه نظافت خود و اتاقش را رعایت می کرد.\nمریم برای خود یک الماری کوچک و زیبا درُست کرده بود.\nاو کتاب هایش را به شکل منظم به داخل آن می گذاشت."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f76cbf1e2-d537-4d33-8e57-cd83e4f649f6%2f%d8%af%d8%ae%d8%aa%d8%b1+%d9%85%d9%86%d8%b8%d9%85%2f%db%b5.jpg",
+      "text": "او بعد از خوردن غذا و استراحت، شاداب می شد.\nاو کارخانگی اش را منظم و تمیز انجام می داد."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "مریم کتاب هایش را برای فردا منظم کرده داخل بکسش می گذاشت.\nمادرمریم از او همیشه راضی بود.\nمعلم صاحب همیشه مریم را تشویق می کرد.\nمریم در مکتب همیشه از نظر رعایت نظافت، الگوی شاگردان دیگر بود.\nکسی که نظافت را رعایت کند، همه او را دوست دارند."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 267
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-9164883b-untitled",
+  "title": "ປສຶມ ສາລີ",
+  "description": "Learn about corn, from planting the seed to harvesting the corn to eat.",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Health"
+  ],
+  "authors": [
+    "bloom khmu"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "bloom khmu",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/rQk7fKH3FV"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/rQk7fKH3FV%2f1752733054842%2f%e0%ba%9b%e0%ba%aa%e0%ba%b6%e0%ba%a1+%e2%80%8b%e0%ba%aa%e0%ba%b2%e0%ba%a5%e0%ba%b5%2fCorn+cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ປສຶມ ສາລີ\" (Lao). Learn about corn, from planting the seed to harvesting the corn to eat."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 70
+  }
+}

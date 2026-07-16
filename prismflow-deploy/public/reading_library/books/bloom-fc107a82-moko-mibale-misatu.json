@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-fc107a82-moko-mibale-misatu",
+  "title": "Moko Mibale Misatu",
+  "description": "Count in your own language!",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jk3n5vAMOZ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2fBeans+Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2f1+Bean.jpg",
+      "text": "Moko"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2f2+Beans.jpg",
+      "text": "Mibale"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2f3+Beans.jpg",
+      "text": "Misatu"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2f4+Beans.jpg",
+      "text": "Mineyi"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2f5+Beans.jpg",
+      "text": "Mitanu"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2f6+Beans.jpg",
+      "text": "Motoba"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2f7+Beans.jpg",
+      "text": "Sambo"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2f8+Beans.jpg",
+      "text": "Mwambe"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2f9+Beans.jpg",
+      "text": "Libwa"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2f10+Beans.jpg",
+      "text": "Zomi"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 10
+  }
+}

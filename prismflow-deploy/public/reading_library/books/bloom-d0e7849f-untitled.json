@@ -1,0 +1,107 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d0e7849f-untitled",
+  "title": "នៅផ្សារ",
+  "description": "చుడ్డుక్ కాండిర్-పేకికున్ సాటి ఇవ్ గొస్టింగ్ కామి సీంతంగ్.",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Business"
+  ],
+  "authors": [
+    "jamunasidam2016@gmail.com"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "jamunasidam2016@gmail.com",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ILj5QS0v0J"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+table+of+tomatoes.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+pile+of+peanuts.jpg",
+      "text": "ពំនូកសណ្តែកដី"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+bunch+of+bananas.jpg",
+      "text": "ចេក ០១ស្ទង"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+sack+of+saksak.jpg",
+      "text": "ម្សៅសាគូ ០១បាវ"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+bowl+of+beetles.jpg",
+      "text": "ចានក្រឡោមដាក់សត្វល្អិត"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+pair+of+pineapples.jpg",
+      "text": "ម្នាស់ ១គូ"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+kilo+of+kaukau.jpg",
+      "text": "កាកាវ ១គីឡូក្រាម"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+table+of+tomatoes1.jpg",
+      "text": "ផ្លែប៉េងបោះ ១តុ"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+mixture+of+meats.jpg",
+      "text": "សាច់ចម្រុះ"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+piece+of+pawpaw.jpg",
+      "text": "ល្ហុង ០១ចំណិត"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+photo+of+fish.jpg",
+      "text": "រូបភាពសត្វត្រី ១សន្លឹក"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+group+of+greens.jpg",
+      "text": "ក្រុមបន្លែពណ៌ខៀវ"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+an+extra+egg.png",
+      "text": "ស៊ុតជាច្រើនគ្រាប់"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+tin+of+tuna.jpg",
+      "text": "ត្រីខ ០១កំប៉ុង"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ILj5QS0v0J%2f1745461201834%2f%e1%9e%98%e1%9f%81%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%91%e1%9e%b8+%e1%9f%a0%e1%9f%a1%e1%9f%96+%e1%9e%93%e1%9f%85%e1%9e%91%e1%9e%b8%e1%9e%95%e1%9f%92%e1%9e%9f%e1%9e%b6%e1%9e%9a%2fAt+the+market+-+a+mess+of+melons.jpg",
+      "text": "បំណែកផ្លែឪឡឹក"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 22
+  }
+}

@@ -1,0 +1,436 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-5851665e-isi-n-izuba",
+  "title": "Isi N'izuba",
+  "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru y’isi n’izuba.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Science"
+  ],
+  "authors": [
+    "Ndahayo Ferdinand"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/U1GsFHG6Qk"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA3.jpg",
+  "audio": {
+    "mode": "perPage"
+  },
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA1.png",
+      "text": ""
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Perdua Publishers\nP.O Box 3405 Kigali\nEmail: info@perduap.com\nWebsite: www.perduap.com\n© Perdua Publishers 2020\nCyatangajwe bwa mbere mu mwaka wa 2020\nAbantu bose bahawe uburenganzira bukurikira kuri iki gitabo: kugisoma\nyaba mu buryo bw’ikoranabuhanga cyangwa ku mpapuro, kugikura kuri\nmurandasi, kugifotoza cyangwa kugicapisha mu mpapuro, kugihererekanya\nyaba ku mpapuro cyangwa ku mbuga z’ikoranabuhanga (iziriho cyangwa\nizizavumburwa nyuma) no kugihindura mu ndimi izo ari zo zose. Abagikoreshantibemerewe kugicuruza cyangwa kukibyazamo amafaranga mu buryo ubwoari bwo bwose, batabiherewe uburenganzira mu nyandiko n’abagitangaje.\nISBN:"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_05_Image_1.jpg",
+      "text": "Isi yari ifite abana barindwi.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fe2091361-4e27-4f0c-bcf4-613bb862b0fa.mp3",
+          "dur": 3.44
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_06_Image_3.jpg",
+      "text": "Umwe yitwaga Afurika, undi Aziya, undi Ositarariya, undi Burayi, undi Antaragitika, hakabamo n’ab’impanga bitwa Amerika ya Ruguru na Amerika y’Epfo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fd83af7c7-8403-49b6-9053-6fd168d2e7e4.mp3",
+          "dur": 19.72
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_07_Image_1.jpg",
+      "text": "Isi rero ikaba yibumbabumbye nk’umupira wo gukina. Abana bayo yabahekaga mu mpande zayo zose: Hepfo, haruguru, hagati, mu mbavu no mu mugongo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fe081673c-ec4f-4758-85a2-22d1e0bfea5c.mp3",
+          "dur": 21.27
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_08_Image_3.jpg",
+      "text": "Isi igakunda kota izuba. Buri munsi ikajya aho iryitegeye neza, maze ikaryota ikanezerwa.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi3f4244bf-00e6-495e-b106-3b5589af84b0.mp3",
+          "dur": 18.52
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_09_Image_1.jpg",
+      "text": "Ariko izuba ntiryageraga ku bana bose.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fc0094fdb-663a-43d7-9e8a-748d595aa347.mp3",
+          "dur": 4.95
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_10_Image_1.jpg",
+      "text": "Bityo aho izuba ricana bagahora bari ku manywa ibihe byose.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi9654f36f-4a8b-49fe-9657-5fb0c60da241.mp3",
+          "dur": 8.74
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_11_Image_3.jpg",
+      "text": "Naho abo ihetse ahatagera izuba bagahora mu ijoro ridacya.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi79e12715-1690-45de-9167-d626f10ea740.mp3",
+          "dur": 7.64
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_12_Image_1.jpg",
+      "text": "Bukeye, ba bana bahora ku zuba bagira ubutayu n’ubushyuhe bwinshi.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi9c5c1aae-57fa-4834-8942-52e9858a7cdf.mp3",
+          "dur": 8.66
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_13_Image_1.jpg",
+      "text": "Naho abana bari ahatari izuba bakaba mu bukonje n’urubura.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fe07f12fb-ff2d-4d4b-b0f8-9939e04de3ac.mp3",
+          "dur": 6.12
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_14_Image_1.jpg",
+      "text": "Umunsi umwe, abana bose baririra icyarimwe, Isi ibura uko ibigenza.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi60e20fed-1fe5-4073-a361-ac7a0bb61278.mp3",
+          "dur": 7.65
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_15_Image_1.jpg",
+      "text": "Nuko Izuba rirayibwira riti: “Humura nshuti! Ngaho hindukira nsusurutse n’abo uhetse mu mugongo.”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fae51fe92-4f05-4de3-bef4-ac8f23d0c5a3.mp3",
+          "dur": 12.16
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_16_Image_1.jpg",
+      "text": "Isi irahindukira. Ba bana ihetse mu mugongo na bo bagerwaho n’izuba.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi9ccd3d53-b896-4165-b01d-aae0268a4609.mp3",
+          "dur": 7.32
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_17_Image_1.jpg",
+      "text": "Isi ihindukiye, ijoro n’amanywa bikajya bisimburana.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2ffce46a6d-6c57-4b72-b36a-b02e7f96d6b5.mp3",
+          "dur": 6.66
+        }
+      ]
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_18_Image_1.jpg",
+      "text": "Isi ibaza Izuba iti: “Nakora iki kugira ngo uge umurikira abana bange bose?”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2ff9103c70-8b60-4cad-b8de-9603bbca514c.mp3",
+          "dur": 8.99
+        }
+      ]
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_19_Image_1.jpg",
+      "text": "Izuba riti: “Komeza uge wihindukiza ubudahagarara.”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi4b728658-2e55-40de-b187-e086cc1767c9.mp3",
+          "dur": 6.39
+        }
+      ]
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_20_Image_1.jpg",
+      "text": "Isi ikizengurutsa ubudahagarara, maze Izuba rikagera ku bana bose mu munsi umwe.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi2f719d2b-af43-440d-b044-9f1197232fe7.mp3",
+          "dur": 9.78
+        }
+      ]
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_21_Image_1.jpg",
+      "text": "Nuko Isi iranezerwa, kuko abana bayo bose bagerwaho n’izuba buri munsi.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi462cdc24-f408-4bf4-b6b2-564a25d45466.mp3",
+          "dur": 9.41
+        }
+      ]
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_22_Image_2.png",
+      "text": "Hashize iminsi, Isi isanga uwitwa Antaragitika izuba ritamugeraho neza.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2ff2fd0ac4-c403-48c4-8806-5e7eae873237.mp3",
+          "dur": 10.3
+        }
+      ]
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_23_Image_1.jpg",
+      "text": "Wa mwana agahora akonje.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi99b64b7c-406b-4edc-bcd9-dfb196b8dcab.mp3",
+          "dur": 3.33
+        }
+      ]
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_24_Image_1.jpg",
+      "text": "Isi ikazenguruka ishaka aho yajya ngo izuba rigere neza kuri Antaragitika.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi25634b07-4ba9-4a81-afc6-2db6e06b5e0b.mp3",
+          "dur": 9.55
+        }
+      ]
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_25_Image_1.jpg",
+      "text": "Kuva ubwo, Isi izenguruka iminsi magana atatu mirongo itandatu n’itanu igize umwaka, ishaka ahantu heza yahagarara ngo Antaragitika na we agerweho n’ubushyuhe.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fc4b4191d-2c7e-474f-84c3-87a2e54960b9.mp3",
+          "dur": 17.85
+        }
+      ]
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA_Page_26_Image_1.jpg",
+      "text": "Na n’ubu iracyakora izo ngendo yizenguruka umunsi umwe, ikazenguruka izuba iminsi magana atatu mirongo itandatu n’itanu mu mwaka.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2faudio%2fi2bfcb483-0ad0-415d-8866-3099e54fc4db.mp3",
+          "dur": 16.05
+        }
+      ]
+    },
+    {
+      "n": 25,
+      "img": null,
+      "text": "Isi yari ifite abana barindwi."
+    },
+    {
+      "n": 26,
+      "img": null,
+      "text": "Umwe yitwaga Afurika, undi Aziya, undi Ositarariya, undi Burayi, undi Antaragitika, hakabamo n’ab’impanga bitwa Amerika ya Ruguru na Amerika y’Epfo."
+    },
+    {
+      "n": 27,
+      "img": null,
+      "text": "Isi rero ikaba yibumbabumbye nk’umupira wo gukina. Abana bayo yabahekaga mu mpande zayo zose: Hepfo, haruguru, hagati, mu mbavu no mu mugongo."
+    },
+    {
+      "n": 28,
+      "img": null,
+      "text": "Isi igakunda kota izuba. Buri munsi ikajya aho iryitegeye neza, maze ikaryota ikanezerwa."
+    },
+    {
+      "n": 29,
+      "img": null,
+      "text": "Ariko izuba ntiryageraga ku bana bose."
+    },
+    {
+      "n": 30,
+      "img": null,
+      "text": "Bityo aho izuba ricana bagahora bari ku manywa ibihe byose."
+    },
+    {
+      "n": 31,
+      "img": null,
+      "text": "Naho abo ihetse ahatagera izuba bagahora mu ijoro ridacya."
+    },
+    {
+      "n": 32,
+      "img": null,
+      "text": "Bukeye, ba bana bahora ku zuba bagira ubutayu n’ubushyuhe bwinshi."
+    },
+    {
+      "n": 33,
+      "img": null,
+      "text": "Naho abana bari ahatari izuba bakaba mu bukonje n’urubura."
+    },
+    {
+      "n": 34,
+      "img": null,
+      "text": "Umunsi umwe, abana bose baririra icyarimwe, Isi ibura uko ibigenza."
+    },
+    {
+      "n": 35,
+      "img": null,
+      "text": "Nuko Izuba rirayibwira riti: “Humura nshuti! Ngaho hindukira nsusurutse n’abo uhetse mu mugongo.”"
+    },
+    {
+      "n": 36,
+      "img": null,
+      "text": "Isi irahindukira. Ba bana ihetse mu mugongo na bo bagerwaho n’izuba."
+    },
+    {
+      "n": 37,
+      "img": null,
+      "text": "Isi ihindukiye, ijoro n’amanywa bikajya bisimburana."
+    },
+    {
+      "n": 38,
+      "img": null,
+      "text": "Isi ibaza Izuba iti: “Nakora iki kugira ngo uge umurikira abana bange bose?”"
+    },
+    {
+      "n": 39,
+      "img": null,
+      "text": "Izuba riti: “Komeza uge wihindukiza ubudahagarara.”"
+    },
+    {
+      "n": 40,
+      "img": null,
+      "text": "Isi ikizengurutsa ubudahagarara, maze Izuba rikagera ku bana bose mu munsi umwe."
+    },
+    {
+      "n": 41,
+      "img": null,
+      "text": "Nuko Isi iranezerwa, kuko abana bayo bose bagerwaho n’izuba buri munsi."
+    },
+    {
+      "n": 42,
+      "img": null,
+      "text": "Hashize iminsi, Isi isanga uwitwa Antaragitika izuba ritamugeraho neza."
+    },
+    {
+      "n": 43,
+      "img": null,
+      "text": "Wa mwana agahora akonje."
+    },
+    {
+      "n": 44,
+      "img": null,
+      "text": "Isi ikazenguruka ishaka aho yajya ngo izuba rigere neza kuri Antaragitika."
+    },
+    {
+      "n": 45,
+      "img": null,
+      "text": "Kuva ubwo, Isi izenguruka iminsi magana atatu mirongo itandatu n’itanu igize umwaka, ishaka ahantu heza yahagarara ngo Antaragitika na we agerweho n’ubushyuhe."
+    },
+    {
+      "n": 46,
+      "img": null,
+      "text": "Na n’ubu iracyakora izo ngendo yizenguruka umunsi umwe, ikazenguruka izuba iminsi magana atatu mirongo itandatu n’itanu mu mwaka."
+    },
+    {
+      "n": 47,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nBagerwaho\nIjambo mu Inkuru"
+    },
+    {
+      "n": 48,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nIzenguruka\nIjambo mu Inkuru"
+    },
+    {
+      "n": 49,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nRidacya\nIjambo mu Inkuru"
+    },
+    {
+      "n": 50,
+      "img": null,
+      "text": "IBIBAZO\n1) Hitamo igisubizo kiri cyo;\nIsi yari ifite abana bangahe?\na) Batanu\nb) Bane\nc) Barindwi"
+    },
+    {
+      "n": 51,
+      "img": null,
+      "text": "IBIBAZO\n2) Uzuza iyi nteruro ukoresheje rimwe mu magambo wahawe;\nNaho abana bari ahatari izuba bakaba mu ________\na) birori\nb) bukonje\nc) amahoro"
+    },
+    {
+      "n": 52,
+      "img": null,
+      "text": "IBIBAZO\n3) Subiza YEGO cyangwa OYA;\nBa bana bahora ku zuba bagira ubutayu n’ubushyuhe bwinshi.\nYEGO\nOYA"
+    },
+    {
+      "n": 53,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA4.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 53,
+    "words": 657
+  }
+}

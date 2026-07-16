@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-29da4ac8-untitled",
+  "title": "ໝາກັບແມວ ມີຫມວກ",
+  "description": "A5 Portrait. The wind blows Cat's and Dog's hats into the water but Elephant is there again to help them.",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "SIL"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/aDuTNKDCF6"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/aDuTNKDCF6%2f1752131600884%2f%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%81%e0%ba%a1%e0%ba%a7+%e0%ba%a1%e0%ba%b5%e0%ba%ab%e0%ba%a1%e0%ba%a7%e0%ba%81%2fCover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ໝາກັບແມວ ມີຫມວກ\" (Lao). A5 Portrait. The wind blows Cat's and Dog's hats into the water but Elephant is there again to help them."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 77
+  }
+}

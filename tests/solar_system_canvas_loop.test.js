@@ -81,4 +81,159 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('roverGroup.rotation.x = Math.max(-0.22');
     });
   });
+
+  it('provides accessible pointer controls for the core drone science workflow', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const shortcutListener = "canvasEl.addEventListener('keydown', onDroneShortcutKeydown);";
+      const shortcutCleanup = "canvasEl.removeEventListener('keydown', onDroneShortcutKeydown);";
+
+      expect(source).toContain('"data-drone-vehicle-mode":');
+      expect(source).toContain('role: "application"');
+      expect(source).toContain('tabIndex: 0');
+      expect(source).toContain('"aria-label": ((sel &&');
+      expect(source).toContain("actionDock.setAttribute('data-drone-action-dock', 'true');");
+      expect(source).toContain("actionDock.setAttribute('role', 'group');");
+      expect(source).toContain("button.type = 'button';");
+      expect(source).toContain("button.setAttribute('data-drone-command', action.key);");
+      expect(source).toContain("button.setAttribute('aria-keyshortcuts', action.key.toUpperCase());");
+      expect(source).toContain('function dispatchDroneCommand(action)');
+      expect(source).toContain("{ key: 'g', label: 'Scan'");
+      expect(source).toContain("{ key: 'f', label: isFluid ? 'Sample' : 'Collect'");
+      expect(source).toContain("{ key: 'j', label: 'Journal'");
+      expect(source).toContain("{ key: 'n', label: 'Navigate'");
+      expect(source).toContain(shortcutListener);
+      expect(source).toContain(shortcutCleanup);
+      expect(source).toContain('if (actionDock.parentElement) actionDock.parentElement.removeChild(actionDock);');
+      expect(source.indexOf(shortcutListener)).toBeLessThan(source.indexOf(shortcutCleanup));
+    });
+  });
+
+  it('shows mode-specific live science relationships without covering the altitude gauge', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const focusDefinition = source.indexOf('function updateDroneScienceFocus(altitude)');
+      const focusUpdate = source.indexOf('updateDroneScienceFocus(altitude);');
+
+      expect(source).toContain('"aria-describedby": "hud-science-focus"');
+      expect(source).toContain("var scienceQuestion = isOcean ? 'How do pressure and light change as depth increases?'");
+      expect(source).toContain('id="hud-science-focus" role="note"');
+      expect(source).toContain('id="hud-science-reading"');
+      expect(source).toContain("scienceReadingEl.textContent = 'Depth '");
+      expect(source).toContain('oceanScienceZone.lightLevel');
+      expect(source).toContain("scienceReadingEl.textContent = 'Relative altitude '");
+      expect(source).toContain('gasScienceZone.windSpeed');
+      expect(source).toContain("scienceReadingEl.textContent = 'Elevation '");
+      expect(source).toContain('var slopeDegrees = roverGroup');
+      expect(source).toContain("announceToSR('Entered ' + curOceanZone");
+      expect(source).toContain("announceToSR('Entered ' + curZoneName");
+      expect(source).toContain("top:62px;right:48px");
+      expect(source).toContain("width:min(204px,calc(100% - 64px))");
+      expect(source).not.toContain("top:62px;right:8px;z-index:14");
+      expect(focusDefinition, filePath + ' should define the science updater').toBeGreaterThan(-1);
+      expect(focusUpdate, filePath + ' should update the science reading').toBeGreaterThan(-1);
+      expect(focusDefinition).toBeLessThan(focusUpdate);
+    });
+  });
+
+  it('turns consecutive environment scans into comparative evidence', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const comparisonDefinition = source.indexOf('function buildScanComparison(previous, current)');
+      const comparisonUse = source.indexOf('buildScanComparison(previousScanSnapshot, scanSnapshot)');
+
+      expect(source).toContain('var previousScanSnapshot = null;');
+      expect(source).toContain("return 'Baseline saved. ' + nextStep;");
+      expect(source).toContain("current.mode === 'ocean'");
+      expect(source).toContain("current.mode === 'gas'");
+      expect(source).toContain('Compared with the prior terrain site');
+      expect(source).toContain("scanSnapshot = { mode: 'ocean'");
+      expect(source).toContain("scanSnapshot = { mode: 'gas'");
+      expect(source).toContain("scanSnapshot = { mode: 'surface'");
+      expect(source).toContain('Comparison evidence');
+      expect(source).toContain("scanEvidence += (scanEvidence ? ' Comparison: ' : '') + scanComparison;");
+      expect(source).toContain('previousScanSnapshot = scanSnapshot;');
+      expect(source).toContain("announceToSR('Scan complete. ' + scanComparison");
+      expect(source).toContain('var scanDismissTimer = null;');
+      expect(source).toContain('var scanAnnounceTimer = null;');
+      expect(source).toContain('if (scanDismissTimer) clearTimeout(scanDismissTimer);');
+      expect(source).toContain('if (scanAnnounceTimer) clearTimeout(scanAnnounceTimer);');
+      expect(comparisonDefinition, filePath + ' should define scan comparisons').toBeGreaterThan(-1);
+      expect(comparisonUse, filePath + ' should use scan comparisons').toBeGreaterThan(-1);
+      expect(comparisonDefinition).toBeLessThan(comparisonUse);
+    });
+  });
+
+  it('requires a distinct second scan for mission credit and updates the Scan action', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('compared: false');
+      expect(source).toContain('var completedScanComparisons = 0;');
+      expect(source).toContain('missionStats.compared,');
+      expect(source).toContain("'Compare two environment scans'");
+      expect(source).toContain("'Press G to save a baseline sensor reading'");
+      expect(source).toContain("'Baseline saved; move to a different site or layer and press G again'");
+      expect(source).toContain('var hasDistinctScanSite = hasComparableBaseline');
+      expect(source).toContain('Math.abs(scanSnapshot.level - previousScanSnapshot.level) >= 10');
+      expect(source).toContain('Math.abs(scanSnapshot.slope - previousScanSnapshot.slope) >= 0.2');
+      expect(source).toContain('if (hasDistinctScanSite)');
+      expect(source).toContain("markMissionStat('compared');");
+      expect(source).toContain('completedScanComparisons += 1;');
+      expect(source).toContain('Comparative scan completed:');
+      expect(source).toContain('Mission objective complete: two environments compared');
+      expect(source).toContain("if (action.key === 'g')");
+      expect(source).toContain("scanActionLabel.textContent = 'Compare';");
+      expect(source).toContain("'Compare with previous scan, keyboard shortcut G'");
+    });
+  });
+  it('keeps a bounded accessible evidence trail across recent scans', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const historyDefinition = source.indexOf('function buildScanHistoryHTML(history)');
+      const historyUse = source.indexOf('scanHTML += buildScanHistoryHTML(scanHistory);');
+      const reviewDelay = source.indexOf('Auto-dismiss after 7 seconds so students can review the evidence trail');
+
+      const reviewTimeout = source.indexOf('}, 7000);', reviewDelay);
+      expect(source).toContain('var scanHistory = [];');
+      expect(source).toContain('var scanSequence = 0;');
+      expect(source).toContain('scanSnapshot.scanNumber = scanSequence;');
+      expect(source).toContain('scanHistory.push(Object.assign({}, scanSnapshot));');
+      expect(source).toContain('if (scanHistory.length > 4) scanHistory.shift();');
+      expect(source).toContain('data-scan-evidence-trail="true"');
+      expect(source).toContain('<table aria-label="');
+      expect(source).toContain('<th scope="col"');
+      expect(source).toContain("['Scan', 'Depth', 'Pressure', 'Light']");
+      expect(source).toContain("['Scan', 'Altitude', 'Pressure', 'Wind']");
+      expect(source).toContain("['Scan', 'Elevation', 'Slope', 'Landmark']");
+      expect(source).toContain('max-height:82%;overflow-y:auto;pointer-events:auto');
+      expect(reviewTimeout).toBeGreaterThan(reviewDelay);
+      expect(reviewTimeout - reviewDelay).toBeLessThan(1000);
+      expect(historyDefinition).toBeGreaterThan(-1);
+      expect(historyUse).toBeGreaterThan(-1);
+      expect(reviewDelay).toBeGreaterThan(-1);
+      expect(historyDefinition).toBeLessThan(historyUse);
+    });
+  });
+
+  it('detects mode-specific patterns after three readings and adds them to the evidence', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const patternDefinition = source.indexOf('function buildScanPattern(history)');
+      const patternUse = source.indexOf('var scanPattern = buildScanPattern(scanHistory);');
+
+      expect(source).toContain('function scanMeasurementDirection(startValue, endValue, tolerance)');
+      expect(source).toContain('if (!history || history.length < 3) return null;');
+      expect(source).toContain("title: 'Depth pattern'");
+      expect(source).toContain("title: 'Atmosphere pattern'");
+      expect(source).toContain("title: 'Terrain pattern'");
+      expect(source).toContain('data-scan-pattern="true" role="note" aria-label="Pattern analysis"');
+      expect(source).toContain('This describes the sampled readings; it does not by itself prove cause.');
+      expect(source).toContain("if (scanPattern) scanEvidence += ' Pattern analysis: ' + scanPattern.summary;");
+      expect(source).toContain("announceToSR('Scan complete. ' + scanComparison + (scanPattern ? ' ' + scanPattern.summary : ''))");
+      expect(patternDefinition).toBeGreaterThan(-1);
+      expect(patternUse).toBeGreaterThan(-1);
+      expect(patternDefinition).toBeLessThan(patternUse);
+    });
+  });
 });

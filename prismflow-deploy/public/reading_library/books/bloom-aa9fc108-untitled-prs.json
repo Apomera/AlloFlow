@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-aa9fc108-untitled-prs",
+  "title": "میله های باستانی",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/PVKz4wDxTD"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2faa9fc108-540a-41b0-96b3-c006106864a0%2f%d9%85%db%8c%d9%84%d9%87+%d9%87%d8%a7%db%8c+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%db%8c%2f8.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2faa9fc108-540a-41b0-96b3-c006106864a0%2f%d9%85%db%8c%d9%84%d9%87+%d9%87%d8%a7%db%8c+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%db%8c%2f13.jpg",
+      "text": "کشور ما میله های باستانی دارد.\nمیله های باستانی ما چنین است.\nمیله گل سرخ در مزار شریف."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2faa9fc108-540a-41b0-96b3-c006106864a0%2f%d9%85%db%8c%d9%84%d9%87+%d9%87%d8%a7%db%8c+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%db%8c%2f22.jpg",
+      "text": "میله گل نارنج در ننگرهار."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2faa9fc108-540a-41b0-96b3-c006106864a0%2f%d9%85%db%8c%d9%84%d9%87+%d9%87%d8%a7%db%8c+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%db%8c%2f32.jpg",
+      "text": "میله گل ارغوان در گلغندی."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2faa9fc108-540a-41b0-96b3-c006106864a0%2f%d9%85%db%8c%d9%84%d9%87+%d9%87%d8%a7%db%8c+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%db%8c%2f42.jpg",
+      "text": "میله گل سیب درمیدان وردگ."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2faa9fc108-540a-41b0-96b3-c006106864a0%2f%d9%85%db%8c%d9%84%d9%87+%d9%87%d8%a7%db%8c+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%db%8c%2f52.jpg",
+      "text": "میله گل بادام در زابل."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2faa9fc108-540a-41b0-96b3-c006106864a0%2f%d9%85%db%8c%d9%84%d9%87+%d9%87%d8%a7%db%8c+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%db%8c%2f62.jpg",
+      "text": "میله گل کچالو در بامیان."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2faa9fc108-540a-41b0-96b3-c006106864a0%2f%d9%85%db%8c%d9%84%d9%87+%d9%87%d8%a7%db%8c+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%db%8c%2f7.jpg",
+      "text": "میله گل سنجد درلوگر."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2faa9fc108-540a-41b0-96b3-c006106864a0%2f%d9%85%db%8c%d9%84%d9%87+%d9%87%d8%a7%db%8c+%d8%a8%d8%a7%d8%b3%d8%aa%d8%a7%d9%86%db%8c%2fa.jpg",
+      "text": "کشور ما فرهنگ با شکوه دارد.\nما به آن افتخار می کنیم."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 59
+  }
+}

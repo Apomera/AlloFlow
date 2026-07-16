@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T15:00:21.419Z",
+  "packId": "praxis-special-education-learning-disabilities-5383",
+  "standard": {
+    "label": "AlloFlow 5383 source, blueprint, feedback, learning, and linkage QA v1",
+    "limitation": "Not ETS approval; independent learning-disabilities educator, structured-literacy, mathematics-intervention, accessibility, family, legal, cultural-linguistic, and psychometric validation remain pending."
+  },
+  "summary": {
+    "totalItems": 200,
+    "passedItems": 200,
+    "findings": [],
+    "status": "pass"
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-5ed5e855-untitled",
+  "title": "عطسه و سرفه به چه کسی ضرر دارد؟",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/7D0LNABr4a"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2f20.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2f19.jpg",
+      "text": "سمیر عطسه می زد.\nاو سرماخورده بود.\nسمیر نمی دانست که عطسه به دیگران ضرر دارد."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2fimage2.png",
+      "text": "سمیر بسیار علاقه داشت که در مسابقه فوتبال اشتراک کند.\nخالد برایش گفت: سمیرجان! تو مریض استی، نباید در مسابقه اشتراک کنی."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2f16.jpg",
+      "text": "اگر تو بازی کنی ما هم مریض می شویم.\nتو باید استراحت کنی.\nسمیر قبول کرد و در خانه استراحت کرد."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2f%d8%b4%d8%b1%d9%88%d8%b9+%d8%a8%d8%a7%d8%b2%db%8c+%d9%81%d9%88%d8%aa%d8%a8%d8%a7%d9%842.jpg",
+      "text": "مسابقه شروع شد.\nدوستان سمیر برنده کپ قهرمانی شدند."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2fimage5.png",
+      "text": "دوستان سمیر گفتند: ما این کپ قهرمانی را به سمیر می دهیم.\nاو سرماخورده بود وعطسه می زد.\nاو نخواست که ما هم مریض شویم."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2f21.jpg",
+      "text": "سمیر به خاطر سلامتی ما در خانه استراحت کرد.\nما به خاطر سلامتی سمیر، این کپ را به او می دهیم."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2fimage1.png",
+      "text": "امروز سمیر بهتر است.\nدوستانش کپ قهرمانی را به او دادند، سمیر بسیار خوش شد."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2fimage2.jpg",
+      "text": "سمیر گفت: هر وقتی که عطسه و سرفه داشتید\nاستراحت کنید و از دیگران دور باشید."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2fimage4.jpg",
+      "text": "ذره های کوچک به نام ویروس ها سبب سرماخورده گی می شود.\nاین ذره ها در هوا گردش می کنند و روی\nاشیایی می نشینند که ما آن ها را لمس می کنیم.\nوقتی که این ویروس ها داخل بینی می شوند،\nسبب گلودرد، سردرد ویا بندش بینی می شوند."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2f%d8%b9%d9%84%d8%a7%d9%85%d8%aa+%d8%a7%da%a9%d8%b3.jpg",
+      "text": "هنگام سرماخورده گی باید با کسی نزدیک نشویم.\nعطسه و سرفه باعث انتقال ویروس از یک\nفرد به افراد دیگر می شود."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2fimage111.jpg",
+      "text": "عطسه ویروس ها را به اندازۀ سه متر دورتر\nپرتاب می کند.\nهر کس در نزدیکی فرد مریض قرار داشته\nباشد، آن هم مبتلا می شود.\nنزدیک نشستن، دست دادن و بغل کشی با فرد مریض بسیار خطرناک است.\nباید همیشه دست های مان را با صابون بشوییم."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f5ed5e855-8954-4a8c-ace0-00e7669f6958%2f%d8%b9%d8%b7%d8%b3%d9%87+%d9%88+%d8%b3%d8%b1%d9%81%d9%87+%d8%a8%d9%87+%da%86%d9%87+%da%a9%d8%b3%db%8c+%d8%b6%d8%b1%d8%b1+%d8%af%d8%a7%d8%b1%d8%af%d8%9f%2f%d8%a7%d8%af%db%8c%d8%aa+%d8%b3%d9%85%db%8c%d8%b1.jpg",
+      "text": "گیلاس، ظرف غذا خوری و لباس های مریض باید جدا باشد.\nفرد مریض باید از سبزی ها، میوه ها و مایعات گرم استفاده کند.\nفرد مریض باید بدن خود را گرم نگهدارد،\nتا سالم بماند."
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 300
+  }
+}

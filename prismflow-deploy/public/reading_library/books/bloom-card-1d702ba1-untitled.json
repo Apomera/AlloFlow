@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-1d702ba1-untitled",
+  "title": "አንድ አይን፣ ስድስት የእግር ጣት ያላት ጸጋ",
+  "description": "አንድ አይን፣ ስድስት የእግር ጣት ያላት ጸጋ\n\nጸጋ ብርታት ያጣች አንድ አይን ስድስት የእግር ጣት ያላት ግመል ናት። ሁሌም ቢሆን እረኛዋን ካማድን ማስደሰት እና በሌሎች እንስሳቶች ተቀባይነት አግኝታ መኖርን ነበር የምትመኘው። ጸጋ የፈለገችውን ያህል ብትሞክርም ግን ክብ ቅርጽ እየሰራች ብቻ ነው መራመድ የምትችለው።\n\nበዚህ መሃል…. አንድ መልካም የሆነ እንግዳ ሰው መጣ…",
+  "language": "Amharic",
+  "langCode": "am",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Hopeful Hearts"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Hopeful Hearts",
+  "license": "CC BY-NC-ND",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Q41EXYftHA"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/Q41EXYftHA%2f1743491547572%2fTsega+-+Amharic%2fTsega_English-Prophet+Isa_1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"አንድ አይን፣ ስድስት የእግር ጣት ያላት ጸጋ\" (Amharic). አንድ አይን፣ ስድስት የእግር ጣት ያላት ጸጋ\n\nጸጋ ብርታት ያጣች አንድ አይን ስድስት የእግር ጣት ያላት ግመል ናት። ሁሌም ቢሆን እረኛዋን ካማድን ማስደሰት እና በሌሎች እንስሳቶች ተቀባይነት አግኝታ መኖርን ነበር የምትመኘው። ጸጋ የፈለገችውን ያህል ብትሞክርም ግን ክብ ቅርጽ እየሰራች ብቻ ነው መራመድ የምትችለው።\n\nበዚህ መሃል…. አንድ መልካም የሆነ እንግዳ ሰው መጣ…"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-ND) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 113
+  }
+}

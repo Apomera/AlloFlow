@@ -34,7 +34,8 @@ const items = audit.reviewQueue.map((item) => {
 });
 
 const migratedCount = items.filter((item) => item.workflowStage === 'native-content-qa-passed').length;
-const nativeOriginalCount = nativeQa.items.filter((item) => !item.legacySourceId).length;
+const nativeOriginalCount = nativeQa.items.filter((item) => !item.legacySourceId && !item.authoredSourceId).length;
+const sourceAuthoredCount = nativeQa.items.filter((item) => item.authoredSourceId).length;
 const report = {
   schemaVersion: 1,
   generatedAt: new Date().toISOString(),
@@ -59,6 +60,7 @@ const report = {
     legacyItemsMigratedToNativeQa: migratedCount,
     legacyItemsStillQuarantined: items.length - migratedCount,
     nativeOriginalQaItems: nativeOriginalCount,
+    sourceAuthoredQaItems: sourceAuthoredCount,
     totalNativeQaItems: nativeQa.summary.passedItems,
     independentExpertValidatedItems: 0,
     productionValidatedItems: 0,
@@ -83,6 +85,7 @@ ${report.goal}
 | Legacy items migrated and native-QA passed | ${s.legacyItemsMigratedToNativeQa} |
 | Legacy items still quarantined | ${s.legacyItemsStillQuarantined} |
 | Native-original QA-passed items | ${s.nativeOriginalQaItems} |
+| Source-authored QA-passed replacements | ${s.sourceAuthoredQaItems} |
 | Total native QA-passed items | ${s.totalNativeQaItems} |
 | Independently expert-validated items | ${s.independentExpertValidatedItems} |
 | Production-validated items | ${s.productionValidatedItems} |

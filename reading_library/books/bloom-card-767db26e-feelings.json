@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-767db26e-feelings",
+  "title": "Feelings",
+  "description": "A girl shares many feelings.",
+  "language": "Kiswahili",
+  "langCode": "sw",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Personal Development"
+  ],
+  "authors": [
+    "School of Education and Development (Centre for Adult Education), University of KwaZulu-Natal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "School of Education and Development (Centre for Adult Education), University of KwaZulu-Natal",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/LSMhP3NoA8"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f767db26e-e07f-4cb4-8d03-9553e4f31aae%2fFeelings%2fFeelings_Page_1_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"Feelings\" (Kiswahili). A girl shares many feelings."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 61
+  }
+}

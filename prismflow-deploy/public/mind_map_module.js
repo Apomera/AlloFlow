@@ -839,6 +839,7 @@
     var genBaseRef = useRef(120);
     var genDialogRef = useRef(null);
     var busyRef = useRef(false);   // synchronous re-entrancy guard for propose/build/retry
+    var threeDDialogRef = useRef(null);
     useEffect(function () { genRef.current = gen; }, [gen]);
     useEffect(function () {
       mountedRef.current = true;
@@ -880,6 +881,34 @@
         try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (e) {}
       };
     }, [!!gen]);
+    // 3D modal a11y: keep keyboard focus inside the immersive overlay and
+    // restore it to the View in 3D trigger when the student returns to the map.
+    useEffect(function () {
+      if (!show3D) return;
+      var prevFocus = (typeof document !== 'undefined') ? document.activeElement : null;
+      function focusables3D() {
+        var el = threeDDialogRef.current; if (!el) return [];
+        return Array.prototype.slice.call(el.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'))
+          .filter(function (n) { return !n.disabled && n.offsetParent !== null; });
+      }
+      try { var f0 = focusables3D(); var t0 = f0[0] || threeDDialogRef.current; if (t0 && t0.focus) t0.focus(); } catch (e) {}
+      function on3DKey(ev) {
+        var el = threeDDialogRef.current; if (!el) return;
+        if (ev.key === 'Escape') { ev.preventDefault(); close3D(); return; }
+        if (ev.key !== 'Tab') return;
+        var f = focusables3D();
+        if (!f.length) { ev.preventDefault(); el.focus(); return; }
+        var first = f[0], last = f[f.length - 1], active = document.activeElement;
+        if (ev.shiftKey && (active === first || !el.contains(active))) { ev.preventDefault(); last.focus(); }
+        else if (!ev.shiftKey && (active === last || !el.contains(active))) { ev.preventDefault(); first.focus(); }
+      }
+      document.addEventListener('keydown', on3DKey, true);
+      return function () {
+        document.removeEventListener('keydown', on3DKey, true);
+        try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (e) {}
+      };
+    }, [show3D]);
+
 
     function setGenMerge(patch) { setGen(function (g) { return g ? Object.assign({}, g, patch) : g; }); }
     function setLesson(idx, patch) {
@@ -1816,9 +1845,8 @@
     var CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
     var _cg3dCenter = { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24, color: '#cbd5e1', fontSize: 14, lineHeight: 1.5 };
     var threeDModal = show3D && h('div', {
-      style: { position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.94)', zIndex: 140, display: 'flex', flexDirection: 'column' },
+      ref: threeDDialogRef, tabIndex: -1, style: { position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.94)', zIndex: 140, display: 'flex', flexDirection: 'column' },
       role: 'dialog', 'aria-modal': 'true', 'aria-label': t('throughline.view_3d') || 'View in 3D',
-      onKeyDown: function (e) { if (e.key === 'Escape') { e.preventDefault(); close3D(); } }
     },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: '#0b1020', borderBottom: '1px solid #1e293b', color: '#e2e8f0' } },
         h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, '🧊'),
@@ -1830,7 +1858,7 @@
         (typeof window.callGemini === 'function') && h('button', {
           onClick: arrange3DByMeaning, disabled: aiBusy || cg3dState !== 'ready',
           title: t('throughline.ai_arrange_title') || 'Use AI to position lessons by meaning: left→right = sequence, up = cognitive depth, depth = strand',
-          style: { fontSize: 12, fontWeight: 800, padding: '6px 12px', borderRadius: 8, border: 'none', whiteSpace: 'nowrap',
+          style: { fontSize: 12, fontWeight: 800, minHeight: 44, padding: '8px 12px', borderRadius: 8, border: 'none', whiteSpace: 'nowrap',
             background: (aiBusy || cg3dState !== 'ready') ? '#334155' : 'linear-gradient(90deg,#7c3aed,#4f46e5)',
             color: '#fff', cursor: (aiBusy || cg3dState !== 'ready') ? 'default' : 'pointer' }
         }, aiBusy ? ('… ' + (t('throughline.ai_arranging') || 'Arranging')) : ('✨ ' + (t('throughline.ai_arrange') || 'Arrange by meaning'))),

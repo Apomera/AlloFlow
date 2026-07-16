@@ -210,6 +210,21 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'AgentCoreContracts',
+        filename: 'agent_core_contracts_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AgentCoreBlueprintService',
+        filename: 'agent_core_blueprint_service_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AgentCoreUIAdapter',
+        filename: 'agent_core_ui_adapter_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'UdlChatModule',
         filename: 'udl_chat_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -232,6 +247,11 @@ const MODULES = [
     {
         name: 'AudioHelpersModule',
         filename: 'audio_helpers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'KaraokeAudioStoreModule',
+        filename: 'karaoke_audio_store_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -836,6 +856,16 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'VerificationPolicy',
+        filename: 'verification_policy_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'DocBuilderRenderer',
+        filename: 'doc_builder_renderer_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'PdfAuditView',
         filename: 'view_pdf_audit_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -999,6 +1029,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_cyberdefense.js',
     'stem_lab/stem_tool_physics.js',
     'stem_lab/stem_tool_watercycle.js',
+    'stem_lab/stem_tool_weathersystems.js',
     'stem_lab/stem_tool_rocks.js',
     'stem_lab/stem_tool_dissection.js',
     'stem_lab/stem_tool_behaviorlab.js',
@@ -1209,7 +1240,26 @@ function compileJsx(src) {
     return r.code;
 }
 
+function simplePureCompilePair(name, fileBase, guardKey) {
+    return {
+        name,
+        srcPath: path.join(ROOT, fileBase + '_source.jsx'),
+        modPath: path.join(ROOT, fileBase + '_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', fileBase + '_module.js'),
+        wrap(src) {
+            return (
+                '(function(){"use strict";\n'
+                + 'if(window.AlloModules&&window.AlloModules.' + guardKey + '){console.log("[CDN] ' + guardKey + ' already loaded, skipping"); return;}\n'
+                + src.trim() + '\n'
+                + '})();\n'
+            );
+        },
+    };
+}
+
 const COMPILE_PAIRS = [
+    simplePureCompilePair('VerificationPolicy', 'verification_policy', 'VerificationPolicyModule'),
+    simplePureCompilePair('DocBuilderRenderer', 'doc_builder_renderer', 'DocBuilderRendererModule'),
     {
         name: 'DocPipeline',
         srcPath: path.join(ROOT, 'doc_pipeline_source.jsx'),
@@ -1643,6 +1693,9 @@ const CONTENT_HASH_PINNED = new Set([
     'view_student_join_panel_module.js',
     'view_student_save_adventure_module.js',
     'view_socratic_chat_module.js',
+    'karaoke_audio_store_module.js',
+    'immersive_reader_module.js',
+    'view_simplified_module.js',
 ]);
 const _contentHashCache = {};
 function contentHashPin(filename) {

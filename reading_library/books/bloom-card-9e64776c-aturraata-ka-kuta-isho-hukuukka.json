@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-9e64776c-aturraata-ka-kuta-isho-hukuukka",
+  "title": "Aturraata ka kuta isho hukuukka",
+  "description": "A Amharic picture book, readable free at Bloom Library.",
+  "language": "Amharic",
+  "langCode": "am",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "SIL Ethiopia"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL Ethiopia",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/3kJimEkB3b"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/3kJimEkB3b%2f1747729570627%2fAturraata+ka+kuta+isho+hukuukka%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"Aturraata ka kuta isho hukuukka\" (Amharic)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  }
+}

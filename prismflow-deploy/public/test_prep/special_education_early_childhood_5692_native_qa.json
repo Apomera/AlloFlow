@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T15:00:19.132Z",
+  "packId": "praxis-special-education-early-childhood-5692",
+  "standard": {
+    "label": "AlloFlow 5692 source, blueprint, feedback, learning, and linkage QA v1",
+    "limitation": "Not ETS approval; independent early intervention, ECSE, family, legal, accessibility, cultural-linguistic, and psychometric validation remain pending."
+  },
+  "summary": {
+    "totalItems": 200,
+    "passedItems": 200,
+    "findings": [],
+    "status": "pass"
+  }
+}

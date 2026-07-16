@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T15:03:43.574Z",
+  "libraryId": "praxis-school-counselor-5422-learning-library",
+  "standard": {
+    "label": "AlloFlow Praxis School Counselor 5422 learning-library source and editorial review v1",
+    "meaning": "A pass confirms release counts, stable identifiers, authoritative-source allowlisting, substantive native lessons, one-best-answer knowledge checks, complete card and aid metadata, safety cautions, and item-compatible skills.",
+    "limitation": "This is not ETS or ASCA approval, independent school-counselor validation, psychometric validation, mental-health treatment, legal advice, or a substitute for current federal, state, local, district, credential, ethical, crisis, and mandated-reporting requirements."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "findings": [],
+    "status": "pass"
+  },
+  "chapters": [
+    {
+      "id": "sc5422-ch-01",
+      "title": "School Counselor Role and Program Foundations",
+      "domainId": "define",
+      "skillId": "counselor-role-national-model",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sc5422-ch-02",
+      "title": "Human Development, Learning, and Family Systems",
+      "domainId": "define",
+      "skillId": "development-learning-family-systems",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sc5422-ch-03",
+      "title": "Ethics, Law, Equity, Safety, and Boundaries",
+      "domainId": "define",
+      "skillId": "ethics-law-equity-wellness",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sc5422-ch-04",
+      "title": "Individual Counseling, Academic Planning, and Career Development",
+      "domainId": "deliver",
+      "skillId": "individual-counseling-academic-career",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sc5422-ch-05",
+      "title": "Group, Classroom, Crisis, and Prevention Services",
+      "domainId": "deliver",
+      "skillId": "group-classroom-crisis-prevention",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sc5422-ch-06",
+      "title": "Consultation, Collaboration, MTSS, Plans, and Referrals",
+      "domainId": "deliver",
+      "skillId": "consultation-collaboration-mtss-referrals",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sc5422-ch-07",
+      "title": "Program Vision, Mission, Alignment, and Partnership",
+      "domainId": "manage",
+      "skillId": "program-foundations-alignment",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sc5422-ch-08",
+      "title": "Outcome Goals, Data Types, Action Plans, and Measurement",
+      "domainId": "manage",
+      "skillId": "program-goals-data-psychometrics",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sc5422-ch-09",
+      "title": "Program Operations, Technology, Resources, and Communication",
+      "domainId": "manage",
+      "skillId": "program-operations-technology-resources",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sc5422-ch-10",
+      "title": "Program Assessment and Implementation Quality",
+      "domainId": "assess",
+      "skillId": "program-assessment-implementation",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sc5422-ch-11",
+      "title": "Results Data, Interpretation, and Reporting",
+      "domainId": "assess",
+      "skillId": "results-data-interpretation-reporting",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "sc5422-ch-12",
+      "title": "Continuous Improvement and Data-Based Advocacy",
+      "domainId": "assess",
+      "skillId": "continuous-improvement-advocacy",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    }
+  ]
+}

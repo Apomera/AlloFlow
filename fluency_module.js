@@ -39,9 +39,16 @@
     return;
   }
 
-  function calculateLocalFluencyMetrics(wordData, durationSeconds, totalReferenceWordCount) {
-      if (!wordData || wordData.length === 0) return { accuracy: 0, wcpm: 0 };
-      var correctCount = wordData.filter(function (w) { return w.status === 'correct' || w.status === 'stumbled'; }).length;
+  function calculateLocalFluencyMetrics(wordData, durationSeconds, totalReferenceWordCount, insertionsArr) {
+      if (!wordData || wordData.length === 0) return { accuracy: 0, wcpm: 0, correctWords: 0 };
+      // A self-correction counts as correct in a running record. Insertions are
+      // errors, so subtract them from words-correct rather than allowing an
+      // inserted word to leave WCPM/accuracy unchanged.
+      var correctCount = wordData.filter(function (w) {
+          return w.status === 'correct' || w.status === 'stumbled' || w.status === 'self_corrected';
+      }).length;
+      var insertionCount = Array.isArray(insertionsArr) ? insertionsArr.length : 0;
+      var adjustedCorrectCount = Math.max(0, correctCount - insertionCount);
       var denominator = (totalReferenceWordCount && totalReferenceWordCount > 0)
           ? totalReferenceWordCount
           : wordData.length;
@@ -52,18 +59,18 @@
               denominator = wordData.length;
           }
       }
-      var accuracy = Math.min(100, denominator > 0 ? Math.round((correctCount / denominator) * 100) : 0);
+      var accuracy = Math.min(100, denominator > 0 ? Math.round((adjustedCorrectCount / denominator) * 100) : 0);
       var validDuration = Math.max(1, durationSeconds);
       var minutes = validDuration / 60;
-      var wcpm = Math.round(correctCount / minutes);
-      return { accuracy: accuracy, wcpm: wcpm };
+      var wcpm = Math.round(adjustedCorrectCount / minutes);
+      return { accuracy: accuracy, wcpm: wcpm, correctWords: adjustedCorrectCount };
   }
 
   function calculateRunningRecordMetrics(wordData, insertionsArr) {
       if (!wordData || wordData.length === 0) return {
           substitutions: 0, omissions: 0, insertions: 0,
           selfCorrections: 0, totalErrors: 0, errorRate: '0',
-          scRate: '0', readingLevel: 'frustrational'
+          scRate: '0', readingLevel: 'frustrational', accuracy: 0, accuracyPct: 0
       };
       var substitutions = wordData.filter(function (w) { return w.status === 'mispronounced'; }).length;
       var omissions = wordData.filter(function (w) { return w.status === 'missed'; }).length;
@@ -74,7 +81,7 @@
       var errorRate = totalErrors > 0 ? (totalWords / totalErrors).toFixed(1) : '∞';
       var scTotal = selfCorrections + totalErrors;
       var scRate = scTotal > 0 ? (selfCorrections / scTotal * 100).toFixed(0) : '0';
-      var correctAndSC = wordData.filter(function (w) { return w.status === 'correct' || w.status === 'self_corrected' || w.status === 'stumbled'; }).length;
+      var correctAndSC = Math.max(0, totalWords - substitutions - omissions - insertions);
       var accuracyPct = totalWords > 0 ? (correctAndSC / totalWords) * 100 : 0;
       var readingLevel = 'frustrational';
       if (accuracyPct >= 95) readingLevel = 'independent';
@@ -82,8 +89,202 @@
       return {
           substitutions: substitutions, omissions: omissions, insertions: insertions,
           selfCorrections: selfCorrections, totalErrors: totalErrors, errorRate: errorRate,
-          scRate: scRate, readingLevel: readingLevel, accuracyPct: Math.round(accuracyPct)
+          scRate: scRate, readingLevel: readingLevel,
+          accuracy: Math.round(accuracyPct), accuracyPct: Math.round(accuracyPct)
       };
+  }
+
+  var _FLUENCY_STATUSES = {
+    correct: true,
+    missed: true,
+    stumbled: true,
+    self_corrected: true,
+    mispronounced: true
+  };
+
+  function _cloneFluencyWords(words) {
+    return (Array.isArray(words) ? words : []).map(function (word) {
+      var status = word && _FLUENCY_STATUSES[word.status] ? word.status : 'correct';
+      return Object.assign({}, word || {}, {
+        word: String((word && word.word) || ''),
+        status: status,
+        said: word && word.said ? String(word.said) : undefined,
+        lowConfidence: !!(word && word.lowConfidence),
+        triangulation: word && word.triangulation ? String(word.triangulation) : undefined
+      });
+    });
+  }
+
+  function _cloneInsertions(insertions) {
+    return (Array.isArray(insertions) ? insertions : [])
+      .map(function (word) { return String(word || '').trim(); })
+      .filter(function (word) { return word.length > 0; });
+  }
+
+  function _fluencySnapshot(result) {
+    result = result || {};
+    return {
+      wordData: _cloneFluencyWords(result.wordData),
+      insertions: _cloneInsertions(result.insertions),
+      accuracy: Number(result.accuracy) || 0,
+      wcpm: Number(result.wcpm) || 0,
+      timestamp: result.timestamp || null
+    };
+  }
+
+  function _passageHash(text) {
+    var input = String(text || '').trim().replace(/\s+/g, ' ');
+    var hash = 2166136261;
+    for (var i = 0; i < input.length; i++) {
+      hash ^= input.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(36);
+  }
+
+  // Records what was actually read. Generated/arbitrary passages are marked
+  // uncalibrated by default so their WCPM values are never silently treated as
+  // interchangeable screening forms.
+  function createFluencyPassageMetadata(referenceText, options) {
+    options = options || {};
+    var wordCount = _tokenizeReference(referenceText).length;
+    return {
+      passageId: String(options.passageId || ('passage-' + _passageHash(referenceText))),
+      sourceResourceId: options.sourceResourceId ? String(options.sourceResourceId) : null,
+      title: options.title ? String(options.title) : null,
+      grade: options.grade ? String(options.grade) : null,
+      language: options.language ? String(options.language) : null,
+      wordCount: wordCount,
+      calibrated: options.calibrated === true,
+      passageSetId: options.passageSetId ? String(options.passageSetId) : null,
+      formId: options.formId ? String(options.formId) : null,
+      lexile: options.lexile != null ? String(options.lexile) : null
+    };
+  }
+
+  // Applies human adjudication without overwriting the machine result. The
+  // first automated snapshot and every prior reviewed snapshot remain in the
+  // record so exports can distinguish model output from educator judgment.
+  function applyFluencyReview(result, review, options) {
+    result = result || {};
+    review = review || {};
+    options = options || {};
+    var reviewedWords = _cloneFluencyWords(review.wordData || result.wordData);
+    var reviewedInsertions = _cloneInsertions(
+      review.insertions !== undefined ? review.insertions : result.insertions
+    );
+    var durationSeconds = Number(options.durationSeconds || result.durationSeconds ||
+      (result.metrics && result.metrics.durationSeconds)) || 0;
+    var totalWords = Number(options.totalReferenceWordCount || result.totalReferenceWordCount ||
+      (result.metrics && result.metrics.totalWords)) || reviewedWords.length;
+    var metrics = calculateLocalFluencyMetrics(
+      reviewedWords,
+      durationSeconds,
+      totalWords,
+      reviewedInsertions
+    );
+    var automatedSnapshot = result.automatedSnapshot || _fluencySnapshot(result);
+    var previousSnapshot = _fluencySnapshot(result);
+    var priorAudit = Array.isArray(result.reviewAudit) ? result.reviewAudit.slice() : [];
+    var reviewedAt = options.reviewedAt || new Date().toISOString();
+    var reviewer = String(options.reviewer || review.reviewer || 'Educator').trim() || 'Educator';
+    var note = String(options.note !== undefined ? options.note : (review.note || '')).trim();
+    var correctedWordCount = 0;
+    for (var i = 0; i < reviewedWords.length; i++) {
+      var originalWord = automatedSnapshot.wordData[i] || {};
+      var reviewedWord = reviewedWords[i] || {};
+      if (originalWord.status !== reviewedWord.status ||
+          String(originalWord.said || '') !== String(reviewedWord.said || '')) correctedWordCount++;
+    }
+    priorAudit.push({
+      revision: priorAudit.length + 1,
+      reviewedAt: reviewedAt,
+      reviewer: reviewer,
+      note: note,
+      previous: previousSnapshot
+    });
+    return Object.assign({}, result, {
+      wordData: reviewedWords,
+      insertions: reviewedInsertions,
+      accuracy: metrics.accuracy,
+      wcpm: metrics.wcpm,
+      correctWords: metrics.correctWords,
+      metrics: Object.assign({}, result.metrics || {}, {
+        durationSeconds: durationSeconds,
+        totalWords: totalWords,
+        accuracy: metrics.accuracy,
+        wcpm: metrics.wcpm,
+        correctWords: metrics.correctWords
+      }),
+      automatedSnapshot: automatedSnapshot,
+      reviewAudit: priorAudit,
+      review: {
+        status: 'reviewed',
+        reviewedAt: reviewedAt,
+        reviewer: reviewer,
+        note: note,
+        revision: priorAudit.length,
+        correctedWordCount: correctedWordCount
+      }
+    });
+  }
+
+  function _median(values) {
+    if (!values.length) return null;
+    var sorted = values.slice().sort(function (a, b) { return a - b; });
+    var mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+  }
+
+  // Produces a descriptive median of the most recent reads while separately
+  // deciding whether those passages are calibrated parallel forms. This keeps
+  // a useful practice trend from being mislabeled as benchmark evidence.
+  function summarizeFluencyEvidence(assessments, options) {
+    options = options || {};
+    var sampleSize = Math.max(1, Number(options.sampleSize) || 3);
+    var valid = (Array.isArray(assessments) ? assessments : []).filter(function (item) {
+      return item && isFinite(Number(item.wcpm != null ? item.wcpm : (item.metrics && item.metrics.wcpm)));
+    });
+    valid.sort(function (a, b) {
+      return new Date(a.timestamp || a.date || 0).getTime() - new Date(b.timestamp || b.date || 0).getTime();
+    });
+    var sample = valid.slice(-sampleSize);
+    var wcpmValues = sample.map(function (item) {
+      return Number(item.wcpm != null ? item.wcpm : item.metrics.wcpm);
+    });
+    var accuracyValues = sample.map(function (item) {
+      return Number(item.accuracy != null ? item.accuracy : (item.metrics && item.metrics.accuracy));
+    }).filter(function (value) { return isFinite(value); });
+    var metadata = sample.map(function (item) { return item.passageMetadata || {}; });
+    var passageIds = metadata.map(function (m) { return m.passageId; }).filter(Boolean);
+    var setIds = metadata.map(function (m) { return m.passageSetId; }).filter(Boolean);
+    var formIds = metadata.map(function (m) { return m.formId; }).filter(Boolean);
+    var allCalibrated = sample.length >= 3 && metadata.every(function (m) { return m.calibrated === true; });
+    var sameSet = setIds.length === sample.length && new Set(setIds).size === 1;
+    var parallelForms = formIds.length === sample.length && new Set(formIds).size === sample.length;
+    var samePassage = passageIds.length === sample.length && new Set(passageIds).size === 1;
+    var benchmarkReady = allCalibrated && sameSet && parallelForms;
+    var evidenceKind = benchmarkReady ? 'calibrated-parallel-forms' :
+      (samePassage && sample.length > 1 ? 'repeated-reading' : 'descriptive-only');
+    var message = benchmarkReady
+      ? 'Median of three calibrated parallel forms; appropriate for comparison with the selected benchmark.'
+      : (evidenceKind === 'repeated-reading'
+        ? 'Repeated readings of one passage show practice change, not an interchangeable screening score.'
+        : (sample.length < 3
+          ? 'Fewer than three readings are available; treat this as a single-read practice signal.'
+          : 'Passages are not documented as calibrated parallel forms; the median is descriptive only.'));
+    return {
+      sampleCount: sample.length,
+      requestedSampleSize: sampleSize,
+      medianWcpm: _median(wcpmValues),
+      medianAccuracy: _median(accuracyValues),
+      minWcpm: wcpmValues.length ? Math.min.apply(Math, wcpmValues) : null,
+      maxWcpm: wcpmValues.length ? Math.max.apply(Math, wcpmValues) : null,
+      evidenceKind: evidenceKind,
+      benchmarkReady: benchmarkReady,
+      message: message,
+      recordIds: sample.map(function (item) { return item.recordId || item.id || null; })
+    };
   }
 
   function getBenchmarkComparison(wcpm, grade, season, customNorms) {
@@ -420,6 +621,9 @@
   window.analyzeFluencyLocal = analyzeFluencyLocal;
   window.isLocalAsrAvailable = isLocalAsrAvailable;
   window.triangulateFluency = triangulateFluency;
+  window.createFluencyPassageMetadata = createFluencyPassageMetadata;
+  window.applyFluencyReview = applyFluencyReview;
+  window.summarizeFluencyEvidence = summarizeFluencyEvidence;
 
   // Trigger the monolith's upgrade callback if it exists.
   if (typeof window._upgradeFluency === 'function') {
@@ -436,7 +640,10 @@
       transcribeAudioLocal: transcribeAudioLocal,
       analyzeFluencyLocal: analyzeFluencyLocal,
       isLocalAsrAvailable: isLocalAsrAvailable,
-      triangulateFluency: triangulateFluency
+      triangulateFluency: triangulateFluency,
+      createFluencyPassageMetadata: createFluencyPassageMetadata,
+      applyFluencyReview: applyFluencyReview,
+      summarizeFluencyEvidence: summarizeFluencyEvidence
   };
   console.log('[CDN] Fluency loaded');
 })();

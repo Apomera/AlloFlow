@@ -176,17 +176,18 @@ class ErrorBoundary extends React.Component {
       return f[key] || key;
     });
     if (this.state.hasError) {
-      return /* @__PURE__ */ React.createElement("div", { className: "w-full h-full min-h-[400px] flex flex-col items-center justify-center p-8 bg-red-50 border-2 border-red-200 rounded-xl text-center animate-in fade-in zoom-in duration-300 relative z-50" }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-100 p-4 rounded-full text-red-500 mb-4 shadow-sm" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 48 })), /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-black text-red-800 mb-2" }, this.props.title || t("errors.component_title")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-red-600 mb-6 max-w-md font-medium leading-relaxed" }, this.props.fallbackMessage || t("errors.default_desc")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement("div", { role: "alert", "aria-live": "assertive", "aria-atomic": "true", className: "w-full h-full min-h-[400px] flex flex-col items-center justify-center p-8 bg-red-50 border-2 border-red-200 rounded-xl text-center animate-in fade-in zoom-in duration-300 motion-reduce:animate-none relative z-50" }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-100 p-4 rounded-full text-red-500 mb-4 shadow-sm" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 48, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-black text-red-800 mb-2" }, this.props.title || t("errors.component_title")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-red-600 mb-6 max-w-md font-medium leading-relaxed" }, this.props.fallbackMessage || t("errors.default_desc")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "aria-label": t("common.refresh"),
           onClick: () => {
             if (this.props.onRetry) this.props.onRetry();
             this.setState({ hasError: false, error: null });
           },
-          className: "px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-lg flex items-center gap-2 active:scale-95"
+          className: "px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-lg flex items-center gap-2 active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
         },
-        /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }),
+        /* @__PURE__ */ React.createElement(RefreshCw, { size: 16, "aria-hidden": "true" }),
         " ",
         this.props.retryLabel || t("errors.try_again")
       )), Boolean(this.state.error) && /* @__PURE__ */ React.createElement("details", { className: "mt-8 text-[11px] text-red-600 text-left max-w-sm opacity-60 cursor-pointer" }, /* @__PURE__ */ React.createElement("summary", null, t("common.error_details")), /* @__PURE__ */ React.createElement("pre", { className: "mt-2 whitespace-pre-wrap" }, this.state.error.toString())));
