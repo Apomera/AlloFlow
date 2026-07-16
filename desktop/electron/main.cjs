@@ -24,17 +24,44 @@ const { assertTrustedIpcSender, isSameOrigin } = require('./security.cjs');
 const KNOWN_EDITIONS = ['desktop', 'admin', 'remediation'];
 
 // The Windows installer's "Choose your experience" page (build-resources/
-// installer.nsh) writes { "edition": "remediation" | "desktop" } here. It
-// lives in userData, not $INSTDIR, so auto-updates (which replace the install
-// dir) never reset the choice; a later interactive reinstall rewrites it.
-function readInstallEditionChoice() {
+// installer.nsh) writes { "edition": "remediation" | "desktop", "installedAt":
+// "<stamp>" } here on every interactive install. It lives in userData, not
+// $INSTDIR, so auto-updates (which replace the install dir) never reset the
+// choice; a later interactive reinstall rewrites it.
+function readInstallMarker() {
   try {
     const markerPath = path.join(app.getPath('userData'), 'desktop-edition.json');
-    const parsed = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
-    const choice = String((parsed && parsed.edition) || '').toLowerCase();
-    if (KNOWN_EDITIONS.includes(choice)) return choice;
-  } catch (_) {}
-  return '';
+    return JSON.parse(fs.readFileSync(markerPath, 'utf8')) || {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function readInstallEditionChoice() {
+  const choice = String(readInstallMarker().edition || '').toLowerCase();
+  return KNOWN_EDITIONS.includes(choice) ? choice : '';
+}
+
+// Reinstalling must bring the guided AI setup back (user requirement,
+// 2026-07-16): the installer stamps each interactive install with
+// installedAt, and when that stamp differs from the one recorded in the
+// runtime config we clear setup.completed so the wizard greets again.
+// Silent auto-updates never restamp, so updates stay quiet.
+function ensureFreshInstallSetupReset() {
+  try {
+    const installId = String(readInstallMarker().installedAt || '');
+    if (!installId) return;
+    const config = runtime.readConfig();
+    const setup = config.setup || {};
+    if (String(setup.installId || '') === installId) return;
+    runtime.writeConfig({
+      ...config,
+      setup: { ...setup, completed: false, installId },
+    });
+    logLine('Fresh interactive install detected (' + installId + '): AI setup wizard re-armed.');
+  } catch (error) {
+    logLine('Install-stamp check skipped: ' + (error && error.message ? error.message : error));
+  }
 }
 
 function getEdition() {
@@ -770,6 +797,7 @@ app.whenReady().then(async () => {
   configureDesktopSecretStorage();
   runtime.configurePrivateApiToken(PRIVATE_API_TOKEN);
   prepareDesktopRuntimeHome();
+  ensureFreshInstallSetupReset();
   logLine('Launching AlloFlow Desktop' + (DESKTOP_EDITION ? ` (${DESKTOP_EDITION} edition)` : ''));
   logLine('Runtime data dir: ' + runtime.getDataDir());
   await ensureRuntime();

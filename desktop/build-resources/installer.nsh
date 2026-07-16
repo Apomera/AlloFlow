@@ -1,6 +1,7 @@
 !ifndef BUILD_UNINSTALLER
   !include LogicLib.nsh
   !include nsDialogs.nsh
+  !include FileFunc.nsh
 
   ; The "Choose your experience" (Full vs Document Remediation) step only
   ; applies to the AlloFlow Desktop product. The Admin Server flavor shares
@@ -137,22 +138,27 @@
     ; Persist the "Choose your experience" selection where the app reads it
     ; (Electron userData for package name alloflow-desktop). Interactive
     ; installs always write it; silent installs (auto-updates) skip this whole
-    ; block so an update never resets the user's choice. Choosing Full deletes
-    ; the marker so the baked build flavor decides again.
+    ; block so an update never resets the user's choice or re-arms the wizard.
+    ; installedAt stamps this specific install: the app compares it to the
+    ; stamp recorded in its runtime config and re-shows the guided AI setup
+    ; whenever they differ - so a reinstall always brings the wizard back
+    ; (desktop/electron/main.cjs ensureFreshInstallSetupReset).
     !ifdef ALLO_EXPERIENCE_CHOICE
       ${IfNot} ${Silent}
         ${If} $ExperienceChoice == "remediation"
-          CreateDirectory "$APPDATA\alloflow-desktop"
-          ClearErrors
-          FileOpen $EditionMarkerHandle "$APPDATA\alloflow-desktop\desktop-edition.json" w
-          ${IfNot} ${Errors}
-            FileWrite $EditionMarkerHandle '{ "edition": "remediation" }'
-            FileClose $EditionMarkerHandle
-          ${EndIf}
+          StrCpy $ExperienceChoice "remediation"
         ${Else}
-          Delete "$APPDATA\alloflow-desktop\desktop-edition.json"
+          StrCpy $ExperienceChoice "desktop"
         ${EndIf}
-        !insertmacro LogInstallDiagnostic "experienceChoice=$ExperienceChoice"
+        ${GetTime} "" "L" $R0 $R1 $R2 $R3 $R4 $R5 $R6
+        CreateDirectory "$APPDATA\alloflow-desktop"
+        ClearErrors
+        FileOpen $EditionMarkerHandle "$APPDATA\alloflow-desktop\desktop-edition.json" w
+        ${IfNot} ${Errors}
+          FileWrite $EditionMarkerHandle '{ "edition": "$ExperienceChoice", "installedAt": "$R2-$R1-$R0 $R4:$R5:$R6" }'
+          FileClose $EditionMarkerHandle
+        ${EndIf}
+        !insertmacro LogInstallDiagnostic "experienceChoice=$ExperienceChoice installedAt=$R2-$R1-$R0 $R4:$R5:$R6"
       ${EndIf}
     !endif
     !insertmacro LogInstallDiagnostic "appExe=$appExe"
