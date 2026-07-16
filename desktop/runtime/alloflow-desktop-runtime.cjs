@@ -4283,8 +4283,10 @@ async function handleApi(req, res, url) {
       name: 'AlloFlow Desktop Runtime',
       version: VERSION,
       status: 'ok',
-      // Build edition ('desktop' | 'admin' | '') — set by electron/main.cjs from
-      // extraMetadata.alloEdition; the command center adapts its boot view to it.
+      // Build edition ('desktop' | 'admin' | 'remediation' | '') — set by
+      // electron/main.cjs (baked extraMetadata.alloEdition, or the installer's
+      // "Choose your experience" marker); the command center adapts its boot
+      // view to it.
       edition: String(process.env.ALLOFLOW_DESKTOP_EDITION || '').toLowerCase(),
       privateApiAuth: privateApiToken ? 'launch-token' : 'development-unlocked',
       appUrl: getAppUrl(config, origin),

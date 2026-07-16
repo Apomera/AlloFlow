@@ -68,6 +68,17 @@
     }
   }
 
+  // The URL the app frame (and the open-in-browser link) should load. The
+  // remediation edition boots the bundled app into its focused document-
+  // remediation screen via ?mode=remediation (read by the app at startup).
+  function bundledAppLaunchUrl() {
+    const base = state.health?.appUrl || '';
+    if (!base) return '';
+    const edition = String((state.health && state.health.edition) || '').toLowerCase();
+    if (edition !== 'remediation') return base;
+    return base + (base.indexOf('?') === -1 ? '?' : '&') + 'mode=remediation';
+  }
+
   function getAppBridgeTarget() {
     const frame = $('#app-frame');
     const origin = expectedAppOrigin();
@@ -320,9 +331,9 @@
       : 'Waiting for ' + state.health.appUrl;
     setText('#app-status', appStatus);
     $('#app-url').value = state.health.appUrl || '';
-    $('#open-app-link').href = state.health.appUrl || '#';
+    $('#open-app-link').href = bundledAppLaunchUrl() || '#';
     const frame = $('#app-frame');
-    const nextFrameUrl = state.health.appReachable ? state.health.appUrl : 'about:blank';
+    const nextFrameUrl = state.health.appReachable ? bundledAppLaunchUrl() : 'about:blank';
     if (frame && frame.src !== nextFrameUrl) {
       resetAppBridge();
       frame.src = nextFrameUrl;
@@ -933,7 +944,7 @@
     frame.src = 'about:blank';
     resetAppBridge();
     setTimeout(() => {
-      frame.src = state.health.appUrl;
+      frame.src = bundledAppLaunchUrl();
     }, 30);
   }
 
@@ -2149,16 +2160,19 @@
     healthPollTimer = setInterval(refreshSetupHealth, 4000);
   }
 
-  // ── Build editions (teacher | admin) ──────────────────────────────────────
-  // The runtime reports the baked edition in /api/health. Teacher boots
+  // ── Build editions (desktop | admin | remediation) ─────────────────────────
+  // The runtime reports the baked edition in /api/health. Desktop boots
   // straight into the app view full-bleed (console behind the ⚙ gear); admin
   // shows the school-server "teachers connect here" banner with the join PIN.
+  // Remediation is the desktop posture with the app frame locked to the
+  // focused document-remediation screen (see bundledAppLaunchUrl).
   // Unflavored builds change nothing.
   function applyEditionPosture() {
     const edition = String((state.health && state.health.edition) || '').toLowerCase();
     document.body.classList.toggle('edition-admin', edition === 'admin');
-    document.body.classList.toggle('edition-desktop', edition === 'desktop');
-    if (edition === 'desktop' && !state.editionBooted) {
+    document.body.classList.toggle('edition-desktop', edition === 'desktop' || edition === 'remediation');
+    document.body.classList.toggle('edition-remediation', edition === 'remediation');
+    if ((edition === 'desktop' || edition === 'remediation') && !state.editionBooted) {
       state.editionBooted = true;
       // CSS-only full-bleed — no forced OS fullscreen; the Full Screen control
       // still does that on demand.

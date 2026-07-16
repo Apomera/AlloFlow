@@ -2,6 +2,15 @@
   !include LogicLib.nsh
   !include nsDialogs.nsh
 
+  ; The "Choose your experience" (Full vs Document Remediation) step only
+  ; applies to the AlloFlow Desktop product. The Admin Server flavor shares
+  ; this script (scripts/build-edition.cjs) but keeps just the shortcut page.
+  !ifdef PRODUCT_NAME
+    !if "${PRODUCT_NAME}" == "AlloFlow Desktop"
+      !define ALLO_EXPERIENCE_CHOICE
+    !endif
+  !endif
+
   ; Friendly, teacher-facing installer chrome. customWelcomePage is the hook
   ; the electron-builder template inserts BEFORE the page flow (customHeader
   ; comes after the pages exist, so MUI defines there are silent no-ops).
@@ -21,6 +30,10 @@
 
   Var AddDesktopShortcutCheckbox
   Var AddDesktopShortcut
+  Var ExperienceFullRadio
+  Var ExperienceRemediationRadio
+  Var ExperienceChoice
+  Var EditionMarkerHandle
   Var InstallDiagnosticLog
   Var InstallDiagnosticHandle
   Var ResolvedAppExe
@@ -53,6 +66,12 @@
     StrCpy $isForceCurrentInstall "1"
   !macroend
 
+  ; "Choose your experience" + desktop-shortcut page. The experience choice is
+  ; how the Document Remediation edition ships: same installer, same app - the
+  ; choice is written to a small marker file the desktop shell reads at boot
+  ; (see desktop/electron/main.cjs readInstallEditionChoice). Full is the
+  ; default; remediation locks the app to the focused document-remediation
+  ; screen. Re-running the installer lets the user change the choice.
   Function DesktopShortcutPage
     nsDialogs::Create 1018
     Pop $0
@@ -60,11 +79,33 @@
       Abort
     ${EndIf}
 
-    ${NSD_CreateLabel} 0 0 100% 24u "Choose whether AlloFlow Desktop should add a shortcut to your desktop."
-    Pop $0
+    !ifdef ALLO_EXPERIENCE_CHOICE
+      ${NSD_CreateLabel} 0 0 100% 12u "Choose your AlloFlow experience:"
+      Pop $0
 
-    ${NSD_CreateCheckbox} 0 34u 100% 12u "Add a shortcut to my desktop"
-    Pop $AddDesktopShortcutCheckbox
+      ${NSD_CreateRadioButton} 0 14u 100% 12u "Full AlloFlow Desktop (recommended)"
+      Pop $ExperienceFullRadio
+      ${NSD_AddStyle} $ExperienceFullRadio ${WS_GROUP}
+      ${NSD_CreateLabel} 12u 27u 95% 12u "Lessons, classroom sessions, accessibility tools, and more."
+      Pop $0
+
+      ${NSD_CreateRadioButton} 0 42u 100% 12u "Document remediation only"
+      Pop $ExperienceRemediationRadio
+      ${NSD_CreateLabel} 12u 55u 95% 20u "A focused screen that makes PDF, Word, and PowerPoint documents accessible. The rest of the app stays hidden."
+      Pop $0
+
+      ${NSD_Check} $ExperienceFullRadio
+
+      ${NSD_CreateCheckbox} 0 84u 100% 12u "Add a shortcut to my desktop"
+      Pop $AddDesktopShortcutCheckbox
+      ${NSD_AddStyle} $AddDesktopShortcutCheckbox ${WS_GROUP}
+    !else
+      ${NSD_CreateLabel} 0 0 100% 24u "Choose whether ${PRODUCT_NAME} should add a shortcut to your desktop."
+      Pop $0
+
+      ${NSD_CreateCheckbox} 0 34u 100% 12u "Add a shortcut to my desktop"
+      Pop $AddDesktopShortcutCheckbox
+    !endif
     ${NSD_Check} $AddDesktopShortcutCheckbox
 
     nsDialogs::Show
@@ -72,6 +113,14 @@
 
   Function DesktopShortcutPageLeave
     ${NSD_GetState} $AddDesktopShortcutCheckbox $AddDesktopShortcut
+    !ifdef ALLO_EXPERIENCE_CHOICE
+      ${NSD_GetState} $ExperienceRemediationRadio $0
+      ${If} $0 == ${BST_CHECKED}
+        StrCpy $ExperienceChoice "remediation"
+      ${Else}
+        StrCpy $ExperienceChoice "desktop"
+      ${EndIf}
+    !endif
   FunctionEnd
 
   !macro customPageAfterChangeDir
@@ -84,6 +133,28 @@
 
     !insertmacro LogInstallDiagnostic "---- AlloFlow Desktop install ----"
     !insertmacro LogInstallDiagnostic "INSTDIR=$INSTDIR"
+
+    ; Persist the "Choose your experience" selection where the app reads it
+    ; (Electron userData for package name alloflow-desktop). Interactive
+    ; installs always write it; silent installs (auto-updates) skip this whole
+    ; block so an update never resets the user's choice. Choosing Full deletes
+    ; the marker so the baked build flavor decides again.
+    !ifdef ALLO_EXPERIENCE_CHOICE
+      ${IfNot} ${Silent}
+        ${If} $ExperienceChoice == "remediation"
+          CreateDirectory "$APPDATA\alloflow-desktop"
+          ClearErrors
+          FileOpen $EditionMarkerHandle "$APPDATA\alloflow-desktop\desktop-edition.json" w
+          ${IfNot} ${Errors}
+            FileWrite $EditionMarkerHandle '{ "edition": "remediation" }'
+            FileClose $EditionMarkerHandle
+          ${EndIf}
+        ${Else}
+          Delete "$APPDATA\alloflow-desktop\desktop-edition.json"
+        ${EndIf}
+        !insertmacro LogInstallDiagnostic "experienceChoice=$ExperienceChoice"
+      ${EndIf}
+    !endif
     !insertmacro LogInstallDiagnostic "appExe=$appExe"
     !insertmacro LogInstallDiagnostic "installMode=$installMode"
     !insertmacro LogInstallDiagnostic "newStartMenuLink=$newStartMenuLink"

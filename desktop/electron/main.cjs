@@ -8,20 +8,46 @@ const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('ele
 const runtime = require('../runtime/alloflow-desktop-runtime.cjs');
 const { assertTrustedIpcSender, isSameOrigin } = require('./security.cjs');
 
-// ── Build edition ('desktop' | 'admin' | '' = unflavored upstream) ──────────
+// ── Build edition ('desktop' | 'admin' | 'remediation' | '' = unflavored) ───
 // Baked at package time by scripts/build-edition.cjs via electron-builder
 // extraMetadata.alloEdition; ALLOFLOW_DESKTOP_EDITION env overrides for dev.
-//   desktop — boots straight into the web app full-bleed (single teacher).
-//   admin   — school-server posture: boots into the command center and
-//             auto-starts LAN Share with a required join PIN, so teachers
-//             reach the app from browsers at http://<server-ip>:32175/app/.
+//   desktop     — boots straight into the web app full-bleed (single teacher).
+//   admin       — school-server posture: boots into the command center and
+//                 auto-starts LAN Share with a required join PIN, so teachers
+//                 reach the app from browsers at http://<server-ip>:32175/app/.
+//   remediation — desktop posture, but the app frame boots into the focused
+//                 document-remediation screen (?mode=remediation) and never
+//                 exposes the full app. Selected during the Windows install
+//                 step (see readInstallEditionChoice below), not a separate
+//                 build.
 // Unflavored builds keep pure upstream behavior.
+const KNOWN_EDITIONS = ['desktop', 'admin', 'remediation'];
+
+// The Windows installer's "Choose your experience" page (build-resources/
+// installer.nsh) writes { "edition": "remediation" | "desktop" } here. It
+// lives in userData, not $INSTDIR, so auto-updates (which replace the install
+// dir) never reset the choice; a later interactive reinstall rewrites it.
+function readInstallEditionChoice() {
+  try {
+    const markerPath = path.join(app.getPath('userData'), 'desktop-edition.json');
+    const parsed = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
+    const choice = String((parsed && parsed.edition) || '').toLowerCase();
+    if (KNOWN_EDITIONS.includes(choice)) return choice;
+  } catch (_) {}
+  return '';
+}
+
 function getEdition() {
   const fromEnv = String(process.env.ALLOFLOW_DESKTOP_EDITION || '').toLowerCase();
-  if (fromEnv === 'desktop' || fromEnv === 'admin') return fromEnv;
+  if (KNOWN_EDITIONS.includes(fromEnv)) return fromEnv;
+  // The install-step choice outranks the baked flavor: the desktop installer
+  // bakes alloEdition 'desktop', and the marker is how a user turns that
+  // install into the remediation experience (or back).
+  const fromInstaller = readInstallEditionChoice();
+  if (fromInstaller) return fromInstaller;
   try {
     const fromPkg = String(require('../package.json').alloEdition || '').toLowerCase();
-    if (fromPkg === 'desktop' || fromPkg === 'admin') return fromPkg;
+    if (KNOWN_EDITIONS.includes(fromPkg)) return fromPkg;
   } catch (_) {}
   return '';
 }
@@ -647,6 +673,69 @@ handleTrustedIpc('remediation:reveal-path', async (_event, targetPath) => {
     }
     await shell.openPath(targetPath);
     return { success: true };
+  } catch (error) {
+    return { error: String((error && error.message) || error) };
+  }
+});
+
+// ── Remediation folder ingestion (ported from the AlloFlow Admin app) ──────
+// Powers the batch screen's "Scan Folder" button (view_pdf_audit_source.jsx
+// gates it on window.alloAPI.remediation.selectFolder). Returns file metadata
+// only — contents are fetched on demand via remediation:read-file-base64 to
+// keep the IPC payload small.
+const REMEDIATION_EXTS = new Set(['.pdf', '.docx', '.pptx']);
+
+handleTrustedIpc('remediation:select-folder', async () => {
+  try {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      defaultPath: os.homedir(),
+      properties: ['openDirectory'],
+      title: 'Choose a folder of documents to remediate',
+    });
+    if (result.canceled || !result.filePaths[0]) return { canceled: true };
+
+    const root = result.filePaths[0];
+    const files = [];
+    const MAX_FILES = 1000; // safety cap
+
+    const walk = (dir) => {
+      if (files.length >= MAX_FILES) return;
+      let entries;
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
+      catch { return; }
+      for (const entry of entries) {
+        if (files.length >= MAX_FILES) break;
+        if (entry.name.startsWith('.')) continue; // skip hidden / dotfiles
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name === 'node_modules') continue;
+          walk(full);
+        } else if (entry.isFile() && REMEDIATION_EXTS.has(path.extname(entry.name).toLowerCase())) {
+          let sizeBytes = 0;
+          try { sizeBytes = fs.statSync(full).size; } catch (_) {}
+          files.push({ name: entry.name, path: full, relPath: path.relative(root, full), sizeBytes });
+        }
+      }
+    };
+    walk(root);
+
+    logLine(`remediation:select-folder ${root} -> ${files.length} document(s)`);
+    return { canceled: false, root, files };
+  } catch (error) {
+    return { canceled: true, error: String((error && error.message) || error) };
+  }
+});
+
+// Read one document (by absolute path) and return its base64 contents on
+// demand. Only paths with remediation-supported extensions are served — the
+// renderer never gets a generic read-any-file primitive from this bridge.
+handleTrustedIpc('remediation:read-file-base64', async (_event, filePath) => {
+  try {
+    if (typeof filePath !== 'string' || !REMEDIATION_EXTS.has(path.extname(filePath).toLowerCase()) || !fs.existsSync(filePath)) {
+      return { error: 'File not found' };
+    }
+    const buf = fs.readFileSync(filePath);
+    return { base64: buf.toString('base64'), sizeBytes: buf.length };
   } catch (error) {
     return { error: String((error && error.message) || error) };
   }

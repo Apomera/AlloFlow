@@ -7921,7 +7921,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=5f72a297a');
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=5f72a297a');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=5f72a297a');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d5bbc8eb');
+    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=b9a937ff');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=5f72a297a');
     loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=5f72a297a');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=5f72a297a');
@@ -16300,6 +16300,63 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfBatchSummary, setPdfBatchSummary] = useState(null);
   const [pdfExperimentMode, setPdfExperimentMode] = useState(false);
   const [pdfExperimentRuns, setPdfExperimentRuns] = useState(3);
+  // ── Focused remediation mode (?mode=remediation) ──────────────────────────
+  // Ported from the standalone AlloFlow Remediation build (local-app). The
+  // AlloFlow Desktop installer offers "Document remediation" as an install
+  // choice; the desktop shell then serves the bundled app with this query
+  // param. Skip the landing/role/gate flow and open the batch remediation
+  // screen directly, and never expose the full app.
+  const _remediationMode = (() => {
+    try { return new URLSearchParams(window.location.search).get('mode') === 'remediation'; }
+    catch { return false; }
+  })();
+  useEffect(() => {
+    if (!_remediationMode) return;
+    setShowWizard(false);
+    setHasSelectedMode(true);
+    setHasSelectedRole(true);
+    setIsTeacherMode(true);
+    setPdfBatchMode(true);
+    setPdfAuditResult({ _choosing: true, fileName: 'Folder scan', fileSize: 0 });
+    try { document.body.classList.add('allo-remediation-only'); } catch {}
+    // Strip the full-app chrome so the focused build shows ONLY the
+    // remediation screen: make the audit dialog's backdrop opaque (hiding the
+    // app shell behind it) and remove the decorative animated background.
+    try {
+      const STYLE_ID = 'allo-remediation-only-style';
+      if (!document.getElementById(STYLE_ID)) {
+        const style = document.createElement('style');
+        style.id = STYLE_ID;
+        style.textContent = `
+          body.allo-remediation-only [aria-label="PDF Accessibility Audit"] {
+            background: #f1f5f9 !important;
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+          }
+          body.allo-remediation-only .bg-dot-pattern,
+          body.allo-remediation-only .animate-float,
+          body.allo-remediation-only .animate-float-delayed { display: none !important; }
+        `;
+        document.head.appendChild(style);
+      }
+    } catch {}
+  }, [_remediationMode]);
+  // Lock the user inside the remediation screen — the focused mode must never
+  // expose the full AlloFlow app. If anything closes the audit modal (a Cancel
+  // button, Escape, etc.), immediately re-assert the batch remediation screen.
+  useEffect(() => {
+    if (!_remediationMode) return;
+    if (pdfAuditResult) return;            // modal still open
+    // Audit/fix/auto-continue in progress: those flows briefly null
+    // pdfAuditResult while showing a loading state — do NOT hijack them back
+    // to the home screen, or the user loses the running audit and never sees
+    // the result.
+    if (pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning) return;
+    setPdfBatchMode(true);
+    setPdfFixResult(null);
+    setPdfFixLoading(false);
+    setPdfAuditResult({ _choosing: true, fileName: 'Folder scan', fileSize: 0 });
+  }, [_remediationMode, pdfAuditResult, pdfAuditLoading, pdfFixLoading, pdfAutoContinueRunning]);
   const [customExportCSS, setCustomExportCSS] = useState('');
   const [exportStylePrompt, setExportStylePrompt] = useState('');
   const [isGeneratingStyle, setIsGeneratingStyle] = useState(false);
@@ -37610,7 +37667,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setPdfPageRange, setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
           setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, setPendingPdfBase64, setPendingPdfFile,
           setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
-          pdfRunHistory, setPdfRunHistory
+          pdfRunHistory, setPdfRunHistory, _remediationMode
       })}
       <ErrorBoundary fallbackMessage="File transcription encountered an error. Please try again.">
       <LargeFileTranscriptionModal
@@ -37972,7 +38029,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           <button onClick={() => { try { if (window.__alloVoiceLoop) window.__alloVoiceLoop.stop(); } catch (_) {} }} className="ml-1 px-2 py-0.5 bg-white/20 border border-white/50 rounded-full hover:bg-white/30" aria-label={t('voice_control.stop_aria') || 'Stop voice control'}>⏹</button>
         </div>
       )}
-      {isBotVisible && (
+      {isBotVisible && !_remediationMode && (
           <AlloBot
             ref={alloBotRef}
             canPlayIntro={canPlayBotIntro && isBotVisible && hasSelectedRole}

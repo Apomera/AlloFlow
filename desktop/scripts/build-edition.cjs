@@ -10,6 +10,11 @@
 //             command center, auto-starts LAN Share (serves the full web app
 //             to the network) and enforces a join PIN by default.
 //
+// Note: the Document Remediation experience is NOT a build flavor — it is an
+// install-step choice inside the desktop installer ("Choose your experience",
+// build-resources/installer.nsh), persisted to userData and read at boot by
+// electron/main.cjs. One desktop installer serves both experiences.
+//
 // The flavor is baked via electron-builder extraMetadata.alloEdition (read by
 // electron/main.cjs at boot) plus a distinct appId/productName/artifact prefix
 // so both apps install side by side with separate userData dirs. Mirrors the

@@ -33,5 +33,9 @@ contextBridge.exposeInMainWorld('alloAPI', {
   remediation: {
     saveFiles: (payload) => ipcRenderer.invoke('remediation:save-files', payload),
     revealPath: (p) => ipcRenderer.invoke('remediation:reveal-path', p),
+    // Folder ingestion for the batch screen's "Scan Folder" button (used by
+    // the remediation install choice, but available to every desktop build).
+    selectFolder: () => ipcRenderer.invoke('remediation:select-folder'),
+    readFileBase64: (p) => ipcRenderer.invoke('remediation:read-file-base64', p),
   },
 });
