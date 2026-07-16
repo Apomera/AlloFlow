@@ -396,6 +396,14 @@ describe('mirrored data contract (reading_library/)', () => {
       (book.pages || []).forEach((page, pageIdx) => {
         fail(page.n === pageIdx + 1, label + ': nonsequential page ' + pageIdx);
         fail(!!(page.img || page.text), label + ': empty page ' + (pageIdx + 1));
+        // Page art is hotlinked (StoryWeaver GCS, Bloom S3, Gutenberg cache);
+        // captions ride along for alt text and must never appear without art.
+        if (page.img) fail(typeof page.img === 'string' && /^https?:\/\//.test(page.img), label + ': bad page image URL ' + (pageIdx + 1));
+        if (page.imgCaption != null) {
+          fail(!!page.img, label + ': image caption without an image ' + (pageIdx + 1));
+          fail(typeof page.imgCaption === 'string' && page.imgCaption.trim().length > 0 && page.imgCaption.length <= 300,
+            label + ': bad image caption ' + (pageIdx + 1));
+        }
       });
       const actualWords = (book.pages || []).reduce((sum, page) => (
         sum + (String(page.text || '').trim().match(/\S+/g) || []).length

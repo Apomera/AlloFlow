@@ -693,6 +693,27 @@ describe('reader navigation, bookmarks, and continuous read-aloud', () => {
 
   function pageInput() { return host.querySelector('input[aria-label="Go to page"]'); }
 
+  it('renders page art with its caption, and the caption doubles as alt text', async () => {
+    const book = makeBook();
+    book.pages[0].img = 'https://www.gutenberg.org/cache/epub/1/images/test-art.jpg';
+    book.pages[0].imgCaption = 'Peter squeezed under the gate.';
+    await mountBook(book);
+    const img = host.querySelector('img[src="https://www.gutenberg.org/cache/epub/1/images/test-art.jpg"]');
+    expect(img).toBeTruthy();
+    expect(img.getAttribute('alt')).toBe('Peter squeezed under the gate.');
+    expect(textOf(host)).toContain('Peter squeezed under the gate.');
+  });
+
+  it('falls back to the generic illustration alt text when a page has no caption', async () => {
+    const book = makeBook();
+    book.pages[0].img = 'https://www.gutenberg.org/cache/epub/1/images/plain-art.jpg';
+    await mountBook(book);
+    const img = host.querySelector('img[src="https://www.gutenberg.org/cache/epub/1/images/plain-art.jpg"]');
+    expect(img).toBeTruthy();
+    expect(img.getAttribute('alt')).toContain('Illustration from');
+    expect(textOf(host)).not.toContain('Illustration from'); // alt only, no visible caption row
+  });
+
   it('jumps to an arbitrary page via the page input (Enter commits)', async () => {
     await mountBook(makeBook());
     const inp = pageInput();

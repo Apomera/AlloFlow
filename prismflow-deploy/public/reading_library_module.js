@@ -1929,10 +1929,15 @@
             })) : null,
           page.img ? e('img', {
             src: page.img,
-            alt: tr('readinglib_page_illustration', 'Illustration from') + ' "' + book.title + '", ' + tr('readinglib_page', 'page') + ' ' + page.n,
+            // A real caption (Gutenberg figure captions travel with the image
+            // as page.imgCaption) beats the generic label for screen readers.
+            alt: page.imgCaption || (tr('readinglib_page_illustration', 'Illustration from') + ' "' + book.title + '", ' + tr('readinglib_page', 'page') + ' ' + page.n),
             className: 'block mx-auto w-auto max-w-full max-h-[48vh] rounded-xl',
             loading: 'lazy',
           }) : null,
+          page.img && page.imgCaption ? e('div', {
+            className: 'mt-1 mx-auto max-w-xl text-center text-[12px] italic text-slate-500',
+          }, page.imgCaption) : null,
           translation && translation.status === 'loading' ? e('div', { className: 'mt-6 text-center text-slate-500 italic' },
             '🌐 ' + tr('readinglib_translating_into', 'Translating into') + ' ' + translation.language + '…') : null,
           txReady ? e('div', { className: 'mt-3 mx-auto max-w-xl text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 text-center' },
