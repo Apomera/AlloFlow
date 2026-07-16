@@ -104,6 +104,7 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
   const [animateInput, setAnimateInput] = React.useState("");
   const [regenFrame, setRegenFrame] = React.useState(null);
   const [regenInput, setRegenInput] = React.useState("");
+  const [imageUploadErrors, setImageUploadErrors] = React.useState({});
   const [pausedFrames, setPausedFrames] = React.useState({});
   const prefersReducedMotion = React.useMemo(() => {
     if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -119,10 +120,17 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
     if (!file) return;
     if (!file.type.startsWith("image/")) return;
     if (file.size > 10 * 1024 * 1024) {
-      if (window.AlloFlowUX) window.AlloFlowUX.toast("Image too large (max 10MB). Please use a smaller image.", "error");
-      else alert(t("alerts.image_too_large_10mb"));
+      const message = t?.("alerts.image_too_large_10mb") || "Image too large (max 10MB). Please use a smaller image.";
+      setImageUploadErrors((prev) => ({ ...prev, [panelIdx]: message }));
+      e.target.value = "";
       return;
     }
+    setImageUploadErrors((prev) => {
+      if (!prev[panelIdx]) return prev;
+      const next = { ...prev };
+      delete next[panelIdx];
+      return next;
+    });
     const reader = new FileReader();
     reader.onload = (ev) => {
       setImageOverrides((prev) => ({ ...prev, [panelIdx]: ev.target.result }));
@@ -1407,18 +1415,21 @@ Return ONLY valid JSON:
       },
       onChange: (e) => handleImageUpload(panelIdx, e),
       style: { display: "none" },
-      "aria-label": t("common.upload_custom_image")
+      "aria-label": t("common.upload_custom_image"),
+      "aria-describedby": imageUploadErrors[panelIdx] ? `visual-panel-upload-error-${panelIdx}` : void 0,
+      "aria-invalid": imageUploadErrors[panelIdx] ? "true" : void 0
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       "aria-label": t("common.upload_custom_image"),
+      "aria-describedby": imageUploadErrors[panelIdx] ? `visual-panel-upload-error-${panelIdx}` : void 0,
       onClick: () => fileInputRefs.current[panelIdx]?.click(),
       title: t("common.upload_your_own_image_for_this_panel")
     },
     "\u{1F4F7}"
-  ), imageOverrides[panelIdx] && /* @__PURE__ */ React.createElement(
+  ), imageUploadErrors[panelIdx] && /* @__PURE__ */ React.createElement("p", { id: `visual-panel-upload-error-${panelIdx}`, role: "alert", className: "text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1" }, imageUploadErrors[panelIdx]), imageOverrides[panelIdx] && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
