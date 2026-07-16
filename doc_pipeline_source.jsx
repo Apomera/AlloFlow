@@ -31666,12 +31666,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     };
                     btn.addEventListener('click', async function() {
                         if (typeof window.__alloflowEncryptSubmission !== 'function') {
-                            if (window.AlloFlowUX) window.AlloFlowUX.toast('Encryption not available in this browser. You may need a more modern browser to save submissions.', 'error'); else alert('Encryption not available in this browser. You may need a more modern browser to save submissions.');
+                            window.__alloflowNotify('Encryption not available in this browser. You may need a more modern browser to save submissions.', 'error');
                             return;
                         }
                         var urlParams = new URLSearchParams(window.location.search);
                         var nicknameFromUrl = urlParams.get('nickname');
-                        var nickname = nicknameFromUrl || prompt('Enter your name or nickname so your teacher knows this is yours:');
+                        var nickname = nicknameFromUrl || await window.__alloflowPrompt({ title: 'Save your work', description: 'Enter a name or nickname so your teacher can identify this submission.', label: 'Name or nickname', confirmLabel: 'Save work', cancelLabel: 'Cancel', maxLength: 60, requiredMessage: 'Enter a name or nickname.' });
                         if (!nickname) return;
                         nickname = String(nickname).trim().slice(0, 60);
                         if (!nickname) return;
@@ -31711,7 +31711,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         } catch (e) {
                             btn.disabled = false;
                             btn.textContent = '📝 Save my work';
-                            if (window.AlloFlowUX) window.AlloFlowUX.toast('Could not save your work: ' + (e && e.message ? e.message : 'unknown error'), 'error'); else alert('Could not save your work: ' + (e && e.message ? e.message : 'unknown error'));
+                            window.__alloflowNotify('Could not save your work: ' + (e && e.message ? e.message : 'unknown error'), 'error');
                         }
                     });
                 })();
@@ -32488,6 +32488,133 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <script type="application/json" id="alloflow-teacher-annotations">${_jsonForScript(_teacherAnnotations)}</script>
         <script type="application/json" id="alloflow-teacher-annotations-by-resource">${_jsonForScript(_teacherAnnotationsByResource)}</script>
         <script>
+          // Standalone exports cannot rely on the host application's dialogs.
+          // These helpers provide announced feedback and keyboard-safe text entry.
+          (function () {
+            var promptSequence = 0;
+            window.__alloflowNotify = function (message, type) {
+              try {
+                if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') {
+                  window.AlloFlowUX.toast(String(message || ''), type || 'info');
+                  return;
+                }
+              } catch (e) {}
+              try {
+                var notice = document.createElement('div');
+                var isError = type === 'error';
+                notice.setAttribute('role', isError ? 'alert' : 'status');
+                notice.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+                notice.setAttribute('aria-atomic', 'true');
+                notice.textContent = String(message || '');
+                notice.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(36rem,calc(100vw - 32px));padding:12px 18px;border-radius:10px;background:' + (isError ? '#991b1b' : '#1e293b') + ';color:#fff;font:600 14px/1.45 system-ui,sans-serif;box-shadow:0 8px 24px rgba(15,23,42,.35);z-index:100001;';
+                document.body.appendChild(notice);
+                setTimeout(function () { try { notice.remove(); } catch (e) {} }, 6000);
+              } catch (e) {}
+            };
+            window.__alloflowPrompt = function (options) {
+              return new Promise(function (resolve) {
+                if (!document.body) { resolve(null); return; }
+                options = options || {};
+                promptSequence += 1;
+                var idBase = 'alloflow-export-prompt-' + promptSequence;
+                var opener = document.activeElement;
+                var blocked = Array.prototype.slice.call(document.body.children).map(function (el) {
+                  return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+                });
+                var overlay = document.createElement('div');
+                overlay.setAttribute('role', 'presentation');
+                overlay.style.cssText = 'position:fixed;inset:0;z-index:100002;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:20px;';
+                var dialog = document.createElement('div');
+                dialog.setAttribute('role', 'dialog');
+                dialog.setAttribute('aria-modal', 'true');
+                dialog.setAttribute('aria-labelledby', idBase + '-title');
+                dialog.setAttribute('aria-describedby', idBase + '-description ' + idBase + '-error');
+                dialog.style.cssText = 'width:min(32rem,100%);background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.4);font-family:system-ui,sans-serif;';
+                var title = document.createElement('h2');
+                title.id = idBase + '-title';
+                title.textContent = String(options.title || 'Enter information');
+                title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#0f172a;';
+                var description = document.createElement('p');
+                description.id = idBase + '-description';
+                description.textContent = String(options.description || '');
+                description.style.cssText = 'margin:0 0 16px;color:#334155;line-height:1.5;';
+                var form = document.createElement('form');
+                var label = document.createElement('label');
+                label.setAttribute('for', idBase + '-input');
+                label.textContent = String(options.label || 'Value');
+                label.style.cssText = 'display:block;margin-bottom:6px;font-weight:700;color:#0f172a;';
+                var input = document.createElement('input');
+                input.id = idBase + '-input';
+                input.type = 'text';
+                input.value = String(options.defaultValue || '');
+                input.maxLength = Number(options.maxLength) > 0 ? Number(options.maxLength) : 160;
+                input.autocomplete = String(options.autocomplete || 'name');
+                input.style.cssText = 'box-sizing:border-box;width:100%;min-height:44px;border:2px solid #64748b;border-radius:8px;padding:9px 11px;color:#0f172a;background:#fff;font:16px/1.4 system-ui,sans-serif;';
+                var error = document.createElement('p');
+                error.id = idBase + '-error';
+                error.setAttribute('role', 'alert');
+                error.hidden = true;
+                error.style.cssText = 'margin:8px 0 0;color:#991b1b;font-weight:700;';
+                var actions = document.createElement('div');
+                actions.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;margin-top:20px;';
+                var cancel = document.createElement('button');
+                cancel.type = 'button';
+                cancel.textContent = String(options.cancelLabel || 'Cancel');
+                cancel.style.cssText = 'min-height:44px;padding:9px 16px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;cursor:pointer;';
+                var submit = document.createElement('button');
+                submit.type = 'submit';
+                submit.textContent = String(options.confirmLabel || 'Continue');
+                submit.style.cssText = 'min-height:44px;padding:9px 16px;border:2px solid #1d4ed8;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer;';
+                actions.appendChild(cancel); actions.appendChild(submit);
+                form.appendChild(label); form.appendChild(input); form.appendChild(error); form.appendChild(actions);
+                dialog.appendChild(title); dialog.appendChild(description); dialog.appendChild(form); overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                blocked.forEach(function (entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+                var settled = false;
+                function finish(value) {
+                  if (settled) return;
+                  settled = true;
+                  document.removeEventListener('keydown', onKeyDown, true);
+                  try { overlay.remove(); } catch (e) {}
+                  blocked.forEach(function (entry) {
+                    if (!entry.hadInert) entry.el.removeAttribute('inert');
+                    if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden'); else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+                  });
+                  try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+                  resolve(value);
+                }
+                function onKeyDown(event) {
+                  if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(null); return; }
+                  if (event.key !== 'Tab') return;
+                  var focusable = [input, cancel, submit];
+                  var first = focusable[0], last = focusable[focusable.length - 1];
+                  if (!dialog.contains(document.activeElement)) { event.preventDefault(); first.focus(); return; }
+                  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+                }
+                function validateAndFinish(event) {
+                  event.preventDefault();
+                  var value = input.value.trim();
+                  if (options.required !== false && !value) {
+                    error.textContent = String(options.requiredMessage || 'Enter a value.');
+                    error.hidden = false;
+                    input.setAttribute('aria-invalid', 'true');
+                    input.focus();
+                    return;
+                  }
+                  input.removeAttribute('aria-invalid');
+                  finish(value);
+                }
+                cancel.addEventListener('click', function () { finish(null); });
+                form.addEventListener('submit', validateAndFinish);
+                overlay.addEventListener('click', function (event) { if (event.target === overlay) finish(null); });
+                document.addEventListener('keydown', onKeyDown, true);
+                input.focus(); input.select();
+              });
+            };
+          })();
+        </script>
+        <script>
           // Reading Tools — runtime theme switcher.
           // Applies saved theme (or prefers-color-scheme dark) immediately on
           // parse so there's no Flash of Unstyled Content. Click handler
@@ -32777,7 +32904,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 var text = (sp.textContent || '').trim();
                 if (!text) { step(state, i + 1); return; }
                 if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
-                  if (window.AlloFlowUX) window.AlloFlowUX.toast('Browser read-aloud is not available here.', 'error'); else alert('Browser read-aloud is not available here.');
+                  window.__alloflowNotify('Browser read-aloud is not available here.', 'error');
                   stop();
                   return;
                 }
@@ -33459,7 +33586,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             function startVoiceAt(x, y) {
               if (voiceRec) return; // already recording
               if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                if (window.AlloFlowUX) window.AlloFlowUX.toast('Voice recording is not supported in this browser.', 'error'); else alert('Voice recording is not supported in this browser.');
+                window.__alloflowNotify('Voice recording is not supported in this browser.', 'error');
                 return;
               }
               snapshot();
@@ -33486,7 +33613,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   studentAnno = studentAnno.filter(function (a) { return a && a.id !== id; });
                   saveStudent();
                   render();
-                  if (window.AlloFlowUX) window.AlloFlowUX.toast('Voice recording is not supported on this device.', 'error'); else alert('Voice recording is not supported on this device.');
+                  window.__alloflowNotify('Voice recording is not supported on this device.', 'error');
                   return;
                 }
                 voiceChunks = [];
@@ -33500,7 +33627,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 studentAnno = studentAnno.filter(function (a) { return a && a.id !== id; });
                 saveStudent();
                 render();
-                if (window.AlloFlowUX) window.AlloFlowUX.toast('Microphone access was denied. Allow microphone access in your browser settings to record voice notes.', 'error'); else alert('Microphone access was denied. Allow microphone access in your browser settings to record voice notes.');
+                window.__alloflowNotify('Microphone access was denied. Allow microphone access in your browser settings to record voice notes.', 'error');
               });
             }
 
@@ -33520,7 +33647,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       cleanupVoice();
                       saveStudent();
                       render();
-                      if (window.AlloFlowUX) window.AlloFlowUX.toast('Voice note too long to save (over 500KB). Try a shorter clip.', 'error'); else alert('Voice note too long to save (over 500KB). Try a shorter clip.');
+                      window.__alloflowNotify('Voice note too long to save (over 500KB). Try a shorter clip.', 'error');
                       return;
                     }
                     if (!b64) {
@@ -33529,7 +33656,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       cleanupVoice();
                       saveStudent();
                       render();
-                      if (window.AlloFlowUX) window.AlloFlowUX.toast('Voice recording was empty.', 'error'); else alert('Voice recording was empty.');
+                      window.__alloflowNotify('Voice recording was empty.', 'error');
                       return;
                     }
                     // Attach audio to the placeholder.
@@ -33947,7 +34074,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             // teacher (manual workflow — student saves, emails/uploads file).
             function downloadStudentAnno() {
               if (studentAnno.length === 0) {
-                if (window.AlloFlowUX) window.AlloFlowUX.toast('No annotations to save yet — add a note or highlight first.', 'error'); else alert('No annotations to save yet — add a note or highlight first.');
+                window.__alloflowNotify('No annotations to save yet — add a note or highlight first.', 'error');
                 return;
               }
               var payload = {
@@ -33967,7 +34094,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 document.body.removeChild(link);
                 setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 1000);
               } catch (e) {
-                if (window.AlloFlowUX) window.AlloFlowUX.toast('Could not save annotations. Try a different browser.', 'error'); else alert('Could not save annotations. Try a different browser.');
+                window.__alloflowNotify('Could not save annotations. Try a different browser.', 'error');
               }
             }
 
@@ -34622,9 +34749,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         document.querySelectorAll('.question[data-correct]').forEach(function(q, idx) { var ch = q.querySelector('input[type=\"radio\"]:checked'); if (ch) { out['allo-mcq:' + (ch.getAttribute('name') || ('q' + idx))] = ch.value; } });
                         return out;
                     };
-                    pbtn.addEventListener('click', function() {
+                    pbtn.addEventListener('click', async function() {
                         var up = new URLSearchParams(window.location.search);
-                        var nick = up.get('nickname') || prompt('Enter your name or nickname so your teacher knows this is yours:');
+                        var nick = up.get('nickname') || await window.__alloflowPrompt({ title: 'Save your answers', description: 'Enter a name or nickname so your teacher can identify this answer file.', label: 'Name or nickname', confirmLabel: 'Save answers', cancelLabel: 'Cancel', maxLength: 60, requiredMessage: 'Enter a name or nickname.' });
                         if (!nick) return; nick = String(nick).trim().slice(0, 60); if (!nick) return;
                         var payload = { schemaVersion: 1, nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect() };
                         try {
@@ -34635,7 +34762,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             setTimeout(function() { if (a.parentNode) a.parentNode.removeChild(a); URL.revokeObjectURL(a.href); }, 200);
                             pbtn.textContent = 'Saved! Send the file to your teacher';
                             setTimeout(function() { pbtn.textContent = 'Save my answers'; }, 2600);
-                        } catch (e) { alert('Could not save your answers: ' + e.message); }
+                        } catch (e) { window.__alloflowNotify('Could not save your answers: ' + e.message, 'error'); }
                     });
                 })();
             });
