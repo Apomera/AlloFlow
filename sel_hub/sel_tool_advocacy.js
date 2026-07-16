@@ -16236,12 +16236,30 @@ window.SelHub = window.SelHub || {
 
   // ── A. MY REQUEST LOG ──
   // Log every time I asked for something + outcome. Pattern = the skill.
+  // WCAG 3.3.1 / 3.3.2: validation stays next to the field, is announced,
+  // and moves focus to the input that needs correction.
+  function advFocusInvalidField(id) {
+    setTimeout(function() {
+      var field = document.getElementById(id);
+      if (field && typeof field.focus === 'function') field.focus();
+    }, 0);
+  }
+  function advInlineError(id, message) {
+    if (!message) return null;
+    return hh('div', {
+      id: id,
+      role: 'alert',
+      style: { marginTop: 5, color: '#fecaca', background: 'rgba(127,29,29,0.45)', border: '1px solid #f87171', borderRadius: 6, padding: '7px 9px', fontSize: 11, fontWeight: 700, lineHeight: 1.4 }
+    }, message);
+  }
+
   function AdvRequestLog(props) {
     if (!R_ADV) return null;
     var data = props.data || { requests: [] };
     var setData = props.setData;
     var fs = R_ADV.useState({ what: '', who: '', how: 'in-person', outcome: 'good', notes: '' });
     var form = fs[0]; var setForm = fs[1];
+    var es = R_ADV.useState(''); var error = es[0]; var setError = es[1];
 
     var HOW = [
       { id: 'in-person', label: 'In person', icon: '🗣' },
@@ -16259,7 +16277,8 @@ window.SelHub = window.SelHub || {
     ];
 
     function log() {
-      if (!form.what.trim()) { alert('Need "what" you asked for.'); return; }
+      if (!form.what.trim()) { setError('Describe what you asked for.'); advFocusInvalidField('adv-request-what'); return; }
+      setError('');
       var r = Object.assign({ id: adv_id(), date: adv_today(), time: Date.now() }, form);
       setData({ requests: [r].concat(data.requests || []) });
       setForm({ what: '', who: '', how: 'in-person', outcome: 'good', notes: '' });
@@ -16291,7 +16310,12 @@ window.SelHub = window.SelHub || {
         hh('div', null,
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '+ Log a request'),
           hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 2fr', gap: 6, marginBottom: 6 } },
-            advInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'What did I ask for?'),
+            hh('div', null,
+              advInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); if (error) setError(''); }, 'What did I ask for?', {
+                id: 'adv-request-what', required: true, 'aria-invalid': !!error, 'aria-describedby': error ? 'adv-request-what-error' : undefined
+              }),
+              advInlineError('adv-request-what-error', error)
+            ),
             advInput(form.who, function(v) { setForm(Object.assign({}, form, { who: v })); }, 'Who?')
           ),
           hh('div', { style: { fontSize: 11, color: '#a5b4fc', marginTop: 8, marginBottom: 4 } }, 'How?'),
@@ -16349,6 +16373,7 @@ window.SelHub = window.SelHub || {
     var setData = props.setData;
     var fs = R_ADV.useState({ title: '', situation: '', script: '', category: 'ask', tags: '' });
     var form = fs[0]; var setForm = fs[1];
+    var es = R_ADV.useState(''); var error = es[0]; var setError = es[1];
     var qs = R_ADV.useState(''); var search = qs[0]; var setSearch = qs[1];
 
     var CATS = [
@@ -16361,7 +16386,8 @@ window.SelHub = window.SelHub || {
     ];
 
     function save() {
-      if (!form.script.trim()) { alert('Need the script text.'); return; }
+      if (!form.script.trim()) { setError('Write the words you want to say.'); advFocusInvalidField('adv-script-text'); return; }
+      setError('');
       var s = Object.assign({ id: adv_id(), createdAt: adv_today(), useCount: 0 }, form);
       setData({ scripts: [s].concat(data.scripts || []) });
       setForm({ title: '', situation: '', script: '', category: 'ask', tags: '' });
@@ -16388,7 +16414,10 @@ window.SelHub = window.SelHub || {
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ Save a script'),
           advInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'Short title (e.g., "When teacher rushes me")', { marginBottom: 6 }),
           advInput(form.situation, function(v) { setForm(Object.assign({}, form, { situation: v })); }, 'When this situation happens...', { marginBottom: 6 }),
-          advTextarea(form.script, function(v) { setForm(Object.assign({}, form, { script: v })); }, '... I will say:', 4, { marginBottom: 8 }),
+          advTextarea(form.script, function(v) { setForm(Object.assign({}, form, { script: v })); if (error) setError(''); }, '... I will say:', 4, {
+            id: 'adv-script-text', required: true, 'aria-invalid': !!error, 'aria-describedby': error ? 'adv-script-text-error' : undefined, marginBottom: 8
+          }),
+          advInlineError('adv-script-text-error', error),
           hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
             CATS.map(function(c) {
               var on = form.category === c.id;
@@ -16556,6 +16585,7 @@ window.SelHub = window.SelHub || {
     var setData = props.setData;
     var fs = R_ADV.useState({ name: '', role: '', context: '', contact: '', howTheyHelp: '' });
     var form = fs[0]; var setForm = fs[1];
+    var es = R_ADV.useState(''); var error = es[0]; var setError = es[1];
 
     var ROLES = [
       { id: 'family',    label: 'Family',    icon: '🏠', color: '#ef4444' },
@@ -16567,7 +16597,8 @@ window.SelHub = window.SelHub || {
     ];
 
     function add() {
-      if (!form.name.trim()) { alert('Need a name.'); return; }
+      if (!form.name.trim()) { setError("Enter the champion's name."); advFocusInvalidField('adv-champion-name'); return; }
+      setError('');
       var c = Object.assign({ id: adv_id(), addedAt: adv_today() }, form);
       setData({ champions: [c].concat(data.champions || []) });
       setForm({ name: '', role: '', context: '', contact: '', howTheyHelp: '' });
@@ -16583,7 +16614,12 @@ window.SelHub = window.SelHub || {
         hh('div', null,
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ Add a champion'),
           hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 1fr 2fr', gap: 6, marginBottom: 6 } },
-            advInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Their name'),
+            hh('div', null,
+              advInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); if (error) setError(''); }, 'Their name', {
+                id: 'adv-champion-name', required: true, 'aria-invalid': !!error, 'aria-describedby': error ? 'adv-champion-name-error' : undefined
+              }),
+              advInlineError('adv-champion-name-error', error)
+            ),
             (function() {
               var first = ROLES[0];
               return hh('select', { 'aria-label': 'Champion role', value: form.role || '',
@@ -16819,9 +16855,11 @@ window.SelHub = window.SelHub || {
     var setData = props.setData;
     var fs = R_ADV.useState({ moment: '', what_I_did: '', what_I_learned: '', felt: 5 });
     var form = fs[0]; var setForm = fs[1];
+    var es = R_ADV.useState(''); var error = es[0]; var setError = es[1];
 
     function save() {
-      if (!form.moment.trim()) { alert('Need a moment.'); return; }
+      if (!form.moment.trim()) { setError('Describe the advocacy moment.'); advFocusInvalidField('adv-journal-moment'); return; }
+      setError('');
       var e = Object.assign({ id: adv_id(), date: adv_today() }, form);
       setData({ entries: [e].concat(data.entries || []) });
       setForm({ moment: '', what_I_did: '', what_I_learned: '', felt: 5 });
@@ -16836,7 +16874,10 @@ window.SelHub = window.SelHub || {
       advCard('#ec4899',
         hh('div', null,
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, '+ Journal a moment'),
-          advInput(form.moment, function(v) { setForm(Object.assign({}, form, { moment: v })); }, 'The moment (brief — "I asked Mr. Garcia for extended time on test")', { marginBottom: 6 }),
+          advInput(form.moment, function(v) { setForm(Object.assign({}, form, { moment: v })); if (error) setError(''); }, 'The moment (brief — "I asked Mr. Garcia for extended time on test")', {
+            id: 'adv-journal-moment', required: true, 'aria-invalid': !!error, 'aria-describedby': error ? 'adv-journal-moment-error' : undefined, marginBottom: 6
+          }),
+          advInlineError('adv-journal-moment-error', error),
           advTextarea(form.what_I_did, function(v) { setForm(Object.assign({}, form, { what_I_did: v })); }, 'What I did + said', 3, { marginBottom: 6 }),
           advTextarea(form.what_I_learned, function(v) { setForm(Object.assign({}, form, { what_I_learned: v })); }, 'What I learned (about myself, the situation, what works)', 3, { marginBottom: 8 }),
           hh('div', { style: { marginBottom: 8 } },
