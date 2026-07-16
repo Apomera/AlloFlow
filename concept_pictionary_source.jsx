@@ -944,6 +944,37 @@ const PictionaryHostView = React.memo((props) => {
   // drawerUids, drawerNames, resolution: 'correct'|'timeout'|'manual', durationMs, ts }
   // Lives in host memory only; cleared when the modal closes. No Firestore writes.
   const [roundLog, setRoundLog] = React.useState([]);
+  // ── Team mode (2026-07-16) ────────────────────────────────────────────────
+  // Optional: split the roster into two teams. Correct guess = +2 to the
+  // guesser's team, +1 to each drawing team (clear drawing is rewarded too).
+  // Host-side only (the teacher's screen is usually projected); scores are not
+  // broadcast — a transport extension is a listed follow-up. Rotation keeps
+  // drawer turns fair instead of the same eager artists every round.
+  const [teamMode, setTeamMode] = React.useState(false);
+  const [picTeams, setPicTeams] = React.useState({});           // uid -> 'A' | 'B'
+  const [picTeamScores, setPicTeamScores] = React.useState({ A: 0, B: 0 });
+  const picRotationRef = React.useRef({ A: 0, B: 0 });
+  const assignTeams = () => {
+    const uids = Object.keys(roster);
+    const next = {};
+    uids.forEach((uid, i) => { next[uid] = i % 2 === 0 ? 'A' : 'B'; });
+    setPicTeams(next);
+    setPicTeamScores({ A: 0, B: 0 });
+    picRotationRef.current = { A: 0, B: 0 };
+  };
+  const suggestNextDrawers = () => {
+    // One drawer from each team, rotating through each team's members in join order.
+    const byTeam = { A: [], B: [] };
+    Object.keys(roster).forEach((uid) => { const tm = picTeams[uid]; if (tm) byTeam[tm].push(uid); });
+    const picks = [];
+    ['A', 'B'].forEach((tm) => {
+      if (byTeam[tm].length === 0) return;
+      const idx = picRotationRef.current[tm] % byTeam[tm].length;
+      picks.push(byTeam[tm][idx]);
+      picRotationRef.current[tm] = idx + 1;
+    });
+    if (picks.length > 0) setDrawerUids(picks);
+  };
   const [showRoundLogDetail, setShowRoundLogDetail] = React.useState(false);
   // Per-drawer last-stroke timestamp for the "X is drawing right now" indicator.
   // Ref so updates don't re-render; a separate tick state forces re-render
@@ -1120,6 +1151,20 @@ const PictionaryHostView = React.memo((props) => {
     const correctGuess = guessFeed.find((g) => g.id === guessId);
     const winnerUid = correctGuess && correctGuess.uid;
     const winnerCodename = correctGuess && correctGuess.codename;
+    // Team scoring (2026-07-16): +2 guesser's team, +1 each unique drawing team.
+    // Captured BEFORE resolveRound clears activeRound.
+    if (teamMode && winnerUid) {
+      const drawerSet = (hostRef.current && hostRef.current.activeRound && hostRef.current.activeRound.drawerUids) || new Set(drawerUids);
+      setPicTeamScores((prev) => {
+        const next = { ...prev };
+        const winnerTeam = picTeams[winnerUid];
+        if (winnerTeam) next[winnerTeam] = (next[winnerTeam] || 0) + 2;
+        const drawerTeams = new Set();
+        Array.from(drawerSet).forEach((uid) => { const tm = picTeams[uid]; if (tm) drawerTeams.add(tm); });
+        drawerTeams.forEach((tm) => { next[tm] = (next[tm] || 0) + 1; });
+        return next;
+      });
+    }
     if (hostRef.current) hostRef.current.resolveRound({ winnerUid, reason: 'manual' });
     setRoundResolved({ concept, winnerUid, reason: 'manual' });
     setRoundActive(false);
@@ -1263,6 +1308,36 @@ const PictionaryHostView = React.memo((props) => {
             </div>
           </div>
           <div className="space-y-3">
+            {/* Team mode (2026-07-16): optional 2-team play with fair drawer rotation. */}
+            <div className="bg-white border border-slate-200 rounded-xl p-3">
+              <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 cursor-pointer select-none">
+                <input type="checkbox" checked={teamMode} onChange={(e) => { setTeamMode(e.target.checked); if (e.target.checked) assignTeams(); }} className="w-4 h-4" />
+                {'Team mode'}
+              </label>
+              {teamMode && (
+                <div className="mt-2 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="px-2 py-1 rounded-lg bg-blue-100 border border-blue-300 text-blue-900 text-sm font-black">A · {picTeamScores.A || 0}</span>
+                    <span className="px-2 py-1 rounded-lg bg-rose-100 border border-rose-300 text-rose-900 text-sm font-black">B · {picTeamScores.B || 0}</span>
+                    <button type="button" onClick={assignTeams} title="Re-split the current roster into two teams (resets scores)" className="ml-auto px-2 py-1 text-[10px] font-bold rounded border border-slate-300 hover:bg-slate-50">↻ re-team</button>
+                  </div>
+                  <div className="text-[11px] text-slate-600 leading-snug">
+                    {Object.keys(picTeams).length === 0 ? 'No students in the roster yet.' : (
+                      <>
+                        <span className="font-bold text-blue-800">A:</span> {Object.keys(picTeams).filter(u => picTeams[u] === 'A').map(u => (roster[u] && roster[u].name) || 'Student').join(', ') || '—'}
+                        <span className="font-bold text-rose-800 ml-2">B:</span> {Object.keys(picTeams).filter(u => picTeams[u] === 'B').map(u => (roster[u] && roster[u].name) || 'Student').join(', ') || '—'}
+                      </>
+                    )}
+                  </div>
+                  {!roundActive && (
+                    <button type="button" onClick={suggestNextDrawers} className="w-full px-2 py-1.5 text-xs font-bold rounded-lg border border-indigo-300 text-indigo-800 hover:bg-indigo-50" title="Fair rotation: picks the next drawer from each team in join order">
+                      🎨 Suggest next drawers (one per team)
+                    </button>
+                  )}
+                  <div className="text-[10px] text-slate-500">Correct guess: +2 guesser's team · +1 drawing team.</div>
+                </div>
+              )}
+            </div>
             {!roundActive ? (
               <>
                 <div className="bg-white border border-slate-200 rounded-xl p-3">

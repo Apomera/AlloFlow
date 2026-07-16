@@ -966,6 +966,35 @@ const PictionaryHostView = React.memo((props) => {
   const [roundResolved, setRoundResolved] = React.useState(null);
   const [isLoadingIdeas, setIsLoadingIdeas] = React.useState(false);
   const [roundLog, setRoundLog] = React.useState([]);
+  const [teamMode, setTeamMode] = React.useState(false);
+  const [picTeams, setPicTeams] = React.useState({});
+  const [picTeamScores, setPicTeamScores] = React.useState({ A: 0, B: 0 });
+  const picRotationRef = React.useRef({ A: 0, B: 0 });
+  const assignTeams = () => {
+    const uids = Object.keys(roster);
+    const next = {};
+    uids.forEach((uid, i) => {
+      next[uid] = i % 2 === 0 ? "A" : "B";
+    });
+    setPicTeams(next);
+    setPicTeamScores({ A: 0, B: 0 });
+    picRotationRef.current = { A: 0, B: 0 };
+  };
+  const suggestNextDrawers = () => {
+    const byTeam = { A: [], B: [] };
+    Object.keys(roster).forEach((uid) => {
+      const tm = picTeams[uid];
+      if (tm) byTeam[tm].push(uid);
+    });
+    const picks = [];
+    ["A", "B"].forEach((tm) => {
+      if (byTeam[tm].length === 0) return;
+      const idx = picRotationRef.current[tm] % byTeam[tm].length;
+      picks.push(byTeam[tm][idx]);
+      picRotationRef.current[tm] = idx + 1;
+    });
+    if (picks.length > 0) setDrawerUids(picks);
+  };
   const [showRoundLogDetail, setShowRoundLogDetail] = React.useState(false);
   const drawerActivityRef = React.useRef(/* @__PURE__ */ new Map());
   const [activityTick, setActivityTick] = React.useState(0);
@@ -1137,6 +1166,23 @@ const PictionaryHostView = React.memo((props) => {
     const correctGuess = guessFeed.find((g) => g.id === guessId);
     const winnerUid = correctGuess && correctGuess.uid;
     const winnerCodename = correctGuess && correctGuess.codename;
+    if (teamMode && winnerUid) {
+      const drawerSet = hostRef.current && hostRef.current.activeRound && hostRef.current.activeRound.drawerUids || new Set(drawerUids);
+      setPicTeamScores((prev) => {
+        const next = { ...prev };
+        const winnerTeam = picTeams[winnerUid];
+        if (winnerTeam) next[winnerTeam] = (next[winnerTeam] || 0) + 2;
+        const drawerTeams = /* @__PURE__ */ new Set();
+        Array.from(drawerSet).forEach((uid) => {
+          const tm = picTeams[uid];
+          if (tm) drawerTeams.add(tm);
+        });
+        drawerTeams.forEach((tm) => {
+          next[tm] = (next[tm] || 0) + 1;
+        });
+        return next;
+      });
+    }
     if (hostRef.current) hostRef.current.resolveRound({ winnerUid, reason: "manual" });
     setRoundResolved({ concept, winnerUid, reason: "manual" });
     setRoundActive(false);
@@ -1207,7 +1253,10 @@ const PictionaryHostView = React.memo((props) => {
         },
         mutedGuessers[g.uid] ? "\u{1F507}" : "\u{1F50A}"
       ));
-    })))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, !roundActive ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "1. Concept to draw"), /* @__PURE__ */ React.createElement(
+    })))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: teamMode, onChange: (e) => {
+      setTeamMode(e.target.checked);
+      if (e.target.checked) assignTeams();
+    }, className: "w-4 h-4" }), "Team mode"), teamMode && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-1 rounded-lg bg-blue-100 border border-blue-300 text-blue-900 text-sm font-black" }, "A \xB7 ", picTeamScores.A || 0), /* @__PURE__ */ React.createElement("span", { className: "px-2 py-1 rounded-lg bg-rose-100 border border-rose-300 text-rose-900 text-sm font-black" }, "B \xB7 ", picTeamScores.B || 0), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: assignTeams, title: "Re-split the current roster into two teams (resets scores)", className: "ml-auto px-2 py-1 text-[10px] font-bold rounded border border-slate-300 hover:bg-slate-50" }, "\u21BB re-team")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, Object.keys(picTeams).length === 0 ? "No students in the roster yet." : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-blue-800" }, "A:"), " ", Object.keys(picTeams).filter((u) => picTeams[u] === "A").map((u) => roster[u] && roster[u].name || "Student").join(", ") || "\u2014", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-rose-800 ml-2" }, "B:"), " ", Object.keys(picTeams).filter((u) => picTeams[u] === "B").map((u) => roster[u] && roster[u].name || "Student").join(", ") || "\u2014")), !roundActive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: suggestNextDrawers, className: "w-full px-2 py-1.5 text-xs font-bold rounded-lg border border-indigo-300 text-indigo-800 hover:bg-indigo-50", title: "Fair rotation: picks the next drawer from each team in join order" }, "\u{1F3A8} Suggest next drawers (one per team)"), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500" }, "Correct guess: +2 guesser's team \xB7 +1 drawing team."))), !roundActive ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "1. Concept to draw"), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: concept,
