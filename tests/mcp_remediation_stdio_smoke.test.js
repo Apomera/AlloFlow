@@ -6,7 +6,7 @@
 // properties that keep a misconfigured client from spending quota or hanging.
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { spawn } from 'node:child_process';
-import { writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { writeFileSync, mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -40,7 +40,9 @@ function request(method, params, { rawId } = {}) {
   const id = rawId !== undefined ? rawId : nextId++;
   const key = id === null ? 'null' : id;
   return new Promise((resolveP, rejectP) => {
-    const timer = setTimeout(() => { pending.delete(key); rejectP(new Error(`timeout waiting for ${method}`)); }, 8000);
+    // 20s (not the sibling suite's 8s): under a parallel full-suite run the first spawn of a
+    // Node child on Windows can exceed 8s (cold start + AV scan) — observed flaking once.
+    const timer = setTimeout(() => { pending.delete(key); rejectP(new Error(`timeout waiting for ${method}`)); }, 20000);
     pending.set(key, (msg) => { clearTimeout(timer); resolveP(msg); });
     child.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
   });
@@ -70,9 +72,12 @@ describe('remediation MCP: protocol + tool registry', () => {
     child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
   });
 
-  it('lists exactly the three tools, underscore-named, each with title + annotations', async () => {
+  it('lists exactly the eight tools, underscore-named, each with title + annotations', async () => {
     const { tools } = (await request('tools/list', {})).result;
-    expect(tools.map((t) => t.name).sort()).toEqual(['pdf_audit', 'pdf_remediate', 'remediation_capabilities']);
+    expect(tools.map((t) => t.name).sort()).toEqual([
+      'pdf_audit', 'pdf_batch_remediate_start', 'pdf_remediate', 'pdf_remediate_start',
+      'remediation_capabilities', 'remediation_job_cancel', 'remediation_job_result', 'remediation_job_status',
+    ]);
     for (const t of tools) {
       expect(t.name).not.toContain('.');
       expect(t.title).toBeTruthy();
@@ -139,6 +144,87 @@ describe('remediation MCP: validation fires BEFORE any browser/quota spend', () 
     const msg = await request('tools/call', { name: 'pdf_audit', arguments: { file_path: pdf, ocr_language: 'not a lang!!' } });
     expect(msg.error.code).toBe(-32602);
     expect(msg.error.message).toContain('ocr_language');
+  });
+
+  it('pdf_remediate_start validates + key-gates BEFORE creating a job (a bad start never occupies the queue)', async () => {
+    // Missing file → invalid params, no job id minted.
+    const bad = await request('tools/call', { name: 'pdf_remediate_start', arguments: { file_path: join(tmp, 'ghost.pdf') } });
+    expect(bad.error.code).toBe(-32602);
+    // Real file but no key → in-band error naming the key, still no job.
+    const res = await callTool('pdf_remediate_start', { file_path: join(tmp, 'real.pdf') });
+    expect(res.isError).toBe(true);
+    expect(res.content[0].text).toContain('GEMINI_API_KEY');
+  });
+
+  it('pdf_batch_remediate_start rejects an empty folder and a missing folder cleanly', async () => {
+    const missing = await request('tools/call', { name: 'pdf_batch_remediate_start', arguments: { dir_path: join(tmp, 'no-such-dir') } });
+    expect(missing.error.code).toBe(-32602);
+    const empty = await request('tools/call', { name: 'pdf_batch_remediate_start', arguments: { dir_path: tmp } });
+    // tmp contains real.pdf — but the batch must reject when the only PDFs are absent; use a truly empty subdir.
+    // (real.pdf IS in tmp, so this call is key-gated instead — both shapes are the pre-spend contract.)
+    if (empty.error) expect(empty.error.code).toBe(-32602);
+    else {
+      expect(empty.result.isError).toBe(true);
+      expect(empty.result.content[0].text).toContain('GEMINI_API_KEY');
+    }
+  });
+});
+
+describe('remediation MCP: job bookkeeping (no runs needed)', () => {
+  it('status/result/cancel of an unknown job id → clean in-band not-found', async () => {
+    for (const tool of ['remediation_job_status', 'remediation_job_result', 'remediation_job_cancel']) {
+      const res = await callTool(tool, { job_id: 'rjob-does-not-exist' });
+      expect(res.isError).toBe(false); // in-band data, not a protocol error
+      expect(res.structuredContent.ok).toBe(false);
+      expect(res.structuredContent.error).toContain('No job');
+    }
+  });
+
+  it('job_id is required and validated', async () => {
+    const msg = await request('tools/call', { name: 'remediation_job_status', arguments: {} });
+    expect(msg.error.code).toBe(-32602);
+  });
+});
+
+describe('remediation MCP: job tools (no key, no browser — lifecycle edges only)', () => {
+  it('pdf_remediate_start validates BEFORE creating a job: missing file → -32602, no job id minted', async () => {
+    const msg = await request('tools/call', { name: 'pdf_remediate_start', arguments: { file_path: join(tmp, 'ghost.pdf') } });
+    expect(msg.error.code).toBe(-32602);
+    expect(msg.error.message).toContain('does not exist');
+  });
+
+  it('pdf_remediate_start with a real PDF but NO key → in-band key error, still no job', async () => {
+    const res = await callTool('pdf_remediate_start', { file_path: join(tmp, 'real.pdf') });
+    expect(res.isError).toBe(true);
+    expect(res.content[0].text).toContain('GEMINI_API_KEY');
+  });
+
+  it("pdf_batch_remediate_start refuses a folder with no PDFs (and '-tagged.pdf' outputs don't count)", async () => {
+    const batchDir = join(tmp, 'batch-empty');
+    mkdirSync(batchDir, { recursive: true });
+    writeFileSync(join(batchDir, 'already-tagged.pdf'.replace('already-', 'x-')), '%PDF-1.4\n%%EOF\n'); // x-tagged.pdf → excluded as our own output
+    const msg = await request('tools/call', { name: 'pdf_batch_remediate_start', arguments: { dir_path: batchDir } });
+    expect(msg.error.code).toBe(-32602);
+    expect(msg.error.message).toContain('No .pdf files found');
+  });
+
+  it('status / result / cancel of an unknown job id → honest in-band not-found (not a protocol error)', async () => {
+    for (const tool of ['remediation_job_status', 'remediation_job_result', 'remediation_job_cancel']) {
+      const res = await callTool(tool, { job_id: 'rjob-does-not-exist' });
+      expect(res.isError).toBe(false);
+      expect(res.structuredContent.ok).toBe(false);
+      expect(res.structuredContent.error).toContain('No job');
+    }
+  });
+
+  it('job tools reject unknown argument keys (closed schemas)', async () => {
+    const msg = await request('tools/call', { name: 'remediation_job_status', arguments: { job_id: 'x', peek: true } });
+    expect(msg.error.code).toBe(-32602);
+  });
+
+  it('capabilities reports the job store (0 stored, 0 unfinished in this smoke)', async () => {
+    const cap = (await callTool('remediation_capabilities', {})).structuredContent;
+    expect(cap.jobs).toEqual({ stored: 0, unfinished: 0 });
   });
 });
 

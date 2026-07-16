@@ -113,6 +113,7 @@ function createDriver(options) {
   const o = options || {};
   const log = typeof o.log === 'function' ? o.log : defaultLog;
   let browser = null;
+  let activeContext = null; // the in-flight run's browser context (single-flight callers only)
 
   function requireModuleFiles() {
     const missing = MODULE_FILES.filter((f) => !fs.existsSync(path.join(REPO_ROOT, f)));
@@ -138,27 +139,30 @@ function createDriver(options) {
     requireModuleFiles();
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error('GEMINI_API_KEY is not set. The remediation pipeline needs a Gemini API key.');
+    // Per-run log sink: job-based callers route a run's telemetry into that job's record;
+    // everything still lands on the driver-level log (stderr) too via the caller's sink.
+    const rlog = typeof runOpts.onLog === 'function' ? runOpts.onLog : log;
     const b = await getBrowser();
     const context = await b.newContext();
     const page = await context.newPage();
     page.on('console', (msg) => {
       const t = msg.text();
       // The pipeline's own telemetry IS the diagnostic — forward the load-bearing lines.
-      if (/\[GeminiGate\]|\[Retry\]|\[PDF Fix\]|\[Tesseract\]|\[Throttle\]|API-start|Vision-start/.test(t)) log(t.slice(0, 500));
-      else if (process.env.ALLOFLOW_MCP_VERBOSE === '1') log('console: ' + t.slice(0, 300));
+      if (/\[GeminiGate\]|\[Retry\]|\[PDF Fix\]|\[Tesseract\]|\[Throttle\]|API-start|Vision-start/.test(t)) rlog(t.slice(0, 500));
+      else if (process.env.ALLOFLOW_MCP_VERBOSE === '1') rlog('console: ' + t.slice(0, 300));
     });
     await page.goto('about:blank');
 
     await page.exposeFunction('__mcpGeminiText', async (prompt) => {
-      return geminiCallWithFallback({ apiKey, model: DEFAULT_MODEL, parts: [{ text: String(prompt) }], log });
+      return geminiCallWithFallback({ apiKey, model: DEFAULT_MODEL, parts: [{ text: String(prompt) }], log: rlog });
     });
     await page.exposeFunction('__mcpGeminiVision', async (prompt, base64Data, mimeType) => {
       return geminiCallWithFallback({
-        apiKey, model: DEFAULT_MODEL, log,
+        apiKey, model: DEFAULT_MODEL, log: rlog,
         parts: [{ text: String(prompt) }, { inline_data: { mime_type: mimeType || 'application/pdf', data: String(base64Data || '') } }],
       });
     });
-    await page.exposeFunction('__mcpProgress', async (line) => { log('progress: ' + String(line).slice(0, 300)); });
+    await page.exposeFunction('__mcpProgress', async (line) => { rlog('progress: ' + String(line).slice(0, 300)); });
 
     for (const f of MODULE_FILES) await page.addScriptTag({ path: path.join(REPO_ROOT, f) });
     await page.waitForFunction(
@@ -216,6 +220,7 @@ function createDriver(options) {
   async function withRunPage(runOpts, fn) {
     const maxMs = Math.max(60000, (Number(runOpts.maxRunMinutes) || Number(process.env.ALLOFLOW_MCP_MAX_RUN_MINUTES) || 30) * 60000);
     const { page, context } = await newPipelinePage(runOpts);
+    activeContext = context;
     let timer = null;
     try {
       return await Promise.race([
@@ -224,14 +229,26 @@ function createDriver(options) {
       ]);
     } finally {
       clearTimeout(timer);
+      if (activeContext === context) activeContext = null;
       try { await context.close(); } catch (_) {}
     }
+  }
+
+  // Best-effort cancel of the in-flight run: closing its browser context makes the run's
+  // page.evaluate reject immediately, and with it every queued/in-flight Gemini bridge call.
+  // Page-per-run isolation means nothing else is affected. Returns false when idle.
+  async function cancelActiveRun() {
+    const c = activeContext;
+    if (!c) return false;
+    activeContext = null;
+    try { await c.close(); } catch (_) {}
+    return true;
   }
 
   async function audit(opts) {
     const fileName = path.basename(opts.filePath);
     const b64 = readPdfBase64(opts.filePath);
-    log('audit: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB)');
+    (opts.onLog || log)('audit: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB)');
     return withRunPage(Object.assign({ fileName }, opts), (page) =>
       page.evaluate(async ({ b64, fileName }) => {
         const a = await window.__mcpPipeline.runPdfAccessibilityAudit(b64, { skipUiUpdates: true, skipCache: true, fileName });
@@ -260,7 +277,7 @@ function createDriver(options) {
   async function remediate(opts) {
     const fileName = path.basename(opts.filePath);
     const b64 = readPdfBase64(opts.filePath);
-    log('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
+    (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
     return withRunPage(Object.assign({ fileName }, opts), (page) =>
       page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, pdfLibCdn }) => {
         const pipeline = window.__mcpPipeline;
@@ -333,10 +350,11 @@ function createDriver(options) {
   }
 
   async function close() {
+    activeContext = null;
     if (browser) { try { await browser.close(); } catch (_) {} browser = null; }
   }
 
-  return { audit, remediate, close };
+  return { audit, remediate, cancelActiveRun, close };
 }
 
 module.exports = { createDriver, classifyHttpFailure, REPO_ROOT, MODULE_FILES };

@@ -65,17 +65,44 @@ GEMINI_API_KEY=... node desktop/mcp/remediation_headless_driver.cjs audit path/t
 GEMINI_API_KEY=... node desktop/mcp/remediation_headless_driver.cjs remediate path/to/doc.pdf [outDir]
 ```
 
+## Why a Gemini key? (billing model, in one minute)
+
+MCP has two sides. Your **Claude subscription pays for the client** — Claude reading your
+request, deciding to call `pdf_remediate`, interpreting the result. The **server is a separate
+program on your machine**, and the remediation pipeline inside it makes dozens of its own AI
+calls (Vision OCR, audits, fix passes) to **Gemini** — that engine choice is baked into the
+pipeline's prompts and OCR flow. Those calls can't ride the Claude subscription:
+
+- MCP does define a "sampling" mechanism where a server borrows the client's model, but Claude's
+  clients don't support it today — and the pipeline's Vision/OCR calls are Gemini-shaped anyway.
+- A Claude-backed engine (Anthropic API key, or shelling out to `claude -p`) is possible as a
+  future additive backend, but it's a real project: the audit/OCR prompts, the error taxonomy,
+  and the scoring calibration are all tuned against Gemini.
+
+**The practical answer:** a free Google AI Studio key (aistudio.google.com → "Get API key",
+~2 minutes). The free tier of the flash models is generous enough for real remediation runs.
+The Canvas app never needs this — only this connector does.
+
 ## Tools
 
 | Tool | What it does | Writes | Typical time |
 | --- | --- | --- | --- |
 | `remediation_capabilities` | Honest environment report (key present, Chromium available, modules found, models, limits). Call first. | nothing | instant |
 | `pdf_audit` | Accessibility audit: score, per-severity issues, scanned/searchable detection, language, page count. | nothing | 1–3 min |
-| `pdf_remediate` | Full pipeline: audit → accessible HTML rebuild → AI fix passes to `target_score` → honesty-gated verification → tagged-PDF export. | `<stem>-accessible.html`, `<stem>-tagged.pdf`, `<stem>-remediation-report.json` (collision-safe names, never overwrites) | 5–30 min |
+| `pdf_remediate` | Full pipeline, **synchronous**: audit → accessible HTML rebuild → AI fix passes to `target_score` → honesty-gated verification → tagged-PDF export. Blocks until done — use the job tools if your client enforces tool timeouts. | `<stem>-accessible.html`, `<stem>-tagged.pdf`, `<stem>-remediation-report.json` (collision-safe names, never overwrites) | 5–30 min |
+| `pdf_remediate_start` | Same run as a **background job**; returns a `jobId` immediately. Jobs run one at a time in start order. | same as above | instant return |
+| `pdf_batch_remediate_start` | Background job remediating **every .pdf in a folder** (non-recursive, ≤60 files, skips `-tagged.pdf` outputs), continuing past per-file failures. | same, per file | instant return |
+| `remediation_job_status` | Job state + the last pipeline telemetry lines (throttle waits show here — a slow job is distinguishable from a stuck one). | nothing | instant |
+| `remediation_job_result` | The completed job's summary (per-file summaries for batches). | nothing | instant |
+| `remediation_job_cancel` | Cancels a queued job, or kills the running one (its browser context closes; in-flight AI calls die in seconds). Files already written stay. | nothing | instant |
 
-`pdf_remediate` options: `output_dir`, `target_score` (default 95), `fix_passes` (default 2),
-`polish_passes` (default 0), `tagged_pdf` (default true), `ocr_language` (Tesseract code for
-scanned docs, e.g. `spa`; omit for auto-detect).
+Remediate options (same on all three remediate tools): `output_dir`, `target_score` (default
+95), `fix_passes` (default 2), `polish_passes` (default 0), `tagged_pdf` (default true),
+`ocr_language` (Tesseract code for scanned docs, e.g. `spa`; omit for auto-detect).
+
+**Recommended flow for a client like Claude:** `remediation_capabilities` → `pdf_remediate_start`
+→ poll `remediation_job_status` every 30–60 s → `remediation_job_result`. Jobs are in-memory:
+they do not survive a server restart.
 
 The result carries AlloFlow's honesty surfaces verbatim: the distribution verdict
 (ready / cautions / review-before-handing-out), before/after scores with their source,
