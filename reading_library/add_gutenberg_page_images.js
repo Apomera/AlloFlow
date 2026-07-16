@@ -23,11 +23,26 @@
  * index rebuild is needed — but the public mirror byte-parity test means the
  * changed book files must be copied to prismflow-deploy/public/reading_library.
  *
+ * --repaginate additionally re-splits an illustrated book's pages so the page
+ * count follows the ART DENSITY of the original edition (the illustrator
+ * paced those books — Peter Rabbit is 28 plates over 983 words, not 3
+ * screens of 500 words). When the illustrated edition carries at least
+ * REPAGINATE_MIN_IMAGES images and words-per-image lands below the standard
+ * page, pages are rebuilt at clamp(bodyWords/imageCount, tier floor, tier
+ * target) words via the importer's own splitIntoReadingPages (text is
+ * reassembled from the existing pages — no network, no re-clean, word stats
+ * identical). Books without art, or with sparse art, keep their pagination
+ * byte-for-byte. NOTE: repagination renumbers pages, so saved reading
+ * positions/bookmarks for that book drift; run it as a deliberate pass, and
+ * rebuild the index afterwards (pageCount changes):
+ *   node reading_library/mirror_books.js --fetch
+ *
  * Usage:
  *   node reading_library/add_gutenberg_page_images.js --dry-run          # report only
  *   node reading_library/add_gutenberg_page_images.js --ids 14838,67098  # subset
  *   node reading_library/add_gutenberg_page_images.js                    # write all
  *   node reading_library/add_gutenberg_page_images.js --force            # redo books that have images
+ *   node reading_library/add_gutenberg_page_images.js --force --repaginate  # art-density pages + images
  */
 'use strict';
 
@@ -50,9 +65,13 @@ function loadJsdom() {
   ({ JSDOM } = require(jsdomPath));
 }
 
+const importer = require('./import_gutenberg_full_texts.js');
+
 const argv = process.argv.slice(2);
 const dryRun = argv.includes('--dry-run');
 const force = argv.includes('--force');
+const repaginate = argv.includes('--repaginate');
+const REPAGINATE_MIN_IMAGES = 8; // below this, finer pages buy nothing
 const idsArg = (() => {
   const i = argv.indexOf('--ids');
   if (i === -1) return null;
@@ -228,6 +247,32 @@ function alignImages(book, analysis) {
   return { placed, unmatched, occupied };
 }
 
+// Rebuild the book's pages at an art-density word target: one page per
+// illustration, clamped to the length tier's floor (a 150-word page suits a
+// children's novel; a 30-word page suits a true picture book). Text is
+// reassembled from the existing pages (page 1, the source note, stays put);
+// import joined paragraphs with \n\n, so the split is lossless and the whole
+// operation is idempotent. Returns null when standard pages already fit the
+// art (sparse illustrations) or the page count would not change.
+function repaginateForArt(book, imageCount) {
+  const bodyPages = book.pages.slice(1);
+  const bodyWords = bodyPages.reduce((sum, p) => sum + importer.words(p.text), 0);
+  const tier = importer.pageTargetsFor(bodyWords);
+  const perImage = Math.round(bodyWords / imageCount);
+  const target = Math.min(tier.target, Math.max(tier.floor, perImage));
+  if (target >= tier.target) return null;
+  const paragraphs = [];
+  bodyPages.forEach((p) => String(p.text || '').split(/\n{2,}/).forEach((par) => {
+    if (par.trim()) paragraphs.push(par);
+  }));
+  const targets = { target, max: Math.max(target + 20, Math.round(target * 1.5)) };
+  const texts = [book.pages[0].text].concat(importer.splitIntoReadingPages(paragraphs, targets));
+  if (texts.length === book.pages.length) return null;
+  book.pages = texts.map((text, idx) => ({ n: idx + 1, img: null, text }));
+  book.stats = { pages: book.pages.length, words: book.pages.reduce((s, p) => s + importer.words(p.text), 0) };
+  return { target, pages: texts.length };
+}
+
 async function main() {
   loadJsdom();
   const targets = [];
@@ -267,6 +312,10 @@ async function main() {
       console.log('  #' + target.id + ' ' + target.book.title + ': 0 usable images');
       continue;
     }
+    let repag = null;
+    if (repaginate && analysis.images.length >= REPAGINATE_MIN_IMAGES) {
+      repag = repaginateForArt(target.book, analysis.images.length);
+    }
     if (force) {
       for (const page of target.book.pages) { page.img = null; delete page.imgCaption; }
     }
@@ -286,7 +335,8 @@ async function main() {
     totalPlaced += result.placed.length;
     const captioned = result.placed.filter((p) => p.caption).length;
     console.log('  #' + target.id + ' ' + target.book.title + ': placed ' + result.placed.length + '/' + analysis.images.length +
-      ' (captions ' + captioned + ', unmatched ' + result.unmatched + ', page-occupied ' + result.occupied + ')');
+      ' (captions ' + captioned + ', unmatched ' + result.unmatched + ', page-occupied ' + result.occupied + ')' +
+      (repag ? ' — repaginated to ' + repag.pages + ' pages @ ~' + repag.target + ' words' : ''));
     if (!dryRun) writeJson(target.file, target.book);
     await sleep(250);
   }

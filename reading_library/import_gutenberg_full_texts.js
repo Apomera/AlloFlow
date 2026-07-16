@@ -27,6 +27,18 @@ const PG_LICENSE = 'https://www.gutenberg.org/policy/license.html';
 const UA = 'AlloFlow reading library full-text importer';
 const TARGET_WORDS_PER_PAGE = 520;
 const MAX_WORDS_PER_PAGE = 760;
+
+// A flat 520-word page turns a 983-word picture book (Peter Rabbit) into a
+// 3-page wall of text. Short texts get proportionally shorter pages so they
+// read like the booklets they are; novel-length books keep the classic page.
+// add_gutenberg_page_images.js --repaginate goes further for illustrated
+// books (one page per illustration, clamped to these floors).
+function pageTargetsFor(totalWords) {
+  if (totalWords < 1200) return { target: 60, max: 100, floor: 30 };
+  if (totalWords < 2500) return { target: 120, max: 190, floor: 60 };
+  if (totalWords < 10000) return { target: 280, max: 420, floor: 120 };
+  return { target: TARGET_WORDS_PER_PAGE, max: MAX_WORDS_PER_PAGE, floor: 140 };
+}
 const OBSOLETE_GUTENBERG_CARD_IDS = new Set([
   1404, // Duplicate catalog card; curated Federalist full text is #18.
   17405, // Duplicate catalog card; curated Art of War full text is #132.
@@ -930,51 +942,66 @@ function normalizeParagraphs(text) {
     .filter((p) => p && !/^(_|\*|-){3,}$/.test(p) && !isTranscriberNoteBlock(p));
 }
 
-function splitLongParagraph(paragraph) {
+function splitLongParagraph(paragraph, targets) {
+  const target = (targets && targets.target) || TARGET_WORDS_PER_PAGE;
+  const max = (targets && targets.max) || MAX_WORDS_PER_PAGE;
   const count = words(paragraph);
-  if (count <= MAX_WORDS_PER_PAGE) return [paragraph];
+  if (count <= max) return [paragraph];
+  // Verse and tables keep intentional line breaks (normalizeParagraphs joins
+  // prose to one line); flattening them to sentence chunks would destroy the
+  // layout, so they stay whole even when they overflow the page target.
+  if (/\n/.test(paragraph)) return [paragraph];
   const sentences = paragraph.match(/[^.!?]+[.!?]+["')\]]*|[^.!?]+$/g);
   if (!sentences || sentences.length < 2) {
     const tokens = paragraph.split(/\s+/);
     const chunks = [];
-    for (let i = 0; i < tokens.length; i += TARGET_WORDS_PER_PAGE) {
-      chunks.push(tokens.slice(i, i + TARGET_WORDS_PER_PAGE).join(' '));
+    for (let i = 0; i < tokens.length; i += target) {
+      chunks.push(tokens.slice(i, i + target).join(' '));
     }
     return chunks;
   }
+  // Chunks are SLICES of the original paragraph, cut only at junctions where
+  // the following sentence begins with whitespace — so closing curly quotes,
+  // footnote refs, ellipses, and any characters the sentence regex tiles
+  // imperfectly stay glued to their sentence, and the token stream survives
+  // byte-for-byte (compact()-rejoining used to turn "etc.;" into "etc. ;",
+  // minting a token, and dropped whatever the regex skipped).
   const chunks = [];
-  let current = [];
+  let chunkStart = 0;
   let currentWords = 0;
-  for (const sentence of sentences.map(compact).filter(Boolean)) {
-    const sentenceWords = words(sentence);
-    if (current.length && currentWords + sentenceWords > TARGET_WORDS_PER_PAGE) {
-      chunks.push(current.join(' '));
-      current = [];
+  for (const match of paragraph.matchAll(/[^.!?]+[.!?]+["')\]]*|[^.!?]+$/g)) {
+    const sentenceWords = words(match[0]);
+    if (currentWords && match.index > chunkStart && /^\s/.test(match[0]) &&
+        currentWords + sentenceWords > target) {
+      chunks.push(paragraph.slice(chunkStart, match.index).trim());
+      chunkStart = match.index;
       currentWords = 0;
     }
-    current.push(sentence);
     currentWords += sentenceWords;
   }
-  if (current.length) chunks.push(current.join(' '));
+  const last = paragraph.slice(chunkStart).trim();
+  if (last) chunks.push(last);
   return chunks;
 }
 
-function splitIntoReadingPages(paragraphs) {
+function splitIntoReadingPages(paragraphs, targets) {
+  const target = (targets && targets.target) || TARGET_WORDS_PER_PAGE;
+  const max = (targets && targets.max) || MAX_WORDS_PER_PAGE;
   const pieces = [];
-  paragraphs.forEach((p) => splitLongParagraph(p).forEach((part) => pieces.push(part)));
+  paragraphs.forEach((p) => splitLongParagraph(p, targets).forEach((part) => pieces.push(part)));
   const pages = [];
   let current = [];
   let currentWords = 0;
   for (const piece of pieces) {
     const pieceWords = words(piece);
-    if (current.length && currentWords + pieceWords > TARGET_WORDS_PER_PAGE) {
+    if (current.length && currentWords + pieceWords > target) {
       pages.push(current.join('\n\n'));
       current = [];
       currentWords = 0;
     }
     current.push(piece);
     currentWords += pieceWords;
-    if (currentWords >= MAX_WORDS_PER_PAGE) {
+    if (currentWords >= max) {
       pages.push(current.join('\n\n'));
       current = [];
       currentWords = 0;
@@ -1037,7 +1064,7 @@ function makeBook(metadata, textSource, curation, catalogItem) {
     'Use Open original for Project Gutenberg formats and the full Project Gutenberg license.',
     'Teacher note: historical texts can preserve dated language, assumptions, and viewpoints. Preview before assigning.',
   ].join(' ');
-  const pages = [note].concat(splitIntoReadingPages(paragraphs)).map((text, idx) => ({
+  const pages = [note].concat(splitIntoReadingPages(paragraphs, pageTargetsFor(bodyWords))).map((text, idx) => ({
     n: idx + 1,
     img: null,
     text,
@@ -1145,4 +1172,6 @@ module.exports = {
   isProductionCreditBlock,
   compact,
   words,
+  splitIntoReadingPages,
+  pageTargetsFor,
 };

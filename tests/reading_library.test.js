@@ -9,6 +9,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import { loadAlloModule } from './setup.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -494,6 +495,38 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(source).toContain('setVisibleLimit(function (n) { return n + VISIBLE_BOOK_BATCH; })');
     expect(source).toContain("tr('readinglib_show_more', 'Show more')");
     expect(source).not.toContain('MAX_VISIBLE_BOOKS');
+  });
+
+  describe('pagination splitter (importer + --repaginate share it)', () => {
+    const req = createRequire(import.meta.url);
+    const importer = req(path.join(LIB_DIR, 'import_gutenberg_full_texts.js'));
+
+    it('never adds, drops, or alters a token at any page target', () => {
+      // Curly quotes, ellipses, footnote refs, and no-space punctuation are
+      // exactly what regex sentence-tiling mangles; slice-based chunking must
+      // keep the token stream byte-identical.
+      const nasty = [
+        'He said “Play it off!” and left. She replied ‘why?’ and ran. More words follow here to overflow the target and force chunking of this paragraph.',
+        'It was the upshot. ... I will send A. Murray’s note.[3] Then came etc.; c’est-à-dire more prose that keeps going and going until the splitter must cut somewhere in the middle.',
+        'One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty.',
+      ];
+      const pages = importer.splitIntoReadingPages(nasty, { target: 12, max: 18 });
+      expect(pages.length).toBeGreaterThan(3);
+      const tokens = (arr) => arr.join(' ').split(/\s+/).filter(Boolean).join(' ');
+      expect(tokens(pages)).toBe(tokens(nasty));
+    });
+
+    it('keeps verse and table blocks whole even when they overflow the page', () => {
+      const verse = Array.from({ length: 30 }, (_, i) => 'verse line number ' + (i + 1)).join('\n');
+      const pages = importer.splitIntoReadingPages([verse], { target: 12, max: 18 });
+      expect(pages).toEqual([verse]);
+    });
+
+    it('scales page size down for short texts', () => {
+      expect(importer.pageTargetsFor(983).target).toBeLessThan(importer.pageTargetsFor(5000).target);
+      expect(importer.pageTargetsFor(5000).target).toBeLessThan(importer.pageTargetsFor(50000).target);
+      expect(importer.pageTargetsFor(50000).target).toBe(520);
+    });
   });
 
   it('public mirror is byte-for-byte in sync with every runtime data file', { timeout: 60000 }, () => {

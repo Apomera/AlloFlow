@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-13T22:10:38.521Z",
+ "generatedAt": "2026-07-16T15:58:15.543Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -53334,7 +53334,7 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 327,
+   "pageCount": 383,
    "wordCount": 144519,
    "file": "books/gutenberg-ebook-245-life-on-the-mississippi.json"
   },
@@ -84624,7 +84624,7 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 73,
+   "pageCount": 74,
    "wordCount": 31116,
    "file": "books/gutenberg-ebook-30155-relativity-the-special-and-general-theory.json"
   },
@@ -84964,7 +84964,7 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 146,
+   "pageCount": 171,
    "wordCount": 68676,
    "file": "books/gutenberg-ebook-120-treasure-island.json"
   },
@@ -88806,7 +88806,7 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 157,
+   "pageCount": 189,
    "wordCount": 70839,
    "file": "books/gutenberg-ebook-74-the-adventures-of-tom-sawyer-complete.json"
   },
@@ -89451,7 +89451,7 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 4,
+   "pageCount": 36,
    "wordCount": 1022,
    "file": "books/gutenberg-ebook-14838-the-tale-of-peter-rabbit.json"
   },
@@ -89553,7 +89553,7 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 48,
+   "pageCount": 131,
    "wordCount": 23045,
    "file": "books/gutenberg-ebook-67098-winnie-the-pooh.json"
   },
@@ -89689,7 +89689,7 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 56,
+   "pageCount": 57,
    "wordCount": 26435,
    "file": "books/gutenberg-ebook-501-the-story-of-doctor-dolittle.json"
   },
@@ -89995,7 +89995,7 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 85,
+   "pageCount": 318,
    "wordCount": 41661,
    "file": "books/gutenberg-ebook-54-the-marvelous-land-of-oz.json"
   },
@@ -90029,7 +90029,7 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 81,
+   "pageCount": 121,
    "wordCount": 39151,
    "file": "books/gutenberg-ebook-33361-ozma-of-oz-a-record-of-her-adventures-with-dorothy-gale-of-kansa.json"
   },
@@ -90063,7 +90063,7 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 152,
+   "pageCount": 224,
    "wordCount": 70085,
    "file": "books/gutenberg-ebook-1837-the-prince-and-the-pauper.json"
   },
@@ -91628,7 +91628,7 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 199,
+   "pageCount": 573,
    "wordCount": 80334,
    "file": "books/gutenberg-ebook-56327-fables-de-la-fontaine.json"
   },
