@@ -491,7 +491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var encounter = getCoreEncounter(region, mode);
     return { correct: action === encounter.correctAction, encounter: encounter };
   }
-  function evaluateCoreManeuver(type, startHeading, currentHeading, startSpeed, currentSpeed, elapsed) {
+  function evaluateCoreManeuver(type, startHeading, currentHeading, startSpeed, currentSpeed, elapsed, fogSignalMade) {
     var headingDelta = currentHeading - startHeading;
     while (headingDelta > Math.PI) headingDelta -= Math.PI * 2;
     while (headingDelta < -Math.PI) headingDelta += Math.PI * 2;
@@ -502,7 +502,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var portTurnDegrees = Math.max(0, headingDelta * 180 / Math.PI);
       var avoidedPortAlteration = portTurnDegrees <= 8;
       var cautiousObservation = elapsed >= 5;
-      return { criterionOne: restrictedSpeed, criterionTwo: avoidedPortAlteration, observedEnough: cautiousObservation, headingDeviation: headingDeviation, speedDeviation: speedDeviation, turnDegrees: 0, portTurnDegrees: portTurnDegrees, complete: restrictedSpeed && avoidedPortAlteration && cautiousObservation };
+      var properFogSignal = !!fogSignalMade;
+      return { criterionOne: restrictedSpeed, criterionTwo: avoidedPortAlteration, criterionThree: properFogSignal, observedEnough: cautiousObservation, headingDeviation: headingDeviation, speedDeviation: speedDeviation, turnDegrees: 0, portTurnDegrees: portTurnDegrees, complete: restrictedSpeed && avoidedPortAlteration && properFogSignal && cautiousObservation };
     }
     if (type === 'stand-on') {
       var courseSteady = headingDeviation <= 8;
@@ -8930,6 +8931,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       trafficGradeId: null,
       trafficGradeLabel: null,
       trafficGradeBonus: 0,
+      fogSignalMade: false,
       missionComplete: false,
       fuelDepletedWarned: false,
       earlyDockWarned: false,
@@ -9047,6 +9049,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (e.key === 'h' || e.key === 'H') {
         startHauling();
       }
+      if (e.key === 'b' || e.key === 'B') {
+        soundFogSignal();
+      }
       if (e.key === 'v' || e.key === 'V') {
         var views = ['chase', 'firstperson', 'topdown'];
         var idx = views.indexOf(boatState.cameraView || 'chase');
@@ -9078,6 +9083,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         statusCb({ type: 'system', text: boatState.paused ? 'Simulation paused' : 'Simulation resumed' });
       }
       hudCb(Object.assign({}, lastHud, { paused: boatState.paused }));
+    }
+    function soundFogSignal() {
+      if (encounterProfile.maneuverType !== 'restricted' || !boatState.trafficDecisionMade || boatState.trafficManeuverComplete) {
+        statusCb({ type: 'guidance', text: 'The prolonged fog signal is required during the active restricted-visibility encounter.' });
+        return;
+      }
+      if (boatState.fogSignalMade) {
+        flAnnounce('Prolonged fog signal already logged.');
+        return;
+      }
+      boatState.fogSignalMade = true;
+      if (soundEnabled) {
+        if (!audioCtx) initAudio();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx) {
+          try {
+            var horn = audioCtx.createOscillator();
+            var hornOvertone = audioCtx.createOscillator();
+            var hornGain = audioCtx.createGain();
+            var hornFilter = audioCtx.createBiquadFilter();
+            var now = audioCtx.currentTime;
+            horn.type = 'sawtooth';
+            hornOvertone.type = 'square';
+            horn.frequency.setValueAtTime(105, now);
+            hornOvertone.frequency.setValueAtTime(157.5, now);
+            hornFilter.type = 'lowpass';
+            hornFilter.frequency.value = 520;
+            hornGain.gain.setValueAtTime(0.0001, now);
+            hornGain.gain.exponentialRampToValueAtTime(0.16, now + 0.12);
+            hornGain.gain.setValueAtTime(0.16, now + 3.8);
+            hornGain.gain.exponentialRampToValueAtTime(0.0001, now + 4.2);
+            horn.connect(hornFilter);
+            hornOvertone.connect(hornFilter);
+            hornFilter.connect(hornGain);
+            hornGain.connect(audioCtx.destination);
+            horn.start(now);
+            hornOvertone.start(now);
+            horn.stop(now + 4.25);
+            hornOvertone.stop(now + 4.25);
+          } catch (_) {}
+        }
+      }
+      statusCb({ type: 'signal', text: 'Rule 35: one prolonged fog-horn blast sounded (4 seconds)' });
+      flAnnounce('Prolonged fog signal made. Visual confirmation: Rule 35 signal logged.');
+      hudCb(Object.assign({}, lastHud, { trafficFogSignalMade: true }));
     }
     function resolveTrafficEncounter(action) {
       if (boatState.trafficDecisionMade) return;
@@ -9418,7 +9468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         statusCb({ type: 'traffic-encounter', encounter: encounterProfile, text: encounterProfile.vessel + ' crossing · ' + encounterProfile.rule + ' decision required' });
         flAnnounce('Traffic encounter. ' + encounterProfile.situation + ' Choose the correct action.');
       }
-      var trafficManeuver = evaluateCoreManeuver(encounterProfile.maneuverType, boatState.trafficStartHeading, boatState.heading, boatState.trafficStartSpeed, boatState.speed, boatState.trafficManeuverSeconds);
+      var trafficManeuver = evaluateCoreManeuver(encounterProfile.maneuverType, boatState.trafficStartHeading, boatState.heading, boatState.trafficStartSpeed, boatState.speed, boatState.trafficManeuverSeconds, boatState.fogSignalMade);
       var trafficRange = boat.position.distanceTo(trafficVessel.position);
       var trafficRelativeBearing = relativeCoreBearing(boatState.heading, boat.position.x, boat.position.z, trafficVessel.position.x, trafficVessel.position.z) * 180 / Math.PI;
       if (boatState.trafficDecisionMade && !boatState.trafficManeuverComplete) {
@@ -9641,6 +9691,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         trafficManeuverLabel: encounterProfile.maneuverLabel,
         trafficCriterionOne: trafficManeuver.criterionOne,
         trafficCriterionTwo: trafficManeuver.criterionTwo,
+        trafficCriterionThree: trafficManeuver.criterionThree,
+        trafficFogSignalMade: boatState.fogSignalMade,
         trafficObservedEnough: trafficManeuver.observedEnough,
         trafficHeadingDeviation: trafficManeuver.headingDeviation,
         trafficSpeedDeviation: trafficManeuver.speedDeviation,
@@ -9741,6 +9793,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       resolveTrafficEncounter: function(action) {
         resolveTrafficEncounter(action);
       },
+      soundFogSignal: function() {
+        soundFogSignal();
+      },
       setWeather: function(w) {
         boatState.weather = w;
         updateEnvironment(boatState.timeOfDay, w);
@@ -9774,6 +9829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.trafficGradeId = null;
         boatState.trafficGradeLabel = null;
         boatState.trafficGradeBonus = 0;
+        boatState.fogSignalMade = false;
         boatState.missionComplete = false;
         boatState.stewardshipScore = 0;
         boatState.decisionStreak = 0;
@@ -10855,8 +10911,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               }, '🦞 Haul Trap (H)') : null
             ),
             h('canvas', { ref: canvasRef, className: 'fl-sim-canvas', role: 'application', tabIndex: 0, style: { width: '100%', height: 460, display: 'block', background: '#9bc4d8' },
-              'aria-label': 'Interactive 3D harbor. Focus this scene to steer with WASD or arrow keys. Press F at the fishing grounds, H near a trap, and P to pause.',
-              'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space F H P V M Escape',
+              'aria-label': 'Interactive 3D harbor. Focus this scene to steer with WASD or arrow keys. Press B for the fog horn, F at the fishing grounds, H near a trap, and P to pause.',
+              'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space B F H P V M Escape',
               onClick: function(e) { if (e.currentTarget && e.currentTarget.focus) e.currentTarget.focus(); },
               onFocus: function() { flAnnounce('Harbor controls active. Steer with WASD or arrows. Press P to pause.'); } }),
 
@@ -10865,7 +10921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', color: '#fbbf24', fontSize: 22, lineHeight: 1, transform: 'rotate(' + (hud.objectiveBearing || 0) + 'deg)', transition: 'transform 0.2s ease' } }, '↑'),
                 h('div', { style: { minWidth: 0, textAlign: 'left' } },
                   h('strong', { style: { display: 'block', color: '#f8fafc', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, hud.objectiveLabel || 'Preparing route'),
-                  h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 9 } }, hud.objectiveDistance == null ? 'Acquiring waypoint' : hud.objectiveId === 'maneuver' ? (trafficIsRestricted ? 'Reduce speed · avoid port alteration' : trafficIsStandOn ? 'Maintain course · monitor closest approach' : 'Alter starboard · open closest approach') : hud.objectiveDistance.toFixed(1) + ' sim range · ' + (Math.abs(hud.objectiveBearing || 0) < 12 ? 'on course' : (hud.objectiveBearing || 0) < 0 ? 'turn port' : 'turn starboard'))
+                  h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 9 } }, hud.objectiveDistance == null ? 'Acquiring waypoint' : hud.objectiveId === 'maneuver' ? (trafficIsRestricted ? 'Reduce speed · sound horn · avoid port' : trafficIsStandOn ? 'Maintain course · monitor closest approach' : 'Alter starboard · open closest approach') : hud.objectiveDistance.toFixed(1) + ' sim range · ' + (Math.abs(hud.objectiveBearing || 0) < 12 ? 'on course' : (hud.objectiveBearing || 0) < 0 ? 'turn port' : 'turn starboard'))
                 )
               ),
               hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('div', { style: { marginTop: 7, paddingTop: 7, borderTop: '1px solid rgba(125,211,252,0.25)', display: 'grid', gap: 4, textAlign: 'left' } },
@@ -10885,6 +10941,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficCriterionTwo ? '#86efac' : '#fef3c7', fontSize: 9 } },
                   h('span', null, (hud.trafficCriterionTwo ? '✓ ' : '○ ') + (trafficIsRestricted ? 'Avoid port alteration > 8°' : trafficIsStandOn ? 'Speed steady ± 1.5 kt' : 'Alter 15° starboard')),
                   h('strong', null, trafficIsRestricted ? (hud.trafficPortTurnDegrees || 0).toFixed(1) + '° port' : trafficIsStandOn ? (hud.trafficSpeedDeviation || 0).toFixed(1) + ' kt' : Math.min(99, hud.trafficTurnDegrees || 0).toFixed(0) + '°')),
+                trafficIsRestricted ? h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficCriterionThree ? '#86efac' : '#fef3c7', fontSize: 9 } },
+                  h('span', null, (hud.trafficCriterionThree ? '✓ ' : '○ ') + 'One prolonged blast (B)'),
+                  h('strong', null, hud.trafficCriterionThree ? 'logged' : 'required')) : null,
                 (trafficIsStandOn || trafficIsRestricted) ? h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficObservedEnough ? '#86efac' : '#fef3c7', fontSize: 9 } },
                   h('span', null, (hud.trafficObservedEnough ? '✓ ' : '○ ') + (trafficIsRestricted ? 'Navigate cautiously 5 s' : 'Observe crossing 5 s')),
                   h('strong', null, Math.min(5, hud.trafficManeuverSeconds || 0).toFixed(1) + ' s')) : null,
@@ -10936,7 +10995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, fontWeight: 800, color: '#bae6fd', marginBottom: 5 } }, h('span', null, mission.title), h('span', { style: { color: '#fde68a' } }, (hud.stewardshipScore || 0) + ' pts')),
               h('div', { style: { height: 5, borderRadius: 4, overflow: 'hidden', background: 'rgba(148,163,184,0.22)', marginBottom: 6 } }, h('div', { style: { width: missionProgressPct + '%', height: '100%', background: 'linear-gradient(90deg,#22c55e,#38bdf8)', transition: 'width 0.25s ease' } })),
               h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Navigate red nun correctly' : '○ Pass red nun on starboard'),
-              h('div', { style: { fontSize: 10, color: hud.trafficManeuverReviewed || (hud.trafficDecisionMade && !hud.trafficDecisionCorrect) ? '#fdba74' : 'inherit' } }, hud.trafficManeuverComplete ? (hud.trafficManeuverReviewed ? '△ ' + hud.trafficManeuverLabel + ' reviewed' : '✓ ' + hud.trafficManeuverLabel) : hud.trafficDecisionMade ? (trafficIsRestricted ? '○ Slow + avoid port alteration' : trafficIsStandOn ? '○ Hold course + speed for 5 s' : '○ Slow + alter 15° starboard') : '○ Resolve crossing traffic'),
+              h('div', { style: { fontSize: 10, color: hud.trafficManeuverReviewed || (hud.trafficDecisionMade && !hud.trafficDecisionCorrect) ? '#fdba74' : 'inherit' } }, hud.trafficManeuverComplete ? (hud.trafficManeuverReviewed ? '△ ' + hud.trafficManeuverLabel + ' reviewed' : '✓ ' + hud.trafficManeuverLabel) : hud.trafficDecisionMade ? (trafficIsRestricted ? '○ Slow + horn + avoid port' : trafficIsStandOn ? '○ Hold course + speed for 5 s' : '○ Slow + alter 15° starboard') : '○ Resolve crossing traffic'),
               hud.trafficManeuverComplete ? h('div', { 'aria-label': 'Traffic encounter debrief. ' + (hud.trafficGradeLabel || 'Maneuver complete') + '. Closest approach ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : 'not available') + ' simulation units. Response time ' + (hud.trafficManeuverSeconds || 0).toFixed(1) + ' seconds.', style: { margin: '5px 0 6px', padding: '5px 0', borderTop: '1px solid rgba(125,211,252,0.22)', borderBottom: '1px solid rgba(125,211,252,0.22)' } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: trafficGradeColor, fontSize: 9, fontWeight: 900, textTransform: 'uppercase' } },
                   h('span', null, 'Encounter · ' + (hud.trafficGradeLabel || 'Complete')),
@@ -10973,6 +11032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   style: { width: 38, height: 34, borderRadius: 6, border: '1px solid rgba(125,211,252,0.4)', background: '#0f2740', color: '#e0f2fe', fontSize: 18, cursor: 'pointer' }
                 }, control.icon);
               }),
+              trafficIsRestricted && hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('button', { type: 'button', className: 'fl-btn', 'aria-label': 'Sound one prolonged fog-horn blast', disabled: !!hud.trafficFogSignalMade, onClick: function() { if (harborRef.current && harborRef.current.soundFogSignal) harborRef.current.soundFogSignal(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(253,230,138,0.6)', background: hud.trafficFogSignalMade ? '#365314' : '#854d0e', color: '#fef9c3', fontWeight: 900, cursor: hud.trafficFogSignalMade ? 'default' : 'pointer' } }, hud.trafficFogSignalMade ? 'Horn logged' : 'Horn (B)') : null,
               h('button', { type: 'button', className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.fish) harborRef.current.fish(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(196,181,253,0.5)', background: '#312e81', color: '#ede9fe', fontWeight: 800, cursor: 'pointer' } }, 'Fish'),
               h('button', { type: 'button', className: 'fl-btn', disabled: !hud.closestTrapId || hud.closestTrapHauled, onClick: function() { if (harborRef.current && harborRef.current.haulTrap) harborRef.current.haulTrap(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(251,191,36,0.5)', background: '#713f12', color: '#fef3c7', fontWeight: 800, cursor: hud.closestTrapId ? 'pointer' : 'not-allowed', opacity: hud.closestTrapId ? 1 : 0.55 } }, 'Haul')
             ),
@@ -11447,6 +11507,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               { k: 'Space', d: 'Throttle boost', c: '#fbbf24' },
               { k: 'F', d: 'Fish (at fishing waypoint)', c: '#a78bfa' },
               { k: 'H', d: 'Haul lobster trap (near buoy)', c: '#fbbf24' },
+              { k: 'B', d: 'Sound prolonged fog-horn blast', c: '#fde68a' },
               { k: 'V', d: 'Cycle camera view', c: '#38bdf8' },
               { k: 'M', d: 'Toggle sound mute', c: '#86efac' },
               { k: 'P / Esc', d: 'Pause or resume', c: '#fde68a' }

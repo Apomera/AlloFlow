@@ -124,16 +124,17 @@ describe('Fisher Lab voyage progression', () => {
     expect(evaluateCoreManeuver('stand-on', Math.PI, Math.PI, 3, 3, 4.9)).toMatchObject({ observedEnough: false, complete: false });
   });
 
-  it('requires safe speed, no unsafe port alteration, and cautious observation under Rule 19', () => {
+  it('requires safe speed, no unsafe port alteration, a fog signal, and cautious observation under Rule 19', () => {
     const { evaluateCoreManeuver } = window.__FisherLabCore;
 
-    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI, 4, 1.5, 5)).toMatchObject({ criterionOne: true, criterionTwo: true, observedEnough: true, complete: true });
-    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI, 4, 3, 5)).toMatchObject({ criterionOne: false, complete: false });
-    const unsafePortTurn = evaluateCoreManeuver('restricted', Math.PI, Math.PI + Math.PI / 12, 4, 1.5, 5);
+    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI, 4, 1.5, 5, true)).toMatchObject({ criterionOne: true, criterionTwo: true, criterionThree: true, observedEnough: true, complete: true });
+    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI, 4, 1.5, 5, false)).toMatchObject({ criterionThree: false, complete: false });
+    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI, 4, 3, 5, true)).toMatchObject({ criterionOne: false, complete: false });
+    const unsafePortTurn = evaluateCoreManeuver('restricted', Math.PI, Math.PI + Math.PI / 12, 4, 1.5, 5, true);
     expect(unsafePortTurn).toMatchObject({ criterionTwo: false, complete: false });
     expect(unsafePortTurn.portTurnDegrees).toBeCloseTo(15);
-    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI - Math.PI / 6, 4, 1.5, 5)).toMatchObject({ criterionTwo: true, portTurnDegrees: 0, complete: true });
-    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI, 4, 1.5, 4.9)).toMatchObject({ observedEnough: false, complete: false });
+    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI - Math.PI / 6, 4, 1.5, 5, true)).toMatchObject({ criterionTwo: true, portTurnDegrees: 0, complete: true });
+    expect(evaluateCoreManeuver('restricted', Math.PI, Math.PI, 4, 1.5, 4.9, true)).toMatchObject({ observedEnough: false, complete: false });
   });
 
   it('interprets bearing and range trends for closest-point-of-approach watch', () => {
@@ -214,6 +215,10 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('COLREGS Rule 19');
     expect(source).toContain('Radar: contact tracking');
     expect(source).toContain('Navigate cautiously 5 s');
+    expect(source).toContain('soundFogSignal');
+    expect(source).toContain('One prolonged blast (B)');
+    expect(source).toContain('Sound one prolonged fog-horn blast');
+    expect(source).toContain("'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space B F");
     expect(source).toContain("activeTraffic.choiceOneAction || 'give-way'");
     expect(source).toContain("' decisions correct · '");
     expect(source).toContain("type: 'fish-haul'");
