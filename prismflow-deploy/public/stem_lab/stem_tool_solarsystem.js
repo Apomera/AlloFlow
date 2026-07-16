@@ -390,7 +390,7 @@ const d = labToolData.solarSystem || {};
             Venus: ['Venus spins backwards compared to most planets', 'A day on Venus is longer than its year', 'Soviet Venera probes survived only ~2 hours on the surface'],
             Earth: ['Earth is the densest planet in the solar system', 'The Moon is slowly drifting away at 3.8 cm/year', 'Earth\'s magnetic field flips every 200,000-300,000 years'],
             Mars: ['Mars has the largest dust storms in the solar system', 'Olympus Mons is 2.5x taller than Everest', 'Mars\' two moons (Phobos & Deimos) may be captured asteroids'],
-            Jupiter: ['Jupiter has the shortest day of any planet (10 hours)', 'The Great Red Spot has been raging for 350+ years', 'Jupiter\'s magnetic field is 20,000x stronger than Earth\'s'],
+            Jupiter: ['Jupiter has the shortest day of any planet (10 hours)', 'The Great Red Spot has been raging for at least 190 years', 'Jupiter\'s magnetic field is 20,000x stronger than Earth\'s'],
             Saturn: ['Saturn is the least dense planet \u2014 it would float in water!', 'Its rings are mostly water ice, some only meters thick', 'Saturn\'s hexagonal storm is 30,000 km across'],
             Uranus: ['Uranus was the first planet discovered with a telescope (1781)', 'It rolls on its side \u2014 probably knocked over by a collision', 'Uranus has 13 known rings'],
             Neptune: ['Neptune takes 165 years to orbit the Sun', 'Its moon Triton orbits backwards \u2014 probably captured', 'Neptune radiates 2.6x more heat than it receives from the Sun'],
@@ -404,7 +404,7 @@ const d = labToolData.solarSystem || {};
             ],
             Mars: [
               { name: __alloT('stem.solarsystem.phobos', 'Phobos'), diameter: '22.4 km', dist: '9,376 km', fact: __alloT('stem.solarsystem.slowly_spiraling_inward_will_crash_int', 'Slowly spiraling inward; will crash into Mars in ~50 million years.'), type: 'Captured asteroid' },
-              { name: __alloT('stem.solarsystem.deimos', 'Deimos'), diameter: '12.4 km', dist: '23,463 km', fact: __alloT('stem.solarsystem.smallest_known_moon_in_the_solar_syste', 'Smallest known moon in the solar system. Smooth surface.'), type: 'Captured asteroid' }
+              { name: __alloT('stem.solarsystem.deimos', 'Deimos'), diameter: '12.4 km', dist: '23,463 km', fact: __alloT('stem.solarsystem.smallest_known_moon_in_the_solar_syste', 'The smaller of Mars\u2019s two moons. Smooth surface.'), type: 'Captured asteroid' }
             ],
             Jupiter: [
               { name: 'Io', diameter: '3,643 km', dist: '421,700 km', fact: __alloT('stem.solarsystem.most_volcanically_active_body_in_the_s', 'Most volcanically active body in the solar system. 400+ active volcanoes!'), type: 'Volcanic' },
@@ -438,7 +438,7 @@ const d = labToolData.solarSystem || {};
             Earth: { sunSize: 'Normal', visible: ['Moon', 'Venus (evening star)', 'Mars, Jupiter, Saturn'], note: __alloT('stem.solarsystem.blue_sky_from_rayleigh_scattering_5_00', 'Blue sky from Rayleigh scattering. ~5,000 stars visible to naked eye.') },
             Mars: { sunSize: '2/3 Earth size', visible: ['Earth & Moon (bright double star)', 'Phobos (rises in west!)', 'Deimos'], note: __alloT('stem.solarsystem.butterscotch_sky_from_iron_dust_blue_s', 'Butterscotch sky from iron dust. Blue sunsets! Phobos rises 2x/day.') },
             Jupiter: { sunSize: '1/5 Earth size', visible: ['Io (volcanic orange)', 'Europa, Ganymede, Callisto in a line'], note: __alloT('stem.solarsystem.no_surface_from_cloud_tops_see_auroras', 'No surface \u2014 from cloud tops, see auroras 100x brighter than Earth\u2019s.') },
-            Saturn: { sunSize: '1/10 Earth size', visible: ['Titan (largest)', 'Ring arcs spanning the sky'], note: __alloT('stem.solarsystem.rings_visible_as_bright_arcs_overhead_', 'Rings visible as bright arcs overhead. From Titan: orange haze sky, Saturn fills 11\u00B0.') },
+            Saturn: { sunSize: '1/10 Earth size', visible: ['Titan (largest)', 'Ring arcs spanning the sky'], note: __alloT('stem.solarsystem.rings_visible_as_bright_arcs_overhead_', 'Rings visible as bright arcs overhead. From Titan: orange haze sky, Saturn looks 11x wider than our full Moon.') },
             Uranus: { sunSize: 'Bright star', visible: ['Miranda, Ariel, Titania (dots)'], note: __alloT('stem.solarsystem.sun_just_a_very_bright_point_42_year_s', 'Sun just a very bright point. 42-year seasons. Extreme tilt means Sun can be at zenith at poles.') },
             Neptune: { sunSize: 'Bright star', visible: ['Triton (retrograde dot)'], note: __alloT('stem.solarsystem.sun_900x_dimmer_than_on_earth_still_30', 'Sun 900x dimmer than on Earth. Still 300x brighter than full Moon on Earth.') },
             Pluto: { sunSize: 'Very bright star', visible: ['Charon (huge in sky, never moves)', 'Sun is just a point'], note: __alloT('stem.solarsystem.charon_appears_7x_larger_than_our_moon', 'Charon appears 7x larger than our Moon. They\u2019re tidally locked \u2014 Charon hangs motionless in the sky.') }
@@ -544,7 +544,7 @@ const d = labToolData.solarSystem || {};
               { q: 'What if you stood on Mercury at the terminator?', a: 'You\u2019d experience the most extreme temperature gradient in the solar system: 430\u00B0C on one side, -180\u00B0C on the other, just steps apart!' }
             ],
             Venus: [
-              { q: 'What if Venus spun the other way?', a: 'Its day would be ~24 hours instead of 243 days! It might have developed a more Earth-like climate.' },
+              { q: 'What if Venus spun the other way?', a: 'Sunrise would flip from west to east, but its day would actually get even longer \u2014 Venus would need to spin much faster, like Earth, to have a ~24-hour day! It might have developed a more Earth-like climate.' },
               { q: 'Could we terraform Venus?', a: 'Theoretically! Floating cities at 50 km altitude would have Earth-like pressure and temperature. Some scientists call it easier than Mars.' }
             ],
             Earth: [
@@ -557,7 +557,7 @@ const d = labToolData.solarSystem || {};
             ],
             Jupiter: [
               { q: 'What if Jupiter became a star?', a: 'It would need ~80x more mass. If it did, we\u2019d have a binary star system! Earth would be too hot for life.' },
-              { q: 'What\u2019s at the very center of Jupiter?', a: 'A rocky core 10-20x Earth\u2019s mass, surrounded by metallic hydrogen at 24,000\u00B0C and 100 million atmospheres of pressure!' }
+              { q: 'What\u2019s at the very center of Jupiter?', a: 'Juno data suggest a fuzzy core of rock mixed into hot metallic hydrogen \u2014 maybe 10-20x Earth\u2019s mass of heavy elements at tens of millions of atmospheres of pressure!' }
             ],
             Saturn: [
               { q: 'What if you could stand on Saturn\u2019s rings?', a: 'You\u2019d sink! The rings are mostly tiny ice particles with gaps between them. Average thickness is only 10 meters!' },
@@ -573,7 +573,7 @@ const d = labToolData.solarSystem || {};
             ],
             Pluto: [
               { q: 'Why was Pluto demoted?', a: 'In 2006, the IAU defined planets must \u201Cclear their orbit.\u201D Pluto shares its space with thousands of Kuiper Belt objects.' },
-              { q: 'What would a sunset look like on Pluto?', a: 'The Sun would look like a very bright star. At 39 AU away, it would be ~900x dimmer than on Earth, but still 250x brighter than a full Moon.' }
+              { q: 'What would a sunset look like on Pluto?', a: 'The Sun would look like a very bright star. At 39 AU away, it would be ~1,500x dimmer than on Earth, but still 250x brighter than a full Moon.' }
             ]
           };
 
@@ -629,7 +629,7 @@ const d = labToolData.solarSystem || {};
             Mars: { predict: 'Mars once had rivers and lakes. Why do you think the water disappeared?', reveal: 'Mars lost its magnetic field ~4 billion years ago. Without magnetic shielding, solar wind stripped away the atmosphere, and low pressure caused surface water to evaporate or freeze underground.', concept: 'magnetosphere' },
             Jupiter: { predict: 'Jupiter is 11x wider than Earth. How strong do you think its gravity is compared to Earth?', reveal: 'Jupiter\u2019s surface gravity is only 2.34x Earth\u2019s \u2014 surprisingly low for such a massive planet! That\u2019s because it\u2019s made of light gases (hydrogen/helium), so its density is low.', concept: 'density vs mass' },
             Saturn: { predict: 'Saturn is the second-largest planet. Could it float in water?', reveal: 'Yes! Saturn\u2019s density is only 0.687 g/cm\u00B3 \u2014 less than water (1.0 g/cm\u00B3). If you had a bathtub big enough, Saturn would float. Size doesn\u2019t always mean heavy!', concept: 'density' },
-            Uranus: { predict: 'Uranus is tilted 98\u00B0 on its side. What do you think seasons are like there?', reveal: 'Each pole gets 42 years of continuous sunlight followed by 42 years of darkness! The equator is actually colder than the poles. Axial tilt dramatically affects climate.', concept: 'axial tilt & seasons' },
+            Uranus: { predict: 'Uranus is tilted 98\u00B0 on its side. What do you think seasons are like there?', reveal: 'Each pole gets 42 years of continuous sunlight followed by 42 years of darkness! Oddly, the equator is actually a bit warmer than the poles. Axial tilt dramatically affects climate.', concept: 'axial tilt & seasons' },
             Neptune: { predict: 'Neptune is the farthest planet from the Sun. Do you think it has the coldest temperature?', reveal: 'Neptune is cold (-214\u00B0C) but Uranus is actually colder (-224\u00B0C) despite being closer to the Sun! Neptune radiates 2.6x more heat than it receives \u2014 it has a mysterious internal heat source.', concept: 'internal heat' },
             Pluto: { predict: 'Pluto was called a planet for 76 years. Why do you think scientists reclassified it?', reveal: 'In 2006, the IAU defined 3 criteria: orbits the Sun (\u2713), round shape (\u2713), cleared its orbit (\u2717). Pluto shares its orbital zone with thousands of Kuiper Belt objects, so it\u2019s a "dwarf planet."', concept: 'planetary classification' }
           };
@@ -651,7 +651,7 @@ const d = labToolData.solarSystem || {};
             { q: 'Why is Pluto no longer classified as a planet?', a: 'It hasn\u2019t cleared its orbital zone', opts: ['It\u2019s too small', 'It\u2019s too far away', 'It hasn\u2019t cleared its orbital zone', 'It doesn\u2019t orbit the Sun'], tip: __alloT('stem.solarsystem.the_iau_s_2006_definition_requires_pla', 'The IAU\u2019s 2006 definition requires planets to clear their orbital neighborhood of other debris.'), wrongFeedback: { 'It\u2019s too small': 'Size isn\u2019t one of the IAU criteria! Mercury is only twice Pluto\u2019s diameter and is still a planet.', 'It\u2019s too far away': 'Distance from the Sun isn\u2019t a criterion for planet classification.', 'It doesn\u2019t orbit the Sun': 'Pluto does orbit the Sun! The issue is it shares its orbit with thousands of Kuiper Belt objects.' }, difficulty: 2, concept: 'planetary classification' },
             { q: 'What is the "habitable zone"?', a: 'Distance where liquid water can exist', opts: ['Where humans can breathe', 'Distance where liquid water can exist', 'Where there is no radiation', 'The warmest part of a solar system'], tip: __alloT('stem.solarsystem.also_called_the_goldilocks_zone_not_to', 'Also called the "Goldilocks zone" \u2014 not too hot, not too cold for liquid water on the surface.'), wrongFeedback: { 'Where humans can breathe': 'Breathability depends on atmosphere composition, not distance from the star. Venus is in the habitable zone but has no oxygen!', 'Where there is no radiation': 'Radiation exists everywhere in space. The habitable zone is about temperature for liquid water.', 'The warmest part of a solar system': 'The warmest zone is closest to the star, but that\u2019s too hot for liquid water. The habitable zone is the "just right" middle distance.' }, difficulty: 2, concept: 'habitable zone' },
             { q: 'Why do we always see the same side of the Moon?', a: 'Tidal locking', opts: ['The Moon doesn\u2019t rotate', 'Tidal locking', 'Earth\u2019s gravity is too strong', 'The dark side is always hidden'], tip: __alloT('stem.solarsystem.the_moon_rotates_exactly_once_per_orbi', 'The Moon rotates exactly once per orbit \u2014 this synchronization is caused by tidal forces over billions of years.'), wrongFeedback: { 'The Moon doesn\u2019t rotate': 'The Moon DOES rotate! It rotates exactly once per orbit (27.3 days), so the same face always points at Earth. This is called tidal locking.', 'Earth\u2019s gravity is too strong': 'Earth\u2019s gravity caused the tidal locking, but the result is synchronized rotation, not prevented rotation.', 'The dark side is always hidden': 'There\u2019s no permanent "dark side" \u2014 all parts of the Moon get sunlight. The far side is just the part we can\u2019t see from Earth.' }, difficulty: 3, concept: 'tidal locking' },
-            { q: 'What evidence suggests Mars once had liquid water?', a: 'Hematite minerals and river channels', opts: ['Red color from rust', 'Hematite minerals and river channels', 'Polar ice caps', 'Thin atmosphere'], tip: __alloT('stem.solarsystem.opportunity_rover_found_hematite_blueb', 'Opportunity rover found hematite "blueberries" \u2014 minerals that only form in water. Orbital photos show ancient river deltas!'), wrongFeedback: { 'Red color from rust': 'Iron oxide (rust) forms through oxidation, not necessarily water. Mars\u2019s red color comes from iron dust, not liquid water.', 'Polar ice caps': 'Mars\u2019s ice caps are mostly CO\u2082 (dry ice) with some water ice. They show water exists but not that it was ever liquid on the surface.', 'Thin atmosphere': 'The thin atmosphere actually makes liquid water impossible today! Low pressure causes water to boil or freeze instantly.' }, difficulty: 3, concept: 'evidence of water' }
+            { q: 'What evidence suggests Mars once had liquid water?', a: 'Hematite minerals and river channels', opts: ['Red color from rust', 'Hematite minerals and river channels', 'Polar ice caps', 'Thin atmosphere'], tip: __alloT('stem.solarsystem.opportunity_rover_found_hematite_blueb', 'Opportunity rover found hematite "blueberries" \u2014 minerals that only form in water. Orbital photos show ancient river deltas!'), wrongFeedback: { 'Red color from rust': 'Iron oxide (rust) forms through oxidation, not necessarily water. Mars\u2019s red color comes from iron dust, not liquid water.', 'Polar ice caps': 'Mars\u2019s ice caps are mostly water ice, with a thin seasonal coating of CO\u2082 frost (dry ice). They show water exists but not that it was ever liquid on the surface.', 'Thin atmosphere': 'The thin atmosphere actually makes liquid water impossible today! Low pressure causes water to boil or freeze instantly.' }, difficulty: 3, concept: 'evidence of water' }
           ];
 
           // ── Vocabulary Glossary ──
@@ -2318,8 +2318,8 @@ const d = labToolData.solarSystem || {};
     { id: "mars",     name: __alloT('stem.solarsystem.mars', "Mars"),           emoji: "\u2642", color: "#c1440e", a: 1.524,   e: 0.0934, T: 1.881,    i: 1.85,  m: 0.107,   R: 3389.5, type: "planet", desc: __alloT('stem.solarsystem.thin_atmosphere_iron_oxide_surface_two', "Thin atmosphere, iron oxide surface, two small moons.") },
     { id: "jupiter",  name: __alloT('stem.solarsystem.jupiter', "Jupiter"),        emoji: "\u2643", color: "#c88b3a", a: 5.203,   e: 0.0489, T: 11.86,    i: 1.3,   m: 317.8,   R: 69911,  type: "planet", desc: __alloT('stem.solarsystem.gas_giant_great_red_spot_95_known_moon', "Gas giant, Great Red Spot, 115 known moons.") },
     { id: "saturn",   name: __alloT('stem.solarsystem.saturn', "Saturn"),         emoji: "\u2644", color: "#e0c068", a: 9.537,   e: 0.0565, T: 29.46,    i: 2.49,  m: 95.16,   R: 58232,  type: "planet", desc: __alloT('stem.solarsystem.magnificent_ring_system_density_less_t', "Magnificent ring system, density less than water.") },
-    { id: "uranus",   name: __alloT('stem.solarsystem.uranus', "Uranus"),         emoji: "\u26e2", color: "#73c2d0", a: 19.19,   e: 0.0457, T: 84.01,    i: 0.77,  m: 14.54,   R: 25362,  type: "planet", desc: __alloT('stem.solarsystem.ice_giant_tilted_98_faint_rings_27_kno', "Ice giant tilted 98\u00b0, faint rings, 27 known moons.") },
-    { id: "neptune",  name: __alloT('stem.solarsystem.neptune', "Neptune"),        emoji: "\u2646", color: "#3f5fc4", a: 30.07,   e: 0.0113, T: 164.8,    i: 1.77,  m: 17.15,   R: 24622,  type: "planet", desc: __alloT('stem.solarsystem.strongest_winds_in_the_solar_system_vi', "Strongest winds in the solar system, vivid blue colour.") },
+    { id: "uranus",   name: __alloT('stem.solarsystem.uranus', "Uranus"),         emoji: "\u26e2", color: "#73c2d0", a: 19.19,   e: 0.0457, T: 84.01,    i: 0.77,  m: 14.54,   R: 25362,  type: "planet", desc: __alloT('stem.solarsystem.ice_giant_tilted_98_faint_rings_27_kno', "Ice giant tilted 98\u00b0, faint rings, 29 known moons.") },
+    { id: "neptune",  name: __alloT('stem.solarsystem.neptune', "Neptune"),        emoji: "\u2646", color: "#3f5fc4", a: 30.07,   e: 0.0113, T: 164.8,    i: 1.77,  m: 17.15,   R: 24622,  type: "planet", desc: __alloT('stem.solarsystem.strongest_winds_in_the_solar_system_vi', "Strongest winds in the solar system, pale greenish-blue colour.") },
     { id: "pluto",    name: __alloT('stem.solarsystem.pluto', "Pluto"),          emoji: "\u2647", color: "#c9a76c", a: 39.48,   e: 0.2488, T: 247.9,    i: 17.16, m: 0.0022,  R: 1188.3, type: "dwarf",  desc: __alloT('stem.solarsystem.heart_shaped_n_glacier_5_moons_kuiper_', "Heart-shaped N\u2082 glacier, 5 moons, Kuiper Belt king.") },
     { id: "ceres",    name: __alloT('stem.solarsystem.ceres', "Ceres"),          emoji: "\u26b3", color: "#8a8a8a", a: 2.769,   e: 0.0758, T: 4.60,     i: 10.59, m: 0.000157,R: 473,    type: "dwarf",  desc: __alloT('stem.solarsystem.largest_asteroid_belt_object_bright_sa', "Largest asteroid-belt object, bright salt deposits.") },
     { id: "haumea",   name: __alloT('stem.solarsystem.haumea', "Haumea"),         emoji: "\u2b2d", color: "#d0d0d0", a: 43.13,   e: 0.1912, T: 283.3,    i: 28.19, m: 0.00066, R: 816,    type: "dwarf",  desc: __alloT('stem.solarsystem.egg_shaped_fastest_rotating_dwarf_plan', "Egg-shaped, fastest-rotating dwarf planet, has a ring.") },
@@ -5864,7 +5864,7 @@ const d = labToolData.solarSystem || {};
 
   // Topic-accent hero band per tab
   var TAB_META = [
-    { accent: "#7c3aed", soft: "rgba(124,58,237,0.10)", title: __alloT('stem.solarsystem.full_orrery_animated_solar_system', "Full orrery — animated solar system"),     hint: __alloT('stem.solarsystem.all_8_planets_to_scale_size_orbit_watc', "All 8 planets to scale (size + orbit). Watch Mercury lap Earth ~4× per Earth-year. Inner planets cluster tight; outer ones sweep huge orbits.") },
+    { accent: "#7c3aed", soft: "rgba(124,58,237,0.10)", title: __alloT('stem.solarsystem.full_orrery_animated_solar_system', "Full orrery — animated solar system"),     hint: __alloT('stem.solarsystem.all_8_planets_to_scale_size_orbit_watc', "All 8 planets to scale (size + orbit). Watch Mercury zip around the Sun ~4 times per Earth-year. Inner planets cluster tight; outer ones sweep huge orbits.") },
     { accent: "#0ea5e9", soft: "rgba(14,165,233,0.10)", title: __alloT('stem.solarsystem.kepler_i_orbits_are_ellipses', "Kepler I — orbits are ellipses"),          hint: __alloT('stem.solarsystem.every_planet_orbits_in_an_ellipse_with', "Every planet orbits in an ellipse with the Sun at one focus. The other focus is empty space. Earth's orbit is barely-eccentric (e ≈ 0.017).") },
     { accent: "#22c55e", soft: "rgba(34,197,94,0.10)",  title: __alloT('stem.solarsystem.kepler_ii_equal_areas_in_equal_times', "Kepler II — equal areas in equal times"),  hint: __alloT('stem.solarsystem.a_line_from_planet_to_sun_sweeps_equal', "A line from planet to Sun sweeps equal areas in equal times — meaning planets move FASTER near the Sun (perihelion) and SLOWER far away (aphelion).") },
     { accent: "#f59e0b", soft: "rgba(245,158,11,0.10)", title: __alloT('stem.solarsystem.kepler_iii_period_semi_major_axis', "Kepler III — period² ∝ semi-major-axis³"), hint: __alloT('stem.solarsystem.t_a_when_t_is_in_years_and_a_is_in_au_', "T² = a³ when T is in years and a is in AU. Earth's T=1, a=1 makes the math beautifully clean. Doubling orbit size multiplies period by ~2.83.") },
@@ -6073,7 +6073,7 @@ const d = labToolData.solarSystem || {};
 
                 ),
 
-                React.createElement("p", { className: "italic text-amber-600" }, __alloT('stem.solarsystem.the_solar_system_is_99_86_empty_space_', "\uD83D\uDCA1 The solar system is 99.86% empty space! Our model compresses distances so you can explore everything in one view."))
+                React.createElement("p", { className: "italic text-amber-600" }, __alloT('stem.solarsystem.the_solar_system_is_99_86_empty_space_', "\uD83D\uDCA1 The Sun holds 99.86% of the solar system\u2019s mass, and the space between the planets is almost completely empty! Our model compresses distances so you can explore everything in one view."))
 
               )
 
@@ -6670,7 +6670,7 @@ const d = labToolData.solarSystem || {};
                             var spotY = cy + planetR * 0.18;
                             // Register GRS as hoverable feature
                             if (Math.sqrt(Math.pow(spotX - cx, 2) + Math.pow(spotY - cy, 2)) < planetR * 0.9) {
-                              _featureLabels.push({ x: spotX, y: spotY, r: planetR * 0.15, name: __alloT('stem.solarsystem.great_red_spot', 'Great Red Spot'), desc: __alloT('stem.solarsystem.storm_raging_350_years_larger_than_ear', 'Storm raging 350+ years, larger than Earth') });
+                              _featureLabels.push({ x: spotX, y: spotY, r: planetR * 0.15, name: __alloT('stem.solarsystem.great_red_spot', 'Great Red Spot'), desc: __alloT('stem.solarsystem.storm_raging_350_years_larger_than_ear', 'Storm raging for nearly 200 years, larger than Earth') });
                             }
                             // Outer swirl
                             ctx.save();
@@ -7279,7 +7279,7 @@ const d = labToolData.solarSystem || {};
                             ctx.stroke();
                           }
                           ctx.globalAlpha = 1;
-                          _featureLabels.push({ x: cx + planetR * 0.8, y: cy - planetR * 0.9, r: 15, name: __alloT('stem.solarsystem.97_8_axial_tilt', '97.8\u00B0 Axial Tilt'), desc: __alloT('stem.solarsystem.knocked_sideways_by_an_ancient_collisi', 'Knocked sideways by an ancient collision with an Earth-sized body') });
+                          _featureLabels.push({ x: cx + planetR * 0.8, y: cy - planetR * 0.9, r: 15, name: __alloT('stem.solarsystem.97_8_axial_tilt', '97.8\u00B0 Axial Tilt'), desc: __alloT('stem.solarsystem.knocked_sideways_by_an_ancient_collisi', 'Likely knocked sideways long ago, perhaps by a collision with a world at least as big as Earth') });
                           ctx.restore();
                         }
 
@@ -7918,7 +7918,7 @@ const d = labToolData.solarSystem || {};
                       var layers;
                       if (sel.name === 'Mercury') {
                         layers = [
-                          { r: 1.0, color: '#8a7060', label: __alloT('stem.solarsystem.crust', 'Crust'), desc: __alloT('stem.solarsystem.thin_silicate_crust_heavily_cratered', 'Thin silicate crust, heavily cratered'), thick: '100 km' },
+                          { r: 1.0, color: '#8a7060', label: __alloT('stem.solarsystem.crust', 'Crust'), desc: __alloT('stem.solarsystem.thin_silicate_crust_heavily_cratered', 'Thin silicate crust, heavily cratered'), thick: '~35 km' },
                           { r: 0.85, color: '#6a5040', label: __alloT('stem.solarsystem.mantle', 'Mantle'), desc: __alloT('stem.solarsystem.silicate_rock_mantle', 'Silicate rock mantle'), thick: '600 km' },
                           { r: 0.55, color: '#d4a050', label: __alloT('stem.solarsystem.outer_core', 'Outer Core'), desc: __alloT('stem.solarsystem.liquid_iron_nickel_outer_core', 'Liquid iron-nickel outer core'), thick: '500 km' },
                           { r: 0.35, color: '#f0c040', label: __alloT('stem.solarsystem.inner_core', 'Inner Core'), desc: __alloT('stem.solarsystem.solid_iron_inner_core_giant_for_mercur', 'Solid iron inner core \u2014 giant for Mercury\'s size!'), thick: '850 km' }
@@ -8083,14 +8083,14 @@ const d = labToolData.solarSystem || {};
                   (function() {
                     var interiorLayers;
                     if (sel.name === 'Mercury') interiorLayers = [
-                      { label: __alloT('stem.solarsystem.crust_5', 'Crust'), thick: '~100 km', desc: __alloT('stem.solarsystem.thin_silicate_crust_heavily_cratered_f', 'Thin silicate crust, heavily cratered from 4 billion years of impacts'), icon: '\uD83E\uDEA8', color: '#8a7060' },
+                      { label: __alloT('stem.solarsystem.crust_5', 'Crust'), thick: '~35 km', desc: __alloT('stem.solarsystem.thin_silicate_crust_heavily_cratered_f', 'Thin silicate crust, heavily cratered from 4 billion years of impacts'), icon: '\uD83E\uDEA8', color: '#8a7060' },
                       { label: __alloT('stem.solarsystem.mantle_3', 'Mantle'), thick: '~600 km', desc: __alloT('stem.solarsystem.silicate_rock_mantle_unusually_thin_co', 'Silicate rock mantle \u2014 unusually thin compared to the core'), icon: '\uD83C\uDF0B', color: '#6a5040' },
                       { label: __alloT('stem.solarsystem.iron_core', 'Iron Core'), thick: '~1,850 km', desc: __alloT('stem.solarsystem.enormous_iron_core_makes_up_85_of_the_', 'Enormous iron core makes up 85% of the planet\'s radius \u2014 the largest core-to-planet ratio in the solar system!'), icon: '\u2B50', color: '#f0c040' }
                     ];
                     else if (sel.name === 'Venus') interiorLayers = [
                       { label: __alloT('stem.solarsystem.volcanic_crust', 'Volcanic Crust'), thick: '~30 km', desc: __alloT('stem.solarsystem.basaltic_surface_1_600_volcanoes_but_n', 'Basaltic surface, 1,600+ volcanoes but no tectonic plates'), icon: '\uD83C\uDF0B', color: '#c9a050' },
                       { label: __alloT('stem.solarsystem.mantle_4', 'Mantle'), thick: '~3,000 km', desc: __alloT('stem.solarsystem.hot_silicate_rock_may_have_periodic_gl', 'Hot silicate rock. May have periodic global resurfacing events'), icon: '\uD83D\uDD25', color: '#a07030' },
-                      { label: __alloT('stem.solarsystem.core_3', 'Core'), thick: '~3,200 km', desc: __alloT('stem.solarsystem.iron_nickel_core_possibly_liquid_but_n', 'Iron-nickel core, possibly liquid but no magnetic field \u2014 Venus rotates too slowly!'), icon: '\uD83E\uDDF2', color: '#e0b040' }
+                      { label: __alloT('stem.solarsystem.core_3', 'Core'), thick: '~3,200 km', desc: __alloT('stem.solarsystem.iron_nickel_core_possibly_liquid_but_n', 'Iron-nickel core, possibly liquid but no magnetic field \u2014 its core likely lacks the churning currents needed to make one!'), icon: '\uD83E\uDDF2', color: '#e0b040' }
                     ];
                     else if (sel.name === 'Earth') interiorLayers = [
                       { label: __alloT('stem.solarsystem.crust_6', 'Crust'), thick: '5\u201335 km', desc: __alloT('stem.solarsystem.oceanic_crust_thin_dense_basalt_contin', 'Oceanic crust (thin, dense basalt) + continental crust (thick, light granite)'), icon: '\uD83C\uDF0D', color: '#4a8050' },
@@ -8122,7 +8122,7 @@ const d = labToolData.solarSystem || {};
                       { label: __alloT('stem.solarsystem.rocky_core_8', 'Rocky Core'), thick: '~3,000 km', desc: __alloT('stem.solarsystem.small_silicate_iron_core_about_1x_eart', 'Small silicate/iron core, about 1x Earth mass'), icon: '\uD83E\uDEA8', color: '#808060' }
                     ];
                     else if (sel.name === 'Neptune') interiorLayers = [
-                      { label: __alloT('stem.solarsystem.methane_atmosphere_2', 'Methane Atmosphere'), thick: '~5,000 km', desc: __alloT('stem.solarsystem.deepest_blue_in_the_solar_system_winds', 'Deepest blue in the solar system. Winds reach 2,100 km/h \u2014 fastest in the solar system!'), icon: '\uD83C\uDF0A', color: '#4060c0' },
+                      { label: __alloT('stem.solarsystem.methane_atmosphere_2', 'Methane Atmosphere'), thick: '~5,000 km', desc: __alloT('stem.solarsystem.deepest_blue_in_the_solar_system_winds', 'Pale greenish-blue from methane, just slightly bluer than Uranus. Winds reach 2,100 km/h \u2014 fastest in the solar system!'), icon: '\uD83C\uDF0A', color: '#4060c0' },
                       { label: __alloT('stem.solarsystem.h_he_envelope_4', 'H\u2082/He Envelope'), thick: '~7,000 km', desc: __alloT('stem.solarsystem.hydrogen_helium_gas_with_extreme_press', 'Hydrogen-helium gas with extreme pressure'), icon: '\uD83D\uDCA8', color: '#3050a0' },
                       { label: __alloT('stem.solarsystem.superionic_water_diamond_rain', 'Superionic Water/Diamond Rain'), thick: '~13,000 km', desc: __alloT('stem.solarsystem.superionic_water_mantle_where_carbon_a', 'Superionic water mantle where carbon atoms are crushed into literal diamonds that rain down'), icon: '\uD83D\uDC8E', color: '#1a2060' },
                       { label: __alloT('stem.solarsystem.rocky_core_9', 'Rocky Core'), thick: '~4,000 km', desc: __alloT('stem.solarsystem.iron_silicate_core_1_2x_earth_mass_at_', 'Iron-silicate core, ~1.2x Earth mass at 5,400\u00B0C'), icon: '\uD83E\uDEA8', color: '#606050' }
@@ -9770,14 +9770,14 @@ const d = labToolData.solarSystem || {};
 
                           // Marine specimen collectibles
                           var marineSpecimens = [
-                            { name: __alloT('stem.solarsystem.giant_kelp_sample', 'Giant Kelp Sample'), icon: '\uD83C\uDF3F', type: 'Flora', depth: 3, color: 0x2d6a4f, xp: 5, fact: __alloT('stem.solarsystem.giant_kelp_can_grow_up_to_60cm_per_day', 'Giant kelp can grow up to 60cm per day \u2014 the fastest growing organism on Earth!') },
+                            { name: __alloT('stem.solarsystem.giant_kelp_sample', 'Giant Kelp Sample'), icon: '\uD83C\uDF3F', type: 'Flora', depth: 3, color: 0x2d6a4f, xp: 5, fact: __alloT('stem.solarsystem.giant_kelp_can_grow_up_to_60cm_per_day', 'Giant kelp can grow up to 60cm per day \u2014 one of the fastest growing organisms on Earth!') },
                             { name: __alloT('stem.solarsystem.coral_fragment', 'Coral Fragment'), icon: '\uD83E\uDEB8', type: 'Cnidaria', depth: 1, color: 0xff6b8a, xp: 8, fact: __alloT('stem.solarsystem.coral_reefs_support_25_of_all_marine_s', 'Coral reefs support 25% of all marine species despite covering less than 1% of the ocean floor.') },
                             { name: __alloT('stem.solarsystem.bioluminescent_jellyfish', 'Bioluminescent Jellyfish'), icon: '\uD83E\uDEBC', type: 'Cnidaria', depth: -3, color: 0x00ffaa, xp: 10, fact: __alloT('stem.solarsystem.some_jellyfish_use_gfp_green_fluoresce', 'Some jellyfish use GFP (green fluorescent protein) \u2014 the same molecule that won a Nobel Prize in chemistry!') },
                             { name: __alloT('stem.solarsystem.deep_sea_anglerfish', 'Deep-Sea Anglerfish'), icon: '\uD83D\uDC1F', type: 'Fish', depth: -8, color: 0x334455, xp: 12, fact: __alloT('stem.solarsystem.the_anglerfish_s_bioluminescent_lure_i', 'The anglerfish\u2019s bioluminescent lure is powered by symbiotic bacteria. Males permanently fuse to females!') },
                             { name: __alloT('stem.solarsystem.giant_squid_tissue', 'Giant Squid Tissue'), icon: '\uD83E\uDD91', type: 'Cephalopod', depth: -6, color: 0xcc4444, xp: 15, fact: __alloT('stem.solarsystem.giant_squid_have_the_largest_eyes_in_t', 'Giant squid have the largest eyes in the animal kingdom (27 cm!) \u2014 the size of dinner plates.') },
-                            { name: __alloT('stem.solarsystem.hydrothermal_vent_microbe', 'Hydrothermal Vent Microbe'), icon: '\uD83E\uDDA0', type: 'Archaea', depth: -15, color: 0xff8800, xp: 18, fact: __alloT('stem.solarsystem.these_extremophiles_thrive_at_400_c_us', 'These extremophiles thrive at 400\u00B0C using chemosynthesis. They may resemble the earliest life on Earth.') },
+                            { name: __alloT('stem.solarsystem.hydrothermal_vent_microbe', 'Hydrothermal Vent Microbe'), icon: '\uD83E\uDDA0', type: 'Archaea', depth: -15, color: 0xff8800, xp: 18, fact: __alloT('stem.solarsystem.these_extremophiles_thrive_at_400_c_us', 'These extremophiles thrive near 400\u00B0C vents using chemosynthesis. They may resemble the earliest life on Earth.') },
                             { name: __alloT('stem.solarsystem.tube_worm_colony', 'Tube Worm Colony'), icon: '\uD83E\uDEB1', type: 'Annelida', depth: -16, color: 0xee3333, xp: 15, fact: __alloT('stem.solarsystem.giant_tube_worms_can_live_250_years_an', 'Giant tube worms can live 250+ years and grow to 2.4m. They have no mouth, stomach, or eyes!') },
-                            { name: __alloT('stem.solarsystem.mariana_snailfish', 'Mariana Snailfish'), icon: '\uD83D\uDC20', type: 'Fish', depth: -24, color: 0xeeddcc, xp: 25, fact: __alloT('stem.solarsystem.the_deepest_living_fish_ever_found_8_1', 'The deepest-living fish ever found (8,178m). Its body has special proteins that prevent cellular collapse under pressure.') },
+                            { name: __alloT('stem.solarsystem.mariana_snailfish', 'Mariana Snailfish'), icon: '\uD83D\uDC20', type: 'Fish', depth: -24, color: 0xeeddcc, xp: 25, fact: __alloT('stem.solarsystem.the_deepest_living_fish_ever_found_8_1', 'One of the deepest-living fish ever found (8,178m). Its body has special proteins that prevent cellular collapse under pressure.') },
                             { name: __alloT('stem.solarsystem.manganese_nodule', 'Manganese Nodule'), icon: '\u26AB', type: 'Mineral', depth: -18, color: 0x333333, xp: 12, fact: __alloT('stem.solarsystem.these_potato_sized_mineral_lumps_take_', 'These potato-sized mineral lumps take millions of years to form and contain cobalt, nickel, and rare earth metals.') },
                             { name: __alloT('stem.solarsystem.marine_snow_sample', 'Marine Snow Sample'), icon: '\u2744\uFE0F', type: 'Organic', depth: -4, color: 0xddddee, xp: 8, fact: __alloT('stem.solarsystem.marine_snow_is_a_shower_of_dead_organi', 'Marine snow is a shower of dead organisms and waste that feeds the deep sea. It can take weeks to reach the bottom.') }
                           ];
@@ -11299,13 +11299,13 @@ const d = labToolData.solarSystem || {};
 
                           // More planet-specific facts
 
-                          sel.name === t('stem.solar_sys.mars') ? '\uD83C\uDF21 Mars has the largest dust storms in the solar system \u2014 they can engulf the entire planet for months.' : sel.name === t('stem.solar_sys.venus') ? '\uD83C\uDF21 Venus rotates backwards (retrograde) so slowly that its day is longer than its year.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDEA8 Jupiter\u2019s core may be a fuzzy mix of metallic hydrogen and dissolved rocky material.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83C\uDF0D Saturn\u2019s density is 0.687 g/cm\u00B3 \u2014 it would float in a bathtub big enough to hold it.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83C\uDF21 Uranus was knocked on its side by an ancient collision with an Earth-sized object.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDEA8 Neptune radiates 2.6x more energy than it receives from the Sun \u2014 its own internal heat drives supersonic winds.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83C\uDF0D Pluto and its moon Charon are tidally locked \u2014 they always show the same face to each other.' : sel.name === t('stem.periodic.mercury') ? '\uD83C\uDF0D Mercury has virtually no atmosphere \u2014 just a thin exosphere of atoms blasted off the surface by solar wind.' : '\uD83E\uDDE0 Every atom in your body was forged inside a star.',
+                          sel.name === t('stem.solar_sys.mars') ? '\uD83C\uDF21 Mars has the largest dust storms in the solar system \u2014 they can engulf the entire planet for months.' : sel.name === t('stem.solar_sys.venus') ? '\uD83C\uDF21 Venus rotates backwards (retrograde) so slowly that its day is longer than its year.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDEA8 Jupiter\u2019s core may be a fuzzy mix of metallic hydrogen and dissolved rocky material.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83C\uDF0D Saturn\u2019s density is 0.687 g/cm\u00B3 \u2014 it would float in a bathtub big enough to hold it.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83C\uDF21 Scientists think an ancient collision with an object at least as big as Earth knocked Uranus on its side.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDEA8 Neptune radiates 2.6x more energy than it receives from the Sun \u2014 its own internal heat drives supersonic winds.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83C\uDF0D Pluto and its moon Charon are tidally locked \u2014 they always show the same face to each other.' : sel.name === t('stem.periodic.mercury') ? '\uD83C\uDF0D Mercury has virtually no atmosphere \u2014 just a thin exosphere of atoms blasted off the surface by solar wind.' : '\uD83E\uDDE0 Every atom in your body was forged inside a star.',
 
                           // Chemistry / science
 
                           '\uD83E\uDDEA Atmosphere: ' + atmosLabel,
 
-                          sel.name === t('stem.solar_sys.mars') ? '\uD83E\uDDEA Mars\u2019s red color comes from iron oxide (rust) in its soil \u2014 the entire planet is literally rusty.' : sel.name === t('stem.solar_sys.venus') ? '\uD83E\uDDEA Venus\u2019s clouds contain sulfuric acid droplets \u2014 rain evaporates before reaching the surface.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDDEA Jupiter\u2019s interior contains metallic hydrogen \u2014 hydrogen so compressed it conducts electricity like a metal.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83E\uDDEA Titan\u2019s thick atmosphere is mostly nitrogen, like Earth\u2019s, but with methane playing the role of water.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83E\uDDEA Methane in Uranus\u2019s upper atmosphere absorbs red light, giving it that distinctive blue-green color.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDDEA Neptune\u2019s vivid blue is from methane \u2014 but a still-unknown compound makes it bluer than Uranus.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83E\uDDEA Tholins on Pluto\u2019s surface are complex organic molecules \u2014 building blocks for prebiotic chemistry.' : sel.name === t('stem.solar_sys.earth') ? '\uD83E\uDDEA Earth\u2019s ozone layer (O\u2083) absorbs 97\u201399% of the Sun\u2019s UV radiation, making life on land possible.' : '\uD83E\uDDEA Mercury\u2019s exosphere contains sodium, pumped off the surface by solar photons.'
+                          sel.name === t('stem.solar_sys.mars') ? '\uD83E\uDDEA Mars\u2019s red color comes from iron oxide (rust) in its soil \u2014 the entire planet is literally rusty.' : sel.name === t('stem.solar_sys.venus') ? '\uD83E\uDDEA Venus\u2019s clouds contain sulfuric acid droplets \u2014 rain evaporates before reaching the surface.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDDEA Jupiter\u2019s interior contains metallic hydrogen \u2014 hydrogen so compressed it conducts electricity like a metal.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83E\uDDEA Titan\u2019s thick atmosphere is mostly nitrogen, like Earth\u2019s, but with methane playing the role of water.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83E\uDDEA Methane in Uranus\u2019s upper atmosphere absorbs red light, giving it that distinctive blue-green color.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDDEA Neptune\u2019s vivid blue is from methane \u2014 but a thinner haze layer lets more blue light through, making it bluer than Uranus.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83E\uDDEA Tholins on Pluto\u2019s surface are complex organic molecules \u2014 building blocks for prebiotic chemistry.' : sel.name === t('stem.solar_sys.earth') ? '\uD83E\uDDEA Earth\u2019s ozone layer (O\u2083) absorbs 97\u201399% of the Sun\u2019s UV radiation, making life on land possible.' : '\uD83E\uDDEA Mercury\u2019s exosphere contains sodium, pumped off the surface by solar photons.'
 
                         ].filter(Boolean);
 
@@ -11390,7 +11390,7 @@ const d = labToolData.solarSystem || {};
                           Venus: ['\uD83C\uDF2C\uFE0F A deep, constant roar of wind and pressure.', '\uD83C\uDF0B Distant rumbling from volcanic activity beneath the surface.', '\uD83C\uDF2C\uFE0F Sulfuric acid rain evaporates far overhead \u2014 it never survives to this scorching surface.'],
                           Earth: ['\uD83C\uDF0A Gentle current hums against the hull. Distant whale song.', '\uD83D\uDCA7 Bubbles rising. The creak of pressure on the hull.', '\uD83D\uDC1F Clicking of shrimp colonies echoes through the water.', '\uD83C\uDF0A Deep groaning of tectonic plates shifting far below.'],
                           Mars: ['\uD83C\uDF2C\uFE0F A thin, eerie whistling of wind through canyon walls.', '\uD83C\uDF2C\uFE0F Sand grains pinging off the rover hull.', '\uD83D\uDD07 Near silence \u2014 Mars\u2019 atmosphere is too thin for most sound.'],
-                          Jupiter: ['\u26A1 Crackling static from the magnetic field.', '\uD83C\uDF2C\uFE0F A deafening roar of hypersonic winds at 360 km/h.', '\u26A1 Deep electromagnetic rumbles from the metallic hydrogen core.'],
+                          Jupiter: ['\u26A1 Crackling static from the magnetic field.', '\uD83C\uDF2C\uFE0F A deafening roar of hurricane-force winds at 360 km/h.', '\u26A1 Deep electromagnetic rumbles from the metallic hydrogen core.'],
                           Saturn: ['\uD83C\uDF2C\uFE0F Gentle whooshing of hydrogen winds.', '\u26A1 Radio emissions from the aurora \u2014 eerie alien tones.', '\uD83E\uDDCA Ring particles creating a distant hiss of impacts.'],
                           Uranus: ['\uD83C\uDF2C\uFE0F A low, constant moan of methane winds.', '\uD83D\uDCA8 Whisper-quiet compared to Jupiter \u2014 but still 900 km/h.', '\uD83D\uDC8E Faint tinkling \u2014 could that be diamond rain?'],
                           Neptune: ['\uD83C\uDF2C\uFE0F The loudest winds in the solar system: a supersonic shriek.', '\u26A1 Electromagnetic pulse from the tilted magnetosphere.', '\uD83C\uDF2C\uFE0F Subsonic rumbles that shake the probe\u2019s instruments.'],
@@ -15252,7 +15252,7 @@ const d = labToolData.solarSystem || {};
                       React.createElement("div", { className: "font-bold text-rose-600" }, (HOHMANN[sel.name].dv1 + HOHMANN[sel.name].dv2).toFixed(1) + " km/s")
                     ),
                     React.createElement("div", { className: "mt-2 text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-200') + " italic" },
-                      __alloT('stem.solarsystem.v_change_in_velocity_earth_s_escape_ve', "\u0394v = change in velocity. Earth\'s escape velocity is 11.2 km/s. The Saturn V rocket achieved about 11.2 km/s.")
+                      __alloT('stem.solarsystem.v_change_in_velocity_earth_s_escape_ve', "\u0394v = change in velocity. Earth\'s escape velocity is 11.2 km/s. The Saturn V rocket reached about 10.8 km/s, just under escape speed, to send Apollo toward the Moon.")
                     )
                   ),
                   // Visual transfer orbit
@@ -15553,7 +15553,7 @@ const d = labToolData.solarSystem || {};
                                       var phase = (d.stellarPhase != null ? d.stellarPhase : 50);
                                       var massChoice = d.stellarMass || 'sun';
                                       var MASS_PROFILES = {
-                                        lowmass: { name: __alloT('stem.solarsystem.red_dwarf_0_3_m', 'Red Dwarf (0.3 M☉)'), color: '#dc2626', lifespan: '100 billion years', stages: [
+                                        lowmass: { name: __alloT('stem.solarsystem.red_dwarf_0_3_m', 'Red Dwarf (0.3 M☉)'), color: '#dc2626', lifespan: 'hundreds of billions of years', stages: [
                                           { at: 0, label: __alloT('stem.solarsystem.protostar', 'Protostar'), size: 30, color: '#fb923c', desc: __alloT('stem.solarsystem.collapsing_hydrogen_cloud', 'Collapsing hydrogen cloud') },
                                           { at: 30, label: __alloT('stem.solarsystem.red_dwarf', 'Red Dwarf'), size: 18, color: '#dc2626', desc: __alloT('stem.solarsystem.slow_hydrogen_burning', 'Slow hydrogen burning') },
                                           { at: 95, label: __alloT('stem.solarsystem.white_dwarf', 'White Dwarf'), size: 8, color: '#e0e7ff', desc: __alloT('stem.solarsystem.cools_forever', 'Cools forever') }
@@ -15664,7 +15664,7 @@ const d = labToolData.solarSystem || {};
                                       var pos = d.moonPhasePos != null ? d.moonPhasePos : 90;
                                       var rad = pos * Math.PI / 180;
                                       var earthX = 200, earthY = 130, orbitR = 70;
-                                      var moonX = earthX + Math.cos(rad) * orbitR;
+                                      var moonX = earthX - Math.cos(rad) * orbitR;
                                       var moonY = earthY + Math.sin(rad) * orbitR;
                                       var phaseNames = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
                                       var phaseIdx = Math.round(((pos + 360) % 360) / 45) % 8;
@@ -15804,8 +15804,8 @@ const d = labToolData.solarSystem || {};
                                       var wind = d.auroraWind != null ? d.auroraWind : 50;
                                       var lat = d.auroraLat != null ? d.auroraLat : 65;
                                       var alt = d.auroraAlt != null ? d.auroraAlt : 100;
-                                      var color = alt < 80 ? '#dc2626' : alt < 150 ? '#22c55e' : alt < 220 ? '#7dd3fc' : '#a78bfa';
-                                      var colorName = alt < 80 ? 'Red (oxygen >250km)' : alt < 150 ? 'Green (oxygen 100-250km)' : alt < 220 ? 'Blue (nitrogen)' : 'Purple (high N2)';
+                                      var color = alt < 100 ? '#a78bfa' : alt < 240 ? '#22c55e' : '#dc2626';
+                                      var colorName = alt < 100 ? 'Purple/Blue (nitrogen <100km)' : alt < 240 ? 'Green (oxygen 100-240km)' : 'Red (oxygen >240km)';
                                       var visibility = wind > 70 && lat > 50 ? 'STRONG — dancing curtains, easy naked-eye' : wind > 40 && lat > 55 ? 'Visible — soft glow on horizon' : 'Too faint — try higher latitude or stronger storm';
                                       var paths = [];
                                       for (var pi = 0; pi < 6; pi++) {
@@ -15944,7 +15944,7 @@ const d = labToolData.solarSystem || {};
                                       var horizonR = 18 + (mass / 100) * 40;
                                       var diskInner = horizonR * 1.3;
                                       var diskOuter = horizonR * 3 + spin * 0.3;
-                                      var massEarth = Math.pow(10, mass / 12).toFixed(1);
+                                      var massEarth = Math.pow(10, 6 + mass / 16).toFixed(1);
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
                                           React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
@@ -15970,7 +15970,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('circle', { cx: 200, cy: 120, r: horizonR, fill: '#000' }),
                                             React.createElement('circle', { cx: 200, cy: 120, r: horizonR + 2, fill: 'none', stroke: '#1e1b4b', strokeWidth: 1 }),
                                             React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 'bold' }, mass < 30 ? 'Stellar Black Hole' : mass < 70 ? 'Intermediate-Mass BH' : 'Supermassive BH'),
-                                            React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, '~ 10^' + (mass / 12).toFixed(1) + ' Earth masses')
+                                            React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, '~ 10^' + (6 + mass / 16).toFixed(1) + ' Earth masses')
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
@@ -16199,7 +16199,7 @@ const d = labToolData.solarSystem || {};
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, year.toFixed(1))
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.the_sun_cycles_every_11_years_between_', 'The Sun cycles every ~11 years between minimum (few sunspots, calm) and maximum (many sunspots, frequent solar flares + CMEs). Current Cycle 25 is rising, peaking ~2025.')
+                                          __alloT('stem.solarsystem.the_sun_cycles_every_11_years_between_', 'The Sun cycles every ~11 years between minimum (few sunspots, calm) and maximum (many sunspots, frequent solar flares + CMEs). Cycle 25 reached its maximum around 2024-2025 and is now declining.')
                                         )
                                       );
                                     })()
@@ -16366,7 +16366,7 @@ const d = labToolData.solarSystem || {};
                   (function() {
                                       var rot = d.dayNightRot != null ? d.dayNightRot : 0;
                                       var season = d.dayNightSeason != null ? d.dayNightSeason : 0;
-                                      var tilt = 23.5 * Math.cos(season * Math.PI / 180);
+                                      var tilt = 23.5 * Math.sin(season * Math.PI / 180);
                                       var cx = 200, cy = 130, r = 80;
                                       var sunDir = -tilt;
                                       return React.createElement('div', null,
@@ -16399,7 +16399,7 @@ const d = labToolData.solarSystem || {};
                                               React.createElement('circle', { cx: cx, cy: cy, r: r, fill: 'url(#earthN)' }),
                                               React.createElement('line', { x1: cx, y1: cy - r - 12, x2: cx, y2: cy + r + 12, stroke: '#cbd5e1', strokeWidth: 0.5, strokeDasharray: '3,3' })
                                             ),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, season < 90 || season > 270 ? 'Northern Summer' : 'Northern Winter'),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, season > 0 && season < 180 ? 'Northern Summer' : 'Northern Winter'),
                                             React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Axis tilt: ' + tilt.toFixed(1) + '° • Hour: ' + Math.floor((rot / 360) * 24) + ':00')
                                           )
                                         ),
@@ -17033,7 +17033,7 @@ const d = labToolData.solarSystem || {};
                                         { t: 4, label: __alloT('stem.solarsystem.recombination_380_000_yr', 'Recombination (380,000 yr)'), desc: __alloT('stem.solarsystem.first_atoms_cmb_photons_released', 'First atoms; CMB photons released') },
                                         { t: 5, label: __alloT('stem.solarsystem.cosmic_dark_ages', 'Cosmic Dark Ages'), desc: __alloT('stem.solarsystem.no_stars_mostly_neutral_hydrogen_dark_', 'No stars; mostly neutral hydrogen + dark matter') },
                                         { t: 6, label: __alloT('stem.solarsystem.first_stars_200_my', 'First stars (200 My)'), desc: __alloT('stem.solarsystem.population_iii_stars_massive_short_liv', 'Population III stars: massive, short-lived') },
-                                        { t: 7, label: __alloT('stem.solarsystem.first_galaxies_500_my', 'First galaxies (500 My)'), desc: __alloT('stem.solarsystem.mergers_create_the_first_galaxy_seeds', 'Mergers create the first galaxy seeds') },
+                                        { t: 7, label: __alloT('stem.solarsystem.first_galaxies_500_my', 'First galaxies (300 My)'), desc: __alloT('stem.solarsystem.mergers_create_the_first_galaxy_seeds', 'Mergers create the first galaxy seeds') },
                                         { t: 8, label: __alloT('stem.solarsystem.galaxy_maturation_1_9_gy', 'Galaxy maturation (1-9 Gy)'), desc: __alloT('stem.solarsystem.most_galaxies_assembled_star_formation', 'Most galaxies assembled; star formation peaks') },
                                         { t: 9, label: __alloT('stem.solarsystem.solar_system_forms_9_gy', 'Solar System forms (9 Gy)'), desc: __alloT('stem.solarsystem.our_sun_and_planets_accrete', 'Our Sun and planets accrete') },
                                         { t: 10, label: __alloT('stem.solarsystem.present_day_13_8_gy', 'Present day (13.8 Gy)'), desc: __alloT('stem.solarsystem.expansion_accelerating_due_to_dark_ene', 'Expansion accelerating due to dark energy') }
@@ -17262,7 +17262,7 @@ const d = labToolData.solarSystem || {};
                                       var magnif = d.scopeMag != null ? d.scopeMag : 50;
                                       var maxMag = aperture * 5;
                                       if (magnif > maxMag) magnif = maxMag;
-                                      var resolveArcsec = 116 / aperture;
+                                      var resolveArcsec = 11.6 / aperture;
                                       var limitMag = 7.5 + 5 * Math.log10(aperture);
                                       var apXp = 20 + aperture * 1.5;
                                       var detail = aperture < 5 ? 'fuzzy blob' : aperture < 12 ? 'cloud bands visible' : aperture < 30 ? 'storm details + moons' : 'fine cloud detail';
@@ -17310,7 +17310,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.aperture_matters_more_than_magnificati', 'Aperture matters more than magnification! Bigger objective gathers more light + resolves finer detail. Magnification beyond 50×/cm aperture just blurs. JWST\'s 6.5 m mirror studies galaxies from the first few hundred million years after the Big Bang.')
+                                          __alloT('stem.solarsystem.aperture_matters_more_than_magnificati', 'Aperture matters more than magnification! Bigger objective gathers more light + resolves finer detail. Magnification beyond about 20x per cm of aperture just blurs. JWST\'s 6.5 m mirror studies galaxies from the first few hundred million years after the Big Bang.')
                                         )
                                       );
                                     })()
@@ -17700,7 +17700,7 @@ const d = labToolData.solarSystem || {};
                                       var DESTS = [
                                         { d: 0.000016, name: __alloT('stem.solarsystem.moon_3', 'Moon'), time: '1.3 seconds (light)', detail: __alloT('stem.solarsystem.384_400_km', '384,400 km') },
                                         { d: 0.00002, name: 'Sun', time: '8 minutes', detail: __alloT('stem.solarsystem.150_million_km', '150 million km') },
-                                        { d: 0.000006, name: __alloT('stem.solarsystem.mars_closest', 'Mars (closest)'), time: '4 minutes', detail: __alloT('stem.solarsystem.78_million_km', '78 million km') },
+                                        { d: 0.000006, name: __alloT('stem.solarsystem.mars_closest', 'Mars (closest)'), time: '3 minutes', detail: __alloT('stem.solarsystem.78_million_km', '56 million km') },
                                         { d: 0.00009, name: __alloT('stem.solarsystem.jupiter_6', 'Jupiter'), time: '43 minutes', detail: __alloT('stem.solarsystem.778_million_km', '778 million km') },
                                         { d: 0.0006, name: __alloT('stem.solarsystem.pluto_4', 'Pluto'), time: '5.5 hours', detail: __alloT('stem.solarsystem.5_9_billion_km', '5.9 billion km') },
                                         { d: 4.24, name: __alloT('stem.solarsystem.proxima_centauri', 'Proxima Centauri'), time: '4.24 years', detail: __alloT('stem.solarsystem.nearest_star', 'Nearest star') },
@@ -17839,9 +17839,9 @@ const d = labToolData.solarSystem || {};
                                       var moon = d.habMoon || 'europa';
                                       var MOONS = {
                                         europa: { name: __alloT('stem.solarsystem.europa_jupiter', 'Europa (Jupiter)'), icyShell: true, ocean: true, life: 'High plausibility', desc: __alloT('stem.solarsystem.subsurface_ocean_has_2_water_of_earth_', 'Subsurface ocean has 2× water of Earth oceans. Hydrothermal vents possible at sea floor. JUICE + Europa Clipper missions ongoing.'), color: '#bfdbfe' },
-                                        enceladus: { name: __alloT('stem.solarsystem.enceladus_saturn', 'Enceladus (Saturn)'), icyShell: true, ocean: true, life: 'Highly plausible', desc: __alloT('stem.solarsystem.cassini_discovered_geysers_spraying_wa', 'Cassini discovered geysers spraying water + organics + hydrogen + silica. Habitable conditions confirmed by chemistry of plumes.'), color: '#f0f9ff' },
+                                        enceladus: { name: __alloT('stem.solarsystem.enceladus_saturn', 'Enceladus (Saturn)'), icyShell: true, ocean: true, life: 'Highly plausible', desc: __alloT('stem.solarsystem.cassini_discovered_geysers_spraying_wa', 'Cassini discovered geysers spraying water + organics + hydrogen + silica. Plume chemistry shows ingredients + energy sources that could support life.'), color: '#f0f9ff' },
                                         titan: { name: __alloT('stem.solarsystem.titan_saturn', 'Titan (Saturn)'), icyShell: false, ocean: true, life: 'Maybe (exotic)', desc: __alloT('stem.solarsystem.thick_atmosphere_of_n2_ch4_lakes_of_li', 'Thick atmosphere of N2 + CH4. Lakes of liquid methane on surface. Water-ammonia ocean below. Life possible but very different.'), color: '#fde047' },
-                                        ganymede: { name: __alloT('stem.solarsystem.ganymede_jupiter', 'Ganymede (Jupiter)'), icyShell: true, ocean: true, life: 'Possible', desc: __alloT('stem.solarsystem.largest_moon_subsurface_ocean_confirme', 'Largest moon. Subsurface ocean confirmed by Hubble. JUICE mission will study it.'), color: 'var(--allo-stem-text, #cbd5e1)' },
+                                        ganymede: { name: __alloT('stem.solarsystem.ganymede_jupiter', 'Ganymede (Jupiter)'), icyShell: true, ocean: true, life: 'Possible', desc: __alloT('stem.solarsystem.largest_moon_subsurface_ocean_confirme', 'Largest moon. Strong Hubble evidence for a subsurface ocean. JUICE mission will study it.'), color: 'var(--allo-stem-text, #cbd5e1)' },
                                         callisto: { name: __alloT('stem.solarsystem.callisto_jupiter', 'Callisto (Jupiter)'), icyShell: true, ocean: 'maybe', life: 'Less likely', desc: __alloT('stem.solarsystem.oldest_visible_surface_in_solar_system', 'Oldest visible surface in solar system. Possible subsurface ocean. Lower radiation than other Jovian moons.'), color: 'var(--allo-stem-text-soft, #94a3b8)' },
                                         io: { name: __alloT('stem.solarsystem.io_jupiter', 'Io (Jupiter)'), icyShell: false, ocean: false, life: 'No', desc: __alloT('stem.solarsystem.most_volcanically_active_body_in_solar', 'Most volcanically active body in solar system. 400+ active volcanoes. Sulfur dioxide atmosphere. Not habitable.'), color: '#fde047' }
                                       };
@@ -18008,7 +18008,7 @@ const d = labToolData.solarSystem || {};
                                               );
                                             }),
                                             React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, __alloT('stem.solarsystem.hubble_deep_field_simulated', 'Hubble Deep Field (simulated)')),
-                                            React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.solarsystem.each_fuzzy_blob_is_a_galaxy_of_100_bil', 'Each fuzzy blob is a galaxy of 100+ billion stars'))
+                                            React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.solarsystem.each_fuzzy_blob_is_a_galaxy_of_100_bil', 'Each fuzzy blob is a galaxy of millions to hundreds of billions of stars'))
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
@@ -18416,7 +18416,7 @@ const d = labToolData.solarSystem || {};
                                               return React.createElement('rect', { key: 'px' + pi, x: p.x, y: p.y, width: 5, height: 4, fill: p.color, opacity: 0.85 });
                                             }),
                                             React.createElement('text', { x: 200, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, __alloT('stem.solarsystem.cosmic_microwave_background_simulated', 'Cosmic Microwave Background (simulated)')),
-                                            React.createElement('text', { x: 200, y: 250, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.solarsystem.temperature_fluctuations_of_0_0001_see', 'Temperature fluctuations of 0.0001% — seeds of all structure'))
+                                            React.createElement('text', { x: 200, y: 250, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.solarsystem.temperature_fluctuations_of_0_0001_see', 'Temperature fluctuations of about 0.001% \u2014 seeds of all structure'))
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
@@ -18425,7 +18425,7 @@ const d = labToolData.solarSystem || {};
                                           React.createElement('span', { className: 'text-[10px] font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, contrast + '%')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.the_cmb_is_leftover_light_from_380_000', 'The CMB is leftover light from 380,000 years after the Big Bang. Tiny temperature variations show where matter was slightly denser. Those denser spots grew into all galaxies + stars we see today. Discovered accidentally by Penzias + Wilson (1965 Nobel Prize).')
+                                          __alloT('stem.solarsystem.the_cmb_is_leftover_light_from_380_000', 'The CMB is leftover light from 380,000 years after the Big Bang. Tiny temperature variations show where matter was slightly denser. Those denser spots grew into all galaxies + stars we see today. Discovered accidentally by Penzias + Wilson in 1965 (Nobel Prize 1978).')
                                         )
                                       );
                                     })()
@@ -18935,7 +18935,7 @@ const d = labToolData.solarSystem || {};
                                               return React.createElement('circle', { key: 'hsw' + hi, cx: 200 + Math.cos(a) * 80, cy: 140 + Math.sin(a) * 80, r: 4, fill: '#dc2626' });
                                             }),
                                             React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, __alloT('stem.solarsystem.saturn_s_hexagonal_pole_storm', 'Saturn\'s Hexagonal Pole Storm')),
-                                            React.createElement('text', { x: 200, y: 265, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.solarsystem.persistent_feature_30_000_km_wide_5_ea', 'Persistent feature 30,000 km wide — 5× Earth diameter'))
+                                            React.createElement('text', { x: 200, y: 265, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.solarsystem.persistent_feature_30_000_km_wide_5_ea', 'Persistent feature 30,000 km wide \u2014 more than 2x Earth diameter'))
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
@@ -19007,7 +19007,7 @@ const d = labToolData.solarSystem || {};
                       (d.showLG ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showLG ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.80_galaxies_span_10_million_light_year', "80 galaxies span 10 million light-years around us. Milky Way + Andromeda will collide in 4 billion years.")),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.80_galaxies_span_10_million_light_year', "80 galaxies span 10 million light-years around us. Milky Way + Andromeda may collide in about 4-5 billion years \u2014 2025 studies put the odds near 50/50.")),
                 d.showLG && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var members = [
@@ -19041,7 +19041,7 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.our_local_group_has_80_galaxies_domina', 'Our Local Group has ~80 galaxies dominated by Milky Way + Andromeda. Andromeda is approaching at 110 km/s — collision expected in 4 billion years. Result: Milkomeda mega-galaxy.')
+                                          __alloT('stem.solarsystem.our_local_group_has_80_galaxies_domina', 'Our Local Group has ~80 galaxies dominated by Milky Way + Andromeda. Andromeda is approaching at 110 km/s — a collision is possible in about 4-5 billion years. If it happens: Milkomeda mega-galaxy.')
                                         )
                                       );
                                     })()
@@ -19240,7 +19240,7 @@ const d = labToolData.solarSystem || {};
                                       var a = 100;
                                       var b = a * Math.sqrt(1 - ecc * ecc);
                                       var c = a * ecc;
-                                      var orbitType = ecc < 0.5 ? 'Near-circular (planet-like)' : ecc < 0.85 ? 'Short-period comet' : ecc < 0.98 ? 'Long-period comet' : 'Near-parabolic (1-orbit only)';
+                                      var orbitType = ecc < 0.5 ? 'Near-circular (planet-like)' : ecc < 0.85 ? 'Short-period comet' : ecc < 0.98 ? 'Long-period comet' : 'Near-parabolic (returns after millennia)';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
                                           React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
@@ -19569,7 +19569,7 @@ const d = labToolData.solarSystem || {};
                                         { f: 'Saturn would float in water', d: 'Saturn\'s density is only 0.69 g/cm³ — less than water (1.0). It would float (in a bathtub the size of Saturn)!', icon: '🪐' },
                                         { f: 'Mauna Kea is the tallest mountain', d: 'From base to summit, Mauna Kea is 33,500 ft tall — taller than Everest. But it\'s mostly underwater.', icon: '⛰' },
                                         { f: 'Jupiter has 115 known moons', d: 'And counting. New moons are still being discovered. The four big ones (Galilean moons) are visible with binoculars.', icon: '🪐' },
-                                        { f: 'Earth weighs ~5.97 × 10^24 kg', d: 'About 6 trillion trillion kilograms. Newton calculated this using gravitational mechanics around 1687.', icon: '🌍' },
+                                        { f: 'Earth weighs ~5.97 × 10^24 kg', d: 'About 6 trillion trillion kilograms. Henry Cavendish first measured this with a torsion-balance experiment in 1798.', icon: '🌍' },
                                         { f: 'There are 200 billion-trillion stars', d: '200,000,000,000,000,000,000,000 estimated stars in the observable universe. More stars than grains of sand on all Earth\'s beaches.', icon: '⭐' },
                                         { f: 'The Sun loses 4 million tons per second', d: 'Through nuclear fusion converting mass to energy. The Sun has been doing this for 4.6 billion years.', icon: '☀' },
                                         { f: 'Earth has 2 trojan asteroids', d: 'They co-orbit Earth at the L4 + L5 Lagrange points. Discovered 2010 + 2020.', icon: '☄' },
@@ -19682,7 +19682,7 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.gas_giants_spin_fast_because_of_how_th', 'Gas giants spin fast because of how they formed. Venus rotates slowest, possibly due to a tidal lock with Sun + thick atmosphere drag. Earth slows down by ~1.7 milliseconds per century due to Moon\'s gravity.')
+                                          __alloT('stem.solarsystem.gas_giants_spin_fast_because_of_how_th', 'Gas giants spin fast because of how they formed. Venus rotates slowest, possibly due to solar tides + thick atmosphere drag. Earth slows down by ~1.7 milliseconds per century due to Moon\'s gravity.')
                                         )
                                       );
                                     })()
@@ -19714,7 +19714,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('circle', { cx: 200 + lon * 2, cy: 110 - lat, r: 4, fill: '#dc2626' }),
                                             React.createElement('text', { x: 200 + lon * 2, y: 100 - lat, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'You'),
                                             React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, __alloT('stem.solarsystem.april_8_2024_total_solar_eclipse_path', 'April 8, 2024 Total Solar Eclipse path')),
-                                            React.createElement('text', { x: 200, y: 205, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, inMaine ? '✨ YOU ARE IN THE PATH OF TOTALITY (Maine had partial)' : 'Move to the path of totality')
+                                            React.createElement('text', { x: 200, y: 205, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, inMaine ? '✨ YOU ARE IN THE PATH OF TOTALITY (northern Maine had totality)' : 'Move to the path of totality')
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
@@ -19730,7 +19730,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.total_solar_eclipses_only_happen_along', 'Total solar eclipses only happen along narrow paths ~100-150 km wide. April 8, 2024 eclipse crossed northern Maine — many Mainers traveled north for totality. Next total eclipse in Maine: not for centuries!')
+                                          __alloT('stem.solarsystem.total_solar_eclipses_only_happen_along', 'Total solar eclipses only happen along narrow paths ~100-150 km wide. April 8, 2024 eclipse crossed northern Maine — many Mainers traveled north for totality. Next total eclipse visible from Maine: May 1, 2079.')
                                         )
                                       );
                                     })()
@@ -19753,7 +19753,7 @@ const d = labToolData.solarSystem || {};
                                       var idx = d.calIdx || 0;
                                       var CAL = [
                                         { date: 'Jan 1', event: 'Big Bang', desc: __alloT('stem.solarsystem.13_8_billion_years_ago', '13.8 billion years ago') },
-                                        { date: 'Mar 16', event: 'First galaxies form', desc: __alloT('stem.solarsystem.10_billion_years_ago', '~10 billion years ago') },
+                                        { date: 'Jan 22', event: 'First galaxies form', desc: __alloT('stem.solarsystem.10_billion_years_ago', '~13 billion years ago') },
                                         { date: 'May 1', event: 'Milky Way forms', desc: __alloT('stem.solarsystem.8_billion_years_ago', '~8 billion years ago') },
                                         { date: 'Sep 9', event: 'Sun + Earth form', desc: __alloT('stem.solarsystem.4_6_billion_years_ago', '4.6 billion years ago') },
                                         { date: 'Sep 14', event: 'First life on Earth', desc: __alloT('stem.solarsystem.4_billion_years_ago', '~4 billion years ago') },
@@ -19762,7 +19762,7 @@ const d = labToolData.solarSystem || {};
                                         { date: 'Dec 14', event: 'Dinosaurs appear', desc: __alloT('stem.solarsystem.250_million_years_ago', '~250 million years ago') },
                                         { date: 'Dec 25', event: 'Mammals diversify', desc: __alloT('stem.solarsystem.66_million_years_ago', '~66 million years ago') },
                                         { date: 'Dec 30 noon', event: 'First primates', desc: __alloT('stem.solarsystem.50_million_years_ago', '~50 million years ago') },
-                                        { date: 'Dec 31 11pm', event: 'Homo sapiens', desc: __alloT('stem.solarsystem.200_000_years_ago', '~200,000 years ago') },
+                                        { date: 'Dec 31 11pm', event: 'Homo sapiens', desc: __alloT('stem.solarsystem.200_000_years_ago', '~300,000 years ago') },
                                         { date: 'Dec 31 11:59:46', event: 'Recorded history begins', desc: __alloT('stem.solarsystem.5_000_years_ago', '~5,000 years ago') },
                                         { date: 'Dec 31 11:59:59.9', event: 'Industrial revolution + space age', desc: __alloT('stem.solarsystem.200_years_ago', '~200 years ago') }
                                       ];
@@ -19877,7 +19877,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.a_dozen_of_the_world_s_most_powerful_t', 'A dozen of the world\'s most powerful telescopes. Aperture (mm) is the diameter of the primary mirror. Bigger aperture = more light + finer detail. Space telescopes avoid atmospheric distortion.')
+                                          __alloT('stem.solarsystem.a_dozen_of_the_world_s_most_powerful_t', 'A dozen of the world\'s most powerful telescopes. Aperture (cm) is the diameter of the primary mirror. Bigger aperture = more light + finer detail. Space telescopes avoid atmospheric distortion.')
                                         )
                                       );
                                     })()
@@ -20149,7 +20149,7 @@ const d = labToolData.solarSystem || {};
                                         ['Accretion disk', 'Matter spiraling into the black hole, heated to millions of degrees.'],
                                         ['Photon sphere', 'Region where light can orbit the black hole in unstable circles.'],
                                         ['Spaghettification', 'Tidal forces stretch infalling matter into long thin shapes.'],
-                                        ['Hawking radiation', 'Quantum effect that lets black holes slowly evaporate over trillions of years.'],
+                                        ['Hawking radiation', 'Quantum effect that lets black holes slowly evaporate over timescales vastly longer than the age of the universe.'],
                                         ['Ergosphere', 'Region around spinning black hole where space itself rotates.'],
                                         ['Relativistic jet', 'Stream of particles launched at near-light speed from poles of accretion disk.'],
                                         ['Sagittarius A*', 'Supermassive black hole at center of Milky Way (4 million solar masses).']
@@ -20300,7 +20300,7 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.magnitudes_count_backward_smaller_brig', 'Magnitudes count BACKWARD: smaller = brighter. Each step of 5 = 100× brighter. Hipparchus invented in 130 BCE. Sun: -26.7. JWST sees to mag 34. Reach: 100^((34-(-26))/5) ≈ 10^48 times the Sun.')
+                                          __alloT('stem.solarsystem.magnitudes_count_backward_smaller_brig', 'Magnitudes count BACKWARD: smaller = brighter. Each step of 5 = 100× brighter. Hipparchus invented in 130 BCE. Sun: -26.7. JWST sees to mag 34. Reach: 100^((34-(-26))/5) \u2248 10^24 times fainter than the Sun.')
                                         )
                                       );
                                     })()
@@ -20362,7 +20362,7 @@ const d = labToolData.solarSystem || {};
                                       var BN = [
                                         { val: '1', what: 'Sun in our solar system' },
                                         { val: '8', what: 'Planets (per modern IAU)' },
-                                        { val: '~200', what: 'Moons known in solar system' },
+                                        { val: '400+', what: 'Moons known in solar system' },
                                         { val: '10⁶', what: 'Asteroids tracked in main belt' },
                                         { val: '10¹⁰', what: 'Comets in Oort Cloud (estimated)' },
                                         { val: '10¹¹', what: 'Stars in the Milky Way' },
@@ -20544,7 +20544,7 @@ const d = labToolData.solarSystem || {};
                                         { date: '2026 Aug 12', type: 'Solar total', where: 'Iceland, Spain', notes: 'Total at sunset over Atlantic' },
                                         { date: '2027 Aug 2', type: 'Solar total', where: 'N Africa, Saudi Arabia', notes: 'Longest of 21st century: 6 min 23 sec' },
                                         { date: '2028 Jul 22', type: 'Solar total', where: 'Australia', notes: 'Total across continent' },
-                                        { date: '2030 Nov 14', type: 'Solar total', where: 'Africa, Madagascar', notes: '' },
+                                        { date: '2030 Nov 25', type: 'Solar total', where: 'Southern Africa, Australia', notes: '' },
                                         { date: '2079 May 1', type: 'Solar total', where: 'Maine, USA', notes: 'Next total solar eclipse in Maine!' }
                                       ];
                                       return React.createElement('div', null,
@@ -20561,7 +20561,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.total_solar_eclipses_are_rare_about_2_', 'Total solar eclipses are rare. About 2 per year somewhere on Earth, but each visible from only a narrow path. Lunar eclipses are visible across the whole night side.')
+                                          __alloT('stem.solarsystem.total_solar_eclipses_are_rare_about_2_', 'Total solar eclipses are rare. About one every 18 months somewhere on Earth, but each visible from only a narrow path. Lunar eclipses are visible across the whole night side.')
                                         )
                                       );
                                     })()
@@ -20606,7 +20606,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.edwin_hubble_classified_galaxies_in_19', 'Edwin Hubble classified galaxies in 1936 — "Hubble tuning fork." Spirals + ellipticals + irregulars. Galaxies evolve via mergers — Milky Way is in mid-life, Andromeda merger in 4 billion years.')
+                                          __alloT('stem.solarsystem.edwin_hubble_classified_galaxies_in_19', 'Edwin Hubble classified galaxies in 1936 — "Hubble tuning fork." Spirals + ellipticals + irregulars. Galaxies evolve via mergers \u2014 the Milky Way is in mid-life; a merger with Andromeda may come in billions of years (2025 studies put the odds near 50/50).')
                                         )
                                       );
                                     })()
@@ -20740,7 +20740,7 @@ const d = labToolData.solarSystem || {};
                                         { q: 'Is space infinite?', a: 'Observable universe is 93 billion ly across. Total universe could be infinite or finite. We can\'t see beyond cosmic horizon.' },
                                         { q: 'How many universes?', a: 'Maybe one. Maybe infinite (multiverse). String theory + inflation theory both suggest more.' },
                                         { q: 'Could humans live on Mars?', a: 'Not without artificial habitats. Surface pressure 100× too low, temperature -65°C avg, atmosphere is unbreathable CO2.' },
-                                        { q: 'Will Andromeda collide with us?', a: 'In ~4 billion years. Combined galaxy nicknamed \'Milkomeda.\' Sun + Earth probably won\'t be directly affected — but Earth orbit may change.' }
+                                        { q: 'Will Andromeda collide with us?', a: 'Maybe \u2014 2025 studies give roughly 50/50 odds within 10 billion years. Combined galaxy nicknamed \'Milkomeda.\' Sun + Earth probably won\'t be directly affected — but Earth orbit may change.' }
                                       ];
                                       var cur = Q[idx % Q.length];
                                       return React.createElement('div', null,
@@ -20800,7 +20800,7 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.side_by_side_comparison_of_key_planet_', 'Side-by-side comparison of key planet properties. Earth = baseline. Sun is 1000× Earth radius. Jupiter has 115 known moons. Venus rotates so slowly its day exceeds its year.')
+                                          __alloT('stem.solarsystem.side_by_side_comparison_of_key_planet_', 'Side-by-side comparison of key planet properties. Earth = baseline. Sun is about 109x Earth diameter (over a million times its volume). Jupiter has 115 known moons. Venus rotates so slowly its day exceeds its year.')
                                         )
                                       );
                                     })()
@@ -21072,7 +21072,7 @@ const d = labToolData.solarSystem || {};
                                         { tier: '$200', name: __alloT('stem.solarsystem.beginner_telescope', 'Beginner Telescope'), desc: __alloT('stem.solarsystem.celestron_starsense_explorer_102_or_or', 'Celestron StarSense Explorer 102 or Orion 4.5" Newtonian.') },
                                         { tier: '$500', name: __alloT('stem.solarsystem.better_telescope', 'Better Telescope'), desc: __alloT('stem.solarsystem.celestron_nexstar_8se_or_apertura_ad8_', 'Celestron NexStar 8SE or Apertura AD8 Dobsonian.') },
                                         { tier: 'Free', name: __alloT('stem.solarsystem.local_astronomy_club', 'Local astronomy club'), desc: __alloT('stem.solarsystem.most_cities_have_one_members_lend_scop', 'Most cities have one. Members lend scopes, teach, run star parties.') },
-                                        { tier: 'Free', name: __alloT('stem.solarsystem.dark_site', 'Dark site'), desc: __alloT('stem.solarsystem.drive_30_min_from_city_lights_maine_is', 'Drive 30+ min from city lights. Maine is full of them. Acadia is a Dark Sky Park.') }
+                                        { tier: 'Free', name: __alloT('stem.solarsystem.dark_site', 'Dark site'), desc: __alloT('stem.solarsystem.drive_30_min_from_city_lights_maine_is', 'Drive 30+ min from city lights. Maine is full of them. Katahdin Woods and Waters is a certified dark-sky sanctuary.') }
                                       ];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'space-y-1' },
@@ -21087,7 +21087,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.most_important_tool_dark_sky_light_pol', 'Most important tool: dark sky. Light pollution wipes out 90% of stars. Acadia NP, Allagash Wilderness, Mt Mansfield (VT), Baxter SP — all International Dark Sky Parks.')
+                                          __alloT('stem.solarsystem.most_important_tool_dark_sky_light_pol', 'Most important tool: dark sky. Light pollution wipes out 90% of stars. Katahdin Woods and Waters NM and AMC Maine Woods are certified International Dark Sky places; Acadia and Baxter also offer superb dark skies.')
                                         )
                                       );
                                     })()
@@ -21156,7 +21156,7 @@ const d = labToolData.solarSystem || {};
                                         { unit: '384,000 km', what: 'Earth-Moon distance' },
                                         { unit: '150,000,000 km (1 AU)', what: 'Earth-Sun distance' },
                                         { unit: '4.5 billion km (30 AU)', what: 'Neptune\'s orbit' },
-                                        { unit: '1 light-year', what: '~63,000 AU. 1 AU/day for 365 days' },
+                                        { unit: '1 light-year', what: '~63,000 AU. Light covers ~173 AU each day' },
                                         { unit: '4.2 ly', what: 'Distance to Proxima Centauri (nearest star)' },
                                         { unit: '~100,000 ly', what: 'Milky Way diameter' },
                                         { unit: '2.5 million ly', what: 'Andromeda Galaxy' },
@@ -21213,7 +21213,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.maine_has_fantastic_dark_skies_especia', 'Maine has fantastic dark skies — especially north of the cities. Acadia NP, Allagash Wilderness, Baxter SP, and Cobscook State Park are all IDA Dark Sky locations. Winter nights are long + crystal-clear.')
+                                          __alloT('stem.solarsystem.maine_has_fantastic_dark_skies_especia', 'Maine has fantastic dark skies — especially north of the cities. Katahdin Woods and Waters NM and AMC Maine Woods are certified International Dark Sky places; Acadia, Allagash, Baxter, and Cobscook are also wonderfully dark. Winter nights are long + crystal-clear.')
                                         )
                                       );
                                     })()
@@ -21237,7 +21237,7 @@ const d = labToolData.solarSystem || {};
                                         { date: 'Jan 2024', what: 'SLIM (Japan) lands on Moon — 5th country to land' },
                                         { date: 'Feb 2024', what: 'Odysseus (US) lands on Moon — first private lander to make it' },
                                         { date: 'Apr 2024', what: 'Total solar eclipse crosses Maine + N America' },
-                                        { date: 'Jun 2024', what: 'NASA Europa Clipper launches toward Jupiter\'s moon Europa' },
+                                        { date: 'Oct 2024', what: 'NASA Europa Clipper launches toward Jupiter\'s moon Europa' },
                                         { date: 'Oct 2024', what: 'ESA Hera mission launches to study DART impact aftermath' },
                                         { date: '2025+', what: 'JWST deepens early-galaxy surveys' },
                                         { date: '2025-2026', what: 'Artemis II — first crewed Moon mission since 1972' },
@@ -21280,7 +21280,7 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
                                           React.createElement('div', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, __alloT('stem.solarsystem.solar_system_stats', 'Solar System Stats')),
                                           React.createElement('div', { className: 'grid grid-cols-2 gap-2 text-[11px]' },
-                                            [['Age', '4.6 billion years'], ['Sun mass', '99.86% of total'], ['Planets', '8'], ['Dwarf planets', '5 + many more'], ['Moons (planets)', '288'], ['Known asteroids', '1,000,000+'], ['Comets', '4000+ known'], ['Kuiper Belt obj', '70,000 est.'], ['Oort Cloud obj', '~trillion'], ['Total mass', '~1.0014 M☉']].map(function(s, si) {
+                                            [['Age', '4.6 billion years'], ['Sun mass', '99.86% of total'], ['Planets', '8'], ['Dwarf planets', '5 + many more'], ['Moons (planets)', '400+'], ['Known asteroids', '1,000,000+'], ['Comets', '4000+ known'], ['Kuiper Belt obj', '70,000 est.'], ['Oort Cloud obj', '~trillion'], ['Total mass', '~1.0014 M☉']].map(function(s, si) {
                                               return React.createElement('div', { key: si, className: 'p-1.5 rounded ' + (isDark ? 'bg-slate-800' : 'bg-white') },
                                                 React.createElement('div', { className: 'font-bold text-[10px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, s[0]),
                                                 React.createElement('div', { className: 'text-[11px] font-mono ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, s[1])
@@ -21390,7 +21390,7 @@ const d = labToolData.solarSystem || {};
                                           React.createElement('div', { className: 'text-5xl text-center mb-3' }, '🚀✨🌌'),
                                           React.createElement('h3', { className: 'text-center text-lg font-bold mb-3 ' + (isDark ? 'text-amber-300' : 'text-purple-800') }, __alloT('stem.solarsystem.keep_looking_up', 'Keep Looking Up')),
                                           React.createElement('div', { className: 'text-[11px] space-y-2 ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
-                                            React.createElement('div', { className: 'italic' }, '"The same atoms in your body were forged in stars. The water in your veins fell from comets billions of years ago. You are not separate from the cosmos — you are how it knows itself."'),
+                                            React.createElement('div', { className: 'italic' }, '"The same atoms in your body were forged in stars. Much of the water in your veins likely rode in on ancient asteroids and comets billions of years ago. You are not separate from the cosmos — you are how it knows itself."'),
                                             React.createElement('div', { className: 'mt-3 text-[10px] not-italic font-bold' }, __alloT('stem.solarsystem.40_interactive_tools_to_explore_in_thi', '40+ interactive tools to explore in this app. Each opens a new window on something cosmic.'))
                                           )
                                         )
@@ -21463,7 +21463,7 @@ const d = labToolData.solarSystem || {};
                                         'Mercury\'s day is longer than its year. Day = 176 Earth days; year = 88 Earth days.',
                                         'Venus is hotter than Mercury despite being farther from the Sun — runaway greenhouse effect.',
                                         'Mars sunsets are blue (not red like ours), due to fine dust filtering.',
-                                        'Jupiter\'s Great Red Spot is shrinking — was 30,000 mi wide in 1979, now ~10,000 mi.',
+                                        'Jupiter\'s Great Red Spot is shrinking — was ~25,000 mi wide in the late 1800s and ~14,500 mi in 1979, now ~10,000 mi.',
                                         'Saturn has hexagonal storm at north pole, persistent for at least 30 years.',
                                         'Uranus rotates on its side — axial tilt 98 degrees.',
                                         'Neptune has the strongest winds — up to 2,100 km/h.',
