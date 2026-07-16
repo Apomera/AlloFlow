@@ -1,0 +1,2029 @@
+[
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b1-065",
+  "item": {
+   "id": "core5752-b1-065",
+   "type": "single-choice",
+   "domainId": "math-number-quantity",
+   "difficulty": "application",
+   "prompt": "Evaluate 3/4 + 5/8 and express the result in simplest form.",
+   "choices": [
+    "1 3/8",
+    "1 1/8",
+    "8/12",
+    "3/8"
+   ],
+   "answerIndex": 0,
+   "rationale": "Convert three-fourths to six-eighths so both fractions share a denominator. Then 6/8 + 5/8 = 11/8, which is 1 3/8 in mixed-number form. Renaming to eighths keeps the parts the same size, so only the numerators are added.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. Convert three-fourths to six-eighths so both fractions share a denominator. Then 6/8 + 5/8 = 11/8, which is 1 3/8 in mixed-number form. Renaming to eighths keeps the parts the same size, so only the numerators are added.",
+    "Not the best answer. 1 1/8 does not match the required calculation or conclusion. Convert three-fourths to sixth-eighths. Then 6/8 + 5/8 = 11/8, which is 1 3/8 in mixed-number form.",
+    "Not the best answer. 8/12 does not match the required calculation or conclusion. Convert three-fourths to sixth-eighths. Then 6/8 + 5/8 = 11/8, which is 1 3/8 in mixed-number form.",
+    "Not the best answer. 3/8 does not match the required calculation or conclusion. Convert three-fourths to sixth-eighths. Then 6/8 + 5/8 = 11/8, which is 1 3/8 in mixed-number form."
+   ],
+   "skillIds": [
+    "math-number-operations"
+   ],
+   "chapterIds": [
+    "core5752-ch-07"
+   ]
+  }
+ },
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b1-069",
+  "item": {
+   "id": "core5752-b1-069",
+   "type": "single-choice",
+   "domainId": "math-number-quantity",
+   "difficulty": "application",
+   "prompt": "A temperature rises from -7 degrees to 5 degrees. What is the change?",
+   "choices": [
+    "12",
+    "-12",
+    "2",
+    "14"
+   ],
+   "answerIndex": 0,
+   "rationale": "Change equals final value minus initial value: 5 - (-7) = 5 + 7 = 12 degrees. Subtracting a negative is the same as adding its opposite, which the rise from -7 up through 0 to 5 confirms on a number line.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. Change equals final value minus initial value: 5 - (-7) = 5 + 7 = 12 degrees. Subtracting a negative is the same as adding its opposite, which the rise from -7 up through 0 to 5 confirms on a number line.",
+    "Not the best answer. -12 does not match the required calculation or conclusion. Change equals final value minus initial value: 5 - (-7) = 5 + 7 = 12 degrees.",
+    "Not the best answer. 2 does not match the required calculation or conclusion. Change equals final value minus initial value: 5 - (-7) = 5 + 7 = 12 degrees.",
+    "Not the best answer. 14 does not match the required calculation or conclusion. Change equals final value minus initial value: 5 - (-7) = 5 + 7 = 12 degrees."
+   ],
+   "skillIds": [
+    "math-number-operations"
+   ],
+   "chapterIds": [
+    "core5752-ch-07"
+   ]
+  }
+ },
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b1-071",
+  "item": {
+   "id": "core5752-b1-071",
+   "type": "single-choice",
+   "domainId": "math-number-quantity",
+   "difficulty": "application",
+   "prompt": "A recipe uses 3 cups of flour for 2 batches. At the same rate, how much flour is needed for 5 batches?",
+   "choices": [
+    "3.3",
+    "6",
+    "7.5",
+    "10"
+   ],
+   "answerIndex": 2,
+   "rationale": "The unit rate is 3/2 = 1.5 cups per batch. Multiplying 1.5 by 5 batches gives 7.5 cups. Scaling the unit rate keeps the cups-to-batches ratio constant for any number of batches.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. 3.3 does not match the required calculation or conclusion. The unit rate is 3/2 = 1.5 cups per batch. Multiplying 1.5 by 5 batches gives 7.5 cups.",
+    "Not the best answer. 6 does not match the required calculation or conclusion. The unit rate is 3/2 = 1.5 cups per batch. Multiplying 1.5 by 5 batches gives 7.5 cups.",
+    "Correct. The unit rate is 3/2 = 1.5 cups per batch. Multiplying 1.5 by 5 batches gives 7.5 cups. Scaling the unit rate keeps the cups-to-batches ratio constant for any number of batches.",
+    "Not the best answer. 10 does not match the required calculation or conclusion. The unit rate is 3/2 = 1.5 cups per batch. Multiplying 1.5 by 5 batches gives 7.5 cups."
+   ],
+   "skillIds": [
+    "math-ratios-percent-measurement"
+   ],
+   "chapterIds": [
+    "core5752-ch-08"
+   ]
+  }
+ },
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b1-083",
+  "item": {
+   "id": "core5752-b1-083",
+   "type": "single-choice",
+   "domainId": "math-data-statistics-probability",
+   "difficulty": "application",
+   "prompt": "What is the range of 4, 9, 11, 15, and 18?",
+   "choices": [
+    "9",
+    "11.4",
+    "14",
+    "22"
+   ],
+   "answerIndex": 2,
+   "rationale": "Range measures the spread of a data set: subtract the minimum from the maximum. For these values the maximum is 18 and the minimum is 4, so the range is 18 - 4 = 14.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. 9 does not match the required calculation or conclusion. Range is maximum minus minimum. For these values, 18 - 4 = 14.",
+    "Not the best answer. 11.4 does not match the required calculation or conclusion. Range is maximum minus minimum. For these values, 18 - 4 = 14.",
+    "Correct. Range measures the spread of a data set: subtract the minimum from the maximum. For these values the maximum is 18 and the minimum is 4, so the range is 18 - 4 = 14.",
+    "Not the best answer. 22 does not match the required calculation or conclusion. Range is maximum minus minimum. For these values, 18 - 4 = 14."
+   ],
+   "skillIds": [
+    "math-statistics-probability"
+   ],
+   "chapterIds": [
+    "core5752-ch-10"
+   ]
+  }
+ },
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b1-088",
+  "item": {
+   "id": "core5752-b1-088",
+   "type": "single-choice",
+   "domainId": "math-data-statistics-probability",
+   "difficulty": "application",
+   "prompt": "From 500 records, a researcher randomly samples 50. What fraction of the records is sampled?",
+   "choices": [
+    "1%",
+    "20%",
+    "50%",
+    "10%"
+   ],
+   "answerIndex": 3,
+   "rationale": "The sampled fraction is the sample size over the population size: 50/500 = 1/10, which is 0.10 or 10 percent. Simplifying the ratio before converting makes the percent immediate.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. 1% does not match the required calculation or conclusion. The sampled fraction is 50/500 = 1/10, which is 0.10 or 10 percent.",
+    "Not the best answer. 20% does not match the required calculation or conclusion. The sampled fraction is 50/500 = 1/10, which is 0.10 or 10 percent.",
+    "Not the best answer. 50% does not match the required calculation or conclusion. The sampled fraction is 50/500 = 1/10, which is 0.10 or 10 percent.",
+    "Correct. The sampled fraction is the sample size over the population size: 50/500 = 1/10, which is 0.10 or 10 percent. Simplifying the ratio before converting makes the percent immediate."
+   ],
+   "skillIds": [
+    "math-statistics-probability"
+   ],
+   "chapterIds": [
+    "core5752-ch-10"
+   ]
+  }
+ },
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b1-094",
+  "item": {
+   "id": "core5752-b1-094",
+   "type": "single-choice",
+   "domainId": "math-algebra-geometry",
+   "difficulty": "application",
+   "prompt": "Solve the inequality 2x - 5 > 9. Select the best answer and verify the result.",
+   "choices": [
+    "x < 7",
+    "x > 7",
+    "x > 2",
+    "x < 14"
+   ],
+   "answerIndex": 1,
+   "rationale": "Add 5 to both sides to obtain 2x > 14, then divide both sides by positive 2 to get x > 7. Because the divisor is positive, the inequality keeps its direction. Check: x = 8 gives 2(8) - 5 = 11 > 9.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. x < 7 does not match the required calculation or conclusion. Add 5 to both sides to obtain 2x > 14, then divide by positive 2. The solution is x > 7.",
+    "Correct. Add 5 to both sides to obtain 2x > 14, then divide both sides by positive 2 to get x > 7. Because the divisor is positive, the inequality keeps its direction. Check: x = 8 gives 2(8) - 5 = 11 > 9.",
+    "Not the best answer. x > 2 does not match the required calculation or conclusion. Add 5 to both sides to obtain 2x > 14, then divide by positive 2. The solution is x > 7.",
+    "Not the best answer. x < 14 does not match the required calculation or conclusion. Add 5 to both sides to obtain 2x > 14, then divide by positive 2. The solution is x > 7."
+   ],
+   "skillIds": [
+    "math-algebra-functions"
+   ],
+   "chapterIds": [
+    "core5752-ch-11"
+   ]
+  }
+ },
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b2-065",
+  "item": {
+   "id": "core5752-b2-065",
+   "type": "single-choice",
+   "domainId": "math-number-quantity",
+   "difficulty": "application",
+   "prompt": "Evaluate 1 7/8 - 1/2 and express the result in simplest form.",
+   "choices": [
+    "1 3/8",
+    "1 1/8",
+    "8/12",
+    "3/8"
+   ],
+   "answerIndex": 0,
+   "rationale": "Convert one-half to four-eighths so both fractions share a denominator. Then 1 7/8 - 4/8 = 1 3/8; no regrouping is needed because 7/8 exceeds 4/8, so only the numerators are subtracted.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. Convert one-half to four-eighths so both fractions share a denominator. Then 1 7/8 - 4/8 = 1 3/8; no regrouping is needed because 7/8 exceeds 4/8, so only the numerators are subtracted.",
+    "Not the best answer. 1 1/8 does not match the required calculation or conclusion. Convert one-half to four-eighths. Then 1 7/8 - 4/8 = 1 3/8.",
+    "Not the best answer. 8/12 does not match the required calculation or conclusion. Convert one-half to four-eighths. Then 1 7/8 - 4/8 = 1 3/8.",
+    "Not the best answer. 3/8 does not match the required calculation or conclusion. Convert one-half to four-eighths. Then 1 7/8 - 4/8 = 1 3/8."
+   ],
+   "skillIds": [
+    "math-number-operations"
+   ],
+   "chapterIds": [
+    "core5752-ch-07"
+   ]
+  }
+ },
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b2-069",
+  "item": {
+   "id": "core5752-b2-069",
+   "type": "single-choice",
+   "domainId": "math-number-quantity",
+   "difficulty": "application",
+   "prompt": "An account balance changes from -$9 to $3. What is the numerical increase?",
+   "choices": [
+    "12",
+    "-12",
+    "2",
+    "14"
+   ],
+   "answerIndex": 0,
+   "rationale": "The numerical increase is final value minus initial value: 3 - (-9) = 3 + 9 = 12. Subtracting a negative adds its opposite; rising from -9 dollars to 0 and then to 3 totals 12 dollars.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. The numerical increase is final value minus initial value: 3 - (-9) = 3 + 9 = 12. Subtracting a negative adds its opposite; rising from -9 dollars to 0 and then to 3 totals 12 dollars.",
+    "Not the best answer. -12 does not match the required calculation or conclusion. The numerical increase is final value minus initial value: 3 - (-9) = 3 + 9 = 12.",
+    "Not the best answer. 2 does not match the required calculation or conclusion. The numerical increase is final value minus initial value: 3 - (-9) = 3 + 9 = 12.",
+    "Not the best answer. 14 does not match the required calculation or conclusion. The numerical increase is final value minus initial value: 3 - (-9) = 3 + 9 = 12."
+   ],
+   "skillIds": [
+    "math-number-operations"
+   ],
+   "chapterIds": [
+    "core5752-ch-07"
+   ]
+  }
+ },
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b2-071",
+  "item": {
+   "id": "core5752-b2-071",
+   "type": "single-choice",
+   "domainId": "math-number-quantity",
+   "difficulty": "application",
+   "prompt": "A printer uses 3 cartridges for 2 production runs. At the same rate, how many cartridges are needed for 5 runs?",
+   "choices": [
+    "3.3",
+    "6",
+    "7.5",
+    "10"
+   ],
+   "answerIndex": 2,
+   "rationale": "The unit rate is 3/2 = 1.5 cartridges per run. Multiplying 1.5 by 5 runs gives 7.5 cartridges.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. 3.3 does not match the required calculation or conclusion. The unit rate is 3/2 = 1.5 cartridges per run. Multiplying 1.5 by 5 runs gives 7.5 cartridges.",
+    "Not the best answer. 6 does not match the required calculation or conclusion. The unit rate is 3/2 = 1.5 cartridges per run. Multiplying 1.5 by 5 runs gives 7.5 cartridges.",
+    "Correct. The unit rate is 3/2 = 1.5 cartridges per run. Multiplying 1.5 by 5 runs gives 7.5 cartridges.",
+    "Not the best answer. 10 does not match the required calculation or conclusion. The unit rate is 3/2 = 1.5 cartridges per run. Multiplying 1.5 by 5 runs gives 7.5 cartridges."
+   ],
+   "skillIds": [
+    "math-ratios-percent-measurement"
+   ],
+   "chapterIds": [
+    "core5752-ch-08"
+   ]
+  }
+ },
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b2-083",
+  "item": {
+   "id": "core5752-b2-083",
+   "type": "single-choice",
+   "domainId": "math-data-statistics-probability",
+   "difficulty": "application",
+   "prompt": "What is the range of 22, 27, 29, 33, and 36?",
+   "choices": [
+    "9",
+    "11.4",
+    "14",
+    "22"
+   ],
+   "answerIndex": 2,
+   "rationale": "Range measures the spread of a data set: subtract the minimum from the maximum. Here the maximum is 36 and the minimum is 22, so the range is 36 - 22 = 14.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. 9 does not match the required calculation or conclusion. Range is maximum minus minimum. For these values, 36 - 22 = 14.",
+    "Not the best answer. 11.4 does not match the required calculation or conclusion. Range is maximum minus minimum. For these values, 36 - 22 = 14.",
+    "Correct. Range measures the spread of a data set: subtract the minimum from the maximum. Here the maximum is 36 and the minimum is 22, so the range is 36 - 22 = 14.",
+    "Not the best answer. 22 does not match the required calculation or conclusion. Range is maximum minus minimum. For these values, 36 - 22 = 14."
+   ],
+   "skillIds": [
+    "math-statistics-probability"
+   ],
+   "chapterIds": [
+    "core5752-ch-10"
+   ]
+  }
+ },
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b2-088",
+  "item": {
+   "id": "core5752-b2-088",
+   "type": "single-choice",
+   "domainId": "math-data-statistics-probability",
+   "difficulty": "application",
+   "prompt": "From 800 applications, an auditor randomly reviews 80. What fraction is reviewed?",
+   "choices": [
+    "1%",
+    "20%",
+    "50%",
+    "10%"
+   ],
+   "answerIndex": 3,
+   "rationale": "The reviewed fraction is the sample size over the population size: 80/800 = 1/10, which is 0.10 or 10 percent. Simplifying the ratio first makes the percent conversion direct.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. 1% does not match the required calculation or conclusion. The reviewed fraction is 80/800 = 1/10, which is 0.10 or 10 percent.",
+    "Not the best answer. 20% does not match the required calculation or conclusion. The reviewed fraction is 80/800 = 1/10, which is 0.10 or 10 percent.",
+    "Not the best answer. 50% does not match the required calculation or conclusion. The reviewed fraction is 80/800 = 1/10, which is 0.10 or 10 percent.",
+    "Correct. The reviewed fraction is the sample size over the population size: 80/800 = 1/10, which is 0.10 or 10 percent. Simplifying the ratio first makes the percent conversion direct."
+   ],
+   "skillIds": [
+    "math-statistics-probability"
+   ],
+   "chapterIds": [
+    "core5752-ch-10"
+   ]
+  }
+ },
+ {
+  "stem": "praxis_core_5752",
+  "id": "core5752-b2-094",
+  "item": {
+   "id": "core5752-b2-094",
+   "type": "single-choice",
+   "domainId": "math-algebra-geometry",
+   "difficulty": "application",
+   "prompt": "Solve the inequality 3x + 1 > 22. Select the best answer and verify the result.",
+   "choices": [
+    "x < 7",
+    "x > 7",
+    "x > 2",
+    "x < 14"
+   ],
+   "answerIndex": 1,
+   "rationale": "Subtract 1 from both sides to obtain 3x > 21, then divide both sides by positive 3 to get x > 7. Dividing by a positive number preserves the inequality direction. Check: x = 8 gives 3(8) + 1 = 25 > 22.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+    "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+    "https://www.thecorestandards.org/Math/"
+   ],
+   "reviewStatus": "source-reviewed",
+   "legacySourceId": "",
+   "legacySourceFile": "",
+   "migrationStatus": "",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. x < 7 does not match the required calculation or conclusion. Subtract 1 from both sides to obtain 3x > 21, then divide by positive 3. The solution is x > 7.",
+    "Correct. Subtract 1 from both sides to obtain 3x > 21, then divide both sides by positive 3 to get x > 7. Dividing by a positive number preserves the inequality direction. Check: x = 8 gives 3(8) + 1 = 25 > 22.",
+    "Not the best answer. x > 2 does not match the required calculation or conclusion. Subtract 1 from both sides to obtain 3x > 21, then divide by positive 3. The solution is x > 7.",
+    "Not the best answer. x < 14 does not match the required calculation or conclusion. Subtract 1 from both sides to obtain 3x > 21, then divide by positive 3. The solution is x > 7."
+   ],
+   "skillIds": [
+    "math-algebra-functions"
+   ],
+   "chapterIds": [
+    "core5752-ch-11"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_early_childhood_5692",
+  "id": "se5692-b1-022",
+  "item": {
+   "id": "se5692-b1-022",
+   "type": "single-choice",
+   "domainId": "curriculum-planning-instruction",
+   "difficulty": "application",
+   "prompt": "A young child has a documented seizure action plan. During a seizure in an inclusive early-learning setting, what should staff do first?",
+   "choices": [
+    "Create a new response based on what seems convenient.",
+    "Follow the individualized emergency plan, protect the child’s safety, and activate trained medical or emergency procedures as specified.",
+    "Give food or medication that is not authorized in the plan.",
+    "Delay action until a family member can be reached."
+   ],
+   "answerIndex": 1,
+   "rationale": "Staff should follow the individualized seizure action plan, their training, applicable delegation rules, and the specified emergency procedures. Improvised treatment, unauthorized medication, or delay can create serious risk and exceed an educator’s role.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
+    "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
+    "https://sites.ed.gov/idea/regs/b"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. Improvisation can conflict with the individualized plan and staff training. Staff should follow the individualized seizure action plan, their training, applicable delegation rules, and the specified emergency procedures. Improvised treatment, unauthorized medication, or delay can create serious risk and exceed an educator’s role.",
+    "Correct. Staff should follow the individualized seizure action plan, their training, applicable delegation rules, and the specified emergency procedures. Improvised treatment, unauthorized medication, or delay can create serious risk and exceed an educator’s role.",
+    "Not the best answer. Food or medication should not be given unless the plan and authorized procedures direct it. Staff should follow the individualized seizure action plan, their training, applicable delegation rules, and the specified emergency procedures. Improvised treatment, unauthorized medication, or delay can create serious risk and exceed an educator’s role.",
+    "Not the best answer. The plan should be implemented promptly; staff do not postpone required emergency action while waiting for contact. Staff should follow the individualized seizure action plan, their training, applicable delegation rules, and the specified emergency procedures. Improvised treatment, unauthorized medication, or delay can create serious risk and exceed an educator’s role."
+   ],
+   "skillIds": [
+    "adaptive-inclusive-access"
+   ],
+   "chapterIds": [
+    "se5692-ch-03"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_early_childhood_5692",
+  "id": "se5692-b1-025",
+  "item": {
+   "id": "se5692-b1-025",
+   "type": "single-choice",
+   "domainId": "curriculum-planning-instruction",
+   "difficulty": "application",
+   "prompt": "A Part C program automatically assigns every infant or toddler with a particular disability to a center-based class without an individualized IFSP Team decision. What is the central problem?",
+   "choices": [
+    "Under Part C, the parent and IFSP Team must individualize the setting; services occur in natural environments to the maximum extent appropriate unless the child's outcomes cannot be achieved satisfactorily there.",
+    "Part C prohibits every center-based service, regardless of the child's outcomes.",
+    "The provider may choose the setting alone whenever a disability category is listed.",
+    "Once selected, an early-intervention setting cannot be reconsidered by the IFSP Team."
+   ],
+   "answerIndex": 0,
+   "rationale": "IDEA Part C requires early intervention services in natural environments to the maximum extent appropriate. A different setting is used only when the parent and IFSP Team determine that the services cannot be achieved satisfactorily in a natural environment. Automatic placement by disability category bypasses the individualized IFSP process.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
+    "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
+    "https://sites.ed.gov/idea/regs/c/a/303.26",
+    "https://sites.ed.gov/idea/regs/c/b/303.126"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. Part C requires an individualized setting decision by the parent and IFSP Team, with natural environments used to the maximum extent appropriate unless the services cannot be achieved satisfactorily there.",
+    "Part C does not categorically prohibit a center-based service; the IFSP Team may justify another setting when services cannot be achieved satisfactorily in a natural environment.",
+    "A provider does not make this decision alone from a disability label; the parent and IFSP Team make an individualized determination tied to the child and family outcomes.",
+    "The IFSP is reviewed and revised, so the service setting is not permanently fixed after the first decision."
+   ],
+   "skillIds": [
+    "adaptive-inclusive-access"
+   ],
+   "chapterIds": [
+    "se5692-ch-03"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_early_childhood_5692",
+  "id": "se5692-b1-037",
+  "item": {
+   "id": "se5692-b1-037",
+   "type": "single-choice",
+   "domainId": "curriculum-planning-instruction",
+   "difficulty": "application",
+   "prompt": "At a high level, what distinguishes an IDEA Part C IFSP from an IDEA Part B IEP?",
+   "choices": [
+    "An IFSP is family-centered and addresses early-intervention outcomes in natural environments; an IEP describes the eligible child's Part B educational program, services, and goals.",
+    "An IFSP is simply an IEP with a different title.",
+    "An IFSP excludes family priorities from planning.",
+    "An IEP is a medical treatment plan written solely by a physician."
+   ],
+   "answerIndex": 0,
+   "rationale": "Part C uses an IFSP developed with the family to address the infant or toddler and family outcomes and services, including natural-environment decisions. Part B uses an IEP to specify the eligible child’s educational program, measurable goals, special education, related services, and supports.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
+    "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
+    "https://sites.ed.gov/idea/regs/c",
+    "https://sites.ed.gov/idea/regs/b"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. Part C uses an IFSP developed with the family to address the infant or toddler and family outcomes and services, including natural-environment decisions. Part B uses an IEP to specify the eligible child’s educational program, measurable goals, special education, related services, and supports.",
+    "Not the best answer. The two plans operate under different IDEA parts and have different required content and emphases. Part C uses an IFSP developed with the family to address the infant or toddler and family outcomes and services, including natural-environment decisions. Part B uses an IEP to specify the eligible child’s educational program, measurable goals, special education, related services, and supports.",
+    "Not the best answer. Family priorities and concerns are central to IFSP development. Part C uses an IFSP developed with the family to address the infant or toddler and family outcomes and services, including natural-environment decisions. Part B uses an IEP to specify the eligible child’s educational program, measurable goals, special education, related services, and supports.",
+    "Not the best answer. An IEP is an educational plan developed by an IEP Team, not a physician-only medical plan. Part C uses an IFSP developed with the family to address the infant or toddler and family outcomes and services, including natural-environment decisions. Part B uses an IEP to specify the eligible child’s educational program, measurable goals, special education, related services, and supports."
+   ],
+   "skillIds": [
+    "ifsp-iep-individualized-planning"
+   ],
+   "chapterIds": [
+    "se5692-ch-04"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_early_childhood_5692",
+  "id": "se5692-b1-085",
+  "item": {
+   "id": "se5692-b1-085",
+   "type": "single-choice",
+   "domainId": "legal-ethical-professionalism",
+   "difficulty": "application",
+   "prompt": "Under IDEA Part B, what does FAPE require for an eligible preschool child?",
+   "choices": [
+    "Special education and related services are provided at public expense, under public supervision and direction, without charge, and in conformity with an appropriately developed IEP.",
+    "The public agency guarantees that every eligible child reaches the same achievement level.",
+    "The family pays for any related service identified as necessary in the IEP.",
+    "The disability label determines a standard program without an individualized IEP."
+   ],
+   "answerIndex": 0,
+   "rationale": "Under IDEA Part B, FAPE means special education and related services provided at public expense, under public supervision and direction, and without charge; the services meet applicable standards, include an appropriate preschool education, and are delivered in conformity with an IEP. FAPE does not guarantee an identical outcome or permit a category-based program.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
+    "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
+    "https://sites.ed.gov/idea/regs/b/a/300.17"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. This states the Part B definition: public expense, public supervision and direction, no charge, applicable standards, appropriate education, and services in conformity with an IEP.",
+    "FAPE requires an appropriate individualized program; it does not guarantee that every child will attain the same achievement level.",
+    "Required Part B special education and related services that constitute FAPE are provided without charge to the family.",
+    "FAPE is delivered through an individualized IEP, not a standard program selected solely from a disability label."
+   ],
+   "skillIds": [
+    "rights-ethics-equity"
+   ],
+   "chapterIds": [
+    "se5692-ch-11"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_early_childhood_5692",
+  "id": "se5692-b1-092",
+  "item": {
+   "id": "se5692-b1-092",
+   "type": "single-choice",
+   "domainId": "legal-ethical-professionalism",
+   "difficulty": "application",
+   "prompt": "An occupational therapist recommends a positioning support for use in the inclusive early-learning setting. How should the early childhood special educator proceed?",
+   "choices": [
+    "Use the support only during therapy sessions.",
+    "Modify the recommendation without consulting the specialist or team.",
+    "Ask the specialist to take full responsibility for the child’s learning.",
+    "Clarify the purpose, integrate the support into authentic routines, define team roles, and share implementation and outcome data."
+   ],
+   "answerIndex": 3,
+   "rationale": "Related services support access and participation in educational routines. Coordination connects specialist expertise with classroom implementation, clarifies responsibilities, and produces shared evidence about feasibility, fidelity, comfort, access, and outcomes.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
+    "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
+    "https://sites.ed.gov/idea/regs/c",
+    "https://sites.ed.gov/idea/regs/b"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. Restricting the support to therapy may prevent access during the routines it is intended to support. Related services support access and participation in educational routines. Coordination connects specialist expertise with classroom implementation, clarifies responsibilities, and produces shared evidence about feasibility, fidelity, comfort, access, and outcomes.",
+    "Not the best answer. Unilateral modification can undermine safety, purpose, and implementation fidelity. Related services support access and participation in educational routines. Coordination connects specialist expertise with classroom implementation, clarifies responsibilities, and produces shared evidence about feasibility, fidelity, comfort, access, and outcomes.",
+    "Not the best answer. The educator and specialist share coordinated roles; neither transfers all responsibility for learning to the other. Related services support access and participation in educational routines. Coordination connects specialist expertise with classroom implementation, clarifies responsibilities, and produces shared evidence about feasibility, fidelity, comfort, access, and outcomes.",
+    "Correct. Related services support access and participation in educational routines. Coordination connects specialist expertise with classroom implementation, clarifies responsibilities, and produces shared evidence about feasibility, fidelity, comfort, access, and outcomes."
+   ],
+   "skillIds": [
+    "professional-practice-collaboration"
+   ],
+   "chapterIds": [
+    "se5692-ch-12"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_early_childhood_5692",
+  "id": "se5692-b1-096",
+  "item": {
+   "id": "se5692-b1-096",
+   "type": "single-choice",
+   "domainId": "legal-ethical-professionalism",
+   "difficulty": "application",
+   "prompt": "How should an early childhood special educator choose professional development?",
+   "choices": [
+    "Attend any available session regardless of relevance.",
+    "Collect certificates without applying the learning in practice.",
+    "Rely only on informal social-media advice.",
+    "Select credible training aligned with an identified practice need, apply it with coaching or feedback, and evaluate implementation and child outcomes."
+   ],
+   "answerIndex": 3,
+   "rationale": "High-value professional learning is targeted, evidence informed, applied in authentic work, supported by feedback, and evaluated through implementation evidence and child outcomes rather than attendance alone.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
+    "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
+    "https://sites.ed.gov/idea/regs/c",
+    "https://sites.ed.gov/idea/regs/b"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. Availability alone does not establish relevance or quality. High-value professional learning is targeted, evidence informed, applied in authentic work, supported by feedback, and evaluated through implementation evidence and child outcomes rather than attendance alone.",
+    "Not the best answer. Certificates do not show that practice or child outcomes improved. High-value professional learning is targeted, evidence informed, applied in authentic work, supported by feedback, and evaluated through implementation evidence and child outcomes rather than attendance alone.",
+    "Not the best answer. Unvetted social-media advice is not an adequate professional-learning standard. High-value professional learning is targeted, evidence informed, applied in authentic work, supported by feedback, and evaluated through implementation evidence and child outcomes rather than attendance alone.",
+    "Correct. High-value professional learning is targeted, evidence informed, applied in authentic work, supported by feedback, and evaluated through implementation evidence and child outcomes rather than attendance alone."
+   ],
+   "skillIds": [
+    "professional-practice-collaboration"
+   ],
+   "chapterIds": [
+    "se5692-ch-12"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_early_childhood_5692",
+  "id": "se5692-b2-025",
+  "item": {
+   "id": "se5692-b2-025",
+   "type": "single-choice",
+   "domainId": "curriculum-planning-instruction",
+   "difficulty": "application",
+   "prompt": "A preschool special education program assigns every child with the same disability label to a separate classroom before reviewing individual needs. Which Part B principle is violated?",
+   "choices": [
+    "Under Part B, placement must be individualized by a group that includes the parents and must comply with LRE; it may not be assigned solely from a disability category.",
+    "Part B prohibits every separate preschool placement, regardless of individualized need.",
+    "The district may assign placement from disability category whenever it maintains a continuum of options.",
+    "The parent alone must decide placement without the placement group or public agency."
+   ],
+   "answerIndex": 0,
+   "rationale": "IDEA Part B requires an individualized placement decision by a group that includes the parents, based on the child's IEP and made in conformity with LRE. Children are educated with nondisabled peers to the maximum extent appropriate; removal is not automatic and depends on whether education can be achieved satisfactorily with supplementary aids and services.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
+    "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
+    "https://sites.ed.gov/idea/regs/b/b/300.114",
+    "https://sites.ed.gov/idea/regs/b/b/300.116"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. Part B placement is individualized, includes the parents in the decision-making group, is based on the child's IEP, and conforms to LRE rather than disability category.",
+    "Part B does not prohibit every separate placement; removal may be appropriate when education in regular classes cannot be achieved satisfactorily with supplementary aids and services.",
+    "Maintaining a continuum does not authorize category-based assignment; the placement decision still must be individualized and based on the IEP.",
+    "Parents participate as members of the placement group, but the regulation does not assign the placement decision to the parent alone."
+   ],
+   "skillIds": [
+    "adaptive-inclusive-access"
+   ],
+   "chapterIds": [
+    "se5692-ch-03"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_early_childhood_5692",
+  "id": "se5692-b2-039",
+  "item": {
+   "id": "se5692-b2-039",
+   "type": "single-choice",
+   "domainId": "curriculum-planning-instruction",
+   "difficulty": "application",
+   "prompt": "A young child is learning an independent handwashing routine. Why would the early childhood special educator begin with a task analysis?",
+   "choices": [
+    "To measure the child’s general intelligence.",
+    "To remove all natural variation from the routine.",
+    "To break the routine into observable, teachable steps that can be prompted, measured, chained, and gradually performed independently.",
+    "To replace instruction with a written test."
+   ],
+   "answerIndex": 2,
+   "rationale": "Task analysis identifies component steps and their sequence. The educator can select a chaining approach, teach missing steps, record performance, and fade prompts while preserving natural variations that do not affect safety or the outcome.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
+    "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
+    "https://www.naeyc.org/resources/position-statements/dap/principles"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. Task analysis evaluates a routine, not general intelligence. Task analysis identifies component steps and their sequence. The educator can select a chaining approach, teach missing steps, record performance, and fade prompts while preserving natural variations that do not affect safety or the outcome.",
+    "Not the best answer. The goal is teachable access and independence, not rigid elimination of harmless variation. Task analysis identifies component steps and their sequence. The educator can select a chaining approach, teach missing steps, record performance, and fade prompts while preserving natural variations that do not affect safety or the outcome.",
+    "Correct. Task analysis identifies component steps and their sequence. The educator can select a chaining approach, teach missing steps, record performance, and fade prompts while preserving natural variations that do not affect safety or the outcome.",
+    "Not the best answer. A written test does not teach or measure performance of the handwashing routine. Task analysis identifies component steps and their sequence. The educator can select a chaining approach, teach missing steps, record performance, and fade prompts while preserving natural variations that do not affect safety or the outcome."
+   ],
+   "skillIds": [
+    "instruction-intervention-routines"
+   ],
+   "chapterIds": [
+    "se5692-ch-05"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_early_childhood_5692",
+  "id": "se5692-b2-085",
+  "item": {
+   "id": "se5692-b2-085",
+   "type": "single-choice",
+   "domainId": "legal-ethical-professionalism",
+   "difficulty": "application",
+   "prompt": "A candidate says that IDEA Part C and Part B use the same plan and payment rules. Which correction is most accurate?",
+   "choices": [
+    "Part C services are generally planned through an IFSP and follow Part C payment rules; Part B FAPE is provided without charge in conformity with an IEP.",
+    "Both parts always use an IEP and prohibit every fee that Part C regulations otherwise permit.",
+    "Part C always requires families to pay for early-intervention services, while Part B never uses an individualized plan.",
+    "Neither part requires an individualized written plan when a disability category has been identified."
+   ],
+   "answerIndex": 0,
+   "rationale": "Part C uses an IFSP and permits a state system of payments subject to protections: specified functions are at public expense, inability to pay may not delay or deny services, and special rules apply when a state has a FAPE mandate or uses Part B funds for children under three. Part B FAPE is provided without charge in conformity with an IEP. The two parts should not be collapsed into one plan or payment rule.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
+    "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
+    "https://sites.ed.gov/idea/regs/b/a/300.17",
+    "https://sites.ed.gov/idea/regs/c/f/303.521"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. Part C generally uses an IFSP and its own protected system-of-payments framework, whereas Part B FAPE is provided without charge in conformity with an IEP.",
+    "Part C generally uses an IFSP, not an IEP, and its regulations permit carefully limited systems of payments and fees with explicit protections.",
+    "Part C does not always require family payment, and Part B expressly requires an individualized IEP for FAPE.",
+    "Both Part C and Part B use individualized written plans; a disability category does not eliminate the IFSP or IEP process."
+   ],
+   "skillIds": [
+    "rights-ethics-equity"
+   ],
+   "chapterIds": [
+    "se5692-ch-11"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_behavior_emotional_5372",
+  "id": "ebd5372-b1-010",
+  "item": {
+   "id": "ebd5372-b1-010",
+   "type": "single-choice",
+   "domainId": "development-characteristics-ebd",
+   "difficulty": "application",
+   "prompt": "A student with emotional or behavioral support needs reads grade-level text accurately but avoids multi-paragraph writing when the task is unstructured. Which response is best?",
+   "choices": [
+    "Provide identical remediation in every academic area.",
+    "Teach a visible planning routine, model paragraph organization, offer bounded choices, reinforce task engagement, and monitor both writing and behavior data.",
+    "Remove writing tasks whenever avoidance occurs.",
+    "Have an adult permanently complete the planning and writing."
+   ],
+   "answerIndex": 1,
+   "rationale": "The response should address the documented writing demand and the conditions associated with avoidance. Explicit organization support, predictable choices, reinforcement, and progress data preserve the grade-level goal while teaching independent engagement.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5372.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-behavioral-disorders-and-emotional-disturbances-5372.html",
+    "https://sites.ed.gov/idea/regs/b/e/300.530",
+    "https://ies.ed.gov/ncee/wwc/PracticeGuide/31"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. The evidence identifies a task-specific need, not an identical deficit in every subject. The response should address the documented writing demand and the conditions associated with avoidance. Explicit organization support, predictable choices, reinforcement, and progress data preserve the grade-level goal while teaching independent engagement.",
+    "Correct. The response should address the documented writing demand and the conditions associated with avoidance. Explicit organization support, predictable choices, reinforcement, and progress data preserve the grade-level goal while teaching independent engagement.",
+    "Not the best answer. Removing the task prevents instruction in the needed skill. The response should address the documented writing demand and the conditions associated with avoidance. Explicit organization support, predictable choices, reinforcement, and progress data preserve the grade-level goal while teaching independent engagement.",
+    "Not the best answer. Permanent adult completion reduces access to instruction and independence. The response should address the documented writing demand and the conditions associated with avoidance. Explicit organization support, predictable choices, reinforcement, and progress data preserve the grade-level goal while teaching independent engagement."
+   ],
+   "skillIds": [
+    "ebd-characteristics-coexisting-needs"
+   ],
+   "chapterIds": [
+    "ebd5372-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_behavior_emotional_5372",
+  "id": "ebd5372-b1-014",
+  "item": {
+   "id": "ebd5372-b1-014",
+   "type": "single-choice",
+   "domainId": "development-characteristics-ebd",
+   "difficulty": "application",
+   "prompt": "Which evidence is most important when designing support for recurring classroom behavior?",
+   "choices": [
+    "A disability label without direct observation.",
+    "Operationally defined behavior with antecedent, consequence, setting, academic, cultural-context, learner-voice, and implementation data across relevant routines.",
+    "One adult’s impression from a single event.",
+    "A list of punishments used with other students."
+   ],
+   "answerIndex": 1,
+   "rationale": "Function-based, equitable support begins with observable definitions and representative data about when behavior occurs, what precedes and follows it, task and setting variables, the learner’s perspective, and current implementation.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5372.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-behavioral-disorders-and-emotional-disturbances-5372.html",
+    "https://sites.ed.gov/idea/regs/b/e/300.530",
+    "https://ies.ed.gov/ncee/wwc/PracticeGuide/31"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. A label does not identify the function or context of behavior. Function-based, equitable support begins with observable definitions and representative data about when behavior occurs, what precedes and follows it, task and setting variables, the learner’s perspective, and current implementation.",
+    "Correct. Function-based, equitable support begins with observable definitions and representative data about when behavior occurs, what precedes and follows it, task and setting variables, the learner’s perspective, and current implementation.",
+    "Not the best answer. One impression cannot establish a reliable pattern. Function-based, equitable support begins with observable definitions and representative data about when behavior occurs, what precedes and follows it, task and setting variables, the learner’s perspective, and current implementation.",
+    "Not the best answer. Other students’ consequences do not identify this learner’s needs or behavior function. Function-based, equitable support begins with observable definitions and representative data about when behavior occurs, what precedes and follows it, task and setting variables, the learner’s perspective, and current implementation."
+   ],
+   "skillIds": [
+    "ebd-characteristics-coexisting-needs"
+   ],
+   "chapterIds": [
+    "ebd5372-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_behavior_emotional_5372",
+  "id": "ebd5372-b1-024",
+  "item": {
+   "id": "ebd5372-b1-024",
+   "type": "single-choice",
+   "domainId": "planning-managing-learning-environments",
+   "difficulty": "application",
+   "prompt": "During IEP development for a student with an emotional or behavioral disorder, when should the team consider assistive technology?",
+   "choices": [
+    "Only after every low-technology support has failed for a full year.",
+    "Only when a parent has already purchased a device.",
+    "Only for students with physical disabilities.",
+    "The team should consider whether assistive technology devices or services are needed for the individual learner."
+   ],
+   "answerIndex": 3,
+   "rationale": "IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5372 preparation, define behavior observably, examine ecological and instructional context, distinguish correlation from function, teach a usable replacement skill, use the least intensive effective response, preserve dignity and belonging, and monitor both outcomes and implementation.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5372.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-behavioral-disorders-and-emotional-disturbances-5372.html",
+    "https://sites.ed.gov/idea/regs/b/e/300.530",
+    "https://ies.ed.gov/ncee/wwc/PracticeGuide/31"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-15",
+   "choiceRationales": [
+    "Not the best answer. \"Only after every low-technology support has failed for a full year.\" misses the observable definition, prevention, function, replacement skill, dignity, evidence, safety, or legal requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5372 preparation, define behavior observably, examine ecological and instructional context, distinguish correlation from function, teach a usable replacement skill, use the least intensive effective response, preserve dignity and belonging, and monitor both outcomes and implementation.",
+    "Not the best answer. \"Only when a parent has already purchased a device.\" misses the observable definition, prevention, function, replacement skill, dignity, evidence, safety, or legal requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5372 preparation, define behavior observably, examine ecological and instructional context, distinguish correlation from function, teach a usable replacement skill, use the least intensive effective response, preserve dignity and belonging, and monitor both outcomes and implementation.",
+    "Not the best answer. \"Only for students with physical disabilities.\" misses the observable definition, prevention, function, replacement skill, dignity, evidence, safety, or legal requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5372 preparation, define behavior observably, examine ecological and instructional context, distinguish correlation from function, teach a usable replacement skill, use the least intensive effective response, preserve dignity and belonging, and monitor both outcomes and implementation.",
+    "Correct. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5372 preparation, define behavior observably, examine ecological and instructional context, distinguish correlation from function, teach a usable replacement skill, use the least intensive effective response, preserve dignity and belonging, and monitor both outcomes and implementation."
+   ],
+   "skillIds": [
+    "individualized-curriculum-programming"
+   ],
+   "chapterIds": [
+    "ebd5372-ch-03"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_behavior_emotional_5372",
+  "id": "ebd5372-b1-054",
+  "item": {
+   "id": "ebd5372-b1-054",
+   "type": "single-choice",
+   "domainId": "instruction",
+   "difficulty": "application",
+   "prompt": "During grade-level literacy instruction for a student with emotional or behavioral support needs, which approach best promotes sustained engagement without lowering the learning goal?",
+   "choices": [
+    "Offer prizes only for the number of pages completed.",
+    "Combine achievable challenge, meaningful choice, culturally responsive text, explicit success supports, authentic purpose, and feedback that builds agency.",
+    "Lower every text below the student’s demonstrated skill level.",
+    "Require public comparison with faster readers."
+   ],
+   "answerIndex": 1,
+   "rationale": "Literacy engagement grows through competence, relevance, identity, autonomy, belonging, and purpose. Explicit supports and meaningful choice should maintain the intended literacy goal while reducing predictable barriers and monitoring engagement and learning.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5372.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-behavioral-disorders-and-emotional-disturbances-5372.html",
+    "https://sites.ed.gov/idea/regs/b/e/300.530",
+    "https://ies.ed.gov/ncee/wwc/PracticeGuide/31"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. Page-count prizes do not address comprehension, belonging, or the conditions affecting engagement. Literacy engagement grows through competence, relevance, identity, autonomy, belonging, and purpose. Explicit supports and meaningful choice should maintain the intended literacy goal while reducing predictable barriers and monitoring engagement and learning.",
+    "Correct. Literacy engagement grows through competence, relevance, identity, autonomy, belonging, and purpose. Explicit supports and meaningful choice should maintain the intended literacy goal while reducing predictable barriers and monitoring engagement and learning.",
+    "Not the best answer. Automatically lowering every text can deny access to grade-level learning. Literacy engagement grows through competence, relevance, identity, autonomy, belonging, and purpose. Explicit supports and meaningful choice should maintain the intended literacy goal while reducing predictable barriers and monitoring engagement and learning.",
+    "Not the best answer. Public speed comparisons can increase threat and do not teach the target literacy skill. Literacy engagement grows through competence, relevance, identity, autonomy, belonging, and purpose. Explicit supports and meaningful choice should maintain the intended literacy goal while reducing predictable barriers and monitoring engagement and learning."
+   ],
+   "skillIds": [
+    "academic-explicit-instruction"
+   ],
+   "chapterIds": [
+    "ebd5372-ch-06"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_behavior_emotional_5372",
+  "id": "ebd5372-b2-014",
+  "item": {
+   "id": "ebd5372-b2-014",
+   "type": "single-choice",
+   "domainId": "development-characteristics-ebd",
+   "difficulty": "application",
+   "prompt": "A behavior occurs during independent writing but rarely during guided practice. What should the team do first?",
+   "choices": [
+    "Assume the disability label explains the difference.",
+    "Compare task demands, antecedents, available supports, consequences, learner input, and implementation across the two routines before selecting an intervention.",
+    "Apply the most restrictive consequence in both routines.",
+    "Remove all independent writing permanently."
+   ],
+   "answerIndex": 1,
+   "rationale": "The contrast across routines is useful functional evidence. The team should analyze relevant environmental and instructional variables, confirm the pattern with data, and then teach and support an effective replacement response.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5372.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-behavioral-disorders-and-emotional-disturbances-5372.html",
+    "https://sites.ed.gov/idea/regs/b/e/300.530",
+    "https://ies.ed.gov/ncee/wwc/PracticeGuide/31"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. A label does not explain why behavior differs by routine. The contrast across routines is useful functional evidence. The team should analyze relevant environmental and instructional variables, confirm the pattern with data, and then teach and support an effective replacement response.",
+    "Correct. The contrast across routines is useful functional evidence. The team should analyze relevant environmental and instructional variables, confirm the pattern with data, and then teach and support an effective replacement response.",
+    "Not the best answer. Consequences selected before analysis may be ineffective or unnecessarily restrictive. The contrast across routines is useful functional evidence. The team should analyze relevant environmental and instructional variables, confirm the pattern with data, and then teach and support an effective replacement response.",
+    "Not the best answer. Permanent task removal avoids instruction rather than addressing the documented conditions. The contrast across routines is useful functional evidence. The team should analyze relevant environmental and instructional variables, confirm the pattern with data, and then teach and support an effective replacement response."
+   ],
+   "skillIds": [
+    "ebd-characteristics-coexisting-needs"
+   ],
+   "chapterIds": [
+    "ebd5372-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_intellectual_disabilities_5322",
+  "id": "id5322-b1-010",
+  "item": {
+   "id": "id5322-b1-010",
+   "type": "single-choice",
+   "domainId": "development-characteristics-intellectual-disabilities",
+   "difficulty": "application",
+   "prompt": "A student with an intellectual disability communicates several relevant ideas but needs support organizing them into a paragraph. Which response is best?",
+   "choices": [
+    "Provide identical remediation in every academic area.",
+    "Use an accessible model, jointly construct an example, provide a visual organizer and explicit sentence-to-paragraph instruction, then fade prompts as independence grows.",
+    "Infer that the student has no ideas to communicate.",
+    "Have an adult permanently write every response."
+   ],
+   "answerIndex": 1,
+   "rationale": "Instruction should presume competence and target the observed organization need. Accessible models, communication supports, explicit instruction, guided practice, and planned prompt fading support meaningful writing and agency.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
+    "https://sites.ed.gov/idea/regs/b",
+    "https://www.aaidd.org/intellectual-disability/definition"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. A documented writing need does not establish the same need in every subject. Instruction should presume competence and target the observed organization need. Accessible models, communication supports, explicit instruction, guided practice, and planned prompt fading support meaningful writing and agency.",
+    "Correct. Instruction should presume competence and target the observed organization need. Accessible models, communication supports, explicit instruction, guided practice, and planned prompt fading support meaningful writing and agency.",
+    "Not the best answer. Difficulty organizing a paragraph does not mean the learner lacks ideas. Instruction should presume competence and target the observed organization need. Accessible models, communication supports, explicit instruction, guided practice, and planned prompt fading support meaningful writing and agency.",
+    "Not the best answer. Permanent adult authorship replaces rather than teaches communication and writing. Instruction should presume competence and target the observed organization need. Accessible models, communication supports, explicit instruction, guided practice, and planned prompt fading support meaningful writing and agency."
+   ],
+   "skillIds": [
+    "id-characteristics-coexisting-needs"
+   ],
+   "chapterIds": [
+    "id5322-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_intellectual_disabilities_5322",
+  "id": "id5322-b1-013",
+  "item": {
+   "id": "id5322-b1-013",
+   "type": "single-choice",
+   "domainId": "development-characteristics-intellectual-disabilities",
+   "difficulty": "application",
+   "prompt": "A student with an intellectual disability refuses a multistep routine when directions are rapid but participates when steps are modeled and displayed. What perspective is most useful?",
+   "choices": [
+    "Examine interactions among the learner, task sequence, communication access, supports, expectations, and consequences rather than locating the problem only within the learner.",
+    "Assume the behavior will occur equally in every setting.",
+    "Conclude that the disability label identifies the behavior’s function.",
+    "Remove all opportunities to learn the routine."
+   ],
+   "answerIndex": 0,
+   "rationale": "An ecological and instructional perspective uses context-specific evidence to identify barriers, teach an accessible routine or communication response, and evaluate whether supports improve participation and independence.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
+    "https://sites.ed.gov/idea/regs/b",
+    "https://www.aaidd.org/intellectual-disability/definition"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. An ecological and instructional perspective uses context-specific evidence to identify barriers, teach an accessible routine or communication response, and evaluate whether supports improve participation and independence.",
+    "Not the best answer. The observed contrast shows that setting and support conditions matter. An ecological and instructional perspective uses context-specific evidence to identify barriers, teach an accessible routine or communication response, and evaluate whether supports improve participation and independence.",
+    "Not the best answer. A disability label does not identify the function of a particular behavior. An ecological and instructional perspective uses context-specific evidence to identify barriers, teach an accessible routine or communication response, and evaluate whether supports improve participation and independence.",
+    "Not the best answer. Removing every opportunity prevents instruction and participation. An ecological and instructional perspective uses context-specific evidence to identify barriers, teach an accessible routine or communication response, and evaluate whether supports improve participation and independence."
+   ],
+   "skillIds": [
+    "id-characteristics-coexisting-needs"
+   ],
+   "chapterIds": [
+    "id5322-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_intellectual_disabilities_5322",
+  "id": "id5322-b1-024",
+  "item": {
+   "id": "id5322-b1-024",
+   "type": "single-choice",
+   "domainId": "planning-managing-learning-environment",
+   "difficulty": "application",
+   "prompt": "During IEP development for a student with an intellectual disability, when should the team consider assistive technology?",
+   "choices": [
+    "Only after every low-technology support has failed for a full year.",
+    "Only when a parent has already purchased a device.",
+    "Only for students with physical disabilities.",
+    "The team should consider whether assistive technology devices or services are needed for the individual learner."
+   ],
+   "answerIndex": 3,
+   "rationale": "IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
+    "https://sites.ed.gov/idea/regs/b",
+    "https://www.aaidd.org/intellectual-disability/definition"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. \"Only after every low-technology support has failed for a full year.\" misses the adaptive evidence, access, age respect, agency, explicit instruction, safety, generalization, or legal requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+    "Not the best answer. \"Only when a parent has already purchased a device.\" misses the adaptive evidence, access, age respect, agency, explicit instruction, safety, generalization, or legal requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+    "Not the best answer. \"Only for students with physical disabilities.\" misses the adaptive evidence, access, age respect, agency, explicit instruction, safety, generalization, or legal requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+    "Correct. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization."
+   ],
+   "skillIds": [
+    "person-centered-iep-transition"
+   ],
+   "chapterIds": [
+    "id5322-ch-03"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_intellectual_disabilities_5322",
+  "id": "id5322-b1-054",
+  "item": {
+   "id": "id5322-b1-054",
+   "type": "single-choice",
+   "domainId": "instruction",
+   "difficulty": "application",
+   "prompt": "During age-respectful literacy instruction for a student with an intellectual disability, which approach best promotes engagement and comprehension?",
+   "choices": [
+    "Offer prizes only for page counts.",
+    "Combine accessible grade-relevant text, meaningful choice, explicit comprehension support, communication access, authentic purpose, and feedback that builds agency.",
+    "Lower every task below the student’s demonstrated skills.",
+    "Require public comparison with faster readers."
+   ],
+   "answerIndex": 1,
+   "rationale": "Engagement and comprehension improve when instruction is accessible, purposeful, explicit, and age respectful. Communication supports and meaningful choices should preserve the literacy target while evidence guides intensity and prompt fading.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
+    "https://sites.ed.gov/idea/regs/b",
+    "https://www.aaidd.org/intellectual-disability/definition"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. Page-count prizes do not ensure comprehension or meaningful participation. Engagement and comprehension improve when instruction is accessible, purposeful, explicit, and age respectful. Communication supports and meaningful choices should preserve the literacy target while evidence guides intensity and prompt fading.",
+    "Correct. Engagement and comprehension improve when instruction is accessible, purposeful, explicit, and age respectful. Communication supports and meaningful choices should preserve the literacy target while evidence guides intensity and prompt fading.",
+    "Not the best answer. Automatically lowering every task can deny age-respectful academic access. Engagement and comprehension improve when instruction is accessible, purposeful, explicit, and age respectful. Communication supports and meaningful choices should preserve the literacy target while evidence guides intensity and prompt fading.",
+    "Not the best answer. Public comparison does not teach comprehension and may undermine dignity and belonging. Engagement and comprehension improve when instruction is accessible, purposeful, explicit, and age respectful. Communication supports and meaningful choices should preserve the literacy target while evidence guides intensity and prompt fading."
+   ],
+   "skillIds": [
+    "functional-literacy-language"
+   ],
+   "chapterIds": [
+    "id5322-ch-06"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_intellectual_disabilities_5322",
+  "id": "id5322-b2-013",
+  "item": {
+   "id": "id5322-b2-013",
+   "type": "single-choice",
+   "domainId": "development-characteristics-intellectual-disabilities",
+   "difficulty": "application",
+   "prompt": "A student with an intellectual disability completes transitions with a visual schedule but withdraws when changes are announced only verbally. What should the team examine?",
+   "choices": [
+    "Compare communication access, predictability, task demands, supports, learner response, and consequences across the two transition conditions.",
+    "Assume withdrawal is inevitable for the disability category.",
+    "Discontinue the visual schedule because it is a support.",
+    "Use the same consequence without analyzing either condition."
+   ],
+   "answerIndex": 0,
+   "rationale": "The differing transition conditions provide actionable evidence. The team should identify which access and predictability supports are effective, teach a usable response for change, and monitor generalization rather than make label-based assumptions.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
+    "https://sites.ed.gov/idea/regs/b",
+    "https://www.aaidd.org/intellectual-disability/definition"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. The differing transition conditions provide actionable evidence. The team should identify which access and predictability supports are effective, teach a usable response for change, and monitor generalization rather than make label-based assumptions.",
+    "Not the best answer. The successful supported condition contradicts an inevitability assumption. The differing transition conditions provide actionable evidence. The team should identify which access and predictability supports are effective, teach a usable response for change, and monitor generalization rather than make label-based assumptions.",
+    "Not the best answer. An effective support should be evaluated and faded only when data justify a change. The differing transition conditions provide actionable evidence. The team should identify which access and predictability supports are effective, teach a usable response for change, and monitor generalization rather than make label-based assumptions.",
+    "Not the best answer. A consequence alone does not explain or resolve the access difference. The differing transition conditions provide actionable evidence. The team should identify which access and predictability supports are effective, teach a usable response for change, and monitor generalization rather than make label-based assumptions."
+   ],
+   "skillIds": [
+    "id-characteristics-coexisting-needs"
+   ],
+   "chapterIds": [
+    "id5322-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-013",
+  "item": {
+   "id": "ld5383-b1-013",
+   "type": "single-choice",
+   "domainId": "development-characteristics-learning-disabilities",
+   "difficulty": "application",
+   "prompt": "A student with a learning disability argues mainly during unpredictable peer-group reading tasks but participates when roles and steps are explicit. What perspective is most useful?",
+   "choices": [
+    "Examine interactions among the learner, literacy demand, peer structure, expectations, supports, and consequences rather than locating the problem only within the learner.",
+    "Assume the behavior will occur equally in every class.",
+    "Conclude that peers caused the learning disability.",
+    "Remove all collaborative literacy opportunities permanently."
+   ],
+   "answerIndex": 0,
+   "rationale": "An ecological and instructional analysis uses the contrast between routines to identify barriers, teach participation and self-advocacy strategies, clarify roles, and monitor both literacy access and behavior.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
+    "https://sites.ed.gov/idea/regs/b/d/300.309"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. An ecological and instructional analysis uses the contrast between routines to identify barriers, teach participation and self-advocacy strategies, clarify roles, and monitor both literacy access and behavior.",
+    "Not the best answer. The documented contrast shows that context matters. An ecological and instructional analysis uses the contrast between routines to identify barriers, teach participation and self-advocacy strategies, clarify roles, and monitor both literacy access and behavior.",
+    "Not the best answer. Peers do not cause a learning disability, although peer-task conditions may affect participation. An ecological and instructional analysis uses the contrast between routines to identify barriers, teach participation and self-advocacy strategies, clarify roles, and monitor both literacy access and behavior.",
+    "Not the best answer. Permanent removal prevents instruction and access to collaboration. An ecological and instructional analysis uses the contrast between routines to identify barriers, teach participation and self-advocacy strategies, clarify roles, and monitor both literacy access and behavior."
+   ],
+   "skillIds": [
+    "ld-characteristics-coexisting-needs"
+   ],
+   "chapterIds": [
+    "ld5383-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-014",
+  "item": {
+   "id": "ld5383-b1-014",
+   "type": "single-choice",
+   "domainId": "development-characteristics-learning-disabilities",
+   "difficulty": "application",
+   "prompt": "Which evidence best identifies an individualized learning-disability profile for instructional planning?",
+   "choices": [
+    "A single low reading score by itself.",
+    "Multiple measures of specific academic skills, error patterns, language and cultural context, instruction received, response to intervention, strengths, and functional classroom performance.",
+    "Physical appearance and medical history only.",
+    "The expectations of one classroom without other evidence."
+   ],
+   "answerIndex": 1,
+   "rationale": "Instructional planning for a learning disability uses converging, culturally and linguistically responsive evidence to identify specific strengths, needs, error patterns, access barriers, and response to explicit instruction.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
+    "https://sites.ed.gov/idea/regs/b/d/300.309"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. One score cannot establish a complete learning profile or rule out instructional and contextual factors. Instructional planning for a learning disability uses converging, culturally and linguistically responsive evidence to identify specific strengths, needs, error patterns, access barriers, and response to explicit instruction.",
+    "Correct. Instructional planning for a learning disability uses converging, culturally and linguistically responsive evidence to identify specific strengths, needs, error patterns, access barriers, and response to explicit instruction.",
+    "Not the best answer. Appearance and medical history do not define the specific academic learning pattern. Instructional planning for a learning disability uses converging, culturally and linguistically responsive evidence to identify specific strengths, needs, error patterns, access barriers, and response to explicit instruction.",
+    "Not the best answer. One classroom expectation is not representative assessment evidence. Instructional planning for a learning disability uses converging, culturally and linguistically responsive evidence to identify specific strengths, needs, error patterns, access barriers, and response to explicit instruction."
+   ],
+   "skillIds": [
+    "ld-characteristics-coexisting-needs"
+   ],
+   "chapterIds": [
+    "ld5383-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-023",
+  "item": {
+   "id": "ld5383-b1-023",
+   "type": "single-choice",
+   "domainId": "planning-managing-learning-environment",
+   "difficulty": "application",
+   "prompt": "During IEP development for a student with a learning disability, when should the team consider assistive technology?",
+   "choices": [
+    "Only after every low-technology support has failed for a full year.",
+    "Only when a parent has already purchased a device.",
+    "The team should consider whether assistive technology devices or services are needed for the individual learner.",
+    "Only for students with physical disabilities."
+   ],
+   "answerIndex": 2,
+   "rationale": "IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
+    "https://sites.ed.gov/idea/regs/b/d/300.309"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-14",
+   "choiceRationales": [
+    "Not the best answer. \"Only after every low-technology support has failed for a full year.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Not the best answer. \"Only when a parent has already purchased a device.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Correct. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Not the best answer. \"Only for students with physical disabilities.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance."
+   ],
+   "skillIds": [
+    "individualized-curriculum-planning"
+   ],
+   "chapterIds": [
+    "ld5383-ch-03"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-053",
+  "item": {
+   "id": "ld5383-b1-053",
+   "type": "single-choice",
+   "domainId": "instruction",
+   "difficulty": "application",
+   "prompt": "During explicit literacy intervention for a student with a learning disability, while teaching comprehension with a grade-level text, what supports literacy engagement?",
+   "choices": [
+    "Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency.",
+    "Offer only prizes for page counts.",
+    "Lower every task below the student's skill level.",
+    "Require public comparison with faster readers."
+   ],
+   "answerIndex": 0,
+   "rationale": "Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
+    "https://sites.ed.gov/idea/regs/b/d/300.309",
+    "https://ies.ed.gov/ncee/wwc/PracticeGuide/29"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Not the best answer. \"Offer only prizes for page counts.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Not the best answer. \"Lower every task below the student's skill level.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Not the best answer. \"Require public comparison with faster readers.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance."
+   ],
+   "skillIds": [
+    "structured-literacy-comprehension"
+   ],
+   "chapterIds": [
+    "ld5383-ch-06"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-013",
+  "item": {
+   "id": "ld5383-b2-013",
+   "type": "single-choice",
+   "domainId": "development-characteristics-learning-disabilities",
+   "difficulty": "application",
+   "prompt": "A student with a learning disability withdraws during timed competitive reading but engages during structured cooperative reading. What should the team examine?",
+   "choices": [
+    "Compare task demands, time pressure, peer structure, skill access, learner input, supports, and consequences across the two routines.",
+    "Assume withdrawal is a fixed feature of the disability label.",
+    "End all reading instruction that involves peers.",
+    "Use a punitive response without examining the task conditions."
+   ],
+   "answerIndex": 0,
+   "rationale": "Contrasting routines help the team identify the conditions affecting participation. The next step is to analyze skill and context data, provide explicit access and coping supports, and monitor whether engagement and literacy outcomes improve.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
+    "https://sites.ed.gov/idea/regs/b/d/300.309"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. Contrasting routines help the team identify the conditions affecting participation. The next step is to analyze skill and context data, provide explicit access and coping supports, and monitor whether engagement and literacy outcomes improve.",
+    "Not the best answer. A label does not establish a fixed response across settings. Contrasting routines help the team identify the conditions affecting participation. The next step is to analyze skill and context data, provide explicit access and coping supports, and monitor whether engagement and literacy outcomes improve.",
+    "Not the best answer. Eliminating all peer reading removes potentially beneficial instruction. Contrasting routines help the team identify the conditions affecting participation. The next step is to analyze skill and context data, provide explicit access and coping supports, and monitor whether engagement and literacy outcomes improve.",
+    "Not the best answer. Punishment selected before analysis does not address the documented contrast. Contrasting routines help the team identify the conditions affecting participation. The next step is to analyze skill and context data, provide explicit access and coping supports, and monitor whether engagement and literacy outcomes improve."
+   ],
+   "skillIds": [
+    "ld-characteristics-coexisting-needs"
+   ],
+   "chapterIds": [
+    "ld5383-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-014",
+  "item": {
+   "id": "ld5383-b2-014",
+   "type": "single-choice",
+   "domainId": "development-characteristics-learning-disabilities",
+   "difficulty": "application",
+   "prompt": "After one low reading score, a team suspects a learning disability. What additional evidence is most important before planning instruction?",
+   "choices": [
+    "The low score alone, repeated without further analysis.",
+    "Representative skill and error analysis, language and cultural context, instructional history, progress data, strengths, and performance across tasks and settings.",
+    "A disability category chosen from physical appearance.",
+    "One teacher’s expectations without student work or progress evidence."
+   ],
+   "answerIndex": 1,
+   "rationale": "A defensible instructional decision requires multiple sources that clarify the learner’s specific academic pattern and response to instruction. The team should not convert one score or impression into a global assumption.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
+    "https://sites.ed.gov/idea/regs/b/d/300.309"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. Repeating one score does not add the missing diagnostic or instructional evidence. A defensible instructional decision requires multiple sources that clarify the learner’s specific academic pattern and response to instruction. The team should not convert one score or impression into a global assumption.",
+    "Correct. A defensible instructional decision requires multiple sources that clarify the learner’s specific academic pattern and response to instruction. The team should not convert one score or impression into a global assumption.",
+    "Not the best answer. Physical appearance does not identify a learning disability. A defensible instructional decision requires multiple sources that clarify the learner’s specific academic pattern and response to instruction. The team should not convert one score or impression into a global assumption.",
+    "Not the best answer. Expectations without work samples and progress evidence cannot establish the learning pattern. A defensible instructional decision requires multiple sources that clarify the learner’s specific academic pattern and response to instruction. The team should not convert one score or impression into a global assumption."
+   ],
+   "skillIds": [
+    "ld-characteristics-coexisting-needs"
+   ],
+   "chapterIds": [
+    "ld5383-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-023",
+  "item": {
+   "id": "ld5383-b2-023",
+   "type": "single-choice",
+   "domainId": "planning-managing-learning-environment",
+   "difficulty": "application",
+   "prompt": "When aligning present levels, measurable goals, services, and curriculum access, a student has difficulty accessing grade-level text and producing written responses. What is the team’s AT responsibility?",
+   "choices": [
+    "Only after every low-technology support has failed for a full year.",
+    "Only when a parent has already purchased a device.",
+    "The team should consider whether assistive technology devices or services are needed for the individual learner.",
+    "Only for students with physical disabilities."
+   ],
+   "answerIndex": 2,
+   "rationale": "IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
+    "https://sites.ed.gov/idea/regs/b/d/300.309"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-14",
+   "choiceRationales": [
+    "Not the best answer. \"Only after every low-technology support has failed for a full year.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Not the best answer. \"Only when a parent has already purchased a device.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Correct. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Not the best answer. \"Only for students with physical disabilities.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance."
+   ],
+   "skillIds": [
+    "individualized-curriculum-planning"
+   ],
+   "chapterIds": [
+    "ld5383-ch-03"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-053",
+  "item": {
+   "id": "ld5383-b2-053",
+   "type": "single-choice",
+   "domainId": "instruction",
+   "difficulty": "application",
+   "prompt": "When progress evidence identifies a specific reading barrier, while planning meaning-focused text instruction, a capable student avoids reading because assigned texts feel irrelevant and success is rare. What is the strongest response?",
+   "choices": [
+    "Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency.",
+    "Offer only prizes for page counts.",
+    "Lower every task below the student's skill level.",
+    "Require public comparison with faster readers."
+   ],
+   "answerIndex": 0,
+   "rationale": "Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
+    "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
+    "https://sites.ed.gov/idea/regs/b/d/300.309",
+    "https://ies.ed.gov/ncee/wwc/PracticeGuide/29"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Not the best answer. \"Offer only prizes for page counts.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Not the best answer. \"Lower every task below the student's skill level.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+    "Not the best answer. \"Require public comparison with faster readers.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance."
+   ],
+   "skillIds": [
+    "structured-literacy-comprehension"
+   ],
+   "chapterIds": [
+    "ld5383-ch-06"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_severe_profound_5547",
+  "id": "sp5547-b1-010",
+  "item": {
+   "id": "sp5547-b1-010",
+   "type": "single-choice",
+   "domainId": "development-individualized-needs",
+   "difficulty": "application",
+   "prompt": "A learner with severe or profound disabilities uses AAC to select relevant ideas but needs support organizing them in a shared written paragraph. Which response is best?",
+   "choices": [
+    "Provide identical remediation in every academic area.",
+    "Provide an age-respectful model, ensure AAC access, jointly construct an example, use a visual organizer, and fade prompts while preserving the learner’s authorship.",
+    "Infer that the learner has no ideas because speech is limited.",
+    "Have an adult permanently choose and write every response."
+   ],
+   "answerIndex": 1,
+   "rationale": "The instructional response should presume competence, preserve authorship, and target the observed organization need through accessible communication, explicit modeling, guided participation, and systematic prompt fading.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
+    "https://praxis.ets.org/test/special-education-severe-to-profound-5547.html",
+    "https://sites.ed.gov/idea/regs/b",
+    "https://exceptionalchildren.org/standards/initial-practice-based-professional-preparation-standards-special-educators"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. A specific writing need does not establish an identical need in every subject. The instructional response should presume competence, preserve authorship, and target the observed organization need through accessible communication, explicit modeling, guided participation, and systematic prompt fading.",
+    "Correct. The instructional response should presume competence, preserve authorship, and target the observed organization need through accessible communication, explicit modeling, guided participation, and systematic prompt fading.",
+    "Not the best answer. Speech limitations do not show an absence of ideas or literacy potential. The instructional response should presume competence, preserve authorship, and target the observed organization need through accessible communication, explicit modeling, guided participation, and systematic prompt fading.",
+    "Not the best answer. Permanent adult selection replaces agency and instruction. The instructional response should presume competence, preserve authorship, and target the observed organization need through accessible communication, explicit modeling, guided participation, and systematic prompt fading."
+   ],
+   "skillIds": [
+    "complex-support-profiles"
+   ],
+   "chapterIds": [
+    "sp5547-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_severe_profound_5547",
+  "id": "sp5547-b1-013",
+  "item": {
+   "id": "sp5547-b1-013",
+   "type": "single-choice",
+   "domainId": "development-individualized-needs",
+   "difficulty": "application",
+   "prompt": "A learner with severe or profound disabilities shows distress during a noisy group routine but participates in a predictable small group with communication and sensory supports. What perspective is most useful?",
+   "choices": [
+    "Examine interactions among communication access, sensory conditions, health, task demands, peer structure, supports, and consequences rather than locating the problem only within the learner.",
+    "Assume distress will occur equally in every setting.",
+    "Conclude that peers alone cause the disability.",
+    "Remove all group-learning opportunities permanently."
+   ],
+   "answerIndex": 0,
+   "rationale": "An ecological, person-centered analysis uses the contrast across routines to identify access needs, coordinate supports, teach a usable communication response, and monitor safe, meaningful participation.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
+    "https://praxis.ets.org/test/special-education-severe-to-profound-5547.html",
+    "https://sites.ed.gov/idea/regs/b",
+    "https://exceptionalchildren.org/standards/initial-practice-based-professional-preparation-standards-special-educators"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. An ecological, person-centered analysis uses the contrast across routines to identify access needs, coordinate supports, teach a usable communication response, and monitor safe, meaningful participation.",
+    "Not the best answer. The successful supported routine shows that conditions matter. An ecological, person-centered analysis uses the contrast across routines to identify access needs, coordinate supports, teach a usable communication response, and monitor safe, meaningful participation.",
+    "Not the best answer. Peers do not cause the disability, though group conditions may affect access. An ecological, person-centered analysis uses the contrast across routines to identify access needs, coordinate supports, teach a usable communication response, and monitor safe, meaningful participation.",
+    "Not the best answer. Permanent removal prevents individualized support and participation. An ecological, person-centered analysis uses the contrast across routines to identify access needs, coordinate supports, teach a usable communication response, and monitor safe, meaningful participation."
+   ],
+   "skillIds": [
+    "complex-support-profiles"
+   ],
+   "chapterIds": [
+    "sp5547-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_severe_profound_5547",
+  "id": "sp5547-b1-014",
+  "item": {
+   "id": "sp5547-b1-014",
+   "type": "single-choice",
+   "domainId": "development-individualized-needs",
+   "difficulty": "application",
+   "prompt": "Which evidence is essential when planning age-respectful support for a learner with severe or profound disabilities?",
+   "choices": [
+    "A single reading score by itself.",
+    "Integrated evidence about communication, health, sensory and motor access, adaptive and academic skills, preferences, relationships, participation, and performance across settings.",
+    "The disability label and physical appearance only.",
+    "One adult’s expectations without learner or team evidence."
+   ],
+   "answerIndex": 1,
+   "rationale": "Person-centered planning integrates multiple sources to identify strengths, preferences, access needs, safety considerations, meaningful goals, and supports across environments. Severity labels alone do not determine a program.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
+    "https://praxis.ets.org/test/special-education-severe-to-profound-5547.html",
+    "https://sites.ed.gov/idea/regs/b",
+    "https://exceptionalchildren.org/standards/initial-practice-based-professional-preparation-standards-special-educators"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. One academic score cannot represent the learner’s full support and participation profile. Person-centered planning integrates multiple sources to identify strengths, preferences, access needs, safety considerations, meaningful goals, and supports across environments. Severity labels alone do not determine a program.",
+    "Correct. Person-centered planning integrates multiple sources to identify strengths, preferences, access needs, safety considerations, meaningful goals, and supports across environments. Severity labels alone do not determine a program.",
+    "Not the best answer. A label and appearance do not establish individualized strengths, needs, or goals. Person-centered planning integrates multiple sources to identify strengths, preferences, access needs, safety considerations, meaningful goals, and supports across environments. Severity labels alone do not determine a program.",
+    "Not the best answer. One expectation is not representative and excludes learner, family, and interdisciplinary evidence. Person-centered planning integrates multiple sources to identify strengths, preferences, access needs, safety considerations, meaningful goals, and supports across environments. Severity labels alone do not determine a program."
+   ],
+   "skillIds": [
+    "complex-support-profiles"
+   ],
+   "chapterIds": [
+    "sp5547-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_severe_profound_5547",
+  "id": "sp5547-b2-013",
+  "item": {
+   "id": "sp5547-b2-013",
+   "type": "single-choice",
+   "domainId": "development-individualized-needs",
+   "difficulty": "application",
+   "prompt": "A learner with severe or profound disabilities withdraws during an unpredictable activity but participates when the sequence, communication options, and sensory supports are clear. What should the team examine?",
+   "choices": [
+    "Compare predictability, communication access, sensory and health variables, task demands, supports, and consequences across the two conditions.",
+    "Assume withdrawal is inevitable because of disability severity.",
+    "Remove all new activities from the learner’s program.",
+    "Select a consequence without reviewing access or health variables."
+   ],
+   "answerIndex": 0,
+   "rationale": "The contrasting conditions provide evidence for individualized support. The team should coordinate relevant expertise, preserve learner assent and communication, adjust access, and monitor participation and well-being.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
+    "https://praxis.ets.org/test/special-education-severe-to-profound-5547.html",
+    "https://sites.ed.gov/idea/regs/b",
+    "https://exceptionalchildren.org/standards/initial-practice-based-professional-preparation-standards-special-educators"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Correct. The contrasting conditions provide evidence for individualized support. The team should coordinate relevant expertise, preserve learner assent and communication, adjust access, and monitor participation and well-being.",
+    "Not the best answer. The supported condition contradicts an inevitability assumption. The contrasting conditions provide evidence for individualized support. The team should coordinate relevant expertise, preserve learner assent and communication, adjust access, and monitor participation and well-being.",
+    "Not the best answer. Eliminating all new activity restricts learning and participation. The contrasting conditions provide evidence for individualized support. The team should coordinate relevant expertise, preserve learner assent and communication, adjust access, and monitor participation and well-being.",
+    "Not the best answer. Consequences chosen without access and health analysis may be unsafe or ineffective. The contrasting conditions provide evidence for individualized support. The team should coordinate relevant expertise, preserve learner assent and communication, adjust access, and monitor participation and well-being."
+   ],
+   "skillIds": [
+    "complex-support-profiles"
+   ],
+   "chapterIds": [
+    "sp5547-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_severe_profound_5547",
+  "id": "sp5547-b2-014",
+  "item": {
+   "id": "sp5547-b2-014",
+   "type": "single-choice",
+   "domainId": "development-individualized-needs",
+   "difficulty": "application",
+   "prompt": "A team is reviewing support needs for a learner with severe or profound disabilities. Which evidence should organize the next program decision?",
+   "choices": [
+    "The disability category without current performance data.",
+    "Current person-centered data on communication, health, sensory-motor access, adaptive and academic participation, preferences, quality of life, and response to supports across routines.",
+    "A generic program used for every learner with the same label.",
+    "One isolated observation without family, learner, or team input."
+   ],
+   "answerIndex": 1,
+   "rationale": "The next decision should follow current, representative, interdisciplinary evidence and the learner’s preferences and communication. Coordinated supports should promote dignity, safety, participation, learning, and increasing agency.",
+   "references": [
+    "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
+    "https://praxis.ets.org/test/special-education-severe-to-profound-5547.html",
+    "https://sites.ed.gov/idea/regs/b",
+    "https://exceptionalchildren.org/standards/initial-practice-based-professional-preparation-standards-special-educators"
+   ],
+   "reviewStatus": "source-reviewed",
+   "qaStatus": "qa-passed",
+   "qaReviewedAt": "2026-07-16",
+   "choiceRationales": [
+    "Not the best answer. A category does not specify an individual program. The next decision should follow current, representative, interdisciplinary evidence and the learner’s preferences and communication. Coordinated supports should promote dignity, safety, participation, learning, and increasing agency.",
+    "Correct. The next decision should follow current, representative, interdisciplinary evidence and the learner’s preferences and communication. Coordinated supports should promote dignity, safety, participation, learning, and increasing agency.",
+    "Not the best answer. A generic program ignores individual strengths, needs, and context. The next decision should follow current, representative, interdisciplinary evidence and the learner’s preferences and communication. Coordinated supports should promote dignity, safety, participation, learning, and increasing agency.",
+    "Not the best answer. One observation cannot represent patterns across routines or perspectives. The next decision should follow current, representative, interdisciplinary evidence and the learner’s preferences and communication. Coordinated supports should promote dignity, safety, participation, learning, and increasing agency."
+   ],
+   "skillIds": [
+    "complex-support-profiles"
+   ],
+   "chapterIds": [
+    "sp5547-ch-02"
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-062",
+  "item": {
+   "id": "ld5383-b1-062",
+   "rationale": "Multiplication counts equal groups: 18 boxes with 24 markers each is 18 x 24. Decompose to make the computation transparent: 18 x 24 = (18 x 20) + (18 x 4) = 360 + 72 = 432 markers. A student who adds 18 + 24 or multiplies only the tens digits is showing an immature strategy the worked example should target.",
+   "choiceRationales": [
+    "Not the best answer. \"42\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Multiplication counts equal groups: 18 boxes with 24 markers each is 18 x 24. Decompose to make the computation transparent: 18 x 24 = (18 x 20) + (18 x 4) = 360 + 72 = 432 markers. A student who adds 18 + 24 or multiplies only the tens digits is showing an immature strategy the worked example should target.",
+    "Correct. Multiplication counts equal groups: 18 boxes with 24 markers each is 18 x 24. Decompose to make the computation transparent: 18 x 24 = (18 x 20) + (18 x 4) = 360 + 72 = 432 markers. A student who adds 18 + 24 or multiplies only the tens digits is showing an immature strategy the worked example should target.",
+    "Not the best answer. \"192\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Multiplication counts equal groups: 18 boxes with 24 markers each is 18 x 24. Decompose to make the computation transparent: 18 x 24 = (18 x 20) + (18 x 4) = 360 + 72 = 432 markers. A student who adds 18 + 24 or multiplies only the tens digits is showing an immature strategy the worked example should target.",
+    "Not the best answer. \"442\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Multiplication counts equal groups: 18 boxes with 24 markers each is 18 x 24. Decompose to make the computation transparent: 18 x 24 = (18 x 20) + (18 x 4) = 360 + 72 = 432 markers. A student who adds 18 + 24 or multiplies only the tens digits is showing an immature strategy the worked example should target."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-062",
+  "item": {
+   "id": "ld5383-b2-062",
+   "rationale": "Multiplication counts equal groups: 27 folders for each of 16 sessions is 27 x 16. Decompose by place value: 27 x 16 = (27 x 10) + (27 x 6) = 270 + 162 = 432 folders. During explicit intervention, model the array or area representation so the equal-groups structure stays visible through guided practice.",
+   "choiceRationales": [
+    "Not the best answer. \"42\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Multiplication counts equal groups: 27 folders for each of 16 sessions is 27 x 16. Decompose by place value: 27 x 16 = (27 x 10) + (27 x 6) = 270 + 162 = 432 folders. During explicit intervention, model the array or area representation so the equal-groups structure stays visible through guided practice.",
+    "Correct. Multiplication counts equal groups: 27 folders for each of 16 sessions is 27 x 16. Decompose by place value: 27 x 16 = (27 x 10) + (27 x 6) = 270 + 162 = 432 folders. During explicit intervention, model the array or area representation so the equal-groups structure stays visible through guided practice.",
+    "Not the best answer. \"192\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Multiplication counts equal groups: 27 folders for each of 16 sessions is 27 x 16. Decompose by place value: 27 x 16 = (27 x 10) + (27 x 6) = 270 + 162 = 432 folders. During explicit intervention, model the array or area representation so the equal-groups structure stays visible through guided practice.",
+    "Not the best answer. \"442\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Multiplication counts equal groups: 27 folders for each of 16 sessions is 27 x 16. Decompose by place value: 27 x 16 = (27 x 10) + (27 x 6) = 270 + 162 = 432 folders. During explicit intervention, model the array or area representation so the equal-groups structure stays visible through guided practice."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-063",
+  "item": {
+   "id": "ld5383-b1-063",
+   "rationale": "Adding fractions requires a common denominator. Rename three-fourths as eighths: 3/4 = 6/8, so 3/4 + 5/8 = 6/8 + 5/8 = 11/8. Because 11/8 is more than one whole, rewrite it as the mixed number 1 3/8. Watch for students who add numerators and denominators separately (3 + 5 over 4 + 8), a classic fraction misconception.",
+   "choiceRationales": [
+    "Not the best answer. \"1 1/8\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Adding fractions requires a common denominator. Rename three-fourths as eighths: 3/4 = 6/8, so 3/4 + 5/8 = 6/8 + 5/8 = 11/8. Because 11/8 is more than one whole, rewrite it as the mixed number 1 3/8. Watch for students who add numerators and denominators separately (3 + 5 over 4 + 8), a classic fraction misconception.",
+    "Not the best answer. \"8/12\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Adding fractions requires a common denominator. Rename three-fourths as eighths: 3/4 = 6/8, so 3/4 + 5/8 = 6/8 + 5/8 = 11/8. Because 11/8 is more than one whole, rewrite it as the mixed number 1 3/8. Watch for students who add numerators and denominators separately (3 + 5 over 4 + 8), a classic fraction misconception.",
+    "Correct. Adding fractions requires a common denominator. Rename three-fourths as eighths: 3/4 = 6/8, so 3/4 + 5/8 = 6/8 + 5/8 = 11/8. Because 11/8 is more than one whole, rewrite it as the mixed number 1 3/8. Watch for students who add numerators and denominators separately (3 + 5 over 4 + 8), a classic fraction misconception.",
+    "Not the best answer. \"3/8\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Adding fractions requires a common denominator. Rename three-fourths as eighths: 3/4 = 6/8, so 3/4 + 5/8 = 6/8 + 5/8 = 11/8. Because 11/8 is more than one whole, rewrite it as the mixed number 1 3/8. Watch for students who add numerators and denominators separately (3 + 5 over 4 + 8), a classic fraction misconception."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-063",
+  "item": {
+   "id": "ld5383-b2-063",
+   "rationale": "Subtracting fractions requires a common denominator. Rename one-half as eighths: 1/2 = 4/8, so 1 7/8 - 4/8 = 1 3/8; no regrouping is needed because 7/8 is larger than 4/8. In explicit intervention, model the renaming with fraction strips so the student sees why halves become eighths before symbols are manipulated.",
+   "choiceRationales": [
+    "Not the best answer. \"1 1/8\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Subtracting fractions requires a common denominator. Rename one-half as eighths: 1/2 = 4/8, so 1 7/8 - 4/8 = 1 3/8; no regrouping is needed because 7/8 is larger than 4/8. In explicit intervention, model the renaming with fraction strips so the student sees why halves become eighths before symbols are manipulated.",
+    "Not the best answer. \"8/12\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Subtracting fractions requires a common denominator. Rename one-half as eighths: 1/2 = 4/8, so 1 7/8 - 4/8 = 1 3/8; no regrouping is needed because 7/8 is larger than 4/8. In explicit intervention, model the renaming with fraction strips so the student sees why halves become eighths before symbols are manipulated.",
+    "Correct. Subtracting fractions requires a common denominator. Rename one-half as eighths: 1/2 = 4/8, so 1 7/8 - 4/8 = 1 3/8; no regrouping is needed because 7/8 is larger than 4/8. In explicit intervention, model the renaming with fraction strips so the student sees why halves become eighths before symbols are manipulated.",
+    "Not the best answer. \"3/8\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Subtracting fractions requires a common denominator. Rename one-half as eighths: 1/2 = 4/8, so 1 7/8 - 4/8 = 1 3/8; no regrouping is needed because 7/8 is larger than 4/8. In explicit intervention, model the renaming with fraction strips so the student sees why halves become eighths before symbols are manipulated."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-064",
+  "item": {
+   "id": "ld5383-b1-064",
+   "rationale": "Division answers how many equal-sized pieces fit into the total: 12.5 / 0.5. Multiply both numbers by 10 to divide with whole numbers: 125 / 5 = 25 complete pieces. A student who gets 2.5 or 250 has misplaced the decimal, a signal that the worked example should show why scaling both numbers by the same factor preserves the quotient.",
+   "choiceRationales": [
+    "Not the best answer. \"6\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Division answers how many equal-sized pieces fit into the total: 12.5 / 0.5. Multiply both numbers by 10 to divide with whole numbers: 125 / 5 = 25 complete pieces. A student who gets 2.5 or 250 has misplaced the decimal, a signal that the worked example should show why scaling both numbers by the same factor preserves the quotient.",
+    "Not the best answer. \"15\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Division answers how many equal-sized pieces fit into the total: 12.5 / 0.5. Multiply both numbers by 10 to divide with whole numbers: 125 / 5 = 25 complete pieces. A student who gets 2.5 or 250 has misplaced the decimal, a signal that the worked example should show why scaling both numbers by the same factor preserves the quotient.",
+    "Not the best answer. \"250\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Division answers how many equal-sized pieces fit into the total: 12.5 / 0.5. Multiply both numbers by 10 to divide with whole numbers: 125 / 5 = 25 complete pieces. A student who gets 2.5 or 250 has misplaced the decimal, a signal that the worked example should show why scaling both numbers by the same factor preserves the quotient.",
+    "Correct. Division answers how many equal-sized pieces fit into the total: 12.5 / 0.5. Multiply both numbers by 10 to divide with whole numbers: 125 / 5 = 25 complete pieces. A student who gets 2.5 or 250 has misplaced the decimal, a signal that the worked example should show why scaling both numbers by the same factor preserves the quotient."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-064",
+  "item": {
+   "id": "ld5383-b2-064",
+   "rationale": "Division answers how many equal-sized bottles the total can fill: 7.5 / 0.3. Multiply both numbers by 10 to work with whole numbers: 75 / 3 = 25 complete bottles. During guided practice, have the student explain why scaling the dividend and divisor by the same factor leaves the quotient unchanged before moving to new problems.",
+   "choiceRationales": [
+    "Not the best answer. \"6\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Division answers how many equal-sized bottles the total can fill: 7.5 / 0.3. Multiply both numbers by 10 to work with whole numbers: 75 / 3 = 25 complete bottles. During guided practice, have the student explain why scaling the dividend and divisor by the same factor leaves the quotient unchanged before moving to new problems.",
+    "Not the best answer. \"15\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Division answers how many equal-sized bottles the total can fill: 7.5 / 0.3. Multiply both numbers by 10 to work with whole numbers: 75 / 3 = 25 complete bottles. During guided practice, have the student explain why scaling the dividend and divisor by the same factor leaves the quotient unchanged before moving to new problems.",
+    "Not the best answer. \"250\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Division answers how many equal-sized bottles the total can fill: 7.5 / 0.3. Multiply both numbers by 10 to work with whole numbers: 75 / 3 = 25 complete bottles. During guided practice, have the student explain why scaling the dividend and divisor by the same factor leaves the quotient unchanged before moving to new problems.",
+    "Correct. Division answers how many equal-sized bottles the total can fill: 7.5 / 0.3. Multiply both numbers by 10 to work with whole numbers: 75 / 3 = 25 complete bottles. During guided practice, have the student explain why scaling the dividend and divisor by the same factor leaves the quotient unchanged before moving to new problems."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-066",
+  "item": {
+   "id": "ld5383-b1-066",
+   "rationale": "A prime factorization expresses the number as a product of primes only. Factor stepwise: 360 = 36 x 10 = (6 x 6) x (2 x 5) = 2 x 3 x 2 x 3 x 2 x 5 = 2^3 x 3^2 x 5. Check by multiplying back: 8 x 9 x 5 = 360. Distractors that keep 6 or 9 as factors are not prime factorizations because those factors are still composite.",
+   "choiceRationales": [
+    "Not the best answer. \"2 x 3 x 60\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A prime factorization expresses the number as a product of primes only. Factor stepwise: 360 = 36 x 10 = (6 x 6) x (2 x 5) = 2 x 3 x 2 x 3 x 2 x 5 = 2^3 x 3^2 x 5. Check by multiplying back: 8 x 9 x 5 = 360. Distractors that keep 6 or 9 as factors are not prime factorizations because those factors are still composite.",
+    "Correct. A prime factorization expresses the number as a product of primes only. Factor stepwise: 360 = 36 x 10 = (6 x 6) x (2 x 5) = 2 x 3 x 2 x 3 x 2 x 5 = 2^3 x 3^2 x 5. Check by multiplying back: 8 x 9 x 5 = 360. Distractors that keep 6 or 9 as factors are not prime factorizations because those factors are still composite.",
+    "Not the best answer. \"2^2 x 3^2 x 10\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A prime factorization expresses the number as a product of primes only. Factor stepwise: 360 = 36 x 10 = (6 x 6) x (2 x 5) = 2 x 3 x 2 x 3 x 2 x 5 = 2^3 x 3^2 x 5. Check by multiplying back: 8 x 9 x 5 = 360. Distractors that keep 6 or 9 as factors are not prime factorizations because those factors are still composite.",
+    "Not the best answer. \"3^3 x 5\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A prime factorization expresses the number as a product of primes only. Factor stepwise: 360 = 36 x 10 = (6 x 6) x (2 x 5) = 2 x 3 x 2 x 3 x 2 x 5 = 2^3 x 3^2 x 5. Check by multiplying back: 8 x 9 x 5 = 360. Distractors that keep 6 or 9 as factors are not prime factorizations because those factors are still composite."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-066",
+  "item": {
+   "id": "ld5383-b2-066",
+   "rationale": "A prime factorization uses primes only. Build a factor tree: 360 = 8 x 45 = (2 x 2 x 2) x (9 x 5) = 2^3 x 3^2 x 5. Verify by recomposing: 8 x 9 x 5 = 360. In intervention, contrast this with expressions that contain composite factors such as 6 or 9, which are complete only after further splitting into primes.",
+   "choiceRationales": [
+    "Not the best answer. \"2 x 3 x 60\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A prime factorization uses primes only. Build a factor tree: 360 = 8 x 45 = (2 x 2 x 2) x (9 x 5) = 2^3 x 3^2 x 5. Verify by recomposing: 8 x 9 x 5 = 360. In intervention, contrast this with expressions that contain composite factors such as 6 or 9, which are complete only after further splitting into primes.",
+    "Correct. A prime factorization uses primes only. Build a factor tree: 360 = 8 x 45 = (2 x 2 x 2) x (9 x 5) = 2^3 x 3^2 x 5. Verify by recomposing: 8 x 9 x 5 = 360. In intervention, contrast this with expressions that contain composite factors such as 6 or 9, which are complete only after further splitting into primes.",
+    "Not the best answer. \"2^2 x 3^2 x 10\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A prime factorization uses primes only. Build a factor tree: 360 = 8 x 45 = (2 x 2 x 2) x (9 x 5) = 2^3 x 3^2 x 5. Verify by recomposing: 8 x 9 x 5 = 360. In intervention, contrast this with expressions that contain composite factors such as 6 or 9, which are complete only after further splitting into primes.",
+    "Not the best answer. \"3^3 x 5\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A prime factorization uses primes only. Build a factor tree: 360 = 8 x 45 = (2 x 2 x 2) x (9 x 5) = 2^3 x 3^2 x 5. Verify by recomposing: 8 x 9 x 5 = 360. In intervention, contrast this with expressions that contain composite factors such as 6 or 9, which are complete only after further splitting into primes."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-067",
+  "item": {
+   "id": "ld5383-b1-067",
+   "rationale": "Change equals the final value minus the initial value: 5 - (-7) = 5 + 7 = 12 degrees. On a number line, the temperature climbs 7 degrees to reach 0 and then 5 more to reach 5, so the two-part jump makes the total visible. Students who answer 2 have subtracted absolute values instead of the signed values.",
+   "choiceRationales": [
+    "Not the best answer. \"-12\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Change equals the final value minus the initial value: 5 - (-7) = 5 + 7 = 12 degrees. On a number line, the temperature climbs 7 degrees to reach 0 and then 5 more to reach 5, so the two-part jump makes the total visible. Students who answer 2 have subtracted absolute values instead of the signed values.",
+    "Not the best answer. \"2\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Change equals the final value minus the initial value: 5 - (-7) = 5 + 7 = 12 degrees. On a number line, the temperature climbs 7 degrees to reach 0 and then 5 more to reach 5, so the two-part jump makes the total visible. Students who answer 2 have subtracted absolute values instead of the signed values.",
+    "Correct. Change equals the final value minus the initial value: 5 - (-7) = 5 + 7 = 12 degrees. On a number line, the temperature climbs 7 degrees to reach 0 and then 5 more to reach 5, so the two-part jump makes the total visible. Students who answer 2 have subtracted absolute values instead of the signed values.",
+    "Not the best answer. \"14\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Change equals the final value minus the initial value: 5 - (-7) = 5 + 7 = 12 degrees. On a number line, the temperature climbs 7 degrees to reach 0 and then 5 more to reach 5, so the two-part jump makes the total visible. Students who answer 2 have subtracted absolute values instead of the signed values."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-067",
+  "item": {
+   "id": "ld5383-b2-067",
+   "rationale": "The increase equals the final balance minus the initial balance: 3 - (-9) = 3 + 9 = 12 dollars. On a number line, the balance rises 9 dollars to reach 0 and 3 more to reach 3, so the total climb is 12. A student who answers 6 likely subtracted absolute values, a sign-rule misconception to address in guided practice.",
+   "choiceRationales": [
+    "Not the best answer. \"-12\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. The increase equals the final balance minus the initial balance: 3 - (-9) = 3 + 9 = 12 dollars. On a number line, the balance rises 9 dollars to reach 0 and 3 more to reach 3, so the total climb is 12. A student who answers 6 likely subtracted absolute values, a sign-rule misconception to address in guided practice.",
+    "Not the best answer. \"2\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. The increase equals the final balance minus the initial balance: 3 - (-9) = 3 + 9 = 12 dollars. On a number line, the balance rises 9 dollars to reach 0 and 3 more to reach 3, so the total climb is 12. A student who answers 6 likely subtracted absolute values, a sign-rule misconception to address in guided practice.",
+    "Correct. The increase equals the final balance minus the initial balance: 3 - (-9) = 3 + 9 = 12 dollars. On a number line, the balance rises 9 dollars to reach 0 and 3 more to reach 3, so the total climb is 12. A student who answers 6 likely subtracted absolute values, a sign-rule misconception to address in guided practice.",
+    "Not the best answer. \"14\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. The increase equals the final balance minus the initial balance: 3 - (-9) = 3 + 9 = 12 dollars. On a number line, the balance rises 9 dollars to reach 0 and 3 more to reach 3, so the total climb is 12. A student who answers 6 likely subtracted absolute values, a sign-rule misconception to address in guided practice."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-068",
+  "item": {
+   "id": "ld5383-b1-068",
+   "rationale": "Rounding to the nearest tenth keeps one digit after the decimal point. In 48.376 the tenths digit is 3 and the decider, the hundredths digit, is 7, which is 5 or more, so the tenths digit rounds up from 3 to 4, giving 48.4. Students who answer 48.3 truncated instead of rounding; 48.38 is a rounding to hundredths, not tenths.",
+   "choiceRationales": [
+    "Not the best answer. \"48.3\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Rounding to the nearest tenth keeps one digit after the decimal point. In 48.376 the tenths digit is 3 and the decider, the hundredths digit, is 7, which is 5 or more, so the tenths digit rounds up from 3 to 4, giving 48.4. Students who answer 48.3 truncated instead of rounding; 48.38 is a rounding to hundredths, not tenths.",
+    "Not the best answer. \"48.38\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Rounding to the nearest tenth keeps one digit after the decimal point. In 48.376 the tenths digit is 3 and the decider, the hundredths digit, is 7, which is 5 or more, so the tenths digit rounds up from 3 to 4, giving 48.4. Students who answer 48.3 truncated instead of rounding; 48.38 is a rounding to hundredths, not tenths.",
+    "Not the best answer. \"49.0\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Rounding to the nearest tenth keeps one digit after the decimal point. In 48.376 the tenths digit is 3 and the decider, the hundredths digit, is 7, which is 5 or more, so the tenths digit rounds up from 3 to 4, giving 48.4. Students who answer 48.3 truncated instead of rounding; 48.38 is a rounding to hundredths, not tenths.",
+    "Correct. Rounding to the nearest tenth keeps one digit after the decimal point. In 48.376 the tenths digit is 3 and the decider, the hundredths digit, is 7, which is 5 or more, so the tenths digit rounds up from 3 to 4, giving 48.4. Students who answer 48.3 truncated instead of rounding; 48.38 is a rounding to hundredths, not tenths."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-068",
+  "item": {
+   "id": "ld5383-b2-068",
+   "rationale": "Rounding to the nearest tenth keeps one digit after the decimal point. In 48.36 the tenths digit is 3 and the decider, the hundredths digit, is 6, which is 5 or more, so the tenths digit rounds up to 4, giving 48.4 centimeters. During intervention, have the student underline the target place and circle the decider before rounding.",
+   "choiceRationales": [
+    "Not the best answer. \"48.3\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Rounding to the nearest tenth keeps one digit after the decimal point. In 48.36 the tenths digit is 3 and the decider, the hundredths digit, is 6, which is 5 or more, so the tenths digit rounds up to 4, giving 48.4 centimeters. During intervention, have the student underline the target place and circle the decider before rounding.",
+    "Not the best answer. \"48.38\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Rounding to the nearest tenth keeps one digit after the decimal point. In 48.36 the tenths digit is 3 and the decider, the hundredths digit, is 6, which is 5 or more, so the tenths digit rounds up to 4, giving 48.4 centimeters. During intervention, have the student underline the target place and circle the decider before rounding.",
+    "Not the best answer. \"49.0\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Rounding to the nearest tenth keeps one digit after the decimal point. In 48.36 the tenths digit is 3 and the decider, the hundredths digit, is 6, which is 5 or more, so the tenths digit rounds up to 4, giving 48.4 centimeters. During intervention, have the student underline the target place and circle the decider before rounding.",
+    "Correct. Rounding to the nearest tenth keeps one digit after the decimal point. In 48.36 the tenths digit is 3 and the decider, the hundredths digit, is 6, which is 5 or more, so the tenths digit rounds up to 4, giving 48.4 centimeters. During intervention, have the student underline the target place and circle the decider before rounding."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-069",
+  "item": {
+   "id": "ld5383-b1-069",
+   "rationale": "First find the unit rate: 3 cups / 2 batches = 1.5 cups per batch. Then scale it: 1.5 x 5 = 7.5 cups. A double number line pairing cups with batches makes the proportional structure visible. A student who answers 6 has added 3, treating the relationship as additive rather than multiplicative, the core ratio misconception.",
+   "choiceRationales": [
+    "Correct. First find the unit rate: 3 cups / 2 batches = 1.5 cups per batch. Then scale it: 1.5 x 5 = 7.5 cups. A double number line pairing cups with batches makes the proportional structure visible. A student who answers 6 has added 3, treating the relationship as additive rather than multiplicative, the core ratio misconception.",
+    "Not the best answer. \"3.3\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. First find the unit rate: 3 cups / 2 batches = 1.5 cups per batch. Then scale it: 1.5 x 5 = 7.5 cups. A double number line pairing cups with batches makes the proportional structure visible. A student who answers 6 has added 3, treating the relationship as additive rather than multiplicative, the core ratio misconception.",
+    "Not the best answer. \"6\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. First find the unit rate: 3 cups / 2 batches = 1.5 cups per batch. Then scale it: 1.5 x 5 = 7.5 cups. A double number line pairing cups with batches makes the proportional structure visible. A student who answers 6 has added 3, treating the relationship as additive rather than multiplicative, the core ratio misconception.",
+    "Not the best answer. \"10\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. First find the unit rate: 3 cups / 2 batches = 1.5 cups per batch. Then scale it: 1.5 x 5 = 7.5 cups. A double number line pairing cups with batches makes the proportional structure visible. A student who answers 6 has added 3, treating the relationship as additive rather than multiplicative, the core ratio misconception."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-069",
+  "item": {
+   "id": "ld5383-b2-069",
+   "rationale": "Find the unit rate first: 3 cartridges / 2 runs = 1.5 cartridges per run. Scale to five runs: 1.5 x 5 = 7.5 cartridges. In explicit intervention, a ratio table (3:2, 1.5:1, 7.5:5) shows the constant multiplicative relationship. Answering 6 signals additive thinking; the student added 3 instead of scaling the rate.",
+   "choiceRationales": [
+    "Correct. Find the unit rate first: 3 cartridges / 2 runs = 1.5 cartridges per run. Scale to five runs: 1.5 x 5 = 7.5 cartridges. In explicit intervention, a ratio table (3:2, 1.5:1, 7.5:5) shows the constant multiplicative relationship. Answering 6 signals additive thinking; the student added 3 instead of scaling the rate.",
+    "Not the best answer. \"3.3\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Find the unit rate first: 3 cartridges / 2 runs = 1.5 cartridges per run. Scale to five runs: 1.5 x 5 = 7.5 cartridges. In explicit intervention, a ratio table (3:2, 1.5:1, 7.5:5) shows the constant multiplicative relationship. Answering 6 signals additive thinking; the student added 3 instead of scaling the rate.",
+    "Not the best answer. \"6\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Find the unit rate first: 3 cartridges / 2 runs = 1.5 cartridges per run. Scale to five runs: 1.5 x 5 = 7.5 cartridges. In explicit intervention, a ratio table (3:2, 1.5:1, 7.5:5) shows the constant multiplicative relationship. Answering 6 signals additive thinking; the student added 3 instead of scaling the rate.",
+    "Not the best answer. \"10\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Find the unit rate first: 3 cartridges / 2 runs = 1.5 cartridges per run. Scale to five runs: 1.5 x 5 = 7.5 cartridges. In explicit intervention, a ratio table (3:2, 1.5:1, 7.5:5) shows the constant multiplicative relationship. Answering 6 signals additive thinking; the student added 3 instead of scaling the rate."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-070",
+  "item": {
+   "id": "ld5383-b1-070",
+   "rationale": "A 25% discount leaves 75% of the price, so compute 0.75 x 80 = 60 dollars in one step, or find the discount first (0.25 x 80 = 20 dollars) and subtract: 80 - 20 = 60. Students who answer 20 dollars found the discount amount, not the sale price, a signal to restate what the question asks before computing.",
+   "choiceRationales": [
+    "Not the best answer. \"$20\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A 25% discount leaves 75% of the price, so compute 0.75 x 80 = 60 dollars in one step, or find the discount first (0.25 x 80 = 20 dollars) and subtract: 80 - 20 = 60. Students who answer 20 dollars found the discount amount, not the sale price, a signal to restate what the question asks before computing.",
+    "Correct. A 25% discount leaves 75% of the price, so compute 0.75 x 80 = 60 dollars in one step, or find the discount first (0.25 x 80 = 20 dollars) and subtract: 80 - 20 = 60. Students who answer 20 dollars found the discount amount, not the sale price, a signal to restate what the question asks before computing.",
+    "Not the best answer. \"$55\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A 25% discount leaves 75% of the price, so compute 0.75 x 80 = 60 dollars in one step, or find the discount first (0.25 x 80 = 20 dollars) and subtract: 80 - 20 = 60. Students who answer 20 dollars found the discount amount, not the sale price, a signal to restate what the question asks before computing.",
+    "Not the best answer. \"$75\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A 25% discount leaves 75% of the price, so compute 0.75 x 80 = 60 dollars in one step, or find the discount first (0.25 x 80 = 20 dollars) and subtract: 80 - 20 = 60. Students who answer 20 dollars found the discount amount, not the sale price, a signal to restate what the question asks before computing."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-070",
+  "item": {
+   "id": "ld5383-b2-070",
+   "rationale": "A 50% discount leaves half of the fee, so 0.5 x 120 = 60 dollars; equivalently, subtract the 60-dollar discount from 120. In guided practice, connect the percent to the fraction one-half so the student sees why halving the fee and computing 50% are the same operation. Answering 240 or 30 signals confusion about the base amount.",
+   "choiceRationales": [
+    "Not the best answer. \"$20\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A 50% discount leaves half of the fee, so 0.5 x 120 = 60 dollars; equivalently, subtract the 60-dollar discount from 120. In guided practice, connect the percent to the fraction one-half so the student sees why halving the fee and computing 50% are the same operation. Answering 240 or 30 signals confusion about the base amount.",
+    "Correct. A 50% discount leaves half of the fee, so 0.5 x 120 = 60 dollars; equivalently, subtract the 60-dollar discount from 120. In guided practice, connect the percent to the fraction one-half so the student sees why halving the fee and computing 50% are the same operation. Answering 240 or 30 signals confusion about the base amount.",
+    "Not the best answer. \"$55\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A 50% discount leaves half of the fee, so 0.5 x 120 = 60 dollars; equivalently, subtract the 60-dollar discount from 120. In guided practice, connect the percent to the fraction one-half so the student sees why halving the fee and computing 50% are the same operation. Answering 240 or 30 signals confusion about the base amount.",
+    "Not the best answer. \"$75\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A 50% discount leaves half of the fee, so 0.5 x 120 = 60 dollars; equivalently, subtract the 60-dollar discount from 120. In guided practice, connect the percent to the fraction one-half so the student sees why halving the fee and computing 50% are the same operation. Answering 240 or 30 signals confusion about the base amount."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b1-071",
+  "item": {
+   "id": "ld5383-b1-071",
+   "rationale": "A constant rate is the total quantity divided by the elapsed time: 180 miles / 3 hours = 60 miles per hour. Check by recomposing: 60 x 3 = 180. Students who answer 540 multiplied instead of dividing, and those who answer 177 subtracted; both signal that the worked example should name the per-unit meaning of rate explicitly.",
+   "choiceRationales": [
+    "Not the best answer. \"45 per hour\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A constant rate is the total quantity divided by the elapsed time: 180 miles / 3 hours = 60 miles per hour. Check by recomposing: 60 x 3 = 180. Students who answer 540 multiplied instead of dividing, and those who answer 177 subtracted; both signal that the worked example should name the per-unit meaning of rate explicitly.",
+    "Not the best answer. \"120 per hour\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A constant rate is the total quantity divided by the elapsed time: 180 miles / 3 hours = 60 miles per hour. Check by recomposing: 60 x 3 = 180. Students who answer 540 multiplied instead of dividing, and those who answer 177 subtracted; both signal that the worked example should name the per-unit meaning of rate explicitly.",
+    "Correct. A constant rate is the total quantity divided by the elapsed time: 180 miles / 3 hours = 60 miles per hour. Check by recomposing: 60 x 3 = 180. Students who answer 540 multiplied instead of dividing, and those who answer 177 subtracted; both signal that the worked example should name the per-unit meaning of rate explicitly.",
+    "Not the best answer. \"540 per hour\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A constant rate is the total quantity divided by the elapsed time: 180 miles / 3 hours = 60 miles per hour. Check by recomposing: 60 x 3 = 180. Students who answer 540 multiplied instead of dividing, and those who answer 177 subtracted; both signal that the worked example should name the per-unit meaning of rate explicitly."
+   ]
+  }
+ },
+ {
+  "stem": "special_education_learning_disabilities_5383",
+  "id": "ld5383-b2-071",
+  "item": {
+   "id": "ld5383-b2-071",
+   "rationale": "A constant hourly rate is the total output divided by the elapsed time: 240 items / 4 hours = 60 items per hour. Verify by recomposing: 60 x 4 = 240. During explicit instruction, label the units in every step (items / hours = items per hour) so the student attaches meaning to the quotient rather than memorizing a procedure.",
+   "choiceRationales": [
+    "Not the best answer. \"45 per hour\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A constant hourly rate is the total output divided by the elapsed time: 240 items / 4 hours = 60 items per hour. Verify by recomposing: 60 x 4 = 240. During explicit instruction, label the units in every step (items / hours = items per hour) so the student attaches meaning to the quotient rather than memorizing a procedure.",
+    "Not the best answer. \"120 per hour\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A constant hourly rate is the total output divided by the elapsed time: 240 items / 4 hours = 60 items per hour. Verify by recomposing: 60 x 4 = 240. During explicit instruction, label the units in every step (items / hours = items per hour) so the student attaches meaning to the quotient rather than memorizing a procedure.",
+    "Correct. A constant hourly rate is the total output divided by the elapsed time: 240 items / 4 hours = 60 items per hour. Verify by recomposing: 60 x 4 = 240. During explicit instruction, label the units in every step (items / hours = items per hour) so the student attaches meaning to the quotient rather than memorizing a procedure.",
+    "Not the best answer. \"540 per hour\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. A constant hourly rate is the total output divided by the elapsed time: 240 items / 4 hours = 60 items per hour. Verify by recomposing: 60 x 4 = 240. During explicit instruction, label the units in every step (items / hours = items per hour) so the student attaches meaning to the quotient rather than memorizing a procedure."
+   ]
+  }
+ }
+]

@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-16T22:33:18.304Z",
+  "reviewedAt": "2026-07-16",
+  "waveId": "eppp-key-alignment-wave-02",
+  "standard": {
+    "method": "Manual stem-choice-rationale review followed by cross-check against each item’s cited editorial source record.",
+    "keyBalanceProtection": "The supported choice is moved into the existing keyed position, preserving answer-position balance and practice-bank structure.",
+    "limitation": "This is an editorial answer-key consistency repair, not psychometric calibration or independent licensed-psychologist validation."
+  },
+  "summary": {
+    "declaredRepairs": 10,
+    "choiceSwapsApplied": 0,
+    "alignedItems": 10
+  },
+  "items": [
+    {
+      "id": "eppp-b007-intervention-1",
+      "answerIndex": 1,
+      "supportedChoice": "Beginning with prolonged exposure to a highly feared stimulus rather than moving up a hierarchy gradually",
+      "displacedChoice": "Beginning with prolonged exposure to a highly feared stimulus rather than moving up a hierarchy gradually",
+      "choiceSwapApplied": false
+    },
+    {
+      "id": "eppp-b013-cognitive-1",
+      "answerIndex": 1,
+      "supportedChoice": "Selectively enhances processing within a limited spatial region",
+      "displacedChoice": "Selectively enhances processing within a limited spatial region",
+      "choiceSwapApplied": false
+    },
+    {
+      "id": "eppp-b015-intervention-1",
+      "answerIndex": 1,
+      "supportedChoice": "Help clients describe concrete signs that the preferred future has occurred",
+      "displacedChoice": "Help clients describe concrete signs that the preferred future has occurred",
+      "choiceSwapApplied": false
+    },
+    {
+      "id": "eppp-b016-intervention-1",
+      "answerIndex": 1,
+      "supportedChoice": "Adaptive information and action tendencies that can also become maladaptive",
+      "displacedChoice": "Adaptive information and action tendencies that can also become maladaptive",
+      "choiceSwapApplied": false
+    },
+    {
+      "id": "eppp-b016-professional-1",
+      "answerIndex": 1,
+      "supportedChoice": "Maintain impartiality and focus on the child’s psychological best interests",
+      "displacedChoice": "Maintain impartiality and focus on the child’s psychological best interests",
+      "choiceSwapApplied": false
+    },
+    {
+      "id": "eppp-b017-assessment-1",
+      "answerIndex": 2,
+      "supportedChoice": "People with the condition who test positive",
+      "displacedChoice": "People with the condition who test positive",
+      "choiceSwapApplied": false
+    },
+    {
+      "id": "eppp-b017-intervention-1",
+      "answerIndex": 1,
+      "supportedChoice": "Thoughts, emotions, behavior, physiology, and context interact and can be changed",
+      "displacedChoice": "Thoughts, emotions, behavior, physiology, and context interact and can be changed",
+      "choiceSwapApplied": false
+    },
+    {
+      "id": "eppp-b017-professional-1",
+      "answerIndex": 1,
+      "supportedChoice": "Avoid or minimize reasonably foreseeable harm where possible",
+      "displacedChoice": "Avoid or minimize reasonably foreseeable harm where possible",
+      "choiceSwapApplied": false
+    },
+    {
+      "id": "eppp-b017-social-1",
+      "answerIndex": 3,
+      "supportedChoice": "Lifelong self-reflection, power awareness, and accountable partnership",
+      "displacedChoice": "Lifelong self-reflection, power awareness, and accountable partnership",
+      "choiceSwapApplied": false
+    },
+    {
+      "id": "eppp-b025-professional-1",
+      "answerIndex": 2,
+      "supportedChoice": "Develop self-awareness, seek relevant knowledge, adapt responsively, and consult when needed",
+      "displacedChoice": "Develop self-awareness, seek relevant knowledge, adapt responsively, and consult when needed",
+      "choiceSwapApplied": false
+    }
+  ]
+}

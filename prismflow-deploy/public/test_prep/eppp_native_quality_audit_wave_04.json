@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-04",
+  "reviewedAt": "2026-07-16",
+  "scope": "Eight priority-docket rewrites replacing cue-heavy or redundant recall with sourced application and analysis scenarios using adjacent-concept distractors.",
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "aggregateResponseOptionsAdded": 0,
+    "optionSpecificExplanations": 32,
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v3-assessment-051",
+      "domainId": "assessment",
+      "difficulty": "advanced",
+      "answerIndex": 0,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "assessment-lnnb-integrated-interpretation",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "single-scale-localization",
+        "construct-substitution",
+        "unsupported-response-distortion"
+      ],
+      "sourceCount": 3
+    },
+    {
+      "id": "eppp-v2-professional-040",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "professional-accurate-payor-reporting",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "supervision-responsibility-confusion",
+        "reimbursement-incentive-confusion",
+        "omission-as-correction-confusion"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-v2-assessment-005",
+      "domainId": "assessment",
+      "difficulty": "advanced",
+      "answerIndex": 1,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "assessment-irt-item-information-selection",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "difficulty-only-heuristic",
+        "discrimination-only-heuristic",
+        "exposure-only-heuristic"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-v3-intervention-018",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "intervention-bowen-differentiation-in-context",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "emotional-cutoff",
+        "fusion-through-compliance",
+        "triangulation"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-b016-social-1",
+      "domainId": "social-cultural",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "social-comparison-application",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "self-perception",
+        "cognitive-dissonance",
+        "in-group-favoritism"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-b022-assessment-1",
+      "domainId": "assessment",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "assessment-pai-validity-before-interpretation",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "scores-equal-diagnosis",
+        "averaging-corrects-invalidity",
+        "construct-substitution"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-b023-intervention-3",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 3,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "intervention-dbt-target-hierarchy",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "skills-before-safety",
+        "therapy-interference-before-safety",
+        "quality-of-life-before-safety"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-v2-professional-030",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "answerIndex": 3,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "professional-therapy-informed-consent-elements",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "credentials-as-consent",
+        "formulation-as-consent",
+        "office-logistics-as-consent"
+      ],
+      "sourceCount": 1
+    }
+  ],
+  "limitations": [
+    "Editorial and source review is not psychometric calibration or independent licensed-psychologist validation."
+  ]
+}

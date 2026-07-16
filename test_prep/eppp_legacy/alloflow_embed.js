@@ -5,7 +5,7 @@
     var notice = document.createElement('aside');
     notice.id = 'alloflow-legacy-notice';
     notice.setAttribute('role', 'note');
-    notice.innerHTML = '<strong>AlloFlow legacy workspace:</strong> The complete Pass the EPPP Part 1 study app is available here without its former access gate. Its content is pending item-by-item expert review. Adaptive difficulty and score displays are practice heuristics—not official EPPP equating, pass predictions, or psychometric results.';
+    notice.innerHTML = '<strong>AlloFlow EPPP study suite:</strong> Independent practice content for review and study. Adaptive difficulty and score displays are practice heuristics&mdash;not official EPPP equating, pass predictions, or psychometric results.';
     document.body.insertBefore(notice, document.body.firstChild);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installNotice);

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-16T23:53:34.541Z",
+  "packId": "praxis-school-librarian-5312",
+  "standard": {
+    "label": "AlloFlow School Librarian 5312 source, structure, feedback, and linkage QA v1",
+    "limitation": "Not ETS, AASL, or ALA approval; independent school-librarian, accessibility, legal, and psychometric validation remain pending."
+  },
+  "summary": {
+    "totalItems": 500,
+    "passedItems": 500,
+    "findings": [],
+    "status": "pass",
+    "sourceItems": 200,
+    "distinctSourceContentKernels": 26,
+    "parallelSourceVariants": 174,
+    "guidedReasoningItems": 300,
+    "independentQuestionTarget": 500,
+    "newIndependentItemsNeeded": 474,
+    "structuralStatus": "pass",
+    "contentDistinctnessStatus": "target-not-met",
+    "assistantReviewVerdict": "reviewed-target-not-met",
+    "diagnosticBanks": 5,
+    "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
+    "sourceDiagnosticBanks": 2,
+    "guidedReviewBanks": 3,
+    "learningActivityBanks": 5
+  },
+  "expansion": {
+    "independentQuestionTarget": 500,
+    "totalLearningActivities": 500,
+    "batchSize": 100,
+    "learningActivityBanks": 5,
+    "sourceItems": 200,
+    "distinctSourceContentKernels": 26,
+    "parallelSourceVariants": 174,
+    "guidedReasoningItems": 300,
+    "newIndependentItemsNeeded": 474,
+    "structurallyReviewedItems": 500,
+    "reviewer": "OpenAI Codex",
+    "examItemReview": "reviewed-target-not-met",
+    "taskForms": [
+      "misconception-correction",
+      "principle-justification",
+      "evidence-comparison"
+    ],
+    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "findings": []
+  }
+}

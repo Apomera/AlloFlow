@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T15:00:14.360Z",
+  "generatedAt": "2026-07-16T23:53:33.247Z",
   "packId": "praxis-esol-5362",
   "standard": {
     "label": "AlloFlow independent Praxis ESOL 5362 source, structure, feedback, originality, safety, and linkage QA v1",
@@ -8,12 +8,46 @@
     "limitation": "This is not ETS, TESOL, WIDA, NCELA, or U.S. Department of Education approval; independent ESOL educator, multilingual-family, accessibility, linguistic, civil-rights, and psychometric validation remain pending."
   },
   "summary": {
-    "totalItems": 200,
-    "passedItems": 200,
-    "diagnosticBanks": 2,
+    "totalItems": 500,
+    "passedItems": 500,
+    "diagnosticBanks": 5,
     "bankSize": 100,
     "simulationItems": 120,
     "findings": [],
-    "status": "pass"
+    "status": "pass",
+    "sourceItems": 200,
+    "distinctSourceContentKernels": 100,
+    "parallelSourceVariants": 100,
+    "guidedReasoningItems": 300,
+    "independentQuestionTarget": 500,
+    "newIndependentItemsNeeded": 400,
+    "structuralStatus": "pass",
+    "contentDistinctnessStatus": "target-not-met",
+    "assistantReviewVerdict": "reviewed-target-not-met",
+    "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
+    "sourceDiagnosticBanks": 2,
+    "guidedReviewBanks": 3,
+    "learningActivityBanks": 5
+  },
+  "expansion": {
+    "independentQuestionTarget": 500,
+    "totalLearningActivities": 500,
+    "batchSize": 100,
+    "learningActivityBanks": 5,
+    "sourceItems": 200,
+    "distinctSourceContentKernels": 100,
+    "parallelSourceVariants": 100,
+    "guidedReasoningItems": 300,
+    "newIndependentItemsNeeded": 400,
+    "structurallyReviewedItems": 500,
+    "reviewer": "OpenAI Codex",
+    "examItemReview": "reviewed-target-not-met",
+    "taskForms": [
+      "misconception-correction",
+      "principle-justification",
+      "evidence-comparison"
+    ],
+    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "findings": []
   }
 }

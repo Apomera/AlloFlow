@@ -8,6 +8,8 @@ const sourcePack = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'para
 const batch1Supplement = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'parapro_batch_1_supplement.json'), 'utf8'));
 const batch2Items = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'parapro_batch_2_items.json'), 'utf8'));
 const sourceItems = Array.isArray(sourcePack.items) ? sourcePack.items.slice() : [];
+const expandedSourceMode = sourceItems.length > 200;
+const expandedTail = expandedSourceMode ? sourceItems.slice(200) : [];
 const learningLibrary = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'parapro_learning_library.json'), 'utf8'));
 const batch1SupplementById = new Map((Array.isArray(batch1Supplement) ? batch1Supplement : []).map((item) => [item.id, item]));
 const batch2ById = new Map((Array.isArray(batch2Items) ? batch2Items : []).map((item) => [item.id, item]));
@@ -44,6 +46,7 @@ const pack = {
   ],
   items: mergedItems,
 };
+const packForWrite = expandedSourceMode ? { ...sourcePack, items: mergedItems.concat(expandedTail) } : pack;
 const blueprintUrl = 'https://www.ets.org/pdfs/parapro/1755.pdf';
 const domains = ['reading', 'mathematics', 'writing'];
 const allowedHosts = new Set(['ets.org', 'www.ets.org', 'ies.ed.gov', 'openstax.org']);
@@ -204,11 +207,13 @@ ${reports.map((item) => `| ${item.id} | ${item.domainId} | ${item.blueprintRole}
 
 for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
-  fs.writeFileSync(path.join(outputRoot, 'parapro_pack.json'), JSON.stringify(pack, null, 2) + '\n', 'utf8');
-  fs.writeFileSync(path.join(outputRoot, 'parapro_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
-  fs.writeFileSync(path.join(outputRoot, 'parapro_native_qa.md'), markdown, 'utf8');
+  fs.writeFileSync(path.join(outputRoot, 'parapro_pack.json'), JSON.stringify(packForWrite, null, 2) + '\n', 'utf8');
+  if (!expandedSourceMode) {
+    fs.writeFileSync(path.join(outputRoot, 'parapro_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
+    fs.writeFileSync(path.join(outputRoot, 'parapro_native_qa.md'), markdown, 'utf8');
+  }
 }
-console.log('ParaPro QA: ' + passedItems + '/' + pack.items.length + ' items passed; pack status ' + status + '.');
+console.log('ParaPro QA: ' + passedItems + '/' + pack.items.length + ' base items passed; pack status ' + status + (expandedSourceMode ? '; preserved ' + packForWrite.items.length + '-item expanded pack and expansion QA.' : '.') );
 if (status !== 'pass') {
   for (const item of reports.filter((candidate) => candidate.qaStatus !== 'pass')) console.error(item.id + ': ' + item.findings.map((finding) => finding.check + ' — ' + finding.message).join('; '));
   for (const finding of findings) console.error('pack: ' + finding.message);

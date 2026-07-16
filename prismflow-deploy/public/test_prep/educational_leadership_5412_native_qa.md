@@ -1,6 +1,6 @@
 # Praxis Educational Leadership (5412) QA report
 
-Generated: 2026-07-15T14:59:56.950Z
+Generated: 2026-07-16T23:53:15.174Z
 
 ## Result
 
@@ -12,3 +12,5 @@ Generated: 2026-07-15T14:59:56.950Z
 - Optional simulation: 120 questions / 165 minutes
 
 > This is not ETS or NPBEA approval, independent practicing-school-leader validation, field testing, psychometric calibration, a scaled-score model, legal or personnel advice, an employment or licensure decision, or an emergency directive.
+
+- Assistant audit: 200 source questions contain 100 distinct source content kernels and 100 parallel variants under the normalized answer-set/rationale/reference test. Three additional 100-item banks are source-derived guided review, not independent exam-item banks. The 500-distinct-question target is not met.

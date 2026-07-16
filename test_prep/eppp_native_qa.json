@@ -1,10 +1,10 @@
 {
-  "schemaVersion": 4,
-  "generatedAt": "2026-07-15T15:05:21.132Z",
+  "schemaVersion": 5,
+  "generatedAt": "2026-07-16T18:05:53.172Z",
   "packId": "eppp-part-one",
   "packVersion": "3.1.0",
   "standard": {
-    "label": "AlloFlow native test-prep editorial QA v4",
+    "label": "AlloFlow native test-prep editorial QA v5",
     "checks": [
       "authoritative-source",
       "one-best-answer",
@@ -19,13 +19,14 @@
       "provenance",
       "qa-declaration"
     ],
-    "meaning": "Editorial QA confirms cited answer support, one-best-answer structure, distinct and readable distractors, mechanical-padding rejection, clean text encoding, parallel-choice review, explanatory and option-specific feedback where required, template integrity, accessibility review declarations, and provenance.",
+    "meaning": "Editorial QA confirms cited answer support, one-best-answer structure, distinct and readable distractors, mechanical-padding rejection, clean text encoding, parallel-choice review, explanatory and option-specific feedback for every answer choice, template integrity, accessibility review declarations, and provenance.",
     "limitation": "Editorial QA is not psychometric calibration, official exam approval, or independent licensed-psychologist validation."
   },
   "summary": {
     "totalItems": 1500,
     "passedItems": 1500,
     "reviewRequiredItems": 0,
+    "completeOptionFeedbackItems": 1500,
     "domains": 8,
     "answerPositions": {
       "0": 375,
@@ -6114,7 +6115,8 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1038/457675a"
+        "https://www.ncbi.nlm.nih.gov/books/NBK10869/",
+        "https://pubmed.ncbi.nlm.nih.gov/18567623/"
       ]
     },
     {
@@ -12626,7 +12628,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.ncbi.nlm.nih.gov/books/NBK606098/"
+        "https://www.ncbi.nlm.nih.gov/sites/books/NBK459285/"
       ]
     },
     {

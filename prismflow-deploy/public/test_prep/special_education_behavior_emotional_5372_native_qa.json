@@ -1,15 +1,50 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T15:00:23.206Z",
+  "generatedAt": "2026-07-16T23:53:34.800Z",
   "packId": "praxis-special-education-behavior-emotional-5372",
   "standard": {
     "label": "AlloFlow 5372 source, blueprint, feedback, learning, safety, and linkage QA v1",
     "limitation": "Not ETS approval; independent EBD educator, behavior analyst, school mental-health, trauma-aware practice, family, legal, cultural-linguistic, crisis-safety, and psychometric validation remain pending."
   },
   "summary": {
-    "totalItems": 200,
-    "passedItems": 200,
+    "totalItems": 500,
+    "passedItems": 500,
     "findings": [],
-    "status": "pass"
+    "status": "pass",
+    "sourceItems": 200,
+    "distinctSourceContentKernels": 128,
+    "parallelSourceVariants": 72,
+    "guidedReasoningItems": 300,
+    "independentQuestionTarget": 500,
+    "newIndependentItemsNeeded": 372,
+    "structuralStatus": "pass",
+    "contentDistinctnessStatus": "target-not-met",
+    "assistantReviewVerdict": "reviewed-target-not-met",
+    "diagnosticBanks": 5,
+    "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
+    "sourceDiagnosticBanks": 2,
+    "guidedReviewBanks": 3,
+    "learningActivityBanks": 5
+  },
+  "expansion": {
+    "independentQuestionTarget": 500,
+    "totalLearningActivities": 500,
+    "batchSize": 100,
+    "learningActivityBanks": 5,
+    "sourceItems": 200,
+    "distinctSourceContentKernels": 128,
+    "parallelSourceVariants": 72,
+    "guidedReasoningItems": 300,
+    "newIndependentItemsNeeded": 372,
+    "structurallyReviewedItems": 500,
+    "reviewer": "OpenAI Codex",
+    "examItemReview": "reviewed-target-not-met",
+    "taskForms": [
+      "misconception-correction",
+      "principle-justification",
+      "evidence-comparison"
+    ],
+    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "findings": []
   }
 }

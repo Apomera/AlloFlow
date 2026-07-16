@@ -1,0 +1,614 @@
+[
+  {
+    "id": "id5322-b2-045",
+    "prompt": "During an annual review, staff report that a student independently hangs up a coat and finds homeroom, while the family reports that the student still needs repeated cues for comparable morning routines at home. Which assessment approach would give the team the most valid picture of the student's adaptive functioning?",
+    "choices": [
+      "Combine structured observations with caregiver and teacher ratings across routines, and include the student's perspective in an accessible interview.",
+      "Administer one individually scored reasoning task and use that score to infer how the student manages daily routines.",
+      "Rate only the school behaviors because school personnel can apply the same expectations to every student.",
+      "Postpone additional assessment until the student performs the home and school routines at the same level."
+    ],
+    "answerIndex": 0,
+    "rationale": "Adaptive behavior is context dependent, so the team needs information from multiple informants, methods, and settings. Comparing observed performance with caregiver, teacher, and student reports can reveal supports, expectations, and opportunities that explain the difference between home and school.",
+    "choiceRationales": [
+      "This triangulates performance across settings and identifies contextual supports without treating one report as definitive.",
+      "A reasoning score does not directly measure conceptual, social, and practical functioning in everyday contexts.",
+      "School-only ratings would miss the documented home discrepancy and could overstate independent functioning.",
+      "Waiting discards useful current evidence and delays support planning for routines that matter now."
+    ]
+  },
+  {
+    "id": "id5322-b2-046",
+    "prompt": "A tenth-grade student says that working with animals and using computers are appealing, but the family suggests an office job because it seems predictable. What should the special educator do first to make the transition assessment person centered?",
+    "choices": [
+      "Arrange an office placement immediately and evaluate whether the student can comply with its routines.",
+      "Use accessible interviews and choice sampling, then let the student try several authentic work tasks while recording preferences and support needs.",
+      "Give the class the same written career inventory and select the occupation with the highest numerical score.",
+      "Ask teachers to choose a realistic occupation before discussing alternatives with the student."
+    ],
+    "answerIndex": 1,
+    "rationale": "Person-centered transition assessment begins with the student's interests and informed participation, then tests those preferences in authentic contexts. Accessible interviews, systematic choice sampling, and work trials produce stronger evidence than either adult preference or a single generic inventory.",
+    "choiceRationales": [
+      "Beginning with the family's choice bypasses the student's stated interests and provides no comparison across options.",
+      "This combines the student's voice with observable evidence about preferences, performance, and needed supports.",
+      "A single written inventory may be inaccessible and cannot show how the student responds during real tasks.",
+      "Adult-selected limits chosen in advance undermine self-determination and may overlook viable pathways."
+    ]
+  },
+  {
+    "id": "id5322-b2-047",
+    "prompt": "A student who uses an augmentative and alternative communication system selects messages successfully in class, but in the noisy cafeteria the device is hard to hear and the student often reaches or points instead. Which response is most appropriate?",
+    "choices": [
+      "Require spoken words during lunch so the student does not become dependent on the device.",
+      "Have an adult preprogram a fixed lunch script and prevent changes until the student memorizes it.",
+      "Conduct feature-matching trials with the student and speech-language pathologist in the cafeteria, considering access, output, vocabulary, and partner support.",
+      "Remove the device during meals and ask staff to interpret the student's gestures."
+    ],
+    "answerIndex": 2,
+    "rationale": "AAC effectiveness must be evaluated where communication occurs. Collaborative feature matching in the cafeteria can identify whether volume, visual access, vocabulary organization, positioning, or partner behavior should change while preserving the student's agency and all available communication modes.",
+    "choiceRationales": [
+      "Speech-only expectations can reduce communication access and are not a valid response to an environmental barrier.",
+      "A rigid adult-written script limits novel communication and ignores the student's own vocabulary priorities.",
+      "Contextual trials can distinguish device, environment, access, and partner factors before the team changes the system.",
+      "Removing the system reduces expressive options and makes the student dependent on adult interpretation."
+    ]
+  },
+  {
+    "id": "id5322-b2-048",
+    "prompt": "A student accurately reads supply words on flash cards but cannot use the posted materials list to gather equipment for a general education science lab. Which instructional change is most likely to build useful independence?",
+    "choices": [
+      "Add more isolated sight-word practice using the same flash-card deck.",
+      "Have a paraprofessional collect the materials before each lab so the activity begins on time.",
+      "Replace the lab with a lower-level worksheet that uses familiar vocabulary.",
+      "Teach the routine with the actual list, labels, and equipment; model its steps, fade prompts systematically, and record independent use."
+    ],
+    "answerIndex": 3,
+    "rationale": "The unmet need is applying literacy within the authentic science routine, not recognizing words in isolation. Instruction with real materials, a clear task sequence, planned prompting and fading, and independence data connects the academic skill to meaningful participation.",
+    "choiceRationales": [
+      "Additional flash-card accuracy does not address transferring the words to the materials-gathering routine.",
+      "Adult completion removes the student's opportunity to practice and demonstrate increasing independence.",
+      "Substituting unrelated work reduces access to the science activity instead of supporting participation in it.",
+      "This embeds literacy in the target routine and uses systematic instruction to transfer control to natural cues."
+    ]
+  },
+  {
+    "id": "id5322-b2-049",
+    "prompt": "A middle school student routinely looks to an adult to choose an elective, even after the student has viewed course descriptions. Which instructional strategy best develops self-determination?",
+    "choices": [
+      "Present accessible options, teach the student to compare likely outcomes, support the student in communicating a choice, and later reflect on it.",
+      "Let the case manager choose this year's elective and revisit student choice after high school begins.",
+      "Assign an elective randomly so no adult preference influences the decision.",
+      "Teach the student to select whichever option is recommended first by a trusted adult."
+    ],
+    "answerIndex": 0,
+    "rationale": "Self-determination includes making informed choices, communicating preferences, experiencing consequences, and evaluating decisions. Structured support for comparing options and reflecting afterward teaches a reusable decision-making process without transferring the decision to an adult.",
+    "choiceRationales": [
+      "This teaches a repeatable choice process while keeping ownership of the decision with the student.",
+      "Adult selection may be efficient, but it postpones rather than teaches decision-making skills.",
+      "Random assignment removes both meaningful choice and instruction about evaluating alternatives.",
+      "Automatically following the first recommendation teaches compliance, not informed self-direction."
+    ]
+  },
+  {
+    "id": "id5322-b2-050",
+    "prompt": "A student independently packs the correct materials when practicing in the resource room but leaves books behind after classes in other parts of the building. What should the team do next?",
+    "choices": [
+      "Continue resource-room practice until the student reaches perfect accuracy for a full month.",
+      "Practice with varied class schedules, materials, locations, and people; use common cues across settings and fade adult prompts while collecting data.",
+      "Provide a checklist only in the resource room so the student associates it with successful packing.",
+      "Assume the student is choosing not to pack because the skill has already been demonstrated once."
+    ],
+    "answerIndex": 1,
+    "rationale": "Performance in one controlled location does not demonstrate generalization. Multiple exemplars, common stimuli, practice in the actual settings, prompt fading, and data across people and routines help the skill come under the control of naturally occurring school cues.",
+    "choiceRationales": [
+      "More practice in the original setting may strengthen acquisition but does not program transfer.",
+      "This deliberately varies relevant conditions and tests whether natural cues support independent performance.",
+      "Restricting the cue to the training room makes it less likely to support behavior elsewhere.",
+      "The setting-specific pattern indicates an instructional transfer problem, not evidence of intentional refusal."
+    ]
+  },
+  {
+    "id": "id5322-b2-051",
+    "prompt": "An IEP for a sixteen-year-old student includes the statement “will improve job skills,” but the file contains no information about preferences, work performance, or postschool goals. What is the strongest next step?",
+    "choices": [
+      "Enroll the student in the first available vocational class and write goals after final grades are posted.",
+      "Use the student's most recent cognitive score to select one occupation with matching entry requirements.",
+      "Complete age-appropriate transition assessment through accessible student and family interviews, situational work assessments, and record review, then use the findings to write measurable goals and services.",
+      "Wait until the final semester because employment planning is most accurate immediately before graduation."
+    ],
+    "answerIndex": 2,
+    "rationale": "Measurable postsecondary goals and coordinated transition services should be grounded in current, age-appropriate assessment. Combining the student's voice with family knowledge and observed performance in authentic tasks produces actionable information about interests, strengths, and support needs.",
+    "choiceRationales": [
+      "Placement before assessment risks a poor match and does not clarify the student's desired postschool outcomes.",
+      "A cognitive score alone cannot establish vocational interests, work behaviors, or contextual support needs.",
+      "This produces multiple forms of relevant evidence and connects them directly to goals and services.",
+      "Delaying until graduation is near loses time for instruction, exploration, and coordinated preparation."
+    ]
+  },
+  {
+    "id": "id5322-b2-052",
+    "prompt": "In seventh-grade social studies, classmates compare two primary sources, while a student with an intellectual disability is routinely assigned an unrelated map-coloring page. Which revision best supports inclusive participation?",
+    "choices": [
+      "Move the student to a separate life-skills lesson whenever the class analyzes historical evidence.",
+      "Give the student the same dense source packet without changes so expectations remain identical.",
+      "Have an adult complete the comparison and let the student copy the final response.",
+      "Identify the essential grade-level comparison, provide accessible source excerpts and response options, explicitly teach key vocabulary, and assign the student a meaningful role with peers."
+    ],
+    "answerIndex": 3,
+    "rationale": "Inclusion requires access to the shared academic purpose, not merely presence in the room. Accessible materials, explicit instruction, flexible response modes, and a substantive peer role let the student work toward the grade-level target with appropriate supports.",
+    "choiceRationales": [
+      "Routine removal prevents participation in the academic and social activity taking place with classmates.",
+      "Identical materials without access supports confuse sameness with equitable opportunity to learn.",
+      "Copying an adult's product does not show the student's analysis or create authentic group membership.",
+      "This preserves the lesson's central concept while reducing access barriers and supporting active contribution."
+    ]
+  },
+  {
+    "id": "id5322-b2-053",
+    "prompt": "In a crowded cafeteria, a paraprofessional begins telling another staff member details about a student's toileting support because both adults work in the building. What should the special educator do?",
+    "choices": [
+      "Interrupt and move the discussion to a private, need-to-know setting, protect the student's dignity, and follow up with the paraprofessional about confidentiality expectations.",
+      "Allow the conversation to finish because school employees may discuss any student information with one another.",
+      "Send the information to all staff so everyone hears the same version and rumors are less likely.",
+      "Immediately remove the paraprofessional from the student's program without documenting or following personnel procedures."
+    ],
+    "answerIndex": 0,
+    "rationale": "Sensitive disability-related information should be shared only for a legitimate educational purpose and in a private manner. Prompt redirection protects the student immediately, while documented supervision and instruction address the staff member's practice through appropriate channels.",
+    "choiceRationales": [
+      "This stops the public disclosure, limits access to those with a legitimate role, and supports corrective supervision.",
+      "Employment in the same building does not create an unrestricted right to hear personally identifiable information.",
+      "Broader distribution compounds the privacy breach rather than correcting it.",
+      "A personnel consequence without documentation or established procedure may be disproportionate and does not repair immediate practice."
+    ]
+  },
+  {
+    "id": "id5322-b2-054",
+    "prompt": "A goal states that a student will initiate a request for help with a symbol in four of five opportunities. Data show success in 80% of trials when an adult gives a verbal cue, but only 20% before any prompt. What is the best team response?",
+    "choices": [
+      "Mark the goal mastered because prompted and independent responses together exceed the criterion.",
+      "Separate independent responses from each prompt level, examine the conditions surrounding opportunities, and revise instruction and prompt fading based on those data.",
+      "Lower the criterion so the independent percentage meets the written goal immediately.",
+      "Combine these results with unrelated academic scores to obtain a more stable overall average."
+    ],
+    "answerIndex": 1,
+    "rationale": "The goal concerns initiation, so prompted success and independent initiation answer different questions. Recording prompt levels and opportunity conditions allows the team to determine whether the symbol response is acquired and whether instructional changes are transferring stimulus control.",
+    "choiceRationales": [
+      "Counting prompted responses as initiation masks the central independence problem in the data.",
+      "This preserves meaningful measurement and gives the team evidence for adjusting prompts, cues, and practice.",
+      "Changing the criterion to fit current performance avoids addressing why independent initiation remains low.",
+      "Averaging unrelated measures would make the result less interpretable for this specific communication behavior."
+    ]
+  },
+  {
+    "id": "id5322-b2-055",
+    "prompt": "A family explains that their daughter uses a gesture from the home language community to request a break, but school staff have been recording the gesture only as task escape. What should the IEP team do first?",
+    "choices": [
+      "Prohibit the gesture at school so the student uses the same behavior as English-speaking classmates.",
+      "Require an English word before honoring any break request, even when communication partners understand the gesture.",
+      "Invite the student, family, and communication specialists to clarify its meaning, collect antecedent-and-outcome data across settings, and incorporate an accessible, culturally responsive signal into the plan.",
+      "Accept the school's interpretation because classroom observations are more objective than family knowledge."
+    ],
+    "answerIndex": 2,
+    "rationale": "The team should distinguish the communicative form from the function of behavior using culturally and linguistically informed evidence. Family expertise, student participation, and contextual data can establish whether and when the gesture communicates a break request and how partners should respond.",
+    "choiceRationales": [
+      "Suppressing a meaningful form can reduce communication access and disregards cultural and family knowledge.",
+      "Speech in English is not a prerequisite for honoring an understandable, functionally equivalent request.",
+      "This integrates cultural knowledge with direct evidence and can produce a consistent communication response across settings.",
+      "School observation is valuable, but treating it as inherently superior creates a biased and incomplete interpretation."
+    ]
+  },
+  {
+    "id": "id5322-b2-056",
+    "prompt": "In a simulated laundry task, a student completes every sorting step accurately only because an adult uses hand-over-hand assistance throughout the routine. Which change is most appropriate?",
+    "choices": [
+      "Continue full physical assistance because accuracy is the only outcome that matters in vocational instruction.",
+      "Remove all help on the next trial and score any error as evidence that the student cannot learn the task.",
+      "Offer a reward only after the entire routine is completed without changing how assistance is delivered.",
+      "Use a task analysis, select the least intrusive effective prompt for each step, introduce time delay where appropriate, fade help systematically, and record independent steps."
+    ],
+    "answerIndex": 3,
+    "rationale": "Full physical assistance can produce correct products without showing learning or independence. A stepwise plan using the least intrusive effective support, time delay, systematic fading, and step-level data helps natural task cues gain control while protecting successful participation.",
+    "choiceRationales": [
+      "Permanent maximal prompting can create prompt dependence and obscures what the student can do independently.",
+      "Abrupt removal is not systematic fading and may produce avoidable errors or safety concerns.",
+      "A reward does not by itself transfer control from the adult's physical prompts to the task cues.",
+      "This pairs accurate instruction with a concrete plan to reduce assistance and measure independent performance."
+    ]
+  },
+  {
+    "id": "id5322-b2-057",
+    "prompt": "A student tears a worksheet shortly after lengthy verbal directions. An assessment indicates that difficult language often precedes the behavior, and the student uses a break card successfully in other classes. Which intervention is best aligned with those findings?",
+    "choices": [
+      "Teach and honor an efficient request for clarification or a brief break, reduce the language load, and reinforce returning to the task with appropriate support.",
+      "Assign an after-school consequence each time paper is torn, regardless of what happened beforehand.",
+      "Withhold the break card during academic work so tearing no longer results in escape.",
+      "Permanently remove written academic tasks from the student's schedule."
+    ],
+    "answerIndex": 0,
+    "rationale": "The assessment suggests that inaccessible directions and escape from difficult work are relevant variables. Adjusting the antecedent and teaching a functionally effective communication response addresses the cause while maintaining access to instruction and supporting task reentry.",
+    "choiceRationales": [
+      "This changes the triggering condition and teaches a socially appropriate response that meets the same need.",
+      "A consequence-only plan does not address inaccessible directions or provide a replacement communication skill.",
+      "Blocking an established communication option may intensify behavior and leaves the instructional barrier unchanged.",
+      "Eliminating the curriculum avoids the behavior by sacrificing educational opportunity rather than building access."
+    ]
+  },
+  {
+    "id": "id5322-b2-058",
+    "prompt": "During an inclusive lunch club, classmates direct every question to the paraprofessional even though a student uses an AAC system and can answer. What is the best way to improve peer interaction?",
+    "choices": [
+      "Have the paraprofessional answer quickly so the conversation continues without awkward pauses.",
+      "Teach peers to address the student directly, allow adequate response time, recognize multiple communication modes, and organize shared activities with interdependent roles.",
+      "Give peers a script that permits only praise statements toward the student.",
+      "Hold a separate AAC lunch group so all participants use similar communication systems."
+    ],
+    "answerIndex": 1,
+    "rationale": "Direct communication, sufficient wait time, responsive partners, and meaningful shared roles support reciprocal relationships. These strategies change the interaction pattern without making the student dependent on an adult spokesperson or limiting communication to a scripted exchange.",
+    "choiceRationales": [
+      "Adult answering reinforces peers' habit of bypassing the student and removes authentic response opportunities.",
+      "This teaches usable partner skills and structures the club so participation contributes to a common activity.",
+      "Praise-only scripts are artificial and do not support varied, reciprocal conversation.",
+      "Separating students by communication mode reduces natural peer access and does not repair current partner behavior."
+    ]
+  },
+  {
+    "id": "id5322-b2-059",
+    "prompt": "A student with an individualized seizure action plan wants to participate in a culinary elective that uses hot appliances. Which response best balances safety and autonomy?",
+    "choices": [
+      "Exclude the student from the course because any possibility of a seizure makes kitchen participation inappropriate.",
+      "Announce the student's medical history to every classmate so peers can decide whether participation feels safe.",
+      "Review the plan with the student, family, nurse, and relevant staff; teach assigned responders, adjust specific hazards when indicated, and preserve as much independent participation as possible.",
+      "Require a parent to attend every class even if the health plan identifies other effective supports."
+    ],
+    "answerIndex": 2,
+    "rationale": "Safety planning should be individualized, collaborative, and no more restrictive than necessary. Applying the established health plan to actual kitchen risks can identify precise training or environmental supports while respecting the student's preferences, privacy, and course access.",
+    "choiceRationales": [
+      "Categorical exclusion is not individualized and ignores supports that may manage identified risks.",
+      "Broadcasting private information is unnecessary; responders need role-specific information, not classwide disclosure.",
+      "This uses relevant expertise and the student's voice to match safeguards to actual risks without needless restriction.",
+      "Automatic parent attendance may reduce independence and is unwarranted when the individualized plan supports another approach."
+    ]
+  },
+  {
+    "id": "id5322-b2-060",
+    "prompt": "An eighteen-year-old student is choosing between two community training programs, and team members assume that the parent should make the decision alone. What should the educator do?",
+    "choices": [
+      "Ask the parent to decide privately because family agreement is sufficient for every adult-student decision.",
+      "Select the program with the strongest placement record and tell the student after enrollment.",
+      "Delay all planning until the student can explain every policy without any communication or decision support.",
+      "Present the options accessibly, check the student's understanding and preferences, involve supporters chosen by the student, and document participation consistent with the student's legal decision-making status."
+    ],
+    "answerIndex": 3,
+    "rationale": "Adulthood planning should maximize the student's informed participation and use support rather than substituting adult preferences automatically. Accessible information, chosen supporters, and attention to the student's actual legal status respect autonomy while enabling a meaningful decision.",
+    "choiceRationales": [
+      "Family input can be valuable, but it does not automatically replace an adult student's rights or preferences.",
+      "A program statistic cannot substitute for an individualized, informed choice about fit and goals.",
+      "Requiring unsupported mastery of every detail sets an unnecessary barrier to participation in a consequential decision.",
+      "This provides decision support while keeping the student's preferences and applicable rights central."
+    ]
+  },
+  {
+    "id": "id5322-b2-061",
+    "prompt": "A teacher says that because a student takes an alternate assessment, science instruction should consist only of daily-living worksheets. Which instructional plan is most appropriate?",
+    "choices": [
+      "Teach grade-level science content at an appropriately reduced level of complexity, using accessible materials and response modes while collecting evidence of the student's own learning.",
+      "Select disconnected science facts from several earlier grades because any academic exposure satisfies access requirements.",
+      "Spend most lessons drilling the appearance of alternate-test items without teaching the underlying concepts.",
+      "Replace science entirely with personal-care instruction because functional skills are always the higher priority."
+    ],
+    "answerIndex": 0,
+    "rationale": "Participation in an alternate assessment does not eliminate access to grade-level academic content. The teacher should preserve the central science construct, adjust complexity and access, and gather valid evidence of what the student understands rather than substituting unrelated work.",
+    "choiceRationales": [
+      "This maintains alignment to the enrolled grade's content while providing supports appropriate to the learner.",
+      "Random lower-grade facts lack coherent alignment and may not advance the current science target.",
+      "Format practice cannot replace concept instruction and risks producing test familiarity without learning.",
+      "Functional instruction can be important, but it does not justify removing the student from science learning."
+    ]
+  },
+  {
+    "id": "id5322-b2-062",
+    "prompt": "A student selects the correct bus stop from classroom photographs but becomes unsure when practicing the route near school. Which instructional approach is most likely to produce safe, durable use of the skill?",
+    "choices": [
+      "Continue photograph quizzes until the student responds perfectly for ten consecutive classroom sessions.",
+      "Teach the travel routine through simulations and supervised practice on varied routes and conditions, use a planned prompt-and-fade sequence, embed safety responses, and collect step-level data.",
+      "Send the student on the route without support so natural consequences reveal which steps need work.",
+      "Teach one fixed route through rote repetition and avoid any variation that might cause confusion."
+    ],
+    "answerIndex": 1,
+    "rationale": "Community travel requires performance amid changing people, traffic, landmarks, and schedules. Systematic instruction that combines simulation with supervised in-vivo practice, safety teaching, varied examples, prompt fading, and task-level data supports both generalization and risk management.",
+    "choiceRationales": [
+      "Classroom picture accuracy does not establish that the full travel chain can be performed safely in context.",
+      "This teaches the target routine under authentic conditions while managing risk and programming transfer.",
+      "Unsupported exposure creates avoidable safety risk and is not a responsible assessment or teaching method.",
+      "A single unvaried route may be learned, but it does not prepare the student to respond to common changes."
+    ]
+  },
+  {
+    "id": "id5322-b1-063",
+    "prompt": "A classroom teacher rates a student as independent in most daily routines, but a community job coach reports frequent help is needed to follow schedules and locate materials. How should the team interpret the conflicting adaptive-behavior information?",
+    "choices": [
+      "Discard the job-coach report because classroom staff have known the student longer.",
+      "Average the two ratings into one score and avoid considering differences between environments.",
+      "Clarify how each rater defined independence, observe the student in both settings, and identify the cues, task demands, and supports associated with performance.",
+      "Conclude that one rater must have scored the form incorrectly and repeat only that rating scale."
+    ],
+    "answerIndex": 2,
+    "rationale": "Different ratings can represent genuine variation in demands and available supports rather than error. Defining the behavior consistently and examining performance in each setting lets the team explain the discrepancy and plan instruction that targets the conditions limiting independence.",
+    "choiceRationales": [
+      "Length of acquaintance does not invalidate direct evidence from a setting with different demands.",
+      "Averaging hides the contextual difference that the team needs to understand for planning.",
+      "This tests whether definitions, environmental cues, task complexity, or support levels account for the pattern.",
+      "Assuming scoring error prematurely ignores the possibility that both reports accurately describe context-specific performance."
+    ]
+  },
+  {
+    "id": "id5322-b1-064",
+    "prompt": "At recent IEP meetings, adults have spoken about a student while the student sits silently. The student communicates preferences by selecting photographs and using switches. Which preparation would best increase meaningful participation at the next meeting?",
+    "choices": [
+      "Invite the student only for the signature page so the technical discussion remains efficient.",
+      "Ask the family to predict every preference and present those choices on the student's behalf.",
+      "Give the student the complete procedural document on the morning of the meeting and wait for spontaneous comments.",
+      "Develop an accessible agenda with the student, preview decisions using photographs and switches, rehearse chosen portions of the meeting, and build in response time."
+    ],
+    "answerIndex": 3,
+    "rationale": "Meaningful participation requires accessible information, reliable communication opportunities, and preparation tied to actual decisions. Co-developing materials and roles before the meeting lets the student express authentic preferences rather than being present only symbolically.",
+    "choiceRationales": [
+      "Attendance for a signature does not provide an opportunity to influence goals, services, or outcomes.",
+      "Family knowledge is valuable, but substituted preferences should not replace direct student participation when access is possible.",
+      "An inaccessible last-minute document creates little opportunity to understand choices or prepare a response.",
+      "This matches meeting demands to the student's communication system and supports an active, prepared role."
+    ]
+  },
+  {
+    "id": "id5322-b1-065",
+    "prompt": "A student uses a robust AAC application but has difficulty selecting small icons accurately. A team member proposes replacing it permanently with a board containing only “yes,” “no,” and “more.” What is the best response?",
+    "choices": [
+      "Assess motor access, positioning, icon size, selection method, and vocabulary needs with the student, then trial adjustments that preserve broad communication options.",
+      "Accept the smaller board because inaccurate selections prove the student is not ready for a larger vocabulary.",
+      "Keep the application unchanged and increase daily correction whenever the student selects an unintended icon.",
+      "Suspend AAC use until fine-motor performance improves enough for the current screen layout."
+    ],
+    "answerIndex": 0,
+    "rationale": "Selection errors may reflect an access mismatch rather than limited language potential. Feature matching and trials of layout, positioning, keyguards, scanning, or other access methods can improve accuracy while preserving the vocabulary needed for social, academic, and self-advocacy communication.",
+    "choiceRationales": [
+      "This investigates the access barrier without unnecessarily restricting what the student can communicate.",
+      "Reducing vocabulary based on motor errors confuses physical access with communicative competence.",
+      "Correction alone does not change the screen or motor demands causing unintended selections.",
+      "Removing AAC eliminates communication now and makes access contingent on an unrelated prerequisite."
+    ]
+  },
+  {
+    "id": "id5322-b1-066",
+    "prompt": "In a school café, a student can name coins on a worksheet but cannot use the menu, communicate an order, or check that the correct item was received. Which lesson would most directly address the instructional need?",
+    "choices": [
+      "Assign another page of coin-identification items before allowing café participation.",
+      "Teach the entire purchase routine with the actual menu and communication supports, using modeling and a prompt-fading plan while collecting data on independently completed steps.",
+      "Have a peer place the order and handle the exchange while the student observes from the table.",
+      "Replace the café activity with abstract computation because authentic routines contain too many variables."
+    ],
+    "answerIndex": 1,
+    "rationale": "The target is coordinated use of literacy, communication, choice, and practical money concepts in a real transaction. Teaching and measuring the whole routine under authentic conditions shows which steps require support and promotes useful independence beyond isolated coin naming.",
+    "choiceRationales": [
+      "More isolated identification does not teach how to navigate and communicate during the actual purchase sequence.",
+      "This embeds academic and communication skills in the target routine and systematically transfers responsibility to the student.",
+      "Observation without an active role provides little evidence or practice of the student's own performance.",
+      "Removing the real context avoids the very integration and generalization the student needs to learn."
+    ]
+  },
+  {
+    "id": "id5322-b1-067",
+    "prompt": "A student begins independent work only after an adult reminder, even though the assignment and materials are within the student's skill level. Which intervention best promotes self-directed behavior?",
+    "choices": [
+      "Increase the number of adult reminders so the student experiences fewer delays.",
+      "Withhold all feedback until the student begins every assignment without assistance for a week.",
+      "Help the student set a start-time goal, use an accessible self-check cue, record whether work began, and review the pattern to choose the next strategy.",
+      "Move the student's seat beside the teacher and have the teacher signal the start of every task."
+    ],
+    "answerIndex": 2,
+    "rationale": "Self-determination grows when students learn to set a goal, monitor their own behavior, evaluate results, and adjust a plan. An accessible self-check routine can shift control from repeated adult reminders to cues the student manages and understands.",
+    "choiceRationales": [
+      "More adult reminders may improve immediate compliance while strengthening dependence on external prompts.",
+      "Removing support abruptly does not teach the student how to notice, initiate, or evaluate the behavior.",
+      "This explicitly teaches goal setting, self-monitoring, and strategy adjustment around a meaningful school task.",
+      "A permanent teacher signal changes location but retains adult control over initiation."
+    ]
+  },
+  {
+    "id": "id5322-b1-068",
+    "prompt": "A student completes a handwashing sequence when one teacher recites each step but does not begin when another adult supervises or when a different sink is used. What is the most appropriate next step?",
+    "choices": [
+      "Return to the original sink and teacher for all hygiene instruction so errors do not occur.",
+      "Increase the volume and speed of the teacher's verbal directions in every setting.",
+      "Remove all prompts at once and score the routine only as pass or fail.",
+      "Introduce a portable visual cue used across sinks, practice with different people and materials, fade adult prompts, and probe performance when no training adult is present."
+    ],
+    "answerIndex": 3,
+    "rationale": "The behavior is controlled by a specific adult script rather than the naturally relevant routine cues. A common portable cue, varied examples, planned fading, and unprompted probes directly program generalization while still supporting accurate and hygienic performance.",
+    "choiceRationales": [
+      "Restricting instruction to the mastered context preserves the dependence and prevents transfer.",
+      "Changing how the same adult prompts does not shift control to cues available in other locations.",
+      "Abrupt prompt removal risks failure and a single pass/fail score cannot show which steps transferred.",
+      "This systematically varies conditions and measures whether the student can perform beyond the training arrangement."
+    ]
+  },
+  {
+    "id": "id5322-b1-069",
+    "prompt": "A student identifies photography as a strong career interest, but the transition file contains only observations from housekeeping tasks selected by adults. What should the team do next?",
+    "choices": [
+      "Arrange accessible job-shadowing and work samples in photography or media settings, compare them with other student-selected options, and document performance and support needs.",
+      "Continue housekeeping trials because changing assessment tasks would make the existing data difficult to compare.",
+      "Remove photography from discussion because a stated preference is not equivalent to a demonstrated job skill.",
+      "Choose a career from the student's academic grades without conducting additional situational assessment."
+    ],
+    "answerIndex": 0,
+    "rationale": "Transition assessment should connect the student's interests with direct evidence from relevant environments. Work samples and observation in photography or media tasks can test the preference, reveal strengths and supports, and inform instruction without assuming that either interest or prior adult-selected data is sufficient alone.",
+    "choiceRationales": [
+      "This honors the student's stated direction while gathering concrete evidence needed for planning.",
+      "Comparable data are not useful if all assessment occurs in a field unrelated to the student's goals.",
+      "An interest should prompt exploration and skill assessment, not automatic acceptance or dismissal.",
+      "Grades alone do not show occupational preference, task performance, workplace behavior, or contextual support needs."
+    ]
+  },
+  {
+    "id": "id5322-b1-070",
+    "prompt": "During a general education science investigation, a student with an intellectual disability records classmates' attendance while peers classify changes observed in several materials. Which redesign would create more substantive participation?",
+    "choices": [
+      "Continue the attendance job because being busy near the group is sufficient inclusion.",
+      "Define an accessible version of the same classification target, provide a picture-supported data table and adapted materials, assign an essential investigation role, and evaluate the student's own responses.",
+      "Move the student to a separate room to practice matching unrelated household pictures.",
+      "Have a peer complete the classification first and then guide the student's hand to copy each answer."
+    ],
+    "answerIndex": 1,
+    "rationale": "Substantive inclusion connects the student to the class's academic construct and cooperative purpose. Accessible representations, an authentic role, appropriate materials, and evidence of the student's own decisions support both learning and genuine membership in the investigation.",
+    "choiceRationales": [
+      "A peripheral helper task creates presence without access to the science concept being taught.",
+      "This preserves the shared learning target and makes the student's contribution necessary and assessable.",
+      "Unrelated separate work reduces both academic access and interaction with classmates.",
+      "Copying a peer's completed answers does not reveal the student's classification or support autonomous participation."
+    ]
+  },
+  {
+    "id": "id5322-b2-063",
+    "prompt": "After a student leaves the assigned dismissal area on one occasion, staff propose requiring a live-location badge throughout every school day and retaining all location records indefinitely. What should the IEP team do before adopting that plan?",
+    "choices": [
+      "Begin continuous tracking immediately because any safety concern overrides privacy and instructional considerations.",
+      "Let the device vendor determine who receives location data and how long records remain available.",
+      "Analyze what occurred during dismissal, strengthen environmental and instructional supports, and consider only a justified, time-limited, least-intrusive measure with appropriate consent, access controls, and review criteria.",
+      "Take no action unless the student leaves campus three times, because one event cannot inform planning."
+    ],
+    "answerIndex": 2,
+    "rationale": "The team must respond to the real dismissal risk while avoiding an unnecessarily broad surveillance practice. An individualized review can identify teachable and environmental causes, and any technology considered should be proportionate, safeguarded, time limited, and evaluated for continued need.",
+    "choiceRationales": [
+      "Safety matters, but it does not automatically justify all-day collection unrelated to the identified dismissal risk.",
+      "Privacy, educational purpose, record access, and retention are team and policy responsibilities, not vendor defaults.",
+      "This addresses the event directly and establishes necessity, scope, safeguards, and a way to discontinue added monitoring.",
+      "Waiting for repeated unsafe events disregards current evidence and delays reasonable prevention and instruction."
+    ]
+  },
+  {
+    "id": "id5322-b2-064",
+    "prompt": "A general education teacher routinely sends a student's assignments to the paraprofessional, saying that special education staff are responsible for modifying and teaching everything. Which response from the special educator best supports effective collaboration?",
+    "choices": [
+      "Accept the arrangement because paraprofessionals usually know more about individual accommodations than classroom teachers.",
+      "Ask the paraprofessional to create a separate curriculum and report only the student's final grades to both teachers.",
+      "Remove the paraprofessional so the general education teacher has no alternative but to work independently.",
+      "Schedule co-planning to identify shared learning targets and access needs, define teacher and paraprofessional roles, prepare supports together, and review the student's performance data."
+    ],
+    "answerIndex": 3,
+    "rationale": "The classroom teacher and special educator share responsibility for instruction, while paraprofessionals work within defined, supervised roles. Joint planning around the common target, needed access, implementation duties, and evidence of learning prevents fragmented or substitute instruction.",
+    "choiceRationales": [
+      "Delegating all planning and teaching to a paraprofessional exceeds an appropriate support role and fragments responsibility.",
+      "A separate curriculum and grade-only communication disconnect the student from classroom learning and collaborative problem solving.",
+      "Removing support abruptly does not establish the planning structures or instructional competence the team needs.",
+      "This creates shared ownership, clear implementation roles, and a data-based process for adjusting supports."
+    ]
+  },
+  {
+    "id": "id5322-b2-065",
+    "prompt": "During morning meeting, an adult asks a student who uses AAC a question and immediately guides the student's hand to a symbol before the student has a chance to respond. Which change is most appropriate?",
+    "choices": [
+      "Ensure the system is positioned and available, model language as needed, pause for an intentional response, and use the least intrusive prompt only after an adequate response interval.",
+      "Require the student to select the exact symbol the adult expects before acknowledging any other communication.",
+      "Put the system away during group activities so the adult is less tempted to provide physical assistance.",
+      "Continue immediate hand guidance, then ask the same question again to see whether the student remembers the movement."
+    ],
+    "answerIndex": 0,
+    "rationale": "Immediate physical guidance can obscure the student's intent and create prompt dependence. Reliable access, aided modeling, expectant pause, recognition of intentional communication, and a planned least-to-most sequence give the student a genuine opportunity to initiate or answer.",
+    "choiceRationales": [
+      "This provides communication access and processing time while reserving prompts for when they are actually needed.",
+      "Insisting on an adult-selected message can invalidate the student's meaning and turn communication into compliance.",
+      "Removing AAC eliminates the student's expressive access rather than correcting partner behavior.",
+      "Repeating hand guidance rehearses a prompted motor response and still does not establish the student's intended answer."
+    ]
+  },
+  {
+    "id": "id5322-b2-066",
+    "prompt": "A student usually listens without direct eye contact. The family explains that this behavior communicates respect in their community, but staff describe it as a social deficit. What should the team do?",
+    "choices": [
+      "Set a daily eye-contact quota because classroom behavior should look the same across cultural groups.",
+      "Seek the student and family's interpretation, observe participation across contexts, define any actual access problem behaviorally, and support multiple culturally responsive ways to show attention.",
+      "Record noncompliance whenever the student looks away during instruction, regardless of task performance.",
+      "Exempt the student from all collaborative work because cultural responsiveness means never teaching interaction skills."
+    ],
+    "answerIndex": 1,
+    "rationale": "Eye-contact norms vary, so the form of behavior should not be labeled deficient without evidence that it interferes with communication or learning. Student and family knowledge, contextual observation, and functional definitions help the team support participation without imposing a culturally narrow norm.",
+    "choiceRationales": [
+      "A uniform eye-contact quota mistakes one cultural convention for a necessary learning behavior.",
+      "This distinguishes cultural difference from a functional need and permits valid, accessible indicators of engagement.",
+      "Scoring gaze alone as noncompliance ignores the student's meaning, comprehension, and actual participation.",
+      "Cultural responsiveness does not require avoiding collaboration; it requires teaching only genuine needs in respectful ways."
+    ]
+  },
+  {
+    "id": "id5322-b2-067",
+    "prompt": "A student independently follows a visual sequence to prepare a snack in the classroom microwave, but during a smoke-alarm drill the student remains beside the appliance and waits for an adult direction. Which instructional priority is most important?",
+    "choices": [
+      "Add more snack recipes so the student becomes faster and more confident with appliance use.",
+      "Assign an adult to remain within arm's reach whenever the student enters any room with an appliance.",
+      "Teach the student to discriminate emergency cues, stop the routine, move to safety, and seek designated help through varied simulations with different people and locations.",
+      "Remove microwave access and record the drill response as willful failure to follow school rules."
+    ],
+    "answerIndex": 2,
+    "rationale": "Completing a familiar routine does not ensure adaptive responding when conditions change. Direct, safe practice in recognizing emergency cues and shifting to an exit-and-help sequence across examples addresses a high-priority practical need while preserving future independence.",
+    "choiceRationales": [
+      "Additional recipes expand cooking repertoire but do not teach interruption and emergency response.",
+      "Permanent close adult surveillance may manage risk temporarily but does not build the missing adaptive skill.",
+      "This targets the precise safety breakdown and programs flexible responding across likely emergency conditions.",
+      "Punitive removal neither teaches the response nor distinguishes skill deficits from intentional rule breaking."
+    ]
+  },
+  {
+    "id": "id5322-b2-068",
+    "prompt": "A student matches product labels correctly at a desk but cannot use the shelf diagram to restock the school store, check an item's location, or communicate when a product does not match. Which lesson is most appropriate?",
+    "choices": [
+      "Increase the number of label-matching worksheets and delay store practice until desk accuracy is perfect.",
+      "Have staff sort every product onto the correct cart before the student begins so errors are unlikely.",
+      "Let the student restock without instruction and replace misplaced products after the store closes.",
+      "Teach the actual restocking chain with store products, shelf markers, and an accessible help signal; use systematic prompts and fading while recording independent steps and errors."
+    ],
+    "answerIndex": 3,
+    "rationale": "The practical literacy target involves coordinating labels, spatial cues, error checking, and communication within the real work routine. Systematic instruction in the store can identify difficult steps and build independent performance under the conditions where the skill is needed.",
+    "choiceRationales": [
+      "Desk matching alone does not teach navigation, error recognition, or help seeking during restocking.",
+      "Presorting changes the task and prevents assessment or instruction of several essential steps.",
+      "Unsupported trial and error can disrupt the store and provides no planned teaching for observed difficulties.",
+      "This integrates the component skills in context and uses step-level evidence to fade assistance responsibly."
+    ]
+  },
+  {
+    "id": "id5322-b2-069",
+    "prompt": "Before a school break, a student requested assistance independently with one familiar aide. After returning, the student rarely uses the request with new staff or in other classrooms. What is the best response?",
+    "choices": [
+      "Reestablish a common cue, provide brief booster practice with varied partners and settings, fade prompts, let natural assistance reinforce the request, and schedule maintenance probes.",
+      "Assign the familiar aide to accompany the student all day so the successful communication partner never changes.",
+      "Keep the skill marked as mastered because it was independent before the break.",
+      "Teach a different request phrase in every classroom so each setting has a unique signal."
+    ],
+    "answerIndex": 0,
+    "rationale": "The change after a delay and with unfamiliar partners shows weak maintenance and generalization, not necessarily loss of the underlying response. Booster teaching across people and places, common cues, prompt fading, natural outcomes, and later probes rebuild durable, flexible use.",
+    "choiceRationales": [
+      "This targets both the time gap and partner-specific performance while checking whether independence persists afterward.",
+      "Permanent reliance on one aide preserves the narrow stimulus control rather than expanding communication partners.",
+      "A past mastery decision does not override current evidence that the functional response is not occurring.",
+      "Different phrases for each room add unnecessary discrimination demands and may hinder transfer."
+    ]
+  },
+  {
+    "id": "id5322-b2-070",
+    "prompt": "A seventeen-year-old student wants to enter a community college culinary program, but the team has not addressed application steps, disability-services timelines, transportation, or possible vocational rehabilitation support. What should happen next?",
+    "choices": [
+      "Have the case manager complete every application and service request so deadlines are met without burdening the student.",
+      "With the student's informed agreement, connect relevant partners, create an accessible action plan with roles and deadlines, and teach the student to communicate with programs and request needed supports.",
+      "Wait until after graduation because adult agencies and colleges cannot coordinate with school transition planning.",
+      "Ask the family to choose a different postschool goal that can be managed entirely by existing school staff."
+    ],
+    "answerIndex": 1,
+    "rationale": "A coordinated transition plan translates the student's chosen postsecondary goal into time-sensitive actions while building self-advocacy. With appropriate consent, collaboration among the student, family, school, college, and agencies can reduce service gaps without taking ownership away from the student.",
+    "choiceRationales": [
+      "Adult completion may meet a deadline but bypasses instruction and leaves the student unprepared to manage future contacts.",
+      "This links the student's goal to coordinated services, concrete follow-through, and supported self-advocacy practice.",
+      "Transition planning is specifically intended to prepare and coordinate before school entitlement ends.",
+      "Changing the goal for staff convenience disregards the student's preference and avoids solvable coordination tasks."
+    ]
+  }
+]

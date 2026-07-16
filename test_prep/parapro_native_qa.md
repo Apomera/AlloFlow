@@ -1,6 +1,6 @@
 # ParaPro 200-item diagnostic bank QA report
 
-Generated: 2026-07-15T15:03:39.418Z
+Generated: 2026-07-16T23:53:08.250Z
 
 Pack: ParaPro Assessment (1755) - 200-Item Diagnostic Bank v0.4.0
 
@@ -246,3 +246,5 @@ The official blueprint has 30 questions in each domain, with approximately two-t
 | parapro-writing-application-020 | writing | application | pass | 2 |
 | parapro-writing-application-021 | writing | application | pass | 2 |
 | parapro-writing-application-022 | writing | application | pass | 2 |
+
+- Assistant audit: 200 source questions contain 200 distinct source content kernels and 0 parallel variants under the normalized answer-set/rationale/reference test. Three additional 100-item banks are source-derived guided review, not independent exam-item banks. The 500-distinct-question target is not met.

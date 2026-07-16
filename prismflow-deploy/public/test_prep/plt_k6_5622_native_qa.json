@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T14:59:58.093Z",
+  "generatedAt": "2026-07-16T23:53:34.228Z",
   "packId": "praxis-plt-k6-5622",
   "standard": {
     "label": "AlloFlow independent 5622 source, structure, feedback, originality, safety, and linkage QA v1",
@@ -38,7 +38,7 @@
     }
   },
   "diagnosticBatch": {
-    "batchCount": 2,
+    "batchCount": 5,
     "batchSize": 100,
     "categories": {
       "students-as-learners": 30,
@@ -77,14 +77,32 @@
           25
         ]
       }
-    ]
+    ],
+    "batchCountSemantics": "legacy-total-learning-activity-bank-alias",
+    "sourceBatchCount": 2,
+    "guidedReviewBatchCount": 3,
+    "learningActivityBankCount": 5
   },
   "summary": {
-    "totalItems": 200,
-    "passedItems": 200,
+    "totalItems": 500,
+    "passedItems": 500,
     "reviewRequiredItems": 0,
     "findings": 0,
-    "status": "pass"
+    "status": "pass",
+    "sourceItems": 200,
+    "distinctSourceContentKernels": 100,
+    "parallelSourceVariants": 100,
+    "guidedReasoningItems": 300,
+    "independentQuestionTarget": 500,
+    "newIndependentItemsNeeded": 400,
+    "structuralStatus": "pass",
+    "contentDistinctnessStatus": "target-not-met",
+    "assistantReviewVerdict": "reviewed-target-not-met",
+    "diagnosticBanks": 5,
+    "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
+    "sourceDiagnosticBanks": 2,
+    "guidedReviewBanks": 3,
+    "learningActivityBanks": 5
   },
   "findings": [],
   "items": [
@@ -888,5 +906,26 @@
       "id": "plt5622-b2-100",
       "findings": []
     }
-  ]
+  ],
+  "expansion": {
+    "independentQuestionTarget": 500,
+    "totalLearningActivities": 500,
+    "batchSize": 100,
+    "learningActivityBanks": 5,
+    "sourceItems": 200,
+    "distinctSourceContentKernels": 100,
+    "parallelSourceVariants": 100,
+    "guidedReasoningItems": 300,
+    "newIndependentItemsNeeded": 400,
+    "structurallyReviewedItems": 500,
+    "reviewer": "OpenAI Codex",
+    "examItemReview": "reviewed-target-not-met",
+    "taskForms": [
+      "misconception-correction",
+      "principle-justification",
+      "evidence-comparison"
+    ],
+    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "findings": []
+  }
 }

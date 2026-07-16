@@ -1,0 +1,703 @@
+#!/usr/bin/env node
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+
+const root = path.resolve(__dirname, '..');
+const reviewedAt = '2026-07-16';
+const blueprintUrl = 'https://asppb.net/future-eppp-content-areas-2027/';
+const blueprintLabel = 'Integrated EPPP future six-domain blueprint (fall 2027)';
+const blueprintEffective = 'Future integrated EPPP blueprint planned for fall 2027 and later administrations';
+const transitionNotice = 'This unofficial preview follows ASPPB\'s future integrated six-domain blueprint. Current EPPP Part 1-Knowledge and Part 2-Skills administrations in 2026 and 2027 continue to use their separately published blueprints.';
+
+const sourceCatalog = {
+  blueprint: {
+    title: 'Future Examination for Professional Practice in Psychology (EPPP) Content Areas',
+    organization: 'Association of State and Provincial Psychology Boards (ASPPB)',
+    url: blueprintUrl,
+    credibility: 'ASPPB owns and develops the EPPP. This is its official content specification for the integrated examination scheduled to become operational in fall 2027.',
+  },
+  jars: {
+    title: 'APA Style Journal Article Reporting Standards for Qualitative and Mixed Methods Research',
+    organization: 'American Psychological Association',
+    url: 'https://www.apa.org/news/press/releases/2018/05/journal-article-reporting',
+    credibility: 'The American Psychological Association developed these reporting standards to promote transparent, rigorous appraisal of qualitative and mixed-methods psychological research.',
+  },
+  nihResearch: {
+    title: 'Guiding Principles for Ethical Research',
+    organization: 'National Institutes of Health',
+    url: 'https://www.nih.gov/health-information/nih-clinical-research-trials-you/guiding-principles-ethical-research',
+    credibility: 'The National Institutes of Health is the primary United States biomedical research agency; this official guidance addresses scientifically valid and ethically conducted human research.',
+  },
+  effectSize: {
+    title: 'Effect Size Estimates: Current Use, Calculations, and Interpretation',
+    organization: 'American Psychological Association journal article indexed by PubMed',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/21823805/',
+    credibility: 'This peer-reviewed American Psychological Association publication explains how effect sizes support judgments about practical and theoretical importance beyond statistical significance.',
+  },
+  statisticalSignificance: {
+    title: 'APA Dictionary of Psychology: Statistical Significance',
+    organization: 'American Psychological Association',
+    url: 'https://dictionary.apa.org/statistical-significance',
+    credibility: 'The APA Dictionary of Psychology is the professional association\'s edited reference source; this entry distinguishes statistical significance from practical or clinical importance.',
+  },
+  nlmStatistics: {
+    title: 'Finding and Using Health Statistics: Causation and Association',
+    organization: 'United States National Library of Medicine',
+    url: 'https://www.nlm.nih.gov/oet/ed/stats/02-400.html',
+    credibility: 'The National Library of Medicine is a United States federal scientific information authority; this educational resource explains why an observed correlation does not by itself establish causation.',
+  },
+  strobe: {
+    title: 'Strengthening the Reporting of Observational Studies in Epidemiology (STROBE) Statement: Guidelines for Reporting Observational Studies',
+    organization: 'STROBE Initiative and The BMJ',
+    url: 'https://www.bmj.com/content/335/7624/806',
+    credibility: 'The STROBE Statement is the primary international reporting guideline for cohort, case-control, and cross-sectional observational studies, published in the peer-reviewed BMJ.',
+  },
+  predictiveValues: {
+    title: 'Foundational Statistical Principles in Medical Research: Sensitivity, Specificity, Positive Predictive Value, and Negative Predictive Value',
+    organization: 'Peer-reviewed scholarly article indexed by PubMed',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/34065637/',
+    credibility: 'This peer-reviewed tutorial indexed by the United States National Library of Medicine directly explains that predictive values vary with prevalence and pretest probability.',
+  },
+  testingStandards: {
+    title: 'Standards for Educational and Psychological Testing',
+    organization: 'American Educational Research Association, American Psychological Association, and National Council on Measurement in Education',
+    url: 'https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf',
+    credibility: 'These jointly developed professional standards are the leading United States consensus source for validity, reliability, fairness, accommodations, administration, and responsible test use.',
+  },
+  apaAssessmentGuidelines: {
+    title: 'APA Guidelines for Psychological Assessment and Evaluation',
+    organization: 'American Psychological Association',
+    url: 'https://www.apa.org/about/policy/guidelines-psychological-assessment-evaluation.pdf',
+    credibility: 'These official American Psychological Association guidelines address appropriate test selection, administration, interpretation, multimethod integration, and limits on assessment conclusions.',
+  },
+  apaDisabilityAssessment: {
+    title: 'APA Guidelines for Assessment and Intervention with Persons with Disabilities',
+    organization: 'American Psychological Association',
+    url: 'https://www.apa.org/about/policy/guidelines-assessment-intervention-disabilities.pdf',
+    credibility: 'These official American Psychological Association guidelines directly address accessible, individualized, and valid assessment and intervention practices with persons with disabilities.',
+  },
+  telepsychology: {
+    title: 'APA Guidelines for the Practice of Telepsychology',
+    organization: 'American Psychological Association',
+    url: 'https://www.apa.org/about/policy/telepsychology-revisions',
+    credibility: 'These guidelines were approved by the APA Council of Representatives and address competence, testing, privacy, emergencies, documentation, and emerging technologies in telepsychology.',
+  },
+  informantDiscrepancies: {
+    title: 'Informant Discrepancies in the Assessment of Childhood Psychopathology: A Critical Review, Theoretical Framework, and Recommendations',
+    organization: 'Psychological Bulletin article indexed by PubMed',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/16060799/',
+    credibility: 'This peer-reviewed Psychological Bulletin review is a foundational scholarly analysis of why parent, teacher, and youth reports may differ and how those differences should be interpreted.',
+  },
+  assessmentEducation: {
+    title: 'Education and Training Guidelines for Psychological Assessment in Health Service Psychology',
+    organization: 'American Psychological Association journal article indexed by PubMed',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/33180536/',
+    credibility: 'This APA-developed, peer-reviewed guidance describes quality practices for psychological assessment training, including multimethod integration and responsible interpretation.',
+  },
+  fdaDigitalHealth: {
+    title: 'Guidances with Digital Health Content',
+    organization: 'United States Food and Drug Administration',
+    url: 'https://www.fda.gov/medical-devices/digital-health-center-excellence/guidances-digital-health-content',
+    credibility: 'The Food and Drug Administration is the United States regulator for medical devices; its Digital Health Center of Excellence publishes primary guidance on evaluating digital health technologies.',
+  },
+  ftcHealthApps: {
+    title: 'Mobile Health App Interactive Tool',
+    organization: 'United States Federal Trade Commission',
+    url: 'https://www.ftc.gov/business-guidance/resources/mobile-health-apps-interactive-tool',
+    credibility: 'The Federal Trade Commission is the United States consumer-protection authority; this official tool identifies privacy, security, health-information, and consumer-protection duties that may apply to mobile health apps.',
+  },
+  measurementBasedCare: {
+    title: 'How Are Information and Communication Technologies Supporting Routine Outcome Monitoring and Measurement-Based Care in Psychotherapy?',
+    organization: 'Peer-reviewed systematic review indexed by PubMed',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/32370140/',
+    credibility: 'This peer-reviewed systematic review examines routine outcome monitoring and the use of timely client data to identify and respond to treatment that is not on track.',
+  },
+  evidenceBasedPractice: {
+    title: 'APA Dictionary of Psychology: Evidence-Based Practice',
+    organization: 'American Psychological Association',
+    url: 'https://dictionary.apa.org/evidence-based-practice',
+    credibility: 'The APA professional definition describes evidence-based practice as integrating research, clinical expertise, client characteristics, culture, preferences, costs, and available resources.',
+  },
+  samhsaMotivation: {
+    title: 'TIP 35: Enhancing Motivation for Change in Substance Use Disorder Treatment',
+    organization: 'Substance Abuse and Mental Health Services Administration',
+    url: 'https://store.samhsa.gov/sites/default/files/tip35_final_508_compliant_-_02252020_0.pdf',
+    credibility: 'SAMHSA is the United States federal behavioral-health agency; this evidence-informed Treatment Improvement Protocol addresses motivational interviewing, ambivalence, and readiness for change.',
+  },
+  cdcEvidence: {
+    title: 'Tools for Implementing an Evidence-Based Approach in Public Health Practice',
+    organization: 'Centers for Disease Control and Prevention',
+    url: 'https://www.cdc.gov/pcd/issues/2012/11_0324.htm',
+    credibility: 'The CDC is the United States public-health authority; this peer-reviewed agency resource explains how prevention integrates research evidence, community preferences, local data, planning, and evaluation.',
+  },
+  pcoriPartnerships: {
+    title: 'Foundational Expectations for Partnerships in Research',
+    organization: 'Patient-Centered Outcomes Research Institute',
+    url: 'https://www.pcori.org/engagement-research/engagement-resources/foundational-expectations',
+    credibility: 'PCORI is an independent congressionally authorized research institute; its official guidance synthesizes evidence and experience on representative, early, and ongoing community partnership.',
+  },
+  supervision: {
+    title: 'Guidelines for Clinical Supervision in Health Service Psychology',
+    organization: 'American Psychological Association journal article indexed by PubMed',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/25581007/',
+    credibility: 'These APA-developed, peer-reviewed supervision guidelines address supervisor competence, direct observation, feedback, client welfare, trainee development, and supervisory accountability.',
+  },
+  cdcEvaluation: {
+    title: 'CDC Program Evaluation Framework',
+    organization: 'Centers for Disease Control and Prevention',
+    url: 'https://www.cdc.gov/evaluation/php/evaluation-framework/index.html',
+    credibility: 'The CDC framework is current official guidance for designing useful, rigorous, transparent, ethical, and collaboratively engaged program evaluations across settings.',
+  },
+  cdcEvaluationReport: {
+    title: 'CDC Program Evaluation Framework, 2024',
+    organization: 'Centers for Disease Control and Prevention, Morbidity and Mortality Weekly Report',
+    url: 'https://www.cdc.gov/mmwr/volumes/73/rr/rr7306a1.htm',
+    credibility: 'This formally published CDC recommendations report documents the evidence-informed 2024 evaluation framework, including context, credible evidence, collaborative engagement, and use of findings.',
+  },
+  clasStandards: {
+    title: 'National Standards for Culturally and Linguistically Appropriate Services in Health and Health Care',
+    organization: 'United States Department of Health and Human Services, Office of Minority Health',
+    url: 'https://thinkculturalhealth.hhs.gov/clas/standards',
+    credibility: 'The HHS Office of Minority Health publishes these national standards for respectful, understandable, culturally responsive care and qualified language assistance.',
+  },
+  multiculturalGuidelines: {
+    title: 'APA Multicultural Guidelines Executive Summary: Ecological Approach to Context, Identity, and Intersectionality',
+    organization: 'American Psychological Association journal article indexed by PubMed',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/30762387/',
+    credibility: 'This peer-reviewed APA executive summary describes the association\'s ecological, contextual, and intersectional framework for culturally responsive psychological work.',
+  },
+  culturalRuptures: {
+    title: 'Repairing Cultural Ruptures in Psychotherapy: Strategies to Enhance the Therapeutic Alliance',
+    organization: 'American Journal of Psychotherapy article indexed by PubMed',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/39901761/',
+    credibility: 'This peer-reviewed clinical article addresses cultural humility, direct broaching, power, alliance ruptures, and collaborative repair in psychotherapy.',
+  },
+  culturalHumility: {
+    title: 'The Effects of Cultural Humility on Therapeutic Alliance and Psychotherapy Outcomes: A Systematic Review and Meta-Analysis',
+    organization: 'Counselling and Psychotherapy Research',
+    url: 'https://onlinelibrary.wiley.com/doi/full/10.1002/capr.12835',
+    credibility: 'This peer-reviewed systematic review and meta-analysis evaluates the association of therapist cultural humility with alliance quality and psychotherapy outcomes.',
+  },
+  ipec: {
+    title: 'Core Competencies for Interprofessional Collaborative Practice: Version 3',
+    organization: 'Interprofessional Education Collaborative',
+    url: 'https://www.ipecollaborative.org/assets/core-competencies/IPEC_Core_Competencies_Version_3_2023.pdf',
+    credibility: 'IPEC represents major United States health-professions education organizations; its consensus competencies address shared goals, role clarity, respectful communication, and effective teamwork.',
+  },
+  aiGuidance: {
+    title: 'Ethical Guidance for AI in the Professional Practice of Health Service Psychology',
+    organization: 'American Psychological Association Ethics Committee',
+    url: 'https://www.apa.org/topics/artificial-intelligence-machine-learning/ethical-guidance-professional-practice.pdf',
+    credibility: 'The APA Ethics Committee adopted this professional guidance on AI competence, transparency, informed consent, privacy, bias, evidence, human oversight, documentation, and accountability.',
+  },
+  hhsCourtOrders: {
+    title: 'Court Orders and Subpoenas',
+    organization: 'United States Department of Health and Human Services',
+    url: 'https://www.hhs.gov/hipaa/for-individuals/court-orders-subpoenas/index.html',
+    credibility: 'The United States Department of Health and Human Services administers the HIPAA Privacy Rule; this official guidance distinguishes court orders from subpoenas and explains conditions governing disclosure.',
+  },
+  hhsSubpoenaAssurances: {
+    title: 'What "satisfactory assurances" must a covered entity receive before it may respond to a subpoena without a court order?',
+    organization: 'United States Department of Health and Human Services',
+    url: 'https://www.hhs.gov/hipaa/for-professionals/faq/706/what-satisfactory-assurances-must-a-covered-entity-receive-before-it-responds-to-a-subpoena/index.html',
+    credibility: 'The United States Department of Health and Human Services publishes this primary HIPAA guidance on the notice and protective-order assurances required before certain subpoena responses.',
+  },
+  ethicsCode: {
+    title: 'Ethical Principles of Psychologists and Code of Conduct',
+    organization: 'American Psychological Association',
+    url: 'https://www.apa.org/ethics/code',
+    credibility: 'The American Psychological Association publishes the current enforceable ethics standards and aspirational principles used for APA-governed professional conduct.',
+  },
+};
+
+const domains = [
+  { id: 'scientific-orientation', label: 'Scientific Orientation to Practice', weight: 0.15, itemCount: 3 },
+  { id: 'assessment', label: 'Assessment', weight: 0.20, itemCount: 4 },
+  { id: 'intervention', label: 'Intervention', weight: 0.20, itemCount: 4 },
+  { id: 'consultation-supervision', label: 'Consultation and Supervision', weight: 0.10, itemCount: 2 },
+  { id: 'interpersonal-relationships', label: 'Interpersonal Relationships', weight: 0.15, itemCount: 3 },
+  { id: 'ethical-professional-practice', label: 'Ethical and Professional Practice', weight: 0.20, itemCount: 4 },
+];
+
+const items = [
+  {
+    id: 'eppp-2027-preview-scientific-01', domainId: 'scientific-orientation', competencyTag: '1.C.1', answerIndex: 0,
+    prompt: 'A hospital team is studying patients\' experiences of involuntary admission. Treating psychologists recruit their current patients and conduct the interviews. The report does not discuss researcher reflexivity and concludes that "patients undergoing involuntary care experience the process as helpful." Which revision would most strengthen the study\'s interpretation?',
+    choices: [
+      'Disclose dual roles, examine power and nonresponse effects, use independent procedures when feasible, and limit conclusions to this sample and setting.',
+      'Add more participants from the same units and lengthen interviews, because a larger convenience sample resolves researcher influence and disclosure effects.',
+      'Exclude sharply negative interviews collected by treating clinicians, because acute symptoms may make those accounts less trustworthy than favorable accounts.',
+      'Treat thematic saturation as evidence that the conclusions apply to all patients undergoing involuntary admission once no new themes appear.',
+    ],
+    rationale: 'Treating-clinician roles can affect who participates, what patients disclose, and how data are interpreted. Reflexivity, safeguards against undue influence, and transparent limits on transferability address these threats; neither sample size nor thematic saturation makes a convenience sample representative.',
+    choiceRationales: [
+      'This directly addresses researcher positionality, power, recruitment bias, reflexivity, and appropriate limits on interpretation.',
+      'A larger sample from the same recruitment process does not remove dual-role, selection, or disclosure effects.',
+      'Removing disconfirming accounts introduces systematic bias rather than improving qualitative rigor.',
+      'Saturation concerns the adequacy of information for developing themes, not population representativeness.',
+    ],
+    sourceKeys: ['jars', 'nihResearch'],
+  },
+  {
+    id: 'eppp-2027-preview-scientific-02', domainId: 'scientific-orientation', competencyTag: '1.B.2', answerIndex: 1,
+    prompt: 'A randomized trial with 8,000 participants finds that an intervention improves a 100-point functioning scale by 1.2 points compared with control, p < .001, 95% CI [0.8, 1.6]. Before data collection, investigators defined 5 points as the minimum clinically important difference. Which interpretation is best supported?',
+    choices: [
+      'The treatment is clinically important because any p value below .001 indicates a meaningful benefit.',
+      'The estimate is precise but smaller than the prespecified threshold for a clinically important benefit.',
+      'The trial probably missed a clinically important benefit because a small mean difference indicates low statistical power.',
+      'The trial cannot be interpreted because confidence intervals and clinical thresholds should not be compared.',
+    ],
+    rationale: 'The result is statistically distinguishable from zero, but the entire confidence interval lies below the prespecified clinically important difference. The large sample can make a small effect statistically significant without making it clinically meaningful.',
+    choiceRationales: [
+      'A p value does not measure effect magnitude or establish that clients would experience a meaningful benefit.',
+      'This correctly distinguishes precise statistical evidence from the magnitude required for clinical importance.',
+      'The narrow interval and significant result suggest a precisely estimated small effect, not inadequate statistical power.',
+      'Comparing an estimate and its confidence interval with a justified clinical threshold is directly informative.',
+    ],
+    sourceKeys: ['effectSize', 'statisticalSignificance'],
+  },
+  {
+    id: 'eppp-2027-preview-scientific-03', domainId: 'scientific-orientation', competencyTag: '1.D.2', answerIndex: 2,
+    prompt: 'A cross-sectional school survey finds that adolescents reporting more than two hours of daily social-media use have an adjusted odds ratio of 1.4 for elevated anxiety relative to adolescents reporting less use. Which public summary is most scientifically defensible?',
+    choices: [
+      'Based on the adjusted analysis, high social-media use causes anxiety in adolescents who use platforms more than two hours daily.',
+      "Reducing daily use below two hours should lower an adolescent's probability of anxiety by approximately 40% across similar school populations.",
+      'In this sample, higher use was associated with higher odds of anxiety; the cross-sectional design does not establish temporal or causal direction.',
+      'After demographic adjustment, the association can be generalized beyond the sampled schools despite the cross-sectional design and remaining confounding.',
+    ],
+    rationale: 'An adjusted cross-sectional association does not establish temporal order, eliminate unmeasured confounding, or estimate what would happen if exposure changed. Accurate public communication preserves the observed association and odds metric while stating the causal and generalizability limits.',
+    choiceRationales: [
+      'A cross-sectional association cannot establish that social-media use preceded or caused anxiety; reverse causation and confounding remain possible.',
+      'The odds ratio is not an intervention effect, and a 1.4 odds ratio is not a 40% change in probability.',
+      'This accurately reports the observed association, the sampled context, and the design\'s central causal limitation.',
+      'Adjusting measured covariates does not make the school sample representative of other adolescent populations.',
+    ],
+    sourceKeys: ['strobe', 'nlmStatistics'],
+  },
+  {
+    id: 'eppp-2027-preview-assessment-01', domainId: 'assessment', competencyTag: '2.B.5', answerIndex: 3,
+    prompt: 'A screening measure has 90% sensitivity and 90% specificity. It is administered in a setting where the target disorder occurs in 1% of clients. A client screens positive and has no other assessment data. What is the most appropriate response?',
+    choices: [
+      'Begin disorder-specific treatment because 90% sensitivity makes a positive result diagnostically conclusive.',
+      'Dismiss the result because low prevalence makes any positive result more likely to be erroneous.',
+      'Repeat the same screen once and diagnose if the second administration is also positive.',
+      'Explain the low positive predictive value and obtain a fuller assessment before making a diagnosis.',
+    ],
+    rationale: 'In 1,000 comparable clients, about 9 of 10 affected clients would screen positive, while about 99 of 990 unaffected clients would also screen positive. The positive predictive value is therefore roughly 9 / 108, or 8%, so the result raises concern but is not diagnostic.',
+    choiceRationales: [
+      'Sensitivity is the probability of a positive result among affected persons, not the probability of disorder given a positive result.',
+      'A low predictive value warrants confirmation and contextual interpretation, not automatic dismissal.',
+      'Repeating the same method does not independently establish diagnosis and may reproduce the same sources of error.',
+      'This correctly incorporates prevalence, test characteristics, and the need for multimethod diagnostic confirmation.',
+    ],
+    sourceKeys: ['predictiveValues', 'testingStandards'],
+  },
+  {
+    id: 'eppp-2027-preview-assessment-02', domainId: 'assessment', competencyTag: '2.C.2', answerIndex: 0,
+    prompt: 'An adult with a motor disability is referred for an evaluation of reasoning. The planned timed written-response test imposes a motor demand unrelated to reasoning, and its publisher provides neither a validated accommodation nor norms for modified timing. What is the psychologist\'s best next step?',
+    choices: [
+      'Consult test guidance and the client, prefer an accessible validated alternative, and document interpretation limits if a nonstandard modification remains necessary.',
+      'Administer the test under standard timing and interpret the normed score, while noting that motor speed may have reduced performance.',
+      'Provide extended time based on clinical judgment and apply the standard timed norms after documenting the change as an individualized accommodation.',
+      'Omit standardized performance measures and base conclusions on interview and collateral data because any modification makes normed interpretation unusable.',
+    ],
+    rationale: 'Access and validity should be addressed before administration. When construct-irrelevant motor demands cannot be accommodated within validated procedures, the psychologist should consider a measure that validly assesses the referral question for this client. If a justified nonstandard administration remains necessary, the deviation and its effects on score meaning must be documented; published timed norms cannot automatically be treated as applicable.',
+    choiceRationales: [
+      'This first seeks evidence-supported access and comparability and explicitly limits inferences if nonstandard administration is unavoidable.',
+      'A caveat after standard administration does not remove the construct-irrelevant motor barrier and may leave the score dominated by motor speed rather than reasoning.',
+      'Documentation is necessary but does not make published timed norms applicable after an unvalidated timing change.',
+      'An interview-only approach discards potentially useful standardized evidence when an accessible validated alternative or carefully qualified modification may be available.',
+    ],
+    sourceKeys: ['testingStandards', 'apaAssessmentGuidelines', 'apaDisabilityAssessment'],
+  },
+  {
+    id: 'eppp-2027-preview-assessment-03', domainId: 'assessment', competencyTag: '2.C.2', answerIndex: 1,
+    prompt: 'During a remotely administered timed cognitive subtest, the video freezes twice and the psychologist cannot determine how long the client continued working during each interruption. What is the best next step?',
+    choices: [
+      'Score the subtest normally because the client completed every item despite the interrupted connection.',
+      'Follow test-specific restart rules; document the disruption and withhold the standard score if validity remains uncertain.',
+      'Subtract the estimated frozen interval from completion time and score using the usual remote norms.',
+      'Prorate the completed responses and interpret them after confirming that the client understood the instructions.',
+    ],
+    rationale: 'Unobserved timing disruptions can invalidate standardized administration. The psychologist should follow publisher and professional guidance, document the event, and avoid representing the resulting score as standard when comparability cannot be restored.',
+    choiceRationales: [
+      'Item completion does not repair uncertainty about standardized timing, observation, or the conditions represented by the norms.',
+      'This protects validity while allowing a supported restart or re-administration when test-specific guidance authorizes one.',
+      'An estimated timing correction is not a standardized administration procedure and creates unsupported precision.',
+      'Understanding instructions does not resolve the compromised timing and observation conditions.',
+    ],
+    sourceKeys: ['telepsychology', 'testingStandards'],
+  },
+  {
+    id: 'eppp-2027-preview-assessment-04', domainId: 'assessment', competencyTag: '2.C.3', answerIndex: 2,
+    prompt: 'In an adolescent evaluation, the parent reports severe irritability at home, the teacher reports problems only during unstructured periods, and the adolescent reports little distress. Which method best supports a defensible conclusion?',
+    choices: [
+      'Give the parent\'s rating priority because caregivers observe behavior across more hours than other informants.',
+      'Average the three ratings so no informant contributes more than another to the diagnostic conclusion.',
+      'Investigate setting, timing, and informant perspectives, then integrate the discrepancy with interviews and observations.',
+      'Exclude the adolescent\'s report because low symptom endorsement is most likely deliberate underreporting.',
+    ],
+    rationale: 'Informant differences may reflect meaningful cross-setting variation, different opportunities to observe behavior, reporter perspectives, or measurement error. The task is to investigate and synthesize the pattern rather than mechanically privileging, averaging, or discarding an informant.',
+    choiceRationales: [
+      'Observation time alone does not make one informant universally more valid across settings and target behaviors.',
+      'Averaging can erase clinically meaningful contextual differences and assumes the reports measure interchangeable observations.',
+      'This treats discrepancies as data and integrates multiple methods, perspectives, and contexts.',
+      'Underreporting is only one possible hypothesis and cannot be assumed without supporting evidence.',
+    ],
+    sourceKeys: ['informantDiscrepancies', 'assessmentEducation'],
+  },
+  {
+    id: 'eppp-2027-preview-intervention-01', domainId: 'intervention', competencyTag: '3.A.3', answerIndex: 3,
+    prompt: 'A clinic is considering a mental-health app whose vendor cites testimonials and one unpublished pre-post study. The app sends engagement data to a third party and has no documented crisis-escalation process. What should the clinic psychologist recommend?',
+    choices: [
+      'Run a time-limited clinician-monitored pilot after clients consent, exclude clients with current suicide risk, and use symptom change plus adverse-event data to decide whether to continue.',
+      'Use the app only as an adjunct to usual care, require clinicians to review engagement weekly, and tell clients not to use it during emergencies.',
+      'Require a business-associate agreement and vendor documentation of encryption and deletion, then adopt it for clients whose treatment goals match its content.',
+      'Defer clinical use while evaluating evidence, data practices, accessibility, crisis handling, and client choice.',
+    ],
+    rationale: 'Technology does not receive a lower evidence or safety standard merely because it is convenient or voluntary. Clinical adoption requires evaluation of effectiveness claims, privacy and security, accessibility and bias, emergency procedures, informed choice, and fit with the intended population.',
+    choiceRationales: [
+      'A monitored pilot would still expose client data and create clinical reliance before the app\'s evidence, privacy, accessibility, and crisis safeguards are established.',
+      'Adjunctive use, weekly review, and an emergency warning do not resolve uncertain effectiveness, third-party data practices, accessibility, or missing escalation procedures.',
+      'A business-associate agreement and security documentation address only part of the review and do not establish clinical effectiveness, accessibility, or crisis safety.',
+      'This evaluates the full set of clinical, technological, equity, safety, privacy, and client-centered requirements before deployment.',
+    ],
+    sourceKeys: ['telepsychology', 'fdaDigitalHealth', 'ftcHealthApps'],
+  },
+  {
+    id: 'eppp-2027-preview-intervention-02', domainId: 'intervention', competencyTag: '3.C.2', answerIndex: 0,
+    prompt: 'After six well-attended CBT sessions, a client\'s symptom measure has worsened across three administrations, the alliance rating has declined, and the client says homework conflicts with major caregiving demands. What is the best response?',
+    choices: [
+      'Review the outcome and alliance data with the client, reassess safety and formulation, and collaboratively agree on a modification.',
+      'Continue core CBT techniques but reduce homework demands and reassess after two sessions without revisiting the formulation.',
+      'Switch to supportive therapy because the outcome data show CBT is ineffective for this client, then reassess the alliance after the switch.',
+      'Address the alliance strain first and postpone reviewing symptom deterioration until the relationship improves.',
+    ],
+    rationale: 'Repeated worsening and alliance decline call for timely reassessment, including safety, case formulation, treatment fit, and contextual barriers. Measurement-based care informs collaborative clinical judgment; it does not require rigid continuation, automatic termination, or a score-only modality switch.',
+    choiceRationales: [
+      'This integrates outcome and alliance data, safety, formulation, contextual barriers, and the client\'s perspective into a collaborative treatment adaptation.',
+      'Reducing homework may help, but changing one demand without revisiting the worsening trajectory, alliance, safety, and formulation is too narrow.',
+      'The outcome data warrant reassessment but do not by themselves establish that CBT is ineffective or identify supportive therapy as the best alternative.',
+      'Alliance repair matters, but postponing attention to symptom deterioration can miss safety concerns and leaves the broader formulation unexamined.',
+    ],
+    sourceKeys: ['measurementBasedCare', 'evidenceBasedPractice'],
+  },
+  {
+    id: 'eppp-2027-preview-intervention-03', domainId: 'intervention', competencyTag: '3.B.3', answerIndex: 1,
+    prompt: 'An adult with hazardous alcohol use attends after an employer referral and says, "I do not think drinking is the main problem, but I hate that it is affecting work." There is no acute safety risk. Which initial response best supports engagement?',
+    choices: [
+      '"Because your employer required this visit, abstinence is the safest starting goal; let us plan weekly testing."',
+      '"You see other problems as more important, yet drinking is affecting work. What would you like to change?"',
+      '"Before we discuss goals, I will outline the consequences of continued drinking so you can make an informed choice."',
+      '"You may not be ready for treatment, so return after you decide whether you want abstinence."',
+    ],
+    rationale: 'The second response uses reflective listening, develops discrepancy in the client\'s own terms, invites change talk, and preserves autonomy, which are core motivational interviewing processes. The alternatives impose a clinician-selected abstinence goal, prioritize information giving over eliciting the client\'s perspective, or withdraw help until the client adopts a particular goal.',
+    choiceRationales: [
+      'This imposes abstinence and monitoring before the client has adopted that goal, which can intensify resistance and weaken engagement.',
+      'This reflects both sides of the client\'s statement, develops discrepancy without argument, invites change talk, and preserves autonomy.',
+      'Providing information can be useful with permission, but leading with consequences bypasses reflection and the client\'s own reasons for change.',
+      'Readiness can be explored and strengthened now; requiring an abstinence decision before offering help undermines engagement and autonomy.',
+    ],
+    sourceKeys: ['samhsaMotivation', 'evidenceBasedPractice'],
+  },
+  {
+    id: 'eppp-2027-preview-intervention-04', domainId: 'intervention', competencyTag: '3.D.2', answerIndex: 2,
+    prompt: 'A rural school district reports increasing anxiety-related absence. A universal prevention program has strong evidence from urban districts, while local students and caregivers identify transportation, discrimination, and work schedules as important barriers. Which plan best integrates the available information?',
+    choices: [
+      'Preserve the program\'s core components, adapt delivery to transportation and work schedules, and monitor attendance; defer discrimination-related changes until local efficacy is established.',
+      'Build a locally designed program around identified barriers and community preferences, then compare outcomes with published benchmarks.',
+      'Combine local data and community input to select an evidence-informed strategy, preserve core components, and monitor outcomes.',
+      'Begin with indicated treatment for students already missing school while collecting local data to decide later whether universal prevention is warranted.',
+    ],
+    rationale: 'Evidence-based prevention combines research, local data, implementation context, and the perspectives of affected communities. Adaptation should protect core mechanisms while addressing local barriers, followed by monitoring of reach, implementation, benefits, and unintended effects.',
+    choiceRationales: [
+      'This adapts some logistics but postpones a locally identified equity barrier and monitors attendance rather than the full intended outcomes and unintended effects.',
+      'Community-designed adaptation is valuable, but relying on unmatched published benchmarks and omitting an evidence-informed strategy weakens causal and practical interpretation.',
+      'This integrates research evidence, local context, community preferences, thoughtful adaptation of core components, and ongoing evaluation.',
+      'Indicated treatment may be needed, but substituting it for the universal prevention decision leaves broader population need and access barriers unaddressed.',
+    ],
+    sourceKeys: ['cdcEvidence', 'pcoriPartnerships'],
+  },
+  {
+    id: 'eppp-2027-preview-consultation-01', domainId: 'consultation-supervision', competencyTag: '4.D.1', answerIndex: 3,
+    prompt: 'A first-year trainee is assigned a client with recurrent suicidal ideation. The supervisor currently reviews cases by weekly email and has told the trainee to "use the emergency department if things worsen." What is the supervisor\'s best response?',
+    choices: [
+      'Keep weekly supervision, add a standardized suicide-risk checklist, and require same-day email after any increase in ideation.',
+      'Transfer the client to the supervisor for stabilization and return the case only after suicidal ideation has resolved.',
+      'Have the trainee follow agency crisis policy and arrange peer consultation between scheduled supervision sessions.',
+      'Create a written supervision and escalation plan, verify competence, ensure immediate supervisory access, and directly monitor the work.',
+    ],
+    rationale: 'Supervision must be responsive to client risk and the supervisee\'s current competence. A clear plan should define roles, emergency access, documentation, monitoring, and limits of independent practice; a generic instruction or distant weekly review is insufficient.',
+    choiceRationales: [
+      'A checklist and same-day email do not provide immediate supervisory access, individualized escalation steps, competence verification, or direct monitoring.',
+      'Transfer may sometimes be necessary, but automatically removing the case until all ideation resolves bypasses individualized risk and competence assessment.',
+      'Agency policy and peers can support care, but neither substitutes for the assigned supervisor\'s immediate access, accountability, and direct monitoring.',
+      'This matches supervision intensity to client risk and trainee competence while defining escalation, access, oversight, and professional accountability.',
+    ],
+    sourceKeys: ['supervision'],
+  },
+  {
+    id: 'eppp-2027-preview-consultation-02', domainId: 'consultation-supervision', competencyTag: '4.C.1', answerIndex: 0,
+    prompt: 'A school consultation program has operated for one year. Participation increased, but no baseline outcome data were collected. The board asks whether the program improved student functioning and reduced unnecessary referrals. What should the consulting psychologist do?',
+    choices: [
+      'Clarify intended outcomes with interest holders, reconstruct the program logic, choose feasible process and outcome indicators, and state design limits.',
+      'Use attendance as the primary outcome because it is the only complete variable available for the implementation period.',
+      'Compare current participants with demographically matched national norms because a local baseline was not collected before implementation.',
+      'Report the program as provisionally effective because reach increased, while recommending later study of student functioning and referral patterns.',
+    ],
+    rationale: 'Participation measures reach, not whether the intended outcomes occurred. A useful evaluation can still reconstruct the logic model, clarify stakeholder questions, select feasible evidence and comparisons, and communicate the inferential limits created by missing baseline data.',
+    choiceRationales: [
+      'This produces a useful and transparent evaluation without pretending the missing baseline can be recovered.',
+      'Attendance alone cannot answer the board\'s questions about student functioning or referral appropriateness.',
+      'Even demographically matched national norms can differ on unmeasured context and do not automatically provide a valid counterfactual for this program.',
+      'Increased reach is not evidence that the program caused its intended functional or referral outcomes, even when effectiveness is labeled provisional.',
+    ],
+    sourceKeys: ['cdcEvaluation', 'cdcEvaluationReport'],
+  },
+  {
+    id: 'eppp-2027-preview-interpersonal-01', domainId: 'interpersonal-relationships', competencyTag: '5.B.2', answerIndex: 1,
+    prompt: 'During an interview through a qualified interpreter, a psychologist interprets a client\'s limited eye contact and long response pauses as evasiveness. The interpreter notes that these behaviors can convey respect in the client\'s community. What should the psychologist do next?',
+    choices: [
+      'Ask the interpreter about the behavior\'s usual community meaning, then document that explanation as the most likely interpretation.',
+      'Check the meaning with the client through the interpreter, examine the psychologist\'s assumptions, and adapt pacing and gaze.',
+      'Keep the usual pace and gaze but omit an evasiveness inference unless other behavioral evidence supports it.',
+      'Re-administer key questions more directly through the interpreter to determine whether the pauses reflect comprehension rather than respect.',
+    ],
+    rationale: 'Cultural responsiveness requires curiosity rather than replacing one assumption with another. The psychologist should ask the client, reflect on personal interpretive habits, and adapt communication when doing so supports a respectful and valid interaction.',
+    choiceRationales: [
+      'The interpreter\'s cultural knowledge offers a hypothesis, but documenting it as the most likely meaning without asking the client substitutes a new assumption.',
+      'This combines client-centered inquiry, qualified language access, self-reflection, and culturally responsive adaptation.',
+      'Withholding the evasiveness inference is appropriate, but preserving the same interaction style misses the opportunity to clarify meaning and improve communication.',
+      'More direct questioning tests only one alternative explanation and may intensify the original cultural mismatch without first consulting the client.',
+    ],
+    sourceKeys: ['clasStandards', 'multiculturalGuidelines'],
+  },
+  {
+    id: 'eppp-2027-preview-interpersonal-02', domainId: 'interpersonal-relationships', competencyTag: '5.B.4', answerIndex: 2,
+    prompt: 'A psychologist feels unusually protective of a client and repeatedly answers for the client in interdisciplinary meetings. A colleague notes that the client has asked to speak for themself. What is the psychologist\'s best response?',
+    choices: [
+      'At the next meeting, wait for the client to speak first and intervene only if the team dismisses the client\'s stated preference.',
+      'Tell the client that a colleague observed overprotection, apologize, and ask the client to alert the psychologist if it happens again.',
+      'Reflect on the reaction, seek consultation, ask how the client wants support provided, and adjust the psychologist\'s role.',
+      'Ask the colleague to chair future meetings and provide feedback afterward while the psychologist continues in the advocacy role.',
+    ],
+    rationale: 'Helpful intent does not eliminate the possibility that the psychologist\'s reaction is reducing client agency. Active reflection, consultation, direct attention to the client\'s preferences, and behavioral adjustment address both the reaction and the power differential.',
+    choiceRationales: [
+      'Waiting for the client to speak is an improvement, but a rule triggered only by team dismissal does not examine the reaction or clarify the client\'s preferred support.',
+      'Acknowledgment may support repair, but assigning the client responsibility for monitoring the psychologist leaves reflection, consultation, and role change incomplete.',
+      'This integrates self-reflection, consultation, client voice, power awareness, and an explicit adjustment in professional behavior.',
+      'Changing the chair and requesting feedback may add oversight, but continuing the same advocacy role does not center the client\'s preference or correct the reaction.',
+    ],
+    sourceKeys: ['culturalRuptures', 'culturalHumility'],
+  },
+  {
+    id: 'eppp-2027-preview-interpersonal-03', domainId: 'interpersonal-relationships', competencyTag: '5.C.3', answerIndex: 3,
+    prompt: 'A school psychologist, community therapist, and prescribing clinician disagree about priorities for an adolescent. The family requests coordination and signs an appropriate release. Which response best supports collaborative care?',
+    choices: [
+      'Ask the family to rank each clinician\'s recommendations, then circulate the ranking so each professional can align a separate plan.',
+      'Have the clinician responsible for the highest-risk concern coordinate the plan and obtain family feedback before finalizing it.',
+      'Exchange written summaries under the release and ask each clinician to revise recommendations independently before the next family meeting.',
+      'With consent, establish shared goals and roles with the family, exchange relevant information, and schedule joint review.',
+    ],
+    rationale: 'Collaboration does not require disciplines to erase their perspectives. It requires shared goals, clear roles, respectful communication, relevant information exchange within consent, and an agreed process for reviewing the integrated plan.',
+    choiceRationales: [
+      'Family priorities matter, but ranking separate recommendations leaves the family carrying the burden of professional integration and does not create shared roles.',
+      'Risk may influence urgency, yet assigning one clinician control before establishing shared goals and roles does not provide genuinely collaborative planning.',
+      'Information exchange is useful, but independent revisions preserve parallel plans rather than producing an integrated family-centered approach.',
+      'This promotes family-centered coordination, shared goals, role clarity, relevant information exchange, and ongoing team accountability.',
+    ],
+    sourceKeys: ['ipec'],
+  },
+  {
+    id: 'eppp-2027-preview-ethical-01', domainId: 'ethical-professional-practice', competencyTag: '6.C.2', answerIndex: 0,
+    prompt: 'A psychologist wants to use an AI system that records sessions, drafts notes, and suggests diagnoses. The psychologist has not evaluated the training data, error rate, data retention, or performance across demographic groups. What is the most appropriate next step?',
+    choices: [
+      'Avoid client-data use until the psychologist has evaluated purpose-specific evidence and subgroup performance, data flows and retention, recording consent, human verification, competence, and failure procedures.',
+      'Use it only to draft notes, obtain a business-associate agreement, and require clinician sign-off; disable diagnostic suggestions until validation data are available.',
+      'Run a small pilot with consenting low-risk clients, compare AI notes with clinician notes, and adopt it if agreement and client satisfaction are high.',
+      'Rely on the vendor\'s HIPAA and accuracy attestations, disclose AI use in the clinic\'s general consent, and monitor errors after implementation.',
+    ],
+    rationale: 'Because the system records sessions and contributes to documentation and diagnostic reasoning, its use affects confidentiality, informed consent, competence, evidence, bias, and professional accountability. No client data should be transmitted until purpose-specific validity, subgroup performance, data flows and retention, security, informed consent for recording and AI data use, human verification, documentation, and failure procedures have been evaluated.',
+    choiceRationales: [
+      'This addresses the relevant evidence, equity, privacy, consent, competence, oversight, and contingency requirements before client use.',
+      'A business-associate agreement and clinician signature do not establish validity, resolve subgroup performance, explain data retention, or obtain informed consent for recording and AI processing.',
+      'Client consent and low acuity do not justify exposing client data before privacy, security, fitness-for-purpose, and bias review; agreement in a small convenience pilot is not adequate validation.',
+      'Vendor attestations, generic consent, and post-deployment complaint monitoring do not substitute for independent pre-use evaluation and specific informed consent.',
+    ],
+    sourceKeys: ['aiGuidance', 'ethicsCode'],
+  },
+  {
+    id: 'eppp-2027-preview-ethical-02', domainId: 'ethical-professional-practice', competencyTag: '6.B.4', answerIndex: 1,
+    prompt: 'In a United States outpatient practice covered by HIPAA, a psychologist receives an attorney-issued subpoena (not a judge-signed court order) demanding a client\'s entire therapy record. The client has not authorized release, and the psychologist does not know whether applicable state privilege and procedural requirements have been satisfied. What should the psychologist do first?',
+    choices: [
+      'Send only progress notes while withholding psychotherapy notes, because HIPAA permits partial response to an attorney-issued subpoena.',
+      'Verify the subpoena and applicable law, preserve privilege, and obtain legal consultation before authorizing or opposing any disclosure.',
+      'Refuse all disclosure unless the attorney obtains a judge-signed order, because an attorney-issued subpoena never permits disclosure without client authorization.',
+      'Notify the client and release the full record after the objection period if the client does not respond, because silence waives privilege.',
+    ],
+    rationale: 'An attorney-issued subpoena differs from a court order, but it still requires a timely response under governing procedure. HIPAA permits disclosures in response to certain subpoenas only when specified notice or protective-order conditions are satisfied; state privilege and other law may be stricter. The psychologist should not automatically disclose, ignore the demand, or treat client silence as waiver, and any legally required disclosure should be limited.',
+    choiceRationales: [
+      'HIPAA\'s special treatment of psychotherapy notes does not itself authorize release of other records; subpoena, notice or protective-order, privilege, and state-law requirements still must be addressed.',
+      'This manages the demand without assuming either automatic disclosure or categorical refusal and preserves the possibility of the least necessary legally required response.',
+      'An attorney-issued subpoena is not a court order, but disclosure may be permitted when governing procedural conditions are satisfied; categorical refusal may mishandle valid legal process.',
+      'Notice may be required or appropriate, but client nonresponse is not a universal waiver and does not itself authorize full disclosure.',
+    ],
+    sourceKeys: ['hhsCourtOrders', 'hhsSubpoenaAssurances', 'ethicsCode'],
+    qaExceptions: {
+      categoricalDistractors: 'Two audit-prescribed distractors intentionally test categorical legal errors about record subsets and subpoena force; the keyed response preserves jurisdiction-sensitive conditional reasoning.',
+    },
+  },
+  {
+    id: 'eppp-2027-preview-ethical-03', domainId: 'ethical-professional-practice', competencyTag: '6.B.3', answerIndex: 2,
+    prompt: 'Before a conference presentation, a psychologist notices that a colleague\'s slides contain a client\'s rare occupation, exact age, clinic location, and detailed history. The colleague appears unaware that the combination may identify the client. No presentation has occurred, and raising the issue privately would not violate confidentiality. What should the psychologist do first?',
+    choices: [
+      'Ask the conference organizer to review the slides privately and decide whether the identifiers require removal.',
+      'Remove the exact age and clinic location but retain the rare occupation and detailed history because no single field names the client.',
+      'Privately raise the reidentification risk, verify valid authorization, and seek correction before presentation; escalate if the concern remains unresolved.',
+      'Ask the organizer to give a confidentiality reminder before the talk and let the colleague decide whether the details are sufficiently disguised.',
+    ],
+    rationale: 'The psychologist should first determine whether valid authorization permits the planned disclosure and privately raise the foreseeable reidentification risk so the colleague can correct it before presentation. If informal resolution is appropriate and does not violate rights, it should be attempted promptly, with additional action if the concern is not resolved or substantial harm remains likely.',
+    choiceRationales: [
+      'Delegating the initial review to the organizer delays direct preventive correction and may disclose client details to another person unnecessarily.',
+      'Removing two fields does not adequately address reidentification when the remaining rare occupation and detailed history can still identify the client in combination.',
+      'This checks authorization, seeks immediate confidential correction before harm occurs, and preserves escalation if informal resolution fails.',
+      'A generic reminder neither determines authorization nor corrects the identifiable case details, and it leaves the decision entirely with the colleague who missed the risk.',
+    ],
+    sourceKeys: ['ethicsCode'],
+  },
+  {
+    id: 'eppp-2027-preview-ethical-04', domainId: 'ethical-professional-practice', competencyTag: '6.C.4', answerIndex: 3,
+    prompt: 'A psychologist discovers that a new electronic template copied inaccurate risk statements into several records and automatically submitted six claims using a higher service code than was provided. What is the best response?',
+    choices: [
+      'Disable automated coding, correct the six claims, and leave the clinical entries unchanged because the claims create the greater external risk.',
+      'Add a general correction note to each affected chart and ask the vendor to patch the template before submitting further claims.',
+      'Audit all template-created records and claims, notify risk management, and wait for instructions before stopping the workflow.',
+      'Stop the faulty workflow, assess its scope, transparently correct records and claims, notify appropriate parties, and prevent recurrence.',
+    ],
+    rationale: 'Psychologists remain responsible for the accuracy of professional records and billing processes they use. Corrective action includes stopping ongoing error, determining its extent, making transparent amendments rather than silently rewriting history, following payer and legal correction requirements, mitigating client harm, and fixing the workflow.',
+    choiceRationales: [
+      'Correcting the claims addresses only one part of the known error and leaves inaccurate clinical risk statements available to influence care.',
+      'A general note and vendor patch do not establish the full scope or transparently correct each affected record and claim.',
+      'Auditing and consultation are appropriate, but allowing a known faulty workflow to continue can create additional inaccurate records and claims.',
+      'This stops ongoing harm, determines scope, preserves transparent record integrity, corrects billing, notifies appropriate parties, and prevents recurrence.',
+    ],
+    sourceKeys: ['ethicsCode'],
+  },
+];
+
+const competencyLabels = {
+  '1.C.1': 'Critically evaluate research findings, including methodology, interpretation, assumptions, quality of evidence, and researcher positionality',
+  '1.B.2': 'Interpret data analysis, power, effect size, and clinical versus statistical significance',
+  '1.D.2': 'Communicate psychological knowledge to diverse groups in an understandable and scientifically accurate manner',
+  '2.B.5': 'Integrate base rates, group differences, cultural factors, heuristics, development, and risk or protective factors',
+  '2.C.2': 'Use relevant guidelines for nonstandard assessment administration, scoring, and interpretation',
+  '2.A.3': 'Select or adapt assessment methods with attention to technology, accessibility, culture, language, and limitations',
+  '2.C.3': 'Interpret and synthesize multiple assessment methods and collateral sources using research and guidelines',
+  '3.A.3': 'Evaluate technologies used to provide psychological services, including digital therapeutics',
+  '3.C.2': 'Adapt interventions using client response, preferences, diversity, context, and other relevant factors',
+  '3.B.3': 'Integrate client or stakeholder preferences, readiness, history, and improvement potential into intervention planning',
+  '3.D.2': 'Integrate stakeholder preferences and evidence-based rationale into prevention planning',
+  '4.D.1': 'Implement a supervision plan covering risk, records, competence, policies, and the supervisory relationship',
+  '4.C.1': 'Develop, monitor, and modify program-evaluation activities with attention to context and stakeholders',
+  '5.B.2': 'Adapt professional behavior using reflection, guidance, and cultural, social, or organizational context',
+  '5.B.4': 'Consult to examine and address one\'s reactions and behavior in relation to others',
+  '5.C.3': 'Consult and collaborate with stakeholders when serving or advocating with diverse populations',
+  '6.C.2': 'Obtain knowledge, training, and supervision when expanding practice, including evolving technologies',
+  '6.B.4': 'Identify and address conflicts between legal and ethical requirements in professional practice',
+  '6.B.3': 'Address ethical concerns about colleagues and take appropriate additional action when necessary',
+  '6.C.4': 'Accept responsibility for professional activities and take corrective action when needed',
+};
+
+const builtItems = items.map((item) => {
+  const sourceDetails = ['blueprint', ...item.sourceKeys].map((key) => {
+    if (!sourceCatalog[key]) throw new Error(`Unknown source key ${key} for ${item.id}`);
+    return { ...sourceCatalog[key] };
+  });
+  return {
+    id: item.id,
+    templateVersion: 1,
+    type: 'single-choice',
+    domainId: item.domainId,
+    competencyTag: item.competencyTag,
+    competencyLabel: competencyLabels[item.competencyTag],
+    difficulty: 'advanced',
+    prompt: item.prompt,
+    choices: item.choices,
+    answerIndex: item.answerIndex,
+    rationale: item.rationale,
+    choiceRationales: item.choiceRationales,
+    references: sourceDetails.map((source) => source.url),
+    sourceDetails,
+    reviewStatus: 'source-reviewed-editorial-preview',
+    qaStatus: 'qa-passed',
+    qaReviewedAt: reviewedAt,
+    futureBlueprintAlignment: 'ASPPB-integrated-EPPP-fall-2027',
+    officialItem: false,
+    ...(item.qaExceptions ? { qaExceptions: { ...item.qaExceptions } } : {}),
+    editorialChecks: {
+      scenarioBased: true,
+      singleBestAnswer: true,
+      parallelPlausibleOptions: true,
+      noKeywordGiveaway: true,
+      noAllOrNoneOption: true,
+    },
+  };
+});
+
+const expectedDomains = Object.fromEntries(domains.map((domain) => [domain.id, domain.itemCount]));
+for (const [domainId, expected] of Object.entries(expectedDomains)) {
+  const actual = builtItems.filter((item) => item.domainId === domainId).length;
+  if (actual !== expected) throw new Error(`${domainId} allocation ${actual}/${expected}`);
+}
+const answers = [0, 1, 2, 3].map((answerIndex) => builtItems.filter((item) => item.answerIndex === answerIndex).length);
+if (answers.some((count) => count !== 5)) throw new Error(`Answer-position balance must be 5/5/5/5, received ${answers.join('/')}`);
+if (builtItems.some((item) => item.choices.some((choice) => /\b(?:all|none)\s+of\s+(?:the\s+)?(?:above|these)\b/i.test(choice)))) {
+  throw new Error('All/none-of-the-above options are prohibited in the preview sampler.');
+}
+if (new Set(builtItems.map((item) => item.id)).size !== builtItems.length) throw new Error('Duplicate preview item IDs.');
+
+const pack = {
+  schemaVersion: 1,
+  id: 'eppp-integrated-2027-preview',
+  title: 'Unofficial Integrated EPPP 2027 Blueprint Preview',
+  shortTitle: '2027 Blueprint Preview (Unofficial)',
+  description: 'An independently authored, unofficial 20-item scenario-based sampler proportionally aligned to ASPPB\'s published future six-domain blueprint; not an official or psychometrically calibrated EPPP form.',
+  previewBadge: 'Unofficial',
+  credentialOwner: 'Association of State and Provincial Psychology Boards (ASPPB)',
+  version: '0.1.0-preview',
+  status: 'preview',
+  accent: 'purple',
+  contentReview: '20 independently authored, source-reviewed, advanced application items; independent licensed-psychologist review, field testing, and psychometric calibration remain pending.',
+  nativeQaUrl: './test_prep/eppp_2027_preview_qa.json',
+  blueprintLabel,
+  blueprintEffective,
+  officialBlueprintUrl: blueprintUrl,
+  transitionNotice,
+  transitionUrl: blueprintUrl,
+  disclaimer: 'Unofficial independent preparation material aligned to ASPPB\'s published future blueprint for the integrated EPPP scheduled for fall 2027. Not affiliated with, endorsed by, or authored by ASPPB, APA, CPA, or any cited organization. The current EPPP Part 1 and Part 2 use their separately published blueprints during 2026 and 2027. Results are not official items, scaled scores, pass predictions, licenses, clinical guidance, legal advice, or psychometrically calibrated estimates.',
+  blueprint: {
+    url: blueprintUrl,
+    operationalTiming: 'Fall 2027 and forward',
+    assessmentModel: 'Integrated competency assessment of knowledge and skills in a single examination',
+    alignment: 'Exact 20-item proportional sampler: 3/4/4/2/3/4',
+    currentExamBoundary: 'EPPP Part 1-Knowledge and Part 2-Skills administered during 2026 and 2027 continue to use their respective published blueprints.',
+  },
+  domains,
+  batchSize: 20,
+  sections: [{ id: 'integrated-preview-sampler', label: '20-item Integrated EPPP 2027 Preview sampler', timeMinutes: null }],
+  items: builtItems,
+};
+
+const serialized = `${JSON.stringify(pack, null, 2)}\n`;
+const outputs = [
+  path.join(root, 'test_prep', 'eppp_2027_preview_pack.json'),
+  path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_2027_preview_pack.json'),
+];
+for (const output of outputs) {
+  fs.mkdirSync(path.dirname(output), { recursive: true });
+  fs.writeFileSync(output, serialized, 'utf8');
+}
+
+console.log(`Built ${pack.id}: ${builtItems.length} items; domains ${Object.values(expectedDomains).join('/')}; answer positions ${answers.join('/')}.`);

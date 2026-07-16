@@ -1,0 +1,614 @@
+[
+  {
+    "id": "ebd5372-b2-045",
+    "prompt": "During independent composition, Maya tears her worksheet and asks to visit the nurse only when prompts require organizing several ideas. Staff usually send her into the hallway. The team hypothesizes that the behavior helps her escape complex writing. What should the specialist do next to test that hypothesis before selecting an intervention?",
+    "choices": [
+      "Collect ABC observations during writing tasks of different difficulty and compare the consequences with those in nonwriting periods.",
+      "Require the same writing task without a break for a week and decide whether persistence alone eliminates the behavior.",
+      "Ask Maya's classmates why they think she tears papers and adopt the explanation reported by most students.",
+      "Begin an attention-based token plan because paper tearing is visible to adults and may attract a response."
+    ],
+    "answerIndex": 0,
+    "rationale": "Systematic direct observation can confirm whether difficult writing reliably precedes the behavior and whether leaving the task reliably follows it. Comparing demands and settings tests the escape hypothesis while avoiding an intervention based only on assumption.",
+    "choiceRationales": [
+      "This gathers antecedent, behavior, and consequence evidence relevant to the proposed function.",
+      "Withholding breaks is an untested intervention, not an assessment of the behavior's function.",
+      "Peer opinions may inform context but cannot establish a functional relation.",
+      "Visibility does not show that adult attention is the maintaining consequence."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-046",
+    "prompt": "A ninth grader enters first period agitated after an unpredictable bus ride and often argues when several adults give directions at the doorway. Which preventive support best addresses the pattern while preserving access to instruction?",
+    "choices": [
+      "Give a detention after every argument so the arrival expectation remains firm and consistent.",
+      "Establish one predictable greeter, a brief visual arrival routine, and a practiced choice of two regulation activities before academic directions begin.",
+      "Excuse the student from first period whenever the bus is late or the student appears upset.",
+      "Have each available staff member remind the student of every classroom rule during arrival."
+    ],
+    "answerIndex": 1,
+    "rationale": "A consistent entry sequence reduces uncertainty and competing verbal demands, while a brief regulation choice gives the student a teachable way to become ready for instruction. The support changes the triggering context without removing the student from learning.",
+    "choiceRationales": [
+      "A delayed penalty does not alter the dysregulating arrival conditions or teach an entry routine.",
+      "Predictability, low language demand, and a practiced regulation choice directly address the antecedent pattern.",
+      "Routine exclusion can strengthen avoidance and reduces instructional access.",
+      "Multiple simultaneous reminders recreate the condition associated with escalation."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-047",
+    "prompt": "In a crowded locker area, Devon swears and shoves past peers. Observation shows that peers move away immediately, giving Devon space. Which replacement skill is most functionally equivalent to the behavior?",
+    "choices": [
+      "Reciting the school's hallway rules to an adult before each passing period.",
+      "Completing a general worksheet about respectful language during advisory.",
+      "Using a brief 'space, please' statement or agreed signal that peers and staff promptly honor while safe passage is arranged.",
+      "Apologizing to peers at the end of the day after every incident."
+    ],
+    "answerIndex": 2,
+    "rationale": "The replacement must efficiently produce the same appropriate outcome that the problem behavior has produced: obtaining space in a crowded setting. Teaching and reliably honoring a concise request makes the safer response practical under real hallway conditions.",
+    "choiceRationales": [
+      "Rule recall does not provide space at the moment crowding occurs.",
+      "A worksheet may build knowledge but is not an in-context response with the same outcome.",
+      "The request is efficient, socially appropriate, and matched to the identified escape-from-crowding function.",
+      "A later apology repairs harm but does not replace the behavior when space is needed."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-048",
+    "prompt": "A team starts a check-in and coping routine to reduce lengthy classroom outbursts. Which measurement plan would provide the most useful evidence about whether the plan is working as intended?",
+    "choices": [
+      "Ask teachers at the end of the month whether the student's attitude seems more positive.",
+      "Compare report-card grades before and after the plan without collecting behavior information.",
+      "Count office referrals only, even when most outbursts are managed without an office referral.",
+      "Use an operational definition, record each outburst's duration across target routines, and track whether staff delivered the check-in and coping prompt as planned."
+    ],
+    "answerIndex": 3,
+    "rationale": "Duration directly measures the stated concern, repeated collection across relevant routines shows change over time, and fidelity data distinguish an ineffective intervention from inconsistent implementation. Together, those measures support defensible decisions.",
+    "choiceRationales": [
+      "Global impressions are vulnerable to recall and expectation bias.",
+      "Grades reflect many influences and do not directly measure outburst duration.",
+      "Referral counts omit events resolved in the classroom and can change with staff practice.",
+      "This plan measures the target behavior and the integrity of the intervention concurrently."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-049",
+    "prompt": "A middle school student has begun leaving class and walking toward an exterior door when overwhelmed. No immediate danger is present during most episodes. Which plan best balances safety, instruction, and least-restrictive practice?",
+    "choices": [
+      "Increase supervision near exits, teach and reinforce a rapid check-out signal for accessing a designated regulated space, and reserve crisis procedures for imminent danger.",
+      "Use a physical hold each time the student stands up so elopement never begins.",
+      "Keep the student in a locked separate room for the remainder of each day following an attempt.",
+      "Post the student's elopement history in all classrooms so peers can alert staff quickly."
+    ],
+    "answerIndex": 0,
+    "rationale": "Environmental safeguards and an efficient, taught alternative address risk while preserving dignity and access to school. Restrictive emergency procedures should be governed by policy and used only when the situation meets the applicable safety threshold.",
+    "choiceRationales": [
+      "It combines prevention, a functionally useful alternative, and a proportionate safety response.",
+      "Routine restraint is not justified when there is no imminent safety emergency.",
+      "Seclusion and broad exclusion are unnecessarily restrictive and undermine instruction.",
+      "Public disclosure violates privacy and can stigmatize the student."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-050",
+    "prompt": "A recently arrived multilingual student is described as defiant because she rarely makes eye contact and sometimes waits silently after whole-group questions. Before treating these actions as evidence of an emotional or behavioral disorder, what should the team do?",
+    "choices": [
+      "Use only an English behavior rating scale because the concern occurs in an English-language classroom.",
+      "Work with a qualified interpreter and family, examine cultural and language expectations, and observe the student across people, tasks, and settings.",
+      "Assign daily consequences for nonresponse so the team can see whether the behavior is intentional.",
+      "Delay all inquiry until the student speaks English fluently enough to explain the behavior independently."
+    ],
+    "answerIndex": 1,
+    "rationale": "Culturally and linguistically responsive assessment tests alternative explanations and uses multiple sources rather than equating difference with disability. Cross-setting observation and family input help determine whether the concern is pervasive and educationally significant.",
+    "choiceRationales": [
+      "A single English-only rating can confound language, culture, and disability.",
+      "Multiple culturally responsive sources reduce bias and clarify the meaning of the observed behavior.",
+      "Punishment before assessment assumes willful misconduct and may distort later observations.",
+      "Support and valid inquiry should not be postponed until English proficiency changes."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-051",
+    "prompt": "Nia can name her early signs of frustration but does not notice them during independent mathematics until she has already crumpled her work. Which instructional approach is most likely to build accurate self-monitoring?",
+    "choices": [
+      "Give Nia a blank behavior chart and tell her to complete it whenever she remembers.",
+      "Ask the teacher to record incidents privately without discussing the observations with Nia.",
+      "Model the cueing routine, practice with brief task samples, teach Nia to record a specific early sign, compare her record with adult observations, and reinforce accurate use.",
+      "Have Nia write an essay explaining why emotional control matters before returning to mathematics."
+    ],
+    "answerIndex": 2,
+    "rationale": "Self-monitoring is a skill that requires explicit modeling, guided practice, a clearly defined response, feedback on accuracy, and reinforcement in the setting where it is needed. Gradual practice connects recognition of early signs to timely action.",
+    "choiceRationales": [
+      "An unprompted blank chart provides neither discrimination training nor accuracy feedback.",
+      "Adult-only data can monitor behavior but do not teach Nia to observe her own cues.",
+      "The sequence directly teaches, checks, and strengthens accurate self-observation during relevant work.",
+      "An essay assesses verbal knowledge rather than in-the-moment self-monitoring performance."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-052",
+    "prompt": "When Luis refuses a difficult task, one teacher negotiates, another sends him out, and a third repeats the direction until he yells. The team wants to implement one behavior support plan across classes. What is the strongest first collaborative step?",
+    "choices": [
+      "Email staff the name of the intervention and allow each teacher to interpret it for the class context.",
+      "Assign responsibility to the special educator so general educators do not need to alter their responses.",
+      "Try a different consequence in each class and keep whichever one produces the quietest week.",
+      "Agree on observable triggers and responses, define the prompt and consequence sequence, rehearse it with staff, and collect brief fidelity data in each class."
+    ],
+    "answerIndex": 3,
+    "rationale": "A shared operational plan and rehearsal reduce contradictory consequences that may maintain refusal, while fidelity data show whether the agreed support actually occurred. Consistent implementation is necessary before comparing student outcomes across classrooms.",
+    "choiceRationales": [
+      "A label without procedures is unlikely to produce consistent staff behavior.",
+      "The plan must operate where the student encounters demands, not only with one specialist.",
+      "Uncoordinated consequences prevent meaningful interpretation and can reinforce refusal unpredictably.",
+      "Specific procedures, practice, and fidelity checks create a coherent cross-class implementation system."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-053",
+    "prompt": "During a sudden escalation, a student begins throwing heavy classroom materials toward occupied desks. What should the trained teacher do first?",
+    "choices": [
+      "Move others from danger, summon designated assistance, use brief calm directions and the established crisis plan, and postpone problem solving until regulation returns.",
+      "Ask the student to explain the feelings and events that led to the escalation before anyone moves.",
+      "Attempt a physical restraint alone so other adults do not witness the incident.",
+      "Invite classmates to remind the student how the behavior affects the classroom community."
+    ],
+    "answerIndex": 0,
+    "rationale": "The immediate priority is reducing imminent risk through the school's established, trained response and the least intrusive safe actions available. Processing causes or repairing relationships belongs after the student and others are safe and regulated.",
+    "choiceRationales": [
+      "This sequence protects people, obtains trained support, and separates crisis response from later teaching.",
+      "Demanding an explanation during acute escalation increases language load and delays protection.",
+      "Solo restraint creates serious risk and may violate training and policy requirements.",
+      "Peer involvement exposes classmates to danger and can intensify the event."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-054",
+    "prompt": "Specific praise no longer increases Andre's use of a coping card, and staff report that the same reward has been used for months. What is the best next step?",
+    "choices": [
+      "Remove all positive reinforcement so Andre learns that coping is an expected responsibility.",
+      "Conduct a brief, age-respectful preference assessment, offer meaningful choices, and use data to evaluate whether selected consequences increase coping-card use.",
+      "Select a larger reward without asking Andre or observing whether it changes behavior.",
+      "Provide food after every class regardless of whether Andre uses the coping card."
+    ],
+    "answerIndex": 1,
+    "rationale": "Reinforcers are defined by their effect, and preferences can change over time. A current choice-based assessment followed by outcome data identifies consequences that are acceptable and actually strengthen the target replacement response.",
+    "choiceRationales": [
+      "Removing reinforcement does not address why the replacement response has weakened.",
+      "Current preferences and behavior data allow the team to verify a consequence's reinforcing effect.",
+      "Size alone does not establish value and excludes the student's perspective.",
+      "Noncontingent delivery cannot selectively strengthen coping-card use and may be inappropriate."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-055",
+    "prompt": "An eighth grader with a successful behavior plan will attend a large high school where schedules, staff, and break procedures differ. Which transition action is most likely to maintain the student's success?",
+    "choices": [
+      "Send the existing plan to the records office and assume receiving staff will implement it unchanged.",
+      "Wait for a serious incident at the high school before deciding which supports are necessary.",
+      "Include the student in planning, summarize triggers and effective replacement skills with data, arrange warm handoffs and practice in the new setting, and identify who will monitor early implementation.",
+      "Remove the behavior plan before promotion so the student begins high school without a label."
+    ],
+    "answerIndex": 2,
+    "rationale": "Transition planning should transfer effective knowledge while adapting supports to the new environment and strengthening the student's self-advocacy. Warm handoffs, practice, and early monitoring reduce gaps that a file transfer alone cannot address.",
+    "choiceRationales": [
+      "Records do not ensure shared understanding, contextual adaptation, or implementation.",
+      "Waiting for failure sacrifices prevention and may allow avoidable disruption.",
+      "This coordinates people, settings, student participation, and data before the change occurs.",
+      "Ending effective support solely to avoid stigma disregards demonstrated need."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-056",
+    "prompt": "A student currently calls out during teacher-led discussion and is learning to request a turn. Which annual goal is written so progress can be measured meaningfully?",
+    "choices": [
+      "The student will demonstrate better self-control and show respect during class.",
+      "The student will understand why interrupting is inappropriate in all school settings.",
+      "The student will improve participation enough to satisfy classroom teachers by the end of the year.",
+      "Given the class discussion cue, the student will use the agreed turn-request response in at least four of five observed opportunities across three consecutive weekly probes."
+    ],
+    "answerIndex": 3,
+    "rationale": "The selected goal specifies the context, observable replacement response, performance criterion, and repeated measurement schedule. Those features allow the team to collect comparable evidence and determine whether instruction is producing durable change.",
+    "choiceRationales": [
+      "Terms such as better and respect do not define an observable performance standard.",
+      "Understanding is not directly measured and does not specify the desired classroom action.",
+      "Teacher satisfaction is subjective and lacks an explicit criterion or data method.",
+      "The cue, response, criterion, and repeated probes make progress observable and replicable."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-057",
+    "prompt": "Jalen bolts from the cafeteria on some days but remains throughout lunch on others. Staff disagree about whether noise, peer contact, or delayed food service is most relevant. What should the behavior specialist recommend first?",
+    "choices": [
+      "Collect direct ABC and contextual observations across multiple lunch periods, including days without bolting, before refining the functional hypothesis.",
+      "Choose noise as the cause because cafeterias are generally loud and immediately issue headphones.",
+      "Move Jalen to eat alone indefinitely so none of the possible triggers can occur.",
+      "Average his grades from days with and without bolting to identify the cause."
+    ],
+    "answerIndex": 0,
+    "rationale": "Sampling both occurrence and nonoccurrence days allows the team to compare competing antecedent conditions and the consequences of leaving. Direct contextual data are needed before deciding which environmental change or replacement skill fits the pattern.",
+    "choiceRationales": [
+      "Contrasting relevant lunch conditions can distinguish among the team's plausible hypotheses.",
+      "A common cafeteria feature is not evidence that noise controls this student's behavior.",
+      "Indefinite isolation is restrictive and removes opportunities without identifying function.",
+      "Academic grades do not measure the immediate variables surrounding cafeteria elopement."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-058",
+    "prompt": "Priya refuses long independent assignments but completes the same skills in short teacher-led segments. Which antecedent strategy is most appropriate while the team teaches sustained engagement?",
+    "choices": [
+      "Permanently reduce Priya's curriculum to easier work so refusal is unlikely.",
+      "Divide the assignment into visible sections, let Priya choose the order of equivalent sections, signal brief completion points, and prompt the taught break request.",
+      "Allow Priya to end every assignment as soon as refusal begins so escalation is avoided.",
+      "Present the full assignment without warning and add missed work to the next day's task."
+    ],
+    "answerIndex": 1,
+    "rationale": "Chunking, bounded choice, predictable endpoints, and a functional break request reduce the response effort that precedes refusal while preserving the learning target. The team can then build endurance gradually from successful engagement data.",
+    "choiceRationales": [
+      "Permanent simplification changes instructional expectations rather than scaffolding access to them.",
+      "The strategy modifies relevant antecedents and embeds an appropriate way to request relief.",
+      "Ending work contingent on refusal can strengthen refusal as an escape response.",
+      "Surprise and accumulated work increase the same demand conditions linked to refusal."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-059",
+    "prompt": "Malik disrupts a lunchtime game by grabbing equipment, and observation suggests he is trying to gain entry to the peer activity. Which instructional plan best matches that function?",
+    "choices": [
+      "Give a weekly lecture about friendship and wait for Malik to apply the ideas independently.",
+      "Seat Malik at a separate table so peers cannot react to the grabbing.",
+      "Teach and rehearse a brief joining request, prompt it near naturally occurring games, arrange peer responses, and reinforce successful participation.",
+      "Require Malik to copy the rule against grabbing after every lunch period."
+    ],
+    "answerIndex": 2,
+    "rationale": "The plan teaches an efficient socially appropriate response that can access the same outcome—participation with peers—and practices it where the opportunity occurs. Coordinated peer responses make the replacement more reliable than grabbing.",
+    "choiceRationales": [
+      "General information without situated practice is unlikely to replace the entry behavior.",
+      "Isolation removes the desired social opportunity instead of teaching access to it.",
+      "The taught request and arranged peer response directly match the peer-access function.",
+      "Rule copying is delayed and does not produce a usable way to join an activity."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-060",
+    "prompt": "Rosa independently uses a grounding routine in the resource room but not in science or physical education. What should the team do to promote generalization?",
+    "choices": [
+      "Continue practice only in the resource room until Rosa uses the routine perfectly there.",
+      "Assume Rosa will transfer the routine once she is sufficiently motivated in other classes.",
+      "Replace the routine with a different coping skill in every setting so each class has its own method.",
+      "Teach common cues across settings, rehearse during authentic low-stress moments with relevant staff, reinforce use, and probe performance as prompts are faded."
+    ],
+    "answerIndex": 3,
+    "rationale": "Generalization is programmed by connecting the skill to cues, people, and conditions beyond the original teaching setting. Practice in authentic contexts, coordinated reinforcement, and planned prompt fading show whether the routine becomes portable and independent.",
+    "choiceRationales": [
+      "Mastery in one room does not by itself establish transfer to other contexts.",
+      "Motivation is an assumption, not a plan for stimulus generalization.",
+      "Multiple unrelated routines increase learning demands and prevent use of a shared cue.",
+      "This deliberately extends stimulus control and checks independent use in target settings."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-061",
+    "prompt": "A fire alarm reminds Tessa of a frightening event; afterward she hides under a desk and may strike at anyone who approaches closely. Which school response is most trauma-sensitive and educationally useful?",
+    "choices": [
+      "Coordinate a predictable post-alarm safety routine, offer physical space and limited choices, cue a practiced regulation response, and invite rather than require later discussion.",
+      "Arrange unannounced alarm exposure when the class is empty so Tessa becomes accustomed to the sound.",
+      "Question Tessa about the frightening event immediately after every alarm until she provides details.",
+      "Excuse Tessa from all academic expectations for the remainder of any day with an alarm."
+    ],
+    "answerIndex": 0,
+    "rationale": "Predictability, choice, distance, and a practiced regulation response reduce threat without forcing disclosure or broadly removing instruction. The team can support recovery and reentry while coordinating any further care through appropriate channels.",
+    "choiceRationales": [
+      "The response increases felt safety and control while preserving a path back to learning.",
+      "Unplanned exposure can intensify distress and should not be improvised by school staff.",
+      "Demanding details during dysregulation can be intrusive and escalate the threat response.",
+      "Automatic full-day exclusion may reinforce avoidance and exceeds the support needed for recovery."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-062",
+    "prompt": "A student with an IEP receives a disciplinary removal that may constitute a change of placement. What action should the school-based team take as it determines the appropriate next steps?",
+    "choices": [
+      "Apply the same extended removal used for students without disabilities and review the IEP after the student returns.",
+      "Convene the required manifestation review with relevant members, examine evaluation and observational information and the IEP, and determine both disability relationship and implementation issues.",
+      "Ask the classroom teacher alone whether the conduct seemed intentional and use that judgment as the legal decision.",
+      "Automatically conclude that every behavior of a student with an emotional disability is a manifestation."
+    ],
+    "answerIndex": 1,
+    "rationale": "A manifestation determination is an individualized team review of relevant information, including whether the conduct had the required relationship to disability and whether the IEP was implemented. Neither disability status nor perceived intent alone resolves the question.",
+    "choiceRationales": [
+      "A possible change of placement triggers disability-specific procedural protections before routine exclusion proceeds.",
+      "The required team and evidence review address both statutory manifestation questions.",
+      "One person's intent judgment is neither the required membership nor the required analysis.",
+      "Eligibility does not make every act a manifestation; the prescribed relationship must be evaluated."
+    ]
+  },
+  {
+    "id": "ebd5372-b1-063",
+    "prompt": "Elena correctly requests a break during role-play in the support room, but she pushes materials away when a lab report is assigned in science. Which interpretation and response are most appropriate?",
+    "choices": [
+      "Treat the science behavior as willful noncompliance because Elena has already demonstrated the skill elsewhere.",
+      "Repeat the definition of a break request only in the support room until Elena can recite it without error.",
+      "Examine the cues and consequences in science, then practice the request there with a shared prompt and reinforce it before gradually fading support.",
+      "Remove lab reports from Elena's schedule because the skill has not generalized independently."
+    ],
+    "answerIndex": 2,
+    "rationale": "Demonstrating a response in role-play does not show that the relevant classroom cues control it under authentic demand. Assessing the science context and programming in-setting practice, reinforcement, and fading addresses a likely performance or generalization gap.",
+    "choiceRationales": [
+      "Prior demonstration does not prove deliberate refusal under different cues and task conditions.",
+      "More decontextualized recitation does not transfer stimulus control to science.",
+      "This tests contextual barriers and deliberately teaches use where the breakdown occurs.",
+      "Eliminating the task reduces access to instruction and does not build generalization."
+    ]
+  },
+  {
+    "id": "ebd5372-b1-064",
+    "prompt": "A point system initially increased Sam's on-time return from breaks, but the effect has weakened and Sam says the available rewards are no longer worth earning. What should the team do next?",
+    "choices": [
+      "Double every point requirement immediately so the system becomes more challenging.",
+      "Keep the system unchanged for the semester because changing rewards makes data invalid.",
+      "Remove all earned points following one late return to restore the consequence's importance.",
+      "Reassess current preferences with Sam, test several feasible outcomes, and adjust the menu while continuing to measure on-time returns."
+    ],
+    "answerIndex": 3,
+    "rationale": "The effectiveness of a reinforcer can change with satiation, development, and context. Updating the menu through student input and observed behavioral effects preserves the target contingency while allowing the team to verify renewed effectiveness.",
+    "choiceRationales": [
+      "Increasing response effort can further weaken an already ineffective contingency.",
+      "Stable procedures are not useful when data and student report show loss of value.",
+      "Response cost does not establish what currently reinforces timely return.",
+      "Current preference and outcome data support an individualized, testable adjustment."
+    ]
+  },
+  {
+    "id": "ebd5372-b1-065",
+    "prompt": "Direct observation shows that when independent reading passages exceed Cole's instructional level, he puts his head down; the teacher then sends him to a computer with easier text. Which statement is the most defensible functional hypothesis?",
+    "choices": [
+      "When independent text is too difficult, Cole puts his head down, which is followed by removal of that text; the behavior may be maintained by escape from an excessive reading demand.",
+      "Cole avoids reading because he has a negative attitude and needs to value education more.",
+      "Cole puts his head down because putting one's head down is an avoidant behavior.",
+      "Whenever Cole is tired, sensory stimulation from the computer causes the behavior in every class."
+    ],
+    "answerIndex": 0,
+    "rationale": "A useful hypothesis identifies an observable antecedent, behavior, and typical consequence and cautiously proposes a function supported by those data. It can then guide tests involving task level, requests for help, and consequences without treating inference as fact.",
+    "choiceRationales": [
+      "It links observed task difficulty and task removal to a testable escape hypothesis.",
+      "An inferred attitude is not operational and is not established by the observations.",
+      "This circular statement merely renames the behavior rather than explaining its outcome.",
+      "The observations do not establish fatigue, sensory reinforcement, or occurrence across all classes."
+    ]
+  },
+  {
+    "id": "ebd5372-b1-066",
+    "prompt": "A teacher asks the behavior specialist to send a student's detailed incident log to every staff member in the building ‘so everyone knows what to expect.’ What is the most appropriate response?",
+    "choices": [
+      "Send the full log because all school employees automatically need access to every student's behavior information.",
+      "Identify staff with a legitimate educational role, share only the information needed to implement safety and instruction, and use objective language through approved channels.",
+      "Refuse to discuss any behavior support with classroom staff because all educational records are confidential.",
+      "Remove the student's name but include enough unusual details that staff can infer the student's identity."
+    ],
+    "answerIndex": 1,
+    "rationale": "Effective collaboration must be balanced with privacy: relevant staff need actionable information for their educational responsibilities, not unrestricted access to a detailed history. Minimum-necessary, objective communication also reduces stigma and rumor.",
+    "choiceRationales": [
+      "Employment at the school does not by itself establish a need for the complete record.",
+      "This limits disclosure to role-relevant, implementation-focused information through proper channels.",
+      "Confidentiality permits appropriate sharing with personnel who need information to serve the student.",
+      "Indirect identification can still disclose protected information and is not a valid safeguard."
+    ]
+  },
+  {
+    "id": "ebd5372-b1-067",
+    "prompt": "A graph shows no improvement after two weeks of a new antecedent support, but fidelity checks show that the planned pre-correction occurred in fewer than half of observed opportunities. What conclusion should the team draw?",
+    "choices": [
+      "The student's disability is too severe for antecedent interventions to work.",
+      "The support has been implemented adequately because it appeared at least once in each week.",
+      "The outcome is not yet a fair test of the plan; the team should address implementation barriers, coach staff, and gather stable fidelity and behavior data before judging effects.",
+      "The functional hypothesis must be wrong because behavior did not improve immediately."
+    ],
+    "answerIndex": 2,
+    "rationale": "Low implementation fidelity prevents the team from attributing unchanged behavior to the intervention itself. Improving feasibility and staff performance, then monitoring both fidelity and outcomes, creates interpretable evidence for a later decision.",
+    "choiceRationales": [
+      "Student severity cannot be inferred from a plan that was seldom delivered.",
+      "Occasional use does not meet the planned opportunity-based implementation criterion.",
+      "This separates an implementation failure from a possible intervention failure.",
+      "An unchanged short series under low fidelity does not disconfirm the functional hypothesis."
+    ]
+  },
+  {
+    "id": "ebd5372-b1-068",
+    "prompt": "Peers have begun teasing Amina because her teacher announces her daily behavior points and posts her chart beside the classroom door. Amina's replacement-skill use is also declining. What revision is most appropriate?",
+    "choices": [
+      "Continue public posting because embarrassment may motivate Amina to earn more points.",
+      "Ask classmates to comment on Amina's chart so the class shares responsibility for her improvement.",
+      "End all feedback and reinforcement so no behavioral information is visible.",
+      "Move individualized feedback and records to a private format, retain reinforcement for the taught skill, and teach classroom expectations through universal supports that do not identify Amina."
+    ],
+    "answerIndex": 3,
+    "rationale": "Individual behavior data and feedback should protect dignity and avoid making the student a public target. Private delivery preserves an evidence-based contingency, while universal instruction supports the classroom without disclosing Amina's status.",
+    "choiceRationales": [
+      "Public embarrassment is stigmatizing and may make the intervention aversive.",
+      "Peer review further exposes private information and can intensify social harm.",
+      "Privacy can be restored without abandoning instruction and effective reinforcement.",
+      "This retains the functional support while separating it from public identification."
+    ]
+  },
+  {
+    "id": "ebd5372-b1-069",
+    "prompt": "During unfamiliar multistep work, Omar tears materials after repeated errors; the teacher then completes the hardest step for him. Which replacement response should be taught first if the team confirms an assistance function?",
+    "choices": [
+      "A brief help request that produces a prompt for the difficult step, followed by reinforcement and gradual fading as Omar becomes more independent.",
+      "A promise to avoid tearing materials for the entire grading period.",
+      "An apology written after the teacher has completed the assignment.",
+      "Silent waiting until the teacher happens to notice that Omar is struggling."
+    ],
+    "answerIndex": 0,
+    "rationale": "A concise help request can obtain the same needed assistance more safely and efficiently than tearing materials. Prompting, honoring, and reinforcing the request establishes it, while systematic fading prevents support from replacing skill development.",
+    "choiceRationales": [
+      "It directly accesses assistance and includes a plan to build later independence.",
+      "A distant promise does not provide a usable response at the point of difficulty.",
+      "An apology addresses aftermath but does not replace the assistance-seeking behavior.",
+      "Waiting is inefficient and does not reliably contact the needed outcome."
+    ]
+  },
+  {
+    "id": "ebd5372-b1-070",
+    "prompt": "A family supports their child's regulation but cannot use the school's hourly point card during evening routines. The school team wants continuity without imposing an unworkable plan. What should the specialist do?",
+    "choices": [
+      "Tell the family that fidelity requires using the school card exactly as written at home.",
+      "Ask about family priorities and routines, co-design a feasible shared cue or communication method, and review data together while allowing setting-specific procedures.",
+      "Stop sharing progress information because home and school interventions are different.",
+      "Ask the student to enforce the school's procedure with family members each evening."
+    ],
+    "answerIndex": 1,
+    "rationale": "Authentic family collaboration centers family knowledge, priorities, and feasibility rather than demanding identical procedures across settings. A common goal or cue can support coherence while home and school use contextually appropriate methods.",
+    "choiceRationales": [
+      "Rigid replication disregards family context and is not necessary for shared outcomes.",
+      "This creates meaningful continuity through collaborative, feasible, data-informed planning.",
+      "Different procedures do not prevent useful two-way communication about progress.",
+      "The child should not be made responsible for directing adult implementation."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-063",
+    "prompt": "A universal behavior screener indicates elevated internalizing risk for a quiet sixth grader whose grades have recently declined. What is the appropriate interpretation and next step?",
+    "choices": [
+      "Diagnose an emotional disability from the screening score and begin special education immediately.",
+      "Ignore the result because the student has not disrupted class or received discipline referrals.",
+      "Treat the score as one risk indicator, review multiple data sources, provide timely support, and follow evaluation and consent procedures if a disability evaluation is warranted.",
+      "Tell teachers the student has an anxiety disorder so they can lower all expectations."
+    ],
+    "answerIndex": 2,
+    "rationale": "Screening identifies possible risk; it does not diagnose a condition or establish special education eligibility. Combining the result with observations, student and family information, academic data, and appropriate procedures supports an equitable response.",
+    "choiceRationales": [
+      "A screening measure alone cannot establish diagnosis, eligibility, or service need.",
+      "Internalizing concerns may be educationally important even without disruptive behavior.",
+      "This uses screening for early response while preserving a valid multi-source evaluation process.",
+      "Assigning an unestablished diagnosis breaches appropriate interpretation and may reduce access to instruction."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-064",
+    "prompt": "During group work, Isaiah begins pacing, clenching his hands, and answering in short phrases but is still responsive to the teacher. Which response best fits this early escalation phase?",
+    "choices": [
+      "Deliver a detailed lecture about consequences while the whole group listens.",
+      "Stand close, block Isaiah's movement, and insist on immediate eye contact.",
+      "Continue increasing task demands so Isaiah does not learn that agitation changes expectations.",
+      "Reduce verbal load, increase physical space, offer two safe options, and cue the regulation strategy practiced when Isaiah was calm."
+    ],
+    "answerIndex": 3,
+    "rationale": "Early signs create an opportunity for low-arousal de-escalation before safety deteriorates. Brief language, space, bounded choice, and a familiar coping cue reduce demands while helping the student regain control without an audience or power struggle.",
+    "choiceRationales": [
+      "Lengthy public correction adds language, attention, and potential shame during escalation.",
+      "Crowding and forced eye contact can increase perceived threat and agitation.",
+      "Escalating demands ignores observable warning signs and may accelerate the crisis cycle.",
+      "The response matches the phase and prompts an already learned regulation pathway."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-065",
+    "prompt": "A student earns time with a favorite drawing app for beginning work, but frequent access has reduced its effect. The team wants the reinforcement plan to remain useful over time. Which adjustment is best?",
+    "choices": [
+      "Offer a rotating menu based on current preferences, pair tangible outcomes with specific social feedback, and thin the schedule gradually only when performance data remain strong.",
+      "Make the app available throughout every class regardless of work initiation so the student never loses interest.",
+      "Replace reinforcement with increasingly severe penalties whenever work does not begin.",
+      "Keep the same app and schedule indefinitely because consistent plans should never respond to satiation."
+    ],
+    "answerIndex": 0,
+    "rationale": "Varying effective options reduces satiation, pairing them with naturally available feedback supports maintenance, and data-based thinning avoids withdrawing reinforcement faster than the skill can sustain. The consequence still remains contingent on the target response.",
+    "choiceRationales": [
+      "This addresses changing value while building a practical path toward natural reinforcement.",
+      "Noncontingent continuous access may further reduce value and cannot strengthen initiation selectively.",
+      "Punishment does not solve reinforcer satiation or teach reliable work initiation.",
+      "Consistency means implementing a sound decision rule, not ignoring evidence of lost effectiveness."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-066",
+    "prompt": "In the first days of a plan for escape-maintained refusal, yelling increases. Staff also report that they sometimes cancel the task after yelling because the taught break request takes too long. What should the specialist recommend?",
+    "choices": [
+      "Add a harsher consequence immediately because any early increase proves the plan is too lenient.",
+      "Check safety and implementation, make the break request fast and well prompted, adjust the task for successful engagement, and prevent yelling from inconsistently producing task cancellation when it is safe to do so.",
+      "Return to canceling every task after yelling because the student's initial response shows the demand is inappropriate.",
+      "Ignore all escalation, including safety warning signs, until the behavior eventually decreases."
+    ],
+    "answerIndex": 1,
+    "rationale": "An early increase does not identify one cause, especially when staff responses are inconsistent. Fidelity review, an efficient alternative, appropriate task support, and safe consequence consistency address both implementation problems and the confirmed escape function.",
+    "choiceRationales": [
+      "Severity does not correct a slow replacement response or inconsistent escape consequence.",
+      "This repairs the functional plan while preserving safety and attainable instruction.",
+      "Reliable cancellation after yelling can strengthen the very response the plan targets.",
+      "Safety monitoring remains essential; extinction is never a reason to disregard risk."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-067",
+    "prompt": "A student who wants peer interaction hovers near cooperative groups, makes insulting jokes, and is then excluded. Which peer-mediated support is most appropriate?",
+    "choices": [
+      "Tell peers to tolerate every joke so the student always gains group access.",
+      "Ask one peer to supervise and correct the student's behavior throughout the school day.",
+      "With willing participants, structure cooperative roles, teach the student an entry and comment routine, prepare peers to respond naturally, and monitor participation and social validity.",
+      "Move the student to independent work whenever group activities are scheduled."
+    ],
+    "answerIndex": 2,
+    "rationale": "Structured roles and explicit entry skills create successful, reciprocal opportunities for the desired peer contact. Preparing willing peers and monitoring both outcomes and acceptability avoids turning classmates into enforcers or requiring them to accept harmful behavior.",
+    "choiceRationales": [
+      "Peers should not be required to accept insults as the price of inclusion.",
+      "A classmate should not be assigned an adult-like surveillance role.",
+      "This teaches reciprocal access in authentic activities while protecting voluntary peer participation.",
+      "Routine isolation removes the social learning opportunity and may deepen exclusion."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-068",
+    "prompt": "A single-case graph shows lower aggression immediately after a support begins, but baseline data were highly variable and aggression rises again near the end of intervention. What is the most defensible conclusion?",
+    "choices": [
+      "The support is proven effective because the first intervention point is below the final baseline point.",
+      "The support failed because any later increase cancels all earlier improvement.",
+      "The student's behavior is random, so additional systematic observation cannot clarify the pattern.",
+      "The graph suggests a possible effect, but the team should examine level, trend, variability, fidelity, and replication before making a strong causal claim."
+    ],
+    "answerIndex": 3,
+    "rationale": "Visual analysis considers the whole pattern, not a single favorable or unfavorable point. Baseline variability, later overlap or trend, implementation fidelity, and replicated change affect confidence that the intervention—not another event—produced improvement.",
+    "choiceRationales": [
+      "One point comparison ignores variability, trend, overlap, and alternative explanations.",
+      "A later increase matters but does not erase all information in the series.",
+      "Variability calls for careful design and measurement rather than abandoning inquiry.",
+      "This appropriately limits the claim while identifying evidence needed for stronger inference."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-069",
+    "prompt": "A student preparing for a community internship worries that corrective feedback will trigger walking off the job site. Which transition instruction is most likely to support durable employment success?",
+    "choices": [
+      "Practice identifying early cues, requesting a brief approved pause or clarification, receiving simulated supervisor feedback, and returning to the task with the vocational partner using the same routine.",
+      "Ask the job coach to prevent supervisors from ever giving the student corrective feedback.",
+      "Teach the student to leave the site without notifying anyone whenever stress begins.",
+      "Focus transition instruction only on completing the technical job tasks because regulation is a school concern."
+    ],
+    "answerIndex": 0,
+    "rationale": "Rehearsing self-awareness, appropriate self-advocacy, feedback tolerance, and task reentry under conditions that resemble the internship promotes generalization. Coordination with the vocational partner makes the response feasible at the actual work site.",
+    "choiceRationales": [
+      "It integrates regulation and communication with authentic workplace expectations and partners.",
+      "Eliminating all feedback is unrealistic and prevents learning a central employment skill.",
+      "Unannounced departure creates safety and employment risks rather than self-determination.",
+      "Work success depends on behavioral and self-advocacy skills as well as technical performance."
+    ]
+  },
+  {
+    "id": "ebd5372-b2-070",
+    "prompt": "A teacher sees a student's public social-media post that includes a specific threat to harm a named classmate the next school day. What is the most appropriate professional response?",
+    "choices": [
+      "Reply publicly to question the student and ask other users whether the threat is serious.",
+      "Follow the school's threat and safety reporting procedures immediately, preserve relevant information as permitted, notify designated personnel, and avoid conducting an independent online investigation.",
+      "Ignore the post because it appeared outside school hours and on the student's personal account.",
+      "Share a screenshot in the staff group chat so every employee can decide how to respond."
+    ],
+    "answerIndex": 1,
+    "rationale": "A specific prospective threat warrants prompt action through established safety channels regardless of where it was noticed. Designated personnel can assess and respond while the teacher avoids public engagement, rumor, excessive disclosure, or an untrained investigation.",
+    "choiceRationales": [
+      "Public questioning can escalate the situation, compromise privacy, and interfere with assessment.",
+      "This activates trained, documented safety processes while limiting the teacher's role appropriately.",
+      "Off-campus origin does not justify ignoring information about a credible school safety concern.",
+      "Broad informal sharing exceeds need-to-know communication and can spread sensitive information."
+    ]
+  }
+]

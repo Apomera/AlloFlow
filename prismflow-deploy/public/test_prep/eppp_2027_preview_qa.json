@@ -1,0 +1,1371 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-16T00:00:00.000Z",
+  "packId": "eppp-integrated-2027-preview",
+  "packVersion": "0.1.0-preview",
+  "standard": {
+    "label": "AlloFlow Integrated EPPP 2027 Preview source, blueprint, structure, feedback, clue-resistance, and parity QA v2",
+    "checks": [
+      "future-blueprint-alignment",
+      "unofficial-preview-labeling",
+      "domain-allocation",
+      "answer-position-balance",
+      "one-best-answer",
+      "scenario-and-competency-application",
+      "parallel-plausible-options",
+      "keyed-option-length",
+      "categorical-cue-balance",
+      "all-none-option-rejection",
+      "option-specific-feedback",
+      "authoritative-source-details",
+      "originality-and-provenance",
+      "deployment-parity"
+    ],
+    "meaning": "A pass confirms exact proportional alignment to ASPPB's published fall-2027 domain weights, advanced scenario structure, four parallel plausible choices, hard keyed-option-length and categorical-cue checks with only narrowly documented exceptions, a single supported answer, complete option-specific feedback, full authoritative source details, clear unofficial labeling, and source/deployment parity.",
+    "limitation": "This editorial and automated QA is not ASPPB approval, independent licensed-psychologist validation, field testing, psychometric calibration, item-response analysis, a scaled-score model, or evidence that these items will appear on an EPPP form."
+  },
+  "blueprint": {
+    "url": "https://asppb.net/future-eppp-content-areas-2027/",
+    "operationalTiming": "Fall 2027 and forward",
+    "domainAllocation": {
+      "scientific-orientation": 3,
+      "assessment": 4,
+      "intervention": 4,
+      "consultation-supervision": 2,
+      "interpersonal-relationships": 3,
+      "ethical-professional-practice": 4
+    },
+    "weights": {
+      "scientific-orientation": 0.15,
+      "assessment": 0.2,
+      "intervention": 0.2,
+      "consultation-supervision": 0.1,
+      "interpersonal-relationships": 0.15,
+      "ethical-professional-practice": 0.2
+    }
+  },
+  "summary": {
+    "totalItems": 20,
+    "passedItems": 20,
+    "reviewRequiredItems": 0,
+    "domainCounts": {
+      "scientific-orientation": 3,
+      "assessment": 4,
+      "intervention": 4,
+      "consultation-supervision": 2,
+      "interpersonal-relationships": 3,
+      "ethical-professional-practice": 4
+    },
+    "answerPositions": {
+      "A": 5,
+      "B": 5,
+      "C": 5,
+      "D": 5
+    },
+    "findings": 0,
+    "status": "pass"
+  },
+  "findings": [],
+  "items": [
+    {
+      "id": "eppp-2027-preview-scientific-01",
+      "domainId": "scientific-orientation",
+      "competencyTag": "1.C.1",
+      "answerIndex": 0,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-scientific-02",
+      "domainId": "scientific-orientation",
+      "competencyTag": "1.B.2",
+      "answerIndex": 1,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-scientific-03",
+      "domainId": "scientific-orientation",
+      "competencyTag": "1.D.2",
+      "answerIndex": 2,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-assessment-01",
+      "domainId": "assessment",
+      "competencyTag": "2.B.5",
+      "answerIndex": 3,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-assessment-02",
+      "domainId": "assessment",
+      "competencyTag": "2.C.2",
+      "answerIndex": 0,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-assessment-03",
+      "domainId": "assessment",
+      "competencyTag": "2.C.2",
+      "answerIndex": 1,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-assessment-04",
+      "domainId": "assessment",
+      "competencyTag": "2.C.3",
+      "answerIndex": 2,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-intervention-01",
+      "domainId": "intervention",
+      "competencyTag": "3.A.3",
+      "answerIndex": 3,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-intervention-02",
+      "domainId": "intervention",
+      "competencyTag": "3.C.2",
+      "answerIndex": 0,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-intervention-03",
+      "domainId": "intervention",
+      "competencyTag": "3.B.3",
+      "answerIndex": 1,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-intervention-04",
+      "domainId": "intervention",
+      "competencyTag": "3.D.2",
+      "answerIndex": 2,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-consultation-01",
+      "domainId": "consultation-supervision",
+      "competencyTag": "4.D.1",
+      "answerIndex": 3,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-consultation-02",
+      "domainId": "consultation-supervision",
+      "competencyTag": "4.C.1",
+      "answerIndex": 0,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-interpersonal-01",
+      "domainId": "interpersonal-relationships",
+      "competencyTag": "5.B.2",
+      "answerIndex": 1,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-interpersonal-02",
+      "domainId": "interpersonal-relationships",
+      "competencyTag": "5.B.4",
+      "answerIndex": 2,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-interpersonal-03",
+      "domainId": "interpersonal-relationships",
+      "competencyTag": "5.C.3",
+      "answerIndex": 3,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-ethical-01",
+      "domainId": "ethical-professional-practice",
+      "competencyTag": "6.C.2",
+      "answerIndex": 0,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-ethical-02",
+      "domainId": "ethical-professional-practice",
+      "competencyTag": "6.B.4",
+      "answerIndex": 1,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-ethical-03",
+      "domainId": "ethical-professional-practice",
+      "competencyTag": "6.B.3",
+      "answerIndex": 2,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "eppp-2027-preview-ethical-04",
+      "domainId": "ethical-professional-practice",
+      "competencyTag": "6.C.4",
+      "answerIndex": 3,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "name": "future-blueprint-alignment",
+          "status": "pass"
+        },
+        {
+          "name": "unofficial-preview-labeling",
+          "status": "pass"
+        },
+        {
+          "name": "domain-allocation",
+          "status": "pass"
+        },
+        {
+          "name": "answer-position-balance",
+          "status": "pass"
+        },
+        {
+          "name": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "name": "scenario-and-competency-application",
+          "status": "pass"
+        },
+        {
+          "name": "parallel-plausible-options",
+          "status": "pass"
+        },
+        {
+          "name": "keyed-option-length",
+          "status": "pass"
+        },
+        {
+          "name": "categorical-cue-balance",
+          "status": "pass"
+        },
+        {
+          "name": "all-none-option-rejection",
+          "status": "pass"
+        },
+        {
+          "name": "option-specific-feedback",
+          "status": "pass"
+        },
+        {
+          "name": "authoritative-source-details",
+          "status": "pass"
+        },
+        {
+          "name": "originality-and-provenance",
+          "status": "pass"
+        },
+        {
+          "name": "deployment-parity",
+          "status": "pass"
+        }
+      ]
+    }
+  ]
+}

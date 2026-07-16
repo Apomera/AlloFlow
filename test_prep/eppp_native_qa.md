@@ -1,12 +1,12 @@
 # EPPP native pack editorial QA report
 
-Generated: 2026-07-15T15:05:21.132Z
+Generated: 2026-07-16T18:05:53.172Z
 
 Pack: EPPP Part 1 — Source-Reviewed Practice Bank v3.1.0
 
 ## Scope
 
-Editorial QA confirms cited answer support, one-best-answer structure, distinct and readable distractors, mechanical-padding rejection, clean text encoding, parallel-choice review, explanatory and option-specific feedback where required, template integrity, accessibility review declarations, and provenance.
+Editorial QA confirms cited answer support, one-best-answer structure, distinct and readable distractors, mechanical-padding rejection, clean text encoding, parallel-choice review, explanatory and option-specific feedback for every answer choice, template integrity, accessibility review declarations, and provenance.
 
 > Editorial QA is not psychometric calibration, official exam approval, or independent licensed-psychologist validation.
 
@@ -17,6 +17,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | Native questions | 1500 |
 | Editorial-QA-passed questions | 1500 |
 | Questions requiring review | 0 |
+| Questions with four option explanations | 1500 |
 | Domains | 8 |
 | Answer keys | A 375 · B 375 · C 375 · D 375 |
 | Overall status | PASS |
@@ -122,7 +123,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-b005-professional-1 | professional | legacy-seeded-re-authored | pass | 1 |
 | eppp-b005-professional-2 | professional | legacy-seeded-re-authored | pass | 1 |
 | eppp-b006-biological-1 | biological | legacy-seeded-re-authored | pass | 1 |
-| eppp-b006-biological-2 | biological | legacy-seeded-re-authored | pass | 1 |
+| eppp-b006-biological-2 | biological | legacy-seeded-re-authored | pass | 2 |
 | eppp-b006-cognitive-1 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
 | eppp-b006-cognitive-2 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
 | eppp-b006-social-1 | social-cultural | legacy-seeded-re-authored | pass | 1 |

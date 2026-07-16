@@ -1,6 +1,6 @@
 # Praxis School Counselor (5422) QA report
 
-Generated: 2026-07-15T15:03:43.766Z
+Generated: 2026-07-16T23:53:10.195Z
 
 ## Result
 
@@ -12,3 +12,5 @@ Generated: 2026-07-15T15:03:43.766Z
 - Optional timed simulation: 120 questions / 120 minutes
 
 > This is not ETS or ASCA approval, independent school-counselor validation, field testing, psychometric calibration, a scaled-score model, mental-health treatment, or legal advice.
+
+- Assistant audit: 200 source questions contain 100 distinct source content kernels and 100 parallel variants under the normalized answer-set/rationale/reference test. Three additional 100-item banks are source-derived guided review, not independent exam-item banks. The 500-distinct-question target is not met.

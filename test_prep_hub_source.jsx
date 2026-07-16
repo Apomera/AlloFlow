@@ -7,7 +7,7 @@ const TEST_PREP_ANNOTATIONS_STORAGE_KEY = 'alloflow_test_prep_annotations_v1';
 const TEST_PREP_STUDY_PLANS_STORAGE_KEY = 'alloflow_test_prep_study_plans_v1';
 const TEST_PREP_ITEM_TYPES = ['single-choice'];
 const TEST_PREP_SESSION_STORAGE_KEY = 'alloflow_test_prep_session_v1';
-const TEST_PREP_PACK_STATUSES = ['ready', 'planned', 'research'];
+const TEST_PREP_PACK_STATUSES = ['ready', 'preview', 'planned', 'research'];
 
 const WORKPLACE_SAFETY_DEMO = {
   schemaVersion: TEST_PREP_SCHEMA_VERSION,
@@ -116,13 +116,6 @@ const EPPP_PART_ONE_SCAFFOLD = {
   accent: 'violet',
   contentReview: '1,500 source-reviewed practice items; independent expert review pending',
   legacyUrl: './test_prep/eppp_legacy/index.html?embedded=1',
-  legacyAuditUrl: './test_prep/eppp_legacy/content_audit.json',
-  legacyInventoryUrl: './test_prep/eppp_legacy/content_inventory.json',
-  legacyReviewLedgerUrl: './test_prep/eppp_legacy/review_ledger.json',
-  nextReviewDocketUrl: './test_prep/eppp_legacy/next_review_docket.json',
-  curation500Url: './test_prep/eppp_legacy/curation_500.json',
-  curation1000Url: './test_prep/eppp_legacy/curation_1500.json',
-  expansionAuditUrl: './test_prep/eppp_native_expansion_1500_audit.json',
   nativeQaUrl: './test_prep/eppp_native_qa.json',
   learningLibraryUrl: './test_prep/eppp_learning_library.json',
   learningLibraryQaUrl: './test_prep/eppp_learning_library_qa.json',
@@ -281,6 +274,7 @@ function testPrepReferencePageLabel(url) {
 }
 
 function testPrepDescribeReference(reference) {
+  if (typeof TEST_PREP_REFERENCE_CATALOG !== 'undefined' && TEST_PREP_REFERENCE_CATALOG[reference]) return TEST_PREP_REFERENCE_CATALOG[reference];
   if (TEST_PREP_REFERENCE_DETAILS[reference]) return TEST_PREP_REFERENCE_DETAILS[reference];
   try {
     const url = new URL(reference, window.location.href);
@@ -289,19 +283,25 @@ function testPrepDescribeReference(reference) {
       const doi = decodeURIComponent(url.pathname.replace(/^\//, ''));
       return {
         title: 'Digital Object Identifier record — ' + doi,
+        organization: 'DOI Foundation record',
+        summary: 'This DOI preserves a link to a scholarly publication. Open the record to review the article or book title, scope, findings, and limitations.',
         credibility: 'A DOI is a persistent identifier that makes the cited scholarly work and its publisher metadata traceable. A DOI is not a quality rating; the publication and study methods still determine evidentiary strength.',
       };
     }
     const organization = TEST_PREP_REFERENCE_ORGANIZATIONS[hostname];
     const pageLabel = testPrepReferencePageLabel(url);
-    if (organization) return { title: pageLabel + ' — ' + organization[0], credibility: organization[1] };
+    if (organization) return { title: pageLabel + ' — ' + organization[0], organization: organization[0], summary: 'This resource addresses ' + pageLabel.toLowerCase() + ' and provides source context for the answer explanation.', credibility: organization[1] };
     return {
       title: pageLabel + ' — ' + hostname,
+      organization: hostname,
+      summary: 'This linked resource provides source context for the related answer explanation. Open it to review the complete content, scope, and limitations.',
       credibility: 'This link identifies the publishing organization and preserves a traceable source record. Its relevance, authorship, evidence, and publication process should be evaluated for the specific claim.',
     };
   } catch (_error) {
     return {
       title: reference,
+      organization: '',
+      summary: 'This citation is retained as supporting context for the answer explanation. Verify the complete publication record before relying on it.',
       credibility: 'This citation is retained for traceability, but its publisher and evidence quality should be verified before relying on it.',
     };
   }
@@ -333,6 +333,8 @@ function normalizeTestPrepItem(item, index, domainIds) {
     return {
       url: String(value.url || '').trim().slice(0, 500),
       title: String(value.title || '').trim().slice(0, 500),
+      organization: String(value.organization || '').trim().slice(0, 300),
+      summary: String(value.summary || value.relevance || '').trim().slice(0, 1600),
       credibility: String(value.credibility || '').trim().slice(0, 1600),
     };
   }).filter((detail) => references.includes(detail.url) && detail.title && detail.credibility);
@@ -342,6 +344,12 @@ function normalizeTestPrepItem(item, index, domainIds) {
     type: TEST_PREP_ITEM_TYPES.includes(input.type) ? input.type : 'single-choice',
     domainId: domainIds.includes(requestedDomain) ? requestedDomain : (domainIds[0] || 'general'),
     difficulty: String(input.difficulty || 'unrated').trim().slice(0, 40),
+    competencyTag: String(input.competencyTag || input.blueprintCompetency || '').trim().slice(0, 40),
+    competencyLabel: String(input.competencyLabel || input.blueprintCompetencyLabel || '').trim().slice(0, 600),
+    futureBlueprintAlignment: String(input.futureBlueprintAlignment || '').trim().slice(0, 120),
+    officialItem: input.officialItem === true,
+    learningObjectiveId: testPrepSlug(input.learningObjectiveId, ''),
+    cognitiveProcess: String(input.cognitiveProcess || '').trim().slice(0, 60),
     skillIds: (Array.isArray(input.skillIds) ? input.skillIds : []).slice(0, 4).map((value) => testPrepSlug(value, '')).filter(Boolean),
     chapterIds: (Array.isArray(input.chapterIds) ? input.chapterIds : []).slice(0, 4).map((value) => testPrepSlug(value, '')).filter(Boolean),
     prompt: String(input.prompt || input.q || '').trim().slice(0, 3000),
@@ -356,6 +364,17 @@ function normalizeTestPrepItem(item, index, domainIds) {
     legacySourceFile: /^js\/[a-zA-Z0-9_.-]+\.js$/.test(String(input.legacySourceFile || '').trim()) ? String(input.legacySourceFile).trim() : '',
     authoredSourceId: String(input.authoredSourceId || '').trim().slice(0, 100),
     expansionBatch: String(input.expansionBatch || '').trim().slice(0, 100),
+    sourceItemId: String(input.sourceItemId || '').trim().slice(0, 120),
+    taskForm: String(input.taskForm || '').trim().slice(0, 80),
+    expansionStatus: String(input.expansionStatus || '').trim().slice(0, 100),
+    assistantReviewStatus: String(input.assistantReviewStatus || '').trim().slice(0, 100),
+    examItemStatus: String(input.examItemStatus || '').trim().slice(0, 100),
+    sourceAnswerIndex: input.sourceAnswerIndex == null ? null : Math.max(0, Math.min(3, Math.floor(testPrepFinite(input.sourceAnswerIndex, 0)))),
+    answerDerivation: String(input.answerDerivation || '').trim().slice(0, 160),
+    authorship: String(input.authorship || '').trim().slice(0, 120),
+    editorialReviewer: String(input.editorialReviewer || '').trim().slice(0, 120),
+    assistantReviewedAt: /^\d{4}-\d{2}-\d{2}$/.test(String(input.assistantReviewedAt || '').trim()) ? String(input.assistantReviewedAt).trim() : '',
+    reviewMethod: String(input.reviewMethod || '').trim().slice(0, 180),
     sourceReviewBasis: String(input.sourceReviewBasis || '').trim().slice(0, 100),
     domainAlignmentStatus: String(input.domainAlignmentStatus || '').trim().slice(0, 100),
     clueReviewStatus: String(input.clueReviewStatus || '').trim().slice(0, 100),
@@ -374,6 +393,7 @@ function normalizeTestPrepPack(pack) {
   const sections = (Array.isArray(input.sections) ? input.sections : []).slice(0, 20).map((section, index) => ({
     id: testPrepSlug(section && (section.id || section.label), 'section-' + (index + 1)),
     label: String(section && (section.label || section.name) || 'Section ' + (index + 1)).trim().slice(0, 140),
+    kind: section && section.kind === 'guided-review' ? 'guided-review' : section && section.kind === 'source-diagnostic' ? 'source-diagnostic' : 'practice',
     timeMinutes: section && section.timeMinutes != null ? Math.max(1, Math.round(testPrepFinite(section.timeMinutes, 1))) : null,
   }));
   const items = (Array.isArray(input.items) ? input.items : []).slice(0, 10000)
@@ -404,7 +424,32 @@ function normalizeTestPrepPack(pack) {
     status: TEST_PREP_PACK_STATUSES.includes(input.status) ? input.status : 'research',
     accent: String(input.accent || 'indigo').trim().slice(0, 30),
     disclaimer: String(input.disclaimer || 'Independent practice material. Not an official score or credential.').trim().slice(0, 800),
-    contentReview: String(input.contentReview || '').trim().slice(0, 160),
+    contentReview: String(input.contentReview || '').trim().slice(0, 800),
+    bankDisclosure: String(input.bankDisclosure || '').trim().slice(0, 800),
+    diagnosticBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.diagnosticBatchCount, 0)))),
+    diagnosticBatchCountSemantics: String(input.diagnosticBatchCountSemantics || '').trim().slice(0, 100),
+    sourceDiagnosticBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.sourceDiagnosticBatchCount, 0)))),
+    guidedReviewBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.guidedReviewBatchCount, 0)))),
+    learningActivityBankCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.learningActivityBankCount, 0)))),
+    distinctSourceContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.distinctSourceContentKernels, 0)))),
+    parallelSourceVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.parallelSourceVariants, 0)))),
+    newIndependentItemsNeeded: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.newIndependentItemsNeeded, 0)))),
+    expansionVersion: String(input.expansionVersion || '').trim().slice(0, 100),
+    assistantReviewVerdict: String(input.assistantReview && input.assistantReview.verdict || '').trim().slice(0, 100),
+    assistantReview: input.assistantReview && typeof input.assistantReview === 'object' && !Array.isArray(input.assistantReview) ? {
+      reviewer: String(input.assistantReview.reviewer || '').trim().slice(0, 120),
+      structurallyReviewedItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.structurallyReviewedItems, 0)))),
+      sourceItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.sourceItems, 0)))),
+      distinctSourceContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.distinctSourceContentKernels, 0)))),
+      parallelSourceVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.parallelSourceVariants, 0)))),
+      guidedReviewItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.guidedReviewItems, 0)))),
+      independentQuestionTarget: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.independentQuestionTarget, 0)))),
+      newIndependentItemsNeeded: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.newIndependentItemsNeeded, 0)))),
+      verdict: String(input.assistantReview.verdict || '').trim().slice(0, 100),
+      categories: (Array.isArray(input.assistantReview.categories) ? input.assistantReview.categories : []).slice(0, 20).map(value => String(value || '').trim().slice(0, 100)).filter(Boolean),
+      taskForms: (Array.isArray(input.assistantReview.taskForms) ? input.assistantReview.taskForms : []).slice(0, 10).map(value => String(value || '').trim().slice(0, 100)).filter(Boolean),
+      limitation: String(input.assistantReview.limitation || '').trim().slice(0, 800),
+    } : null,
     batchSize: Math.max(1, Math.min(500, Math.round(testPrepFinite(input.batchSize, 100)))),
     simulationItemCount: Math.max(0, Math.min(500, Math.round(testPrepFinite(input.simulationItemCount, 0)))),
     simulationTimeMinutes: Math.max(0, Math.min(600, Math.round(testPrepFinite(input.simulationTimeMinutes, 0)))),
@@ -422,6 +467,7 @@ function normalizeTestPrepPack(pack) {
     curation500Url: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.curation500Url || '').trim()) && !String(input.curation500Url || '').includes('..') ? String(input.curation500Url).trim() : '',
     curation1000Url: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.curation1000Url || '').trim()) && !String(input.curation1000Url || '').includes('..') ? String(input.curation1000Url).trim() : '',
     expansionAuditUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.expansionAuditUrl || '').trim()) && !String(input.expansionAuditUrl || '').includes('..') ? String(input.expansionAuditUrl).trim() : '',
+    assistantAuditUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.assistantAuditUrl || '').trim()) && !String(input.assistantAuditUrl || '').includes('..') ? String(input.assistantAuditUrl).trim() : '',
     nativeQaUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.nativeQaUrl || '').trim()) && !String(input.nativeQaUrl || '').includes('..') ? String(input.nativeQaUrl).trim() : '',
     learningLibraryUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.learningLibraryUrl || '').trim()) && !String(input.learningLibraryUrl || '').includes('..') ? String(input.learningLibraryUrl).trim() : '',
     learningLibraryQaUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.learningLibraryQaUrl || '').trim()) && !String(input.learningLibraryQaUrl || '').includes('..') ? String(input.learningLibraryQaUrl).trim() : '',
@@ -455,6 +501,15 @@ function validateTestPrepPack(pack) {
 }
 
 function registerTestPrepPack(pack) {
+  // Slim-embed contract: the release build ships only the 200 source items per
+  // expanded pack (Cloudflare 25 MiB per-file cap) and the 300 guided-review
+  // activities are derived here, deterministically, from the same shared core
+  // the pipeline used to write test_prep/*_items.json (parity-gated at build).
+  if (pack && Array.isArray(pack.items) && pack.items.length === 200 && pack.guidedReviewBatchCount > 0 &&
+      typeof TEST_PREP_GUIDED_EXPANSION !== 'undefined' && TEST_PREP_GUIDED_EXPANSION &&
+      typeof TEST_PREP_GUIDED_EXPANSION.deriveGuidedReviewItems === 'function') {
+    pack = { ...pack, items: pack.items.concat(TEST_PREP_GUIDED_EXPANSION.deriveGuidedReviewItems(pack.items)) };
+  }
   const result = validateTestPrepPack(pack);
   if (!result.valid) throw new Error('Invalid test prep pack: ' + result.errors.join(' '));
   _testPrepPackRegistry[result.pack.id] = result.pack;
@@ -637,9 +692,11 @@ function testPrepNormalizeItemResults(value) {
 function testPrepAttemptMetadata(metadata) {
   const input = metadata && typeof metadata === 'object' && !Array.isArray(metadata) ? metadata : {};
   return {
-    mode: ['standard', 'diagnostic', 'targeted', 'custom', 'review', 'simulation'].includes(input.mode) ? input.mode : 'standard',
+    mode: ['standard', 'diagnostic', 'guided-review', 'targeted', 'custom', 'review', 'simulation'].includes(input.mode) ? input.mode : 'standard',
     label: String(input.label || '').trim().slice(0, 120),
     targetSkillId: testPrepSlug(input.targetSkillId, ''),
+    targetDomainId: testPrepSlug(input.targetDomainId, ''),
+    targetDifficulties: testPrepNormalizeDifficultyIds(input.targetDifficulties),
     sourceStartIndex: Math.max(0, Math.floor(testPrepFinite(input.sourceStartIndex, 0))),
     sourceItemCount: Math.max(0, Math.floor(testPrepFinite(input.sourceItemCount, 0))),
     sourceBatchSize: Math.max(0, Math.floor(testPrepFinite(input.sourceBatchSize, 0))),
@@ -669,6 +726,8 @@ function recordTestPrepBatchAttempt(progress, pack, diagnostic, confidence, now,
     mode: meta.mode,
     label: meta.label,
     targetSkillId: meta.targetSkillId,
+    targetDomainId: meta.targetDomainId,
+    targetDifficulties: meta.targetDifficulties,
     sourceStartIndex: meta.sourceStartIndex,
     timeLimitMinutes: meta.timeLimitMinutes,
     timedOut: meta.timedOut,
@@ -695,9 +754,11 @@ function normalizeTestPrepProgress(value) {
     itemResults: testPrepNormalizeItemResults(attempt && attempt.itemResults),
     byDomain: testPrepNormalizeBreakdown(attempt && attempt.byDomain),
     bySkill: testPrepNormalizeBreakdown(attempt && attempt.bySkill),
-    mode: ['standard', 'diagnostic', 'targeted', 'custom', 'review', 'simulation'].includes(attempt && attempt.mode) ? attempt.mode : 'standard',
+    mode: ['standard', 'diagnostic', 'guided-review', 'targeted', 'custom', 'review', 'simulation'].includes(attempt && attempt.mode) ? attempt.mode : 'standard',
     label: String(attempt && attempt.label || '').trim().slice(0, 120),
     targetSkillId: testPrepSlug(attempt && attempt.targetSkillId, ''),
+    targetDomainId: testPrepSlug(attempt && attempt.targetDomainId, ''),
+    targetDifficulties: testPrepNormalizeDifficultyIds(attempt && attempt.targetDifficulties),
     sourceStartIndex: Math.max(0, Math.floor(testPrepFinite(attempt && attempt.sourceStartIndex, 0))),
     timeLimitMinutes: Math.max(0, Math.min(600, Math.floor(testPrepFinite(attempt && attempt.timeLimitMinutes, 0)))),
     timedOut: attempt && attempt.timedOut === true,
@@ -950,6 +1011,8 @@ function recordTestPrepAttempt(progress, pack, answers, confidence, now, metadat
     mode: meta.mode,
     label: meta.label,
     targetSkillId: meta.targetSkillId,
+    targetDomainId: meta.targetDomainId,
+    targetDifficulties: meta.targetDifficulties,
     sourceStartIndex: meta.sourceStartIndex,
     timeLimitMinutes: meta.timeLimitMinutes,
     timedOut: meta.timedOut,
@@ -961,7 +1024,7 @@ function recordTestPrepAttempt(progress, pack, answers, confidence, now, metadat
 function testPrepBuildProgressAnalytics(progress, packId) {
   const normalized = normalizeTestPrepProgress(progress);
   const requestedPackId = testPrepSlug(packId, '');
-  const attempts = normalized.attempts.filter((attempt) => !requestedPackId || attempt.packId === requestedPackId);
+  const attempts = normalized.attempts.filter((attempt) => attempt.mode !== 'guided-review' && (!requestedPackId || attempt.packId === requestedPackId));
   const byDomain = {};
   const bySkill = {};
   const confidenceSummary = testPrepNormalizeConfidenceSummary({});
@@ -1007,8 +1070,9 @@ function testPrepBuildReviewSet(progress, pack, options) {
   const normalizedPack = normalizeTestPrepPack(pack);
   const normalizedProgress = normalizeTestPrepProgress(progress);
   const input = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
-  const limit = normalizedPack.items.length ? Math.max(1, Math.min(normalizedPack.items.length, Math.min(100, Math.floor(testPrepFinite(input.limit, 20))))) : 0;
-  const attempts = normalizedProgress.attempts.filter((attempt) => attempt.packId === normalizedPack.id);
+  const sourceItems = normalizedPack.items.filter((item) => item.examItemStatus !== 'not-approved-as-independent-exam-item');
+  const limit = sourceItems.length ? Math.max(1, Math.min(sourceItems.length, Math.min(100, Math.floor(testPrepFinite(input.limit, 20))))) : 0;
+  const attempts = normalizedProgress.attempts.filter((attempt) => attempt.packId === normalizedPack.id && attempt.mode !== 'guided-review');
   const analytics = testPrepBuildProgressAnalytics(normalizedProgress, normalizedPack.id);
   const stats = {};
   attempts.forEach((attempt) => {
@@ -1024,7 +1088,7 @@ function testPrepBuildReviewSet(progress, pack, options) {
     });
   });
   const domainPerformance = Object.fromEntries(analytics.domainRows.map((row) => [row.id, row]));
-  const candidates = normalizedPack.items.map((item, index) => {
+  const candidates = sourceItems.map((item, index) => {
     const row = stats[item.id] || { attempts: 0, correct: 0, misses: 0, confidentMisses: 0, uncertainCorrect: 0 };
     const domain = domainPerformance[item.domainId];
     const weakness = domain && domain.total ? Math.max(0, 100 - domain.percent) / 25 : 1;
@@ -1108,6 +1172,51 @@ function testPrepSeededShuffle(items, seed) {
   return output;
 }
 
+function testPrepNormalizeDifficultyIds(value) {
+  return Array.from(new Set((Array.isArray(value) ? value : [])
+    .slice(0, 12)
+    .map((difficulty) => testPrepSlug(difficulty, ''))
+    .filter(Boolean)));
+}
+
+function testPrepTargetDifficultyValues(filterId) {
+  return filterId === 'higher-challenge' ? ['intermediate', 'advanced'] : filterId === 'advanced' ? ['advanced'] : [];
+}
+
+function testPrepTargetDifficultyFilter(value) {
+  const difficulties = testPrepNormalizeDifficultyIds(value);
+  if (difficulties.length === 1 && difficulties[0] === 'advanced') return 'advanced';
+  if (difficulties.length === 2 && difficulties.includes('intermediate') && difficulties.includes('advanced')) return 'higher-challenge';
+  return 'all';
+}
+
+function testPrepBuildTargetedSet(pack, options) {
+  const normalizedPack = normalizeTestPrepPack(pack);
+  const input = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
+  const requestedDomainId = testPrepSlug(input.domainId, '');
+  const domain = normalizedPack.domains.find((entry) => entry.id === requestedDomainId) || null;
+  const difficulties = testPrepNormalizeDifficultyIds(input.difficulties);
+  const requestedLength = Math.max(1, Math.min(100, Math.floor(testPrepFinite(input.limit, 20))));
+  const seed = String(input.seed == null ? normalizedPack.id + '-targeted-' + requestedDomainId + '-' + (difficulties.join('-') || 'all') : input.seed).slice(0, 120);
+  const eligible = domain ? normalizedPack.items.filter((item) => item.examItemStatus !== 'not-approved-as-independent-exam-item' && item.domainId === domain.id
+    && (!difficulties.length || difficulties.includes(testPrepSlug(item.difficulty, '')))) : [];
+  const items = testPrepSeededShuffle(eligible, seed).slice(0, requestedLength);
+  return {
+    strategy: 'domain-difficulty-targeted-v1',
+    packId: normalizedPack.id,
+    domainId: domain ? domain.id : '',
+    domainLabel: domain ? domain.label : '',
+    difficulties,
+    requestedLength,
+    eligibleCount: eligible.length,
+    limit: items.length,
+    seed,
+    items,
+    itemIds: items.map((item) => item.id),
+    limitation: 'This is a reproducible learner-selected domain set, not an official test form, readiness estimate, or pass prediction.',
+  };
+}
+
 function testPrepBuildCustomQuiz(pack, options) {
   const normalizedPack = normalizeTestPrepPack(pack);
   const input = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
@@ -1115,7 +1224,7 @@ function testPrepBuildCustomQuiz(pack, options) {
   const requestedDomainIds = Array.from(new Set((Array.isArray(input.domainIds) ? input.domainIds : [])
     .map((id) => testPrepSlug(id, '')).filter((id) => availableDomainIds.includes(id))));
   const domainIds = requestedDomainIds.length ? requestedDomainIds : availableDomainIds;
-  const eligible = normalizedPack.items.filter((item) => domainIds.includes(item.domainId));
+  const eligible = normalizedPack.items.filter((item) => item.examItemStatus !== 'not-approved-as-independent-exam-item' && domainIds.includes(item.domainId));
   const requestedLength = Math.max(1, Math.min(100, Math.floor(testPrepFinite(input.limit, Math.min(20, eligible.length || 1)))));
   const limit = Math.min(requestedLength, eligible.length);
   const seed = String(input.seed == null ? normalizedPack.id + '-custom-1' : input.seed).slice(0, 120);
@@ -1287,6 +1396,8 @@ function testPrepNormalizeSession(value) {
     mode: meta.mode,
     label: meta.label,
     targetSkillId: meta.targetSkillId,
+    targetDomainId: meta.targetDomainId,
+    targetDifficulties: meta.targetDifficulties,
     sourceStartIndex: meta.sourceStartIndex,
     timeLimitMinutes: meta.timeLimitMinutes,
     itemIds: meta.itemIds,
@@ -1316,6 +1427,7 @@ function clearTestPrepSession() {
 }
 
 registerTestPrepPack(EPPP_PART_ONE_SCAFFOLD);
+registerTestPrepPack(EPPP_INTEGRATED_2027_PREVIEW_PACK);
 registerTestPrepPack(PARAPRO_PRACTICE_PACK);
 registerTestPrepPack(SPECIAL_EDUCATION_5355_PRACTICE_PACK);
 registerTestPrepPack(SCHOOL_COUNSELOR_5422_PRACTICE_PACK);
@@ -1334,16 +1446,38 @@ registerTestPrepPack(SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK);
 registerTestPrepPack(SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PRACTICE_PACK);
 registerTestPrepPack(SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PRACTICE_PACK);
 registerTestPrepPack(SPECIAL_EDUCATION_BEHAVIOR_EMOTIONAL_5372_PRACTICE_PACK);
+registerTestPrepPack(SPECIAL_EDUCATION_INTELLECTUAL_DISABILITIES_5322_PRACTICE_PACK);
+registerTestPrepPack(PLT_5_9_5623_PRACTICE_PACK);
+registerTestPrepPack(PLT_7_12_5624_PRACTICE_PACK);
+registerTestPrepPack(SCHOOL_LIBRARIAN_5312_PRACTICE_PACK);
 
 function TestPrepStatusBadge({ status }) {
   const styles = status === 'ready'
     ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
-    : status === 'planned'
-      ? 'bg-violet-100 text-violet-900 border-violet-300'
-      : 'bg-amber-100 text-amber-900 border-amber-300';
-  const label = status === 'ready' ? 'Practice ready' : status === 'planned' ? 'Migration planned' : 'Researching';
+    : status === 'preview'
+      ? 'bg-indigo-100 text-indigo-950 border-indigo-300'
+      : status === 'planned'
+        ? 'bg-violet-100 text-violet-900 border-violet-300'
+        : 'bg-amber-100 text-amber-900 border-amber-300';
+  const label = status === 'ready' ? 'Practice ready' : status === 'preview' ? 'Future preview' : status === 'planned' ? 'Migration planned' : 'Researching';
   return <span className={'inline-flex rounded-full border px-2 py-1 text-xs font-bold ' + styles}>{label}</span>;
 }
+
+const TEST_PREP_LARGE_TEXT_STYLES = `
+[data-test-prep-text-size="large"] { font-size: 1.25rem; line-height: 1.6; }
+[data-test-prep-text-size="large"] .text-xs { font-size: 0.9375rem !important; line-height: 1.375rem !important; }
+[data-test-prep-text-size="large"] .text-sm { font-size: 1.09375rem !important; line-height: 1.625rem !important; }
+[data-test-prep-text-size="large"] .text-base { font-size: 1.25rem !important; line-height: 1.875rem !important; }
+[data-test-prep-text-size="large"] .text-lg { font-size: 1.40625rem !important; line-height: 2rem !important; }
+[data-test-prep-text-size="large"] .text-xl { font-size: 1.5625rem !important; line-height: 2.125rem !important; }
+[data-test-prep-text-size="large"] .text-2xl { font-size: 1.875rem !important; line-height: 2.375rem !important; }
+[data-test-prep-text-size="large"] .text-3xl { font-size: 2.34375rem !important; line-height: 2.75rem !important; }
+[data-test-prep-text-size="large"] .text-4xl { font-size: 2.8125rem !important; line-height: 3.25rem !important; }
+[data-test-prep-text-size="large"] .text-5xl { font-size: 3.75rem !important; line-height: 4.25rem !important; }
+@media (min-width: 640px) {
+  [data-test-prep-text-size="large"] [class~="sm:text-2xl"] { font-size: 1.875rem !important; line-height: 2.375rem !important; }
+}
+`;
 
 function TestPrepHub(props) {
   const { isOpen = true, onClose = (() => {}), callTTS, addToast } = props || {};
@@ -1364,6 +1498,8 @@ function TestPrepHub(props) {
   const [activeItemIds, setActiveItemIds] = React.useState([]);
   const [sourceStartIndex, setSourceStartIndex] = React.useState(0);
   const [targetSkillId, setTargetSkillId] = React.useState('');
+  const [targetDomainId, setTargetDomainId] = React.useState('');
+  const [targetDifficultyFilter, setTargetDifficultyFilter] = React.useState('all');
   const [timeRemainingSeconds, setTimeRemainingSeconds] = React.useState(0);
   const [savedSession, setSavedSession] = React.useState(readTestPrepSession);
   const [progress, setProgress] = React.useState(readTestPrepProgress);
@@ -1395,26 +1531,37 @@ function TestPrepHub(props) {
   const [customQuizLength, setCustomQuizLength] = React.useState(20);
   const [customQuizVariant, setCustomQuizVariant] = React.useState(1);
   const [memoryAidOpen, setMemoryAidOpen] = React.useState('');
+  const [readAloudStatus, setReadAloudStatus] = React.useState('idle');
   const dialogRef = React.useRef(null);
+  const legacyChapterFrameRef = React.useRef(null);
+  const readAloudAudioRef = React.useRef(null);
+  const readAloudUtteranceRef = React.useRef(null);
+  const readAloudAbortRef = React.useRef(null);
+  const readAloudRequestRef = React.useRef(0);
   const [chapterCheckAnswers, setChapterCheckAnswers] = React.useState({});
   const [chapterCheckRevealed, setChapterCheckRevealed] = React.useState({});
   const selectedPack = packs.find((pack) => pack.id === selectedPackId) || readyPack;
   const itemLookup = new Map((selectedPack ? selectedPack.items : []).map((item) => [item.id, item]));
   const practiceItems = selectedPack && activeItemIds.length ? activeItemIds.map((id) => itemLookup.get(id)).filter(Boolean) : (selectedPack ? selectedPack.items : []);
-  const activeBatchSize = !selectedPack ? 100 : practiceMode === 'diagnostic' ? Math.max(1, practiceItems.length) : practiceMode === 'standard' ? selectedPack.batchSize : Math.max(selectedPack.batchSize, practiceItems.length + 1);
+  const activeBatchSize = !selectedPack ? 100 : (practiceMode === 'diagnostic' || practiceMode === 'guided-review') ? Math.max(1, practiceItems.length) : practiceMode === 'standard' ? selectedPack.batchSize : Math.max(selectedPack.batchSize, practiceItems.length + 1);
   const activePack = selectedPack ? Object.assign({}, selectedPack, { items: practiceItems, batchSize: activeBatchSize }) : null;
   const currentItem = practiceStarted && activePack && activePack.items[questionIndex];
   const currentBatch = activePack ? testPrepBatchMeta(activePack, questionIndex) : null;
-  const savedReviewItemIds = selectedPack ? (reviewItems[selectedPack.id] || []).filter((itemId) => itemLookup.has(itemId)) : [];
+  const savedReviewItemIds = selectedPack ? (reviewItems[selectedPack.id] || []).filter((itemId) => {
+    const item = itemLookup.get(itemId);
+    return item && item.examItemStatus !== 'not-approved-as-independent-exam-item';
+  }) : [];
   const currentItemSavedForReview = !!(currentItem && savedReviewItemIds.includes(currentItem.id));
   const progressAnalytics = testPrepBuildProgressAnalytics(progress, selectedPackId);
   const smartReviewPlan = selectedPack ? testPrepBuildReviewSet(progress, selectedPack, { limit: Math.min(20, selectedPack.items.length) }) : null;
   const customQuizPlan = selectedPack ? testPrepBuildCustomQuiz(selectedPack, { domainIds: customQuizDomainIds, limit: customQuizLength, seed: selectedPack.id + '-custom-' + customQuizVariant }) : null;
+  const targetedDomainPlan = selectedPack ? testPrepBuildTargetedSet(selectedPack, { domainId: targetDomainId, difficulties: testPrepTargetDifficultyValues(targetDifficultyFilter), limit: 20 }) : null;
   const globalSearch = selectedPack && learningLibrary ? testPrepSearchPack(selectedPack, learningLibrary, librarySearch, { limit: 60, annotations }) : { query: '', total: 0, counts: {}, results: [] };
   const packAnnotations = selectedPack ? normalizeTestPrepAnnotations(annotations).records.filter((record) => record.packId === selectedPack.id) : [];
   const currentStudyPlan = selectedPack ? testPrepStudyPlanForPack(studyPlans, selectedPack.id) : { weeklyQuestions: 100, weeklySets: 3, activeDays: 3 };
   const studyPlanStatus = selectedPack ? testPrepBuildStudyPlanStatus(progress, studyPlans, selectedPack.id, Date.now()) : null;
-  const skillById = Object.fromEntries((learningLibrary && Array.isArray(learningLibrary.skills) ? learningLibrary.skills : []).map((skill) => [skill.id, skill]));
+  const availableSkills = learningLibrary && Array.isArray(learningLibrary.skills) ? learningLibrary.skills : [];
+  const skillById = Object.fromEntries(availableSkills.map((skill) => [skill.id, skill]));
   const domainById = Object.fromEntries((selectedPack ? selectedPack.domains : []).map((domain) => [domain.id, domain]));
 
   React.useEffect(() => {
@@ -1423,6 +1570,8 @@ function TestPrepHub(props) {
     catch (_) { setFlashcardRatings({}); }
     setFlashcardDueOnly(false);
     setCustomQuizDomainIds([]);
+    setTargetDomainId('');
+    setTargetDifficultyFilter('all');
     setCustomQuizLength(Math.min(20, selectedPack && selectedPack.items.length ? selectedPack.items.length : 20));
     setCustomQuizVariant(1);
     setAnnotationTarget({ targetType: 'general', targetId: '', targetLabel: 'General pack note' });
@@ -1527,6 +1676,8 @@ function TestPrepHub(props) {
       mode: practiceMode,
       label: practiceLabel,
       targetSkillId,
+      targetDomainId,
+      targetDifficulties: testPrepTargetDifficultyValues(targetDifficultyFilter),
       sourceStartIndex,
       sourceItemCount: selectedPack ? selectedPack.items.length : 0,
       sourceBatchSize: selectedPack ? selectedPack.batchSize : 0,
@@ -1538,7 +1689,7 @@ function TestPrepHub(props) {
       confidence,
       updatedAt: Date.now(),
     }));
-  }, [practiceStarted, selectedPackId, practiceMode, practiceLabel, targetSkillId, sourceStartIndex, activeItemIds, questionIndex, timeRemainingSeconds, answers, confidence, result, checkpoint]);
+  }, [practiceStarted, selectedPackId, practiceMode, practiceLabel, targetSkillId, targetDomainId, targetDifficultyFilter, sourceStartIndex, activeItemIds, questionIndex, timeRemainingSeconds, answers, confidence, result, checkpoint]);
 
   React.useEffect(() => {
     if (!practiceStarted || practiceMode !== 'simulation' || result || checkpoint || timeRemainingSeconds <= 0) return undefined;
@@ -1550,10 +1701,49 @@ function TestPrepHub(props) {
     if (practiceStarted && practiceMode === 'simulation' && !result && !checkpoint && activeItemIds.length && timeRemainingSeconds === 0) finishPractice(true);
   }, [practiceStarted, practiceMode, result, checkpoint, activeItemIds.length, timeRemainingSeconds]);
 
+  React.useEffect(() => () => stopReadAloud(false), []);
+
+  React.useEffect(() => {
+    if (readAloudAudioRef.current || readAloudUtteranceRef.current || readAloudAbortRef.current) stopReadAloud();
+  }, [currentItem && currentItem.id]);
+
+  React.useEffect(() => {
+    syncLegacyChapterTextSize();
+  }, [largeText, libraryChapterId]);
+
   if (!isOpen) return null;
 
   function announce(message, type) {
     try { if (typeof addToast === 'function') addToast(message, type || 'info'); } catch (_) {}
+  }
+
+  function syncLegacyChapterTextSize(frame) {
+    const target = frame || legacyChapterFrameRef.current;
+    try {
+      const frameDocument = target && target.contentDocument;
+      if (!frameDocument || !frameDocument.documentElement) return;
+      frameDocument.documentElement.style.fontSize = largeText ? '125%' : '';
+      frameDocument.documentElement.dataset.alloflowTextSize = largeText ? 'large' : 'standard';
+    } catch (_) {}
+  }
+
+  function stopReadAloud(updateStatus = true) {
+    readAloudRequestRef.current += 1;
+    if (readAloudAbortRef.current) {
+      try { readAloudAbortRef.current.abort(); } catch (_) {}
+      readAloudAbortRef.current = null;
+    }
+    if (readAloudAudioRef.current) {
+      readAloudAudioRef.current.onplay = null;
+      readAloudAudioRef.current.onended = null;
+      readAloudAudioRef.current.onerror = null;
+      try { readAloudAudioRef.current.pause(); } catch (_) {}
+      readAloudAudioRef.current = null;
+    }
+    const hadBrowserSpeech = !!readAloudUtteranceRef.current;
+    readAloudUtteranceRef.current = null;
+    try { if (hadBrowserSpeech && typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
+    if (updateStatus) setReadAloudStatus('idle');
   }
 
   function resetPracticeWorkspace() {
@@ -1569,12 +1759,14 @@ function TestPrepHub(props) {
   function openPack(pack, nextTab) {
     setSelectedPackId(pack.id);
     resetPracticeWorkspace();
-    setPracticeStarted(!(pack.simulationItemCount || pack.items.length > pack.batchSize));
+    setPracticeStarted(pack.status !== 'preview' && !(pack.simulationItemCount || pack.items.length > pack.batchSize));
     setPracticeMode('standard');
     setPracticeLabel('');
     setActiveItemIds([]);
     setSourceStartIndex(0);
     setTargetSkillId('');
+    setTargetDomainId('');
+    setTargetDifficultyFilter('all');
     setTimeRemainingSeconds(0);
     setLegacyOpen(false);
     setTab(nextTab || 'practice');
@@ -1591,6 +1783,8 @@ function TestPrepHub(props) {
     setActiveItemIds(items.map((item) => item.id));
     setSourceStartIndex(Math.max(0, Number(input.sourceStartIndex) || 0));
     setTargetSkillId(input.targetSkillId || '');
+    setTargetDomainId(input.targetDomainId || '');
+    setTargetDifficultyFilter(testPrepTargetDifficultyFilter(input.targetDifficulties));
     setTimeRemainingSeconds(input.mode === 'simulation' ? Math.max(1, selectedPack.simulationTimeMinutes) * 60 : 0);
     setPracticeStarted(true);
     setTab('practice');
@@ -1600,9 +1794,12 @@ function TestPrepHub(props) {
     if (!selectedPack) return;
     const safeBatch = Math.max(0, Math.floor(Number(batchIndex) || 0));
     const start = safeBatch * selectedPack.batchSize;
+    const bankCount = Math.ceil(selectedPack.items.length / selectedPack.batchSize);
+    const section = selectedPack.sections[safeBatch];
+    const guided = section && section.kind === 'guided-review';
     startPracticeSet({
-      mode: 'diagnostic',
-      label: 'Practice Bank ' + (safeBatch + 1) + ' of ' + Math.ceil(selectedPack.items.length / selectedPack.batchSize),
+      mode: guided ? 'guided-review' : 'diagnostic',
+      label: guided ? section.label + ' (' + (safeBatch + 1) + ' of ' + bankCount + ')' : 'Practice Bank ' + (safeBatch + 1) + ' of ' + bankCount,
       items: selectedPack.items.slice(start, start + selectedPack.batchSize),
       sourceStartIndex: start,
     });
@@ -1611,7 +1808,11 @@ function TestPrepHub(props) {
   function toggleSavedForReview(itemId) {
     if (!selectedPack) return;
     const safeItemId = testPrepSlug(itemId, '');
-    if (!itemLookup.has(safeItemId)) return;
+    const item = itemLookup.get(safeItemId);
+    if (!item || item.examItemStatus === 'not-approved-as-independent-exam-item') {
+      announce('Guided activities stay in their guided-review bank and are excluded from saved-question diagnostic review.', 'info');
+      return;
+    }
     const normalized = normalizeTestPrepReviewItems(reviewItems);
     const packItems = normalized[selectedPack.id] || [];
     const removing = packItems.includes(safeItemId);
@@ -1787,10 +1988,23 @@ function TestPrepHub(props) {
     reader.onerror = () => announce('Progress import failed.', 'warning');
     reader.readAsText(file);
   }
+  function startDomainTargetedPractice() {
+    if (!selectedPack || !targetDomainId) { announce('Choose a domain before starting Domain focus.', 'info'); return; }
+    if (!targetedDomainPlan || !targetedDomainPlan.items.length) { announce('No questions match that domain and difficulty selection.', 'info'); return; }
+    const difficultyLabel = targetDifficultyFilter === 'advanced' ? 'advanced only' : targetDifficultyFilter === 'higher-challenge' ? 'intermediate and advanced' : 'all difficulty levels';
+    startPracticeSet({
+      mode: 'targeted',
+      label: 'Domain focus: ' + targetedDomainPlan.domainLabel + ' · ' + difficultyLabel,
+      items: targetedDomainPlan.items,
+      targetDomainId: targetedDomainPlan.domainId,
+      targetDifficulties: targetedDomainPlan.difficulties,
+    });
+  }
+
   function startTargetedPractice(skillId) {
     if (!selectedPack) return;
     const skill = skillById[skillId];
-    const matching = selectedPack.items.filter((item) => item.skillIds.includes(skillId)).slice(0, 20);
+    const matching = selectedPack.items.filter((item) => item.examItemStatus !== 'not-approved-as-independent-exam-item' && item.skillIds.includes(skillId)).slice(0, 20);
     if (!matching.length) { announce('No questions are tagged to that skill yet.', 'info'); return; }
     startPracticeSet({
       mode: 'targeted',
@@ -1824,6 +2038,8 @@ function TestPrepHub(props) {
     setActiveItemIds(ids);
     setSourceStartIndex(savedSession.sourceStartIndex);
     setTargetSkillId(savedSession.targetSkillId);
+    setTargetDomainId(savedSession.targetDomainId);
+    setTargetDifficultyFilter(testPrepTargetDifficultyFilter(savedSession.targetDifficulties));
     setTimeRemainingSeconds(savedSession.timeRemainingSeconds);
     setQuestionIndex(safeIndex);
     setAnswers(savedSession.answers);
@@ -1843,6 +2059,8 @@ function TestPrepHub(props) {
       mode: practiceMode,
       label: practiceLabel,
       targetSkillId,
+      targetDomainId,
+      targetDifficulties: testPrepTargetDifficultyValues(targetDifficultyFilter),
       sourceStartIndex,
       sourceItemCount: selectedPack ? selectedPack.items.length : 0,
       sourceBatchSize: selectedPack ? selectedPack.batchSize : 0,
@@ -1872,6 +2090,8 @@ function TestPrepHub(props) {
     setActiveItemIds([]);
     setSourceStartIndex(0);
     setTargetSkillId('');
+    setTargetDomainId('');
+    setTargetDifficultyFilter('all');
     setTimeRemainingSeconds(0);
   }
 
@@ -1894,18 +2114,93 @@ function TestPrepHub(props) {
     return Math.floor(safe / 60) + ':' + String(safe % 60).padStart(2, '0');
   }
 
-  function readQuestion() {
-    if (!currentItem) return;
-    const text = currentItem.prompt + '. ' + currentItem.choices.map((choice, index) => String.fromCharCode(65 + index) + ', ' + choice).join('. ');
+  function speakQuestionWithBrowser(text, requestId) {
+    if (requestId !== readAloudRequestRef.current) return false;
     try {
-      if (typeof callTTS === 'function') { callTTS(text); return; }
-      if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
+      if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+        const utterance = new window.SpeechSynthesisUtterance(text);
+        readAloudUtteranceRef.current = utterance;
+        utterance.onstart = () => { if (requestId === readAloudRequestRef.current) setReadAloudStatus('speaking'); };
+        utterance.onend = () => {
+          if (requestId !== readAloudRequestRef.current) return;
+          readAloudUtteranceRef.current = null;
+          readAloudAbortRef.current = null;
+          setReadAloudStatus('idle');
+        };
+        utterance.onerror = () => {
+          if (requestId !== readAloudRequestRef.current) return;
+          readAloudUtteranceRef.current = null;
+          readAloudAbortRef.current = null;
+          setReadAloudStatus('unavailable');
+          announce('Read-aloud is unavailable in this environment.', 'warning');
+        };
         window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(text));
-        return;
+        window.speechSynthesis.speak(utterance);
+        setReadAloudStatus('speaking');
+        return true;
       }
     } catch (_) {}
-    announce('Read-aloud is unavailable in this environment.', 'info');
+    readAloudAbortRef.current = null;
+    setReadAloudStatus('unavailable');
+    announce('Read-aloud is unavailable in this environment.', 'warning');
+    return false;
+  }
+
+  async function readQuestion() {
+    if (!currentItem) return;
+    if (readAloudStatus === 'loading' || readAloudStatus === 'speaking') {
+      stopReadAloud();
+      announce('Read-aloud stopped.', 'info');
+      return;
+    }
+    const text = currentItem.prompt + '. ' + currentItem.choices.map((choice, index) => String.fromCharCode(65 + index) + ', ' + choice).join('. ');
+    stopReadAloud(false);
+    const requestId = readAloudRequestRef.current + 1;
+    readAloudRequestRef.current = requestId;
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    readAloudAbortRef.current = controller;
+    setReadAloudStatus('loading');
+    try {
+      const audioUrl = typeof callTTS === 'function'
+        ? await callTTS(text, 'Puck', 1, controller ? { maxRetries: 2, signal: controller.signal } : 2)
+        : null;
+      if (requestId !== readAloudRequestRef.current) return;
+      if (audioUrl && typeof window !== 'undefined' && typeof window.Audio === 'function') {
+        const audio = new window.Audio(audioUrl);
+        readAloudAudioRef.current = audio;
+        audio.onplay = () => { if (requestId === readAloudRequestRef.current) setReadAloudStatus('speaking'); };
+        audio.onended = () => {
+          if (requestId !== readAloudRequestRef.current) return;
+          readAloudAudioRef.current = null;
+          readAloudAbortRef.current = null;
+          setReadAloudStatus('idle');
+        };
+        audio.onerror = () => {
+          if (requestId !== readAloudRequestRef.current) return;
+          audio.onplay = null;
+          audio.onended = null;
+          audio.onerror = null;
+          readAloudAudioRef.current = null;
+          readAloudAbortRef.current = null;
+          speakQuestionWithBrowser(text, requestId);
+        };
+        await Promise.resolve(audio.play());
+        if (requestId === readAloudRequestRef.current) setReadAloudStatus('speaking');
+        return;
+      }
+    } catch (error) {
+      if (controller && controller.signal.aborted) return;
+      if (requestId !== readAloudRequestRef.current) return;
+      if (readAloudAudioRef.current) {
+        readAloudAudioRef.current.onplay = null;
+        readAloudAudioRef.current.onended = null;
+        readAloudAudioRef.current.onerror = null;
+        try { readAloudAudioRef.current.pause(); } catch (_) {}
+        readAloudAudioRef.current = null;
+      }
+    }
+    if (requestId !== readAloudRequestRef.current) return;
+    speakQuestionWithBrowser(text, requestId);
   }
 
   function checkAnswer() {
@@ -1953,7 +2248,7 @@ function TestPrepHub(props) {
       setCheckpoint(Object.assign({}, sourceDiagnostic, { practiceLabel: practiceLabel || ('Batch ' + sourceBatchNumber) }));
       clearTestPrepSession();
       setSavedSession(null);
-      announce((practiceLabel || ('Batch ' + diagnostic.batchNumber)) + ' complete. Review the diagnostic feedback before continuing.', 'success');
+      announce((practiceLabel || ('Batch ' + diagnostic.batchNumber)) + ' complete. Review the ' + (practiceMode === 'guided-review' ? 'guided-learning' : 'diagnostic') + ' feedback before continuing.', 'success');
       return;
     }
     if (questionIndex >= activePack.items.length - 1) {
@@ -1987,10 +2282,19 @@ function TestPrepHub(props) {
   const packAttempts = progress.attempts.filter((attempt) => attempt.packId === selectedPackId);
   const totalAttempts = packAttempts.length;
   const latestAttempt = totalAttempts ? packAttempts[packAttempts.length - 1] : null;
+  const readAloudActive = readAloudStatus === 'loading' || readAloudStatus === 'speaking';
+  const readAloudMessage = readAloudStatus === 'loading'
+    ? 'Preparing question audio.'
+    : readAloudStatus === 'speaking'
+      ? 'Reading the question and answer choices.'
+      : readAloudStatus === 'unavailable'
+        ? 'Read-aloud is unavailable in this environment.'
+        : '';
 
   return (
     <div className="fixed inset-0 z-[290] flex items-center justify-center bg-slate-950/70 p-2 sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="test-prep-title" className={'allo-docsuite flex max-h-[94vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-4 ring-indigo-300 ' + (largeText ? 'text-lg' : '')}>
+      <style data-test-prep-accessibility-styles="true">{TEST_PREP_LARGE_TEXT_STYLES}</style>
+      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="test-prep-title" data-test-prep-text-size={largeText ? 'large' : 'standard'} className="allo-docsuite flex max-h-[94vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-4 ring-indigo-300">
         <header className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-gradient-to-r from-indigo-950 via-indigo-900 to-violet-900 px-4 py-4 text-white sm:px-6">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
@@ -2046,7 +2350,7 @@ function TestPrepHub(props) {
                     </dl>
                     <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs leading-relaxed text-amber-950">{pack.disclaimer}</p>
                     <button type="button" onClick={() => openPack(pack, 'practice')} className="mt-4 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">
-                      {pack.status === 'ready' ? 'Open practice pack' : 'View migration plan'}
+                      {pack.status === 'ready' ? 'Open practice pack' : pack.status === 'preview' ? 'Open preview pack' : 'View migration plan'}
                     </button>
                   </article>
                 ))}
@@ -2084,15 +2388,13 @@ function TestPrepHub(props) {
                 <section className="mb-4 rounded-lg border border-violet-300 bg-violet-50 px-3 py-3 text-violet-950" aria-labelledby="content-review-title">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p id="content-review-title" className="text-sm font-bold">Evidence status: {selectedPack.contentReview}</p>
-                    {selectedPack.nativeQaUrl && <a href={selectedPack.nativeQaUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open source-review report</a>}
+                    <span className="flex flex-wrap gap-3">{selectedPack.assistantAuditUrl && <a href={selectedPack.assistantAuditUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open assistant audit</a>}{selectedPack.nativeQaUrl && <a href={selectedPack.nativeQaUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open source-review report</a>}</span>
                   </div>
-                  {selectedPack.legacyUrl && (
-                    <div className="mt-3 grid gap-2 border-t border-violet-200 pt-3 text-xs leading-relaxed sm:grid-cols-3">
-                      <p><strong>Legacy source lead</strong><br />A topic lead from the old app. Its original wording and key are not automatically accepted.</p>
-                      <p><strong>Source reviewed</strong><br />The practice item has named answer support, one best answer, reviewed distractors, clue checks, a rationale, and traceable provenance.</p>
-                      <p><strong>Independent expert review pending</strong><br />A separate review by a qualified psychology and assessment professional has not yet been completed.</p>
-                    </div>
-                  )}
+                  {selectedPack.bankDisclosure && <p className="mt-2 text-sm leading-relaxed"><strong>Bank disclosure:</strong> {selectedPack.bankDisclosure}</p>}
+                  <div className="mt-3 grid gap-2 border-t border-violet-200 pt-3 text-xs leading-relaxed sm:grid-cols-2">
+                    <p><strong>{selectedPack.assistantReviewVerdict ? 'Assistant review completed' : 'Source review recorded'}</strong><br />The displayed evidence status records the completed review scope and its verdict; it does not convert parallel forms or guided review into independent exam questions.</p>
+                    <p><strong>Independent professional and psychometric validation is separate</strong><br />This tool does not claim licensed-professional endorsement, field testing, score calibration, or official-form status.</p>
+                  </div>
                 </section>
               )}
 
@@ -2104,61 +2406,6 @@ function TestPrepHub(props) {
                 </section>
               )}
 
-              {selectedPack.legacyUrl && (
-                <section className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3" aria-labelledby="legacy-audit-title">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="max-w-3xl text-sm text-amber-950"><strong>Complete legacy workspace:</strong> includes the existing lessons, quizzes, flashcards, games, and practice tools. Its item bank and score/adaptive heuristics still await expert validation.</p>
-                    <button type="button" onClick={() => setLegacyOpen((value) => !value)} className="rounded-lg bg-violet-800 px-4 py-2 text-sm font-black text-white hover:bg-violet-900 focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{legacyOpen ? 'Return to native pilot' : 'Open complete legacy workspace'}</button>
-                  </div>
-                  <div className="mt-3 border-t border-amber-300 pt-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h4 id="legacy-audit-title" className="font-black text-amber-950">Legacy-bank migration audit</h4>
-                      {selectedPack.legacyAuditUrl && <a href={selectedPack.legacyAuditUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open full audit report</a>}
-                    </div>
-                    {legacyAudit && legacyAudit.summary ? (
-                      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" aria-live="polite">
-                        <div className="rounded-lg bg-white p-3"><p className="text-xl font-black text-slate-900">{Number(legacyAudit.summary.totalItems || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-700">learner-visible questions</p></div>
-                        <div className="rounded-lg bg-white p-3"><p className="text-xl font-black text-slate-900">{Number(legacyAudit.summary.referenceCoveragePercent || 0)}%</p><p className="text-xs font-bold text-slate-700">with attached references</p></div>
-                        <div className="rounded-lg bg-white p-3"><p className="text-xl font-black text-slate-900">{Number(legacyAudit.summary.duplicateGroups || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-700">duplicate prompt groups</p></div>
-                        <div className="rounded-lg bg-white p-3"><p className="text-xl font-black text-slate-900">{legacyAudit.summary.dominantAnswerIndex == null ? '—' : String.fromCharCode(65 + Number(legacyAudit.summary.dominantAnswerIndex)) + ' · ' + Number(legacyAudit.summary.dominantAnswerPercent || 0) + '%'}</p><p className="text-xs font-bold text-slate-700">dominant answer position</p></div>
-                        <p className="sm:col-span-2 lg:col-span-4 text-xs leading-relaxed text-amber-950"><strong>Automated triage:</strong> {Number(legacyAudit.summary.blocker || 0)} structural blockers, {Number(legacyAudit.summary.high || 0).toLocaleString()} high-priority reviews, {Number(legacyAudit.summary.medium || 0).toLocaleString()} medium-priority reviews, and {Number(legacyAudit.summary.routine || 0).toLocaleString()} routine reviews. Flags identify review work; they do not establish that an answer is factually wrong.</p>
-                      </div>
-                    ) : (
-                      <p className="mt-2 text-xs text-amber-900" aria-live="polite">{legacyAuditStatus === 'loading' ? 'Loading the latest audit snapshot…' : legacyAuditStatus === 'unavailable' ? 'The audit snapshot is unavailable in this preview; the legacy review warning still applies.' : 'Audit snapshot will appear when the report is available.'}</p>
-                    )}
-                  </div>
-                  <div className="mt-3 border-t border-amber-300 pt-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h4 className="font-black text-amber-950">Legacy learning-library inventory</h4>
-                      <div className="flex flex-wrap gap-3">{selectedPack.legacyInventoryUrl && <a href={selectedPack.legacyInventoryUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open content inventory</a>}{selectedPack.legacyReviewLedgerUrl && <a href={selectedPack.legacyReviewLedgerUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open full review ledger</a>}{selectedPack.nextReviewDocketUrl && <a href={selectedPack.nextReviewDocketUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open next-500 editorial docket</a>}{selectedPack.curation1000Url && <a href={selectedPack.curation1000Url.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open {selectedPack.items.length.toLocaleString()}-question curation record</a>}{selectedPack.expansionAuditUrl && <a href={selectedPack.expansionAuditUrl} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open latest 500-item expansion audit</a>}{selectedPack.curation500Url && <a href={selectedPack.curation500Url.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open historical 500-question curation record</a>}</div>
-                    </div>
-                    {legacyInventory && legacyInventory.summary ? (
-                      <div className="mt-3" aria-live="polite">
-                        <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
-                          <div className="rounded-lg bg-white p-3"><p className="text-xl font-black text-slate-900">{Number(legacyInventory.summary.textbookChapters || 0)}</p><p className="text-xs font-bold text-slate-700">chapters</p></div>
-                          <div className="rounded-lg bg-white p-3"><p className="text-xl font-black text-slate-900">{Number(legacyInventory.summary.diagramTemplates || 0)}</p><p className="text-xs font-bold text-slate-700">diagram templates</p></div>
-                          <div className="rounded-lg bg-white p-3"><p className="text-xl font-black text-slate-900">{Number(legacyInventory.summary.flashcards || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-700">flashcards</p></div>
-                          <div className="rounded-lg bg-white p-3"><p className="text-xl font-black text-slate-900">{Number(legacyInventory.summary.memoryAids || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-700">memory aids</p></div>
-                          <div className="rounded-lg bg-white p-3"><p className="text-xl font-black text-slate-900">{Number(legacyInventory.summary.termDefinitions || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-700">term definitions</p></div>
-                          <div className="rounded-lg bg-white p-3"><p className="text-xl font-black text-slate-900">{Number(legacyInventory.summary.knowledgeChecks || 0)}</p><p className="text-xs font-bold text-slate-700">knowledge checks</p></div>
-                        </div>
-                        <div className="mt-3 rounded-lg bg-white p-3 text-xs text-slate-800">
-                          <div className="flex items-center justify-between gap-2"><strong>Full-bank review program</strong><span>{Number(legacyInventory.summary.legacyReviewPassedQuestions || 0).toLocaleString()} / {Number(legacyInventory.summary.nativeTargetQuestions || 2933).toLocaleString()} legacy items</span></div>
-                          <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden="true"><div className="h-full bg-violet-700" style={{ width: Math.min(100, Math.round(Number(legacyInventory.summary.legacyReviewPassedQuestions || 0) / Math.max(1, Number(legacyInventory.summary.nativeTargetQuestions || 2933)) * 1000) / 10) + '%' }} /></div>
-                          <p className="mt-2">{Number(legacyInventory.summary.legacyReviewPassedQuestions || 0).toLocaleString()} legacy-source items have completed the current source-and-content review; {Number(legacyInventory.summary.nativeOriginalQaQuestions || 0).toLocaleString()} additional questions were authored natively. All 2,933 legacy questions are in the review universe, not automatically approved. Items enter the native bank only after source, accuracy, ambiguity, distractor, clue, duplication, cultural/accessibility, rationale, and provenance review; production validation remains a separate independent-expert step. Practice sets should follow blueprint weights rather than the uneven legacy distribution.</p>
-                        </div>
-                      </div>
-                    ) : <p className="mt-2 text-xs text-amber-900" aria-live="polite">{legacyInventoryStatus === 'loading' ? 'Loading the learning-library inventory…' : 'The inventory report is unavailable in this preview.'}</p>}
-                  </div>
-                </section>
-              )}
-
-              {legacyOpen && selectedPack.legacyUrl && (
-                <section className="overflow-hidden rounded-2xl border border-violet-300 bg-white shadow-sm">
-                  <h4 className="sr-only">Pass the EPPP legacy workspace</h4>
-                  <iframe title="Pass the EPPP legacy workspace" src={selectedPack.legacyUrl} className="h-[68vh] min-h-[560px] w-full border-0" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-downloads" />
-                </section>
-              )}
 
               {!legacyOpen && !selectedPack.items.length && (
                 <section className="rounded-2xl border border-violet-300 bg-white p-6 shadow-sm">
@@ -2181,7 +2428,7 @@ function TestPrepHub(props) {
                 <section className="rounded-2xl border border-indigo-300 bg-white p-5 shadow-sm sm:p-7" aria-labelledby="practice-options-title">
                   <p className="text-xs font-black uppercase tracking-wider text-indigo-700">Choose a study mode</p>
                   <h4 id="practice-options-title" className="mt-1 text-2xl font-black text-slate-900">What would you like to work on?</h4>
-                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">Choose any of the {Math.ceil(selectedPack.items.length / selectedPack.batchSize)} independent practice banks. Each bank includes {selectedPack.batchSize} questions, answer explanations, confidence calibration, and diagnostic feedback. Targeted sets and the optional timed simulation remain available below.</p>
+                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">{selectedPack.guidedReviewBatchCount ? 'Choose from ' + selectedPack.sourceDiagnosticBatchCount + ' source-question diagnostic banks and ' + selectedPack.guidedReviewBatchCount + ' guided-reasoning review banks. Each includes answer explanations, confidence calibration, and end-of-bank feedback; guided banks reinforce source items and are not additional independent exam questions.' : 'Choose any of the ' + Math.ceil(selectedPack.items.length / selectedPack.batchSize) + ' practice banks. Each bank includes ' + selectedPack.batchSize + ' questions, answer explanations, confidence calibration, and diagnostic feedback. Targeted sets and the optional timed simulation remain available below.'}</p>
 
                   {savedSession && savedSession.packId === selectedPack.id && (
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-300 bg-emerald-50 p-4">
@@ -2192,17 +2439,21 @@ function TestPrepHub(props) {
 
                   <section className="mt-5 rounded-2xl border border-sky-300 bg-sky-50/60 p-4" aria-labelledby="practice-banks-title">
                     <div className="flex flex-wrap items-end justify-between gap-2">
-                      <div><p className="text-xs font-black uppercase tracking-wide text-sky-800">Question bank</p><h5 id="practice-banks-title" className="text-xl font-black text-slate-900">Choose a {selectedPack.batchSize}-question practice bank</h5></div>
-                      <p className="text-sm font-bold text-sky-900">{Math.ceil(selectedPack.items.length / selectedPack.batchSize)} banks {'·'} {selectedPack.items.length.toLocaleString()} questions total</p>
+                      <div><p className="text-xs font-black uppercase tracking-wide text-sky-800">{selectedPack.guidedReviewBatchCount ? 'Learning activity banks' : 'Practice banks'}</p><h5 id="practice-banks-title" className="text-xl font-black text-slate-900">Choose a {selectedPack.batchSize}{selectedPack.guidedReviewBatchCount ? '-activity' : '-question practice'} bank</h5></div>
+                      <p className="text-sm font-bold text-sky-900">{Math.ceil(selectedPack.items.length / selectedPack.batchSize)} banks {'·'} {selectedPack.items.length.toLocaleString()} {selectedPack.guidedReviewBatchCount ? 'learning activities total' : 'questions total'}</p>
                     </div>
                     <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                     {Array.from({ length: Math.ceil(selectedPack.items.length / selectedPack.batchSize) }, (_, batchIndex) => {
                       const start = batchIndex * selectedPack.batchSize;
                       const count = Math.min(selectedPack.batchSize, selectedPack.items.length - start);
                       const bankNumber = batchIndex + 1;
-                      const prior = packAttempts.filter((attempt) => attempt.mode === 'diagnostic' && attempt.batchNumber === bankNumber);
+                      const section = selectedPack.sections[batchIndex];
+                      const guided = section && section.kind === 'guided-review';
+                      const classified = guided || section && section.kind === 'source-diagnostic';
+                      const bankLabel = classified ? section.label : 'Practice Bank ' + bankNumber;
+                      const prior = packAttempts.filter((attempt) => attempt.mode === (guided ? 'guided-review' : 'diagnostic') && attempt.batchNumber === bankNumber);
                       const latest = prior.length ? prior[prior.length - 1] : null;
-                      return <article key={'diagnostic-' + batchIndex} className="flex min-h-52 flex-col rounded-xl border border-sky-300 bg-white p-4 shadow-sm"><p className="text-xs font-black uppercase tracking-wide text-sky-800">Practice Bank {bankNumber}</p><h6 className="mt-1 text-lg font-black text-slate-900">Questions {start + 1}{'–'}{start + count}</h6><p className="mt-2 text-sm text-slate-700">{count} untimed questions with answer explanations and an end-of-bank diagnostic.</p><p className={'mt-3 text-xs font-bold ' + (latest ? 'text-emerald-800' : 'text-slate-600')}>{latest ? 'Latest: ' + latest.correct + '/' + latest.total + ' · ' + latest.percent + '% · ' + prior.length + ' attempt' + (prior.length === 1 ? '' : 's') : 'Not started on this browser'}</p><button type="button" onClick={() => startDiagnosticBatch(batchIndex)} className="mt-auto rounded-lg bg-sky-800 px-3 py-2 font-black text-white focus:ring-2 focus:ring-sky-600 focus:ring-offset-2">Start Practice Bank {bankNumber}</button></article>;
+                      return <article key={'diagnostic-' + batchIndex} className="flex min-h-52 flex-col rounded-xl border border-sky-300 bg-white p-4 shadow-sm"><p className="text-xs font-black uppercase tracking-wide text-sky-800">{bankLabel}</p><h6 className="mt-1 text-lg font-black text-slate-900">{selectedPack.guidedReviewBatchCount ? 'Activities ' : 'Questions '}{start + 1}{'–'}{start + count}</h6><p className="mt-2 text-sm text-slate-700">{guided ? count + ' source-derived guided reasoning activities with feedback; these are not independent exam questions.' : count + ' untimed source questions with answer explanations and an end-of-bank diagnostic.'}</p><p className={'mt-3 text-xs font-bold ' + (latest ? 'text-emerald-800' : 'text-slate-600')}>{latest ? 'Latest: ' + latest.correct + '/' + latest.total + ' · ' + latest.percent + '% · ' + prior.length + ' attempt' + (prior.length === 1 ? '' : 's') : 'Not started on this browser'}</p><button type="button" onClick={() => startDiagnosticBatch(batchIndex)} className="mt-auto rounded-lg bg-sky-800 px-3 py-2 font-black text-white focus:ring-2 focus:ring-sky-600 focus:ring-offset-2">{guided ? 'Start Guided Review ' + (batchIndex - 1) : 'Start Practice Bank ' + bankNumber}</button></article>;
                     })}
                     </div>
                   </section>
@@ -2222,9 +2473,15 @@ function TestPrepHub(props) {
                     </article>
                     <article className="rounded-xl border border-violet-300 bg-violet-50 p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-violet-800">Targeted practice</p>
-                      <h5 className="mt-1 text-lg font-black text-slate-900">Practice one skill</h5>
-                      <label className="mt-3 block text-sm font-bold text-slate-800">Skill<select value={targetSkillId} onChange={(event) => setTargetSkillId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-violet-600"><option value="">Choose a skill</option>{(learningLibrary && Array.isArray(learningLibrary.skills) ? learningLibrary.skills : []).map((skill) => <option key={skill.id} value={skill.id}>{skill.domain}: {skill.label}</option>)}</select></label>
-                      <button type="button" disabled={!targetSkillId} onClick={() => startTargetedPractice(targetSkillId)} className="mt-4 rounded-lg bg-violet-800 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">Start targeted set</button>
+                      <h5 className="mt-1 text-lg font-black text-slate-900">Practice one domain or tagged skill</h5>
+                      <p className="mt-2 text-sm leading-relaxed text-violet-950">Domain focus works for every released pack, including packs without a separate skill catalog. Difficulty labels describe editorial item tiers, not an ability estimate.</p>
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        <label className="text-sm font-bold text-slate-800">Domain<select aria-label="Domain focus domain" value={targetDomainId} onChange={(event) => setTargetDomainId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-violet-600"><option value="">Choose a domain</option>{selectedPack.domains.map((domain) => <option key={domain.id} value={domain.id}>{domain.label}</option>)}</select></label>
+                        <label className="text-sm font-bold text-slate-800">Difficulty<select aria-label="Domain focus difficulty" value={targetDifficultyFilter} onChange={(event) => setTargetDifficultyFilter(['higher-challenge', 'advanced'].includes(event.target.value) ? event.target.value : 'all')} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-violet-600"><option value="all">All available levels</option><option value="higher-challenge">Intermediate and advanced</option><option value="advanced">Advanced only</option></select></label>
+                      </div>
+                      <p className="mt-3 text-xs font-bold text-violet-950" role="status">{!targetDomainId ? 'Choose a domain to build a focused set.' : targetedDomainPlan && targetedDomainPlan.items.length ? targetedDomainPlan.items.length + ' of ' + targetedDomainPlan.eligibleCount + ' matching questions ready.' : 'No questions match this domain and difficulty selection.'}</p>
+                      <button type="button" disabled={!targetedDomainPlan || !targetedDomainPlan.items.length} onClick={startDomainTargetedPractice} className="mt-3 rounded-lg bg-violet-800 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">Start Domain focus</button>
+                      {availableSkills.length > 0 && <div className="mt-4 border-t border-violet-300 pt-4"><p className="text-xs font-black uppercase tracking-wide text-violet-800">Tagged skill focus</p><label className="mt-2 block text-sm font-bold text-slate-800">Skill<select aria-label="Target practice skill" value={targetSkillId} onChange={(event) => setTargetSkillId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-violet-600"><option value="">Choose a skill</option>{availableSkills.map((skill) => <option key={skill.id} value={skill.id}>{skill.domain}: {skill.label}</option>)}</select></label><button type="button" disabled={!targetSkillId} onClick={() => startTargetedPractice(targetSkillId)} className="mt-3 rounded-lg border border-violet-700 bg-white px-4 py-2 font-black text-violet-950 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">Start targeted set</button></div>}
                     </article>
                     <article className="rounded-xl border border-cyan-300 bg-cyan-50 p-4 md:col-span-2 lg:col-span-3">
                       <p className="text-xs font-black uppercase tracking-wide text-cyan-900">Custom quiz builder</p>
@@ -2258,17 +2515,17 @@ function TestPrepHub(props) {
 
               {!legacyOpen && !!selectedPack.items.length && checkpoint && (
                 <section className="rounded-2xl border border-sky-300 bg-white p-5 shadow-sm sm:p-7" aria-labelledby="batch-checkpoint-title" aria-live="polite">
-                  <p className="text-xs font-black uppercase tracking-wider text-sky-800">Questions {checkpoint.sourceFirstQuestion || checkpoint.firstQuestion}{'–'}{checkpoint.sourceLastQuestion || checkpoint.lastQuestion}</p>
+                  <p className="text-xs font-black uppercase tracking-wider text-sky-800">{practiceMode === 'guided-review' ? 'Activities ' : 'Questions '}{checkpoint.sourceFirstQuestion || checkpoint.firstQuestion}{'–'}{checkpoint.sourceLastQuestion || checkpoint.lastQuestion}</p>
                   <h4 id="batch-checkpoint-title" className="mt-1 text-2xl font-black text-slate-900">{checkpoint.practiceLabel && !/^Batch \d+$/i.test(checkpoint.practiceLabel) ? checkpoint.practiceLabel : ('Batch ' + checkpoint.batchNumber + ' of ' + checkpoint.batchCount)} checkpoint</h4>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-xl bg-sky-50 p-4"><p className="text-3xl font-black text-sky-950">{checkpoint.correct}/{checkpoint.total}</p><p className="text-sm font-bold text-sky-900">Correct in this batch</p></div>
-                    <div className="rounded-xl bg-indigo-50 p-4"><p className="text-3xl font-black text-indigo-950">{checkpoint.percent}%</p><p className="text-sm font-bold text-indigo-900">Batch accuracy</p></div>
+                    <div className="rounded-xl bg-sky-50 p-4"><p className="text-3xl font-black text-sky-950">{checkpoint.correct}/{checkpoint.total}</p><p className="text-sm font-bold text-sky-900">{practiceMode === 'guided-review' ? 'Correct in this guided bank' : 'Correct in this batch'}</p></div>
+                    <div className="rounded-xl bg-indigo-50 p-4"><p className="text-3xl font-black text-indigo-950">{checkpoint.percent}%</p><p className="text-sm font-bold text-indigo-900">{practiceMode === 'guided-review' ? 'Guided-practice accuracy' : 'Batch accuracy'}</p></div>
                     <div className="rounded-xl bg-amber-50 p-4"><p className="text-3xl font-black text-amber-950">{checkpoint.confidentMissQuestionNumbers.length}</p><p className="text-sm font-bold text-amber-900">Confident misses</p></div>
                   </div>
-                  <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">This checkpoint describes practice in this batch. It is not an official score, pass prediction, or readiness classification.</p>
+                  <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">{practiceMode === 'guided-review' ? 'This checkpoint describes source-derived guided practice and is excluded from diagnostic analytics.' : 'This checkpoint describes practice in this source-question batch.'} It is not an official score, pass prediction, or readiness classification.</p>
                   <div className="mt-5 overflow-hidden rounded-xl border border-slate-300">
                     <table className="w-full text-left text-sm">
-                      <caption className="bg-slate-100 px-4 py-3 text-left font-black text-slate-900">Domain diagnostic for this batch</caption>
+                      <caption className="bg-slate-100 px-4 py-3 text-left font-black text-slate-900">{practiceMode === 'guided-review' ? 'Domain breakdown for guided review' : selectedPack.guidedReviewBatchCount ? 'Domain diagnostic for this source-question batch' : 'Domain diagnostic for this batch'}</caption>
                       <thead className="bg-slate-50 text-slate-700"><tr><th scope="col" className="px-4 py-2">Domain</th><th scope="col" className="px-4 py-2">Correct</th><th scope="col" className="px-4 py-2">Accuracy</th></tr></thead>
                       <tbody className="divide-y divide-slate-200">{checkpoint.domainRows.map((entry) => <tr key={entry.id}><th scope="row" className="px-4 py-2 font-semibold text-slate-900">{entry.label}</th><td className="px-4 py-2 text-slate-800">{entry.correct}/{entry.total}</td><td className="px-4 py-2 font-bold text-slate-900">{entry.percent}%</td></tr>)}</tbody>
                     </table>
@@ -2290,7 +2547,7 @@ function TestPrepHub(props) {
                   </div>
                   {!!checkpoint.focusSkillIds.length && learningLibrary && (
                     <section className="mt-5 rounded-xl border border-indigo-300 bg-indigo-50 p-4" aria-labelledby="recommended-review-title">
-                      <h5 id="recommended-review-title" className="font-black text-indigo-950">Recommended review from this diagnostic</h5>
+                      <h5 id="recommended-review-title" className="font-black text-indigo-950">{practiceMode === 'guided-review' ? 'Optional follow-up from guided review' : 'Recommended review from this diagnostic'}</h5>
                       <p className="mt-1 text-sm text-indigo-900">These suggestions point to the lowest-accuracy tagged skills in this batch; they are study priorities, not readiness classifications.</p>
                       <div className="mt-3 grid gap-3 md:grid-cols-2">
                         {checkpoint.focusSkillIds.map((skillId) => {
@@ -2325,12 +2582,14 @@ function TestPrepHub(props) {
               {!legacyOpen && !!selectedPack.items.length && !result && currentItem && (
                 <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm sm:p-7">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{practiceLabel || 'Practice set'}</p><p className="font-black text-indigo-900">Question {questionIndex + 1} of {activePack.items.length}</p>{practiceMode === 'diagnostic' && <p className="mt-1 text-sm font-bold text-sky-800">Question bank item {sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}</p>}{currentBatch && currentBatch.batchCount > 1 && <p className="mt-1 text-sm font-bold text-slate-700">Batch {currentBatch.batchNumber} of {currentBatch.batchCount} · Question {currentBatch.position} of {currentBatch.itemCount}</p>}{practiceMode === 'simulation' && <div className="mt-2 flex flex-wrap items-center gap-2"><p className="text-lg font-black text-amber-900" role="timer">Time remaining {formatPracticeTime(timeRemainingSeconds)}</p><button type="button" onClick={extendSimulationTime} className="rounded-lg border border-amber-600 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700 focus:ring-offset-2">Add 10 minutes</button>{timeRemainingSeconds <= 60 && <p className="w-full text-sm font-bold text-rose-800" role="status" aria-live="polite">One minute or less remains. Use Add 10 minutes now if you need more time.</p>}</div>}</div>
-                    <button type="button" onClick={readQuestion} className="rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} Read question</button>
-                    <button type="button" aria-pressed={currentItemSavedForReview} onClick={() => toggleSavedForReview(currentItem.id)} className={'rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-600 ' + (currentItemSavedForReview ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : 'border-indigo-400 bg-indigo-50 text-indigo-900')}>{currentItemSavedForReview ? 'Remove from review' : 'Save for review'}</button>
+                    <div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{practiceLabel || 'Practice set'}</p><p className="font-black text-indigo-900">{practiceMode === 'guided-review' ? 'Guided-review activity ' : 'Question '}{questionIndex + 1} of {activePack.items.length}</p>{practiceMode === 'diagnostic' && <p className="mt-1 text-sm font-bold text-sky-800">{selectedPack.guidedReviewBatchCount ? 'Source-question bank item ' : 'Question bank item '}{sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}</p>}{practiceMode === 'guided-review' && <p className="mt-1 text-sm font-bold text-violet-800">Guided activity {sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}; this score is excluded from diagnostic analytics.</p>}{currentBatch && currentBatch.batchCount > 1 && <p className="mt-1 text-sm font-bold text-slate-700">Batch {currentBatch.batchNumber} of {currentBatch.batchCount} · Question {currentBatch.position} of {currentBatch.itemCount}</p>}{practiceMode === 'simulation' && <div className="mt-2 flex flex-wrap items-center gap-2"><p className="text-lg font-black text-amber-900" role="timer">Time remaining {formatPracticeTime(timeRemainingSeconds)}</p><button type="button" onClick={extendSimulationTime} className="rounded-lg border border-amber-600 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700 focus:ring-offset-2">Add 10 minutes</button>{timeRemainingSeconds <= 60 && <p className="w-full text-sm font-bold text-rose-800" role="status" aria-live="polite">One minute or less remains. Use Add 10 minutes now if you need more time.</p>}</div>}</div>
+                    <button type="button" aria-pressed={readAloudActive} onClick={readQuestion} className="rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} {readAloudStatus === 'loading' ? 'Preparing audio' : readAloudStatus === 'speaking' ? 'Stop reading' : 'Read question'}</button>
+                    {currentItem.examItemStatus !== 'not-approved-as-independent-exam-item' && <button type="button" aria-pressed={currentItemSavedForReview} onClick={() => toggleSavedForReview(currentItem.id)} className={'rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-600 ' + (currentItemSavedForReview ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : 'border-indigo-400 bg-indigo-50 text-indigo-900')}>{currentItemSavedForReview ? 'Remove from review' : 'Save for review'}</button>}
                     <button type="button" onClick={() => beginAnnotation({ targetType: 'question', targetId: currentItem.id, targetLabel: 'Question: ' + currentItem.prompt })} className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 focus:ring-2 focus:ring-amber-600">Add note or highlight</button>
                     <button type="button" onClick={chooseAnotherPracticeSet} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600">Practice options</button>
                   </div>
+                  <p role="status" aria-live="polite" className={readAloudStatus === 'unavailable' ? 'mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950' : 'sr-only'}>{readAloudMessage}</p>
+                  {currentItem.competencyTag && <p className="mt-3 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm leading-relaxed text-indigo-950"><strong>Unofficial integrated 2027 blueprint practice · {currentItem.competencyTag}</strong>{currentItem.competencyLabel ? ' - ' + currentItem.competencyLabel : ''}</p>}
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden="true"><div className="h-full bg-indigo-700" style={{ width: Math.round((questionIndex + 1) / Math.max(1, activePack.items.length) * 100) + '%' }} /></div>
                   <fieldset className="mt-6" disabled={checked}>
                     <legend className="text-lg font-black leading-relaxed text-slate-900">{currentItem.prompt}</legend>
@@ -2352,14 +2611,15 @@ function TestPrepHub(props) {
                   {checked && practiceMode !== 'simulation' && (
                     <div className={'mt-5 rounded-xl border p-4 ' + (selectedChoice === currentItem.answerIndex ? 'border-emerald-400 bg-emerald-50' : 'border-amber-400 bg-amber-50')} role="status" aria-live="polite">
                       <p className="font-black text-slate-900">{selectedChoice === currentItem.answerIndex ? 'Correct' : 'Not yet - review the reasoning'}</p>
+                      {selectedChoice !== currentItem.answerIndex && <div className="mt-3 grid gap-2 rounded-lg border border-amber-300 bg-white/80 p-3 text-sm text-slate-900 sm:grid-cols-2"><p><strong>Your answer:</strong><br />{String.fromCharCode(65 + selectedChoice)}. {currentItem.choices[selectedChoice]}</p><p><strong>Supported answer:</strong><br />{String.fromCharCode(65 + currentItem.answerIndex)}. {currentItem.choices[currentItem.answerIndex]}</p></div>}
                       <p className="mt-2 text-sm leading-relaxed text-slate-800">{currentItem.rationale}</p>
                       {currentItem.choiceRationales.length === currentItem.choices.length && (
                         <div className="mt-3 rounded-lg border border-slate-300 bg-white/70 p-3 text-sm text-slate-800">
                           <p className="font-black text-slate-900">Why the other options do not fit</p>
                           <ul className="mt-2 space-y-3">
                             {currentItem.choices.map((choice, index) => index === currentItem.answerIndex ? null : (
-                              <li key={currentItem.id + '-rationale-' + index}>
-                                <p className="font-bold">{String.fromCharCode(65 + index)}. {choice}</p>
+                              <li key={currentItem.id + '-rationale-' + index} className={selectedChoice === index ? 'rounded-lg border border-rose-300 bg-rose-50 p-2' : ''}>
+                                <p className="flex flex-wrap items-center gap-2 font-bold"><span>{String.fromCharCode(65 + index)}. {choice}</span>{selectedChoice === index && <span className="rounded-full bg-rose-700 px-2 py-0.5 text-xs font-black text-white">Your answer</span>}</p>
                                 <p className="mt-0.5 leading-relaxed">{currentItem.choiceRationales[index]}</p>
                               </li>
                             ))}
@@ -2372,13 +2632,10 @@ function TestPrepHub(props) {
                           <ul className="mt-2 space-y-3">
                             {currentItem.references.map((reference) => {
                               const source = (currentItem.sourceDetails || []).find((detail) => detail.url === reference) || testPrepDescribeReference(reference);
-                              return <li key={reference}><a href={reference} target="_blank" rel="noreferrer" className="font-semibold text-indigo-800 underline">{source.title}</a><p className="mt-1 leading-relaxed"><strong>Why this source is credible:</strong> {source.credibility}</p></li>;
+                              return <li key={reference} className="rounded-lg border border-slate-200 bg-white p-3"><a href={reference} target="_blank" rel="noreferrer" className="font-black text-indigo-800 underline">{source.title}</a>{source.organization && <p className="mt-1 font-bold text-slate-800">{source.organization}</p>}<p className="mt-1 leading-relaxed"><strong>Brief source summary:</strong> {source.summary || 'This source provides context for the related answer explanation; open it to review the complete scope and limitations.'}</p><p className="mt-1 leading-relaxed"><strong>Why this source is credible:</strong> {source.credibility}</p></li>;
                             })}
                           </ul>
                         </div>
-                      )}
-                      {currentItem.legacySourceId && (
-                        <p className="mt-3 rounded-lg border border-violet-300 bg-violet-50 p-3 text-xs text-violet-950"><strong>Migration provenance:</strong> this native question was re-authored and source-reviewed using legacy source item <code>{currentItem.legacySourceId}</code> in <code>{currentItem.legacySourceFile}</code>. The original wording was not promoted automatically.</p>
                       )}
                       <div className="mt-4 flex flex-wrap items-center gap-2">
                         <span className="text-sm font-bold text-slate-800">How certain were you?</span>
@@ -2427,7 +2684,7 @@ function TestPrepHub(props) {
                   <div className="rounded-2xl border border-indigo-300 bg-indigo-50 p-5">
                     <p className="text-xs font-black uppercase tracking-wide text-indigo-800">One pack-wide index</p>
                     <h4 id="library-global-search-title" className="mt-1 text-xl font-black text-slate-900">Search questions and learning resources</h4>
-                    <p className="mt-2 text-sm leading-relaxed text-indigo-950">Searches released practice questions, chapters, flashcards, memory aids, and written-response workshops for this pack. Search does not unlock quarantined legacy content.</p>
+                    <p className="mt-2 text-sm leading-relaxed text-indigo-950">Searches released practice questions, chapters, flashcards, memory aids, and written-response workshops for this pack. Content that has not passed its release gate is excluded.</p>
                     <label className="mt-4 block text-sm font-black text-slate-900">Search the complete released pack<input aria-label="Search the complete released pack" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-3 font-normal focus:ring-2 focus:ring-indigo-600" placeholder="Try assessment, phonology, ethics, evidence…" /></label>
                   </div>
                   {globalSearch.query ? <p className="text-sm font-bold text-slate-700" role="status">Found {globalSearch.total} result{globalSearch.total === 1 ? '' : 's'}; showing {globalSearch.results.length}.</p> : <p className="rounded-xl border border-slate-300 bg-white p-5 text-sm text-slate-700">Enter a word or phrase to search all released content in this pack.</p>}
@@ -2444,7 +2701,7 @@ function TestPrepHub(props) {
               {learningLibrary && !libraryChapterId && libraryMode === 'chapters' && (() => {
                 const domains = Array.from(new Set(learningLibrary.chapters.map((chapter) => chapter.domain))).sort();
                 const query = librarySearch.trim().toLowerCase();
-                const visible = learningLibrary.chapters.filter((chapter) => (libraryDomain === 'all' || chapter.domain === libraryDomain) && (!query || (chapter.title + ' ' + chapter.domain + ' ' + chapter.sections.map((section) => section.heading).join(' ')).toLowerCase().includes(query)));
+                const visible = learningLibrary.chapters.filter((chapter) => (libraryDomain === 'all' || chapter.domain === libraryDomain) && (!query || (chapter.title + ' ' + chapter.domain + ' ' + (chapter.sections || []).map((section) => section.heading).join(' ')).toLowerCase().includes(query)));
                 return <>
                   <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-label="Learning library inventory">
                     {([['Chapters', learningLibrary.summary.chapters], ['Sections', learningLibrary.summary.sections], ['Knowledge checks', learningLibrary.summary.knowledgeChecks], ['Skills', (learningLibrary.skills || []).length], ['Flashcards', learningLibrary.summary.flashcards], ['Memory aids', learningLibrary.summary.memoryAids]].concat(learningLibrary.summary.constructedResponseWorkshops ? [['Response workshops', learningLibrary.summary.constructedResponseWorkshops]] : [])).map(([label, value]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"><p className="text-2xl font-black text-slate-900">{Number(value || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-600">{label}</p></div>)}
@@ -2568,7 +2825,7 @@ function TestPrepHub(props) {
               {learningLibrary && libraryChapterId && !selectedPack.legacyUrl && (() => {
                 const chapter = learningLibrary.chapters.find((entry) => entry.id === libraryChapterId);
                 if (!chapter) return <p className="rounded-xl border border-rose-300 bg-rose-50 p-5 text-sm text-rose-950">That chapter could not be found.</p>;
-                const targetedCount = selectedPack.items.filter((item) => item.skillIds.includes(chapter.skillId)).length;
+                const targetedCount = selectedPack.items.filter((item) => item.examItemStatus !== 'not-approved-as-independent-exam-item' && item.skillIds.includes(chapter.skillId)).length;
                 return <article className="space-y-6 rounded-2xl border border-indigo-300 bg-white p-5 shadow-sm sm:p-7" aria-labelledby="native-chapter-title">
                   <header className="border-b border-slate-200 pb-5">
                     <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wider text-indigo-700">{chapter.domain} {'\u00B7'} Source-reviewed independent study chapter</p><h4 id="native-chapter-title" className="mt-1 text-2xl font-black text-slate-900">{chapter.title}</h4></div><span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-900">Source reviewed</span></div>
@@ -2576,30 +2833,30 @@ function TestPrepHub(props) {
                     <div className="mt-4 flex flex-wrap gap-3">{targetedCount > 0 && <button type="button" onClick={() => startTargetedPractice(chapter.skillId)} className="rounded-lg bg-indigo-700 px-4 py-2 font-black text-white focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Practice this skill ({Math.min(20, targetedCount)} questions)</button>}<button type="button" onClick={() => { setLibraryMode('flashcards'); setLibraryChapterId(''); setLibraryDomain(chapter.domain); setFlashcardIndex(0); }} className="rounded-lg border border-slate-400 bg-white px-4 py-2 font-black text-slate-900 focus:ring-2 focus:ring-indigo-600">Study flashcards</button></div>
                   </header>
 
-                  <section aria-labelledby="chapter-objectives-title"><h5 id="chapter-objectives-title" className="text-lg font-black text-slate-900">Learning objectives</h5><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{chapter.objectives.map((objective) => <li key={objective}>{objective}</li>)}</ul></section>
+                  <section aria-labelledby="chapter-objectives-title"><h5 id="chapter-objectives-title" className="text-lg font-black text-slate-900">Learning objectives</h5><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{(chapter.objectives || []).map((objective) => <li key={objective}>{objective}</li>)}</ul></section>
 
                   <section className="space-y-4" aria-labelledby="chapter-lessons-title">
                     <h5 id="chapter-lessons-title" className="text-lg font-black text-slate-900">Chapter lessons</h5>
-                    {chapter.sections.map((section, index) => <section key={section.id} className="rounded-xl border border-slate-300 bg-slate-50 p-4"><p className="text-xs font-black uppercase tracking-wide text-indigo-700">Lesson {index + 1}</p><h6 className="mt-1 text-base font-black text-slate-900">{section.heading}</h6><p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-800">{section.content}</p>{section.keyTerms.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{section.keyTerms.map((term) => <span key={term} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs font-bold text-indigo-900">{term}</span>)}</div>}</section>)}
+                    {(chapter.sections || []).map((section, index) => <section key={section.id} className="rounded-xl border border-slate-300 bg-slate-50 p-4"><p className="text-xs font-black uppercase tracking-wide text-indigo-700">Lesson {index + 1}</p><h6 className="mt-1 text-base font-black text-slate-900">{section.heading}</h6><p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-800">{section.content || section.preview || 'Section details are available in the reviewed source chapter.'}</p>{(section.keyTerms || []).length > 0 && <div className="mt-3 flex flex-wrap gap-2">{(section.keyTerms || []).map((term) => <span key={term} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs font-bold text-indigo-900">{term}</span>)}</div>}</section>)}
                   </section>
 
                   <section className="space-y-4" aria-labelledby="chapter-checks-title">
                     <div><h5 id="chapter-checks-title" className="text-lg font-black text-slate-900">Knowledge checks</h5><p className="mt-1 text-sm text-slate-700">Answer each question, check the response, and use the rationale to correct or strengthen your reasoning.</p></div>
-                    {chapter.knowledgeChecks.map((check, checkIndex) => {
+                    {(chapter.knowledgeChecks || []).map((check, checkIndex) => {
                       const selected = chapterCheckAnswers[check.id];
                       const revealed = chapterCheckRevealed[check.id] === true;
                       return <fieldset key={check.id} disabled={revealed} className="rounded-xl border border-slate-300 p-4"><legend className="px-1 font-black text-slate-900">Check {checkIndex + 1}: {check.prompt}</legend><div className="mt-3 space-y-2">{check.choices.map((choice, choiceIndex) => { const inputId = check.id + '-choice-' + choiceIndex; const correct = revealed && choiceIndex === check.answerIndex; const missed = revealed && choiceIndex === selected && choiceIndex !== check.answerIndex; return <label key={inputId} htmlFor={inputId} className={'flex items-start gap-2 rounded-lg border p-3 text-sm focus-within:ring-2 focus-within:ring-indigo-600 ' + (correct ? 'border-emerald-500 bg-emerald-50 text-emerald-950' : missed ? 'border-rose-500 bg-rose-50 text-rose-950' : selected === choiceIndex ? 'border-indigo-500 bg-indigo-50 text-indigo-950' : 'border-slate-300 bg-white text-slate-900')}><input id={inputId} type="radio" name={check.id} checked={selected === choiceIndex} onChange={() => setChapterCheckAnswers((previous) => Object.assign({}, previous, { [check.id]: choiceIndex }))} className="mt-0.5 h-4 w-4 accent-indigo-700" /><span><strong>{String.fromCharCode(65 + choiceIndex)}.</strong> {choice}</span></label>; })}</div>{!revealed ? <button type="button" disabled={selected == null} onClick={() => setChapterCheckRevealed((previous) => Object.assign({}, previous, { [check.id]: true }))} className="mt-3 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-indigo-600">Check answer</button> : <div className={'mt-3 rounded-lg border p-3 text-sm ' + (selected === check.answerIndex ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-amber-300 bg-amber-50 text-amber-950')} role="status"><p className="font-black">{selected === check.answerIndex ? 'Correct' : 'Review the reasoning'}</p><p className="mt-1 leading-relaxed">{check.rationale}</p></div>}</fieldset>;
                     })}
                   </section>
 
-                  <section className="rounded-xl border border-slate-300 bg-slate-50 p-4" aria-labelledby="chapter-sources-title"><h5 id="chapter-sources-title" className="font-black text-slate-900">Sources and review status</h5><p className="mt-1 text-sm leading-relaxed text-slate-700">{chapter.reviewNote}</p><ul className="mt-3 space-y-2 text-sm">{chapter.references.map((reference) => { const source = testPrepDescribeReference(reference); return <li key={reference}><a href={reference} target="_blank" rel="noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a></li>; })}</ul></section>
+                  <section className="rounded-xl border border-slate-300 bg-slate-50 p-4" aria-labelledby="chapter-sources-title"><h5 id="chapter-sources-title" className="font-black text-slate-900">Sources and review status</h5><p className="mt-1 text-sm leading-relaxed text-slate-700">{chapter.reviewNote}</p><ul className="mt-3 space-y-2 text-sm">{(chapter.references || chapter.reviewReferences || []).map((reference) => { const source = testPrepDescribeReference(reference); return <li key={reference}><a href={reference} target="_blank" rel="noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a></li>; })}</ul></section>
                 </article>;
               })()}
 
               {learningLibrary && libraryChapterId && selectedPack.legacyUrl && (
                 <section className="overflow-hidden rounded-2xl border border-violet-300 bg-white shadow-sm">
-                  <h4 className="sr-only">Selected EPPP chapter workspace</h4>
-                  <iframe title="Selected EPPP chapter workspace" src={selectedPack.legacyUrl + '&page=textbook#' + encodeURIComponent(libraryChapterId)} className="h-[68vh] min-h-[560px] w-full border-0" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-downloads" />
+                  <h4 className="sr-only">Selected EPPP chapter</h4>
+                  <iframe ref={legacyChapterFrameRef} onLoad={(event) => syncLegacyChapterTextSize(event.currentTarget)} title="Selected EPPP chapter" src={selectedPack.legacyUrl + '&page=textbook#' + encodeURIComponent(libraryChapterId)} className="h-[68vh] min-h-[560px] w-full border-0" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-downloads" />
                 </section>
               )}
             </div>

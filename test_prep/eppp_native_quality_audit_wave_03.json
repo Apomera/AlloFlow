@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-03",
+  "reviewedAt": "2026-07-16",
+  "scope": "Targeted deep rewrite of a learner-reported answer-word giveaway, with adjacent-concept distractors and source-specific option feedback.",
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 1,
+    "aggregateResponseOptionsAdded": 0,
+    "optionSpecificExplanations": 4,
+    "fullSourceRecords": 2,
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b006-biological-2",
+      "learningObjectiveId": "biological-glial-function-discrimination",
+      "cognitiveProcess": "application",
+      "keyPositionPreserved": true,
+      "distractorDesign": [
+        "adjacent-cell-function-astrocyte",
+        "adjacent-cell-function-oligodendrocyte",
+        "adjacent-cell-function-neuron"
+      ]
+    }
+  ],
+  "limitations": [
+    "Editorial and source review is not psychometric calibration or independent licensed-psychologist validation."
+  ]
+}

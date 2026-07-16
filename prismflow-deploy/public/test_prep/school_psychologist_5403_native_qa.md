@@ -1,6 +1,6 @@
 # Praxis School Psychologist (5403) QA report
 
-Generated: 2026-07-15T15:03:44.948Z
+Generated: 2026-07-16T23:53:11.163Z
 
 ## Result
 
@@ -12,3 +12,5 @@ Generated: 2026-07-15T15:03:44.948Z
 - Optional timed simulation: 125 questions / 125 minutes
 
 > This is not ETS or NASP approval, independent school-psychologist validation, field testing, psychometric calibration, a scaled-score model, psychological evaluation, diagnosis, mental-health treatment, or legal advice.
+
+- Assistant audit: 200 source questions contain 100 distinct source content kernels and 100 parallel variants under the normalized answer-set/rationale/reference test. Three additional 100-item banks are source-derived guided review, not independent exam-item banks. The 500-distinct-question target is not met.
