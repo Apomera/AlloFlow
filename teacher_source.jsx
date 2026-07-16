@@ -2011,6 +2011,37 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
             });
         } catch (e) { warnLog("Unhandled error in handlePrevQuestion:", e); }
     };
+    // ── Boss Battle Debrief (2026-07-16) ────────────────────────────────────
+    // battleLog was appended on every reveal (accuracy/damage per question) but
+    // NEVER rendered — the formative half of boss mode was being discarded.
+    // Shown inside the victory/defeat overlays: which questions the class aced
+    // and which one wrecked them (the reteach candidate).
+    const renderBattleDebrief = () => {
+        const log = bossStats?.battleLog || [];
+        if (log.length === 0) return null;
+        const worst = log.reduce((min, e) => (e.accuracy < min.accuracy ? e : min), log[0]);
+        const qText = (idx) => {
+            const q = generatedContent?.data?.questions?.[idx];
+            return (q && (q.question || q.text)) || '';
+        };
+        return (
+            <div className="mt-5 w-full max-w-sm mx-auto text-left bg-black/30 rounded-xl p-3 max-h-44 overflow-y-auto">
+                <div className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">{t('quiz.boss.debrief_title') || 'Battle debrief — accuracy by question'}</div>
+                {log.map((e, i) => (
+                    <div key={i} className="flex items-center gap-2 mb-1" title={qText(e.questionIndex)}>
+                        <span className="text-[10px] font-bold text-white/80 w-7 shrink-0">Q{(e.questionIndex ?? i) + 1}</span>
+                        <div className="flex-1 h-2.5 bg-white/15 rounded-full overflow-hidden">
+                            <div className={`h-full ${e.accuracy >= 70 ? 'bg-emerald-400' : e.accuracy >= 40 ? 'bg-amber-400' : 'bg-rose-500'}`} style={{ width: `${Math.max(4, e.accuracy)}%` }}></div>
+                        </div>
+                        <span className="text-[10px] font-bold text-white w-9 text-right shrink-0">{e.accuracy}%</span>
+                        {log.length > 1 && e === worst && (
+                            <span className="text-[9px] font-black text-rose-200 bg-rose-900/60 border border-rose-400/40 rounded px-1 py-0.5 shrink-0" title={t('quiz.boss.debrief_reteach_title') || 'Lowest accuracy — a reteach candidate'}>{t('quiz.boss.debrief_reteach') || 'reteach?'}</span>
+                        )}
+                    </div>
+                ))}
+            </div>
+        );
+    };
     const handleEndQuiz = async () => {
         addToast(t('quiz.session_ended_success') || "Session ended successfully.", "success");
         try {
@@ -2563,6 +2594,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                                  <div className="text-7xl mb-4 animate-bounce motion-reduce:animate-none">🎉</div>
                                                  <h2 className="text-4xl font-black text-white mb-2 drop-shadow-lg">{t('quiz.boss.victory_msg')}</h2>
                                                  <p className="text-lg text-green-200">{bossStats?.name || "Boss"} has been defeated!</p>
+                                                 {renderBattleDebrief()}
                                              </div>
                                          </div>
                                      )}
@@ -2572,6 +2604,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                                  <div className="text-7xl mb-4">💀</div>
                                                  <h2 className="text-4xl font-black text-white mb-2 drop-shadow-lg">{t('quiz.boss.class_defeat_msg')}</h2>
                                                  <p className="text-lg text-red-200">{t('teacher.boss.class_fallen') || 'The class has fallen...'}</p>
+                                                 {renderBattleDebrief()}
                                              </div>
                                          </div>
                                      )}
