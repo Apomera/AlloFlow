@@ -4,7 +4,7 @@
 // build-edition.cjs — package a flavored build of the desktop app.
 //
 // Two editions share this one codebase (decided 2026-07-15):
-//   teacher — "AlloFlow Teacher":       single-teacher desktop; boots straight
+//   desktop — "AlloFlow Desktop":       single-teacher desktop; boots straight
 //             into the web app full-bleed, console behind a settings gear.
 //   admin   — "AlloFlow Admin Server":  school-server posture; boots into the
 //             command center, auto-starts LAN Share (serves the full web app
@@ -18,7 +18,7 @@
 // written, used, and removed. An unflavored `npm run package:*` build keeps
 // pure upstream behavior.
 //
-// Usage: node scripts/build-edition.cjs <teacher|admin> [win-x64|win|mac] (default win-x64)
+// Usage: node scripts/build-edition.cjs <desktop|admin> [win-x64|win|mac] (default win-x64)
 
 const fs = require('fs');
 const path = require('path');
@@ -28,15 +28,17 @@ const DESKTOP_ROOT = path.resolve(__dirname, '..');
 const BASE_CONFIG = path.join(DESKTOP_ROOT, 'electron-builder.json');
 
 const EDITIONS = {
-  teacher: {
-    appId: 'com.alloflow.teacher',
-    productName: 'AlloFlow Teacher',
-    // packageName drives Electron's userData dir — each edition gets its own
-    // profile (config, caches, service workers) so side-by-side installs
+  // The single-user flavor IS the desktop product ("AlloFlow Desktop") — it
+  // shares the upstream appId/name and simply adds the guided posture.
+  desktop: {
+    appId: 'com.alloflow.desktop',
+    productName: 'AlloFlow Desktop',
+    // packageName drives Electron's userData dir — the admin edition gets its
+    // own profile (config, caches, service workers) so side-by-side installs
     // never share state. ('alloflow-admin' is taken by the legacy admin app.)
-    packageName: 'alloflow-teacher',
-    artifactPrefix: 'AlloFlow-Teacher',
-    outputDir: 'dist/teacher',
+    packageName: 'alloflow-desktop',
+    artifactPrefix: 'AlloFlow-Desktop',
+    outputDir: 'dist/desktop',
   },
   admin: {
     appId: 'com.alloflow.adminserver',
@@ -56,7 +58,7 @@ const TARGETS = {
 const edition = String(process.argv[2] || '').toLowerCase();
 const target = String(process.argv[3] || 'win-x64').toLowerCase();
 if (!EDITIONS[edition]) {
-  console.error(`[build-edition] Unknown edition "${edition}". Use: teacher | admin`);
+  console.error(`[build-edition] Unknown edition "${edition}". Use: desktop | admin`);
   process.exit(1);
 }
 if (!TARGETS[target]) {

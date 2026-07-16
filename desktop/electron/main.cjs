@@ -7,20 +7,20 @@ const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('ele
 const runtime = require('../runtime/alloflow-desktop-runtime.cjs');
 const { assertTrustedIpcSender, isSameOrigin } = require('./security.cjs');
 
-// ── Build edition ('teacher' | 'admin' | '' = unflavored upstream) ──────────
+// ── Build edition ('desktop' | 'admin' | '' = unflavored upstream) ──────────
 // Baked at package time by scripts/build-edition.cjs via electron-builder
 // extraMetadata.alloEdition; ALLOFLOW_DESKTOP_EDITION env overrides for dev.
-//   teacher — boots straight into the web app full-bleed (single teacher).
+//   desktop — boots straight into the web app full-bleed (single teacher).
 //   admin   — school-server posture: boots into the command center and
 //             auto-starts LAN Share with a required join PIN, so teachers
 //             reach the app from browsers at http://<server-ip>:32175/app/.
 // Unflavored builds keep pure upstream behavior.
 function getEdition() {
   const fromEnv = String(process.env.ALLOFLOW_DESKTOP_EDITION || '').toLowerCase();
-  if (fromEnv === 'teacher' || fromEnv === 'admin') return fromEnv;
+  if (fromEnv === 'desktop' || fromEnv === 'admin') return fromEnv;
   try {
     const fromPkg = String(require('../package.json').alloEdition || '').toLowerCase();
-    if (fromPkg === 'teacher' || fromPkg === 'admin') return fromPkg;
+    if (fromPkg === 'desktop' || fromPkg === 'admin') return fromPkg;
   } catch (_) {}
   return '';
 }
