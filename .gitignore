@@ -200,3 +200,7 @@ vitest-results.json
 
 # Generated at build time by desktop/scripts/build-edition.cjs (deleted after build)
 desktop/electron-builder.*.effective.json
+
+# Transient desktop build/run logs
+desktop-build.log
+desktop-run.log
