@@ -131,6 +131,18 @@ describe('Fisher Lab voyage progression', () => {
     expect(evaluateCoreCollisionRisk(20, 20, 20, 30, 30)).toMatchObject({ id: 'monitoring', closing: false, opening: false });
   });
 
+  it('grades prompt, well-separated encounters without rewarding incorrect or timed-out work', () => {
+    const { gradeCoreEncounter } = window.__FisherLabCore;
+
+    expect(gradeCoreEncounter(true, false, 'stand-on', 5.5, 20)).toEqual({ id: 'excellent', label: 'Excellent watch', bonus: 10 });
+    expect(gradeCoreEncounter(true, false, 'give-way', 6.5, 20)).toEqual({ id: 'excellent', label: 'Excellent watch', bonus: 10 });
+    expect(gradeCoreEncounter(true, false, 'stand-on', 9, 20)).toEqual({ id: 'safe', label: 'Safe separation', bonus: 5 });
+    expect(gradeCoreEncounter(true, false, 'give-way', 10, 15)).toEqual({ id: 'safe', label: 'Safe separation', bonus: 5 });
+    expect(gradeCoreEncounter(true, false, 'give-way', 15, 10)).toEqual({ id: 'complete', label: 'Maneuver complete', bonus: 0 });
+    expect(gradeCoreEncounter(false, false, 'give-way', 4, 25)).toEqual({ id: 'review', label: 'Review required', bonus: 0 });
+    expect(gradeCoreEncounter(true, true, 'stand-on', 20, 25)).toEqual({ id: 'review', label: 'Review required', bonus: 0 });
+  });
+
   it('awards ranks from combined score, accuracy, and fuel stewardship', () => {
     const { getCoreVoyageRank } = window.__FisherLabCore;
 
@@ -173,6 +185,9 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('evaluateCoreCollisionRisk');
     expect(source).toContain('CPA WATCH');
     expect(source).toContain('Closest point of approach watch.');
+    expect(source).toContain('gradeCoreEncounter');
+    expect(source).toContain('Traffic encounter debrief.');
+    expect(source).toContain("' decisions correct · '");
     expect(source).toContain("type: 'fish-haul'");
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true'");
     expect(source).not.toContain('resumeSim');

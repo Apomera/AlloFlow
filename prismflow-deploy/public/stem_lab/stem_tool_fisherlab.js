@@ -509,6 +509,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     };
     return { id: id, label: labels[id], bearingChange: bearingChange, rangeChange: rangeChange, constantBearing: constantBearing, closing: closing, opening: opening };
   }
+  function gradeCoreEncounter(correct, reviewed, maneuverType, elapsed, closestRange) {
+    if (!correct || reviewed) return { id: 'review', label: 'Review required', bonus: 0 };
+    var promptLimit = maneuverType === 'stand-on' ? 8 : 7;
+    if (closestRange >= 18 && elapsed <= promptLimit) return { id: 'excellent', label: 'Excellent watch', bonus: 10 };
+    if (closestRange >= 12 && elapsed <= 14) return { id: 'safe', label: 'Safe separation', bonus: 5 };
+    return { id: 'complete', label: 'Maneuver complete', bonus: 0 };
+  }
   function scoreCoreDecision(score, streak, correct, multiplier) {
     var nextStreak = correct ? streak + 1 : 0;
     var baseReward = 25 + Math.min(20, Math.max(0, nextStreak - 1) * 5);
@@ -546,6 +553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     evaluateCoreEncounter: evaluateCoreEncounter,
     evaluateCoreManeuver: evaluateCoreManeuver,
     evaluateCoreCollisionRisk: evaluateCoreCollisionRisk,
+    gradeCoreEncounter: gradeCoreEncounter,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
     getCoreObjective: getCoreObjective,
@@ -8894,6 +8902,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       trafficStartRange: 0,
       trafficStartBearing: 0,
       trafficClosestRange: Infinity,
+      trafficGradeId: null,
+      trafficGradeLabel: null,
+      trafficGradeBonus: 0,
       missionComplete: false,
       fuelDepletedWarned: false,
       earlyDockWarned: false,
@@ -9391,13 +9402,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         if (trafficManeuver.complete) {
           boatState.trafficManeuverComplete = true;
           var maneuverBonus = Math.round(20 * voyageMode.scoreMultiplier);
-          boatState.stewardshipScore += maneuverBonus;
-          statusCb({ type: 'milestone', text: encounterProfile.maneuverLabel + ' complete · +' + maneuverBonus + ' points' });
-          flAnnounce(encounterProfile.maneuverLabel + ' complete.');
+          var encounterGrade = gradeCoreEncounter(boatState.trafficDecisionCorrect, false, encounterProfile.maneuverType, boatState.trafficManeuverSeconds, boatState.trafficClosestRange);
+          var performanceBonus = Math.round(encounterGrade.bonus * voyageMode.scoreMultiplier);
+          boatState.trafficGradeId = encounterGrade.id;
+          boatState.trafficGradeLabel = encounterGrade.label;
+          boatState.trafficGradeBonus = performanceBonus;
+          boatState.stewardshipScore += maneuverBonus + performanceBonus;
+          statusCb({ type: encounterGrade.id === 'review' ? 'guidance' : 'milestone', text: encounterGrade.label + ' · CPA ' + boatState.trafficClosestRange.toFixed(1) + ' · ' + boatState.trafficManeuverSeconds.toFixed(1) + ' s · +' + (maneuverBonus + performanceBonus) + ' points' });
+          flAnnounce(encounterProfile.maneuverLabel + ' complete. ' + encounterGrade.label + '.');
         } else if (boatState.trafficManeuverSeconds >= 20) {
           boatState.trafficManeuverComplete = true;
           boatState.trafficManeuverReviewed = true;
-          statusCb({ type: 'guidance', text: 'Maneuver window ended. Review: ' + encounterProfile.maneuverInstruction });
+          var reviewGrade = gradeCoreEncounter(boatState.trafficDecisionCorrect, true, encounterProfile.maneuverType, boatState.trafficManeuverSeconds, boatState.trafficClosestRange);
+          boatState.trafficGradeId = reviewGrade.id;
+          boatState.trafficGradeLabel = reviewGrade.label;
+          boatState.trafficGradeBonus = 0;
+          statusCb({ type: 'guidance', text: 'Maneuver window ended · CPA ' + boatState.trafficClosestRange.toFixed(1) + '. Review: ' + encounterProfile.maneuverInstruction });
           flAnnounce('Maneuver reviewed. Continue the voyage.');
         }
       }
@@ -9610,6 +9630,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         trafficOpening: trafficRisk.opening,
         trafficClosestRange: boatState.trafficClosestRange,
         trafficManeuverSeconds: boatState.trafficManeuverSeconds,
+        trafficGradeId: boatState.trafficGradeId,
+        trafficGradeLabel: boatState.trafficGradeLabel,
+        trafficGradeBonus: boatState.trafficGradeBonus,
         trafficVesselVisible: trafficVessel.visible,
         missionComplete: boatState.missionComplete,
         mode: voyageMode.id,
@@ -9719,6 +9742,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.trafficStartRange = 0;
         boatState.trafficStartBearing = 0;
         boatState.trafficClosestRange = Infinity;
+        boatState.trafficGradeId = null;
+        boatState.trafficGradeLabel = null;
+        boatState.trafficGradeBonus = 0;
         boatState.missionComplete = false;
         boatState.stewardshipScore = 0;
         boatState.decisionStreak = 0;
@@ -10677,6 +10703,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var trafficPlotX = Math.sin(trafficPlotAngle) * trafficPlotRadius;
       var trafficPlotY = -Math.cos(trafficPlotAngle) * trafficPlotRadius;
       var trafficRiskColor = hud.trafficRiskId === 'collision-risk' ? '#fca5a5' : hud.trafficRiskId === 'opening' ? '#86efac' : hud.trafficRiskId === 'bearing-changing' ? '#7dd3fc' : '#fde68a';
+      var trafficGradeColor = hud.trafficGradeId === 'excellent' ? '#fde68a' : hud.trafficGradeId === 'safe' ? '#86efac' : hud.trafficGradeId === 'review' ? '#fdba74' : '#bae6fd';
       function setHeldControl(key, pressed) {
         if (harborRef.current && harborRef.current.setControl) harborRef.current.setControl(key, pressed);
       }
@@ -10879,6 +10906,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { height: 5, borderRadius: 4, overflow: 'hidden', background: 'rgba(148,163,184,0.22)', marginBottom: 6 } }, h('div', { style: { width: missionProgressPct + '%', height: '100%', background: 'linear-gradient(90deg,#22c55e,#38bdf8)', transition: 'width 0.25s ease' } })),
               h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Navigate red nun correctly' : '○ Pass red nun on starboard'),
               h('div', { style: { fontSize: 10, color: hud.trafficManeuverReviewed || (hud.trafficDecisionMade && !hud.trafficDecisionCorrect) ? '#fdba74' : 'inherit' } }, hud.trafficManeuverComplete ? (hud.trafficManeuverReviewed ? '△ ' + hud.trafficManeuverLabel + ' reviewed' : '✓ ' + hud.trafficManeuverLabel) : hud.trafficDecisionMade ? (hud.trafficManeuverType === 'stand-on' ? '○ Hold course + speed for 5 s' : '○ Slow + alter 15° starboard') : '○ Resolve crossing traffic'),
+              hud.trafficManeuverComplete ? h('div', { 'aria-label': 'Traffic encounter debrief. ' + (hud.trafficGradeLabel || 'Maneuver complete') + '. Closest approach ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : 'not available') + ' simulation units. Response time ' + (hud.trafficManeuverSeconds || 0).toFixed(1) + ' seconds.', style: { margin: '5px 0 6px', padding: '5px 0', borderTop: '1px solid rgba(125,211,252,0.22)', borderBottom: '1px solid rgba(125,211,252,0.22)' } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: trafficGradeColor, fontSize: 9, fontWeight: 900, textTransform: 'uppercase' } },
+                  h('span', null, 'Encounter · ' + (hud.trafficGradeLabel || 'Complete')),
+                  h('span', null, (hud.trafficGradeBonus || 0) ? '+' + hud.trafficGradeBonus + ' bonus' : hud.trafficGradeId === 'review' ? 'review' : 'complete')),
+                h('div', { style: { marginTop: 2, display: 'flex', justifyContent: 'space-between', gap: 8, color: '#dbeafe', fontSize: 9 } },
+                  h('span', null, 'CPA ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : '—')),
+                  h('span', null, (hud.trafficManeuverSeconds || 0).toFixed(1) + ' s'))
+              ) : null,
               h('div', { style: { fontSize: 10 } }, hud.reachedHalfwayRock ? '✓ Reach ' + mission.destination : '○ Reach ' + mission.destination),
               h('div', { style: { fontSize: 10 } }, hud.targetFishDecision ? '✓ Classify ' + mission.targetFish : '○ Classify ' + mission.targetFish),
               h('div', { style: { fontSize: 10 } }, hud.trapDecisionMade ? '✓ Classify ' + mission.trapCatch : '○ Classify ' + mission.trapCatch),
@@ -10952,7 +10987,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('h3', { id: 'fl-debrief-title', style: { margin: '6px 0 2px', color: '#fff', fontSize: 24 } }, mission.title),
                 h('div', { style: { color: voyageRank.color, fontSize: 13, fontWeight: 900, textTransform: 'uppercase' } }, Array(voyageRank.stars + 1).join('★') + ' ' + voyageRank.label),
                 h('div', { style: { color: '#fde68a', fontSize: 34, fontWeight: 900, marginTop: 4 } }, (hud.stewardshipScore || 0) + ' pts'),
-                h('p', { style: { color: '#dbeafe', fontSize: 12 } }, (hud.correctDecisions || 0) + ' of ' + (hud.totalDecisions || 0) + ' catch classifications correct · ' + fuelValue.toFixed(0) + '% fuel remaining · ' + Math.max(0, Math.round((hud.elapsed || 0) / 60)) + ' min'),
+                h('p', { style: { color: '#dbeafe', fontSize: 12 } }, (hud.correctDecisions || 0) + ' of ' + (hud.totalDecisions || 0) + ' decisions correct · ' + fuelValue.toFixed(0) + '% fuel remaining · ' + Math.max(0, Math.round((hud.elapsed || 0) / 60)) + ' min'),
+                h('p', { style: { color: trafficGradeColor, fontSize: 11, fontWeight: 800 } }, 'Traffic watch: ' + (hud.trafficGradeLabel || 'complete') + ' · CPA ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : '—') + ' · ' + (hud.trafficManeuverSeconds || 0).toFixed(1) + ' s'),
                 h('p', { style: { color: fuelValue >= modeProfile.requiredFuel && decisionAccuracy >= modeProfile.requiredAccuracy ? '#a7f3d0' : '#fdba74', fontSize: 11, lineHeight: 1.5 } }, fuelValue >= modeProfile.requiredFuel && decisionAccuracy >= modeProfile.requiredAccuracy ? 'Challenge standard met: accurate decisions and a prudent reserve.' : 'Next target: at least ' + modeProfile.requiredFuel + '% fuel and ' + modeProfile.requiredAccuracy + '% classification accuracy.'),
                 h('div', { style: { display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 8 } },
                   h('button', { type: 'button', className: 'fl-btn', onClick: restartCoreMission, style: { padding: '10px 16px', border: 0, borderRadius: 7, background: '#34d399', color: '#052e2b', fontWeight: 900, cursor: 'pointer' } }, 'Replay voyage'),
