@@ -1633,6 +1633,9 @@
     await saveConfig({
       selectedProvider: id,
       providers: { [id]: { baseUrl } },
+      // Explicitly picking a provider counts as finishing first-run setup,
+      // whether it happened inside the wizard or from the console's AI tab.
+      setup: { completed: true },
     });
     if (apiKey) {
       await api('/api/secrets/' + encodeURIComponent(id), {
@@ -1655,7 +1658,12 @@
     // every few seconds and must not yank them back to the first step.
     if (state.wizardActive) return;
     const provider = selectedProvider();
-    if (providerNeedsKey(provider)) {
+    // Show until AI setup has actually been completed once, not just when the
+    // selected provider is missing a key. A leftover config from a previous
+    // install can point at a keyless provider (LM Studio/Ollama) and would
+    // otherwise silently skip the guided first-run for a fresh install.
+    const setupCompleted = Boolean(state.config?.setup?.completed);
+    if (providerNeedsKey(provider) || !setupCompleted) {
       wizardGo('choose');
       modal.classList.remove('hidden');
     } else {
@@ -1744,6 +1752,9 @@
   function wizardDone(label) {
     setText('#wiz-done-msg', '✅ You\'re all set — AlloFlow is using ' + label + '.');
     wizardGo('done');
+    // Remember that setup finished so the wizard stops greeting every launch
+    // (it still reappears if the selected provider later needs a key).
+    saveConfig({ setup: { completed: true } }).catch(() => {});
   }
 
   function wizardFail(message) {

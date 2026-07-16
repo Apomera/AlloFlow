@@ -220,6 +220,15 @@ const DEFAULT_CONFIG = {
     startupTimeoutMs: 30000,
   },
   selectedProvider: 'gemini',
+  // First-run guided AI setup. completed flips to true when the user finishes
+  // (or explicitly saves a provider); until then the command center shows the
+  // setup wizard on every launch — even if a leftover config points at a
+  // keyless provider such as LM Studio (field-caught 2026-07-16: an uninstall
+  // leaves this config behind, and a stale lmstudio selection silently
+  // suppressed the wizard for reinstalls).
+  setup: {
+    completed: false,
+  },
   providers: Object.fromEntries(PROVIDER_PRESETS.map((provider) => [
     provider.id,
     { baseUrl: provider.baseUrl, enabled: true },
@@ -608,7 +617,7 @@ function assertAllowedObject(source, allowedKeys, label) {
 
 function sanitizeConfigPatch(input) {
   if (!isPlainObject(input)) throw new Error('Configuration changes must be an object.');
-  const allowedTopLevel = ['appUrl', 'selectedProvider', 'providers', 'localEngine', 'updates', 'liveSession', 'schoolBox'];
+  const allowedTopLevel = ['appUrl', 'selectedProvider', 'providers', 'localEngine', 'updates', 'liveSession', 'schoolBox', 'setup'];
   const unknownTopLevel = Object.keys(input).filter((key) => !allowedTopLevel.includes(key));
   if (unknownTopLevel.length) throw new Error('Unsupported config field: ' + unknownTopLevel[0] + '.');
   const patch = {};
@@ -662,6 +671,11 @@ function sanitizeConfigPatch(input) {
     assertAllowedObject(input.updates, ['channel'], 'updates');
     if (!['latest', 'beta'].includes(input.updates.channel)) throw new Error('Unknown update channel.');
     patch.updates = { channel: input.updates.channel };
+  }
+  if (Object.prototype.hasOwnProperty.call(input, 'setup')) {
+    assertAllowedObject(input.setup, ['completed'], 'setup');
+    if (typeof input.setup.completed !== 'boolean') throw new Error('Setup completed must be true or false.');
+    patch.setup = { completed: input.setup.completed };
   }
   if (Object.prototype.hasOwnProperty.call(input, 'liveSession')) {
     assertAllowedObject(input.liveSession, ['mode', 'requireExplicitCloud', 'lan'], 'live session');
