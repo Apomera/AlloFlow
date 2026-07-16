@@ -92,12 +92,19 @@ Package desktop artifacts:
 
 ```powershell
 Set-Location desktop
+# The shipped product — bakes the desktop edition (guided first-run wizard,
+# full-screen app boot, "Choose your experience" installer page):
+npm.cmd run package:desktop:win
+npm.cmd run package:desktop:win-x64
+npm.cmd run package:desktop:mac
+# Admin Server flavor:
+npm.cmd run package:admin:win
+# Unflavored upstream-parity builds (dev only — boots into the console,
+# no guided first-run; do not ship as AlloFlow Desktop):
 npm.cmd run package:win
 npm.cmd run package:win-arm64
 npm.cmd run package:win-x64
 npm.cmd run package:mac
-npm.cmd run package:mac-arm64
-npm.cmd run package:mac-x64
 npm.cmd run verify:artifacts:win
 # On macOS: npm run verify:artifacts:mac
 ```

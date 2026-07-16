@@ -43,7 +43,10 @@ const EDITIONS = {
     // never share state. ('alloflow-admin' is taken by the legacy admin app.)
     packageName: 'alloflow-desktop',
     artifactPrefix: 'AlloFlow-Desktop',
-    outputDir: 'dist/desktop',
+    // Plain dist, not dist/desktop: the desktop flavor IS the shipped product,
+    // and CI's verify/upload/updater-feed paths all expect desktop/dist. Only
+    // the admin flavor needs a separate output (and updater feed).
+    outputDir: 'dist',
   },
   admin: {
     appId: 'com.alloflow.adminserver',
