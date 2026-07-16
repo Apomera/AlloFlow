@@ -6189,6 +6189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var fs = R.useState({ title: '', dueDate: '', steps: [{ id: tkId(), text: '', estMin: 5, done: false }] });
     var form = fs[0];                              var setForm = fs[1];
     var es = R.useState(null);                     var editing = es[0]; var setEditing = es[1];
+    var ves = R.useState('');                      var formError = ves[0]; var setFormError = ves[1];
 
     function addStep() { setForm(Object.assign({}, form, { steps: form.steps.concat([{ id: tkId(), text: '', estMin: 5, done: false }]) })); }
     function updateStep(i, patch) {
@@ -6200,7 +6201,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setForm(Object.assign({}, form, { steps: form.steps.filter(function(_, j) { return j !== i; }) }));
     }
     function save() {
-      if (!form.title.trim()) { alert('Need a title.'); return; }
+      if (!form.title.trim()) {
+        setFormError('Task title is required.');
+        setTimeout(function() { var target = document.getElementById('learning-lab-task-title'); if (target) target.focus(); }, 0);
+        return;
+      }
       var task = Object.assign({ id: editing || tkId(), createdAt: todayISO() }, form);
       var tasks = (data.tasks || []).slice();
       var i = tasks.findIndex(function(t) { return t.id === task.id; });
@@ -6208,6 +6213,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       else tasks.unshift(task);
       setData({ tasks: tasks });
       setForm({ title: '', dueDate: '', steps: [{ id: tkId(), text: '', estMin: 5, done: false }] });
+      setFormError('');
       setEditing(null);
       setView('list');
     }
@@ -6233,30 +6239,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkSectionHeader('✂', editing ? 'Edit task' : 'Break down a task', 'Big assignment → 2-5 minute steps. Overwhelm becomes tractable.', '#f97316'),
         tkCard('#f97316',
           hh('div', null,
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Task title'),
-            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'e.g., "Write biology lab report"', { marginBottom: 12 }),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Due date (optional)'),
-            hh('input', { type: 'date', value: form.dueDate,
+            hh('label', { htmlFor: 'learning-lab-task-title', style: { fontSize: 10, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Task title (required)'),
+            hh('input', { id: 'learning-lab-task-title', type: 'text', value: form.title, required: true, 'aria-invalid': formError ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-task-error' : undefined, onChange: function(e) { setForm(Object.assign({}, form, { title: e.target.value })); setFormError(''); }, placeholder: 'e.g., "Write biology lab report"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 12, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } }),
+            hh('label', { htmlFor: 'learning-lab-task-due-date', style: { fontSize: 10, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Due date (optional)'),
+            hh('input', { id: 'learning-lab-task-due-date', type: 'date', value: form.dueDate, min: todayISO(),
               onChange: function(e) { setForm(Object.assign({}, form, { dueDate: e.target.value })); },
-              style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 14 }
+              style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 14 }
             }),
+            formError ? hh('div', { id: 'learning-lab-task-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: 10 } }, formError) : null,
             hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fb923c', marginBottom: 8 } }, '📋 Steps (' + form.steps.length + ' · ~' + totalEst + 'm total)'),
             hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
               form.steps.map(function(s, i) {
                 return hh('div', { key: 'st-' + s.id, style: { display: 'flex', gap: 6, alignItems: 'flex-start', padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '2px solid #f97316' } },
                   hh('div', { style: { fontSize: 11, color: '#fb923c', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 8, minWidth: 24 } }, (i + 1) + '.'),
                   hh('div', { style: { flex: 1, minWidth: 0 } },
-                    tkInput(s.text, function(v) { updateStep(i, { text: v }); }, 'e.g., "Open the lab data spreadsheet"', { marginBottom: 4, fontSize: 11 }),
+                    hh('label', { htmlFor: 'learning-lab-task-step-' + s.id, style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'Step ' + (i + 1) + ' description'),
+                    hh('input', { id: 'learning-lab-task-step-' + s.id, type: 'text', value: s.text, onChange: function(e) { updateStep(i, { text: e.target.value }); }, placeholder: 'e.g., "Open the lab data spreadsheet"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 4, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } }),
                     hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                      hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Est:'),
-                      hh('input', { type: 'number', min: 1, max: 60, value: s.estMin,
+                      hh('label', { htmlFor: 'learning-lab-task-estimate-' + s.id, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Estimated minutes:'),
+                      hh('input', { id: 'learning-lab-task-estimate-' + s.id, type: 'number', min: 1, max: 60, value: s.estMin,
                         onChange: function(e) { updateStep(i, { estMin: parseInt(e.target.value, 10) }); },
-                        style: { width: 60, padding: '4px 8px', fontSize: 11, color: '#fb923c', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,146,60,0.40)', borderRadius: 4 }
+                        style: { width: 70, minHeight: 44, padding: '4px 8px', fontSize: 11, color: '#fb923c', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,146,60,0.40)', borderRadius: 4 }
                       }),
                       hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'min')
                     )
                   ),
-                  hh('button', { onClick: function() { removeStep(i); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer', padding: 4 } }, '✕')
+                  hh('button', { type: 'button', 'aria-label': 'Remove step ' + (i + 1), onClick: function() { removeStep(i); }, style: { minWidth: 44, minHeight: 44, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, cursor: 'pointer', padding: 8 } }, '✕')
                 );
               })
             ),
@@ -6264,7 +6272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           )
         ),
         hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
+          tkBtn('← Cancel', function() { setView('list'); setFormError(''); }, 'ghost'),
           tkBtn('💾 Save task', save, 'primary')
         )
       );
@@ -6274,10 +6282,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkSectionHeader('✂', 'Task Breaker', 'Big assignments feel impossible — that\'s working memory overwhelm. Decompose into 2-5 min steps and initiation becomes possible.', '#f97316'),
 
       hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
-        tkBtn('+ New task', function() { setForm({ title: '', dueDate: '', steps: [{ id: tkId(), text: '', estMin: 5, done: false }] }); setEditing(null); setView('add'); }, 'primary')
+        tkBtn('+ New task', function() { setForm({ title: '', dueDate: '', steps: [{ id: tkId(), text: '', estMin: 5, done: false }] }); setEditing(null); setFormError(''); setView('add'); }, 'primary')
       ),
 
-      tasks.length === 0 ? tkEmptyState('✂', 'No tasks broken down yet. Pick a big assignment, break it into 2-5 minute steps.', '+ Break down a task', function() { setForm({ title: '', dueDate: '', steps: [{ id: tkId(), text: '', estMin: 5, done: false }] }); setView('add'); })
+      tasks.length === 0 ? tkEmptyState('✂', 'No tasks broken down yet. Pick a big assignment, break it into 2-5 minute steps.', '+ Break down a task', function() { setForm({ title: '', dueDate: '', steps: [{ id: tkId(), text: '', estMin: 5, done: false }] }); setFormError(''); setView('add'); })
       : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
           tasks.map(function(t) {
             var done = (t.steps || []).filter(function(s) { return s.done; }).length;
@@ -6292,20 +6300,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, done + '/' + total + ' steps · ' + doneEst + '/' + totalEst + ' min' + (t.dueDate ? ' · due ' + t.dueDate : ''))
                 ),
                 hh('div', { style: { display: 'flex', gap: 4 } },
-                  hh('button', { onClick: function() { setEditing(t.id); setForm({ title: t.title, dueDate: t.dueDate, steps: t.steps }); setView('add'); },
-                    style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✏'),
-                  hh('button', { onClick: function() { if (confirm('Delete this task?')) remove(t.id); },
-                    style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                  hh('button', { type: 'button', 'aria-label': 'Edit task: ' + t.title, onClick: function() { setEditing(t.id); setForm({ title: t.title, dueDate: t.dueDate, steps: t.steps }); setFormError(''); setView('add'); },
+                    style: { minWidth: 44, minHeight: 44, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer', padding: 8 } }, '✏'),
+                  hh('button', { type: 'button', 'aria-label': 'Delete task: ' + t.title, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the task "' + t.title + '" and all of its steps.', { title: 'Delete this task?', confirmText: 'Delete task' })) remove(t.id); },
+                    style: { minWidth: 44, minHeight: 44, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer', padding: 8 } }, '✕')
                 )
               ),
-              hh('div', { style: { height: 6, background: 'rgba(15,23,42,0.6)', borderRadius: 3, overflow: 'hidden', marginBottom: 10 } },
+              hh('div', { role: 'progressbar', 'aria-label': t.title + ' completion', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, style: { height: 6, background: 'rgba(15,23,42,0.6)', borderRadius: 3, overflow: 'hidden', marginBottom: 10 } },
                 hh('div', { style: { width: pct + '%', height: '100%', background: pct === 100 ? '#10b981' : '#f97316', transition: 'width 300ms ease' } })
               ),
               hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
                 (t.steps || []).map(function(s, i) {
                   return hh('div', { key: 'ts-' + s.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 4, background: 'rgba(2,6,23,0.4)' } },
-                    hh('button', { onClick: function() { toggleStep(t.id, s.id); },
-                      style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid #f97316', background: s.done ? '#f97316' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
+                    hh('button', { type: 'button', 'aria-pressed': s.done, 'aria-label': (s.done ? 'Mark incomplete: ' : 'Mark complete: ') + (s.text || ('Step ' + (i + 1))), onClick: function() { toggleStep(t.id, s.id); },
+                      style: { minWidth: 44, minHeight: 44, borderRadius: 6, border: '1.5px solid #f97316', background: s.done ? '#f97316' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
                     }, s.done ? '✓' : ''),
                     hh('div', { style: { flex: 1, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: s.done ? 'line-through' : 'none', opacity: s.done ? 0.6 : 1 } }, (i + 1) + '. ' + s.text),
                     hh('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.estMin + 'm')
