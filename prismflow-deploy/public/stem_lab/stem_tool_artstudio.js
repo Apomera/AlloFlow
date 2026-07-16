@@ -1411,7 +1411,7 @@ const d = labToolData.artStudio || {};
 
             React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-400", role: 'tablist', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections') },
 
-              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.color_wheel_2', 'Color Wheel') }, { id: 'mixer', icon: '\uD83E\uDDEA', label: __alloT('stem.artstudio.color_mixer_2', 'Color Mixer') }, { id: 'pixel', icon: '\uD83D\uDDBC', label: __alloT('stem.artstudio.pixel_art_2', 'Pixel Art') }, { id: 'symmetry', icon: '\u2728', label: __alloT('stem.artstudio.symmetry_2', 'Symmetry') }, { id: 'spirograph', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spirograph_2', 'Spirograph') }, { id: 'generative', icon: '\uD83C\uDF86', label: __alloT('stem.artstudio.generative_2', 'Generative') }, { id: 'spinArt', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spin_art_2', 'Spin Art') }, { id: 'stringArt', icon: '\uD83D\uDD78', label: __alloT('stem.artstudio.string_art_2', 'String Art') }, { id: 'opArt', icon: '\uD83D\uDC41', label: __alloT('stem.artstudio.op_art_2', 'Op Art') }, { id: 'tessellation', icon: '\uD83D\uDD37', label: __alloT('stem.artstudio.tessellation_2', 'Tessellation') }, { id: 'fractal', icon: '\uD83D\uDD2E', label: __alloT('stem.artstudio.fractals_2', 'Fractals') }, { id: 'gradient', icon: '\uD83C\uDF08', label: __alloT('stem.artstudio.gradient_2', 'Gradient') }, { id: 'stereogram', icon: '\uD83D\uDC53', label: __alloT('stem.artstudio.stereogram_2', 'Stereogram') }, { id: 'contrast', icon: '\u267F', label: __alloT('stem.artstudio.contrast_2', 'Contrast') }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: __alloT('stem.artstudio.harmony', 'Harmony') }].map(function (tb) {
+              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.color_wheel_2', 'Color Wheel') }, { id: 'mixer', icon: '\uD83E\uDDEA', label: __alloT('stem.artstudio.color_mixer_2', 'Color Mixer') }, { id: 'pixel', icon: '\uD83D\uDDBC', label: __alloT('stem.artstudio.pixel_art_2', 'Pixel Art') }, { id: 'symmetry', icon: '\u2728', label: __alloT('stem.artstudio.symmetry_2', 'Symmetry') }, { id: 'spirograph', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spirograph_2', 'Spirograph') }, { id: 'generative', icon: '\uD83C\uDF86', label: __alloT('stem.artstudio.generative_2', 'Generative') }, { id: 'spinArt', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spin_art_2', 'Spin Art') }, { id: 'stringArt', icon: '\uD83D\uDD78', label: __alloT('stem.artstudio.string_art_2', 'String Art') }, { id: 'opArt', icon: '\uD83D\uDC41', label: __alloT('stem.artstudio.op_art_2', 'Op Art') }, { id: 'tessellation', icon: '\uD83D\uDD37', label: __alloT('stem.artstudio.tessellation_2', 'Tessellation') }, { id: 'fractal', icon: '\uD83D\uDD2E', label: __alloT('stem.artstudio.fractals_2', 'Fractals') }, { id: 'gradient', icon: '\uD83C\uDF08', label: __alloT('stem.artstudio.gradient_2', 'Gradient') }, { id: 'stereogram', icon: '\uD83D\uDC53', label: __alloT('stem.artstudio.stereogram_2', 'Stereogram') }, { id: 'sculpt3d', icon: '\uD83D\uDDFF', label: __alloT('stem.artstudio.sculpt_3d', 'Sculpt 3D') }, { id: 'contrast', icon: '\u267F', label: __alloT('stem.artstudio.contrast_2', 'Contrast') }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: __alloT('stem.artstudio.harmony', 'Harmony') }].map(function (tb) {
 
                 return React.createElement("button", { "aria-label": 'Switch to ' + tb.label + ' tab', key: tb.id, onClick: function () { upd('tab', tb.id); if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'tabSwitch', 'Switched to ' + tb.label + ' canvas tool.', { debounce: 500 }); }, role: 'tab', 'aria-selected': tab === tb.id, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-600 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
 
@@ -1816,6 +1816,205 @@ const d = labToolData.artStudio || {};
               )
 
             ),
+
+            // === Sculpt 3D — the full sculpting suite on the shared Prim3D seams ===
+            // Same recipe format + PURE edit ops (prim3d_module.js) that power
+            // Free Forms, Memory Palace, and Geometry Sandbox: presets, hand-built
+            // part editing, optional AI describe/refine, a persistent gallery, and
+            // PNG export. Preview follows this tool's hook-free convention: a
+            // callback ref owns the WebGL lifecycle, caching on the canvas element
+            // and self-terminating (with disposal) once the canvas leaves the DOM.
+            tab === 'sculpt3d' && (function() {
+              var P3D = window.AlloModules && window.AlloModules.Prim3D;
+              var THREE_OK = !!window.THREE;
+              function _loadScript(src, onDone) {
+                var s = document.createElement('script'); s.src = src; s.async = true;
+                s.onload = function() { onDone(true); }; s.onerror = function() { onDone(false); };
+                document.head.appendChild(s);
+              }
+              if (!THREE_OK && !window._artSculptThreeLoading) {
+                window._artSculptThreeLoading = true;
+                _loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', function() { upd('_sculptPing', Date.now()); });
+              }
+              if (!P3D && !window._artSculptP3dLoading) {
+                window._artSculptP3dLoading = true;
+                var base = 'https://alloflow-cdn.pages.dev/', q = '';
+                try {
+                  var scr = document.querySelectorAll('script[src]');
+                  for (var si = 0; si < scr.length; si++) {
+                    var src = scr[si].getAttribute('src') || '';
+                    var m = src.match(/^(.*\/)(?:stem_lab\/stem_tool_artstudio|stem_lab\/stem_tool_geosandbox|memory_palace_module|concept_graph_3d_module|prim3d_module)\.js(\?.*)?$/);
+                    if (m) { base = m[1]; q = m[2] || ''; break; }
+                  }
+                } catch (e) {}
+                _loadScript(base + 'prim3d_module.js' + q, function() { upd('_sculptPing', Date.now()); });
+              }
+              if (!P3D || !window.THREE) {
+                return React.createElement("div", { className: "p-8 text-center text-slate-500 text-sm", role: "status" }, '🗿 ' + __alloT('stem.artstudio.sculpt_loading', 'Loading the sculpting engine…'));
+              }
+              var recipe = d.sculptRecipe ? P3D.normalizeRecipe(d.sculptRecipe) : null;
+              var parts = (recipe && recipe.parts) || [];
+              var sel = Math.min(d.sculptSel || 0, Math.max(0, parts.length - 1));
+              var gallery = d.sculptGallery || {};
+              var setRecipe = function(r) { upd('sculptRecipe', r); };
+              var partOp = function(op) { var next = op(P3D, recipe); if (next !== recipe) setRecipe(next); };
+              var _cnvBox = { current: null };
+              // ── preview lifecycle (callback ref; state cached ON the canvas) ──
+              var sculptRef = function(cnv) {
+                if (!cnv) return;
+                _cnvBox.current = cnv;
+                var THREE = window.THREE;
+                if (!cnv._p3d) {
+                  var scene3 = new THREE.Scene(); scene3.background = new THREE.Color('#0f172a');
+                  var cam = new THREE.PerspectiveCamera(45, cnv.width / cnv.height, 0.1, 100);
+                  var ren = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
+                  ren.setSize(cnv.width, cnv.height, false);
+                  scene3.add(new THREE.AmbientLight(0xffffff, 0.6));
+                  var d1 = new THREE.DirectionalLight(0xffffff, 0.7); d1.position.set(2, 3, 2); scene3.add(d1);
+                  var grid = new THREE.GridHelper(3, 12, 0x475569, 0x1e293b); scene3.add(grid);
+                  cnv._p3d = { scene: scene3, cam: cam, ren: ren, obj: null, json: '', yaw: 0.7, pitch: 0.5, auto: true };
+                  // drag to orbit (pointer events; auto-rotate resumes on release)
+                  cnv.style.touchAction = 'none';
+                  cnv.addEventListener('pointerdown', function(ev) { cnv._p3d.drag = { x: ev.clientX, y: ev.clientY }; cnv._p3d.auto = false; try { cnv.setPointerCapture(ev.pointerId); } catch (e) {} });
+                  cnv.addEventListener('pointermove', function(ev) {
+                    var st = cnv._p3d; if (!st || !st.drag) return;
+                    st.yaw += (ev.clientX - st.drag.x) * 0.01;
+                    st.pitch = Math.max(0.05, Math.min(1.45, st.pitch + (ev.clientY - st.drag.y) * 0.008));
+                    st.drag = { x: ev.clientX, y: ev.clientY };
+                  });
+                  cnv.addEventListener('pointerup', function() { if (cnv._p3d) { cnv._p3d.drag = null; cnv._p3d.auto = true; } });
+                  var loop = function() {
+                    var st = cnv._p3d;
+                    if (!st) return;
+                    if (!cnv.isConnected) {   // tab switched away — full teardown, no zombie loop
+                      try {
+                        st.scene.traverse(function(o) {
+                          if (o.geometry && o.geometry.dispose) o.geometry.dispose();
+                          var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+                          mats.forEach(function(mx) { try { if (mx.map && mx.map.dispose) mx.map.dispose(); mx.dispose(); } catch (e) {} });
+                        });
+                        st.ren.dispose(); if (st.ren.forceContextLoss) st.ren.forceContextLoss();
+                      } catch (e) {}
+                      cnv._p3d = null;
+                      return;
+                    }
+                    if (st.auto) st.yaw += 0.006;
+                    var R = 2.6;
+                    st.cam.position.set(Math.sin(st.yaw) * Math.cos(st.pitch) * R, 0.5 + Math.sin(st.pitch) * R * 0.8, Math.cos(st.yaw) * Math.cos(st.pitch) * R);
+                    st.cam.lookAt(0, 0.5, 0);
+                    st.ren.render(st.scene, st.cam);
+                    cnv._p3dAnim = requestAnimationFrame(loop);
+                  };
+                  loop();
+                }
+                // (re)build the sculpture when the recipe changed
+                var st2 = cnv._p3d;
+                var json = recipe ? JSON.stringify(recipe) : '';
+                if (st2 && st2.json !== json) {
+                  st2.json = json;
+                  if (st2.obj) {
+                    try {
+                      st2.scene.remove(st2.obj);
+                      st2.obj.traverse(function(o) { if (o.geometry && o.geometry.dispose) o.geometry.dispose(); var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []; mats.forEach(function(mx) { try { mx.dispose(); } catch (e) {} }); });
+                    } catch (e) {}
+                    st2.obj = null;
+                  }
+                  if (recipe) { try { st2.obj = P3D.buildObject(window.THREE, recipe, { unit: 1 }); if (st2.obj) st2.scene.add(st2.obj); } catch (e) {} }
+                }
+              };
+              var SHAPE_ICONS = { box: '📦', sphere: '⚪', cylinder: '🛢', cone: '🔺', torus: '🍩' };
+              var mini = "min-h-[40px] min-w-[40px] rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-pink-50";
+              var doAiSculpt = function() {
+                if (typeof callGemini !== 'function' || d._sculptBusy) return;
+                var subj = (d.sculptText || '').trim(); if (!subj) return;
+                upd('_sculptBusy', true);
+                var prompt = recipe ? P3D.buildRefinePrompt(recipe, subj) : P3D.buildRecipePrompt(subj);
+                callGemini(prompt, false, false, 0.85).then(function(resp) {
+                  var r = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
+                  upd('_sculptBusy', false);
+                  if (r) { if (!recipe) r.name = subj.slice(0, 80); upd('sculptSel', 0); setRecipe(r); if (typeof announceToSR === 'function') announceToSR('Sculpture updated'); }
+                  else if (addToast) addToast('⚠️ ' + __alloT('stem.artstudio.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error');
+                }).catch(function() { upd('_sculptBusy', false); });
+              };
+              var doExportPng = function() {
+                var cnv = _cnvBox.current; if (!cnv || !cnv._p3d) return;
+                try {
+                  cnv._p3d.ren.render(cnv._p3d.scene, cnv._p3d.cam);   // synchronous render → valid buffer
+                  var a = document.createElement('a');
+                  a.href = cnv.toDataURL('image/png');
+                  a.download = ((recipe && recipe.name) || 'sculpture').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40) + '.png';
+                  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                } catch (e) {}
+              };
+              return React.createElement("div", { className: "grid md:grid-cols-2 gap-4" },
+                // preview column
+                React.createElement("div", null,
+                  React.createElement("canvas", { ref: sculptRef, width: 480, height: 420, className: "w-full rounded-xl border border-slate-300", tabIndex: 0, "aria-label": __alloT('stem.artstudio.sculpt_canvas', '3D sculpture preview. Drag to orbit.') }),
+                  React.createElement("div", { className: "flex gap-2 mt-2" },
+                    React.createElement("button", { className: mini + " flex-1", onClick: doExportPng }, '📷 ' + __alloT('stem.artstudio.sculpt_export', 'Save picture')),
+                    recipe ? React.createElement("button", { className: mini + " flex-1", onClick: function() { upd('sculptSel', 0); setRecipe(null); } }, '🗑 ' + __alloT('stem.artstudio.sculpt_clear', 'Clear')) : null
+                  )
+                ),
+                // editor column
+                React.createElement("div", { className: "space-y-2" },
+                  React.createElement("h3", { className: "font-black text-slate-700 text-sm" }, '🗿 ' + __alloT('stem.artstudio.sculpt_title', 'Sculpt with primitive shapes')),
+                  !parts.length ? React.createElement("div", null,
+                    React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mb-1" }, __alloT('stem.artstudio.sculpt_presets', 'Start from a preset')),
+                    React.createElement("div", { className: "flex flex-wrap gap-1" }, (P3D.PRESETS || []).map(function(ps) {
+                      return React.createElement("button", { key: ps.id, className: mini, title: ps.label, "aria-label": 'Preset: ' + ps.label, onClick: function() { upd('sculptSel', 0); setRecipe(P3D.getPreset(ps.id)); } }, ps.emoji);
+                    }))
+                  ) : null,
+                  React.createElement("div", null,
+                    React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mb-1" }, __alloT('stem.artstudio.sculpt_add_part', 'Add a part')),
+                    React.createElement("div", { className: "flex flex-wrap gap-1" }, (P3D.SHAPES || []).map(function(shp) {
+                      return React.createElement("button", { key: shp, className: mini, title: 'Add ' + shp, "aria-label": 'Add ' + shp, onClick: function() { partOp(function(P, r) { return P.addPart(r, shp); }); upd('sculptSel', parts.length); } }, SHAPE_ICONS[shp] || shp);
+                    }))
+                  ),
+                  parts.length ? React.createElement("div", null,
+                    React.createElement("div", { className: "flex flex-wrap gap-1 mb-1", role: "group", "aria-label": __alloT('stem.artstudio.sculpt_parts', 'Parts') }, parts.map(function(p, i) {
+                      return React.createElement("button", { key: i, className: mini + (i === sel ? ' ring-2 ring-pink-500' : ''), "aria-pressed": i === sel ? 'true' : 'false', "aria-label": 'Part ' + (i + 1) + ': ' + p.shape, style: { borderBottom: '3px solid ' + p.color }, onClick: function() { upd('sculptSel', i); } }, SHAPE_ICONS[p.shape] || p.shape);
+                    })),
+                    React.createElement("div", { className: "grid grid-cols-6 gap-1 mb-1", role: "group", "aria-label": __alloT('stem.artstudio.sculpt_move', 'Move the selected part') },
+                      [['◀', 'position', 0, -0.08, 'Left'], ['▶', 'position', 0, 0.08, 'Right'], ['⬆', 'position', 1, 0.08, 'Up'], ['⬇', 'position', 1, -0.08, 'Down'], ['↗', 'position', 2, 0.08, 'Closer'], ['↙', 'position', 2, -0.08, 'Farther']].map(function(cfg) {
+                        return React.createElement("button", { key: cfg[4], className: mini, title: cfg[4], "aria-label": cfg[4], onClick: function() { partOp(function(P, r) { return P.nudgePart(r, sel, cfg[1], cfg[2], cfg[3]); }); } }, cfg[0]);
+                      })),
+                    React.createElement("div", { className: "grid grid-cols-6 gap-1", role: "group", "aria-label": __alloT('stem.artstudio.sculpt_tools', 'Shape tools') },
+                      React.createElement("button", { className: mini, title: 'Bigger', "aria-label": 'Bigger', onClick: function() { partOp(function(P, r) { return P.scalePart(r, sel, 1.25); }); } }, '➕'),
+                      React.createElement("button", { className: mini, title: 'Smaller', "aria-label": 'Smaller', onClick: function() { partOp(function(P, r) { return P.scalePart(r, sel, 0.8); }); } }, '➖'),
+                      React.createElement("button", { className: mini, title: 'Spin', "aria-label": 'Spin', onClick: function() { partOp(function(P, r) { return P.nudgePart(r, sel, 'rotation', 1, 30); }); } }, '🔄'),
+                      React.createElement("button", { className: mini, title: 'Color', "aria-label": 'Change color', onClick: function() { partOp(function(P, r) { return P.recolorPart(r, sel); }); } }, '🎨'),
+                      React.createElement("button", { className: mini, title: 'Duplicate', "aria-label": 'Duplicate', onClick: function() { partOp(function(P, r) { return P.duplicatePart(r, sel); }); } }, '⧉'),
+                      React.createElement("button", { className: mini, title: 'Remove part', "aria-label": 'Remove part', onClick: function() { partOp(function(P, r) { return P.removePart(r, sel); }); upd('sculptSel', Math.max(0, sel - 1)); } }, '✕')
+                    )
+                  ) : null,
+                  (typeof callGemini === 'function') ? React.createElement("div", { className: "flex gap-1" },
+                    React.createElement("input", { value: d.sculptText || '', onChange: function(e) { upd('sculptText', e.target.value); }, placeholder: recipe ? __alloT('stem.artstudio.sculpt_refine_ph', 'Describe a change ("longer tail")…') : __alloT('stem.artstudio.sculpt_create_ph', 'Or describe something to sculpt…'), "aria-label": __alloT('stem.artstudio.sculpt_ai_label', 'Describe a sculpture or a change'), className: "flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-xs" }),
+                    React.createElement("button", { className: mini, onClick: doAiSculpt, disabled: !!d._sculptBusy, "aria-busy": d._sculptBusy ? 'true' : 'false' }, d._sculptBusy ? '…' : '✨')
+                  ) : null,
+                  // gallery — named recipes persisted in toolData
+                  React.createElement("div", null,
+                    React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mb-1" }, '🖼 ' + __alloT('stem.artstudio.sculpt_gallery', 'My gallery')),
+                    recipe ? React.createElement("form", { className: "flex gap-1 mb-1", onSubmit: function(e) {
+                      e.preventDefault();
+                      var nm = (e.target.elements.sculptname.value || '').trim().slice(0, 40);
+                      if (!nm) return;
+                      var g2 = Object.assign({}, gallery); g2[nm] = recipe;
+                      upd('sculptGallery', g2); e.target.elements.sculptname.value = '';
+                      if (typeof announceToSR === 'function') announceToSR('Saved to gallery');
+                    } },
+                      React.createElement("input", { name: "sculptname", placeholder: __alloT('stem.artstudio.sculpt_save_ph', 'Name it…'), "aria-label": __alloT('stem.artstudio.sculpt_save_ph', 'Name it…'), className: "flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-xs" }),
+                      React.createElement("button", { type: "submit", className: mini }, '💾')
+                    ) : null,
+                    Object.keys(gallery).length ? React.createElement("ul", { className: "space-y-1" }, Object.keys(gallery).map(function(nm) {
+                      return React.createElement("li", { key: nm, className: "flex items-center gap-1 text-xs" },
+                        React.createElement("button", { className: "flex-1 text-left min-h-[40px] px-2 rounded-lg border border-slate-200 hover:bg-pink-50 font-bold text-slate-700", onClick: function() { upd('sculptSel', 0); setRecipe(P3D.normalizeRecipe(gallery[nm])); }, "aria-label": 'Load ' + nm }, nm),
+                        React.createElement("button", { className: mini, "aria-label": 'Delete ' + nm, onClick: function() { var g2 = Object.assign({}, gallery); delete g2[nm]; upd('sculptGallery', g2); } }, '✕')
+                      );
+                    })) : React.createElement("p", { className: "text-[11px] text-slate-400" }, __alloT('stem.artstudio.sculpt_gallery_empty', 'Saved sculptures appear here.'))
+                  )
+                )
+              );
+            })(),
 
             // === H7b'' RICH inquiry widget: color harmony ===
             tab === 'harmonyHunt' && (function() {

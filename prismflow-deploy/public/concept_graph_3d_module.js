@@ -1337,6 +1337,102 @@
       group.position.set(_xrPrev.px, _xrPrev.py, _xrPrev.pz);
       _xrPrev = null;
     }
+
+    // ── VR controllers (Tier 2, palace pattern): point at a node, pull the
+    // trigger → it selects/highlights and a caption board above the model
+    // reads out the node (label · strand · note). Controllers live in ROOT
+    // (reference-space poses); picking raycasts the same node spheres as the
+    // mouse, so group scaling is handled by the world matrices.
+    var _xrCtrls = null, _xrRay = null, _xrTmpM = null, _xrCaption = null;
+    function _xrHapticPulse(intensity, ms) {
+      try {
+        var sess = renderer.xr.getSession && renderer.xr.getSession(); if (!sess) return;
+        var srcs = sess.inputSources || [];
+        for (var i = 0; i < srcs.length; i++) {
+          var g = srcs[i].gamepad;
+          if (g && g.hapticActuators && g.hapticActuators[0]) { try { g.hapticActuators[0].pulse(intensity, ms); } catch (e) {} }
+        }
+      } catch (e) {}
+    }
+    function _xrClearCaption() {
+      if (!_xrCaption) return;
+      try {
+        root.remove(_xrCaption);
+        if (_xrCaption.material) { if (_xrCaption.material.map) _xrCaption.material.map.dispose(); _xrCaption.material.dispose(); }
+      } catch (e) {}
+      _xrCaption = null;
+    }
+    function _xrShowCaption(text) {
+      _xrClearCaption();
+      try {
+        var c = document.createElement('canvas'); c.width = 1024; c.height = 192;
+        var g2 = c.getContext('2d');
+        g2.fillStyle = 'rgba(2,6,23,0.85)'; g2.fillRect(0, 0, c.width, c.height);
+        g2.strokeStyle = '#6366f1'; g2.lineWidth = 6; g2.strokeRect(3, 3, c.width - 6, c.height - 6);
+        g2.fillStyle = '#f8fafc'; g2.textAlign = 'center';
+        var line1 = String(text || '').slice(0, 64), line2 = String(text || '').slice(64, 140);
+        g2.font = '700 56px system-ui, sans-serif';
+        g2.fillText(line1, c.width / 2, line2 ? 82 : 112);
+        if (line2) { g2.font = '400 40px system-ui, sans-serif'; g2.fillText(line2, c.width / 2, 148); }
+        var tex = new THREE.CanvasTexture(c);
+        _xrCaption = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+        _xrCaption.scale.set(1.3, 0.24, 1);            // metres — sized to sit above the hologram
+        _xrCaption.position.set(0, 2.15, -1.9);        // above the model's seat position
+        root.add(_xrCaption);
+      } catch (e) {}
+    }
+    function _xrTrigger(ctrl) {
+      try {
+        if (!_xrRay) _xrRay = new THREE.Raycaster();
+        if (!_xrTmpM) _xrTmpM = new THREE.Matrix4();
+        _xrTmpM.identity().extractRotation(ctrl.matrixWorld);
+        _xrRay.ray.origin.setFromMatrixPosition(ctrl.matrixWorld);
+        _xrRay.ray.direction.set(0, 0, -1).applyMatrix4(_xrTmpM);
+        var hits = _xrRay.intersectObjects(spheres, false);
+        if (!hits.length) { _xrClearCaption(); return; }
+        var id = hits[0].object.userData.nodeId;
+        var m = nodeById3d[id];
+        if (!m) return;
+        _xrHapticPulse(0.5, 40);
+        selectNode(id);                                // same highlight path as a mouse click
+        var cap = m.node.label + (m.node.category ? ' · ' + m.node.category : '') + (m.node.summary ? ' — ' + m.node.summary : '');
+        _xrShowCaption(cap);
+        try { live.textContent = describeNodeForSR(scene, id, t); } catch (e) {}
+      } catch (e) {}
+    }
+    function _xrSetupControllers() {
+      if (_xrCtrls) return;
+      _xrCtrls = [];
+      try {
+        for (var ci = 0; ci < 2; ci++) {
+          var c = renderer.xr.getController(ci);
+          var rg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)]);
+          var rl = new THREE.Line(rg, new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.85 }));
+          rl.scale.z = 3;                              // 3 m aim beam (picking uses the true ray)
+          c.add(rl);
+          (function (ctrl) { ctrl.addEventListener('selectstart', function () { _xrTrigger(ctrl); }); })(c);
+          root.add(c); _xrCtrls.push(c);
+          var gp = renderer.xr.getControllerGrip(ci);
+          gp.add(new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.03, 0.09), new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.6, metalness: 0.2 })));
+          root.add(gp); _xrCtrls.push(gp);
+        }
+      } catch (e) {}
+    }
+    function _xrTeardownControllers() {
+      _xrClearCaption();
+      if (!_xrCtrls) return;
+      _xrCtrls.forEach(function (c) {
+        try {
+          root.remove(c);
+          c.traverse(function (o) {
+            if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
+            var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+            mats.forEach(function (mx) { try { if (mx.map && mx.map.dispose) mx.map.dispose(); mx.dispose(); } catch (e) {} });
+          });
+        } catch (e) {}
+      });
+      _xrCtrls = null;
+    }
     function enterVR(btn) {
       if (!navigator.xr) return;
       if (btn) btn.disabled = true;
@@ -1345,10 +1441,12 @@
           _seatForVR();
           if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
           try { renderer.xr.setReferenceSpaceType('local-floor'); } catch (e) {}
+          _xrSetupControllers();                       // point + trigger = select + caption
           Promise.resolve(renderer.xr.setSession(session)).then(function () { renderer.setAnimationLoop(tick); });
           try { live.textContent = _tr(t, 'cg3d.vr_entered', 'Entered VR. Your world floats in front of you — look around it.'); } catch (e) {}
           session.addEventListener('end', function () {
             try { renderer.setAnimationLoop(null); } catch (e) {}
+            _xrTeardownControllers();
             _unseatVR();
             if (btn) btn.disabled = false;
             try { live.textContent = _tr(t, 'cg3d.vr_exited', 'Back to the screen view.'); } catch (e) {}
