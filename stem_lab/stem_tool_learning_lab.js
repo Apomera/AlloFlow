@@ -7209,6 +7209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var data = props.data || { profile: {} };
     var setData = props.setData;
     var p = data.profile || {};
+    var pms = R.useState(''); var printMessage = pms[0]; var setPrintMessage = pms[1];
 
     function update(key, val) {
       setData({ profile: Object.assign({}, p, (function() { var o = {}; o[key] = val; return o; })()) });
@@ -7228,22 +7229,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function print() {
-      try { window.print(); } catch (e) { alert('Use your browser\'s print function (Ctrl/Cmd+P).'); }
+      setPrintMessage('');
+      try { window.print(); } catch (e) { setPrintMessage('The print dialog could not open. Use Ctrl+P on Windows or Command+P on macOS.'); }
     }
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🪞', 'My Learning Profile', 'A one-page snapshot of how you learn. For YOU first. Sharable with teachers, advisors, or your IEP team.', '#06b6d4'),
 
       hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 10 } },
-        tkBtn('🖨 Print my profile', print, 'secondary')
+        tkBtn('🖨 Print my profile', print, 'secondary', { minHeight: 44 })
       ),
+      printMessage ? hh('div', { role: 'alert', style: { marginBottom: 10, padding: 10, borderRadius: 8, color: '#fecaca', background: 'rgba(127,29,29,0.35)', border: '1px solid #f87171', fontSize: 11, fontWeight: 700 } }, printMessage) : null,
 
       hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
         FIELDS.map(function(f) {
           return hh('div', { key: 'f-' + f.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(6,182,212,0.30)', borderLeft: '4px solid #06b6d4' } },
-            hh('label', { style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#67e8f9', marginBottom: 6 } }, f.icon + ' ' + f.label),
-            f.type === 'input' ? tkInput(p[f.id], function(v) { update(f.id, v); }, f.placeholder)
-              : tkTextarea(p[f.id], function(v) { update(f.id, v); }, f.placeholder, 3)
+            hh('label', { htmlFor: 'learning-lab-profile-' + f.id, style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#67e8f9', marginBottom: 6 } }, f.icon + ' ' + f.label),
+            f.type === 'input' ? hh('input', { id: 'learning-lab-profile-' + f.id, type: 'text', value: p[f.id] || '', onChange: function(e) { update(f.id, e.target.value); }, placeholder: f.placeholder, style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } })
+              : hh('textarea', { id: 'learning-lab-profile-' + f.id, value: p[f.id] || '', rows: 3, onChange: function(e) { update(f.id, e.target.value); }, placeholder: f.placeholder, style: { width: '100%', minHeight: 88, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' } })
           );
         })
       ),
