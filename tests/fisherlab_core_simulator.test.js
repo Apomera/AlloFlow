@@ -245,6 +245,16 @@ describe('Fisher Lab catch evidence', () => {
     expect(getCoreFishRuleEvidence(25, slotSpecies)).toMatchObject({ legalToRetain: false, expectedReason: 'above-slot' });
   });
 
+  it('enforces numeric scenario trip limits after size eligibility is established', () => {
+    const { getCoreFishRuleEvidence, evaluateCoreFishDecision } = window.__FisherLabCore;
+    const species = { name: 'Atlantic Cod', minSize: 22, slot: null, dailyBag: 1 };
+
+    expect(getCoreFishRuleEvidence(24, species, { retainedCount: 0 })).toMatchObject({ legalToRetain: true, bagLimit: 1, bagRemaining: 1 });
+    expect(getCoreFishRuleEvidence(24, species, { retainedCount: 1 })).toMatchObject({ legalToRetain: false, expectedReason: 'bag-limit', bagRemaining: 0 });
+    expect(getCoreFishRuleEvidence(20, species, { retainedCount: 1 })).toMatchObject({ legalToRetain: false, expectedReason: 'below-minimum', bagRemaining: 0 });
+    expect(evaluateCoreFishDecision(24, species, 'release-required', 'bag-limit', { retainedCount: 1 })).toMatchObject({ correct: true, expectedAction: 'release-required', expectedReason: 'bag-limit' });
+  });
+
   it('requires both a correct evidence log and a correct classification', () => {
     const { evaluateCoreFishDecision } = window.__FisherLabCore;
     const species = { minSize: 19, slot: '19-24 inches' };
@@ -384,7 +394,12 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("type: 'fish-haul'");
     expect(source).toContain('inspect the measurement and training rule');
     expect(source).not.toContain("(isKeeper ? ' — KEEPER'");
-    expect(source).toContain('1. Log the measurement evidence');
+    expect(source).toContain('1. Log the rule evidence');
+    expect(source).toContain("expectedReason = 'bag-limit'");
+    expect(source).toContain('Scenario trip limit has been reached');
+    expect(source).toContain('retainedBySpecies: {}');
+    expect(source).toContain('boatState.retainedBySpecies = {}');
+    expect(source).toContain('retainedBySpecies: Object.assign({}, boatState.retainedBySpecies)');
     expect(source).toContain("name: 'fl-fish-evidence'");
     expect(source).toContain("disabled: !fishEvidence");
     expect(source).toContain('Deckhand review');

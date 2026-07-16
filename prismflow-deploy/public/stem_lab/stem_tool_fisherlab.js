@@ -577,11 +577,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     if (closestRange >= 12 && elapsed <= 14) return { id: 'safe', label: 'Safe separation', bonus: 5 };
     return { id: 'complete', label: 'Maneuver complete', bonus: 0 };
   }
-  function getCoreFishRuleEvidence(length, species) {
+  function getCoreFishRuleEvidence(length, species, context) {
     var measured = Number(length);
     var slotBounds = species && species.slot ? String(species.slot).match(/\d+(?:\.\d+)?/g) : null;
     var minimum = species && typeof species.minSize === 'number' ? species.minSize : null;
-    var evidence = { legalToRetain: true, expectedReason: 'no-size-rule', expectedLabel: 'No size restriction in this activity', ruleLabel: 'No size score in this activity' };
+    var suppliedBagLimit = context && typeof context.bagLimit === 'number' ? context.bagLimit : species && typeof species.dailyBag === 'number' ? species.dailyBag : null;
+    var bagLimit = suppliedBagLimit !== null && isFinite(suppliedBagLimit) && suppliedBagLimit > 0 ? Math.floor(suppliedBagLimit) : null;
+    var retainedCount = context && typeof context.retainedCount === 'number' && isFinite(context.retainedCount) ? Math.max(0, Math.floor(context.retainedCount)) : 0;
+    var bagRemaining = bagLimit === null ? null : Math.max(0, bagLimit - retainedCount);
+    var evidence = {
+      legalToRetain: true,
+      expectedReason: 'no-size-rule',
+      expectedLabel: 'No size restriction in this activity',
+      ruleLabel: 'No size score in this activity',
+      bagLimit: bagLimit,
+      retainedCount: retainedCount,
+      bagRemaining: bagRemaining,
+      bagLabel: bagLimit === null ? 'No numeric trip limit scored' : 'Scenario trip bag: ' + retainedCount + ' of ' + bagLimit + ' retained · ' + bagRemaining + ' remaining'
+    };
 
     if (slotBounds && slotBounds.length >= 2) {
       var lower = Number(slotBounds[0]);
@@ -605,17 +618,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       evidence.expectedReason = evidence.legalToRetain ? 'within-rule' : 'below-minimum';
       evidence.expectedLabel = evidence.legalToRetain ? measured + ' in meets the ' + minimum + ' in minimum' : measured + ' in is below the ' + minimum + ' in minimum';
     }
+
+    if (evidence.legalToRetain && bagLimit !== null && bagRemaining === 0) {
+      evidence.legalToRetain = false;
+      evidence.expectedReason = 'bag-limit';
+      evidence.expectedLabel = 'Scenario trip limit reached: ' + retainedCount + ' of ' + bagLimit + ' ' + (species && species.name ? species.name : 'fish') + ' already retained';
+    }
     return evidence;
   }
 
-  function evaluateCoreFishDecision(length, species, action, reason) {
-    var evidence = getCoreFishRuleEvidence(length, species);
+  function evaluateCoreFishDecision(length, species, action, reason, context) {
+    var evidence = getCoreFishRuleEvidence(length, species, context);
     var expectedAction = evidence.legalToRetain ? 'retain' : 'release-required';
     var classificationCorrect = action === expectedAction;
     var evidenceCorrect = reason === evidence.expectedReason;
     var correct = classificationCorrect && evidenceCorrect;
-    var explanation = correct ? 'Evidence confirmed: ' + evidence.expectedLabel + '.' : !evidenceCorrect ? 'Evidence review: ' + evidence.expectedLabel + '.' : evidence.legalToRetain ? 'The measurement permits retention under this training rule; voluntary release remains allowed.' : 'The measurement requires release under this training rule.';
-    return { correct: correct, classificationCorrect: classificationCorrect, evidenceCorrect: evidenceCorrect, legalToRetain: evidence.legalToRetain, expectedAction: expectedAction, expectedReason: evidence.expectedReason, expectedLabel: evidence.expectedLabel, ruleLabel: evidence.ruleLabel, explanation: explanation };
+    var explanation = correct ? 'Evidence confirmed: ' + evidence.expectedLabel + '.' : !evidenceCorrect ? 'Evidence review: ' + evidence.expectedLabel + '.' : evidence.legalToRetain ? 'The scenario profile permits retention; voluntary release remains allowed.' : 'The scenario profile requires release.';
+    return { correct: correct, classificationCorrect: classificationCorrect, evidenceCorrect: evidenceCorrect, legalToRetain: evidence.legalToRetain, expectedAction: expectedAction, expectedReason: evidence.expectedReason, expectedLabel: evidence.expectedLabel, ruleLabel: evidence.ruleLabel, bagLimit: evidence.bagLimit, retainedCount: evidence.retainedCount, bagRemaining: evidence.bagRemaining, bagLabel: evidence.bagLabel, explanation: explanation };
   }
 
   function evaluateCoreCaliperReading(actualLength, reading, tolerance) {
@@ -9051,6 +9070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       correctDecisions: 0,
       totalDecisions: 0,
       catchDecisionHistory: [],
+      retainedBySpecies: {},
       targetFishDecision: false,
       trapDecisionMade: false,
       trafficEncounterTriggered: false,
@@ -9342,8 +9362,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.lobstersHauled += 1;
         boatState.trapDecisionMade = correct || boatState.trapDecisionMade;
         if (action === 'keep' && correct) boatState.keeperLobsters += 1;
-      } else if (speciesId === missionProfile.targetFishId && correct) {
-        boatState.targetFishDecision = true;
+      } else {
+        if (action === 'keep' && correct) boatState.retainedBySpecies[speciesId] = (boatState.retainedBySpecies[speciesId] || 0) + 1;
+        if (speciesId === missionProfile.targetFishId && correct) boatState.targetFishDecision = true;
       }
       if (!holdPaused) setPaused(false, false);
       statusCb({ type: correct ? 'score' : 'violation', text: (correct ? '+' : '') + scored.delta + ' stewardship points' + (correct && scored.streak > 1 ? ' · ' + scored.streak + ' decision streak' : '') });
@@ -9758,13 +9779,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
 
         boatState.fishLanded += 1;
-        var isKeeper = getCoreFishRuleEvidence(len, sp).legalToRetain;
+        var bagLimit = typeof sp.dailyBag === 'number' ? sp.dailyBag : null;
+        var retainedCount = boatState.retainedBySpecies[sp.id] || 0;
+        var isKeeper = getCoreFishRuleEvidence(len, sp, { bagLimit: bagLimit, retainedCount: retainedCount }).legalToRetain;
 
         setPaused(true, false);
         statusCb({
           type: 'fish-haul',
           species: sp,
           length: len,
+          bagLimit: bagLimit,
+          retainedCount: retainedCount,
           isKeeper: isKeeper,
           text: 'Landed a ' + len + '" ' + sp.name + ' — inspect the measurement and training rule'
         });
@@ -9867,6 +9892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         correctDecisions: boatState.correctDecisions,
         totalDecisions: boatState.totalDecisions,
         catchDecisionHistory: boatState.catchDecisionHistory.slice(),
+        retainedBySpecies: Object.assign({}, boatState.retainedBySpecies),
         targetFishDecision: boatState.targetFishDecision,
         trapDecisionMade: boatState.trapDecisionMade,
         trafficDecisionMade: boatState.trafficDecisionMade,
@@ -10039,6 +10065,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.correctDecisions = 0;
         boatState.totalDecisions = 0;
         boatState.catchDecisionHistory = [];
+        boatState.retainedBySpecies = {};
         boatState.fuelDepletedWarned = false;
         boatState.earlyDockWarned = false;
         boatState.unsafeSpeedWarned = false;
@@ -11322,16 +11349,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             ) : null,
 
             activeFish ? (function() {
-              var ruleEvidence = getCoreFishRuleEvidence(activeFish.length, activeFish.species);
+              var fishRuleContext = { bagLimit: activeFish.bagLimit, retainedCount: activeFish.retainedCount };
+              var ruleEvidence = getCoreFishRuleEvidence(activeFish.length, activeFish.species, fishRuleContext);
               var evidenceOptions = [
                 { id: 'within-rule', label: 'Measurement meets the size or slot rule' },
                 { id: 'below-minimum', label: 'Measurement is below the minimum' }
               ];
               if (activeFish.species.slot) evidenceOptions.push({ id: 'above-slot', label: 'Measurement is above the slot maximum' });
               if (!activeFish.species.slot && typeof activeFish.species.minSize !== 'number') evidenceOptions = [{ id: 'no-size-rule', label: 'No size restriction is scored here' }];
+              if (ruleEvidence.bagLimit !== null && ruleEvidence.bagRemaining === 0) evidenceOptions.push({ id: 'bag-limit', label: 'Scenario trip limit has been reached' });
               function submitFishDecision(action) {
                 if (fishDecisionResult) return;
-                var result = evaluateCoreFishDecision(activeFish.length, activeFish.species, action, fishEvidence);
+                var result = evaluateCoreFishDecision(activeFish.length, activeFish.species, action, fishEvidence, fishRuleContext);
                 var handling = getCoreFishHandlingGuidance(action, result.legalToRetain);
                 var msg = (result.correct ? 'Correct. ' : 'Review needed. ') + result.explanation;
                 pushStatus({ type: result.correct && action === 'retain' ? 'fish' : result.correct ? 'complete' : 'guidance', species: activeFish.species, length: activeFish.length, isKeeper: result.correct && action === 'retain', text: msg });
@@ -11351,7 +11380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   h('h3', { id: 'fl-fish-inspection-title', style: { margin: '5px 0 8px', color: '#f8fafc', fontSize: 22 } }, activeFish.species.emoji + ' ' + activeFish.species.name + ' · ' + activeFish.length + ' in'),
                   h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, activeFish.species.idMarks),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 8, margin: '12px 0' } },
-                    h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#fde68a', fontSize: 11 } }, 'Training rule'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 12 } }, ruleEvidence.ruleLabel)),
+                    h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#fde68a', fontSize: 11 } }, 'Training rule'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 12 } }, ruleEvidence.ruleLabel), h('div', { style: { marginTop: 4, color: ruleEvidence.bagRemaining === 0 ? '#fca5a5' : '#bae6fd', fontSize: 11, fontWeight: 800 } }, ruleEvidence.bagLabel)),
                     h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#a7f3d0', fontSize: 11 } }, 'Stewardship context'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11, lineHeight: 1.4 } }, activeFish.species.stewardship))
                   ),
                   fishDecisionResult ? h('div', { style: { marginTop: 12, padding: 14, borderRadius: 7, border: '1px solid ' + (fishDecisionResult.result.correct ? 'rgba(110,231,183,0.55)' : 'rgba(251,191,36,0.6)'), background: fishDecisionResult.result.correct ? 'rgba(6,78,59,0.48)' : 'rgba(120,53,15,0.42)' } },
@@ -11366,7 +11395,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                     h('button', { ref: decisionFocusRef, type: 'button', className: 'fl-btn', onClick: continueAfterFishReview, style: { width: '100%', marginTop: 12, padding: 11, border: 0, borderRadius: 7, background: '#38bdf8', color: '#082f49', fontWeight: 900, cursor: 'pointer' } }, 'Continue voyage')
                   ) : [
                     h('fieldset', { key: 'evidence', style: { margin: '12px 0', padding: 10, borderRadius: 7, border: '1px solid rgba(125,211,252,0.35)' } },
-                      h('legend', { style: { padding: '0 5px', color: '#bae6fd', fontSize: 12, fontWeight: 900 } }, '1. Log the measurement evidence'),
+                      h('legend', { style: { padding: '0 5px', color: '#bae6fd', fontSize: 12, fontWeight: 900 } }, '1. Log the rule evidence'),
                       h('div', { style: { display: 'grid', gap: 7 } }, evidenceOptions.map(function(option, index) {
                         return h('label', { key: option.id, style: { display: 'flex', alignItems: 'flex-start', gap: 8, color: '#e2e8f0', fontSize: 12, lineHeight: 1.4, cursor: 'pointer' } },
                           h('input', { ref: index === 0 ? decisionFocusRef : null, type: 'radio', name: 'fl-fish-evidence', value: option.id, checked: fishEvidence === option.id, onChange: function() { setFishEvidence(option.id); }, style: { marginTop: 2, accentColor: '#38bdf8' } }), option.label);
