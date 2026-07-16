@@ -300,6 +300,38 @@ describe('composeGroundSpeedKts (TAS + wind + jet → GS)', () => {
   });
 });
 
+describe('pushTrackPoint (minimap breadcrumb sampler)', () => {
+  it('records the first point and points spaced ≥ minNm', () => {
+    const trail = [];
+    expect(FS.pushTrackPoint(trail, 43.0, -70.0, 0)).toBe(true);
+    // 0.1° lat ≈ 6 nm — well past the 0.08 nm default spacing
+    expect(FS.pushTrackPoint(trail, 43.1, -70.0, 1)).toBe(true);
+    expect(trail).toHaveLength(2);
+  });
+  it('skips points closer than minNm until maxGapSec elapses', () => {
+    const trail = [];
+    FS.pushTrackPoint(trail, 43.0, -70.0, 0);
+    // ~0.0006 nm away, 1 s later → too close, too soon
+    expect(FS.pushTrackPoint(trail, 43.00001, -70.0, 1)).toBe(false);
+    // Same tiny offset but 6 s later → time-gated point IS recorded
+    expect(FS.pushTrackPoint(trail, 43.0001, -70.0, 6)).toBe(true);
+    expect(trail).toHaveLength(2);
+  });
+  it('never records a parked/identical position, even after a long gap', () => {
+    const trail = [];
+    FS.pushTrackPoint(trail, 43.0, -70.0, 0);
+    expect(FS.pushTrackPoint(trail, 43.0, -70.0, 600)).toBe(false);
+    expect(trail).toHaveLength(1);
+  });
+  it('caps the trail by evicting the oldest points', () => {
+    const trail = [];
+    for (let i = 0; i < 30; i++) FS.pushTrackPoint(trail, 43 + i * 0.1, -70, i, { cap: 10 });
+    expect(trail).toHaveLength(10);
+    expect(trail[0].lat).toBeCloseTo(43 + 20 * 0.1, 6); // oldest 20 evicted
+    expect(trail[9].lat).toBeCloseTo(43 + 29 * 0.1, 6);
+  });
+});
+
 // ───────────────────────────── data tables ────────────────────────────
 
 describe('WAYPOINTS', () => {

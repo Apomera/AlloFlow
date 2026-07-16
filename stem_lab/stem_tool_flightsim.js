@@ -606,6 +606,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     return 150 * proximity * altRamp;
   }
 
+  // ── GROUND-TRACK TRAIL sampler ──
+  // Appends a breadcrumb when the aircraft has moved ≥ minNm since the last
+  // point, or after maxGapSec regardless (slow flight still leaves a trail);
+  // identical/parked positions are never duplicated. Oldest points fall off
+  // past cap. Returns true when a point was recorded. Pure: mutates only the
+  // passed array, so the vitest suite can drive it directly.
+  function pushTrackPoint(trail, lat, lon, t, opts) {
+    opts = opts || {};
+    var minNm = opts.minNm != null ? opts.minNm : 0.08;
+    var maxGapSec = opts.maxGapSec != null ? opts.maxGapSec : 5;
+    var cap = opts.cap != null ? opts.cap : 400;
+    var last = trail.length ? trail[trail.length - 1] : null;
+    if (last) {
+      var moved = haversineNm(last.lat, last.lon, lat, lon);
+      if (moved < 0.005) return false;                       // parked / same spot
+      if (moved < minNm && (t - last.t) < maxGapSec) return false;
+    }
+    trail.push({ lat: lat, lon: lon, t: t });
+    if (trail.length > cap) trail.splice(0, trail.length - cap);
+    return true;
+  }
+
   // ── GROUND SPEED (kts) from TAS + surface wind + jet stream ──
   // windFromDeg is the direction the wind blows FROM (met convention, same
   // as weatherRef.windDir); the jet stream tailwind is always toward 090°.
@@ -17375,6 +17397,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillRect(x + r + dx3 - 0.5, y + r + dy3 - 0.5, 1.5, 1.5);
         });
 
+        // Ground-track breadcrumb trail — the flown path over the ground.
+        // With a crosswind or the jet stream, this visibly curves away from
+        // where the nose points: the drift lesson, drawn by the student.
+        var trk = hudRef.current._track;
+        if (trk && trk.length > 1) {
+          gfx.strokeStyle = 'rgba(74,222,128,0.5)';
+          gfx.lineWidth = 1.2;
+          gfx.beginPath();
+          var trkPen = false;
+          for (var ti = 0; ti < trk.length; ti++) {
+            var tdx = (trk[ti].lon - state.lon) * cosLatMM / scale * (r / 2);
+            var tdy = -(trk[ti].lat - state.lat) / scale * (r / 2);
+            // Lift the pen outside the dial so re-entering segments don't chord across
+            if (tdx * tdx + tdy * tdy > (r - 3) * (r - 3)) { trkPen = false; continue; }
+            if (!trkPen) { gfx.moveTo(x + r + tdx, y + r + tdy); trkPen = true; }
+            else gfx.lineTo(x + r + tdx, y + r + tdy);
+          }
+          gfx.stroke();
+        }
+
+        // Converging traffic blip — blinking amber diamond (TCAS convention)
+        var xtM = hudRef.current._xtraffic;
+        if (xtM && Math.floor(timeRef.current * 2) % 2 === 0) {
+          var xmdx = (xtM.lon - state.lon) * cosLatMM / scale * (r / 2);
+          var xmdy = -(xtM.lat - state.lat) / scale * (r / 2);
+          if (xmdx * xmdx + xmdy * xmdy <= (r - 4) * (r - 4)) {
+            gfx.save();
+            gfx.translate(x + r + xmdx, y + r + xmdy);
+            gfx.rotate(Math.PI / 4);
+            gfx.fillStyle = 'rgba(251,191,36,0.95)';
+            gfx.fillRect(-2.2, -2.2, 4.4, 4.4);
+            gfx.restore();
+          }
+        }
+
         gfx.restore();
 
         // Aircraft (center, rotated)
@@ -17603,6 +17660,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         keysRef.current = {};
         pausedRef.current = false;
         landingRef.current = { wasAirborne: false, lastVSI: 0, scored: false, peakAGL: 0 };
+        // Fresh breadcrumb trail + no carried-over traffic from the last flight
+        hudRef.current._track = [];
+        hudRef.current._xtraffic = null;
         hoistAccumRef.current = 0;
         capAccumRef.current = 0;
         // Reset quiz state for fresh flight
@@ -17882,6 +17942,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             state.lon += jetNmPerSec / (60 * Math.max(0.05, Math.cos(state.lat * Math.PI / 180))) * dt;
           }
           hudRef.current.jetKts = jetKts;
+          // Ground-track breadcrumb — sampled AFTER wind/jet displacement so
+          // the minimap trail shows the actual track over the ground (a
+          // crosswind or the jet stream visibly bends it away from heading).
+          pushTrackPoint(hudRef.current._track || (hudRef.current._track = []), state.lat, state.lon, timeRef.current);
           flightRef.current = state;
           // Advance integrated scroll phases with the frame's actual dt
           scrollAccumRef.current.rwy = (scrollAccumRef.current.rwy + (state.speed * 0.045 + 0.02) * dt) % 1;
@@ -18115,45 +18179,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // cue, visible at any altitude.
             drawOtherAircraft(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
-            // ── Converging traffic: spawn/advance in the loop (owns dt), draw pure ──
-            var xtNow = hudRef.current._xtraffic;
-            var xtAgl = state.altitude - (state.fieldElev || 0);
-            if (!xtNow && !state.onGround && xtAgl > 800 && timeRef.current > 60
-                && (timeRef.current % 120) < dt * 2) {
-              var xtHdgRad = state.heading * Math.PI / 180;
-              var xtCosLat = Math.max(0.05, Math.cos(state.lat * Math.PI / 180));
-              var xtSide = (Math.floor(timeRef.current / 120) % 2 === 0) ? 1 : -1;
-              // Convergence point ~4 nm ahead on OUR track; spawn 3 nm abeam of it
-              var xtCpLat = state.lat + Math.cos(xtHdgRad) * (4 / 60);
-              var xtCpLon = state.lon + Math.sin(xtHdgRad) * (4 / 60) / xtCosLat;
-              var xtPerp = xtHdgRad + xtSide * Math.PI / 2;
-              hudRef.current._xtraffic = {
-                lat: xtCpLat + Math.cos(xtPerp) * (3 / 60),
-                lon: xtCpLon + Math.sin(xtPerp) * (3 / 60) / xtCosLat,
-                heading: (((xtPerp + Math.PI) * 180 / Math.PI) % 360 + 360) % 360, // toward the convergence point
-                speedKts: 140,
-                alt: state.altitude + (xtSide > 0 ? 200 : -200),
-                spawnedAt: timeRef.current, called: false, callTxt: null, calledAt: 0,
-              };
-            } else if (xtNow) {
-              var xtRad2 = xtNow.heading * Math.PI / 180;
-              var xtNmSec = xtNow.speedKts / 3600;
-              xtNow.lat += Math.cos(xtRad2) * (xtNmSec / 60) * dt;
-              xtNow.lon += Math.sin(xtRad2) * (xtNmSec / 60) / Math.max(0.05, Math.cos(xtNow.lat * Math.PI / 180)) * dt;
-              var xtDist2 = haversineNm(state.lat, state.lon, xtNow.lat, xtNow.lon);
-              if (!xtNow.called && xtDist2 < 4) {
-                xtNow.called = true;
-                var xtB2 = bearing(state.lat, state.lon, xtNow.lat, xtNow.lon);
-                var xtRel2 = ((xtB2 - state.heading + 540) % 360) - 180;
-                var xtClock = ((Math.round(xtRel2 / 30) + 12 - 1) % 12) + 1;
-                xtNow.callTxt = 'TRAFFIC — ' + xtClock + " o'clock, " + Math.max(1, Math.round(xtDist2)) + ' miles, similar altitude';
-                xtNow.calledAt = timeRef.current;
-                if (typeof skyAnnounce === 'function') skyAnnounce('Traffic, ' + xtClock + " o'clock, " + Math.max(1, Math.round(xtDist2)) + ' miles, similar altitude. Look outside.');
-              }
-              if (xtDist2 > 12 || timeRef.current - xtNow.spawnedAt > 240) hudRef.current._xtraffic = null;
-            }
-            drawCrossTraffic(gfx, W, H, horizonY, state, timeRef.current);
-
             // Hot air balloons drifting at low-mid altitude.
             drawHotAirBalloons(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
@@ -18199,6 +18224,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               });
             }
           }
+
+          // ── Converging traffic: spawn/advance in the loop (owns dt), draw pure ──
+          // OUTSIDE the !threeLoaded gate: this used to live in the 2D-fallback
+          // branch, which meant that whenever the 3D terrain was active (THREE
+          // loads on any online machine — the common case) traffic never
+          // spawned and the TCAS advisory never fired. The sprite + pill are
+          // bearing-projected screen-space draws, so they overlay the 3D world
+          // exactly like the rest of the HUD.
+          var xtNow = hudRef.current._xtraffic;
+          var xtAgl = state.altitude - (state.fieldElev || 0);
+          if (!xtNow && !state.onGround && xtAgl > 800 && timeRef.current > 60
+              && (timeRef.current % 120) < dt * 2) {
+            var xtHdgRad = state.heading * Math.PI / 180;
+            var xtCosLat = Math.max(0.05, Math.cos(state.lat * Math.PI / 180));
+            var xtSide = (Math.floor(timeRef.current / 120) % 2 === 0) ? 1 : -1;
+            // Convergence point ~4 nm ahead on OUR track; spawn 3 nm abeam of it
+            var xtCpLat = state.lat + Math.cos(xtHdgRad) * (4 / 60);
+            var xtCpLon = state.lon + Math.sin(xtHdgRad) * (4 / 60) / xtCosLat;
+            var xtPerp = xtHdgRad + xtSide * Math.PI / 2;
+            hudRef.current._xtraffic = {
+              lat: xtCpLat + Math.cos(xtPerp) * (3 / 60),
+              lon: xtCpLon + Math.sin(xtPerp) * (3 / 60) / xtCosLat,
+              heading: (((xtPerp + Math.PI) * 180 / Math.PI) % 360 + 360) % 360, // toward the convergence point
+              speedKts: 140,
+              alt: state.altitude + (xtSide > 0 ? 200 : -200),
+              spawnedAt: timeRef.current, called: false, callTxt: null, calledAt: 0,
+            };
+          } else if (xtNow) {
+            var xtRad2 = xtNow.heading * Math.PI / 180;
+            var xtNmSec = xtNow.speedKts / 3600;
+            xtNow.lat += Math.cos(xtRad2) * (xtNmSec / 60) * dt;
+            xtNow.lon += Math.sin(xtRad2) * (xtNmSec / 60) / Math.max(0.05, Math.cos(xtNow.lat * Math.PI / 180)) * dt;
+            var xtDist2 = haversineNm(state.lat, state.lon, xtNow.lat, xtNow.lon);
+            if (!xtNow.called && xtDist2 < 4) {
+              xtNow.called = true;
+              var xtB2 = bearing(state.lat, state.lon, xtNow.lat, xtNow.lon);
+              var xtRel2 = ((xtB2 - state.heading + 540) % 360) - 180;
+              var xtClock = ((Math.round(xtRel2 / 30) + 12 - 1) % 12) + 1;
+              xtNow.callTxt = 'TRAFFIC — ' + xtClock + " o'clock, " + Math.max(1, Math.round(xtDist2)) + ' miles, similar altitude';
+              xtNow.calledAt = timeRef.current;
+              if (typeof skyAnnounce === 'function') skyAnnounce('Traffic, ' + xtClock + " o'clock, " + Math.max(1, Math.round(xtDist2)) + ' miles, similar altitude. Look outside.');
+            }
+            if (xtDist2 > 12 || timeRef.current - xtNow.spawnedAt > 240) hudRef.current._xtraffic = null;
+          }
+          drawCrossTraffic(gfx, W, H, horizonY, state, timeRef.current);
 
           // Horizon line — plus a pitch ladder of climb/dive marks above and
           // below. Each rung is the standard length/spacing convention: longer
@@ -22046,6 +22116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       bearing: bearing,
       jetStreamTailwindKts: jetStreamTailwindKts,
       composeGroundSpeedKts: composeGroundSpeedKts,
+      pushTrackPoint: pushTrackPoint,
       WAYPOINTS: WAYPOINTS, LESSONS: LESSONS, GEO_PLACES: GEO_PLACES,
       CHALLENGES: CHALLENGES, SPRINT_ROUTES: SPRINT_ROUTES, AIRCRAFT: AIRCRAFT,
       ACHIEVEMENTS: ACHIEVEMENTS, WORLD_LABELS: WORLD_LABELS,
