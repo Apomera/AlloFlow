@@ -2782,6 +2782,17 @@
       });
     }, [index.data, selectedCollectionId, collectionBooks]);
 
+    // One-tap chips for the best-stocked home languages on this shelf, so a
+    // family finds books in their language without hunting the 59-entry
+    // dropdown. Data-driven (top non-English by count), so it self-maintains
+    // as the catalog grows and only appears where the shelf is multilingual.
+    var homeLanguages = useMemo(function () {
+      return languages
+        .filter(function (l) { return l.name !== 'English'; })
+        .sort(function (a, b) { return b.count - a.count; })
+        .slice(0, 10);
+    }, [languages]);
+
     var sourceOptions = useMemo(function () {
       var counts = {};
       collectionBooks.forEach(function (b) {
@@ -3045,6 +3056,29 @@
             title: tr('readinglib_search_all_hint', 'Include books from every collection in search results'),
           }, '🔎 ' + tr('readinglib_search_all', 'All collections'))
         ),
+        // Home-language quick picks — only on multilingual shelves (2+ non-
+        // English languages), so English-only shelves (History/Study) stay clean.
+        homeLanguages.length >= 2 ? e('div', {
+          className: 'flex flex-wrap items-center gap-1.5 pb-3',
+          'data-testid': 'home-languages',
+        },
+          e('span', { className: 'text-[12px] font-semibold text-slate-500 mr-0.5' }, '🌍 ' + tr('readinglib_home_languages', 'Home languages:')),
+          e('button', {
+            className: 'px-2.5 py-1 rounded-full text-[12px] font-semibold border ' +
+              (!filters.language ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'),
+            onClick: function () { setFilters(Object.assign({}, filters, { language: '' })); },
+            'aria-pressed': !filters.language,
+          }, tr('readinglib_all_languages', 'All languages')),
+          homeLanguages.map(function (l) {
+            var active = filters.language === l.name;
+            return e('button', {
+              key: l.name,
+              className: 'px-2.5 py-1 rounded-full text-[12px] font-semibold border ' +
+                (active ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50'),
+              onClick: function () { setFilters(Object.assign({}, filters, { language: active ? '' : l.name })); },
+              'aria-pressed': active,
+            }, l.name + ' · ' + l.count);
+          })) : null,
         // status
         e('div', { className: 'text-sm text-slate-500 pb-2' },
           index.status === 'loading' ? tr('readinglib_loading', 'Loading the library…') :

@@ -229,6 +229,28 @@ describe('browse view', () => {
     expect(textOf(host)).toContain(cardEntry.title);
   });
 
+  it('offers home-language quick-pick chips that filter the shelf', async () => {
+    // The Stories shelf is multilingual, so the chip row appears; pick the
+    // best-stocked non-English language as a deterministic fixture.
+    // Match the module's count basis: all Stories-shelf books (storyweaver +
+    // bloom, cards included), non-English, ranked by count.
+    const stories = index.books.filter((b) => ['storyweaver', 'bloom'].includes(b.sourceId || 'storyweaver'));
+    const counts = {};
+    stories.forEach((b) => { if (b.language !== 'English') counts[b.language] = (counts[b.language] || 0) + 1; });
+    const topLang = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+    expect(topLang).toBeTruthy();
+    await mount();
+    await chooseStories();
+    const row = host.querySelector('[data-testid="home-languages"]');
+    expect(row).toBeTruthy();
+    expect(textOf(row)).toContain('Home languages');
+    // Tapping the language's chip drives the same filter as the dropdown.
+    clickByText(row, 'button', topLang);
+    await flush();
+    const langSelect = host.querySelector('select[aria-label="Language"]');
+    expect(langSelect.value).toBe(topLang);
+  });
+
   it('the "Readable in app" toggle hides link-out source cards', async () => {
     await mount();
     await chooseCollection('History & primary sources');
