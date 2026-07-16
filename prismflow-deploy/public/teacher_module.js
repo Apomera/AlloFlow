@@ -1557,7 +1557,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         });
         const totalResponses = Object.keys(responses || {}).length;
         const wrongCount = totalResponses - correctCount;
-        const damage = correctCount * 10;
+        const bossMaxHP = bossStats?.maxHP || 1e3;
+        const quizLength = Math.max(1, generatedContent?.data?.questions?.length || 10);
+        const perQuestionBudget = bossMaxHP / quizLength;
+        const answerAccuracy = totalResponses > 0 ? correctCount / totalResponses : 0;
+        const damage = Math.round(answerAccuracy * perQuestionBudget * 1.2);
         const currentHP = bossStats?.currentHP || 1e3;
         const newHP = Math.max(0, currentHP - damage);
         const difficultyMultiplier = bossStats?.difficulty === "easy" ? 0.5 : bossStats?.difficulty === "hard" ? 1.5 : 1;
@@ -1579,10 +1583,15 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         };
         const existingLog = bossStats?.battleLog || [];
         updatePayload["quizState.bossStats.battleLog"] = [...existingLog, battleLogEntry];
-        if (newHP <= 0 && newClassHP > 0) {
+        const isLastQuestion = currentQuestionIndex >= quizLength - 1;
+        if (newHP <= 0) {
           updatePayload["quizState.phase"] = "boss-defeated";
-        } else if (newClassHP <= 0 && newHP > 0) {
+        } else if (newClassHP <= 0) {
           updatePayload["quizState.phase"] = "class-defeated";
+        } else if (isLastQuestion) {
+          const bossPct = newHP / bossMaxHP;
+          const classPct = newClassHP / (bossStats?.classMaxHP || 100);
+          updatePayload["quizState.phase"] = classPct >= bossPct ? "boss-defeated" : "class-defeated";
         }
         if (damage > 0 && bossStats?.image) {
           triggerBossVisualUpdate(bossStats.image, newHP <= 0 ? "defeated" : "hurt");
@@ -1598,8 +1607,13 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
             if (isCorrect(ansIdx)) teamStats[teamColor].correct++;
           }
         });
+        const teamMemberCounts = {};
+        Object.values(sessionData.quizState.teams || {}).forEach((color) => {
+          if (color) teamMemberCounts[color] = (teamMemberCounts[color] || 0) + 1;
+        });
         Object.entries(teamStats).forEach(([team, stats]) => {
-          const percentage2 = stats.total > 0 ? stats.correct / stats.total : 0;
+          const denominator = Math.max(stats.total, teamMemberCounts[team] || 0, 1);
+          const percentage2 = stats.correct / denominator;
           const pointsEarned = Math.round(percentage2 * 1e3);
           const oldScore = currentScores[team] || 0;
           updatePayload[`quizState.teamScores.${team}`] = oldScore + pointsEarned;

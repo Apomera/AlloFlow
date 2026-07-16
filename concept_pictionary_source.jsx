@@ -18,6 +18,28 @@
 // ── Helpers ─────────────────────────────────────────────────────────────
 const _pic_genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
+// ── Guess match SUGGESTION (2026-07-16) ─────────────────────────────────────
+// Guesses are deliberately teacher-judged (this is a concept probe, and near-miss
+// vocabulary is teaching signal) — so this NEVER auto-awards. It only highlights
+// guesses that look like the concept so the teacher can spot them in a busy feed.
+// Tolerates case, accents, punctuation, articles, spacing, and simple plurals.
+const _pic_normalizeGuess = (s) => String(s || '')
+  .toLowerCase()
+  .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+  .replace(/[^a-z0-9\s]/g, ' ')
+  .replace(/\b(the|a|an)\b/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+const _pic_guessLooksRight = (guess, concept) => {
+  const g = _pic_normalizeGuess(guess);
+  const c = _pic_normalizeGuess(concept);
+  if (!g || !c) return false;
+  if (g === c) return true;
+  if (g.includes(c) || c.includes(g)) return true;   // "the water cycle!!" vs "water cycle"
+  const stem = (w) => w.replace(/(es|s)$/, '');
+  return g.split(' ').map(stem).join(' ') === c.split(' ').map(stem).join(' ');
+};
+
 // Fullscreen helper hook — works against the standard Fullscreen API with
 // the webkit-prefixed fallback for older Safari. Returns [isFullscreen, toggle].
 // Pass a ref to the element you want fullscreened. Cleans up the listener on
@@ -1212,10 +1234,16 @@ const PictionaryHostView = React.memo((props) => {
                 <div className="text-xs text-slate-600 italic">No guesses yet.</div>
               ) : (
                 <ul className="space-y-1 max-h-48 overflow-y-auto">
-                  {guessFeed.slice().reverse().map((g) => (
-                    <li key={g.id} className={`flex items-center gap-2 p-2 rounded ${g.marked === 'correct' ? 'bg-emerald-50 border border-emerald-200' : 'hover:bg-slate-50'}`}>
+                  {guessFeed.slice().reverse().map((g) => {
+                    // Suggest-only highlight — the teacher stays the judge.
+                    const looksRight = roundActive && g.marked == null && _pic_guessLooksRight(g.text, concept);
+                    return (
+                    <li key={g.id} className={`flex items-center gap-2 p-2 rounded ${g.marked === 'correct' ? 'bg-emerald-50 border border-emerald-200' : looksRight ? 'bg-amber-50 border border-amber-300' : 'hover:bg-slate-50'}`}>
                       <span className="font-bold text-slate-700 text-xs flex-shrink-0">{g.codename}:</span>
                       <span className="flex-1 text-sm text-slate-800">{g.text}</span>
+                      {looksRight && (
+                        <span className="text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-300 rounded px-1.5 py-0.5 flex-shrink-0" title="Looks like the concept — your call">≈ match?</span>
+                      )}
                       {roundActive && g.marked == null ? (
                         <button type="button" onClick={() => handleMarkCorrect(g.id)} className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700">✓ correct</button>
                       ) : g.marked === 'correct' ? (
@@ -1228,7 +1256,8 @@ const PictionaryHostView = React.memo((props) => {
                         className={`px-1.5 py-0.5 text-[10px] rounded border ${mutedGuessers[g.uid] ? 'bg-slate-700 text-white border-slate-800' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'}`}
                       >{mutedGuessers[g.uid] ? '🔇' : '🔊'}</button>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               )}
             </div>

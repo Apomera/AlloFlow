@@ -1890,7 +1890,19 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 });
                 const totalResponses = Object.keys(responses || {}).length;
                 const wrongCount = totalResponses - correctCount;
-                const damage = correctCount * 10;
+                // ── Class-size-fair boss damage (2026-07-16) ────────────────────
+                // Was `correctCount * 10` against a fixed 1000 maxHP: a class of 8
+                // answering PERFECTLY dealt 80/question (needs 13 flawless questions
+                // — unwinnable on a 10-question quiz), while a class of 30 killed the
+                // boss in 4. Damage is now accuracy × a per-question HP budget, so
+                // pacing is identical for any roster size: a perfect class finishes
+                // with ~2 questions to spare (the 1.2 headroom), a 50%-accurate class
+                // goes down to the wire.
+                const bossMaxHP = bossStats?.maxHP || 1000;
+                const quizLength = Math.max(1, generatedContent?.data?.questions?.length || 10);
+                const perQuestionBudget = bossMaxHP / quizLength;
+                const answerAccuracy = totalResponses > 0 ? (correctCount / totalResponses) : 0;
+                const damage = Math.round(answerAccuracy * perQuestionBudget * 1.2);
                 const currentHP = bossStats?.currentHP || 1000;
                 const newHP = Math.max(0, currentHP - damage);
                 const difficultyMultiplier = bossStats?.difficulty === 'easy' ? 0.5 : bossStats?.difficulty === 'hard' ? 1.5 : 1.0;
@@ -1914,10 +1926,24 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 };
                 const existingLog = bossStats?.battleLog || [];
                 updatePayload["quizState.bossStats.battleLog"] = [...existingLog, battleLogEntry];
-                if (newHP <= 0 && newClassHP > 0) {
+                const isLastQuestion = currentQuestionIndex >= quizLength - 1;
+                if (newHP <= 0) {
+                    // Includes the both-hit-zero edge (previously fell through to
+                    // plain 'revealed'): the class landed the killing blow while
+                    // falling — count it as the heroic win.
                     updatePayload["quizState.phase"] = "boss-defeated";
-                } else if (newClassHP <= 0 && newHP > 0) {
+                } else if (newClassHP <= 0) {
                     updatePayload["quizState.phase"] = "class-defeated";
+                } else if (isLastQuestion) {
+                    // ── Last-question resolution (2026-07-16) ──────────────────
+                    // Previously, running out of questions with both HP bars alive
+                    // simply STALLED the battle — no ending, no debrief. The final
+                    // reveal now resolves by comparing remaining HP percentages
+                    // (class wins ties — be generous), reusing the existing phases
+                    // so student overlays need no changes.
+                    const bossPct = newHP / bossMaxHP;
+                    const classPct = newClassHP / (bossStats?.classMaxHP || 100);
+                    updatePayload["quizState.phase"] = classPct >= bossPct ? "boss-defeated" : "class-defeated";
                 }
                 if (damage > 0 && bossStats?.image) {
                     triggerBossVisualUpdate(bossStats.image, newHP <= 0 ? 'defeated' : 'hurt');
@@ -1934,8 +1960,19 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                         if (isCorrect(ansIdx)) teamStats[teamColor].correct++;
                     }
                 });
+                // ── Team fairness (2026-07-16): score against TEAM SIZE, not just
+                // responders. Previously a team where a single student answered
+                // (correctly) scored a perfect 1000, beating a team with 5 of 6
+                // correct (833) — rewarding non-participation. Every teammate now
+                // counts in the denominator, so answering (and being right) is the
+                // only way to score.
+                const teamMemberCounts = {};
+                Object.values(sessionData.quizState.teams || {}).forEach((color) => {
+                    if (color) teamMemberCounts[color] = (teamMemberCounts[color] || 0) + 1;
+                });
                 Object.entries(teamStats).forEach(([team, stats]) => {
-                    const percentage = stats.total > 0 ? (stats.correct / stats.total) : 0;
+                    const denominator = Math.max(stats.total, teamMemberCounts[team] || 0, 1);
+                    const percentage = stats.correct / denominator;
                     const pointsEarned = Math.round(percentage * 1000);
                     const oldScore = currentScores[team] || 0;
                     updatePayload[`quizState.teamScores.${team}`] = oldScore + pointsEarned;
