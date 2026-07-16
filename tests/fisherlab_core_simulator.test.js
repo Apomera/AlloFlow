@@ -154,6 +154,21 @@ describe('Fisher Lab voyage progression', () => {
     expect(evaluateCoreCollisionRisk(20, 20, 20, 30, 30)).toMatchObject({ id: 'monitoring', closing: false, opening: false });
   });
 
+  it('keeps a capped, immutable history of timed radar plots', () => {
+    const { appendCoreRadarPlot } = window.__FisherLabCore;
+    const original = [{ bearing: 30, range: 20 }];
+    const next = appendCoreRadarPlot(original, 31, 17, 6);
+
+    expect(original).toEqual([{ bearing: 30, range: 20 }]);
+    expect(next).toEqual([{ bearing: 30, range: 20 }, { bearing: 31, range: 17 }]);
+
+    let trail = [];
+    for (let plot = 0; plot < 8; plot += 1) trail = appendCoreRadarPlot(trail, plot, 20 - plot, 6);
+    expect(trail).toHaveLength(6);
+    expect(trail.map((entry) => entry.bearing)).toEqual([2, 3, 4, 5, 6, 7]);
+    expect(appendCoreRadarPlot([], 0, -4, 6)[0].range).toBe(0);
+  });
+
   it('grades prompt, well-separated encounters without rewarding incorrect or timed-out work', () => {
     const { gradeCoreEncounter } = window.__FisherLabCore;
 
@@ -209,7 +224,11 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('Observe crossing 5 s');
     expect(source).toContain('evaluateCoreCollisionRisk');
     expect(source).toContain('CPA WATCH');
-    expect(source).toContain('Closest point of approach watch.');
+    expect(source).toContain('Closest point of approach watch with ');
+    expect(source).toContain('appendCoreRadarPlot');
+    expect(source).toContain('timed radar plots');
+    expect(source).toContain('Steady bearing + shrinking range = collision risk');
+    expect(source).toContain("'PLOT ' + trafficTrackDots.length + '/6 - 0.8 s interval'");
     expect(source).toContain('gradeCoreEncounter');
     expect(source).toContain('Traffic encounter debrief.');
     expect(source).toContain('COLREGS Rule 19');

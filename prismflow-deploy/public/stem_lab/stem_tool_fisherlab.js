@@ -535,6 +535,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     };
     return { id: id, label: labels[id], bearingChange: bearingChange, rangeChange: rangeChange, constantBearing: constantBearing, closing: closing, opening: opening };
   }
+  function appendCoreRadarPlot(history, bearing, range, maxPoints) {
+    var limit = Math.max(2, maxPoints || 6);
+    var next = Array.isArray(history) ? history.slice() : [];
+    next.push({ bearing: Number(bearing) || 0, range: Math.max(0, Number(range) || 0) });
+    return next.slice(-limit);
+  }
   function gradeCoreEncounter(correct, reviewed, maneuverType, elapsed, closestRange) {
     if (!correct || reviewed) return { id: 'review', label: 'Review required', bonus: 0 };
     var promptLimit = maneuverType === 'stand-on' ? 8 : maneuverType === 'restricted' ? 9 : 7;
@@ -579,6 +585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     evaluateCoreEncounter: evaluateCoreEncounter,
     evaluateCoreManeuver: evaluateCoreManeuver,
     evaluateCoreCollisionRisk: evaluateCoreCollisionRisk,
+    appendCoreRadarPlot: appendCoreRadarPlot,
     gradeCoreEncounter: gradeCoreEncounter,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
@@ -8928,6 +8935,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       trafficStartRange: 0,
       trafficStartBearing: 0,
       trafficClosestRange: Infinity,
+      trafficTrackHistory: [],
+      trafficTrackSampleSeconds: 0,
       trafficGradeId: null,
       trafficGradeLabel: null,
       trafficGradeBonus: 0,
@@ -9145,6 +9154,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       boatState.trafficStartRange = boat.position.distanceTo(trafficVessel.position);
       boatState.trafficStartBearing = relativeCoreBearing(boatState.heading, boat.position.x, boat.position.z, trafficVessel.position.x, trafficVessel.position.z) * 180 / Math.PI;
       boatState.trafficClosestRange = boatState.trafficStartRange;
+      boatState.trafficTrackHistory = appendCoreRadarPlot([], boatState.trafficStartBearing, boatState.trafficStartRange, 6);
+      boatState.trafficTrackSampleSeconds = 0;
       setPaused(false, false);
       statusCb({ type: result.correct ? 'score' : 'violation', text: (result.correct ? '+' : '') + scored.delta + ' points · ' + result.encounter.explanation });
       statusCb({ type: 'guidance', text: 'Helm drill: ' + encounterProfile.maneuverInstruction });
@@ -9472,6 +9483,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var trafficRange = boat.position.distanceTo(trafficVessel.position);
       var trafficRelativeBearing = relativeCoreBearing(boatState.heading, boat.position.x, boat.position.z, trafficVessel.position.x, trafficVessel.position.z) * 180 / Math.PI;
       if (boatState.trafficDecisionMade && !boatState.trafficManeuverComplete) {
+        boatState.trafficTrackSampleSeconds += dt;
+        if (boatState.trafficTrackSampleSeconds >= 0.8) {
+          boatState.trafficTrackHistory = appendCoreRadarPlot(boatState.trafficTrackHistory, trafficRelativeBearing, trafficRange, 6);
+          boatState.trafficTrackSampleSeconds = 0;
+        }
         boatState.trafficManeuverSeconds += dt;
         boatState.trafficClosestRange = Math.min(boatState.trafficClosestRange, trafficRange);
         if (trafficManeuver.complete) {
@@ -9700,6 +9716,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         trafficPortTurnDegrees: trafficManeuver.portTurnDegrees || 0,
         trafficRange: trafficRange,
         trafficRelativeBearing: trafficRelativeBearing,
+        trafficTrackHistory: boatState.trafficTrackHistory.slice(),
         trafficRiskId: trafficRisk.id,
         trafficRiskLabel: trafficRisk.label,
         trafficBearingChange: trafficRisk.bearingChange,
@@ -9826,6 +9843,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.trafficStartRange = 0;
         boatState.trafficStartBearing = 0;
         boatState.trafficClosestRange = Infinity;
+        boatState.trafficTrackHistory = [];
+        boatState.trafficTrackSampleSeconds = 0;
         boatState.trafficGradeId = null;
         boatState.trafficGradeLabel = null;
         boatState.trafficGradeBonus = 0;
@@ -10788,6 +10807,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var trafficPlotX = Math.sin(trafficPlotAngle) * trafficPlotRadius;
       var trafficPlotY = -Math.cos(trafficPlotAngle) * trafficPlotRadius;
       var trafficRiskColor = hud.trafficRiskId === 'collision-risk' ? '#fca5a5' : hud.trafficRiskId === 'opening' ? '#86efac' : hud.trafficRiskId === 'bearing-changing' ? '#7dd3fc' : '#fde68a';
+      var trafficTrackHistory = Array.isArray(hud.trafficTrackHistory) ? hud.trafficTrackHistory : [];
+      var trafficTrackDots = trafficTrackHistory.map(function(plot, plotIndex) {
+        var angle = (plot.bearing || 0) * Math.PI / 180;
+        var radius = Math.min(22, Math.max(7, (plot.range || 0) / 38 * 22));
+        return { x: Math.sin(angle) * radius, y: -Math.cos(angle) * radius, opacity: 0.24 + ((plotIndex + 1) / Math.max(1, trafficTrackHistory.length)) * 0.48 };
+      });
+      var trafficPlotLesson = hud.trafficConstantBearing && hud.trafficClosing ? 'Steady bearing + shrinking range = collision risk' : hud.trafficOpening ? 'Growing range = contact opening' : 'Compare each timed bearing and range plot';
       var trafficGradeColor = hud.trafficGradeId === 'excellent' ? '#fde68a' : hud.trafficGradeId === 'safe' ? '#86efac' : hud.trafficGradeId === 'review' ? '#fdba74' : '#bae6fd';
       var trafficIsStandOn = hud.trafficManeuverType === 'stand-on';
       var trafficIsRestricted = hud.trafficManeuverType === 'restricted';
@@ -10925,13 +10951,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 )
               ),
               hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('div', { style: { marginTop: 7, paddingTop: 7, borderTop: '1px solid rgba(125,211,252,0.25)', display: 'grid', gap: 4, textAlign: 'left' } },
-                h('div', { 'aria-label': 'Closest point of approach watch. ' + (hud.trafficRiskLabel || 'Monitoring bearing and range') + '. Bearing change ' + (hud.trafficBearingChange || 0).toFixed(1) + ' degrees. Range change ' + (hud.trafficRangeChange || 0).toFixed(1) + ' simulation units.', style: { display: 'grid', gridTemplateColumns: '54px minmax(0,1fr)', gap: 7, alignItems: 'center', paddingBottom: 5, marginBottom: 1, borderBottom: '1px solid rgba(125,211,252,0.18)' } },
+                h('div', { 'aria-label': 'Closest point of approach watch with ' + trafficTrackDots.length + ' timed radar plots. ' + (hud.trafficRiskLabel || 'Monitoring bearing and range') + '. Bearing change ' + (hud.trafficBearingChange || 0).toFixed(1) + ' degrees. Range change ' + (hud.trafficRangeChange || 0).toFixed(1) + ' simulation units.', style: { display: 'grid', gridTemplateColumns: '54px minmax(0,1fr)', gap: 7, alignItems: 'center', paddingBottom: 5, marginBottom: 1, borderBottom: '1px solid rgba(125,211,252,0.18)' } },
                   h('div', { 'aria-hidden': 'true', style: { position: 'relative', width: 50, height: 50, borderRadius: '50%', border: '1px solid rgba(125,211,252,0.55)', background: 'radial-gradient(circle, transparent 31%, rgba(125,211,252,0.18) 32%, transparent 34%, transparent 64%, rgba(125,211,252,0.18) 65%, transparent 67%), linear-gradient(90deg, transparent 49%, rgba(125,211,252,0.22) 50%, transparent 52%), linear-gradient(transparent 49%, rgba(125,211,252,0.22) 50%, transparent 52%)' } },
                     h('span', { style: { position: 'absolute', left: '50%', top: '50%', width: 6, height: 8, borderRadius: '50% 50% 35% 35%', background: '#f8fafc', transform: 'translate(-50%,-50%)' } }),
+                    trafficTrackDots.map(function(dot, dotIndex) {
+                      return h('span', { key: 'plot-' + dotIndex, style: { position: 'absolute', left: '50%', top: '50%', width: 4, height: 4, borderRadius: '50%', background: '#7dd3fc', opacity: dot.opacity, boxShadow: '0 0 4px rgba(125,211,252,0.65)', transform: 'translate(calc(-50% + ' + dot.x.toFixed(1) + 'px), calc(-50% + ' + dot.y.toFixed(1) + 'px))' } });
+                    }),
                     h('span', { style: { position: 'absolute', left: '50%', top: '50%', width: 7, height: 7, borderRadius: '50%', background: trafficRiskColor, border: '1px solid #020617', boxShadow: '0 0 7px ' + trafficRiskColor, transform: 'translate(calc(-50% + ' + trafficPlotX.toFixed(1) + 'px), calc(-50% + ' + trafficPlotY.toFixed(1) + 'px))', transition: 'transform 0.15s linear' } })
                   ),
                   h('div', { style: { minWidth: 0 } },
+                    h('span', { style: { display: 'block', marginBottom: 2, color: '#7dd3fc', fontSize: 8, fontWeight: 900 } }, 'PLOT ' + trafficTrackDots.length + '/6 - 0.8 s interval'),
                     h('strong', { style: { display: 'block', color: trafficRiskColor, fontSize: 9, lineHeight: 1.3 } }, 'CPA WATCH · ' + (hud.trafficRiskLabel || 'Monitoring bearing and range')),
+                    h('span', { style: { display: 'block', marginTop: 3, color: '#dbeafe', fontSize: 8, lineHeight: 1.3 } }, trafficPlotLesson),
                     h('span', { style: { display: 'block', marginTop: 3, color: '#dbeafe', fontSize: 8 } }, 'Bearing Δ ' + (hud.trafficBearingChange || 0).toFixed(1) + '° · Range Δ ' + ((hud.trafficRangeChange || 0) > 0 ? '+' : '') + (hud.trafficRangeChange || 0).toFixed(1))
                   )
                 ),
