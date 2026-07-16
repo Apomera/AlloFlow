@@ -24,6 +24,112 @@ window.SelHub = window.SelHub || {
     document.body.appendChild(lr);
   })();
 
+  // WCAG 2.2: replace blocking native text entry with a labelled form dialog.
+  // The service supports one or more fields so related milestone data can be
+  // entered together instead of through disconnected sequential prompts.
+  var civicActionFormSequence = 0;
+  function askCivicActionForm(options) {
+    return new Promise(function(resolve) {
+      if (typeof document === 'undefined' || !document.body) { resolve(null); return; }
+      options = options || {};
+      var fields = Array.isArray(options.fields) ? options.fields : [];
+      if (!fields.length) { resolve(null); return; }
+      civicActionFormSequence += 1;
+      var idBase = 'civic-action-form-' + civicActionFormSequence;
+      var opener = document.activeElement;
+      var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+        return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+      });
+      var overlay = document.createElement('div');
+      overlay.setAttribute('role', 'presentation');
+      overlay.setAttribute('data-civic-action-form', 'true');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,.78);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+      var dialog = document.createElement('form');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', idBase + '-title');
+      dialog.setAttribute('aria-describedby', idBase + '-description');
+      dialog.style.cssText = 'box-sizing:border-box;width:min(34rem,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);font-family:system-ui,sans-serif;';
+      var title = document.createElement('h2');
+      title.id = idBase + '-title';
+      title.textContent = String(options.title || 'Add an item');
+      title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#0f172a;';
+      var description = document.createElement('p');
+      description.id = idBase + '-description';
+      description.textContent = String(options.description || 'Complete the fields below.');
+      description.style.cssText = 'margin:0 0 16px;color:#334155;line-height:1.55;';
+      dialog.appendChild(title); dialog.appendChild(description);
+      var inputs = [];
+      fields.forEach(function(field, index) {
+        var fieldId = idBase + '-field-' + index;
+        var group = document.createElement('div');
+        group.style.cssText = 'margin-top:14px;';
+        var label = document.createElement('label');
+        label.setAttribute('for', fieldId);
+        label.textContent = String(field.label || 'Value');
+        label.style.cssText = 'display:block;margin-bottom:6px;font-weight:700;color:#0f172a;';
+        var input = document.createElement('input');
+        input.id = fieldId;
+        input.name = String(field.name || ('field' + index));
+        input.type = String(field.type || 'text');
+        input.value = String(field.value || '');
+        input.required = field.required !== false;
+        if (input.required) input.setAttribute('aria-required', 'true');
+        if (field.placeholder) input.placeholder = String(field.placeholder);
+        if (field.maxLength) input.maxLength = Number(field.maxLength);
+        input.style.cssText = 'box-sizing:border-box;width:100%;min-height:44px;padding:9px 11px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font:inherit;';
+        group.appendChild(label); group.appendChild(input); dialog.appendChild(group);
+        inputs.push(input);
+      });
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button'; cancel.textContent = String(options.cancelText || 'Cancel');
+      cancel.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;cursor:pointer;';
+      var submit = document.createElement('button');
+      submit.type = 'submit'; submit.textContent = String(options.submitText || 'Add');
+      submit.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #0f766e;border-radius:8px;background:#0f766e;color:#fff;font-weight:700;cursor:pointer;';
+      actions.appendChild(cancel); actions.appendChild(submit); dialog.appendChild(actions);
+      overlay.appendChild(dialog); document.body.appendChild(overlay);
+      blocked.forEach(function(entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+      var settled = false;
+      function finish(values) {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener('keydown', onKeyDown, true);
+        try { overlay.remove(); } catch (e) {}
+        blocked.forEach(function(entry) {
+          if (!entry.hadInert) entry.el.removeAttribute('inert');
+          if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden');
+          else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+        });
+        try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+        resolve(values);
+      }
+      function onKeyDown(event) {
+        event.stopImmediatePropagation();
+        if (event.key === 'Escape') { event.preventDefault(); finish(null); return; }
+        if (event.key !== 'Tab') return;
+        var focusable = inputs.concat([cancel, submit]);
+        var first = focusable[0]; var last = focusable[focusable.length - 1];
+        if (!dialog.contains(document.activeElement)) { event.preventDefault(); first.focus(); return; }
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+      cancel.addEventListener('click', function() { finish(null); });
+      overlay.addEventListener('click', function(event) { if (event.target === overlay) finish(null); });
+      dialog.addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (!dialog.checkValidity()) { dialog.reportValidity(); return; }
+        var values = {};
+        inputs.forEach(function(input) { values[input.name] = input.value.trim(); });
+        finish(values);
+      });
+      window.addEventListener('keydown', onKeyDown, true);
+      inputs[0].focus();
+    });
+  }
+
   // ── Audio + WCAG (auto-injected) ──
   var _civicAC = null;
   function getCivicAC() { if (!_civicAC) { try { _civicAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_civicAC && _civicAC.state==="suspended") { try { _civicAC.resume(); } catch(e) {} } return _civicAC; }
@@ -2413,10 +2519,15 @@ window.SelHub = window.SelHub || {
             { id: 'self', label: 'Me', x: 50, y: 30, color: '#06b6d4', isMe: true }
           ];
           function updateStakeholders(newList) { upd('powerMapStakeholders', newList); }
-          function addStakeholder() {
-            var label = prompt('Who is this stakeholder? (e.g., "Principal", "City Council", "Local newspaper")');
-            if (!label || !label.trim()) return;
-            updateStakeholders(stakeholders.concat([{ id: 'sh_' + Date.now(), label: label.trim(), x: 50, y: 50, color: ['#f59e0b','#22c55e','#a855f7','#ef4444','#ec4899'][stakeholders.length % 5] }]));
+          async function addStakeholder() {
+            var values = await askCivicActionForm({
+              title: 'Add a stakeholder',
+              description: 'Identify a person, group, or institution connected to this issue.',
+              submitText: 'Add stakeholder',
+              fields: [{ name: 'label', label: 'Stakeholder name or role', placeholder: 'Principal, City Council, local newspaper', maxLength: 100 }]
+            });
+            if (!values) return;
+            updateStakeholders(stakeholders.concat([{ id: 'sh_' + Date.now(), label: values.label, x: 50, y: 50, color: ['#f59e0b','#22c55e','#a855f7','#ef4444','#ec4899'][stakeholders.length % 5] }]));
           }
           function removeSh(id) {
             if (id === 'self') return;
@@ -2512,10 +2623,15 @@ window.SelHub = window.SelHub || {
             { id: 'pros',   label: '🛟 Pros/services', color: '#10b981' }
           ];
           var support = ['emotional', 'practical', 'info', 'connections', 'voice'];
-          function addAlly() {
-            var label = prompt('Who? (Name or relationship)');
-            if (!label || !label.trim()) return;
-            upd('alliesWeb', allies.concat([{ id: 'a_' + Date.now(), label: label.trim(), cat: 'school', supports: [] }]));
+          async function addAlly() {
+            var values = await askCivicActionForm({
+              title: 'Add an ally',
+              description: 'Enter a name, relationship, or role for someone in your support network.',
+              submitText: 'Add ally',
+              fields: [{ name: 'label', label: 'Ally name or relationship', placeholder: 'Teacher, friend, family member', maxLength: 100 }]
+            });
+            if (!values) return;
+            upd('alliesWeb', allies.concat([{ id: 'a_' + Date.now(), label: values.label, cat: 'school', supports: [] }]));
           }
           function removeAlly(id) { upd('alliesWeb', allies.filter(function(a) { return a.id !== id; })); }
           function setCat(id, cat) { upd('alliesWeb', allies.map(function(a) { return a.id === id ? Object.assign({}, a, { cat: cat }) : a; })); }
@@ -2586,11 +2702,18 @@ window.SelHub = window.SelHub || {
         // ═══ ACTION TIMELINE ═══ visual milestone tracker
         tab === 'timeline' && (function() {
           var milestones = d.actionMilestones || [];
-          function addMilestone() {
-            var label = prompt('What\'s the milestone?');
-            if (!label || !label.trim()) return;
-            var dateStr = prompt('Target date? (YYYY-MM-DD or just leave blank)');
-            upd('actionMilestones', milestones.concat([{ id: 'm_' + Date.now(), label: label.trim(), date: (dateStr || '').trim(), done: false, doneOn: null }]));
+          async function addMilestone() {
+            var values = await askCivicActionForm({
+              title: 'Add an action milestone',
+              description: 'Name the milestone and optionally choose a target date.',
+              submitText: 'Add milestone',
+              fields: [
+                { name: 'label', label: 'Milestone', placeholder: 'Describe the next concrete step', maxLength: 140 },
+                { name: 'date', label: 'Target date (optional)', type: 'date', required: false }
+              ]
+            });
+            if (!values) return;
+            upd('actionMilestones', milestones.concat([{ id: 'm_' + Date.now(), label: values.label, date: values.date, done: false, doneOn: null }]));
           }
           function toggleM(id) {
             upd('actionMilestones', milestones.map(function(m) {
