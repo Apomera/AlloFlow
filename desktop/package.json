@@ -1,6 +1,6 @@
 {
   "name": "alloflow-desktop",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": true,
   "main": "electron/main.cjs",
   "description": "AlloFlow desktop (Electron) app. Split out of the repo-root package.json on 2026-07-04 so the web/CDN build (Cloudflare Pages runs `npm ci` at the repo root) never installs Electron, which was freezing the CDN build. Run `npm install` in THIS directory for desktop dev/packaging. NOTE: scripts run with cwd=desktop/ now — if any build script assumed the repo root, adjust its paths (main.cjs already uses module-relative requires, so runtime is fine). Packaging config lives HERE as electron-builder.json (paths relative to desktop/); the old repo-root electron-builder.desktop.json is the pre-split original and is superseded.",

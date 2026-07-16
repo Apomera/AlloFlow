@@ -1089,6 +1089,25 @@ class AIProvider {
         }
     }
 
+    // response_format for OpenAI-compatible jsonMode calls. LM Studio's server
+    // rejects { type: 'json_object' } outright ("'response_format.type' must
+    // be 'json_schema' or 'text'" — every jsonMode call 400'd, field report
+    // 2026-07-16), and its json_schema variant needs a full schema this
+    // generic layer doesn't have. So for LM Studio send NO response_format
+    // and lean on the prompt's JSON instruction (see _jsonPromptSuffix).
+    _openaiJsonFormat() {
+        if (this.backend === 'lmstudio') return {};
+        return { response_format: { type: 'json_object' } };
+    }
+
+    // Belt-and-braces for backends where we can't enforce JSON server-side.
+    _jsonPromptSuffix() {
+        if (this.backend === 'lmstudio') {
+            return '\n\nRespond with ONLY the valid JSON described above — no prose before or after it, no markdown code fences.';
+        }
+        return '';
+    }
+
     // ─── TEXT GENERATION ──────────────────────────────────────────────
 
     async _refreshAlloFlowLocalProfileFromRuntime() {
@@ -1307,6 +1326,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         if (search) {
             effectivePrompt = await this._webSearchAugment(prompt);
         }
+        if (json) effectivePrompt += this._jsonPromptSuffix();
 
         const payload = this.backend === 'ollama'
             ? {
@@ -1323,7 +1343,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 model: this.models.default,
                 messages: [{ role: 'user', content: effectivePrompt }],
                 max_tokens: maxTokens,
-                ...(json ? { response_format: { type: 'json_object' } } : {}),
+                ...(json ? this._openaiJsonFormat() : {}),
                 ...(temperature !== null ? { temperature } : {}),
             };
 
@@ -1379,10 +1399,11 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             promptLikelyTooLarge: localUsage && localUsage.promptLikelyTooLarge,
         };
 
+        const streamPrompt = json ? (prompt + this._jsonPromptSuffix()) : prompt;
         const payload = isOllama
             ? {
                 model: this.models.default,
-                messages: [{ role: 'user', content: prompt }],
+                messages: [{ role: 'user', content: streamPrompt }],
                 stream: true,
                 ...(json ? { format: 'json' } : {}),
                 options: {
@@ -1392,10 +1413,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }
             : {
                 model: this.models.default,
-                messages: [{ role: 'user', content: prompt }],
+                messages: [{ role: 'user', content: streamPrompt }],
                 max_tokens: maxTokens,
                 stream: true,
-                ...(json ? { response_format: { type: 'json_object' } } : {}),
+                ...(json ? this._openaiJsonFormat() : {}),
                 ...(temperature != null ? { temperature } : {}),
             };
 

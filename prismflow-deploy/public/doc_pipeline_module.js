@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -4538,8 +4538,65 @@ var createDocPipeline = function(deps) {
       throw err;
     });
   } : null;
+  // ── Local-backend PDF reroute for Vision calls ─────────────────────────────
+  // Gemini ingests whole PDFs through its vision endpoint; every other backend
+  // we support (LM Studio / Ollama / LocalAI / built-in engine / custom
+  // OpenAI-compatible) cannot — the bridge wraps the PDF bytes in an image_url
+  // data URL that the server rejects at the socket, so every audit call died
+  // as "Failed to fetch" after minutes of doomed retries (field report
+  // 2026-07-16: LM Studio + gemma-3-4b). When a local text backend is active
+  // and the payload is a PDF, extract the text layer deterministically
+  // (pdf.js, extractPdfTextDeterministic) and run the SAME prompt against the
+  // local TEXT model. Scanned PDFs (no text layer) fail fast with a clear,
+  // non-retryable message. True image payloads (PNG/JPEG) keep using the
+  // local vision path — local multimodal models handle plain images fine.
+  var _localPdfTextCache = { key: '', extracted: null };
+  var _localPdfCacheKey = function (b64) {
+    try {
+      var s = typeof b64 === 'string' ? b64 : '';
+      return s ? (s.length + ':' + s.slice(0, 64) + ':' + s.slice(-64)) : '';
+    } catch (_) { return ''; }
+  };
+  var _visionViaLocalTextModel = async function (prompt, base64Data) {
+    var key = _localPdfCacheKey(base64Data);
+    var extracted = (key && _localPdfTextCache.key === key) ? _localPdfTextCache.extracted : null;
+    if (!extracted) {
+      extracted = await extractPdfTextDeterministic(base64Data);
+      if (key) { _localPdfTextCache.key = key; _localPdfTextCache.extracted = extracted; }
+    }
+    var fullText = (extracted && extracted.fullText) || '';
+    if (!fullText || fullText.length < 40 || (extracted && extracted.isScanned)) {
+      var scanErr = new Error('This PDF has no readable text layer (it looks scanned). The local AI model cannot read scanned pages — connect Google Gemini under AI settings to audit scanned documents, or run OCR on the file first.');
+      scanErr.isConfig = true; // permanent for this document — skip the retry storm
+      throw scanErr;
+    }
+    var profile = _localTextProfile();
+    var ctx = Math.max(2048, Number(profile && profile.contextWindow) || 4096);
+    var out = Math.max(900, Number(profile && (profile.outputTokenLimit || profile.jsonOutputTokenLimit)) || 1400);
+    var budget = Math.max(4000, Math.floor((ctx - out) * 3.4) - String(prompt || '').length);
+    var docText = fullText;
+    var truncNote = '';
+    if (docText.length > budget) {
+      docText = docText.slice(0, budget);
+      truncNote = '\n\n[Note: document text truncated to fit the local model\'s context window — ' + budget + ' of ' + fullText.length + ' characters shown. Describe findings for the included portion only.]';
+      _pipeLog('Vision·local', 'PDF text truncated for the local model: ' + budget + '/' + fullText.length + ' chars (ctx ' + ctx + ')');
+    }
+    var pageCount = (extracted && extracted.pageCount) || null;
+    var merged = String(prompt || '')
+      + '\n\n--- DOCUMENT TEXT (extracted from the PDF text layer' + (pageCount ? ', ' + pageCount + ' page(s)' : '') + ') ---\n'
+      + 'Note: you are reviewing extracted TEXT, not the rendered PDF. Purely visual checks (color contrast, whether images have alt text) cannot be verified from this view — do not fabricate findings for them.\n\n'
+      + docText + truncNote;
+    return callGemini(merged);
+  };
   var callGeminiVision = _rawCallGeminiVision ? function() {
     var args = arguments;
+    // Local text backends cannot ingest PDFs through the vision path —
+    // reroute to the text-layer + local text model (see above).
+    if (String(args[2] || '') === 'application/pdf' && _usesLocalTextBackend() && callGemini) {
+      var localCallNum = ++_pipelineStats.visionCalls;
+      _pipeLog('Vision→', 'callGeminiVision #' + localCallNum + ' — rerouted to the local text model (PDF text layer)');
+      return _visionViaLocalTextModel(args[0], args[1]);
+    }
     var callNum = ++_pipelineStats.visionCalls;
     _pipeLog('Vision→', 'callGeminiVision #' + callNum);
     var t0 = performance.now();
@@ -4558,6 +4615,27 @@ var createDocPipeline = function(deps) {
   } : null;
   var callImagen = deps.callImagen;
   var addToast = deps.addToast;
+  // storageDB (batch-resume checkpoints + audit caches). The host monolith
+  // has its own binding, but this module referenced it as a bare global — a
+  // ReferenceError ("storageDB is not defined") that silently disabled batch
+  // resume checkpointing (field report 2026-07-16). Resolve lazily from deps
+  // or the UtilsPure module (which may register after this factory runs);
+  // fall back to a no-op store so checkpointing degrades quietly.
+  var _resolveStorageDb = function () {
+    try {
+      if (deps && deps.storageDB) return deps.storageDB;
+      var w = typeof window !== 'undefined' ? window : null;
+      var u = w && w.AlloModules && w.AlloModules.UtilsPure;
+      if (u && u.storageDB) return u.storageDB;
+    } catch (_) {}
+    return null;
+  };
+  var storageDB = {
+    get: async function (k) { var db = _resolveStorageDb(); return db ? db.get(k) : null; },
+    set: async function (k, v) { var db = _resolveStorageDb(); return db ? db.set(k, v) : undefined; },
+    del: async function (k) { var db = _resolveStorageDb(); return db ? db.del(k) : undefined; },
+    clear: async function () { var db = _resolveStorageDb(); return db ? db.clear() : undefined; },
+  };
   var t = deps.t;
   var isRtlLang = deps.isRtlLang || function() { return false; };
   var updateExportPreview = deps.updateExportPreview || function() {};
@@ -34747,11 +34825,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
