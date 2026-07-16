@@ -484,6 +484,44 @@
     });
   }
 
+  // "More by this author" — surface other books that share a real, personal
+  // author, so finishing Anne of Green Gables offers Anne of Avonlea and a
+  // prolific StoryWeaver author's other titles are one tap away. The catalog's
+  // author field is noisy: Gutenberg's placeholder, and Bloom/StoryWeaver
+  // collective credits (translator orgs, education projects) would each match
+  // dozens of unrelated books, so those are filtered out and only genuine
+  // personal names are matched.
+  var GENERIC_AUTHOR_RE = /^(project gutenberg|unknown|anonymous|various|n a|multiple authors|editor|editors|staff)$/i;
+  var ORG_AUTHOR_RE = /community|\bproject\b|translators|\beducation\b|cooperation|ministerio|usaid|foundation|council|initiative|\bteam\b|network|\bprogram\b|committee|association|enabling writers|world education|\bicc\b|\bntc\b|rbtt|jala|books$|library$|comunidad|colectivo|storyweaver|pratham|without ?borders/i;
+  function normAuthor(a) {
+    return String(a || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  }
+  function isPersonalAuthor(a) {
+    var n = normAuthor(a);
+    return !!n && !GENERIC_AUTHOR_RE.test(n) && !ORG_AUTHOR_RE.test(String(a)) && n.split(' ').length <= 5;
+  }
+  function moreByAuthor(book, indexBooks, excludeSlugs, limit) {
+    if (!book) return [];
+    var mine = {};
+    (book.authors || []).forEach(function (a) { if (isPersonalAuthor(a)) mine[normAuthor(a)] = true; });
+    if (!Object.keys(mine).length) return [];
+    var skip = excludeSlugs || {};
+    var out = (indexBooks || []).filter(function (b) {
+      if (!b || b.slug === book.slug || skip[b.slug]) return false;
+      if (/card/.test(b.contentType || '')) return false;
+      return (b.authors || []).some(function (a) { return mine[normAuthor(a)]; });
+    });
+    // Same-language titles first (a bilingual family still reaches the others
+    // if fewer than `limit` share the reading language), then alphabetical.
+    out.sort(function (a, b) {
+      var la = a.language === book.language ? 0 : 1;
+      var lb = b.language === book.language ? 0 : 1;
+      if (la !== lb) return la - lb;
+      return String(a.title || '').localeCompare(String(b.title || ''));
+    });
+    return out.slice(0, limit || 8);
+  }
+
   // Assign narration cue ids to whitespace tokens of the page text by walking
   // both sequences in order (punctuation-insensitive compare). Tokens without
   // a confident match simply get no cue — they still render, just never
@@ -1927,6 +1965,21 @@
                 title: tr('readinglib_editions_hint', 'Open this same book in another language'),
               }, ed.language + (ed.hasAudio ? ' 🔊' : ''));
             })) : null,
+          // "More by this author" — only on the final page (the natural
+          // what-to-read-next moment), so it never competes with the story.
+          (props.sameAuthor && props.sameAuthor.length && pageIdx === pages.length - 1) ? e('div', {
+            className: 'mb-3 mx-auto max-w-xl flex flex-wrap items-center justify-center gap-1 text-[12px]',
+            'data-testid': 'more-by-author',
+          },
+            e('span', { className: 'text-slate-500 font-semibold' }, '✍️ ' + tr('readinglib_more_by_author', 'More by this author:')),
+            props.sameAuthor.map(function (rel) {
+              return e('button', {
+                key: rel.slug,
+                className: 'px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold hover:bg-emerald-100',
+                onClick: function () { if (props.onOpenEdition) props.onOpenEdition(rel); },
+                title: tr('readinglib_more_by_author_hint', 'Open this book'),
+              }, rel.title + (rel.hasAudio ? ' 🔊' : ''));
+            })) : null,
           page.img ? e('img', {
             src: page.img,
             // A real caption (Gutenberg figure captions travel with the image
@@ -2849,6 +2902,11 @@
       body = e(BookReader, {
         book: openBook,
         editions: bloomEditionsFor(openBook.slug, books),
+        sameAuthor: (function () {
+          var eds = bloomEditionsFor(openBook.slug, books);
+          var skip = {}; eds.forEach(function (ed) { skip[ed.slug] = true; });
+          return moreByAuthor(openBook, books, skip);
+        })(),
         onOpenEdition: openBookBySlug,
         onExit: onExitReader,
         addToast: props.addToast,
@@ -3105,6 +3163,7 @@
   ReadingLibrary._findActiveCue = findActiveCue;
   ReadingLibrary._pageAudioClips = pageAudioClips;
   ReadingLibrary._bloomEditionsFor = bloomEditionsFor;
+  ReadingLibrary._moreByAuthor = moreByAuthor;
   ReadingLibrary._pageCueRange = pageCueRange;
   ReadingLibrary._cleanReadingText = cleanReadingText;
   ReadingLibrary._pageTextForPipeline = pageTextForPipeline;

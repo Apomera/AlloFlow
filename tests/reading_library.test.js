@@ -497,6 +497,57 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(source).not.toContain('MAX_VISIBLE_BOOKS');
   });
 
+  describe('moreByAuthor — same-author discovery', () => {
+    const book = (over) => Object.assign({
+      slug: 's', title: 'T', language: 'English', contentType: 'public-domain-full-text', authors: [],
+    }, over);
+
+    it('matches other books by a shared personal author, excluding self', () => {
+      const anne = book({ slug: 'anne-1', title: 'Anne of Green Gables', authors: ['Montgomery, L. M. (Lucy Maud)'] });
+      const shelf = [
+        anne,
+        book({ slug: 'anne-2', title: 'Anne of Avonlea', authors: ['Montgomery, L. M. (Lucy Maud)'] }),
+        book({ slug: 'blue', title: 'The Blue Castle', authors: ['Montgomery, L. M. (Lucy Maud)'] }),
+        book({ slug: 'oz', title: 'Wizard of Oz', authors: ['Baum, L. Frank'] }),
+      ];
+      const out = RL._moreByAuthor(anne, shelf, {}, 8).map((b) => b.slug);
+      expect(out).toEqual(['anne-2', 'blue']);
+      expect(out).not.toContain('anne-1');
+      expect(out).not.toContain('oz');
+    });
+
+    it('ignores generic and collective/organization authors', () => {
+      const gutenberg = book({ slug: 'g1', authors: ['Project Gutenberg'] });
+      const shelfG = [gutenberg, book({ slug: 'g2', authors: ['Project Gutenberg'] })];
+      expect(RL._moreByAuthor(gutenberg, shelfG, {}, 8)).toEqual([]);
+      const org = book({ slug: 'o1', authors: ['Translators Without Borders'] });
+      const shelfO = [org, book({ slug: 'o2', authors: ['Translators Without Borders'] }), book({ slug: 'o3', authors: ['Bloom Library Community'] })];
+      expect(RL._moreByAuthor(org, shelfO, {}, 8)).toEqual([]);
+    });
+
+    it('prefers same-language titles and respects the exclude set and limit', () => {
+      const kip = book({ slug: 'jungle', authors: ['Kipling, Rudyard'], language: 'English' });
+      const shelf = [
+        kip,
+        book({ slug: 'kim-hi', title: 'Kim (Hindi)', authors: ['Kipling, Rudyard'], language: 'Hindi' }),
+        book({ slug: 'kim-en', title: 'Kim', authors: ['Kipling, Rudyard'], language: 'English' }),
+        book({ slug: 'justso', title: 'Just So Stories', authors: ['Kipling, Rudyard'], language: 'English' }),
+      ];
+      const out = RL._moreByAuthor(kip, shelf, { justso: true }, 8).map((b) => b.slug);
+      expect(out[0]).toBe('kim-en'); // English before Hindi
+      expect(out).not.toContain('justso'); // excluded
+      expect(RL._moreByAuthor(kip, shelf, {}, 1).length).toBe(1); // limit honored
+    });
+
+    it('never surfaces source cards', () => {
+      const a = book({ slug: 'a', authors: ['Verne, Jules'] });
+      const shelf = [a,
+        book({ slug: 'card', authors: ['Verne, Jules'], contentType: 'public-domain-catalog-card' }),
+        book({ slug: 'real', authors: ['Verne, Jules'] })];
+      expect(RL._moreByAuthor(a, shelf, {}, 8).map((b) => b.slug)).toEqual(['real']);
+    });
+  });
+
   describe('pagination splitter (importer + --repaginate share it)', () => {
     const req = createRequire(import.meta.url);
     const importer = req(path.join(LIB_DIR, 'import_gutenberg_full_texts.js'));

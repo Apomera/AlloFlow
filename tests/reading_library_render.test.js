@@ -714,6 +714,28 @@ describe('reader navigation, bookmarks, and continuous read-aloud', () => {
     expect(textOf(host)).not.toContain('Illustration from'); // alt only, no visible caption row
   });
 
+  it('shows "More by this author" only on the last page and opens the related book', async () => {
+    const related = [
+      { slug: 'rel-1', title: 'Anne of Avonlea', language: 'English', authors: ['Montgomery, L. M.'], hasAudio: false, contentType: 'public-domain-full-text' },
+    ];
+    const opened = [];
+    await mountBook(makeBook({ title: 'Anne of Green Gables' }), {
+      sameAuthor: related, onOpenEdition: (b) => opened.push(b.slug),
+    });
+    // First page: the chip row is absent.
+    expect(host.querySelector('[data-testid="more-by-author"]')).toBeFalsy();
+    // Jump to the last page (6): the chip row appears.
+    const inp = pageInput();
+    setInputValue(inp, '6');
+    act(() => { inp.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
+    await flush();
+    const row = host.querySelector('[data-testid="more-by-author"]');
+    expect(row).toBeTruthy();
+    expect(textOf(row)).toContain('Anne of Avonlea');
+    clickByText(row, 'button', 'Anne of Avonlea');
+    expect(opened).toEqual(['rel-1']);
+  });
+
   it('jumps to an arbitrary page via the page input (Enter commits)', async () => {
     await mountBook(makeBook());
     const inp = pageInput();
