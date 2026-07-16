@@ -17,6 +17,10 @@
           <small>Desktop</small>
         </span>
       </div>
+      <!-- Teacher edition only (CSS-gated on body.edition-teacher): after the
+           gear drops a teacher into the console, this is the obvious way home —
+           returns to the full-bleed app view. -->
+      <button id="back-to-app" class="back-to-app" type="button">◀ Back to App</button>
       <nav class="tabs" aria-label="Command center"><div role="tablist" aria-label="Desktop sections">
         <button class="tab active" id="tab-app" data-tab="app" type="button" role="tab" aria-controls="pane-app" aria-selected="true" tabindex="0">App</button>
         <button class="tab" id="tab-ai" data-tab="ai" type="button" role="tab" aria-controls="pane-ai" aria-selected="false" tabindex="-1">AI</button>
@@ -52,9 +56,32 @@
             <span id="admin-connect-urls">—</span>
           </div>
           <div class="admin-connect-pin">
-            <strong>Join PIN:</strong>
+            <strong>Admin PIN:</strong>
             <code id="admin-connect-pin">—</code>
             <span id="admin-connect-state" class="admin-connect-state">checking…</span>
+          </div>
+          <!-- Server deployments behind a domain / reverse proxy: display-level
+               address teachers are told to use. Point the proxy at the LAN
+               share port (default 32175); no Host restrictions apply. -->
+          <div class="admin-public-url">
+            <label for="admin-public-url-input"><strong>Public address (optional):</strong></label>
+            <input id="admin-public-url-input" type="url" placeholder="https://alloflow.yourschool.org">
+            <button id="admin-public-url-save" type="button">Save</button>
+          </div>
+          <!-- User roster: each user gets a personal join PIN accepted by the
+               LAN gate. source/externalId fields already exist on records so a
+               Google Classroom sync can populate this list later. -->
+          <div class="admin-users">
+            <div class="admin-users-head">
+              <strong>Users</strong>
+              <span class="admin-connect-state">each user signs in with their own PIN</span>
+            </div>
+            <ul id="admin-users-list" class="admin-users-list"></ul>
+            <div class="admin-users-add">
+              <input id="admin-user-name" type="text" placeholder="Name (e.g. Ms. Rivera)" maxlength="80">
+              <button id="admin-user-add" type="button">Add User</button>
+              <button id="admin-users-import-classroom" type="button" disabled title="Roster sync from Google Classroom is planned — user records already carry the fields it needs.">Import from Google Classroom (soon)</button>
+            </div>
           </div>
         </section>
         <!-- Setup Health: one glance answers "is this machine actually ready?"
@@ -407,13 +434,29 @@
         <h2 id="api-key-title">Connect Gemini</h2>
         <p id="api-key-copy">Add your API key to enable cloud AI features in this desktop copy.</p>
       </header>
-      <label for="setup-provider-select">Provider</label>
-      <select id="setup-provider-select"></select>
-      <label for="setup-api-key">API key</label>
-      <input id="setup-api-key" type="password" autocomplete="off" placeholder="Paste key">
-      <div class="button-row setup-actions">
-        <button id="setup-save-key" class="primary" type="button">Save Key</button>
-        <button id="setup-later" type="button">Later</button>
+      <!-- Teacher edition first-run: a guided choice BEFORE the key fields.
+           Cloud reveals the key fields below; Local switches to the built-in
+           engine with no key at all. Other editions skip straight to the key
+           fields (upstream behavior). Wiring: maybeShowApiKeySetup(). -->
+      <div id="setup-choice" class="setup-choice hidden">
+        <button id="setup-choose-cloud" class="setup-choice-card" type="button">
+          <strong>☁️ Google Gemini</strong>
+          <span>Best quality. Free API key from Google — paste it on the next step.</span>
+        </button>
+        <button id="setup-choose-local" class="setup-choice-card" type="button">
+          <strong>🖥️ Private local AI</strong>
+          <span>No account, no key, nothing leaves this computer. Downloads a model on first use.</span>
+        </button>
+      </div>
+      <div id="setup-key-fields">
+        <label for="setup-provider-select">Provider</label>
+        <select id="setup-provider-select"></select>
+        <label for="setup-api-key">API key</label>
+        <input id="setup-api-key" type="password" autocomplete="off" placeholder="Paste key">
+        <div class="button-row setup-actions">
+          <button id="setup-save-key" class="primary" type="button">Save Key</button>
+          <button id="setup-later" type="button">Later</button>
+        </div>
       </div>
       <p id="setup-result" class="inline-status" aria-live="polite"></p>
     </section>

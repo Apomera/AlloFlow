@@ -1448,8 +1448,22 @@
     const provider = selectedProvider();
     if (providerNeedsKey(provider)) {
       renderSetupProviderSelect();
+      // Teacher edition: lead with a guided cloud-vs-local choice; the key
+      // fields appear only after "Google Gemini" is chosen. Other editions go
+      // straight to the key fields (upstream behavior).
+      const choice = $('#setup-choice');
+      const fields = $('#setup-key-fields');
+      const guided = document.body.classList.contains('edition-teacher') && !state.setupChoiceMade;
+      if (choice && fields) {
+        choice.classList.toggle('hidden', !guided);
+        fields.classList.toggle('hidden', guided);
+        if (guided) {
+          setText('#api-key-title', 'Choose your AI');
+          setText('#api-key-copy', 'AlloFlow needs an AI engine to create lessons. Pick one — you can change it any time under ⚙ Settings.');
+        }
+      }
       modal.classList.remove('hidden');
-      setTimeout(() => $('#setup-api-key')?.focus(), 0);
+      if (!guided) setTimeout(() => $('#setup-api-key')?.focus(), 0);
     } else {
       modal.classList.add('hidden');
     }
@@ -1730,15 +1744,47 @@
       return;
     }
     banner.classList.remove('hidden');
-    const pin = String((((state.config || {}).liveSession || {}).lan || {}).pin || '').trim();
+    const lan = (((state.config || {}).liveSession || {}).lan || {});
+    const pin = String(lan.pin || '').trim();
     setText('#admin-connect-pin', pin || 'not set');
     let share = null;
     try { share = await api('/api/lan-share/status'); } catch (_) {}
+    // Public address (domain / reverse-proxy deployments) leads; LAN URLs follow.
+    const publicUrl = String(lan.publicUrl || '').trim().replace(/\/+$/, '');
     const urls = (share && Array.isArray(share.appUrls)) ? share.appUrls : [];
-    setText('#admin-connect-urls', urls.length
-      ? urls.join('  ·  ')
+    const displayUrls = (publicUrl ? [publicUrl + '/app/'] : []).concat(urls);
+    setText('#admin-connect-urls', displayUrls.length
+      ? displayUrls.join('  ·  ')
       : 'LAN Share is not running — start it from the Server tab (or restart the app).');
     setText('#admin-connect-state', share && share.active ? 'serving' : 'stopped');
+    const urlInput = $('#admin-public-url-input');
+    if (urlInput && document.activeElement !== urlInput) urlInput.value = publicUrl;
+    // User roster — per-user join PINs (Google Classroom sync can fill this later).
+    const list = $('#admin-users-list');
+    if (list) {
+      let users = [];
+      try { users = (await api('/api/users')).users || []; } catch (_) {}
+      list.innerHTML = '';
+      if (!users.length) {
+        const empty = document.createElement('li');
+        empty.className = 'admin-users-empty';
+        empty.textContent = 'No users yet — add one below, or share the admin PIN.';
+        list.appendChild(empty);
+      }
+      for (const user of users) {
+        const item = document.createElement('li');
+        const name = document.createElement('span');
+        name.textContent = user.name || '(unnamed)';
+        const pinCode = document.createElement('code');
+        pinCode.textContent = user.pin || '';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.dataset.userId = user.id || '';
+        remove.textContent = 'Remove';
+        item.append(name, pinCode, remove);
+        list.appendChild(item);
+      }
+    }
   }
 
   async function refresh() {
@@ -1945,6 +1991,57 @@
     $('#setup-later').addEventListener('click', () => {
       sessionStorage.setItem(SETUP_SNOOZE_KEY, '1');
       $('#api-key-setup').classList.add('hidden');
+    });
+
+    // Teacher first-run choice (guided step ahead of the key fields).
+    $('#setup-choose-cloud')?.addEventListener('click', () => {
+      state.setupChoiceMade = true;
+      $('#setup-choice')?.classList.add('hidden');
+      $('#setup-key-fields')?.classList.remove('hidden');
+      setText('#api-key-title', 'Connect Gemini');
+      setText('#api-key-copy', 'Paste your free API key from aistudio.google.com/apikey — it stays on this computer.');
+      setTimeout(() => $('#setup-api-key')?.focus(), 0);
+    });
+    $('#setup-choose-local')?.addEventListener('click', async () => {
+      state.setupChoiceMade = true;
+      setText('#setup-result', 'Switching to the built-in local AI…');
+      try {
+        await saveConfig({ selectedProvider: 'alloflow-local' });
+        api('/api/engine/start', { method: 'POST' }).catch(() => {});
+        sessionStorage.removeItem(SETUP_SNOOZE_KEY);
+        $('#api-key-setup').classList.add('hidden');
+        setText('#setup-result', '');
+        await refresh();
+        reloadAppFrame();
+      } catch (error) {
+        setText('#setup-result', 'Could not switch: ' + error.message);
+      }
+    });
+
+    // Teacher edition: obvious way home from the console.
+    $('#back-to-app')?.addEventListener('click', () => {
+      setAppFocusMode(true, { syncWindow: false });
+    });
+
+    // Admin edition: public address + user roster (per-user join PINs).
+    $('#admin-public-url-save')?.addEventListener('click', async () => {
+      const value = $('#admin-public-url-input')?.value.trim() || '';
+      await saveConfig({ liveSession: { lan: { publicUrl: value } } });
+      renderAdminConnectBanner().catch(() => {});
+    });
+    $('#admin-user-add')?.addEventListener('click', async () => {
+      const input = $('#admin-user-name');
+      const name = input?.value.trim() || '';
+      if (!name) { input?.focus(); return; }
+      await api('/api/users', { method: 'POST', body: JSON.stringify({ name }) });
+      if (input) input.value = '';
+      renderAdminConnectBanner().catch(() => {});
+    });
+    $('#admin-users-list')?.addEventListener('click', async (event) => {
+      const btn = event.target.closest('button[data-user-id]');
+      if (!btn) return;
+      await api('/api/users/' + encodeURIComponent(btn.dataset.userId), { method: 'DELETE' });
+      renderAdminConnectBanner().catch(() => {});
     });
 
     $('#save-provider').addEventListener('click', async () => {

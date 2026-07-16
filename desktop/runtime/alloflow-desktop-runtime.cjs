@@ -158,6 +158,13 @@ const LIVE_SESSION_MODES = {
 
 const DEFAULT_CONFIG = {
   version: 1,
+  // School-server user roster (admin edition). Each user gets their own join
+  // PIN, accepted by the LAN share gate alongside the master lan.pin. Records
+  // carry source/externalId so a roster sync (e.g. Google Classroom) can
+  // populate them later without a schema change:
+  //   { id, name, pin, role: 'teacher', source: 'manual'|'google-classroom',
+  //     externalId: null, createdAt }
+  users: [],
   appUrl: process.env.ALLOFLOW_APP_URL || 'http://localhost:3000',
   app: {
     mode: process.env.ALLOFLOW_DESKTOP_APP_MODE || 'auto',
@@ -231,7 +238,15 @@ const DEFAULT_CONFIG = {
       // Optional classroom join PIN. Empty = no PIN. Latched when LAN sharing
       // starts (change the PIN, then restart sharing to apply). Gates the
       // public join page and the student-safe session read/patch endpoints.
+      // Per-user PINs (config.users) are also accepted, and are read live —
+      // adding a user does not require restarting the share.
       pin: '',
+      // Optional public address for server deployments behind a domain /
+      // reverse proxy (e.g. "https://alloflow.myschool.org"). Display-level:
+      // the admin console shows it as the primary connect URL. Actual external
+      // exposure is done by pointing the proxy (Caddy/nginx/Cloudflare Tunnel)
+      // at the LAN share port; this server does not validate Host headers.
+      publicUrl: '',
     },
     firebase: {
       projectId: '',
@@ -1013,10 +1028,7 @@ function getActiveLanPin() {
   return managedLanShare.server ? (managedLanShare.pin || '') : '';
 }
 
-function lanPinMatches(givenPin) {
-  const required = getActiveLanPin();
-  if (!required) return true;
-  const given = String(givenPin || '');
+function pinEquals(given, required) {
   try {
     const a = crypto.createHash('sha256').update(given).digest();
     const b = crypto.createHash('sha256').update(required).digest();
@@ -1024,6 +1036,25 @@ function lanPinMatches(givenPin) {
   } catch (_) {
     return given === required;
   }
+}
+
+function lanPinMatches(givenPin) {
+  const required = getActiveLanPin();
+  if (!required) return true;
+  const given = String(givenPin || '');
+  if (pinEquals(given, required)) return true;
+  // Per-user PINs (school-server roster) are read live from config so a user
+  // added in the admin console can join without restarting the share. Every
+  // candidate is compared (no early exit) to keep timing uniform.
+  let matched = false;
+  try {
+    const users = readConfig().users || [];
+    for (const user of users) {
+      const pin = String((user && user.pin) || '');
+      if (pin && pinEquals(given, pin)) matched = true;
+    }
+  } catch (_) {}
+  return matched;
 }
 
 function getLanShareStatus(config = readConfig(), origin = getDefaultRuntimeOrigin()) {
@@ -3581,6 +3612,58 @@ async function handleApi(req, res, url) {
     }
     const saved = writeConfig(next);
     jsonResponse(res, 200, redactConfig(saved));
+    return;
+  }
+
+  // ── School-server user roster (admin edition) ─────────────────────────────
+  // Private (loopback-only) API: the admin console manages users whose PINs
+  // the LAN share gate accepts. source/externalId leave room for a Google
+  // Classroom roster sync later. PINs are visible here by design — this API is
+  // only reachable from the admin machine, and the console must display them.
+  if (req.method === 'GET' && url.pathname === '/api/users') {
+    jsonResponse(res, 200, { users: config.users || [] });
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/users') {
+    const body = await readRequestJson(req);
+    const name = String((body && body.name) || '').trim().slice(0, 80);
+    if (!name) {
+      jsonResponse(res, 400, { error: 'A user name is required.' });
+      return;
+    }
+    const users = Array.isArray(config.users) ? [...config.users] : [];
+    const taken = new Set(users.map((user) => String((user && user.pin) || '')));
+    taken.add(String((((config.liveSession || {}).lan) || {}).pin || ''));
+    let pin = '';
+    for (let attempt = 0; attempt < 50 && !pin; attempt++) {
+      const candidate = String(crypto.randomInt(100000, 1000000));
+      if (!taken.has(candidate)) pin = candidate;
+    }
+    if (!pin) {
+      jsonResponse(res, 500, { error: 'Could not generate a unique PIN.' });
+      return;
+    }
+    const user = {
+      id: crypto.randomUUID(),
+      name,
+      pin,
+      role: String((body && body.role) || 'teacher'),
+      source: 'manual',
+      externalId: null,
+      createdAt: new Date().toISOString(),
+    };
+    users.push(user);
+    writeConfig({ ...config, users });
+    jsonResponse(res, 200, { user, users });
+    return;
+  }
+
+  if (req.method === 'DELETE' && url.pathname.startsWith('/api/users/')) {
+    const userId = decodeURIComponent(url.pathname.replace('/api/users/', ''));
+    const users = (Array.isArray(config.users) ? config.users : []).filter((user) => user && user.id !== userId);
+    writeConfig({ ...config, users });
+    jsonResponse(res, 200, { users });
     return;
   }
 

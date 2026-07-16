@@ -891,3 +891,132 @@ body.app-focus-mode .focus-gear {
   font-size: 12px;
   opacity: 0.75;
 }
+
+/* Teacher first-run: guided cloud-vs-local choice cards */
+.setup-choice {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 6px;
+}
+
+.setup-choice.hidden,
+#setup-key-fields.hidden {
+  display: none;
+}
+
+.setup-choice-card {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  padding: 14px 16px;
+  border: 1px solid rgba(31, 122, 90, 0.4);
+  border-radius: 10px;
+  background: rgba(31, 122, 90, 0.06);
+  cursor: pointer;
+  font: inherit;
+}
+
+.setup-choice-card:hover,
+.setup-choice-card:focus-visible {
+  border-color: rgba(31, 122, 90, 0.9);
+  background: rgba(31, 122, 90, 0.12);
+}
+
+.setup-choice-card strong {
+  font-size: 15px;
+}
+
+.setup-choice-card span {
+  font-size: 12.5px;
+  opacity: 0.85;
+}
+
+/* Teacher edition: "Back to App" pinned at the top of the rail */
+.back-to-app {
+  display: none;
+}
+
+body.edition-teacher .back-to-app {
+  display: block;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  width: 100%;
+  border: 1px solid rgba(31, 122, 90, 0.5);
+  border-radius: 10px;
+  background: rgba(31, 122, 90, 0.14);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.edition-teacher .back-to-app:hover {
+  background: rgba(31, 122, 90, 0.24);
+}
+
+/* Admin edition: public address + user roster inside the connect banner */
+.admin-public-url,
+.admin-users {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-public-url input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.admin-users {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.admin-users-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.admin-users-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.admin-users-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(31, 122, 90, 0.07);
+}
+
+.admin-users-list li span {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.admin-users-list li code {
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.admin-users-empty {
+  opacity: 0.7;
+  font-size: 12.5px;
+}
+
+.admin-users-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-users-add input {
+  flex: 1;
+  min-width: 180px;
+}
