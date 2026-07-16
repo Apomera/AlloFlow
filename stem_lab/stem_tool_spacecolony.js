@@ -1079,6 +1079,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           window._colonyUpd = upd;
           window._colonyState = d;
 
+          var missionProfiles = [
+            {
+              id: 'balanced', icon: '\uD83D\uDEE1\uFE0F', name: 'Continuity Mission',
+              tagline: 'Stable reserves. Flexible opening.',
+              brief: 'Keep every life-support loop above its emergency threshold while you establish renewable food, water, and power.',
+              start: { food: 40, energy: 30, water: 30, materials: 20, science: 10 },
+              accent: '#22d3ee', firstMove: 'Open the habitat, then choose the weakest loop to reinforce.'
+            },
+            {
+              id: 'ecology', icon: '\uD83C\uDF31', name: 'Living Ark',
+              tagline: 'Strong biosphere. Tight power budget.',
+              brief: 'Protect an irreplaceable seed and microbe archive. Food and water are healthy, but every energy decision matters.',
+              start: { food: 48, energy: 22, water: 38, materials: 18, science: 12 },
+              accent: '#4ade80', firstMove: 'Prove the physics and establish renewable power.'
+            },
+            {
+              id: 'frontier', icon: '\u26CF\uFE0F', name: 'Frontier Foundry',
+              tagline: 'Build fast. Supplies run lean.',
+              brief: 'A materials-rich landing lets you expand quickly, but smaller food and water reserves punish careless growth.',
+              start: { food: 34, energy: 38, water: 25, materials: 30, science: 8 },
+              accent: '#fb923c', firstMove: 'Build a closed-loop food or water system before expanding.'
+            }
+          ];
+          var missionProfile = missionProfiles.find(function (profile) { return profile.id === (d.colonyMissionProfile || 'balanced'); }) || missionProfiles[0];
+
           var lifeSupportScore = [
             resources.food > 10,
             resources.water > 10,
@@ -1092,6 +1117,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               : buildings.indexOf('hydroponics') < 0
                 ? { icon: '\uD83C\uDF31', title: 'Establish Hydroponics', detail: 'Create a renewable food source for six settlers.' }
                 : { icon: '\uD83D\uDD2C', title: 'Gather ecological evidence', detail: 'Explore or research before advancing the turn.' };
+          var firstSolMilestones = [
+            { label: 'Wake habitat', detail: 'Begin the day shift', complete: turnPhase === 'day' || turn > 1 },
+            { label: 'Prove a system', detail: 'Pass one science gate', complete: stats.questionsAnswered > 0 },
+            { label: 'Close a loop', detail: 'Build a starter structure', complete: buildings.length > 0 },
+            { label: 'Survive 3 sols', detail: 'Observe system feedback', complete: turn >= 3 }
+          ];
+          var firstSolComplete = firstSolMilestones.filter(function (milestone) { return milestone.complete; }).length;
 
           return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 md:p-6 border border-slate-700 overflow-hidden' },
             React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5' },
@@ -1152,11 +1184,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     React.createElement('span', { className: 'text-3xl', 'aria-hidden': 'true' }, '\uD83E\uDDEC')
                   ),
                   React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
-                    [['\uD83C\uDF3E', '40', 'Food'], ['\uD83D\uDCA7', '30', 'Water'], ['\u26A1', '30', 'Energy'], ['\uD83D\uDC65', '6', 'Settlers']].map(function (metric) {
+                    [['\uD83C\uDF3E', missionProfile.start.food, 'Food'], ['\uD83D\uDCA7', missionProfile.start.water, 'Water'], ['\u26A1', missionProfile.start.energy, 'Energy'], ['\uD83E\uDEA8', missionProfile.start.materials, 'Materials']].map(function (metric) {
                       return React.createElement('div', { key: metric[2], className: 'rounded-2xl border border-slate-700 bg-slate-800/80 p-3' }, React.createElement('div', { className: 'text-lg', 'aria-hidden': 'true' }, metric[0]), React.createElement('div', { className: 'text-xl font-black text-white mt-1' }, metric[1]), React.createElement('div', { className: 'text-[11px] text-slate-300' }, metric[2]));
                     })
                   ),
                   React.createElement('p', { className: 'mt-4 rounded-xl border border-amber-500/25 bg-amber-950/30 p-3 text-xs leading-relaxed text-amber-100' }, 'Systems note: every structure changes more than one part of colony life. Watch the tradeoffs, not just the totals.')
+                )
+              ),
+              React.createElement('fieldset', { className: 'max-w-4xl mx-auto mb-6 text-left' },
+                React.createElement('legend', { className: 'text-sm font-black text-white mb-2' }, 'Choose your landing protocol'),
+                React.createElement('p', { className: 'text-xs text-slate-300 mb-3' }, 'Each protocol changes your opening reserves and the system most likely to fail first.'),
+                React.createElement('div', { className: 'grid gap-3 md:grid-cols-3' }, missionProfiles.map(function (profile) {
+                  var isSelected = profile.id === missionProfile.id;
+                  return React.createElement('button', {
+                    key: profile.id,
+                    type: 'button',
+                    'aria-pressed': isSelected,
+                    onClick: function () { upd('colonyMissionProfile', profile.id); },
+                    className: 'min-h-[11rem] rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-cyan-300',
+                    style: { background: isSelected ? 'linear-gradient(145deg, ' + profile.accent + '25, #0f172a)' : '#0f172a', borderColor: isSelected ? profile.accent : '#334155', boxShadow: isSelected ? '0 14px 30px ' + profile.accent + '18' : 'none' }
+                  },
+                    React.createElement('div', { className: 'flex items-start justify-between gap-2' },
+                      React.createElement('span', { className: 'text-3xl', 'aria-hidden': 'true' }, profile.icon),
+                      React.createElement('span', { className: 'rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wider', style: { color: isSelected ? '#020617' : '#cbd5e1', background: isSelected ? profile.accent : '#1e293b' } }, isSelected ? 'Selected' : 'Select')
+                    ),
+                    React.createElement('div', { className: 'mt-3 text-base font-black text-white' }, profile.name),
+                    React.createElement('div', { className: 'mt-1 text-xs font-bold', style: { color: profile.accent } }, profile.tagline),
+                    React.createElement('div', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, profile.brief)
+                  );
+                })),
+                React.createElement('div', { className: 'mt-3 flex items-start gap-2 rounded-xl border border-slate-700 bg-slate-800/80 p-3 text-xs text-slate-200' },
+                  React.createElement('span', { className: 'text-lg', 'aria-hidden': 'true' }, missionProfile.icon),
+                  React.createElement('div', null, React.createElement('span', { className: 'font-black text-white' }, 'First command: '), missionProfile.firstMove)
                 )
               ),
               React.createElement('div', { className: 'grid gap-3 sm:grid-cols-3 max-w-3xl mx-auto mb-6 text-slate-300 text-[11px]' },
@@ -1183,11 +1242,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           'aria-pressed': (d.colonyGrade || '6-8') === gl,
                           onClick: function () { upd('colonyGrade', gl); },
                           className: 'min-h-9 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
-                            ((d.colonyGrade || '6-8') === gl ? 'border-green-400 bg-green-900 text-green-200' : 'transition-colors border-slate-700 bg-slate-900 text-slate-600 hover:border-slate-500')
+                            ((d.colonyGrade || '6-8') === gl ? 'border-green-400 bg-green-900 text-green-200' : 'transition-colors border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500')
                         }, gl);
                       })
                     ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' }, t('stem.spacecolony.adjusts_question_difficulty', 'Adjusts question difficulty'))
+                    React.createElement('div', { className: 'text-[11px] text-slate-300 mt-1' }, t('stem.spacecolony.adjusts_question_difficulty', 'Adjusts question difficulty'))
                   ),
                   React.createElement('div', null,
                     React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, t('stem.spacecolony.science_challenge_mode', 'Science Challenge Mode')),
@@ -1231,21 +1290,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 onClick: function () {
                   var startMap = generateMap();
                   var initPickups = generatePickups(startMap.tiles);
-                  upd('mapPickups', initPickups);
-                  upd('colonyMap', startMap); upd('colonyPhase', 'playing'); upd('colonyTurn', 1);
-                  upd('turnPhase', 'dawn'); upd('actionPoints', 3); upd('builtThisTurn', false);
-                  upd('dawnData', { turn: 1, income: {}, weather: null, discovery: null, isFirst: true });
-                  upd('colonyZoom', 1.0);
-                  upd('colonyCamX', Math.max(0, startMap.colonyPos.x - 10));
-                  upd('colonyCamY', Math.max(0, startMap.colonyPos.y - 10));
-                  upd('colonyRes', { food: 40, energy: 30, water: 30, materials: 20, science: 10 });
-                  upd('colonyBuildings', []); upd('colonySettlers', JSON.parse(JSON.stringify(defaultSettlers)));
-                  upd('colonyLog', ['Turn 1: Colony established on Kepler-442b. 6 settlers ready.']);
-                  upd('colony', { name: 'Kepler-442b' });
-                  upd('buildingEff', {}); upd('lastMaintTurn', 0); upd('maintChallenge', null);
-                  upd('colonyStats', { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 });
-                  upd('turnPhase', null); upd('actionPoints', 3); upd('fateRoll', null); upd('dawnData', null); upd('mapPickups', {}); upd('fateAnimating', false); upd('builtThisTurn', false);
-                  upd('colonyRovers', []); upd('selectedRover', null); upd('tileImprovements', {});
+                  setLabToolData(function (previous) {
+                    return Object.assign({}, previous, {
+                      colonyMissionProfile: missionProfile.id,
+                      colonyMap: startMap,
+                      colonyPhase: 'playing',
+                      colonyTurn: 1,
+                      turnPhase: 'dawn',
+                      actionPoints: 3,
+                      builtThisTurn: false,
+                      dawnData: { turn: 1, income: {}, weather: null, discovery: null, isFirst: true },
+                      colonyZoom: 1.0,
+                      colonyCamX: Math.max(0, startMap.colonyPos.x - 10),
+                      colonyCamY: Math.max(0, startMap.colonyPos.y - 10),
+                      colonyRes: Object.assign({}, missionProfile.start),
+                      colonyBuildings: [],
+                      colonySettlers: JSON.parse(JSON.stringify(defaultSettlers)),
+                      colonyLog: ['SOL 1: ' + missionProfile.name + ' established on Kepler-442b. First command: ' + missionProfile.firstMove],
+                      colony: { name: 'Kepler-442b', protocol: missionProfile.name },
+                      buildingEff: {},
+                      lastMaintTurn: 0,
+                      maintChallenge: null,
+                      colonyStats: { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 },
+                      fateRoll: null,
+                      mapPickups: initPickups,
+                      fateAnimating: false,
+                      colonyRovers: [],
+                      selectedRover: null,
+                      colonySelTile: null,
+                      tileImprovements: {},
+                      showBuild: false,
+                      scienceGate: null,
+                      turnSummary: null
+                    });
+                  });
                   if (d.colonyTTS) colonySpeak('Mission log. Colony established on Kepler 442 b. Six settlers are ready to begin construction. Good luck, Commander.', 'narrator');
                   if (addToast) addToast('\uD83D\uDE80 Colony established!', 'success');
                   if (typeof addXP === 'function') addXP(10, 'Kepler Colony: Mission launched');
@@ -1265,6 +1343,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 React.createElement('div', { className: 'grid grid-cols-3 gap-2 rounded-2xl border border-slate-700 bg-slate-900/80 p-3 sm:min-w-[18rem]' },
                   [[buildings.length, 'Structures'], [settlers.length, 'Settlers'], [terraform + '%', 'Terraform']].map(function (metric) { return React.createElement('div', { key: metric[1], className: 'text-center rounded-xl bg-slate-800 p-2' }, React.createElement('div', { className: 'text-lg font-black text-white' }, metric[0]), React.createElement('div', { className: 'text-[10px] text-slate-300' }, metric[1])); })
                 )
+              ),
+              React.createElement('section', { 'data-spacecolony-first-sol': 'true', 'aria-labelledby': 'spacecolony-first-sol-title', className: 'mb-4 rounded-2xl border border-indigo-500/30 bg-slate-900/80 p-4' },
+                React.createElement('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between' },
+                  React.createElement('div', null,
+                    React.createElement('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em]', style: { color: missionProfile.accent } }, missionProfile.icon + ' ' + missionProfile.name),
+                    React.createElement('h3', { id: 'spacecolony-first-sol-title', className: 'mt-1 text-base font-black text-white' }, turn < 3 ? 'First-sol flight plan' : 'Colony flight plan'),
+                    React.createElement('p', { className: 'mt-1 text-xs text-slate-300' }, turn < 3 ? 'Complete the opening loop to see cause and effect across a full colony day.' : nextMission.detail)
+                  ),
+                  React.createElement('div', { className: 'text-sm font-black text-indigo-200' }, firstSolComplete + '/' + firstSolMilestones.length + ' complete')
+                ),
+                React.createElement('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4' }, firstSolMilestones.map(function (milestone, milestoneIndex) {
+                  var isCurrent = !milestone.complete && firstSolMilestones.slice(0, milestoneIndex).every(function (earlier) { return earlier.complete; });
+                  return React.createElement('div', {
+                    key: milestone.label,
+                    className: 'rounded-xl border p-3',
+                    style: { borderColor: milestone.complete ? '#10b98166' : isCurrent ? missionProfile.accent : '#334155', background: milestone.complete ? '#064e3b55' : isCurrent ? missionProfile.accent + '12' : '#0f172a' }
+                  },
+                    React.createElement('div', { className: 'flex items-center justify-between gap-2' },
+                      React.createElement('span', { className: 'text-xs font-black ' + (milestone.complete ? 'text-emerald-300' : 'text-white') }, milestone.label),
+                      React.createElement('span', { className: 'text-sm', 'aria-hidden': 'true' }, milestone.complete ? '\u2713' : isCurrent ? '\u25CF' : '\u25CB')
+                    ),
+                    React.createElement('div', { className: 'mt-1 text-[11px] text-slate-300' }, milestone.detail)
+                  );
+                }))
               ),
               React.createElement('style', null, t('stem.spacecolony.keyframes_kp_fadein_from_opacity_0_tra', '@keyframes kp-fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes kp-pulse{0%,100%{opacity:1}50%{opacity:.6}}@keyframes kp-glow{0%,100%{box-shadow:0 0 5px rgba(99,102,241,.3)}50%{box-shadow:0 0 20px rgba(99,102,241,.6)}}@keyframes kp-fateRoll{0%{transform:scale(.5) rotate(0);opacity:0}50%{transform:scale(1.3) rotate(180deg);opacity:1}100%{transform:scale(1) rotate(360deg);opacity:1}}@keyframes kp-barFill{from{width:0}}@keyframes kp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes kp-slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}@keyframes kp-shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-2px)}20%,40%,60%,80%{transform:translateX(2px)}}@keyframes kp-sparkle{0%,100%{opacity:0;transform:scale(0) rotate(0deg)}50%{opacity:1;transform:scale(1) rotate(180deg)}}@keyframes kp-breathe{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.02);opacity:1}}')),
               // ══ DAWN PHASE OVERLAY ══
@@ -1855,7 +1957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     // Major disaster (rare — every ~20 turns)
                     if (aiHintsEnabled && callGemini && nt > 1 && nt % 20 === 0 && Math.random() < 0.5) {
                       upd('disasterLoading', true);
-                      callGemini('Generate a MAJOR disaster event for a space colony on alien planet Kepler-442b. Turn ' + nt + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. The disaster should be science-based (asteroid impact, volcanic eruption, alien plague, equipment catastrophe, radiation storm). Return ONLY valid JSON: {"emoji":"<emoji>","title":"<disaster name>","description":"<dramatic 3-4 sentences>","lesson":"<real science about this type of disaster, 2-3 sentences>","question":"<science question to mitigate damage>","options":["<correct mitigation>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"fullDamage":{"food":<-5 to -15>,"energy":<-5 to -15>,"water":<-5 to -15>,"materials":<-5 to -15>,"morale":<-10 to -20>},"mitigatedDamage":{"food":<0 to -5>,"energy":<0 to -5>,"water":<0 to -5>,"materials":<0 to -5>,"morale":<-3 to -8>}}. Shuffle correct answer (0-5).', true).then(function (result) {
+                      callGemini('Generate a MAJOR disaster event for a space colony on alien planet Kepler-442b. Turn ' + nt + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. The disaster should be science-based (asteroid impact, volcanic eruption, alien plague, equipment catastrophe, radiation storm). Return ONLY valid JSON: {"emoji":"<emoji>","title":"<disaster name>","description":"<dramatic 3-4 sentences>","lesson":"<real science about this type of disaster, 2-3 sentences>","question":"<science question to mitigate damage>","options":["<option1>","<option2>","<option3>","<option4>","<option5>","<option6>"],"correctIndex":<index 0-5 of the one correct mitigation, placed at a RANDOM position among the options>,"fullDamage":{"food":<-5 to -15>,"energy":<-5 to -15>,"water":<-5 to -15>,"materials":<-5 to -15>,"morale":<-10 to -20>},"mitigatedDamage":{"food":<0 to -5>,"energy":<0 to -5>,"water":<0 to -5>,"materials":<0 to -5>,"morale":<-3 to -8>}}. Do NOT always put the correct answer first.', true).then(function (result) {
                         try {
                           var cl6 = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
                           var s7 = cl6.indexOf('{'); if (s7 > 0) cl6 = cl6.substring(s7);
