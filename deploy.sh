@@ -111,6 +111,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ no render-path free vars in CDN modules."
   node dev-tools/check_free_vars.cjs
   echo "  ✓ no NEW undeclared identifiers in the big sources (the blendedInitial ReferenceError class)."
+  node dev-tools/check_tdz_render.cjs --quiet
+  echo "  ✓ no render-time TDZ in AlloFlowContent (const/let read before its declaration — the useLowQualityVisuals/stopPlayback 'access before initialization' crash class; 2026-07-15)."
   node dev-tools/check_keyless_map.cjs --quiet
   echo "  ✓ no keyless list children in CDN modules / STEM tools."
   node dev-tools/check_stem_render.cjs --quiet

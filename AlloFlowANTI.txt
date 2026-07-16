@@ -21210,7 +21210,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
   };
   const _ceStopPlayback = _ceFn('stopPlayback');
-  const stopPlayback = function() {
+  // Hoisted function declaration (was `const stopPlayback = function() {`) so it is available to
+  // the render-time `_personasLiveRef.current = { ..., stopPlayback, ... }` capture ~1,200 lines
+  // above its definition. As a const function expression there, it crashed AlloFlowContent on mount
+  // with a temporal-dead-zone ReferenceError. (Still recreated each render, so no behavior change.)
+  function stopPlayback() {
     const stoppedContentId = playingContentId;
     _ceStopPlayback();
     if (playbackTimeoutRef.current) { clearTimeout(playbackTimeoutRef.current); playbackTimeoutRef.current = null; }
