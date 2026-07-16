@@ -9569,8 +9569,8 @@
         // Save / cancel
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid ' + palette.border } },
           h('button', {
-            onClick: function() {
-              if (window.confirm && !window.confirm('Delete this story? This can\'t be undone.')) return;
+            onClick: async function() {
+              if (!await askAlloHavenConfirmation('Delete this story? This cannot be undone.', { title: 'Delete story', confirmText: 'Delete story' })) return;
               if (p.onDelete) p.onDelete();
             },
             style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
@@ -10633,8 +10633,8 @@
         // Nav buttons
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '20px', paddingTop: '14px', borderTop: '1px solid ' + palette.border } },
           existing ? h('button', {
-            onClick: function() {
-              if (window.confirm && !window.confirm('Remove your companion?')) return;
+            onClick: async function() {
+              if (!await askAlloHavenConfirmation('Remove your companion?', { title: 'Remove companion', confirmText: 'Remove companion' })) return;
               if (p.onDelete) p.onDelete();
             },
             style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
@@ -10905,8 +10905,8 @@
 
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid ' + palette.border } },
           p.goal ? h('button', {
-            onClick: function() {
-              if (window.confirm && !window.confirm('Delete this goal?')) return;
+            onClick: async function() {
+              if (!await askAlloHavenConfirmation('Delete this goal?', { title: 'Delete goal', confirmText: 'Delete goal' })) return;
               if (p.onDelete) p.onDelete();
             },
             style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
@@ -20296,10 +20296,8 @@
       function backToList() {
         setStateMulti({ activeModal: 'past-encounters', generateContext: null });
       }
-      function clearAll() {
-        if (typeof window !== 'undefined' && window.confirm) {
-          if (!window.confirm('Clear all ' + encounters.length + ' past encounter records? This can\'t be undone.')) return;
-        }
+      async function clearAll() {
+        if (!await askAlloHavenConfirmation('Clear all ' + encounters.length + ' past encounter records? This cannot be undone.', { title: 'Clear encounter history', confirmText: 'Clear history' })) return;
         setStateField('bossEncounters', []);
         addToast('Past encounters cleared.');
       }
@@ -22763,8 +22761,8 @@
           setTimeout(function() { setStateField('printScope', null); }, 200);
         }, 80);
       }
-      function confirmDelete() {
-        if (window.confirm && !window.confirm('Delete this atlas? Edges and justifications cannot be recovered.')) return;
+      async function confirmDelete() {
+        if (!await askAlloHavenConfirmation('Delete this atlas? Edges and justifications cannot be recovered.', { title: 'Delete concept atlas', confirmText: 'Delete atlas' })) return;
         deleteAtlas(atlas.id);
       }
 
@@ -22876,8 +22874,8 @@
           setTimeout(function() { setStateField('printScope', null); }, 200);
         }, 80);
       }
-      function confirmDelete() {
-        if (window.confirm && !window.confirm('Delete this realm? Zones and justifications cannot be recovered.')) return;
+      async function confirmDelete() {
+        if (!await askAlloHavenConfirmation('Delete this realm? Zones and justifications cannot be recovered.', { title: 'Delete realm', confirmText: 'Delete realm' })) return;
         deleteRealm(realm.id);
       }
 
@@ -23933,8 +23931,8 @@
                   entry: entry,
                   palette: palette,
                   onEdit: function(newText) { editJournalEntry(entry.id, newText); },
-                  onDelete: function() {
-                    if (window.confirm && !window.confirm('Delete this entry? Tokens already earned will not be refunded.')) return;
+                  onDelete: async function() {
+                    if (!await askAlloHavenConfirmation('Delete this entry? Tokens already earned will not be refunded.', { title: 'Delete journal entry', confirmText: 'Delete entry' })) return;
                     deleteJournalEntry(entry.id);
                   },
                   onQuizComplete: function(eid, pct) { recordReflectionQuiz(eid, pct); }
