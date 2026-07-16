@@ -1013,26 +1013,31 @@ function AdventureView(props) {
         const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
         const isHeader = s.trim().startsWith('#') || isHtmlHeader;
         const cleanText = isHeader ? isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '') : s;
-        return /*#__PURE__*/React.createElement(React.Fragment, {
-          key: sIdx
-        }, /*#__PURE__*/React.createElement("button", {
-          type: "button",
-          "aria-label": (t('adventure.read_aloud_title') || t('common.click_read_aloud') || 'Read aloud') + ': ' + cleanText.replace(/\*\*/g, '').trim(),
-          "aria-controls": `sentence-${currentGlobalIdx}`,
+        // Per-sentence read-aloud: the sentence TEXT is the control (click or
+        // Enter/Space). The former inline speaker button (52c353dea) was removed
+        // 2026-07-16 per Aaron — redundant with click-to-karaoke and visually
+        // clunky — while keeping its keyboard/SR semantics on the span itself.
+        return /*#__PURE__*/React.createElement("span", {
+          key: sIdx,
+          id: `sentence-${currentGlobalIdx}`,
+          role: "button",
+          tabIndex: 0,
           "aria-pressed": isActive,
+          "aria-label": (t('adventure.read_aloud_title') || t('common.click_read_aloud') || 'Read aloud') + ': ' + cleanText.replace(/\*\*/g, '').trim(),
+          title: t('adventure.read_aloud_title') || t('common.click_read_aloud'),
           onClick: e => {
             e.stopPropagation();
             handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
           },
-          className: "min-w-8 min-h-8 mr-1 inline-flex items-center justify-center align-middle rounded-full bg-indigo-700 text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-2 motion-reduce:transform-none",
-          title: t('adventure.read_aloud_title') || t('common.click_read_aloud')
-        }, /*#__PURE__*/React.createElement(Volume2, {
-          size: 14,
-          "aria-hidden": "true"
-        })), /*#__PURE__*/React.createElement("span", {
-          id: `sentence-${currentGlobalIdx}`,
-          className: `transition-colors duration-300 motion-reduce:transition-none rounded px-1 py-0.5 ${isActive ? 'bg-yellow-200 text-black shadow-sm' : 'hover:bg-yellow-50'} ${isHeader ? 'font-bold block text-lg mt-2' : ''}`
-        }, formatInteractiveText(cleanText), " "));
+          onKeyDown: e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
+            }
+          },
+          className: `transition-colors duration-300 motion-reduce:transition-none rounded px-1 py-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 ${isActive ? 'bg-yellow-200 text-black shadow-sm' : 'hover:bg-yellow-50'} ${isHeader ? 'font-bold block text-lg mt-2' : ''}`
+        }, formatInteractiveText(cleanText), " ");
       }));
     });
   })())))), adventureState.isGameOver && /*#__PURE__*/React.createElement("div", {
@@ -1471,26 +1476,30 @@ function AdventureView(props) {
         const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
         const isHeader = s.trim().startsWith('#') || isHtmlHeader;
         const cleanText = isHeader ? isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '') : s;
-        return /*#__PURE__*/React.createElement(React.Fragment, {
-          key: sIdx
-        }, /*#__PURE__*/React.createElement("button", {
-          type: "button",
-          "aria-label": (t('adventure.read_aloud_title') || t('common.click_read_aloud') || 'Read aloud') + ': ' + cleanText.replace(/\*\*/g, '').trim(),
-          "aria-controls": `sentence-${currentGlobalIdx}`,
+        // Per-sentence read-aloud (immersive/dark theme): the sentence TEXT is
+        // the control — inline speaker button removed 2026-07-16 per Aaron
+        // (see the light-theme renderer above for the rationale).
+        return /*#__PURE__*/React.createElement("span", {
+          key: sIdx,
+          id: `sentence-${currentGlobalIdx}`,
+          role: "button",
+          tabIndex: 0,
           "aria-pressed": isActive,
+          "aria-label": (t('adventure.read_aloud_title') || t('common.click_read_aloud') || 'Read aloud') + ': ' + cleanText.replace(/\*\*/g, '').trim(),
+          title: t('adventure.read_aloud_title') || t('common.click_read_aloud'),
           onClick: e => {
             e.stopPropagation();
             handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
           },
-          className: "min-w-8 min-h-8 mr-1 inline-flex items-center justify-center align-middle rounded-full bg-indigo-700 text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-2 motion-reduce:transform-none",
-          title: t('adventure.read_aloud_title') || t('common.click_read_aloud')
-        }, /*#__PURE__*/React.createElement(Volume2, {
-          size: 14,
-          "aria-hidden": "true"
-        })), /*#__PURE__*/React.createElement("span", {
-          id: `sentence-${currentGlobalIdx}`,
-          className: `transition-colors duration-300 motion-reduce:transition-none rounded px-1 py-0.5 ${isActive ? 'bg-cyan-700 text-white shadow-sm ring-2 ring-cyan-400/50' : 'hover:bg-white/10'} ${isHeader ? 'font-bold block text-2xl mt-2 text-yellow-400' : ''}`
-        }, formatInteractiveText(cleanText.replace(/\*\*([^*]+)\*\*/g, '$1'), false, true), " "));
+          onKeyDown: e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
+            }
+          },
+          className: `transition-colors duration-300 motion-reduce:transition-none rounded px-1 py-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 ${isActive ? 'bg-cyan-700 text-white shadow-sm ring-2 ring-cyan-400/50' : 'hover:bg-white/10'} ${isHeader ? 'font-bold block text-2xl mt-2 text-yellow-400' : ''}`
+        }, formatInteractiveText(cleanText.replace(/\*\*([^*]+)\*\*/g, '$1'), false, true), " ");
       }));
     });
   })())))))), !adventureState.isImmersiveMode && /*#__PURE__*/React.createElement("div", {

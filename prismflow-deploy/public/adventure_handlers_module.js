@@ -130,7 +130,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
           ? `FOCUS: Social Story Mode (SEL). The narrative MUST focus on social-emotional learning, conflict resolution, and understanding perspectives. ${socialStoryFocus ? `CORE THEME: The story must specifically address the skill/concept of: "${socialStoryFocus}".` : ''} Scenarios should be realistic or metaphorical but centered on social dynamics.`
           : "";
       const interactionInstruction = adventureFreeResponseEnabled
-          ? "INTERACTION: Free Text. The student will type their own response. Return an empty 'options' array: []"
+          ? "INTERACTION: Free Text. The student will type their own response. Return an empty 'options' array: []. CRITICAL: The opening scene MUST END with a concrete, unresolved problem or decision the student must respond to (a direct question, an obstacle, an urgent situation) — never end on pure description; the last 1-2 sentences present the challenge."
           : "INTERACTION: Multiple Choice. Provide 6 distinct options.";
       const jsonOptionsExample = adventureFreeResponseEnabled
           ? "[]"
@@ -585,7 +585,16 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
             - 1 Neutral Option (Irrelevant or passive)
             - 1 Mildly Bad Option (Minor misconception or risky)
             - 1 Very Bad Option (Major misconception or failure)
-          `) : '';
+          `) : `
+            CRITICAL (FREE-RESPONSE MODE): DRIVE THE STORY FORWARD every turn.
+            After showing the consequence of the student's action, the scene MUST END with a NEW
+            concrete, unresolved problem, obstacle, or decision that demands the student's next
+            action — a direct question from a character, a danger closing in, a device or clue that
+            must be dealt with, a choice that cannot be postponed. Make it specific enough that the
+            student knows exactly what they are responding to.
+            NEVER end on pure reaction, praise, calm resolution, or summary — the last 1-2 sentences
+            must present the new challenge. Return an empty 'options' array: []
+          `;
           const jsonOptionsExample = adventureFreeResponseEnabled
               ? "[]"
               : `["Choice 1", "Choice 2", "Choice 3", "Choice 4", "Choice 5", "Choice 6"]`;
