@@ -233,6 +233,15 @@ describe('Fisher Lab voyage progression', () => {
 });
 
 describe('Fisher Lab catch evidence', () => {
+  it('scores species identification from the observed catch', () => {
+    const { evaluateCoreFishIdentification } = window.__FisherLabCore;
+    const species = { id: 'cod', name: 'Atlantic Cod' };
+
+    expect(evaluateCoreFishIdentification(species, 'cod')).toMatchObject({ correct: true, expectedId: 'cod', expectedLabel: 'Atlantic Cod' });
+    expect(evaluateCoreFishIdentification(species, 'haddock')).toMatchObject({ correct: false, expectedId: 'cod', expectedLabel: 'Atlantic Cod' });
+    expect(evaluateCoreFishIdentification(null, 'cod').correct).toBe(false);
+  });
+
   it('classifies minimum-size and slot boundaries from the measured fish', () => {
     const { getCoreFishRuleEvidence } = window.__FisherLabCore;
     const minimumSpecies = { minSize: 18, slot: null };
@@ -413,7 +422,15 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("type: 'fish-haul'");
     expect(source).toContain('inspect the measurement and training rule');
     expect(source).not.toContain("(isKeeper ? ' — KEEPER'");
-    expect(source).toContain('1. Log the rule evidence');
+    expect(source).toContain('1. Identify the species from its field marks');
+    expect(source).toContain('2. Log the selected profile evidence');
+    expect(source).toContain('3. Classify the catch.');
+    expect(source).toContain("name: 'fl-fish-identification'");
+    expect(source).toContain('Unidentified catch');
+    expect(source).toContain('evaluateCoreFishIdentification');
+    expect(source).toContain('Species identification review');
+    expect(source).toContain("'Identification: ' + identifiedSpecies.name");
+    expect(source).toContain("disabled: !fishIdentification || !fishEvidence");
     expect(source).toContain("expectedReason = 'bag-limit'");
     expect(source).toContain('Scenario trip limit has been reached');
     expect(source).toContain('retainedBySpecies: {}');
@@ -424,7 +441,7 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("'aria-label': tripLedgerLabel");
     expect(source).toContain("row.limitReached ? '#fca5a5' : '#dbeafe'");
     expect(source).toContain("name: 'fl-fish-evidence'");
-    expect(source).toContain("disabled: !fishEvidence");
+    expect(source).not.toContain("disabled: !fishEvidence");
     expect(source).toContain('Deckhand review');
     expect(source).toContain('Continue voyage');
     expect(source).toContain("getCoreFishHandlingGuidance(action, result.legalToRetain)");
