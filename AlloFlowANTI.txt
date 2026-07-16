@@ -1878,7 +1878,7 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'status') return value === 'active';
   if (field === 'xp') return typeof value === 'number' && isFinite(value) && value >= 0 && value <= 10000000;
   if (field === 'signal') return value === null || value === 'stuck' || value === 'slow' || value === 'repeat' || value === 'ready';
-  if (field === 'signalAt' || field === 'viewingAt') return value === null || (typeof value === 'number' && isFinite(value) && value >= 0);
+  if (field === 'signalAt' || field === 'viewingAt' || field === 'lastSeen') return value === null || (typeof value === 'number' && isFinite(value) && value >= 0);
   if (field === 'viewingResourceId') return value === null || (typeof value === 'string' && value.length <= 100);
   if (field === 'wsProgress') return validWsProgressValue(value);
   if (field === 'wsProbeResult') return validWsProbeResultValue(value);
@@ -1890,7 +1890,7 @@ function participantCanPatchSession(updates, uid) {
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
     signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1,
-    wsProgress: 1, wsProbeResult: 1
+    wsProgress: 1, wsProbeResult: 1, lastSeen: 1
   };
   var roots = [
     'quizState.allResponses.' + uid,
@@ -5113,6 +5113,11 @@ const SESSION_TIER1_LEAVES = new Set([
   // Students cannot free-type; the teacher's Live Session Center shows the
   // signal next to the (curated) codename and can clear it. Tier-1 safe.
   'signal', 'signalAt',
+  // Presence heartbeat (2026-07-16; spec §8 listed "no presence heartbeat" as a
+  // top classroom risk): roster.{uid}.lastSeen is a ms-timestamp stamped ~every
+  // 60s by connected students so the Live Session Center can tell "still here"
+  // from "vanished". Numbers only, no student-typed content; Tier-1 safe.
+  'lastSeen',
   // Group resource push nonce (teacher-managed): groups.{gid}.resourceAt is a
   // ms-timestamp written with each push so student-paced consumers treat the
   // push as ONE jump (and a re-push of the same resource yanks again).
@@ -8427,6 +8432,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     };
   }, []);
   const [stemLabTool, setStemLabTool] = useState(null);
+  // "Make it mine" bridge: a Visual Organizer dispatches 'allo-open-freeforms'
+  // with its {main, branches, structureType}; we stash it as labToolData._ffImport
+  // (the Free Forms plugin converts + consumes it) and deep-link into the tool.
+  useEffect(() => {
+    const onOpenFreeForms = (e) => {
+      const gen = e && e.detail && e.detail.generated;
+      if (gen && Array.isArray(gen.branches)) {
+        setLabToolData(prev => ({ ...prev, _ffImport: { main: gen.main, branches: gen.branches, structureType: gen.structureType || null } }));
+      }
+      setStemLabTool('freeForms');
+      setShowStemLab(true);
+    };
+    window.addEventListener('allo-open-freeforms', onOpenFreeForms);
+    return () => window.removeEventListener('allo-open-freeforms', onOpenFreeForms);
+  }, []);
   const [assessmentBlocks, setAssessmentBlocks] = useState([]);
   const [toolSnapshots, setToolSnapshots] = useState([]);
   const [showAssessmentBuilder, setShowAssessmentBuilder] = useState(false);
@@ -13629,6 +13649,28 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }).catch(e => warnLog("Viewing ack skipped", e));
       } catch (e) { /* session ref unavailable — ack is best-effort */ }
   }, [generatedContent && generatedContent.id, activeSessionCode, isTeacherMode, user, activeSessionAppId]);
+  // Presence heartbeat (2026-07-16; spec §8 named "no presence heartbeat" a top
+  // classroom risk): connected students stamp roster.{uid}.lastSeen ~every 60s
+  // (jittered so a whole class doesn't write in lockstep) and again on tab
+  // return, so the Live Session Center can tell "still here" from "vanished".
+  // Numbers-only Tier-1 leaf via the same gated per-uid path as signals/acks.
+  useEffect(() => {
+      if (isTeacherMode || !activeSessionCode || !user || !user.uid) return;
+      let cancelled = false;
+      const beat = () => {
+          if (cancelled) return;
+          try {
+              const targetAppId = activeSessionAppId || appId;
+              const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+              writeToSession(sessionRef, { [`roster.${user.uid}.lastSeen`]: Date.now() }).catch(() => {});
+          } catch (_) { /* best-effort */ }
+      };
+      beat();
+      const heartbeatId = setInterval(beat, 60000 + Math.floor(Math.random() * 7000));
+      const onVisible = () => { if (document.visibilityState === 'visible') beat(); };
+      document.addEventListener('visibilitychange', onVisible);
+      return () => { cancelled = true; clearInterval(heartbeatId); document.removeEventListener('visibilitychange', onVisible); };
+  }, [activeSessionCode, isTeacherMode, user, activeSessionAppId]);
   useEffect(() => {
       if (isTeacherMode && activeSessionCode && activeView === 'adventure' && adventureState.currentScene) {
           const targetAppId = activeSessionAppId || appId;
@@ -28390,6 +28432,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       openTestPrepHub: () => setIsTestPrepHubOpen(true),
       openAccessibilityLab: () => setIsAccessibilityLabOpen(true),
       openLumen: () => { setStemLabTool('lumen'); setShowStemLab(true); },
+      openFreeForms: () => { setStemLabTool('freeForms'); setShowStemLab(true); },
       openCommunityCatalog: () => setIsCommunityCatalogOpen(true),
       readingLibraryIndex: readingLibraryIndexForBot,
       openReadingBook: (slug) => {
@@ -37105,8 +37148,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 ? { glyph: '○', color: '#b45309', label: t('live_dock.status_elsewhere') || 'elsewhere' }
                                 : { glyph: '–', color: '#94a3b8', label: t('live_dock.status_unknown') || 'no signal' };
                           const viewingTitle = titleFor(viewing);
+                          // Presence (2026-07-16): from roster.{uid}.lastSeen heartbeats. Bands are
+                          // generous vs the ~60s beat (>=2 missed = quiet, >=3 = likely gone).
+                          // Freshness re-evaluates whenever any snapshot re-renders the dock —
+                          // heartbeats themselves arrive as snapshots, so it stays current.
+                          const seenAge = entry.lastSeen ? (dockNow - entry.lastSeen) : null;
+                          const presence = seenAge == null
+                            ? { color: '#94a3b8', label: t('live_dock.presence_unknown') || 'presence unknown (older app version)' }
+                            : seenAge < 95000
+                              ? { color: '#16a34a', label: t('live_dock.presence_here') || 'connected' }
+                              : seenAge < 200000
+                                ? { color: '#b45309', label: t('live_dock.presence_quiet') || 'quiet for 2+ min' }
+                                : { color: '#dc2626', label: t('live_dock.presence_gone') || 'disconnected?' };
                           return (
                             <div key={uid} style={{display:'flex',alignItems:'center',gap:6,padding:'0.3rem 0.45rem',background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:8,fontSize:'0.75rem'}}>
+                              <span role="img" aria-label={presence.label} title={presence.label} style={{width:8,height:8,borderRadius:'50%',background:presence.color,flexShrink:0,display:'inline-block'}}></span>
                               <span aria-hidden="true" style={{color:statusDot.color,fontWeight:900}}>{statusDot.glyph}</span>
                               <span style={{fontWeight:700,color:'#0f172a',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:86}}>{entry.name || 'Student'}</span>
                               <span style={{color:'#64748b',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',flex:1}}>

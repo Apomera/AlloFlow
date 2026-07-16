@@ -37,9 +37,10 @@ service cloud.firestore {
           // deliberately not enumerated here (the client/mailbox validators
           // enforce per-field shapes); current student-written fields include
           // join metadata, xp, signal/signalAt, viewingResourceId/viewingAt,
-          // and the Word Sounds wsProgress / wsProbeResult summaries
+          // the Word Sounds wsProgress / wsProbeResult summaries
           // (2026-07-12: structured numbers + pattern-checked ids only — see
-          // SESSION_TIER1_LEAVES in AlloFlowANTI.txt for justifications).
+          // SESSION_TIER1_LEAVES in AlloFlowANTI.txt for justifications),
+          // and lastSeen (2026-07-16: ms-timestamp presence heartbeat, ~60s).
           return resource.data.get('roster', {})
             .diff(request.resource.data.get('roster', {}))
             .affectedKeys().hasOnly([request.auth.uid]);
