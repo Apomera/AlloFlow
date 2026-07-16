@@ -40,6 +40,106 @@ window.SelHub = window.SelHub || {
     document.body.appendChild(lr);
   })();
 
+  // WCAG 2.2: accessible form dialog for adding habits and planner blocks.
+  var execFunctionFormSequence = 0;
+  function askExecFunctionForm(options) {
+    return new Promise(function(resolve) {
+      if (typeof document === 'undefined' || !document.body) { resolve(null); return; }
+      options = options || {};
+      var fields = Array.isArray(options.fields) ? options.fields : [];
+      if (!fields.length) { resolve(null); return; }
+      execFunctionFormSequence += 1;
+      var idBase = 'exec-function-form-' + execFunctionFormSequence;
+      var opener = document.activeElement;
+      var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+        return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+      });
+      var overlay = document.createElement('div');
+      overlay.setAttribute('role', 'presentation');
+      overlay.setAttribute('data-exec-function-form', 'true');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:10004;background:rgba(15,23,42,.78);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+      var dialog = document.createElement('form');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', idBase + '-title');
+      dialog.setAttribute('aria-describedby', idBase + '-description');
+      dialog.style.cssText = 'box-sizing:border-box;width:min(32rem,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;color:#0f172a;border:2px solid #0891b2;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);font-family:system-ui,sans-serif;';
+      var title = document.createElement('h2');
+      title.id = idBase + '-title'; title.textContent = String(options.title || 'Add an item');
+      title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#155e75;';
+      var description = document.createElement('p');
+      description.id = idBase + '-description'; description.textContent = String(options.description || 'Complete the fields below.');
+      description.style.cssText = 'margin:0 0 16px;color:#334155;line-height:1.55;';
+      dialog.appendChild(title); dialog.appendChild(description);
+      var inputs = [];
+      fields.forEach(function(field, index) {
+        var fieldId = idBase + '-field-' + index;
+        var group = document.createElement('div'); group.style.cssText = 'margin-top:14px;';
+        var label = document.createElement('label');
+        label.setAttribute('for', fieldId); label.textContent = String(field.label || 'Value');
+        label.style.cssText = 'display:block;margin-bottom:6px;font-weight:700;color:#0f172a;';
+        var input = document.createElement('input');
+        input.id = fieldId; input.name = String(field.name || ('field' + index));
+        input.type = String(field.type || 'text'); input.value = String(field.value == null ? '' : field.value);
+        input.required = field.required !== false;
+        if (input.required) input.setAttribute('aria-required', 'true');
+        if (field.placeholder) input.placeholder = String(field.placeholder);
+        if (field.maxLength) input.maxLength = Number(field.maxLength);
+        if (field.min != null) input.min = String(field.min);
+        if (field.max != null) input.max = String(field.max);
+        if (field.step != null) input.step = String(field.step);
+        if (field.inputMode) input.inputMode = String(field.inputMode);
+        input.style.cssText = 'box-sizing:border-box;width:100%;min-height:44px;padding:9px 11px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font:inherit;';
+        group.appendChild(label); group.appendChild(input); dialog.appendChild(group); inputs.push(input);
+      });
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button'; cancel.textContent = 'Cancel';
+      cancel.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;cursor:pointer;';
+      var submit = document.createElement('button');
+      submit.type = 'submit'; submit.textContent = String(options.submitText || 'Add');
+      submit.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #0e7490;border-radius:8px;background:#0e7490;color:#fff;font-weight:700;cursor:pointer;';
+      actions.appendChild(cancel); actions.appendChild(submit); dialog.appendChild(actions);
+      overlay.appendChild(dialog); document.body.appendChild(overlay);
+      blocked.forEach(function(entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+      var settled = false;
+      function finish(values) {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener('keydown', onKeyDown, true);
+        try { overlay.remove(); } catch (e) {}
+        blocked.forEach(function(entry) {
+          if (!entry.hadInert) entry.el.removeAttribute('inert');
+          if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden');
+          else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+        });
+        try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+        resolve(values);
+      }
+      function onKeyDown(event) {
+        event.stopImmediatePropagation();
+        if (event.key === 'Escape') { event.preventDefault(); finish(null); return; }
+        if (event.key !== 'Tab') return;
+        var focusable = inputs.concat([cancel, submit]);
+        var first = focusable[0]; var last = focusable[focusable.length - 1];
+        if (!dialog.contains(document.activeElement)) { event.preventDefault(); first.focus(); return; }
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+      cancel.addEventListener('click', function() { finish(null); });
+      overlay.addEventListener('click', function(event) { if (event.target === overlay) finish(null); });
+      dialog.addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (!dialog.checkValidity()) { dialog.reportValidity(); return; }
+        var values = {}; inputs.forEach(function(input) { values[input.name] = input.value.trim(); });
+        finish(values);
+      });
+      window.addEventListener('keydown', onKeyDown, true);
+      inputs[0].focus();
+    });
+  }
+
   // ── Sound ──
   var _ac = null;
   function getAC() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _ac; }
@@ -1116,10 +1216,15 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'habit') {
         var habits = d.habits || [];
         var todayIso = (function() { var n = new Date(); var y = n.getFullYear(); var m = String(n.getMonth() + 1).padStart(2, '0'); var d2 = String(n.getDate()).padStart(2, '0'); return y + '-' + m + '-' + d2; })();
-        function addHabit() {
-          var label = prompt('What habit do you want to track? (e.g., "Write 3 things for tomorrow before I leave class")');
-          if (!label || !label.trim()) return;
-          upd({ habits: habits.concat([{ id: 'h_' + Date.now(), label: label.trim(), days: {} }]) });
+        async function addHabit() {
+          var values = await askExecFunctionForm({
+            title: 'Add a habit to track',
+            description: 'Choose one specific action you want to notice each day.',
+            submitText: 'Add habit',
+            fields: [{ name: 'label', label: 'Habit', placeholder: 'Write 3 things for tomorrow before leaving class', maxLength: 140 }]
+          });
+          if (!values) return;
+          upd({ habits: habits.concat([{ id: 'h_' + Date.now(), label: values.label, days: {} }]) });
         }
         function toggleDay(hid, dayIso) {
           var nh = habits.map(function(h2) {
@@ -1185,12 +1290,19 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       if (activeTab === 'planner') {
         var dayBlocks = d.dayBlocks || [];
-        function addBlock() {
-          var label = prompt('What\'s the task or block?');
-          if (!label || !label.trim()) return;
-          var minStr = prompt('Estimated minutes? (e.g., 25)');
-          var min = parseInt(minStr, 10) || 25;
-          upd({ dayBlocks: dayBlocks.concat([{ id: 'b_' + Date.now(), label: label.trim(), min: min, done: false }]) });
+        async function addBlock() {
+          var values = await askExecFunctionForm({
+            title: 'Add a day-planner block',
+            description: 'Name the task and estimate how many minutes it needs.',
+            submitText: 'Add block',
+            fields: [
+              { name: 'label', label: 'Task or block', placeholder: 'Math homework', maxLength: 140 },
+              { name: 'minutes', label: 'Estimated minutes', type: 'number', value: 25, min: 1, max: 480, step: 1, inputMode: 'numeric' }
+            ]
+          });
+          if (!values) return;
+          var min = parseInt(values.minutes, 10) || 25;
+          upd({ dayBlocks: dayBlocks.concat([{ id: 'b_' + Date.now(), label: values.label, min: min, done: false }]) });
         }
         function toggleBlock(id) {
           var nb = dayBlocks.map(function(b) { return b.id === id ? Object.assign({}, b, { done: !b.done }) : b; });
