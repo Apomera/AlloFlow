@@ -95,7 +95,8 @@ The Canvas app never needs this — only this connector does.
 
 | Tool | What it does | Writes | Typical time |
 | --- | --- | --- | --- |
-| `remediation_capabilities` | Honest environment report (key present, Chromium available, modules found, models, limits). Call first. | nothing | instant |
+| `remediation_capabilities` | Honest environment report (key present, playwright package AND Chromium **binary** present, modules found, models, limits). Call first — a fresh packaged install reports `chromiumInstalled: false` with a hint. | nothing | instant |
+| `remediation_setup` | One-time environment setup: downloads the Chromium binary via Playwright (~200MB, 1–5 min). Idempotent — returns instantly when already installed. No key needed. | Playwright browser cache | 1–5 min once |
 | `pdf_audit` | Accessibility audit: score, per-severity issues, scanned/searchable detection, language, page count. Accepts `.pdf`, `.docx`, `.pptx` (Office files audit deterministically from extracted text). | nothing | 1–3 min |
 | `pdf_validate_ua` | Independent **PDF/UA-1 (ISO 14289-1)** validation via veraPDF — a real JVM in headless Chromium, served from the repo's own `verapdf/` assets (a local loopback server provides the HTTP Range support CheerpJ requires; the CDN copy fails that at some edges). **Needs no Gemini key.** Runs outside the single-flight lane, so it works even while a remediation job is running. A lone `clause 5, test 1` failure = the pipeline deliberately withheld the PDF/UA claim, not a forgotten stamp. | nothing | ~1–2 min (JVM boot 40–90s cold) |
 | `pdf_remediate` | Full pipeline, **synchronous**: audit → accessible HTML rebuild → AI fix passes to `target_score` → honesty-gated verification → tagged-PDF export. Blocks until done — use the job tools if your client enforces tool timeouts. | `<stem>-accessible.html`, `<stem>-tagged.pdf`, `<stem>-remediation-report.json` (collision-safe names, never overwrites) | 5–30 min |

@@ -73,12 +73,13 @@ describe('remediation MCP: protocol + tool registry', () => {
     child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
   });
 
-  it('lists exactly the nine tools, underscore-named, each with title + annotations', async () => {
+  it('lists exactly the ten tools, underscore-named, each with title + annotations', async () => {
     const { tools } = (await request('tools/list', {})).result;
     expect(tools.map((t) => t.name).sort()).toEqual([
       'pdf_audit', 'pdf_batch_remediate_start', 'pdf_remediate', 'pdf_remediate_start',
       'pdf_validate_ua',
       'remediation_capabilities', 'remediation_job_cancel', 'remediation_job_result', 'remediation_job_status',
+      'remediation_setup',
     ]);
     for (const t of tools) {
       expect(t.name).not.toContain('.');
@@ -102,8 +103,22 @@ describe('remediation MCP: protocol + tool registry', () => {
     expect(cap.geminiKeyPresent).toBe(false);
     expect(cap.ready).toBe(false); // must not claim ready without a key
     expect(typeof cap.playwrightAvailable).toBe('boolean');
+    // Package ≠ browser binary: a packaged install resolves playwright but has no Chromium.
+    // The capabilities report distinguishes the two so a fresh install is guided to setup.
+    expect(typeof cap.chromiumInstalled).toBe('boolean');
     expect(Object.keys(cap.pipelineModulesPresent)).toContain('doc_pipeline_module.js');
     expect(cap.networkEgress.join(' ')).toContain('generativelanguage');
+  });
+
+  it('remediation_setup is idempotent — short-circuits when Chromium is already installed (dev machines)', async () => {
+    const cap = (await callTool('remediation_capabilities', {})).structuredContent;
+    if (!cap.chromiumInstalled) return; // fresh machine: skip rather than trigger a 200MB download in a unit test
+    const t0 = Date.now();
+    const res = await callTool('remediation_setup', {});
+    expect(res.isError).toBe(false);
+    expect(res.structuredContent.ok).toBe(true);
+    expect(res.structuredContent.alreadyInstalled).toBe(true);
+    expect(Date.now() - t0).toBeLessThan(3000); // a probe, not a download
   });
 });
 

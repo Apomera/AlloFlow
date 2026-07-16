@@ -146,7 +146,8 @@ function main() {
   const mb = (fs.statSync(BUNDLE).size / 1024 / 1024).toFixed(1);
   log('OK → ' + BUNDLE + ' (' + mb + ' MB)');
   log('Install: Claude Desktop → Settings → Extensions → drag the .mcpb in; it will prompt for the Gemini API key.');
-  log('Host still needs: Node 18+ on PATH, and `npx playwright install chromium` once.');
+  log('First run on a fresh machine: ask Claude to run `remediation_setup` (one-time ~200MB Chromium download).');
+  log('Claude Desktop provides the Node runtime for type:node MCPB extensions; other hosts need Node 18+ on PATH.');
 }
 
 main();

@@ -289,6 +289,13 @@ const TOOLS = [
     annotations: { title: 'Check remediation environment', readOnlyHint: true, destructiveHint: false, openWorldHint: false },
   },
   {
+    name: 'remediation_setup',
+    title: 'One-time environment setup',
+    description: 'Download the Chromium browser binary the pipeline runs in (a one-time ~200MB download via Playwright, 1-5 minutes). Call this when remediation_capabilities reports chromiumInstalled: false — typically right after installing the packaged connector. Idempotent: returns immediately if Chromium is already installed. Writes only to the Playwright browser cache; needs no Gemini key.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    annotations: { title: 'One-time environment setup', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  },
+  {
     name: 'pdf_audit',
     title: 'Audit a PDF for accessibility',
     description: 'Run the AlloFlow accessibility audit on a local PDF, DOCX, or PPTX: overall score, per-severity issue list, scanned/searchable detection, page count, detected language. Sends document content to the Gemini API and fetches pdf.js/Tesseract from public CDNs. Writes no files. Office files are audited deterministically from extracted text (no Vision pass). Typically 1-3 minutes.',
@@ -388,8 +395,11 @@ const TOOLS = [
 const TOOL_HANDLERS = {
   remediation_capabilities(args) {
     assertAllowedKeys(args, [], 'arguments');
-    let playwrightAvailable = false;
-    try { require.resolve('playwright'); playwrightAvailable = true; } catch (_) {}
+    // The playwright PACKAGE resolving is necessary but NOT sufficient — a packaged
+    // bundle ships the package, never the ~200MB browser binary. Probe both, or a
+    // fresh install claims ready and then dies at first run.
+    const chrome = Driver.resolveChromium();
+    const playwrightAvailable = !!chrome.chromium;
     const modules = {};
     for (const f of Driver.MODULE_FILES) modules[f] = fs.existsSync(path.join(Driver.ASSETS_ROOT, f));
     const keyInfo = Driver.resolveGeminiApiKey();
@@ -397,6 +407,8 @@ const TOOL_HANDLERS = {
       geminiKeyPresent: !!keyInfo.key,
       geminiKeySource: keyInfo.source, // label only ('env:…'/'file:…'/'none') — never the value
       playwrightAvailable,
+      chromiumInstalled: chrome.installed,
+      setupHint: (!chrome.installed && playwrightAvailable) ? 'The Chromium browser binary is not installed yet — call remediation_setup once (a ~200MB one-time download) and this environment becomes ready.' : undefined,
       pipelineModulesPresent: modules,
       model: process.env.ALLOFLOW_MCP_GEMINI_MODEL || 'gemini-3-flash-preview',
       fallbackModel: process.env.ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite',
@@ -409,8 +421,19 @@ const TOOL_HANDLERS = {
         unfinished: Array.from(JOBS.values()).filter((j) => ['queued', 'running'].indexOf(j.status) !== -1).length,
       },
       networkEgress: ['generativelanguage.googleapis.com (document content)', 'public CDNs (pdf.js, Tesseract, pdf-lib, axe)'],
-      ready: !!keyInfo.key && playwrightAvailable && Object.values(modules).every(Boolean),
+      ready: !!keyInfo.key && playwrightAvailable && chrome.installed && Object.values(modules).every(Boolean),
     };
+  },
+
+  async remediation_setup(args) {
+    assertAllowedKeys(args, [], 'arguments');
+    const before = Driver.resolveChromium();
+    if (!before.chromium) return { ok: false, error: 'The playwright package itself is missing — reinstall the connector (or run npm install in the AlloFlow repo).' };
+    if (before.installed) return { ok: true, alreadyInstalled: true, note: 'Chromium is already installed; nothing to do.' };
+    if (busyWith) return { ok: false, error: 'A ' + busyWith + ' run is in progress — retry setup once it finishes.' };
+    const out = await withSingleFlight('remediation_setup', () => Driver.installChromium(log));
+    if (!out.installed) return { ok: false, error: out.error || 'Install failed.' };
+    return { ok: true, installed: true, note: 'Chromium installed — remediation_capabilities should now report ready (given a Gemini key).' };
   },
 
   async pdf_audit(args) {

@@ -60,6 +60,51 @@ const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 function defaultLog(msg) { process.stderr.write('[alloflow-remediation] ' + msg + '\n'); }
 
+// ── Chromium resolution ─────────────────────────────────────────────────────
+// The playwright PACKAGE resolving is not the same as the BROWSER BINARY being
+// installed — a packaged bundle ships the package but never the ~250MB browser.
+// resolveChromium() reports both, plus the CLI entry point installChromium()
+// spawns to download the binary (Playwright's supported install path).
+function resolveChromium() {
+  for (const pkg of ['@playwright/test', 'playwright']) {
+    try {
+      const m = require(pkg);
+      if (!m || !m.chromium) continue;
+      let execPath = null, installed = false;
+      try { execPath = m.chromium.executablePath(); installed = !!(execPath && fs.existsSync(execPath)); } catch (_) {}
+      let cliPath = null;
+      try { cliPath = require.resolve(pkg + '/cli.js'); } catch (_) {}
+      return { pkg, chromium: m.chromium, executablePath: execPath, installed, cliPath };
+    } catch (_) {}
+  }
+  return { pkg: null, chromium: null, executablePath: null, installed: false, cliPath: null };
+}
+
+// Download the Chromium binary via the bundled Playwright CLI (the supported installer).
+// ~150-250MB, 1-5 minutes on school wifi. Resolves {installed, log} — never throws for a
+// failed install; the caller reports honestly.
+function installChromium(onLog) {
+  const rlog = typeof onLog === 'function' ? onLog : defaultLog;
+  const res = resolveChromium();
+  if (res.installed) return Promise.resolve({ installed: true, alreadyInstalled: true });
+  if (!res.cliPath) return Promise.resolve({ installed: false, error: 'Playwright CLI not found — the playwright package is missing entirely.' });
+  return new Promise((resolve) => {
+    const { spawn } = require('child_process');
+    rlog('Downloading Chromium via Playwright (' + res.pkg + ') — this is a one-time ~150-250MB download...');
+    const child = spawn(process.execPath, [res.cliPath, 'install', 'chromium'], { stdio: ['ignore', 'pipe', 'pipe'] });
+    let tail = '';
+    const sink = (chunk) => { const t = String(chunk); tail = (tail + t).slice(-2000); const line = t.trim().split('\n').pop(); if (line) rlog('installer: ' + line.slice(0, 200)); };
+    child.stdout.on('data', sink);
+    child.stderr.on('data', sink);
+    child.on('error', (e) => resolve({ installed: false, error: 'Installer failed to start: ' + e.message }));
+    child.on('exit', (code) => {
+      const after = resolveChromium();
+      if (after.installed) resolve({ installed: true });
+      else resolve({ installed: false, error: 'Installer exited with code ' + code + ' but the browser binary is still missing. Last output: ' + tail.slice(-400) });
+    });
+  });
+}
+
 // ── Gemini key resolution ───────────────────────────────────────────────────
 // Order: GEMINI_API_KEY env var → the file at ALLOFLOW_MCP_ENV_PATH → the repo's
 // gitignored maintainer env file (prismflow-deploy/.env.maintainer-demo), reading
@@ -169,14 +214,12 @@ function createDriver(options) {
 
   async function getBrowser() {
     if (browser) return browser;
-    // Prefer @playwright/test's chromium: it is what the repo's e2e suite runs with, so its
-    // browser revision is the one actually installed on this machine. Fall back to the plain
-    // playwright package (a fresh `npx playwright install chromium` serves either).
-    let chromium = null;
-    for (const pkg of ['@playwright/test', 'playwright']) {
-      try { const m = require(pkg); if (m && m.chromium) { chromium = m.chromium; break; } } catch (_) {}
-    }
-    if (!chromium) throw new Error('Playwright is not installed. From the AlloFlow repo run: npm install && npx playwright install chromium');
+    // resolveChromium prefers @playwright/test (the repo e2e's browser revision) and falls
+    // back to the plain playwright package (what the MCPB bundle ships).
+    const res = resolveChromium();
+    if (!res.chromium) throw new Error('Playwright is not installed. From the AlloFlow repo run: npm install && npx playwright install chromium');
+    if (!res.installed) throw new Error('The Chromium browser binary is not installed yet. Call the remediation_setup tool (one-time ~200MB download), or run: npx playwright install chromium');
+    const chromium = res.chromium;
     browser = await chromium.launch({
       headless: process.env.ALLOFLOW_MCP_HEADFUL !== '1',
       // CheerpJ (the veraPDF JVM) boots via timer/rAF loops that Chromium throttles for
@@ -539,7 +582,7 @@ function createDriver(options) {
   return { audit, remediate, validatePdfUa, cancelActiveRun, close };
 }
 
-module.exports = { createDriver, classifyHttpFailure, resolveGeminiApiKey, REPO_ROOT, ASSETS_ROOT, MODULE_FILES };
+module.exports = { createDriver, classifyHttpFailure, resolveGeminiApiKey, resolveChromium, installChromium, REPO_ROOT, ASSETS_ROOT, MODULE_FILES };
 
 // ── Direct CLI (for manual testing without an MCP client) ──────────────────
 //   GEMINI_API_KEY=... node desktop/mcp/remediation_headless_driver.cjs audit <file.pdf>
