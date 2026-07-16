@@ -76,7 +76,9 @@ const StudentQuizOverlay = React.memo(({
   const showTranslated = groupLanguage && groupLanguage !== 'English';
   const [hasAnswered, setHasAnswered] = useState(false);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
+  const [submitError, setSubmitError] = useState('');
   useEffect(() => {
+    setSubmitError('');
     if (user && responses && responses[user.uid] !== undefined) {
       setHasAnswered(true);
       setSelectedOptionIndex(responses[user.uid]);
@@ -110,6 +112,7 @@ const StudentQuizOverlay = React.memo(({
   }, [mode, user, teams, activeSessionCode, targetAppId]);
   const submitQuizResponse = async optionIndex => {
     if (hasAnswered || !user || !activeSessionCode) return;
+    setSubmitError('');
     setHasAnswered(true);
     setSelectedOptionIndex(optionIndex);
     try {
@@ -127,7 +130,7 @@ const StudentQuizOverlay = React.memo(({
       warnLog("Error submitting quiz response:", e);
       setHasAnswered(false);
       setSelectedOptionIndex(null);
-      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.quiz_submit_failed'), 'error');else alert(t('errors.quiz_submit_failed'));
+      setSubmitError(t('errors.quiz_submit_failed') || 'Your answer could not be submitted. Please try again.');
     }
   };
   const getModeStyles = () => {
@@ -179,7 +182,11 @@ const StudentQuizOverlay = React.memo(({
   return /*#__PURE__*/React.createElement("div", {
     className: `fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-white font-sans`,
     "data-help-key": "quiz_student_overlay"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, submitError && /*#__PURE__*/React.createElement("p", {
+    id: "quiz-submit-error",
+    role: "alert",
+    className: "m-4 rounded-lg border border-red-300 bg-red-950 px-4 py-3 font-semibold text-white"
+  }, submitError), /*#__PURE__*/React.createElement("div", {
     className: "p-4 flex justify-between items-start bg-black/20 backdrop-blur-md border-b border-white/10 shrink-0"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
     className: `font-black text-xl uppercase tracking-widest ${styles.accent} flex items-center gap-2 drop-shadow-md`,
@@ -522,7 +529,7 @@ const RoleSelectionModal = React.memo(({
   const handleMicCheck = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('roles.voice_not_supported'), 'error');else alert(t('roles.voice_not_supported'));
+      setMicStatus('unsupported');
       return;
     }
     setMicStatus('requesting');
@@ -618,10 +625,10 @@ const RoleSelectionModal = React.memo(({
   }, t('roles.mic_setup')), /*#__PURE__*/React.createElement("button", {
     onClick: handleMicCheck,
     disabled: micStatus === 'granted' || micStatus === 'requesting',
-    className: `flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' : micStatus === 'denied' ? 'bg-red-50 text-red-500 border border-red-100' : micStatus === 'requesting' ? 'bg-slate-100 text-slate-600' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`
+    className: `flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' : micStatus === 'denied' || micStatus === 'unsupported' ? 'bg-red-50 text-red-700 border border-red-200' : micStatus === 'requesting' ? 'bg-slate-100 text-slate-600' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`
   }, micStatus === 'granted' ? /*#__PURE__*/React.createElement(CheckCircle, {
     size: 14
-  }) : micStatus === 'denied' ? /*#__PURE__*/React.createElement(XCircle, {
+  }) : micStatus === 'denied' || micStatus === 'unsupported' ? /*#__PURE__*/React.createElement(XCircle, {
     size: 14
   }) : micStatus === 'requesting' ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
@@ -632,7 +639,7 @@ const RoleSelectionModal = React.memo(({
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true"
-  }, micStatus === 'granted' ? t('roles.mic_ready') : micStatus === 'denied' ? t('roles.mic_denied') : micStatus === 'requesting' ? t('roles.mic_requesting') : t('roles.mic_enable'))), micStatus === 'idle' && /*#__PURE__*/React.createElement("p", {
+  }, micStatus === 'granted' ? t('roles.mic_ready') : micStatus === 'unsupported' ? t('roles.voice_not_supported') : micStatus === 'denied' ? t('roles.mic_denied') : micStatus === 'requesting' ? t('roles.mic_requesting') : t('roles.mic_enable'))), micStatus === 'idle' && /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mt-2"
   }, t('roles.mic_tip'))))));
 });
