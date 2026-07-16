@@ -25,6 +25,126 @@
     return arguments.length > 1 ? arguments[1] : arguments[0];
   };
 
+  // WCAG 2.2: native browser dialogs do not provide app-controlled focus,
+  // labelling, or background isolation. Keep confirmations and short text entry
+  // keyboard-operable and perceivable without depending on the host browser UI.
+  var symbolStudioDialogSequence = 0;
+  function openSymbolStudioDecisionDialog(message, options) {
+    return new Promise(function (resolve) {
+      options = options || {};
+      if (typeof document === 'undefined' || !document.body) {
+        resolve(options.input ? null : false);
+        return;
+      }
+      var isTextEntry = options.input === true;
+      symbolStudioDialogSequence += 1;
+      var idBase = 'symbol-studio-decision-' + symbolStudioDialogSequence;
+      var opener = document.activeElement;
+      var blocked = Array.prototype.slice.call(document.body.children).map(function (el) {
+        return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+      });
+      var overlay = document.createElement('div');
+      overlay.setAttribute('role', 'presentation');
+      overlay.setAttribute('data-symbol-studio-dialog', isTextEntry ? 'text' : 'confirmation');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,.78);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+      var dialog = document.createElement('div');
+      dialog.setAttribute('role', isTextEntry ? 'dialog' : 'alertdialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', idBase + '-title');
+      dialog.setAttribute('aria-describedby', idBase + '-description');
+      dialog.style.cssText = 'box-sizing:border-box;width:min(34rem,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);font-family:system-ui,sans-serif;';
+      var title = document.createElement('h2');
+      title.id = idBase + '-title';
+      title.textContent = String(options.title || (isTextEntry ? 'Enter a name' : 'Please confirm'));
+      title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#0f172a;';
+      var description = document.createElement('p');
+      description.id = idBase + '-description';
+      description.textContent = String(message || (isTextEntry ? 'Enter a value.' : 'Continue with this action?'));
+      description.style.cssText = 'margin:0;color:#334155;line-height:1.55;white-space:pre-line;';
+      dialog.appendChild(title);
+      dialog.appendChild(description);
+      var input = null;
+      if (isTextEntry) {
+        var label = document.createElement('label');
+        label.setAttribute('for', idBase + '-input');
+        label.textContent = String(options.inputLabel || 'Name');
+        label.style.cssText = 'display:block;margin-top:16px;margin-bottom:6px;font-weight:700;color:#0f172a;';
+        input = document.createElement('input');
+        input.id = idBase + '-input';
+        input.type = 'text';
+        input.value = String(options.defaultValue || '');
+        input.maxLength = Number(options.maxLength) || 80;
+        input.style.cssText = 'box-sizing:border-box;width:100%;min-height:44px;padding:9px 11px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font:inherit;';
+        dialog.appendChild(label);
+        dialog.appendChild(input);
+      }
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = String(options.cancelText || 'Cancel');
+      cancel.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;cursor:pointer;';
+      var confirm = document.createElement('button');
+      confirm.type = 'button';
+      confirm.textContent = String(options.confirmText || (isTextEntry ? 'Save' : 'Continue'));
+      confirm.style.cssText = 'min-width:44px;min-height:44px;padding:9px 16px;border:2px solid #6d28d9;border-radius:8px;background:#6d28d9;color:#fff;font-weight:700;cursor:pointer;';
+      actions.appendChild(cancel);
+      actions.appendChild(confirm);
+      dialog.appendChild(actions);
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+      blocked.forEach(function (entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+      var settled = false;
+      function updateConfirmState() {
+        if (!input) return;
+        confirm.disabled = !input.value.trim();
+        confirm.style.opacity = confirm.disabled ? '.55' : '1';
+        confirm.style.cursor = confirm.disabled ? 'not-allowed' : 'pointer';
+      }
+      function finish(accepted) {
+        if (settled) return;
+        if (accepted && input && !input.value.trim()) return;
+        settled = true;
+        window.removeEventListener('keydown', onKeyDown, true);
+        try { overlay.remove(); } catch (e) {}
+        blocked.forEach(function (entry) {
+          if (!entry.hadInert) entry.el.removeAttribute('inert');
+          if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden');
+          else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+        });
+        try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+        resolve(accepted ? (input ? input.value.trim() : true) : (input ? null : false));
+      }
+      function onKeyDown(event) {
+        if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); return; }
+        if (event.key === 'Enter' && input && document.activeElement === input && !confirm.disabled) {
+          event.preventDefault(); finish(true); return;
+        }
+        if (event.key !== 'Tab') return;
+        var focusable = input ? [input, cancel, confirm].filter(function (el) { return !el.disabled; }) : [cancel, confirm];
+        var first = focusable[0]; var last = focusable[focusable.length - 1];
+        if (!dialog.contains(document.activeElement)) { event.preventDefault(); first.focus(); return; }
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+      cancel.addEventListener('click', function () { finish(false); });
+      confirm.addEventListener('click', function () { finish(true); });
+      overlay.addEventListener('click', function (event) { if (event.target === overlay) finish(false); });
+      if (input) input.addEventListener('input', updateConfirmState);
+      window.addEventListener('keydown', onKeyDown, true);
+      updateConfirmState();
+      (input || cancel).focus();
+      if (input) input.select();
+    });
+  }
+  function askSymbolStudioConfirmation(message, options) {
+    return openSymbolStudioDecisionDialog(message, options || {});
+  }
+  function askSymbolStudioText(message, defaultValue, options) {
+    options = Object.assign({}, options || {}, { input: true, defaultValue: defaultValue || '' });
+    return openSymbolStudioDecisionDialog(message, options);
+  }
+
   // HTML-escape untrusted text/URLs before interpolating into print/export HTML strings
   // (student names, IEP goals, word labels, AI story text, image URLs all reach document.write).
   var escHtml = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
@@ -1020,14 +1140,16 @@
       });
       return { boards: boards, taps: taps };
     }
-    function confirmRegen(label) {
+    async function confirmRegen(label) {
       var u = symbolUsage(label);
       if (u.boards <= 0 && u.taps <= 0) return true; // not in use — replace freely
       var parts = [];
       if (u.boards > 0) parts.push('used on ' + u.boards + ' saved board' + (u.boards !== 1 ? 's' : ''));
       if (u.taps > 0) parts.push('the student has interacted with it ' + u.taps + ' time' + (u.taps !== 1 ? 's' : ''));
-      return window.confirm('"' + (label || 'This symbol') + '" is ' + parts.join(' and ') +
-        '. Replacing its picture can disrupt the recognition and motor planning the student has built. Replace it anyway?\n\nTip: use the Lock button to permanently protect a symbol.');
+      return askSymbolStudioConfirmation('"' + (label || 'This symbol') + '" is ' + parts.join(' and ') +
+        '. Replacing its picture can disrupt the recognition and motor planning the student has built. Replace it anyway?\n\nTip: use the Lock button to permanently protect a symbol.', {
+        title: 'Replace familiar symbol', confirmText: 'Replace picture'
+      });
     }
 
     // Sync story student name when avatar name changes
@@ -1193,7 +1315,7 @@
       var item = gallery.find(function (i) { return i.id === id; });
       if (!item || !onCallImagen) return;
       if (item.locked) { addToast && addToast('🔒 "' + item.label + '" is locked. Unlock it to change its look.', 'info'); return; }
-      if (!confirmRegen(item.label)) return;
+      if (!(await confirmRegen(item.label))) return;
       setSymLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
       try {
         var prompt = buildSymbolPrompt(item.label, item.description, item.style, avatarRef ? avatarDesc : '');
@@ -1252,19 +1374,20 @@
       setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
     }, [gallery]);
 
-    var clearGallery = useCallback(function () {
-      if (!window.confirm('Clear all ' + gallery.length + ' symbols from the gallery? This cannot be undone.')) return;
+    var clearGallery = useCallback(async function () {
+      if (!(await askSymbolStudioConfirmation('Clear all ' + gallery.length + ' symbols from the gallery? This cannot be undone.', {
+        title: 'Clear symbol gallery', confirmText: 'Clear all symbols'
+      }))) return;
       setGallery([]); store(scopedKey(STORAGE_GALLERY), []);
       setSelectedId(null);
       addToast && addToast(t('toasts.gallery_cleared'), 'info');
     }, [gallery, addToast]);
 
-    var exportData = useCallback(function () {
+    var exportData = useCallback(async function () {
       var hasPhotos = profiles.some(function (p) { return p.image; });
-      var ok = window.confirm('Download full backup?\n\n'
-        + 'This file restores EVERYTHING, so it is NOT de-identified — it contains student names' + (hasPhotos ? ', photos' : '') + ', descriptions, communication logs, and IEP data in plain text.\n\n'
+      var ok = await askSymbolStudioConfirmation('This file restores EVERYTHING, so it is NOT de-identified — it contains student names' + (hasPhotos ? ', photos' : '') + ', descriptions, communication logs, and IEP data in plain text.\n\n'
         + 'FERPA: treat it as a confidential student record. Save it only to a school-approved, encrypted location — do not email it or put it in personal cloud storage. To share or analyze data, use the de-identified CSV exports instead.\n\n'
-        + 'Continue with the full backup?');
+        + 'Continue with the full backup?', { title: 'Download confidential full backup', confirmText: 'Download full backup' });
       if (!ok) return;
       var data = {
         version: 7,
@@ -1593,7 +1716,7 @@
       var word = boardWords.find(function (w) { return w.id === id; });
       if (!word || !onCallImagen) return;
       if (word.locked) { addToast && addToast('🔒 "' + word.label + '" is locked. Unlock the cell to change its look.', 'info'); return; }
-      if (!confirmRegen(word.label)) return;
+      if (!(await confirmRegen(word.label))) return;
       setBoardLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
       try {
         var prompt = buildSymbolPrompt(word.label, word.description, globalStyle, avatarRef ? avatarDesc : '');
@@ -2486,11 +2609,12 @@
       } finally { setPredLoading(false); }
     }, [onCallGemini]);
 
-    var toggleAiPredict = useCallback(function () {
+    var toggleAiPredict = useCallback(async function () {
       if (aiPredict) { setAiPredict(false); store('alloAACPredictConsent', false); setPredictions([]); return; }
-      var ok = window.confirm('Enable AI word prediction?\n\n'
-        + 'When ON, the words the student taps (their in-progress message) are sent to the AI model to suggest likely next words. Only the tapped word labels are sent — no student names, photos, profiles, or logs. AlloFlow does not store the predictions.\n\n'
-        + 'Turn this on only if sending the student\'s message text to the AI is acceptable for this student and setting. You can turn it off anytime.');
+      var ok = await askSymbolStudioConfirmation('When ON, the words the student taps (their in-progress message) are sent to the AI model to suggest likely next words. Only the tapped word labels are sent — no student names, photos, profiles, or logs. AlloFlow does not store the predictions.\n\n'
+        + 'Turn this on only if sending the student\'s message text to the AI is acceptable for this student and setting. You can turn it off anytime.', {
+        title: 'Enable AI word prediction', confirmText: 'Enable AI prediction'
+      });
       if (!ok) return;
       setAiPredict(true); store('alloAACPredictConsent', true);
     }, [aiPredict]);
@@ -6119,10 +6243,11 @@
       var activeFctMeta = FCT_MAP[cbFunction] || {};
       // Confirm before replacing an in-progress board. Only prompts when the user
       // actually has work at risk — a blank builder skips the dialog entirely.
-      var confirmReplaceBoard = function () {
+      var confirmReplaceBoard = async function () {
         if (!boardWords || boardWords.length === 0) return true;
-        try { return window.confirm('Replace the current board? Unsaved cells will be lost.'); }
-        catch (_) { return true; }
+        return askSymbolStudioConfirmation('Replace the current board? Unsaved cells will be lost.', {
+          title: 'Replace current board', confirmText: 'Replace board'
+        });
       };
       var fctChipStyle = function (selected, color) {
         return {
@@ -6184,7 +6309,7 @@
               })
             ),
             e('button', {
-              onClick: function () { if (confirmReplaceBoard()) applyFctTemplate(cbFunction, cbPhase); },
+              onClick: async function () { if (await confirmReplaceBoard()) applyFctTemplate(cbFunction, cbPhase); },
               disabled: !fctPhasePreview.length,
               'aria-label': 'Build board from FCT template',
               style: Object.assign({}, S.btn(activeFctMeta.color || PURPLE, '#fff', !fctPhasePreview.length), { whiteSpace: 'nowrap' })
@@ -6201,7 +6326,7 @@
             id: 'comm-builder-goal', type: 'text',
             value: cbGoalText,
             onChange: function (ev) { setCbGoalText(ev.target.value); },
-            onKeyDown: function (ev) { if (ev.key === 'Enter' && cbGoalText.trim() && !cbGoalBusy) { ev.preventDefault(); if (!confirmReplaceBoard()) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); } },
+            onKeyDown: async function (ev) { if (ev.key === 'Enter' && cbGoalText.trim() && !cbGoalBusy) { ev.preventDefault(); if (!(await confirmReplaceBoard())) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); } },
             placeholder: 'e.g. request a break at recess, ask a peer to play, tell me you need help',
             style: Object.assign({}, S.input, { margin: 0, fontSize: '13px' }),
             'aria-label': 'Communication goal'
@@ -6225,7 +6350,7 @@
           ),
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
             e('button', {
-              onClick: function () { if (!confirmReplaceBoard()) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); },
+              onClick: async function () { if (!(await confirmReplaceBoard())) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); },
               disabled: !cbGoalText.trim() || cbGoalBusy,
               'aria-label': 'Build board from goal',
               style: S.btn(PURPLE, '#fff', !cbGoalText.trim() || cbGoalBusy)
@@ -6703,8 +6828,10 @@
                 autoTrials > 0 && e('div', { style: { marginTop: '5px', padding: '5px 7px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' } },
                   e('span', { style: { fontSize: '9px', color: '#92400e', flex: 1, minWidth: '150px' } }, '⚠ Includes ' + autoTrials + ' auto-logged trial' + (autoTrials !== 1 ? 's' : '') + ' from before manual-only tracking — progress may be inflated.'),
                   e('button', {
-                    onClick: function () {
-                      if (!window.confirm('Recompute "' + g.text + '" from clinician trials only?\n\nProgress will be set to count only your manual ✓ Success entries (' + manualSuccesses + '), and ' + autoTrials + ' auto-logged tap/game/scan trial' + (autoTrials !== 1 ? 's' : '') + ' (recorded before manual-only tracking) will be removed from this goal’s record (and from the RTI dashboard history, if connected). This cannot be undone.')) return;
+                    onClick: async function () {
+                      if (!(await askSymbolStudioConfirmation('Progress will be set to count only your manual ✓ Success entries (' + manualSuccesses + '), and ' + autoTrials + ' auto-logged tap/game/scan trial' + (autoTrials !== 1 ? 's' : '') + ' (recorded before manual-only tracking) will be removed from this goal’s record (and from the RTI dashboard history, if connected). This cannot be undone.', {
+                        title: 'Recompute "' + g.text + '" from clinician trials only?', confirmText: 'Recompute goal'
+                      }))) return;
                       recomputeIepGoal(g.id);
                       addToast && addToast('Recomputed “' + g.text + '” from clinician trials (' + manualSuccesses + ' success' + (manualSuccesses !== 1 ? 'es' : '') + ').', 'success');
                     },
@@ -7667,8 +7794,10 @@
                 }, (isCustom ? '⭐ ' : '') + t.label);
               }),
               storySituation.trim() && e('button', {
-                onClick: function () {
-                  var lbl = window.prompt('Template name:', storySituation.slice(0, 40));
+                onClick: async function () {
+                  var lbl = await askSymbolStudioText('Choose a short name for this reusable social story template.', storySituation.slice(0, 40), {
+                    title: 'Save story template', inputLabel: 'Template name', confirmText: 'Save template', maxLength: 80
+                  });
                   if (!lbl) return;
                   var tmpl = { label: lbl, situation: storySituation, details: storyDetails };
                   var updated = customTemplates.concat([tmpl]);
