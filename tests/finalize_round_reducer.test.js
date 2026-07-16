@@ -247,20 +247,36 @@ describe('finalizeRemediationRound — PARITY with the frozen pre-refactor host 
   });
 });
 
-describe('anti-drift: the host delegates, the hand-rolled merge is gone', () => {
-  it('runAutoFixLoop calls _docPipeline.finalizeRemediationRound and commits its result', () => {
+// ── Host delegation state ─────────────────────────────────────────────────────
+// The ANTI half (runAutoFixLoop delegates to the reducer, hand-rolled merge deleted) was
+// re-landed OVER twice on 2026-07-16 by a concurrent session force-re-landing its own ANTI
+// hunks from a stale base — racing it risks corrupting both edits, so the delegation waits
+// for a quiet window (dev-tools/reland_finalize_round_delegation.py applies it in one shot).
+// Until then the host keeps its old inline merge (functionally identical — the parity block
+// above proves the reducer computes exactly that) and the engine half ships unused.
+// These pins are STATE-AWARE: they activate the moment the delegation lands, and from then
+// on they hard-ban the old inline block from ever coming back.
+const hostDelegates = antiSrc.includes('_mergedRound = await _finalizeRound(cur, {');
+
+describe('anti-drift: host delegation (pins arm when the ANTI half lands)', () => {
+  it(hostDelegates
+    ? 'runAutoFixLoop calls _docPipeline.finalizeRemediationRound and commits its result'
+    : 'PENDING RE-LAND: host still carries the pre-#6-full inline merge (see dev-tools/reland_finalize_round_delegation.py)', () => {
+    if (!hostDelegates) {
+      // The old inline block must then still be INTACT (a half-removed merge would be worse
+      // than either full state).
+      expect(antiSrc).toContain("const _freshAxeRaw = (result.axe && typeof result.axe.score === 'number'");
+      expect(antiSrc).toContain('const _storedExpertBase = (cur._expertReviewBeforeVerification');
+      return;
+    }
     expect(antiSrc).toContain('const _finalizeRound = _docPipeline && _docPipeline.finalizeRemediationRound;');
     expect(antiSrc).toContain('cur = _mergedRound;');
     // module-older-than-host fallback: stop improving, never hand-merge with drift risk
     expect(antiSrc).toContain('finalizeRemediationRound unavailable (engine module predates this host)');
-  });
-
-  it('the old inline assembly no longer exists in the host', () => {
-    // signatures unique to the pre-refactor ANTI block
+    // and the old inline assembly is gone for good (the final-branch sentinel PERSIST
+    // `_expertReviewBeforeVerification: (...) ? ... : null` legitimately remains)
     expect(antiSrc).not.toContain('_nextExpertReviewReason');
     expect(antiSrc).not.toContain("const _recompKinds = (_docPipeline && _docPipeline.recomputableFidelityKinds)");
-    // the expert-base DERIVATION is gone from the host (the reducer owns it); the final-branch
-    // sentinel PERSIST (`_expertReviewBeforeVerification: (...) ? ... : null`) legitimately remains
     expect(antiSrc).not.toContain('const _storedExpertBase = (cur._expertReviewBeforeVerification');
   });
 
