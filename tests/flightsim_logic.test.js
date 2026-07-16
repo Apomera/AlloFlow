@@ -243,6 +243,63 @@ describe('haversineNm + bearing', () => {
   });
 });
 
+describe('jetStreamTailwindKts (physics-backed jet stream)', () => {
+  it('is zero at and below 20,000 ft even in the core latitude band', () => {
+    expect(FS.jetStreamTailwindKts(45, 0)).toBe(0);
+    expect(FS.jetStreamTailwindKts(45, 20000)).toBe(0);
+  });
+  it('is zero outside the 25–65° latitude shoulders at cruise altitude', () => {
+    expect(FS.jetStreamTailwindKts(0, 35000)).toBe(0);   // equator
+    expect(FS.jetStreamTailwindKts(24, 35000)).toBe(0);
+    expect(FS.jetStreamTailwindKts(70, 35000)).toBe(0);  // polar
+  });
+  it('peaks at ~150 kts over 45° in the 30–45k ft band, in both hemispheres', () => {
+    expect(FS.jetStreamTailwindKts(45, 35000)).toBeCloseTo(150, 5);
+    expect(FS.jetStreamTailwindKts(-45, 35000)).toBeCloseTo(150, 5);
+    expect(FS.jetStreamTailwindKts(45, 30000)).toBeCloseTo(150, 5);
+    expect(FS.jetStreamTailwindKts(45, 45000)).toBeCloseTo(150, 5);
+  });
+  it('ramps in between 20k and 30k ft and fades above 45k ft', () => {
+    expect(FS.jetStreamTailwindKts(45, 25000)).toBeCloseTo(75, 5);
+    const high = FS.jetStreamTailwindKts(45, 52500);
+    expect(high).toBeGreaterThan(0);
+    expect(high).toBeLessThan(150);
+    expect(FS.jetStreamTailwindKts(45, 60000)).toBe(0);
+  });
+  it('weakens toward the shoulders and never goes negative', () => {
+    const core = FS.jetStreamTailwindKts(45, 35000);
+    const edge = FS.jetStreamTailwindKts(60, 35000);
+    expect(edge).toBeGreaterThan(0);
+    expect(edge).toBeLessThan(core);
+    for (let lat = -90; lat <= 90; lat += 5) {
+      expect(FS.jetStreamTailwindKts(lat, 35000)).toBeGreaterThanOrEqual(0);
+    }
+  });
+});
+
+describe('composeGroundSpeedKts (TAS + wind + jet → GS)', () => {
+  it('with no wind and no jet, GS equals TAS on any heading', () => {
+    expect(FS.composeGroundSpeedKts(0, 120, 0, 0, 0)).toBeCloseTo(120, 6);
+    expect(FS.composeGroundSpeedKts(237, 120, 0, 0, 0)).toBeCloseTo(120, 6);
+  });
+  it('pure headwind subtracts, pure tailwind adds (met FROM convention)', () => {
+    // Flying north (000) into wind FROM the north = headwind
+    expect(FS.composeGroundSpeedKts(0, 120, 20, 0, 0)).toBeCloseTo(100, 6);
+    // Flying north with wind FROM the south = tailwind
+    expect(FS.composeGroundSpeedKts(0, 120, 20, 180, 0)).toBeCloseTo(140, 6);
+  });
+  it('jet stream adds eastbound and subtracts westbound', () => {
+    expect(FS.composeGroundSpeedKts(90, 400, 0, 0, 150)).toBeCloseTo(550, 6);
+    expect(FS.composeGroundSpeedKts(270, 400, 0, 0, 150)).toBeCloseTo(250, 6);
+    // Flying north across the jet: GS = hypot(400, 150) ≈ 427 (drift, not push)
+    expect(FS.composeGroundSpeedKts(0, 400, 0, 0, 150)).toBeCloseTo(Math.hypot(400, 150), 4);
+  });
+  it('direct crosswind changes GS only quadratically (small for light winds)', () => {
+    const gs = FS.composeGroundSpeedKts(0, 120, 15, 90, 0); // wind FROM the east, flying north
+    expect(gs).toBeCloseTo(Math.hypot(120, 15), 4);
+  });
+});
+
 // ───────────────────────────── data tables ────────────────────────────
 
 describe('WAYPOINTS', () => {

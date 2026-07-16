@@ -589,6 +589,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
   }
 
+  // ── JET STREAM tailwind (kts, always west→east) ──
+  // Single source of truth for both the physics drift and the HUD overlay —
+  // the overlay used to advertise "JET STREAM ~250 kt" while applying zero
+  // force. Model: mid-latitude jet centered on 45°N/S (±20° shoulders),
+  // strongest in the 30-40k ft band, ramping in from 20k ft and fading back
+  // out above 45k ft. Peak core ~150 kts — typical of a strong real jet.
+  function jetStreamTailwindKts(lat, altitudeFt) {
+    var proximity = 1 - Math.abs(Math.abs(lat) - 45) / 20;
+    if (proximity <= 0) return 0;
+    var altRamp;
+    if (altitudeFt <= 20000) altRamp = 0;
+    else if (altitudeFt < 30000) altRamp = (altitudeFt - 20000) / 10000;
+    else if (altitudeFt <= 45000) altRamp = 1;
+    else altRamp = Math.max(0, 1 - (altitudeFt - 45000) / 15000);
+    return 150 * proximity * altRamp;
+  }
+
+  // ── GROUND SPEED (kts) from TAS + surface wind + jet stream ──
+  // windFromDeg is the direction the wind blows FROM (met convention, same
+  // as weatherRef.windDir); the jet stream tailwind is always toward 090°.
+  function composeGroundSpeedKts(headingDeg, tasKts, windKts, windFromDeg, jetTailKts) {
+    var h = headingDeg * Math.PI / 180;
+    var vN = tasKts * Math.cos(h), vE = tasKts * Math.sin(h);
+    var wf = windFromDeg * Math.PI / 180;
+    var wN = -(windKts || 0) * Math.cos(wf), wE = -(windKts || 0) * Math.sin(wf);
+    var jE = jetTailKts || 0;
+    return Math.sqrt((vN + wN) * (vN + wN) + (vE + wE + jE) * (vE + wE + jE));
+  }
+
   // ═══════════════════════════════════════════
   // REGISTER TOOL
   // ═══════════════════════════════════════════
@@ -9099,10 +9128,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // dusk/night). Runway lights/markings are fog-exempt at creation.
           scene.fog = new THREE.Fog(0x5078a0, 60000, 240000);
 
+          // ── Ground underlay ── a huge muted-earth plane 40 ft below sea
+          // level, re-centered on the camera each frame. The 60×60-segment
+          // terrain mesh shows hairline cracks between displaced triangles at
+          // distance (black speckle along the horizon: the void behind the
+          // scene bleeding through) and simply ends 20 nm out; this backstop
+          // makes both read as more ground instead of holes.
+          var underGeo = new THREE.PlaneGeometry(700000, 700000);
+          var underMat = new THREE.MeshLambertMaterial({ color: 0x35543c, flatShading: true });
+          var underMesh = new THREE.Mesh(underGeo, underMat);
+          underMesh.rotation.x = -Math.PI / 2;
+          underMesh.position.y = -40;
+          scene.add(underMesh);
+
           threeResourcesRef.current = {
             skyMesh: skyMesh,
             ambientLight: ambientLight,
             dirLight: dirLight,
+            underMesh: underMesh,
             aircraft: null,
             terrainMesh: null,
             runwayMeshes: {},
@@ -9599,7 +9642,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           
           var material = new THREE.MeshLambertMaterial({
             vertexColors: true,
-            flatShading: true,
+            // Smooth shading, NOT flat: the 60×60 grid spans 40 nm, so far
+            // cells are ~4,000 ft wide and any steep height delta produces a
+            // near-vertical sliver face. Flat-shaded, those faces light as
+            // solid dark dashes peppering the horizon (looked like render
+            // corruption). computeVertexNormals() already runs after every
+            // height update — smooth shading actually uses it.
+            flatShading: false,
             side: THREE.DoubleSide
           });
           var mesh = new THREE.Mesh(geometry, material);
@@ -9752,6 +9801,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (resources.skyMesh) {
           resources.skyMesh.position.copy(camera.position);
         }
+        if (resources.underMesh) {
+          // Follow the camera horizontally only — y stays at −40 so the
+          // backstop always sits under the terrain mesh, never through it.
+          resources.underMesh.position.set(camera.position.x, -40, camera.position.z);
+        }
         
         var solarHr = dayNight.solarHour != null ? dayNight.solarHour : 12;
         var brightness = dayNight.brightness != null ? dayNight.brightness : 1.0;
@@ -9803,7 +9857,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // finally FELT in the world (it was previously 2D/HUD-only).
             var _wv = (weatherRef && weatherRef.current && typeof weatherRef.current.visibility === 'number') ? weatherRef.current.visibility : 1;
             _visF *= Math.max(0.25, _wv);
-            scene.fog.far = 240000 * _visF;
+            // Cap well inside the terrain mesh's ±120,000 edge so terrain
+            // fully melts into the sky color BEFORE it ends — otherwise the
+            // mesh's serrated far edge and half-fogged steep far faces
+            // silhouette against the sky as dark teeth along the horizon.
+            scene.fog.far = Math.min(95000, 240000 * _visF);
             scene.fog.near = scene.fog.far * 0.25;
           }
           var _bp = renderer._alloComposer && renderer._alloComposer.passes && renderer._alloComposer.passes[1];
@@ -15417,15 +15475,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // ── Jet Stream Visualization ──
       var drawJetStream = function(gfx, W, H, horizonY, state, time) {
-        // Jet stream flows west-to-east at ~30,000-40,000 ft, latitude ~30-60°N and S
-        if (state.altitude < 20000) return;
-        var inJetStream = (Math.abs(state.lat) > 25 && Math.abs(state.lat) < 65);
-        if (!inJetStream) return;
-
+        // Jet stream flows west-to-east at ~30,000-40,000 ft, latitude ~30-60°N and S.
+        // Gated on the SAME function that drives the ground-track physics so
+        // the streaks and label only appear when a real tailwind is applied.
+        var jetNow = jetStreamTailwindKts(state.lat, state.altitude);
+        if (jetNow < 5) return;
         var intensity = Math.min(1, (state.altitude - 20000) / 20000);
-        var jetLat = state.lat > 0 ? 45 : -45; // approximate jet stream latitude
-        var proximity = 1 - Math.abs(state.lat - jetLat) / 20;
-        if (proximity < 0) return;
+        var proximity = 1 - Math.abs(Math.abs(state.lat) - 45) / 20;
 
         gfx.globalAlpha = intensity * proximity * 0.12;
         gfx.strokeStyle = '#a78bfa'; gfx.lineWidth = 1.5;
@@ -15440,11 +15496,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
         gfx.globalAlpha = 1;
 
-        // Jet stream indicator text
+        // Jet stream indicator text — reports the tailwind actually being
+        // applied to the ground track, not a made-up core speed.
         if (intensity > 0.3 && proximity > 0.5) {
           gfx.fillStyle = 'rgba(167,139,250,' + (intensity * proximity * 0.5) + ')';
           gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'center';
-          gfx.fillText('JET STREAM ~' + Math.round(100 + proximity * 150) + ' kt', W / 2, horizonY * 0.2);
+          gfx.fillText('JET STREAM +' + Math.round(jetNow) + ' kt E', W / 2, horizonY * 0.2);
         }
       };
 
@@ -17813,6 +17870,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             state.lat += windNmPerSec * Math.cos(windToRad) / 60 * dt;
             state.lon += windNmPerSec * Math.sin(windToRad) / (60 * Math.max(0.05, Math.cos(state.lat * Math.PI / 180))) * dt;
           }
+          // ── Jet stream carries the ground track east ──
+          // Same airmass-displacement math as the surface wind above, but
+          // altitude/latitude gated (jetStreamTailwindKts). This is what makes
+          // the eastbound-vs-westbound airliner-time lesson actually happen:
+          // fly the HyperJet east at 35,000 ft near 45°N and the map moves
+          // ~150 kts faster than the airspeed tape; fly west and you crawl.
+          var jetKts = jetStreamTailwindKts(state.lat, state.altitude);
+          if (jetKts > 0.5 && !state.onGround) {
+            var jetNmPerSec = (jetKts * 1.68781) / 6076.12;
+            state.lon += jetNmPerSec / (60 * Math.max(0.05, Math.cos(state.lat * Math.PI / 180))) * dt;
+          }
+          hudRef.current.jetKts = jetKts;
           flightRef.current = state;
           // Advance integrated scroll phases with the frame's actual dt
           scrollAccumRef.current.rwy = (scrollAccumRef.current.rwy + (state.speed * 0.045 + 0.02) * dt) % 1;
@@ -19095,7 +19164,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var localHour = Math.round(dayNight.solarHour) % 24;
           var ampm = localHour >= 12 ? 'PM' : 'AM';
           var hr12 = localHour % 12 || 12;
-          gfx.fillText('HDG ' + String(Math.round(state.heading)).padStart(3, '0') + '°  |  ALT ' + Math.round(state.altitude).toLocaleString() + ' ft  |  SPD ' + Math.round(kts) + ' kts  |  VS ' + (fpm >= 0 ? '+' : '') + Math.round(fpm) + ' fpm  |  ' + (dayNight.isNight ? '🌙' : dayNight.isDusk ? '🌅' : '☀️') + ' ' + hr12 + ampm + ' local', 10, 21);
+          // Ground speed only earns HUD space when wind/jet actually move it
+          // away from TAS — permanent GS≈SPD would just be clutter. The gap
+          // is the meteorology lesson: same airspeed, different map speed.
+          var hudWx = weatherRef.current || {};
+          var hudGs = composeGroundSpeedKts(state.heading, kts, state.onGround ? 0 : (hudWx.wind || 0), hudWx.windDir || 0, state.onGround ? 0 : (hudRef.current.jetKts || 0));
+          var hudGsTxt = Math.abs(hudGs - kts) > 8 ? '  |  GS ' + Math.round(hudGs) + ' kts' : '';
+          gfx.fillText('HDG ' + String(Math.round(state.heading)).padStart(3, '0') + '°  |  ALT ' + Math.round(state.altitude).toLocaleString() + ' ft  |  SPD ' + Math.round(kts) + ' kts' + hudGsTxt + '  |  VS ' + (fpm >= 0 ? '+' : '') + Math.round(fpm) + ' fpm  |  ' + (dayNight.isNight ? '🌙' : dayNight.isDusk ? '🌅' : '☀️') + ' ' + hr12 + ampm + ' local', 10, 21);
 
           // Autopilot status (green bar when engaged)
           var ap2 = d.autopilot || {};
@@ -21969,6 +22044,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       Physics: Physics,
       haversineNm: haversineNm,
       bearing: bearing,
+      jetStreamTailwindKts: jetStreamTailwindKts,
+      composeGroundSpeedKts: composeGroundSpeedKts,
       WAYPOINTS: WAYPOINTS, LESSONS: LESSONS, GEO_PLACES: GEO_PLACES,
       CHALLENGES: CHALLENGES, SPRINT_ROUTES: SPRINT_ROUTES, AIRCRAFT: AIRCRAFT,
       ACHIEVEMENTS: ACHIEVEMENTS, WORLD_LABELS: WORLD_LABELS,
