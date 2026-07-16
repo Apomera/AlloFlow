@@ -86,6 +86,76 @@
   function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
   function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
 
+  var studentAnalyticsConfirmSequence = 0;
+  function askStudentAnalyticsConfirmation(message, options) {
+    return new Promise(function(resolve) {
+      if (!document.body) { resolve(false); return; }
+      options = options || {};
+      studentAnalyticsConfirmSequence += 1;
+      var idBase = 'student-analytics-confirm-' + studentAnalyticsConfirmSequence;
+      var opener = document.activeElement;
+      var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+        return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+      });
+      var overlay = document.createElement('div');
+      overlay.setAttribute('role', 'presentation');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:400;background:rgba(15,23,42,.78);display:flex;align-items:center;justify-content:center;padding:20px;';
+      var dialog = document.createElement('div');
+      dialog.setAttribute('role', 'alertdialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', idBase + '-title');
+      dialog.setAttribute('aria-describedby', idBase + '-description');
+      dialog.style.cssText = 'box-sizing:border-box;width:min(34rem,100%);background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);font-family:system-ui,sans-serif;';
+      var title = document.createElement('h2');
+      title.id = idBase + '-title';
+      title.textContent = String(options.title || 'Please confirm');
+      title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;color:#0f172a;';
+      var description = document.createElement('p');
+      description.id = idBase + '-description';
+      description.textContent = String(message || 'Continue with this action?');
+      description.style.cssText = 'margin:0;color:#334155;line-height:1.55;white-space:pre-line;';
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = String(options.cancelText || 'Cancel');
+      cancel.style.cssText = 'min-height:44px;padding:9px 16px;border:2px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;cursor:pointer;';
+      var confirm = document.createElement('button');
+      confirm.type = 'button';
+      confirm.textContent = String(options.confirmText || 'Continue');
+      confirm.style.cssText = 'min-height:44px;padding:9px 16px;border:2px solid #1d4ed8;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer;';
+      actions.appendChild(cancel); actions.appendChild(confirm);
+      dialog.appendChild(title); dialog.appendChild(description); dialog.appendChild(actions);
+      overlay.appendChild(dialog); document.body.appendChild(overlay);
+      blocked.forEach(function(entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+      var settled = false;
+      function finish(accepted) {
+        if (settled) return;
+        settled = true;
+        document.removeEventListener('keydown', onKeyDown, true);
+        try { overlay.remove(); } catch (e) {}
+        blocked.forEach(function(entry) {
+          if (!entry.hadInert) entry.el.removeAttribute('inert');
+          if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden'); else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+        });
+        try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+        resolve(accepted === true);
+      }
+      function onKeyDown(event) {
+        if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); return; }
+        if (event.key !== 'Tab') return;
+        if (!dialog.contains(document.activeElement)) { event.preventDefault(); cancel.focus(); return; }
+        if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); confirm.focus(); }
+        else if (!event.shiftKey && document.activeElement === confirm) { event.preventDefault(); cancel.focus(); }
+      }
+      cancel.addEventListener('click', function() { finish(false); });
+      confirm.addEventListener('click', function() { finish(true); });
+      overlay.addEventListener('click', function(event) { if (event.target === overlay) finish(false); });
+      document.addEventListener('keydown', onKeyDown, true);
+      cancel.focus();
+    });
+  }
+
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
   var memo = React.memo;
@@ -1565,10 +1635,10 @@
       URL.revokeObjectURL(url);
       addToast(t('toasts.screening_csv_exported'), 'success');
     };
-    const generateRTICSV = () => {
+    const generateRTICSV = async () => {
       if (!importedStudents || importedStudents.length === 0) return;
       // FERPA gate: this CSV lists students by REAL NAME with tiers/scores — confidential records.
-      if (!window.confirm("Export this RTI report as a CSV?\n\nThe file lists students by REAL NAME with their RTI tiers, scores, and recommendations — confidential student records. Save it only to a school-approved location and handle it per your district's student-records (FERPA) policy.\n\nContinue?")) return;
+      if (!await askStudentAnalyticsConfirmation("This CSV lists students by real name with RTI tiers, scores, and recommendations. It contains confidential student records.\n\nSave it only to a school-approved location and handle it under your district's FERPA policy.", { title: 'Export confidential RTI report', confirmText: 'Export CSV' })) return;
       const headers = ['Student', 'Date', 'RTI Tier', 'Quiz Avg', 'WS Accuracy', 'WS Words', 'Fluency WCPM', 'Games Played', 'Total Activities', 'Label Challenge Avg', 'Time on Task (min)', 'Recommendations'];
       const rows = importedStudents.map(s => {
         const rti = classifyRTITier(s.stats);
@@ -1790,9 +1860,9 @@
         className: 'text-[11px] text-slate-600'
       }, 'Most Common Area to Watch (' + classData.commonWeaknessCount + ' students)')) : null));
     };
-    const exportResearchCSV = () => {
+    const exportResearchCSV = async () => {
       // FERPA gate: this CSV carries identifiable student data (real names, probes, interventions).
-      if (!window.confirm("Export the research data CSV?\n\nThe file contains identifiable student data (real names, probes, interventions, progress). It is confidential — de-identify it before any research use, and store it per your district's student-records (FERPA) policy.\n\nContinue?")) return;
+      if (!await askStudentAnalyticsConfirmation("This CSV contains identifiable student data, including real names, probes, interventions, and progress. It is confidential.\n\nDe-identify it before research use and store it under your district's FERPA policy.", { title: 'Export confidential research data', confirmText: 'Export CSV' })) return;
       const students = importedStudents.map(s => {
         const insights = generateStudentInsights(s.name);
         const probes = probeHistory?.[s.name] || [];
