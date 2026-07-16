@@ -4599,15 +4599,19 @@
     var _busy = useState(false);
     var busy = _busy[0];
     var setBusy = _busy[1];
+    var _validationError = useState("");
+    var validationError = _validationError[0];
+    var setValidationError = _validationError[1];
     var pickGenre = function(g) {
       if (!sa.chip) {
-        window.alert("Pick a stakes audience first (loop back to Frame the Question if needed).");
+        setValidationError("Pick a stakes audience first (loop back to Frame the Question if needed).");
         return;
       }
       if (!CONTESTATION_RANGE[sa.chip][g]) {
-        window.alert('Audience "' + sa.chip + '" is incompatible with genre "' + g + '" \u2014 pick a compatible pair or loop back to change audience.');
+        setValidationError('Audience "' + sa.chip + '" is incompatible with genre "' + g + '" \u2014 pick a compatible pair or loop back to change audience.');
         return;
       }
+      setValidationError("");
       setJournal(function(prev) {
         var next = Object.assign({}, prev);
         next.genreChoice = { genre: g, ts: Date.now(), lockUntilSubstrateLinkPass: false };
@@ -4635,7 +4639,7 @@
       var bounds = (floors.composition || {})[gc.genre] || [200, 800];
       var wc = bodyText.trim().split(/\s+/).filter(Boolean).length;
       if (wc < bounds[0]) {
-        window.alert("Composition needs \u2265" + bounds[0] + " words for " + gc.genre + ".");
+        setValidationError("Composition needs \u2265" + bounds[0] + " words for " + gc.genre + ".");
         return;
       }
       var codaIncludes = function(s) {
@@ -4643,15 +4647,16 @@
       };
       var latestSnap = ps.length ? ps[ps.length - 1] : null;
       if (latestSnap && !codaIncludes(latestSnap.obscuringField)) {
-        window.alert("Foreclosure Coda must include your latest positionality.obscuring text.");
+        setValidationError("Foreclosure Coda must include your latest positionality.obscuring text.");
         return;
       }
       for (var i = 0; i < av.length; i++) {
         if (!codaIncludes(av[i].whoseVoiceText)) {
-          window.alert('Foreclosure Coda is missing absent-voice "' + av[i].whoseVoiceText.slice(0, 30) + '...". Re-open the coda.');
+          setValidationError('Foreclosure Coda is missing absent-voice "' + av[i].whoseVoiceText.slice(0, 30) + '...". Re-open the coda.');
           return;
         }
       }
+      setValidationError("");
       var hash = String(foreclosureCoda).split("").reduce(function(h, c) {
         return (h << 5) - h + c.charCodeAt(0) | 0;
       }, 0);
@@ -4689,9 +4694,10 @@
     var setEgress = _egress[1];
     var sendToStoryForge = function() {
       if (!latest) {
-        window.alert("Save a composition first.");
+        setValidationError("Save a composition first.");
         return;
       }
+      setValidationError("");
       var payload = {
         version: 1,
         sourceModule: "ResearchHub",
@@ -4751,7 +4757,7 @@
         setEgress({ ok: false, error: e && e.message || "localStorage write failed" });
       }
     };
-    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "12px" } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "12px" } }, validationError && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { padding: "10px 12px", borderRadius: "10px", background: "#fef2f2", border: "1px solid #fca5a5", color: "#7f1d1d", fontSize: "12px" } }, validationError), /* @__PURE__ */ React.createElement(
       ExemplarGate,
       {
         t,

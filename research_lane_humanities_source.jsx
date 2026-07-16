@@ -3510,13 +3510,15 @@
     var accNote = _accountabilityNote[0]; var setAccNote = _accountabilityNote[1];
     var _aiResult = useState(null); var aiResult = _aiResult[0]; var setAiResult = _aiResult[1];
     var _busy = useState(false); var busy = _busy[0]; var setBusy = _busy[1];
+    var _validationError = useState(''); var validationError = _validationError[0]; var setValidationError = _validationError[1];
 
     var pickGenre = function (g) {
-      if (!sa.chip) { window.alert('Pick a stakes audience first (loop back to Frame the Question if needed).'); return; }
+      if (!sa.chip) { setValidationError('Pick a stakes audience first (loop back to Frame the Question if needed).'); return; }
       if (!CONTESTATION_RANGE[sa.chip][g]) {
-        window.alert('Audience "' + sa.chip + '" is incompatible with genre "' + g + '" — pick a compatible pair or loop back to change audience.');
+        setValidationError('Audience "' + sa.chip + '" is incompatible with genre "' + g + '" — pick a compatible pair or loop back to change audience.');
         return;
       }
+      setValidationError('');
       setJournal(function (prev) {
         var next = Object.assign({}, prev);
         next.genreChoice = { genre: g, ts: Date.now(), lockUntilSubstrateLinkPass: false };
@@ -3543,18 +3545,19 @@
       if (!gc || !gc.genre) return;
       var bounds = (floors.composition || {})[gc.genre] || [200, 800];
       var wc = bodyText.trim().split(/\s+/).filter(Boolean).length;
-      if (wc < bounds[0]) { window.alert('Composition needs ≥' + bounds[0] + ' words for ' + gc.genre + '.'); return; }
+      if (wc < bounds[0]) { setValidationError('Composition needs ≥' + bounds[0] + ' words for ' + gc.genre + '.'); return; }
       // Foreclosure coda substring-link gate
       var codaIncludes = function (s) { return s && foreclosureCoda.indexOf(s.slice(0, 20)) !== -1; };
       var latestSnap = ps.length ? ps[ps.length - 1] : null;
       if (latestSnap && !codaIncludes(latestSnap.obscuringField)) {
-        window.alert('Foreclosure Coda must include your latest positionality.obscuring text.'); return;
+        setValidationError('Foreclosure Coda must include your latest positionality.obscuring text.'); return;
       }
       for (var i = 0; i < av.length; i++) {
         if (!codaIncludes(av[i].whoseVoiceText)) {
-          window.alert('Foreclosure Coda is missing absent-voice "' + av[i].whoseVoiceText.slice(0, 30) + '...". Re-open the coda.'); return;
+          setValidationError('Foreclosure Coda is missing absent-voice "' + av[i].whoseVoiceText.slice(0, 30) + '...". Re-open the coda.'); return;
         }
       }
+      setValidationError('');
       // Hash of coda
       var hash = String(foreclosureCoda).split('').reduce(function (h, c) { return ((h << 5) - h + c.charCodeAt(0)) | 0; }, 0);
       setJournal(function (prev) {
@@ -3590,8 +3593,9 @@
     var _egress = useState(null); var egress = _egress[0]; var setEgress = _egress[1];
     var sendToStoryForge = function () {
       if (!latest) {
-        window.alert('Save a composition first.'); return;
+        setValidationError('Save a composition first.'); return;
       }
+      setValidationError('');
       var payload = {
         version: 1,
         sourceModule: 'ResearchHub',
@@ -3653,6 +3657,11 @@
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {validationError && (
+          <div role="alert" style={{ padding: '10px 12px', borderRadius: '10px', background: '#fef2f2', border: '1px solid #fca5a5', color: '#7f1d1d', fontSize: '12px' }}>
+            {validationError}
+          </div>
+        )}
         <ExemplarGate t={t} stageKey="genre_composition" journal={journal} setJournal={setJournal}
           primitives={primitives} pair={EXEMPLAR_PAIRS.genre_composition} />
 
