@@ -22365,7 +22365,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio খুলুন",
+    "open_allo_studio_done": "AlloStudio খোলা হয়েছে।",
+    "open_allo_studio_hint": "অ্যাক্সেসযোগ্য পোস্টার, ফ্লায়ার ও ওয়ার্কশিট ডিজাইন করুন",
+    "open_cinematic_studio": "Cinematic Studio খুলুন",
+    "open_cinematic_studio_done": "Cinematic Studio খোলা হয়েছে।",
+    "open_cinematic_studio_hint": "সিনেমাটিক ইন্ট্রো ও ব্যাখ্যামূলক ভিডিও তৈরি করুন",
+    "open_lingua_practice": "Lingua Practice খুলুন",
+    "open_lingua_practice_done": "Lingua Practice খোলা হয়েছে।",
+    "open_lingua_practice_hint": "বর্তমান উৎস থেকে শব্দভাণ্ডার ও ভাষা অনুশীলন করুন",
+    "open_open_groove": "Open Groove Studio খুলুন",
+    "open_open_groove_done": "Open Groove Studio খোলা হয়েছে।",
+    "open_open_groove_hint": "বিট, সিন্থ প্যাটার্ন ও স্বরলিপি-সচেতন সংগীত তৈরি করুন",
+    "open_test_prep_hub": "Test Prep Hub খুলুন",
+    "open_test_prep_hub_done": "Test Prep Hub খোলা হয়েছে।",
+    "open_test_prep_hub_hint": "বিনামূল্যের অনুশীলন সেট ও পড়াশোনার সরঞ্জাম খুলুন",
+    "open_timeline_studio": "Timeline Studio খুলুন",
+    "open_timeline_studio_done": "Timeline Studio খোলা হয়েছে।",
+    "open_timeline_studio_hint": "অ্যাক্সেসযোগ্য টাইমলাইন তৈরি ও যাচাই করুন",
+    "open_video_studio": "Video Studio খুলুন",
+    "open_video_studio_done": "Video Studio খোলা হয়েছে।",
+    "open_video_studio_hint": "ওয়াকথ্রু রেকর্ড, ক্যাপশন ও সম্পাদনা করুন"
   },
   "palette": {
     "aria": "AlloFlow কমান্ড প্যালেট",
@@ -22378,7 +22399,14 @@
       "pipeline": "এখানে — পাইপলাইন ফলাফল",
       "reading": "এখানে — পড়ার মোড",
       "stemLab": "এখানে — STEM Lab",
-      "symbolStudio": "এখানে — Symbol Studio"
+      "symbolStudio": "এখানে — Symbol Studio",
+      "alloStudio": "এখানে — AlloStudio",
+      "cinematicStudio": "এখানে — Cinematic Studio",
+      "linguaPractice": "এখানে — Lingua Practice",
+      "openGroove": "এখানে — Open Groove Studio",
+      "testPrepHub": "এখানে — Test Prep Hub",
+      "timelineStudio": "এখানে — Timeline Studio",
+      "videoStudio": "এখানে — Video Studio"
     },
     "footer": "প্রতিটি কাজ ঘোষণা করা হয়। Ctrl+K টগল করে।",
     "group": {
@@ -22397,7 +22425,8 @@
     "nav": "নেভিগেট",
     "no_match": "কোনো মিলে যাওয়া কমান্ড নেই। বট চ্যাট (এবং শীঘ্রই ভয়েস) মুক্ত-রূপের অনুরোধ বোঝে।",
     "placeholder": "একটি কমান্ড টাইপ করুন — “বড় লেখা”, “educator hub”, “এই পৃষ্ঠা পড়ুন”…",
-    "run": "চালান"
+    "run": "চালান",
+    "close": "কমান্ড প্যালেট বন্ধ করুন"
   },
   "voice_engine": {
     "preparing": "ভয়েস ইঞ্জিন প্রস্তুত করা হচ্ছে...",

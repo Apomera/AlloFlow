@@ -22265,7 +22265,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Fungola AlloStudio",
+    "open_allo_studio_done": "AlloStudio efungolami.",
+    "open_allo_studio_hint": "Sala baafiŝi, bapapye ya koyebisa mpe bafeye ya mosala oyo bato nyonso bakoki kosalela",
+    "open_cinematic_studio": "Fungola Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio efungolami.",
+    "open_cinematic_studio_hint": "Sala ba-intro ya filme mpe bavideo ya kolimbola",
+    "open_lingua_practice": "Fungola Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice efungolami.",
+    "open_lingua_practice_hint": "Meka maloba mpe monoko uta na liziba ya sikoyo",
+    "open_open_groove": "Fungola Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio efungolami.",
+    "open_open_groove_hint": "Sala ba-beat, bamodele ya synth mpe miziki oyo eyebi makomi ya miziki",
+    "open_test_prep_hub": "Fungola Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub efungolami.",
+    "open_test_prep_hub_hint": "Fungola bituluku ya komeka ya ofele mpe bisaleli ya koyekola",
+    "open_timeline_studio": "Fungola Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio efungolami.",
+    "open_timeline_studio_hint": "Tonga mpe tala malamu milongo ya ntango oyo bato nyonso bakoki komona",
+    "open_video_studio": "Fungola Video Studio",
+    "open_video_studio_done": "Video Studio efungolami.",
+    "open_video_studio_hint": "Kanga, tia makomi mpe bongisa bavideo ya kolakisa"
   },
   "palette": {
     "aria": "Palette ya mitindo ya AlloFlow",
@@ -22278,7 +22299,14 @@
       "pipeline": "Awa — Ba résultat ya Pipeline",
       "reading": "Awa — Mode ya botangi",
       "stemLab": "Awa — STEM Lab",
-      "symbolStudio": "Awa — Symbol Studio"
+      "symbolStudio": "Awa — Symbol Studio",
+      "alloStudio": "Awa — AlloStudio",
+      "cinematicStudio": "Awa — Cinematic Studio",
+      "linguaPractice": "Awa — Lingua Practice",
+      "openGroove": "Awa — Open Groove Studio",
+      "testPrepHub": "Awa — Test Prep Hub",
+      "timelineStudio": "Awa — Timeline Studio",
+      "videoStudio": "Awa — Video Studio"
     },
     "footer": "Litambe nyonso esakolami. Ctrl+K ebongolaka.",
     "group": {
@@ -22297,7 +22325,8 @@
     "nav": "tambola",
     "no_match": "Motindo oyo ekokani te. Lisolo ya bot (mpe noki mongongo) esosolaka biloseni ya nzela nyonso.",
     "placeholder": "Koma motindo — “makomi minene”, “educator hub”, “tángela ngai lokasa oyo”…",
-    "run": "sala"
+    "run": "sala",
+    "close": "Kanga palette ya mitindo"
   },
   "voice_engine": {
     "preparing": "Ebongisi motɛ ya mongongo...",

@@ -22821,7 +22821,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "เปิด AlloStudio",
+    "open_allo_studio_done": "เปิด AlloStudio แล้ว",
+    "open_allo_studio_hint": "ออกแบบโปสเตอร์ ใบปลิว และใบงานที่เข้าถึงได้",
+    "open_cinematic_studio": "เปิด Cinematic Studio",
+    "open_cinematic_studio_done": "เปิด Cinematic Studio แล้ว",
+    "open_cinematic_studio_hint": "สร้างอินโทรสไตล์ภาพยนตร์และวิดีโออธิบาย",
+    "open_lingua_practice": "เปิด Lingua Practice",
+    "open_lingua_practice_done": "เปิด Lingua Practice แล้ว",
+    "open_lingua_practice_hint": "ฝึกคำศัพท์และภาษาจากแหล่งข้อมูลปัจจุบัน",
+    "open_open_groove": "เปิด Open Groove Studio",
+    "open_open_groove_done": "เปิด Open Groove Studio แล้ว",
+    "open_open_groove_hint": "สร้างบีต แพตเทิร์นซินธ์ และดนตรีที่เข้าใจโน้ตเพลง",
+    "open_test_prep_hub": "เปิด Test Prep Hub",
+    "open_test_prep_hub_done": "เปิด Test Prep Hub แล้ว",
+    "open_test_prep_hub_hint": "เปิดชุดฝึกฟรีและเครื่องมือการเรียน",
+    "open_timeline_studio": "เปิด Timeline Studio",
+    "open_timeline_studio_done": "เปิด Timeline Studio แล้ว",
+    "open_timeline_studio_hint": "สร้างและตรวจสอบไทม์ไลน์ที่เข้าถึงได้",
+    "open_video_studio": "เปิด Video Studio",
+    "open_video_studio_done": "เปิด Video Studio แล้ว",
+    "open_video_studio_hint": "บันทึก ใส่คำบรรยาย และตัดต่อวิดีโอสาธิต"
   },
   "palette": {
     "aria": "แผงคำสั่ง AlloFlow",
@@ -22834,7 +22855,14 @@
       "pipeline": "ที่นี่ — ผลลัพธ์ของไปป์ไลน์",
       "reading": "ที่นี่ — โหมดการอ่าน",
       "stemLab": "ที่นี่ — STEM Lab",
-      "symbolStudio": "ที่นี่ — Symbol Studio"
+      "symbolStudio": "ที่นี่ — Symbol Studio",
+      "alloStudio": "ที่นี่ — AlloStudio",
+      "cinematicStudio": "ที่นี่ — Cinematic Studio",
+      "linguaPractice": "ที่นี่ — Lingua Practice",
+      "openGroove": "ที่นี่ — Open Groove Studio",
+      "testPrepHub": "ที่นี่ — Test Prep Hub",
+      "timelineStudio": "ที่นี่ — Timeline Studio",
+      "videoStudio": "ที่นี่ — Video Studio"
     },
     "footer": "ทุกการกระทำจะมีการประกาศ Ctrl+K เปิด/ปิด",
     "group": {
@@ -22853,7 +22881,8 @@
     "nav": "นำทาง",
     "no_match": "ไม่มีคำสั่งที่ตรงกัน แชตบอต (และในไม่ช้าก็เสียง) เข้าใจคำขอแบบอิสระ",
     "placeholder": "พิมพ์คำสั่ง — “ขยายตัวอักษร”, “educator hub”, “อ่านหน้านี้”…",
-    "run": "เรียกใช้"
+    "run": "เรียกใช้",
+    "close": "ปิดแผงคำสั่ง"
   },
   "voice_engine": {
     "preparing": "กำลังเตรียมเอนจินเสียง...",

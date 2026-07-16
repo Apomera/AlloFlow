@@ -13757,7 +13757,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Kapeḷḷọk AlloStudio",
+    "open_allo_studio_done": "AlloStudio emōj kapeḷḷọk.",
+    "open_allo_studio_hint": "Kōṃṃan poster, peba in kōjjeḷā im peba in jerbal ko aolep remaroñ kōjerbali",
+    "open_cinematic_studio": "Kapeḷḷọk Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio emōj kapeḷḷọk.",
+    "open_cinematic_studio_hint": "Kōṃṃan ijjino in pija im video in kōmeḷeḷeik",
+    "open_lingua_practice": "Kapeḷḷọk Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice emōj kapeḷḷọk.",
+    "open_lingua_practice_hint": "Kamminene naan ko im kajin jān unin eo kiiō",
+    "open_open_groove": "Kapeḷḷọk Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio emōj kapeḷḷọk.",
+    "open_open_groove_hint": "Kōṃṃan beat ko, wāween synth ko im al eo ejeḷā kōn jeje in al",
+    "open_test_prep_hub": "Kapeḷḷọk Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub emōj kapeḷḷọk.",
+    "open_test_prep_hub_hint": "Kapeḷḷọk set in kamminene ko ejjeḷọk oṇāān im kein katak ko",
+    "open_timeline_studio": "Kapeḷḷọk Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio emōj kapeḷḷọk.",
+    "open_timeline_studio_hint": "Ekkal im etale laajrak in iien ko aolep remaroñ loi",
+    "open_video_studio": "Kapeḷḷọk Video Studio",
+    "open_video_studio_done": "Video Studio emōj kapeḷḷọk.",
+    "open_video_studio_hint": "Rekooti, likūt jeje im kōkōṃanṃan video in tōl ko"
   },
   "palette": {
     "aria": "AlloFlow command palette",
@@ -13770,7 +13791,14 @@
       "pipeline": "Ijin — Tōprak in Pipeline",
       "reading": "Ijin — Mode in riit",
       "stemLab": "Ijin — STEM Lab",
-      "symbolStudio": "Ijin — Symbol Studio"
+      "symbolStudio": "Ijin — Symbol Studio",
+      "alloStudio": "Ijin — AlloStudio",
+      "cinematicStudio": "Ijin — Cinematic Studio",
+      "linguaPractice": "Ijin — Lingua Practice",
+      "openGroove": "Ijin — Open Groove Studio",
+      "testPrepHub": "Ijin — Test Prep Hub",
+      "timelineStudio": "Ijin — Timeline Studio",
+      "videoStudio": "Ijin — Video Studio"
     },
     "footer": "Aolep jerbal rej kwaḷọk. Ctrl+K ej ukōt.",
     "group": {
@@ -13789,7 +13817,8 @@
     "nav": "etetal",
     "no_match": "Ejjeḷọk command ejjet. Chat in bot eo (im ṃōttan iien ainikien) ej meḷeḷe kajjitōk ko reanemkwōj.",
     "placeholder": "Taip juon command — “leta eḷapḷọk”, “educator hub”, “riit peij in”…",
-    "run": "kōṃṃan"
+    "run": "kōṃṃan",
+    "close": "Kiili command palette eo"
   },
   "voice_engine": {
     "preparing": "Ej kōppojak engine in ainikien...",

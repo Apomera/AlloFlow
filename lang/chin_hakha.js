@@ -13750,7 +13750,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio hawng",
+    "open_allo_studio_done": "AlloStudio a hung cang.",
+    "open_allo_studio_hint": "Mi zapi hman khawhmi poster, flyer le worksheet hna ser",
+    "open_cinematic_studio": "Cinematic Studio hawng",
+    "open_cinematic_studio_done": "Cinematic Studio a hung cang.",
+    "open_cinematic_studio_hint": "Cinematic thawhkanak le fianternak video hna ser",
+    "open_lingua_practice": "Lingua Practice hawng",
+    "open_lingua_practice_done": "Lingua Practice a hung cang.",
+    "open_lingua_practice_hint": "Atu source in biafang le holh cawn",
+    "open_open_groove": "Open Groove Studio hawng",
+    "open_open_groove_done": "Open Groove Studio a hung cang.",
+    "open_open_groove_hint": "Beat, synth pattern le hla ṭialnak a hngalmi music ser",
+    "open_test_prep_hub": "Test Prep Hub hawng",
+    "open_test_prep_hub_done": "Test Prep Hub a hung cang.",
+    "open_test_prep_hub_hint": "A man lomi cawnnak set le cawnnak hmanthlak hna hawng",
+    "open_timeline_studio": "Timeline Studio hawng",
+    "open_timeline_studio_done": "Timeline Studio a hung cang.",
+    "open_timeline_studio_hint": "Mi zapi hman khawhmi timeline hna sak le check",
+    "open_video_studio": "Video Studio hawng",
+    "open_video_studio_done": "Video Studio a hung cang.",
+    "open_video_studio_hint": "Lam hruainak video khumh, caption chap le remh"
   },
   "palette": {
     "aria": "AlloFlow command palette",
@@ -13763,7 +13784,14 @@
       "pipeline": "Hika — Pipeline achuak hna",
       "reading": "Hika — Relhnak mode",
       "stemLab": "Hika — STEM Lab",
-      "symbolStudio": "Hika — Symbol Studio"
+      "symbolStudio": "Hika — Symbol Studio",
+      "alloStudio": "Hika — AlloStudio",
+      "cinematicStudio": "Hika — Cinematic Studio",
+      "linguaPractice": "Hika — Lingua Practice",
+      "openGroove": "Hika — Open Groove Studio",
+      "testPrepHub": "Hika — Test Prep Hub",
+      "timelineStudio": "Hika — Timeline Studio",
+      "videoStudio": "Hika — Video Studio"
     },
     "footer": "Tuahnak zafa kha a theh a si. Ctrl+K nih a thleng.",
     "group": {
@@ -13782,7 +13810,8 @@
     "nav": "kalpi",
     "no_match": "Aa tlukmi command a um lo. Bot chat (le a rauthiammi aw) nih a luatmi halnak hna a hngalh.",
     "placeholder": "Command ṭial — “bigger text”, “educator hub”, “read this page”…",
-    "run": "ṭuan"
+    "run": "ṭuan",
+    "close": "Command palette khar"
   },
   "voice_engine": {
     "preparing": "Aw engine timhtuah lio...",

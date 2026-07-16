@@ -22361,7 +22361,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Άνοιγμα του AlloStudio",
+    "open_allo_studio_done": "Το AlloStudio άνοιξε.",
+    "open_allo_studio_hint": "Σχεδιάστε προσβάσιμες αφίσες, φυλλάδια και φύλλα εργασίας",
+    "open_cinematic_studio": "Άνοιγμα του Cinematic Studio",
+    "open_cinematic_studio_done": "Το Cinematic Studio άνοιξε.",
+    "open_cinematic_studio_hint": "Δημιουργήστε κινηματογραφικές εισαγωγές και επεξηγηματικά βίντεο",
+    "open_lingua_practice": "Άνοιγμα του Lingua Practice",
+    "open_lingua_practice_done": "Το Lingua Practice άνοιξε.",
+    "open_lingua_practice_hint": "Εξασκηθείτε στο λεξιλόγιο και τη γλώσσα από την τρέχουσα πηγή",
+    "open_open_groove": "Άνοιγμα του Open Groove Studio",
+    "open_open_groove_done": "Το Open Groove Studio άνοιξε.",
+    "open_open_groove_hint": "Φτιάξτε ρυθμούς, μοτίβα synth και μουσική με επίγνωση σημειογραφίας",
+    "open_test_prep_hub": "Άνοιγμα του Test Prep Hub",
+    "open_test_prep_hub_done": "Το Test Prep Hub άνοιξε.",
+    "open_test_prep_hub_hint": "Ανοίξτε δωρεάν σετ εξάσκησης και εργαλεία μελέτης",
+    "open_timeline_studio": "Άνοιγμα του Timeline Studio",
+    "open_timeline_studio_done": "Το Timeline Studio άνοιξε.",
+    "open_timeline_studio_hint": "Δημιουργήστε και επαληθεύστε προσβάσιμα χρονολόγια",
+    "open_video_studio": "Άνοιγμα του Video Studio",
+    "open_video_studio_done": "Το Video Studio άνοιξε.",
+    "open_video_studio_hint": "Καταγράψτε, υποτιτλίστε και επεξεργαστείτε βίντεο καθοδήγησης"
   },
   "palette": {
     "aria": "Παλέτα εντολών AlloFlow",
@@ -22374,7 +22395,14 @@
       "pipeline": "Εδώ — Αποτελέσματα pipeline",
       "reading": "Εδώ — Λειτουργία ανάγνωσης",
       "stemLab": "Εδώ — STEM Lab",
-      "symbolStudio": "Εδώ — Symbol Studio"
+      "symbolStudio": "Εδώ — Symbol Studio",
+      "alloStudio": "Εδώ — AlloStudio",
+      "cinematicStudio": "Εδώ — Cinematic Studio",
+      "linguaPractice": "Εδώ — Lingua Practice",
+      "openGroove": "Εδώ — Open Groove Studio",
+      "testPrepHub": "Εδώ — Test Prep Hub",
+      "timelineStudio": "Εδώ — Timeline Studio",
+      "videoStudio": "Εδώ — Video Studio"
     },
     "footer": "Κάθε ενέργεια ανακοινώνεται. Το Ctrl+K κάνει εναλλαγή.",
     "group": {
@@ -22393,7 +22421,8 @@
     "nav": "πλοήγηση",
     "no_match": "Καμία εντολή δεν ταιριάζει. Η συνομιλία με το bot (και σύντομα η φωνή) κατανοεί ελεύθερα διατυπωμένα αιτήματα.",
     "placeholder": "Πληκτρολογήστε μια εντολή — «μεγαλύτερο κείμενο», «educator hub», «διάβασε αυτή τη σελίδα»…",
-    "run": "εκτέλεση"
+    "run": "εκτέλεση",
+    "close": "Κλείσιμο της παλέτας εντολών"
   },
   "voice_engine": {
     "preparing": "Προετοιμασία μηχανής φωνής...",

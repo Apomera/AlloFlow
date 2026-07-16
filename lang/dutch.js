@@ -22335,7 +22335,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio openen",
+    "open_allo_studio_done": "AlloStudio geopend.",
+    "open_allo_studio_hint": "Ontwerp toegankelijke posters, flyers en werkbladen",
+    "open_cinematic_studio": "Cinematic Studio openen",
+    "open_cinematic_studio_done": "Cinematic Studio geopend.",
+    "open_cinematic_studio_hint": "Maak filmische intro’s en uitlegvideo’s",
+    "open_lingua_practice": "Lingua Practice openen",
+    "open_lingua_practice_done": "Lingua Practice geopend.",
+    "open_lingua_practice_hint": "Oefen woordenschat en taal uit de huidige bron",
+    "open_open_groove": "Open Groove Studio openen",
+    "open_open_groove_done": "Open Groove Studio geopend.",
+    "open_open_groove_hint": "Maak beats, synthpatronen en notatiebewuste muziek",
+    "open_test_prep_hub": "Test Prep Hub openen",
+    "open_test_prep_hub_done": "Test Prep Hub geopend.",
+    "open_test_prep_hub_hint": "Open gratis oefensets en studietools",
+    "open_timeline_studio": "Timeline Studio openen",
+    "open_timeline_studio_done": "Timeline Studio geopend.",
+    "open_timeline_studio_hint": "Bouw en controleer toegankelijke tijdlijnen",
+    "open_video_studio": "Video Studio openen",
+    "open_video_studio_done": "Video Studio geopend.",
+    "open_video_studio_hint": "Neem walkthroughs op, ondertitel en bewerk ze"
   },
   "palette": {
     "aria": "AlloFlow-opdrachtenpalet",
@@ -22348,7 +22369,14 @@
       "pipeline": "Hier — Pijplijnresultaten",
       "reading": "Hier — Leesmodus",
       "stemLab": "Hier — STEM Lab",
-      "symbolStudio": "Hier — Symbol Studio"
+      "symbolStudio": "Hier — Symbol Studio",
+      "alloStudio": "Hier — AlloStudio",
+      "cinematicStudio": "Hier — Cinematic Studio",
+      "linguaPractice": "Hier — Lingua Practice",
+      "openGroove": "Hier — Open Groove Studio",
+      "testPrepHub": "Hier — Test Prep Hub",
+      "timelineStudio": "Hier — Timeline Studio",
+      "videoStudio": "Hier — Video Studio"
     },
     "footer": "Elke actie wordt aangekondigd. Ctrl+K schakelt om.",
     "group": {
@@ -22367,7 +22395,8 @@
     "nav": "navigeren",
     "no_match": "Geen overeenkomende opdracht. De botchat (en binnenkort spraak) begrijpt vrije verzoeken.",
     "placeholder": "Typ een opdracht — “grotere tekst”, “educator hub”, “lees deze pagina”…",
-    "run": "uitvoeren"
+    "run": "uitvoeren",
+    "close": "Opdrachtenpalet sluiten"
   },
   "math_fluency": {
     "at_above_benchmark": "Op/boven de norm",

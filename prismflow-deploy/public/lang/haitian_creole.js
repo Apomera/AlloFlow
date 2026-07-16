@@ -22355,7 +22355,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Louvri AlloStudio",
+    "open_allo_studio_done": "AlloStudio louvri.",
+    "open_allo_studio_hint": "Kreye afich, flayè ak fèy travay aksesib",
+    "open_cinematic_studio": "Louvri Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio louvri.",
+    "open_cinematic_studio_hint": "Kreye entwodiksyon sinematik ak videyo eksplikasyon",
+    "open_lingua_practice": "Louvri Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice louvri.",
+    "open_lingua_practice_hint": "Pratike vokabilè ak lang soti nan sous aktyèl la",
+    "open_open_groove": "Louvri Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio louvri.",
+    "open_open_groove_hint": "Fè bit, modèl synth ak mizik ki konprann notasyon",
+    "open_test_prep_hub": "Louvri Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub louvri.",
+    "open_test_prep_hub_hint": "Louvri seri egzèsis gratis ak zouti etid",
+    "open_timeline_studio": "Louvri Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio louvri.",
+    "open_timeline_studio_hint": "Bati epi verifye liy tan aksesib",
+    "open_video_studio": "Louvri Video Studio",
+    "open_video_studio_done": "Video Studio louvri.",
+    "open_video_studio_hint": "Anrejistre, mete soutit epi edite videyo demonstrasyon"
   },
   "palette": {
     "aria": "Palèt kòmand AlloFlow",
@@ -22368,7 +22389,14 @@
       "pipeline": "Isit — Rezilta Pipeline",
       "reading": "Isit — Mòd lekti",
       "stemLab": "Isit — STEM Lab",
-      "symbolStudio": "Isit — Symbol Studio"
+      "symbolStudio": "Isit — Symbol Studio",
+      "alloStudio": "Isit — AlloStudio",
+      "cinematicStudio": "Isit — Cinematic Studio",
+      "linguaPractice": "Isit — Lingua Practice",
+      "openGroove": "Isit — Open Groove Studio",
+      "testPrepHub": "Isit — Test Prep Hub",
+      "timelineStudio": "Isit — Timeline Studio",
+      "videoStudio": "Isit — Video Studio"
     },
     "footer": "Tout aksyon anonse. Ctrl+K aktive/dezaktive.",
     "group": {
@@ -22387,7 +22415,8 @@
     "nav": "navige",
     "no_match": "Pa gen kòmand ki koresponn. Chat bot la (epi byento vwa) konprann demann lib.",
     "placeholder": "Tape yon kòmand — “pi gwo tèks”, “sant edikatè”, “li paj sa a”…",
-    "run": "fè l"
+    "run": "fè l",
+    "close": "Fèmen palèt kòmand la"
   },
   "voice_engine": {
     "preparing": "Prepare motè vwa a...",

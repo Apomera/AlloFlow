@@ -22019,7 +22019,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "打开 AlloStudio",
+    "open_allo_studio_done": "AlloStudio 已打开。",
+    "open_allo_studio_hint": "设计无障碍海报、传单和学习单",
+    "open_cinematic_studio": "打开 Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio 已打开。",
+    "open_cinematic_studio_hint": "制作电影感开场和讲解视频",
+    "open_lingua_practice": "打开 Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice 已打开。",
+    "open_lingua_practice_hint": "基于当前素材练习词汇和语言",
+    "open_open_groove": "打开 Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio 已打开。",
+    "open_open_groove_hint": "制作节拍、合成器音型和乐谱感知音乐",
+    "open_test_prep_hub": "打开 Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub 已打开。",
+    "open_test_prep_hub_hint": "打开免费练习题组和学习工具",
+    "open_timeline_studio": "打开 Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio 已打开。",
+    "open_timeline_studio_hint": "构建并核验无障碍时间线",
+    "open_video_studio": "打开 Video Studio",
+    "open_video_studio_done": "Video Studio 已打开。",
+    "open_video_studio_hint": "录制、添加字幕并编辑操作演示"
   },
   "palette": {
     "aria": "AlloFlow 命令面板",
@@ -22032,7 +22053,14 @@
       "pipeline": "此处 — 流水线结果",
       "reading": "此处 — 阅读模式",
       "stemLab": "此处 — STEM 实验室",
-      "symbolStudio": "此处 — Symbol Studio"
+      "symbolStudio": "此处 — Symbol Studio",
+      "alloStudio": "此处 — AlloStudio",
+      "cinematicStudio": "此处 — Cinematic Studio",
+      "linguaPractice": "此处 — Lingua Practice",
+      "openGroove": "此处 — Open Groove Studio",
+      "testPrepHub": "此处 — Test Prep Hub",
+      "timelineStudio": "此处 — Timeline Studio",
+      "videoStudio": "此处 — Video Studio"
     },
     "footer": "每个操作都会播报。Ctrl+K 切换。",
     "group": {
@@ -22051,7 +22079,8 @@
     "nav": "导航",
     "no_match": "没有匹配的命令。机器人对话（很快还有语音）可理解自由形式的请求。",
     "placeholder": "输入命令 — “放大文字”、“教育者中心”、“朗读此页”…",
-    "run": "运行"
+    "run": "运行",
+    "close": "关闭命令面板"
   },
   "voice_engine": {
     "preparing": "正在准备语音引擎…",

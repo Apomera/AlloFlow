@@ -22353,7 +22353,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio ਖੋਲ੍ਹੋ",
+    "open_allo_studio_done": "AlloStudio ਖੁੱਲ੍ਹ ਗਿਆ।",
+    "open_allo_studio_hint": "ਪਹੁੰਚਯੋਗ ਪੋਸਟਰ, ਪਰਚੇ ਅਤੇ ਵਰਕਸ਼ੀਟਾਂ ਡਿਜ਼ਾਈਨ ਕਰੋ",
+    "open_cinematic_studio": "Cinematic Studio ਖੋਲ੍ਹੋ",
+    "open_cinematic_studio_done": "Cinematic Studio ਖੁੱਲ੍ਹ ਗਿਆ।",
+    "open_cinematic_studio_hint": "ਸਿਨੇਮਾਈ ਇੰਟਰੋ ਅਤੇ ਵਿਆਖਿਆ ਵੀਡੀਓ ਬਣਾਓ",
+    "open_lingua_practice": "Lingua Practice ਖੋਲ੍ਹੋ",
+    "open_lingua_practice_done": "Lingua Practice ਖੁੱਲ੍ਹ ਗਿਆ।",
+    "open_lingua_practice_hint": "ਮੌਜੂਦਾ ਸਰੋਤ ਤੋਂ ਸ਼ਬਦਾਵਲੀ ਅਤੇ ਭਾਸ਼ਾ ਦਾ ਅਭਿਆਸ ਕਰੋ",
+    "open_open_groove": "Open Groove Studio ਖੋਲ੍ਹੋ",
+    "open_open_groove_done": "Open Groove Studio ਖੁੱਲ੍ਹ ਗਿਆ।",
+    "open_open_groove_hint": "ਬੀਟ, ਸਿੰਥ ਪੈਟਰਨ ਅਤੇ ਸੁਰਲਿਪੀ-ਸਮਝ ਵਾਲਾ ਸੰਗੀਤ ਬਣਾਓ",
+    "open_test_prep_hub": "Test Prep Hub ਖੋਲ੍ਹੋ",
+    "open_test_prep_hub_done": "Test Prep Hub ਖੁੱਲ੍ਹ ਗਿਆ।",
+    "open_test_prep_hub_hint": "ਮੁਫ਼ਤ ਅਭਿਆਸ ਸੈੱਟ ਅਤੇ ਪੜ੍ਹਾਈ ਦੇ ਸਾਧਨ ਖੋਲ੍ਹੋ",
+    "open_timeline_studio": "Timeline Studio ਖੋਲ੍ਹੋ",
+    "open_timeline_studio_done": "Timeline Studio ਖੁੱਲ੍ਹ ਗਿਆ।",
+    "open_timeline_studio_hint": "ਪਹੁੰਚਯੋਗ ਸਮਾਂ-ਰੇਖਾਵਾਂ ਬਣਾਓ ਅਤੇ ਜਾਂਚੋ",
+    "open_video_studio": "Video Studio ਖੋਲ੍ਹੋ",
+    "open_video_studio_done": "Video Studio ਖੁੱਲ੍ਹ ਗਿਆ।",
+    "open_video_studio_hint": "ਵਾਕਥਰੂ ਰਿਕਾਰਡ ਕਰੋ, ਕੈਪਸ਼ਨ ਲਾਓ ਅਤੇ ਸੰਪਾਦਿਤ ਕਰੋ"
   },
   "palette": {
     "aria": "AlloFlow ਕਮਾਂਡ ਪੈਲੇਟ",
@@ -22366,7 +22387,14 @@
       "pipeline": "ਇੱਥੇ — ਪਾਈਪਲਾਈਨ ਨਤੀਜੇ",
       "reading": "ਇੱਥੇ — ਪੜ੍ਹਨ ਮੋਡ",
       "stemLab": "ਇੱਥੇ — STEM ਲੈਬ",
-      "symbolStudio": "ਇੱਥੇ — Symbol Studio"
+      "symbolStudio": "ਇੱਥੇ — Symbol Studio",
+      "alloStudio": "ਇੱਥੇ — AlloStudio",
+      "cinematicStudio": "ਇੱਥੇ — Cinematic Studio",
+      "linguaPractice": "ਇੱਥੇ — Lingua Practice",
+      "openGroove": "ਇੱਥੇ — Open Groove Studio",
+      "testPrepHub": "ਇੱਥੇ — Test Prep Hub",
+      "timelineStudio": "ਇੱਥੇ — Timeline Studio",
+      "videoStudio": "ਇੱਥੇ — Video Studio"
     },
     "footer": "ਹਰ ਕਾਰਵਾਈ ਦਾ ਐਲਾਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। Ctrl+K ਟੌਗਲ ਕਰਦਾ ਹੈ।",
     "group": {
@@ -22385,7 +22413,8 @@
     "nav": "ਨੈਵੀਗੇਟ ਕਰੋ",
     "no_match": "ਕੋਈ ਮੇਲ ਖਾਂਦੀ ਕਮਾਂਡ ਨਹੀਂ। ਬੋਟ ਚੈਟ (ਅਤੇ ਜਲਦੀ ਆਵਾਜ਼) ਖੁੱਲ੍ਹੀਆਂ ਬੇਨਤੀਆਂ ਸਮਝਦੀ ਹੈ।",
     "placeholder": "ਇੱਕ ਕਮਾਂਡ ਟਾਈਪ ਕਰੋ — “ਟੈਕਸਟ ਵੱਡਾ”, “ਐਜੂਕੇਟਰ ਹੱਬ”, “ਇਹ ਪੰਨਾ ਪੜ੍ਹੋ”…",
-    "run": "ਚਲਾਓ"
+    "run": "ਚਲਾਓ",
+    "close": "ਕਮਾਂਡ ਪੈਲੇਟ ਬੰਦ ਕਰੋ"
   },
   "voice_engine": {
     "preparing": "ਵੌਇਸ ਇੰਜਣ ਤਿਆਰ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...",

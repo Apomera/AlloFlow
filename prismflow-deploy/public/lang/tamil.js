@@ -22362,7 +22362,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio ஐத் திற",
+    "open_allo_studio_done": "AlloStudio திறக்கப்பட்டது.",
+    "open_allo_studio_hint": "அணுகக்கூடிய சுவரொட்டிகள், துண்டறிக்கைகள் மற்றும் பயிற்சித்தாள்களை வடிவமைக்கவும்",
+    "open_cinematic_studio": "Cinematic Studio ஐத் திற",
+    "open_cinematic_studio_done": "Cinematic Studio திறக்கப்பட்டது.",
+    "open_cinematic_studio_hint": "சினிமா பாணி அறிமுகங்களும் விளக்க வீடியோக்களும் உருவாக்கவும்",
+    "open_lingua_practice": "Lingua Practice ஐத் திற",
+    "open_lingua_practice_done": "Lingua Practice திறக்கப்பட்டது.",
+    "open_lingua_practice_hint": "தற்போதைய மூலத்திலிருந்து சொற்களஞ்சியமும் மொழியும் பயிற்சி செய்யவும்",
+    "open_open_groove": "Open Groove Studio ஐத் திற",
+    "open_open_groove_done": "Open Groove Studio திறக்கப்பட்டது.",
+    "open_open_groove_hint": "பீட்கள், சின்த் அமைப்புகள் மற்றும் இசைக்குறியீடு அறிந்த இசையை உருவாக்கவும்",
+    "open_test_prep_hub": "Test Prep Hub ஐத் திற",
+    "open_test_prep_hub_done": "Test Prep Hub திறக்கப்பட்டது.",
+    "open_test_prep_hub_hint": "இலவச பயிற்சித் தொகுப்புகளும் படிப்புக் கருவிகளும் திறக்கவும்",
+    "open_timeline_studio": "Timeline Studio ஐத் திற",
+    "open_timeline_studio_done": "Timeline Studio திறக்கப்பட்டது.",
+    "open_timeline_studio_hint": "அணுகக்கூடிய காலவரிசைகளை உருவாக்கி சரிபார்க்கவும்",
+    "open_video_studio": "Video Studio ஐத் திற",
+    "open_video_studio_done": "Video Studio திறக்கப்பட்டது.",
+    "open_video_studio_hint": "வழிகாட்டிகளைப் பதிவு செய்து, வசனம் சேர்த்து, திருத்தவும்"
   },
   "palette": {
     "aria": "AlloFlow கட்டளைப் பலகை",
@@ -22375,7 +22396,14 @@
       "pipeline": "இங்கே — பைப்லைன் முடிவுகள்",
       "reading": "இங்கே — வாசிப்பு முறை",
       "stemLab": "இங்கே — STEM Lab",
-      "symbolStudio": "இங்கே — Symbol Studio"
+      "symbolStudio": "இங்கே — Symbol Studio",
+      "alloStudio": "இங்கே — AlloStudio",
+      "cinematicStudio": "இங்கே — Cinematic Studio",
+      "linguaPractice": "இங்கே — Lingua Practice",
+      "openGroove": "இங்கே — Open Groove Studio",
+      "testPrepHub": "இங்கே — Test Prep Hub",
+      "timelineStudio": "இங்கே — Timeline Studio",
+      "videoStudio": "இங்கே — Video Studio"
     },
     "footer": "ஒவ்வொரு செயலும் அறிவிக்கப்படுகிறது. Ctrl+K நிலைமாற்றுகிறது.",
     "group": {
@@ -22394,7 +22422,8 @@
     "nav": "வழிசெலுத்து",
     "no_match": "பொருந்தும் கட்டளை இல்லை. பாட் அரட்டை (மற்றும் விரைவில் குரல்) தடையற்ற வேண்டுகோள்களைப் புரிந்துகொள்கிறது.",
     "placeholder": "ஒரு கட்டளையைத் தட்டச்சு செய்யுங்கள் — “பெரிய உரை”, “கல்வியாளர் மையம்”, “இந்தப் பக்கத்தைப் படி”…",
-    "run": "இயக்கு"
+    "run": "இயக்கு",
+    "close": "கட்டளைப் பலகையை மூடு"
   },
   "voice_engine": {
     "preparing": "குரல் இயந்திரம் தயாராகிறது...",

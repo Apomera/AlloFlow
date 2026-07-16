@@ -22144,7 +22144,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio खोलें",
+    "open_allo_studio_done": "AlloStudio खुल गया।",
+    "open_allo_studio_hint": "सुलभ पोस्टर, फ़्लायर और वर्कशीट डिज़ाइन करें",
+    "open_cinematic_studio": "Cinematic Studio खोलें",
+    "open_cinematic_studio_done": "Cinematic Studio खुल गया।",
+    "open_cinematic_studio_hint": "सिनेमाई इंट्रो और व्याख्या वीडियो बनाएँ",
+    "open_lingua_practice": "Lingua Practice खोलें",
+    "open_lingua_practice_done": "Lingua Practice खुल गया।",
+    "open_lingua_practice_hint": "वर्तमान स्रोत से शब्दावली और भाषा का अभ्यास करें",
+    "open_open_groove": "Open Groove Studio खोलें",
+    "open_open_groove_done": "Open Groove Studio खुल गया।",
+    "open_open_groove_hint": "बीट्स, सिंथ पैटर्न और स्वरलिपि-सजग संगीत बनाएँ",
+    "open_test_prep_hub": "Test Prep Hub खोलें",
+    "open_test_prep_hub_done": "Test Prep Hub खुल गया।",
+    "open_test_prep_hub_hint": "मुफ़्त अभ्यास सेट और अध्ययन उपकरण खोलें",
+    "open_timeline_studio": "Timeline Studio खोलें",
+    "open_timeline_studio_done": "Timeline Studio खुल गया।",
+    "open_timeline_studio_hint": "सुलभ समयरेखाएँ बनाएँ और जाँचें",
+    "open_video_studio": "Video Studio खोलें",
+    "open_video_studio_done": "Video Studio खुल गया।",
+    "open_video_studio_hint": "वॉकथ्रू रिकॉर्ड करें, कैप्शन जोड़ें और संपादित करें"
   },
   "palette": {
     "aria": "AlloFlow कमांड पैलेट",
@@ -22157,7 +22178,14 @@
       "pipeline": "यहाँ — पाइपलाइन परिणाम",
       "reading": "यहाँ — पढ़ने का मोड",
       "stemLab": "यहाँ — STEM Lab",
-      "symbolStudio": "यहाँ — Symbol Studio"
+      "symbolStudio": "यहाँ — Symbol Studio",
+      "alloStudio": "यहाँ — AlloStudio",
+      "cinematicStudio": "यहाँ — Cinematic Studio",
+      "linguaPractice": "यहाँ — Lingua Practice",
+      "openGroove": "यहाँ — Open Groove Studio",
+      "testPrepHub": "यहाँ — Test Prep Hub",
+      "timelineStudio": "यहाँ — Timeline Studio",
+      "videoStudio": "यहाँ — Video Studio"
     },
     "footer": "हर क्रिया की घोषणा की जाती है। Ctrl+K टॉगल करता है।",
     "group": {
@@ -22176,7 +22204,8 @@
     "nav": "नेविगेट करें",
     "no_match": "कोई मिलता-जुलता कमांड नहीं। बॉट चैट (और जल्द ही वॉइस) मुक्त-रूप अनुरोधों को समझती है।",
     "placeholder": "एक कमांड टाइप करें — “बड़ा टेक्स्ट”, “educator hub”, “यह पृष्ठ पढ़ें”…",
-    "run": "चलाएँ"
+    "run": "चलाएँ",
+    "close": "कमांड पैलेट बंद करें"
   },
   "voice_engine": {
     "preparing": "वॉयस इंजन तैयार किया जा रहा है...",

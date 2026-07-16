@@ -22150,7 +22150,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio öffnen",
+    "open_allo_studio_done": "AlloStudio geöffnet.",
+    "open_allo_studio_hint": "Barrierefreie Poster, Flyer und Arbeitsblätter gestalten",
+    "open_cinematic_studio": "Cinematic Studio öffnen",
+    "open_cinematic_studio_done": "Cinematic Studio geöffnet.",
+    "open_cinematic_studio_hint": "Filmische Intros und Erklärvideos erstellen",
+    "open_lingua_practice": "Lingua Practice öffnen",
+    "open_lingua_practice_done": "Lingua Practice geöffnet.",
+    "open_lingua_practice_hint": "Wortschatz und Sprache aus der aktuellen Quelle üben",
+    "open_open_groove": "Open Groove Studio öffnen",
+    "open_open_groove_done": "Open Groove Studio geöffnet.",
+    "open_open_groove_hint": "Beats, Synth-Patterns und notationsbewusste Musik machen",
+    "open_test_prep_hub": "Test Prep Hub öffnen",
+    "open_test_prep_hub_done": "Test Prep Hub geöffnet.",
+    "open_test_prep_hub_hint": "Kostenlose Übungssets und Lernwerkzeuge öffnen",
+    "open_timeline_studio": "Timeline Studio öffnen",
+    "open_timeline_studio_done": "Timeline Studio geöffnet.",
+    "open_timeline_studio_hint": "Barrierefreie Zeitleisten erstellen und prüfen",
+    "open_video_studio": "Video Studio öffnen",
+    "open_video_studio_done": "Video Studio geöffnet.",
+    "open_video_studio_hint": "Anleitungen aufnehmen, untertiteln und schneiden"
   },
   "palette": {
     "aria": "AlloFlow-Befehlspalette",
@@ -22163,7 +22184,14 @@
       "pipeline": "Hier — Pipeline-Ergebnisse",
       "reading": "Hier — Lesemodus",
       "stemLab": "Hier — STEM Lab",
-      "symbolStudio": "Hier — Symbol Studio"
+      "symbolStudio": "Hier — Symbol Studio",
+      "alloStudio": "Hier — AlloStudio",
+      "cinematicStudio": "Hier — Cinematic Studio",
+      "linguaPractice": "Hier — Lingua Practice",
+      "openGroove": "Hier — Open Groove Studio",
+      "testPrepHub": "Hier — Test Prep Hub",
+      "timelineStudio": "Hier — Timeline Studio",
+      "videoStudio": "Hier — Video Studio"
     },
     "footer": "Jede Aktion wird angesagt. Ctrl+K schaltet um.",
     "group": {
@@ -22182,7 +22210,8 @@
     "nav": "navigieren",
     "no_match": "Kein passender Befehl. Der Bot-Chat (und bald die Sprachsteuerung) versteht frei formulierte Anfragen.",
     "placeholder": "Gib einen Befehl ein — „größerer Text“, „Educator Hub“, „diese Seite vorlesen“…",
-    "run": "ausführen"
+    "run": "ausführen",
+    "close": "Befehlspalette schließen"
   },
   "voice_engine": {
     "preparing": "Sprach-Engine wird vorbereitet...",

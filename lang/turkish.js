@@ -22234,7 +22234,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio'yu aç",
+    "open_allo_studio_done": "AlloStudio açıldı.",
+    "open_allo_studio_hint": "Erişilebilir posterler, el ilanları ve çalışma sayfaları tasarlayın",
+    "open_cinematic_studio": "Cinematic Studio'yu aç",
+    "open_cinematic_studio_done": "Cinematic Studio açıldı.",
+    "open_cinematic_studio_hint": "Sinematik girişler ve açıklayıcı videolar oluşturun",
+    "open_lingua_practice": "Lingua Practice'i aç",
+    "open_lingua_practice_done": "Lingua Practice açıldı.",
+    "open_lingua_practice_hint": "Mevcut kaynaktan sözcük dağarcığı ve dil alıştırması yapın",
+    "open_open_groove": "Open Groove Studio'yu aç",
+    "open_open_groove_done": "Open Groove Studio açıldı.",
+    "open_open_groove_hint": "Beat’ler, synth desenleri ve nota bilinçli müzik yapın",
+    "open_test_prep_hub": "Test Prep Hub'ı aç",
+    "open_test_prep_hub_done": "Test Prep Hub açıldı.",
+    "open_test_prep_hub_hint": "Ücretsiz alıştırma setleri ve çalışma araçları açın",
+    "open_timeline_studio": "Timeline Studio'yu aç",
+    "open_timeline_studio_done": "Timeline Studio açıldı.",
+    "open_timeline_studio_hint": "Erişilebilir zaman çizelgeleri oluşturun ve doğrulayın",
+    "open_video_studio": "Video Studio'yu aç",
+    "open_video_studio_done": "Video Studio açıldı.",
+    "open_video_studio_hint": "Anlatım videoları kaydedin, altyazı ekleyin ve düzenleyin"
   },
   "palette": {
     "aria": "AlloFlow komut paleti",
@@ -22247,7 +22268,14 @@
       "pipeline": "Burada — Pipeline sonuçları",
       "reading": "Burada — Okuma modu",
       "stemLab": "Burada — STEM Lab",
-      "symbolStudio": "Burada — Symbol Studio"
+      "symbolStudio": "Burada — Symbol Studio",
+      "alloStudio": "Burada — AlloStudio",
+      "cinematicStudio": "Burada — Cinematic Studio",
+      "linguaPractice": "Burada — Lingua Practice",
+      "openGroove": "Burada — Open Groove Studio",
+      "testPrepHub": "Burada — Test Prep Hub",
+      "timelineStudio": "Burada — Timeline Studio",
+      "videoStudio": "Burada — Video Studio"
     },
     "footer": "Her eylem duyurulur. Ctrl+K aç/kapatır.",
     "group": {
@@ -22266,7 +22294,8 @@
     "nav": "gezin",
     "no_match": "Eşleşen komut yok. Bot sohbeti (ve yakında ses) serbest biçimli istekleri anlar.",
     "placeholder": "Bir komut yazın — \"daha büyük metin\", \"educator hub\", \"bu sayfayı oku\"…",
-    "run": "çalıştır"
+    "run": "çalıştır",
+    "close": "Komut paletini kapat"
   },
   "math_fluency": {
     "at_above_benchmark": "Hedefte/üzerinde",

@@ -22361,7 +22361,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Buka AlloStudio",
+    "open_allo_studio_done": "AlloStudio dibuka.",
+    "open_allo_studio_hint": "Rancang poster, selebaran, dan lembar kerja yang aksesibel",
+    "open_cinematic_studio": "Buka Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio dibuka.",
+    "open_cinematic_studio_hint": "Buat intro sinematik dan video penjelasan",
+    "open_lingua_practice": "Buka Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice dibuka.",
+    "open_lingua_practice_hint": "Latih kosakata dan bahasa dari sumber saat ini",
+    "open_open_groove": "Buka Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio dibuka.",
+    "open_open_groove_hint": "Buat beat, pola synth, dan musik sadar notasi",
+    "open_test_prep_hub": "Buka Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub dibuka.",
+    "open_test_prep_hub_hint": "Buka set latihan gratis dan alat belajar",
+    "open_timeline_studio": "Buka Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio dibuka.",
+    "open_timeline_studio_hint": "Bangun dan verifikasi linimasa yang aksesibel",
+    "open_video_studio": "Buka Video Studio",
+    "open_video_studio_done": "Video Studio dibuka.",
+    "open_video_studio_hint": "Rekam, beri takarir, dan edit video panduan"
   },
   "palette": {
     "aria": "Palet perintah AlloFlow",
@@ -22374,7 +22395,14 @@
       "pipeline": "Di sini — Hasil pipeline",
       "reading": "Di sini — Mode baca",
       "stemLab": "Di sini — STEM Lab",
-      "symbolStudio": "Di sini — Symbol Studio"
+      "symbolStudio": "Di sini — Symbol Studio",
+      "alloStudio": "Di sini — AlloStudio",
+      "cinematicStudio": "Di sini — Cinematic Studio",
+      "linguaPractice": "Di sini — Lingua Practice",
+      "openGroove": "Di sini — Open Groove Studio",
+      "testPrepHub": "Di sini — Test Prep Hub",
+      "timelineStudio": "Di sini — Timeline Studio",
+      "videoStudio": "Di sini — Video Studio"
     },
     "footer": "Setiap tindakan diumumkan. Ctrl+K untuk beralih.",
     "group": {
@@ -22393,7 +22421,8 @@
     "nav": "navigasi",
     "no_match": "Tidak ada perintah yang cocok. Obrolan bot (dan segera suara) memahami permintaan bebas.",
     "placeholder": "Ketik perintah — “perbesar teks”, “educator hub”, “bacakan halaman ini”…",
-    "run": "jalankan"
+    "run": "jalankan",
+    "close": "Tutup palet perintah"
   },
   "voice_engine": {
     "preparing": "Menyiapkan mesin suara...",

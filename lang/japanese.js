@@ -22217,7 +22217,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio を開く",
+    "open_allo_studio_done": "AlloStudio を開きました。",
+    "open_allo_studio_hint": "アクセシブルなポスター・チラシ・ワークシートをデザイン",
+    "open_cinematic_studio": "Cinematic Studio を開く",
+    "open_cinematic_studio_done": "Cinematic Studio を開きました。",
+    "open_cinematic_studio_hint": "映画風のイントロや解説動画を作成",
+    "open_lingua_practice": "Lingua Practice を開く",
+    "open_lingua_practice_done": "Lingua Practice を開きました。",
+    "open_lingua_practice_hint": "現在のソースから語彙と言語を練習",
+    "open_open_groove": "Open Groove Studio を開く",
+    "open_open_groove_done": "Open Groove Studio を開きました。",
+    "open_open_groove_hint": "ビート、シンセパターン、楽譜対応の音楽を制作",
+    "open_test_prep_hub": "Test Prep Hub を開く",
+    "open_test_prep_hub_done": "Test Prep Hub を開きました。",
+    "open_test_prep_hub_hint": "無料の練習セットと学習ツールを開く",
+    "open_timeline_studio": "Timeline Studio を開く",
+    "open_timeline_studio_done": "Timeline Studio を開きました。",
+    "open_timeline_studio_hint": "アクセシブルな年表を作成して検証",
+    "open_video_studio": "Video Studio を開く",
+    "open_video_studio_done": "Video Studio を開きました。",
+    "open_video_studio_hint": "操作説明を録画・字幕付け・編集"
   },
   "palette": {
     "aria": "AlloFlow コマンドパレット",
@@ -22230,7 +22251,14 @@
       "pipeline": "ここ — パイプラインの結果",
       "reading": "ここ — 読みモード",
       "stemLab": "ここ — STEM Lab",
-      "symbolStudio": "ここ — Symbol Studio"
+      "symbolStudio": "ここ — Symbol Studio",
+      "alloStudio": "ここ — AlloStudio",
+      "cinematicStudio": "ここ — Cinematic Studio",
+      "linguaPractice": "ここ — Lingua Practice",
+      "openGroove": "ここ — Open Groove Studio",
+      "testPrepHub": "ここ — Test Prep Hub",
+      "timelineStudio": "ここ — Timeline Studio",
+      "videoStudio": "ここ — Video Studio"
     },
     "footer": "すべての操作は読み上げられます。Ctrl+K で切替。",
     "group": {
@@ -22249,7 +22277,8 @@
     "nav": "移動",
     "no_match": "一致するコマンドがありません。ボットチャット（まもなく音声も）は自由な形式のリクエストを理解します。",
     "placeholder": "コマンドを入力 —「文字を大きく」「Educator Hub」「このページを読む」…",
-    "run": "実行"
+    "run": "実行",
+    "close": "コマンドパレットを閉じる"
   },
   "voice_engine": {
     "preparing": "音声エンジンを準備しています...",

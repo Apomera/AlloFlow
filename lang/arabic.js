@@ -22019,7 +22019,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "فتح AlloStudio",
+    "open_allo_studio_done": "تم فتح AlloStudio.",
+    "open_allo_studio_hint": "صمّم ملصقات ونشرات وأوراق عمل ميسّرة الوصول",
+    "open_cinematic_studio": "فتح Cinematic Studio",
+    "open_cinematic_studio_done": "تم فتح Cinematic Studio.",
+    "open_cinematic_studio_hint": "أنشئ مقدمات سينمائية وفيديوهات شرح",
+    "open_lingua_practice": "فتح Lingua Practice",
+    "open_lingua_practice_done": "تم فتح Lingua Practice.",
+    "open_lingua_practice_hint": "تدرّب على المفردات واللغة من المصدر الحالي",
+    "open_open_groove": "فتح Open Groove Studio",
+    "open_open_groove_done": "تم فتح Open Groove Studio.",
+    "open_open_groove_hint": "اصنع إيقاعات وأنماط سينث وموسيقى واعية بالتدوين الموسيقي",
+    "open_test_prep_hub": "فتح Test Prep Hub",
+    "open_test_prep_hub_done": "تم فتح Test Prep Hub.",
+    "open_test_prep_hub_hint": "افتح مجموعات تدريب مجانية وأدوات مذاكرة",
+    "open_timeline_studio": "فتح Timeline Studio",
+    "open_timeline_studio_done": "تم فتح Timeline Studio.",
+    "open_timeline_studio_hint": "أنشئ خطوطاً زمنية ميسّرة الوصول وتحقّق منها",
+    "open_video_studio": "فتح Video Studio",
+    "open_video_studio_done": "تم فتح Video Studio.",
+    "open_video_studio_hint": "سجّل شروحات وأضف تسميات توضيحية وحرّرها"
   },
   "palette": {
     "aria": "لوحة أوامر AlloFlow",
@@ -22032,7 +22053,14 @@
       "pipeline": "هنا — نتائج المسار",
       "reading": "هنا — وضع القراءة",
       "stemLab": "هنا — مختبر STEM",
-      "symbolStudio": "هنا — Symbol Studio"
+      "symbolStudio": "هنا — Symbol Studio",
+      "alloStudio": "هنا — AlloStudio",
+      "cinematicStudio": "هنا — Cinematic Studio",
+      "linguaPractice": "هنا — Lingua Practice",
+      "openGroove": "هنا — Open Groove Studio",
+      "testPrepHub": "هنا — Test Prep Hub",
+      "timelineStudio": "هنا — Timeline Studio",
+      "videoStudio": "هنا — Video Studio"
     },
     "footer": "يُعلَن عن كل إجراء. Ctrl+K للتبديل.",
     "group": {
@@ -22051,7 +22079,8 @@
     "nav": "تنقّل",
     "no_match": "لا يوجد أمر مطابق. تفهم دردشة الروبوت (وقريباً الصوت) الطلبات الحرة.",
     "placeholder": "اكتب أمراً — “نص أكبر”، “مركز المعلّم”، “اقرأ هذه الصفحة”…",
-    "run": "تشغيل"
+    "run": "تشغيل",
+    "close": "إغلاق لوحة الأوامر"
   },
   "voice_engine": {
     "preparing": "جارٍ تجهيز محرك الصوت...",

@@ -22361,7 +22361,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "បើក AlloStudio",
+    "open_allo_studio_done": "បានបើក AlloStudio។",
+    "open_allo_studio_hint": "រចនាផ្ទាំងរូបភាព ខិត្តប័ណ្ណ និងសន្លឹកកិច្ចការដែលងាយស្រួលប្រើ",
+    "open_cinematic_studio": "បើក Cinematic Studio",
+    "open_cinematic_studio_done": "បានបើក Cinematic Studio។",
+    "open_cinematic_studio_hint": "បង្កើតការណែនាំបែបភាពយន្ត និងវីដេអូពន្យល់",
+    "open_lingua_practice": "បើក Lingua Practice",
+    "open_lingua_practice_done": "បានបើក Lingua Practice។",
+    "open_lingua_practice_hint": "អនុវត្តវាក្យសព្ទ និងភាសាពីប្រភពបច្ចុប្បន្ន",
+    "open_open_groove": "បើក Open Groove Studio",
+    "open_open_groove_done": "បានបើក Open Groove Studio។",
+    "open_open_groove_hint": "បង្កើតចង្វាក់ លំនាំ synth និងតន្ត្រីដែលយល់ដឹងពីកំណត់ភ្លេង",
+    "open_test_prep_hub": "បើក Test Prep Hub",
+    "open_test_prep_hub_done": "បានបើក Test Prep Hub។",
+    "open_test_prep_hub_hint": "បើកសំណុំលំហាត់ឥតគិតថ្លៃ និងឧបករណ៍សិក្សា",
+    "open_timeline_studio": "បើក Timeline Studio",
+    "open_timeline_studio_done": "បានបើក Timeline Studio។",
+    "open_timeline_studio_hint": "បង្កើត និងផ្ទៀងផ្ទាត់បន្ទាត់ពេលវេលាដែលងាយស្រួលប្រើ",
+    "open_video_studio": "បើក Video Studio",
+    "open_video_studio_done": "បានបើក Video Studio។",
+    "open_video_studio_hint": "ថត ដាក់ចំណងជើងរង និងកែសម្រួលវីដេអូណែនាំ"
   },
   "palette": {
     "aria": "ផ្ទាំងពាក្យបញ្ជា AlloFlow",
@@ -22374,7 +22395,14 @@
       "pipeline": "ទីនេះ — លទ្ធផល Pipeline",
       "reading": "ទីនេះ — របៀបអាន",
       "stemLab": "ទីនេះ — STEM Lab",
-      "symbolStudio": "ទីនេះ — Symbol Studio"
+      "symbolStudio": "ទីនេះ — Symbol Studio",
+      "alloStudio": "ទីនេះ — AlloStudio",
+      "cinematicStudio": "ទីនេះ — Cinematic Studio",
+      "linguaPractice": "ទីនេះ — Lingua Practice",
+      "openGroove": "ទីនេះ — Open Groove Studio",
+      "testPrepHub": "ទីនេះ — Test Prep Hub",
+      "timelineStudio": "ទីនេះ — Timeline Studio",
+      "videoStudio": "ទីនេះ — Video Studio"
     },
     "footer": "រាល់សកម្មភាពត្រូវបានប្រកាស។ Ctrl+K បិទ/បើក។",
     "group": {
@@ -22393,7 +22421,8 @@
     "nav": "រុករក",
     "no_match": "គ្មានពាក្យបញ្ជាត្រូវគ្នាទេ។ ការជជែកជាមួយ bot (និងឆាប់ៗនេះ សំឡេង) យល់ពីសំណើបែបសេរី។",
     "placeholder": "វាយពាក្យបញ្ជា — “អក្សរធំជាងមុន”, “មជ្ឈមណ្ឌលគ្រូបង្រៀន”, “អានទំព័រនេះ”…",
-    "run": "ដំណើរការ"
+    "run": "ដំណើរការ",
+    "close": "បិទផ្ទាំងពាក្យបញ្ជា"
   },
   "voice_engine": {
     "preparing": "កំពុងរៀបចំម៉ាស៊ីនសំឡេង...",

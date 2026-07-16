@@ -22166,7 +22166,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Открыть AlloStudio",
+    "open_allo_studio_done": "AlloStudio открыт.",
+    "open_allo_studio_hint": "Создавайте доступные постеры, листовки и рабочие листы",
+    "open_cinematic_studio": "Открыть Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio открыт.",
+    "open_cinematic_studio_hint": "Создавайте кинематографичные заставки и обучающие ролики",
+    "open_lingua_practice": "Открыть Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice открыт.",
+    "open_lingua_practice_hint": "Отрабатывайте лексику и язык по текущему источнику",
+    "open_open_groove": "Открыть Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio открыт.",
+    "open_open_groove_hint": "Создавайте биты, синт-паттерны и музыку с учётом нотации",
+    "open_test_prep_hub": "Открыть Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub открыт.",
+    "open_test_prep_hub_hint": "Открывайте бесплатные наборы упражнений и учебные инструменты",
+    "open_timeline_studio": "Открыть Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio открыт.",
+    "open_timeline_studio_hint": "Создавайте и проверяйте доступные ленты времени",
+    "open_video_studio": "Открыть Video Studio",
+    "open_video_studio_done": "Video Studio открыт.",
+    "open_video_studio_hint": "Записывайте, субтитруйте и монтируйте обучающие видео"
   },
   "palette": {
     "aria": "Командная палитра AlloFlow",
@@ -22179,7 +22200,14 @@
       "pipeline": "Здесь — результаты конвейера",
       "reading": "Здесь — режим чтения",
       "stemLab": "Здесь — STEM Lab",
-      "symbolStudio": "Здесь — Symbol Studio"
+      "symbolStudio": "Здесь — Symbol Studio",
+      "alloStudio": "Здесь — AlloStudio",
+      "cinematicStudio": "Здесь — Cinematic Studio",
+      "linguaPractice": "Здесь — Lingua Practice",
+      "openGroove": "Здесь — Open Groove Studio",
+      "testPrepHub": "Здесь — Test Prep Hub",
+      "timelineStudio": "Здесь — Timeline Studio",
+      "videoStudio": "Здесь — Video Studio"
     },
     "footer": "О каждом действии сообщается. Ctrl+K переключает.",
     "group": {
@@ -22198,7 +22226,8 @@
     "nav": "перемещение",
     "no_match": "Нет подходящей команды. Чат с ботом (а вскоре и голос) понимает запросы в свободной форме.",
     "placeholder": "Введите команду — «крупнее текст», «центр педагога», «прочитать эту страницу»…",
-    "run": "выполнить"
+    "run": "выполнить",
+    "close": "Закрыть командную палитру"
   },
   "voice_engine": {
     "preparing": "Подготовка голосового движка…",

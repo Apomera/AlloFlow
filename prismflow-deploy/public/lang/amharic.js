@@ -22353,7 +22353,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio ክፈት",
+    "open_allo_studio_done": "AlloStudio ተከፍቷል።",
+    "open_allo_studio_hint": "ተደራሽ ፖስተሮች፣ በራሪ ወረቀቶች እና የስራ ሉሆች ንደፍ",
+    "open_cinematic_studio": "Cinematic Studio ክፈት",
+    "open_cinematic_studio_done": "Cinematic Studio ተከፍቷል።",
+    "open_cinematic_studio_hint": "ሲኒማዊ መግቢያዎችና ማብራሪያ ቪዲዮዎችን ፍጠር",
+    "open_lingua_practice": "Lingua Practice ክፈት",
+    "open_lingua_practice_done": "Lingua Practice ተከፍቷል።",
+    "open_lingua_practice_hint": "ካሁኑ ምንጭ ቃላትንና ቋንቋን ተለማመድ",
+    "open_open_groove": "Open Groove Studio ክፈት",
+    "open_open_groove_done": "Open Groove Studio ተከፍቷል።",
+    "open_open_groove_hint": "ቢቶች፣ የሲንዝ ቅጦች እና ኖታ-አዋቂ ሙዚቃ ስራ",
+    "open_test_prep_hub": "Test Prep Hub ክፈት",
+    "open_test_prep_hub_done": "Test Prep Hub ተከፍቷል።",
+    "open_test_prep_hub_hint": "ነፃ የልምምድ ስብስቦችንና የጥናት መሣሪያዎችን ክፈት",
+    "open_timeline_studio": "Timeline Studio ክፈት",
+    "open_timeline_studio_done": "Timeline Studio ተከፍቷል።",
+    "open_timeline_studio_hint": "ተደራሽ የጊዜ መስመሮችን ገንባ እና አረጋግጥ",
+    "open_video_studio": "Video Studio ክፈት",
+    "open_video_studio_done": "Video Studio ተከፍቷል።",
+    "open_video_studio_hint": "ማሳያዎችን ቅረጽ፣ መግለጫ ጽሑፍ ጨምር እና አርትዕ"
   },
   "palette": {
     "aria": "የAlloFlow ትዕዛዝ ፓሌት",
@@ -22366,7 +22387,14 @@
       "pipeline": "እዚህ — የቧንቧ ውጤቶች",
       "reading": "እዚህ — የንባብ ሁነታ",
       "stemLab": "እዚህ — STEM Lab",
-      "symbolStudio": "እዚህ — Symbol Studio"
+      "symbolStudio": "እዚህ — Symbol Studio",
+      "alloStudio": "እዚህ — AlloStudio",
+      "cinematicStudio": "እዚህ — Cinematic Studio",
+      "linguaPractice": "እዚህ — Lingua Practice",
+      "openGroove": "እዚህ — Open Groove Studio",
+      "testPrepHub": "እዚህ — Test Prep Hub",
+      "timelineStudio": "እዚህ — Timeline Studio",
+      "videoStudio": "እዚህ — Video Studio"
     },
     "footer": "እያንዳንዱ ድርጊት ይነገራል። Ctrl+K ይቀያይራል።",
     "group": {
@@ -22385,7 +22413,8 @@
     "nav": "ዳስስ",
     "no_match": "የተዛመደ ትዕዛዝ የለም። የቦት ውይይቱ (እና በቅርቡ ድምፅ) ነፃ-ቅርጽ ጥያቄዎችን ይረዳል።",
     "placeholder": "ትዕዛዝ ይተይቡ — “ትልቅ ጽሑፍ”፣ “educator hub”፣ “ይህን ገጽ አንብብ”…",
-    "run": "አስኪድ"
+    "run": "አስኪድ",
+    "close": "የትዕዛዝ ፓሌቱን ዝጋ"
   },
   "voice_engine": {
     "preparing": "የድምፅ ሞተርን በማዘጋጀት ላይ...",

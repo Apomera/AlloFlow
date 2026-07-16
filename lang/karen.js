@@ -12303,7 +12303,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "အိးထီၣ် AlloStudio",
+    "open_allo_studio_done": "အိးထီၣ်လံ AlloStudio.",
+    "open_allo_studio_hint": "ဒုးအိၣ်ထီၣ် ပိးစထၢၣ်, လံာ်ကဘျံး ဒီး တၢ်မၤလံာ်ကဘျံးလၢ ပှၤကိးဂၤသူဝဲသ့",
+    "open_cinematic_studio": "အိးထီၣ် Cinematic Studio",
+    "open_cinematic_studio_done": "အိးထီၣ်လံ Cinematic Studio.",
+    "open_cinematic_studio_hint": "ဒုးအိၣ်ထီၣ် တၢ်ဂီၤမူအတၢ်စးထီၣ် ဒီး တၢ်တဲနၢ်ပၢၢ်အဂီၤမူ",
+    "open_lingua_practice": "အိးထီၣ် Lingua Practice",
+    "open_lingua_practice_done": "အိးထီၣ်လံ Lingua Practice.",
+    "open_lingua_practice_hint": "မၤလိ တၢ်ကတိၤဒီးကျိာ် လၢတၢ်ဂ့ၢ်ခီၣ်ထံးလၢအအိၣ်ခဲအံၤ",
+    "open_open_groove": "အိးထီၣ် Open Groove Studio",
+    "open_open_groove_done": "အိးထီၣ်လံ Open Groove Studio.",
+    "open_open_groove_hint": "ဒုးအိၣ်ထီၣ် တၢ်သးဝံၣ်အသီၣ်, synth အက့ၢ်ဂီၤ ဒီး တၢ်သးဝံၣ်လၢအသ့ၣ်ညါတၢ်သးဝံၣ်အပနီၣ်",
+    "open_test_prep_hub": "အိးထီၣ် Test Prep Hub",
+    "open_test_prep_hub_done": "အိးထီၣ်လံ Test Prep Hub.",
+    "open_test_prep_hub_hint": "အိးထီၣ် တၢ်မၤလိအကျိၤလၢအကလီ ဒီး တၢ်မၤလိအစုကဝဲၤ",
+    "open_timeline_studio": "အိးထီၣ် Timeline Studio",
+    "open_timeline_studio_done": "အိးထီၣ်လံ Timeline Studio.",
+    "open_timeline_studio_hint": "ဘှီထီၣ်ဒီးသမံသမိး တၢ်ဆၢကတီၢ်အကျိၤလၢပှၤကိးဂၤသူဝဲသ့",
+    "open_video_studio": "အိးထီၣ် Video Studio",
+    "open_video_studio_done": "အိးထီၣ်လံ Video Studio.",
+    "open_video_studio_hint": "ဒိနုာ်, ထၢနုာ်လံာ်မဲာ်ဖျၢၣ် ဒီး ဘှီဘၣ် တၢ်နဲၣ်ကျဲအဂီၤမူ"
   },
   "palette": {
     "aria": "AlloFlow တၢ်ပၢအလီၢ်",
@@ -12316,7 +12337,14 @@
       "pipeline": "ဖဲအံၤ — Pipeline အစၢ",
       "reading": "ဖဲအံၤ — တၢ်ဖးအကျဲ",
       "stemLab": "ဖဲအံၤ — STEM Lab",
-      "symbolStudio": "ဖဲအံၤ — Symbol Studio"
+      "symbolStudio": "ဖဲအံၤ — Symbol Studio",
+      "alloStudio": "ဖဲအံၤ — AlloStudio",
+      "cinematicStudio": "ဖဲအံၤ — Cinematic Studio",
+      "linguaPractice": "ဖဲအံၤ — Lingua Practice",
+      "openGroove": "ဖဲအံၤ — Open Groove Studio",
+      "testPrepHub": "ဖဲအံၤ — Test Prep Hub",
+      "timelineStudio": "ဖဲအံၤ — Timeline Studio",
+      "videoStudio": "ဖဲအံၤ — Video Studio"
     },
     "footer": "တၢ်မၤကိးမံၤဒဲးဘၣ်တၢ်ဒုးသ့ၣ်ညါ. Ctrl+K ဆီတလဲ.",
     "group": {
@@ -12335,7 +12363,8 @@
     "nav": "လဲၤထွဲ",
     "no_match": "တၢ်ပၢလၢအဘၣ်လိာ်တအိၣ်ဘၣ်. bot chat (ဒီးကလုၢ်ဖဲတယံာ်) နၢ်ပၢၢ်တၢ်ဃ့ထီၣ်လၢအလီၤဖျါ.",
     "placeholder": "ကွဲးတၢ်ပၢ — “လံာ်မဲာ်ဒိၣ်ထီၣ်”, “educator hub”, “ဖးကဘျံးပၤအံၤ”…",
-    "run": "မၤ"
+    "run": "မၤ",
+    "close": "ကးတံာ်တၢ်ပၢအလီၢ်"
   },
   "voice_engine": {
     "preparing": "ကတဲ၁်ကတီၤ အကလုၢ် engine...",

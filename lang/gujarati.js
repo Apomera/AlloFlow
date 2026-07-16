@@ -22234,7 +22234,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio ખોલો",
+    "open_allo_studio_done": "AlloStudio ખૂલ્યું.",
+    "open_allo_studio_hint": "સુલભ પોસ્ટરો, પત્રિકાઓ અને વર્કશીટ ડિઝાઇન કરો",
+    "open_cinematic_studio": "Cinematic Studio ખોલો",
+    "open_cinematic_studio_done": "Cinematic Studio ખૂલ્યું.",
+    "open_cinematic_studio_hint": "સિનેમેટિક ઇન્ટ્રો અને સમજૂતી વિડિયો બનાવો",
+    "open_lingua_practice": "Lingua Practice ખોલો",
+    "open_lingua_practice_done": "Lingua Practice ખૂલ્યું.",
+    "open_lingua_practice_hint": "વર્તમાન સ્રોતમાંથી શબ્દભંડોળ અને ભાષાનો અભ્યાસ કરો",
+    "open_open_groove": "Open Groove Studio ખોલો",
+    "open_open_groove_done": "Open Groove Studio ખૂલ્યું.",
+    "open_open_groove_hint": "બીટ્સ, સિન્થ પેટર્ન અને સ્વરલિપિ-સભાન સંગીત બનાવો",
+    "open_test_prep_hub": "Test Prep Hub ખોલો",
+    "open_test_prep_hub_done": "Test Prep Hub ખૂલ્યું.",
+    "open_test_prep_hub_hint": "મફત અભ્યાસ સેટ અને અભ્યાસ સાધનો ખોલો",
+    "open_timeline_studio": "Timeline Studio ખોલો",
+    "open_timeline_studio_done": "Timeline Studio ખૂલ્યું.",
+    "open_timeline_studio_hint": "સુલભ સમયરેખાઓ બનાવો અને ચકાસો",
+    "open_video_studio": "Video Studio ખોલો",
+    "open_video_studio_done": "Video Studio ખૂલ્યું.",
+    "open_video_studio_hint": "વૉકથ્રૂ રેકોર્ડ કરો, કૅપ્શન ઉમેરો અને સંપાદિત કરો"
   },
   "palette": {
     "aria": "AlloFlow આદેશ પેલેટ",
@@ -22247,7 +22268,14 @@
       "pipeline": "અહીં — Pipeline પરિણામો",
       "reading": "અહીં — વાંચન મોડ",
       "stemLab": "અહીં — STEM Lab",
-      "symbolStudio": "અહીં — Symbol Studio"
+      "symbolStudio": "અહીં — Symbol Studio",
+      "alloStudio": "અહીં — AlloStudio",
+      "cinematicStudio": "અહીં — Cinematic Studio",
+      "linguaPractice": "અહીં — Lingua Practice",
+      "openGroove": "અહીં — Open Groove Studio",
+      "testPrepHub": "અહીં — Test Prep Hub",
+      "timelineStudio": "અહીં — Timeline Studio",
+      "videoStudio": "અહીં — Video Studio"
     },
     "footer": "દરેક ક્રિયાની જાહેરાત થાય છે. Ctrl+K ટૉગલ કરે છે.",
     "group": {
@@ -22266,7 +22294,8 @@
     "nav": "નેવિગેટ કરો",
     "no_match": "કોઈ મેળ ખાતો આદેશ નથી. બોટ ચેટ (અને ટૂંક સમયમાં વૉઇસ) મુક્ત-સ્વરૂપ વિનંતીઓ સમજે છે.",
     "placeholder": "આદેશ ટાઇપ કરો — “મોટું લખાણ”, “educator hub”, “આ પૃષ્ઠ વાંચો”…",
-    "run": "ચલાવો"
+    "run": "ચલાવો",
+    "close": "આદેશ પેલેટ બંધ કરો"
   },
   "math_fluency": {
     "at_above_benchmark": "લક્ષ્ય પર/લક્ષ્યથી ઉપર",

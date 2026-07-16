@@ -13758,7 +13758,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Yab AlloStudio",
+    "open_allo_studio_done": "AlloStudio oyabbe.",
+    "open_allo_studio_hint": "Yub poster, waraga me tito lok ki waraga me tic ma dano ducu twero tic kwede",
+    "open_cinematic_studio": "Yab Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio oyabbe.",
+    "open_cinematic_studio_hint": "Yub acakki calo me sinema ki vidio ma tito lok",
+    "open_lingua_practice": "Yab Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice oyabbe.",
+    "open_lingua_practice_hint": "Tim kwena lok ki leb ma a ki i te lok ma tye kombeddi",
+    "open_open_groove": "Yab Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio oyabbe.",
+    "open_open_groove_hint": "Yub dwan bit, kit me synth ki thum ma ngeyo coc me thum",
+    "open_test_prep_hub": "Yab Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub oyabbe.",
+    "open_test_prep_hub_hint": "Yab jami me temme ma nono ki jami me kwan",
+    "open_timeline_studio": "Yab Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio oyabbe.",
+    "open_timeline_studio_hint": "Ger ki rot laen me cawa ma dano ducu twero neno",
+    "open_video_studio": "Yab Video Studio",
+    "open_video_studio_done": "Video Studio oyabbe.",
+    "open_video_studio_hint": "Mak, ket coc i te gin ma inen ki yub vidio me nyuto tic"
   },
   "palette": {
     "aria": "Palette me cik me AlloFlow",
@@ -13771,7 +13792,14 @@
       "pipeline": "Kany — Adwogi me Pipeline",
       "reading": "Kany — Kit me kwano",
       "stemLab": "Kany — STEM Lab",
-      "symbolStudio": "Kany — Symbol Studio"
+      "symbolStudio": "Kany — Symbol Studio",
+      "alloStudio": "Kany — AlloStudio",
+      "cinematicStudio": "Kany — Cinematic Studio",
+      "linguaPractice": "Kany — Lingua Practice",
+      "openGroove": "Kany — Open Groove Studio",
+      "testPrepHub": "Kany — Test Prep Hub",
+      "timelineStudio": "Kany — Timeline Studio",
+      "videoStudio": "Kany — Video Studio"
     },
     "footer": "Tic ducu kityeko tito. Ctrl+K loko.",
     "group": {
@@ -13790,7 +13818,8 @@
     "nav": "wot",
     "no_match": "Pe tye cik ma rwatte. Lok me bot (ki dwan oromo bino) niang kwac ma lengo.",
     "placeholder": "Coo cik — “coc madit”, “educator hub”, “kwan pot man”…",
-    "run": "tim"
+    "run": "tim",
+    "close": "Lor palette me cik"
   },
   "voice_engine": {
     "preparing": "Tye ka yubo engine me dwan...",

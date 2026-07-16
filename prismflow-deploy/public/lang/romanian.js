@@ -22392,7 +22392,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Deschide AlloStudio",
+    "open_allo_studio_done": "AlloStudio a fost deschis.",
+    "open_allo_studio_hint": "Creează afișe, fluturași și fișe de lucru accesibile",
+    "open_cinematic_studio": "Deschide Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio a fost deschis.",
+    "open_cinematic_studio_hint": "Creează introduceri cinematografice și videoclipuri explicative",
+    "open_lingua_practice": "Deschide Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice a fost deschis.",
+    "open_lingua_practice_hint": "Exersează vocabularul și limba din sursa curentă",
+    "open_open_groove": "Deschide Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio a fost deschis.",
+    "open_open_groove_hint": "Creează beat-uri, tipare synth și muzică conștientă de notație",
+    "open_test_prep_hub": "Deschide Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub a fost deschis.",
+    "open_test_prep_hub_hint": "Deschide seturi de exerciții gratuite și instrumente de studiu",
+    "open_timeline_studio": "Deschide Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio a fost deschis.",
+    "open_timeline_studio_hint": "Construiește și verifică cronologii accesibile",
+    "open_video_studio": "Deschide Video Studio",
+    "open_video_studio_done": "Video Studio a fost deschis.",
+    "open_video_studio_hint": "Înregistrează, subtitrează și editează tutoriale"
   },
   "palette": {
     "aria": "Paleta de comenzi AlloFlow",
@@ -22405,7 +22426,14 @@
       "pipeline": "Aici — Rezultate pipeline",
       "reading": "Aici — Modul de lectură",
       "stemLab": "Aici — STEM Lab",
-      "symbolStudio": "Aici — Symbol Studio"
+      "symbolStudio": "Aici — Symbol Studio",
+      "alloStudio": "Aici — AlloStudio",
+      "cinematicStudio": "Aici — Cinematic Studio",
+      "linguaPractice": "Aici — Lingua Practice",
+      "openGroove": "Aici — Open Groove Studio",
+      "testPrepHub": "Aici — Test Prep Hub",
+      "timelineStudio": "Aici — Timeline Studio",
+      "videoStudio": "Aici — Video Studio"
     },
     "footer": "Fiecare acțiune este anunțată. Ctrl+K comută.",
     "group": {
@@ -22424,7 +22452,8 @@
     "nav": "navighează",
     "no_match": "Nicio comandă care să se potrivească. Conversația cu botul (și în curând vocea) înțelege cereri în formă liberă.",
     "placeholder": "Scrie o comandă — „text mai mare”, „centru educatori”, „citește această pagină”…",
-    "run": "rulează"
+    "run": "rulează",
+    "close": "Închide paleta de comenzi"
   },
   "voice_engine": {
     "preparing": "Se pregătește motorul vocal...",

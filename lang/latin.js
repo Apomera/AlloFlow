@@ -22264,7 +22264,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio aperi",
+    "open_allo_studio_done": "AlloStudio apertum.",
+    "open_allo_studio_hint": "Designa tabulas, libellos et schedas operis accessibiles",
+    "open_cinematic_studio": "Cinematic Studio aperi",
+    "open_cinematic_studio_done": "Cinematic Studio apertum.",
+    "open_cinematic_studio_hint": "Crea exordia cinematographica et pelliculas explicantes",
+    "open_lingua_practice": "Lingua Practice aperi",
+    "open_lingua_practice_done": "Lingua Practice apertum.",
+    "open_lingua_practice_hint": "Exerce vocabula et linguam ex fonte praesenti",
+    "open_open_groove": "Open Groove Studio aperi",
+    "open_open_groove_done": "Open Groove Studio apertum.",
+    "open_open_groove_hint": "Fac pulsus, formas synthetici et musicam notationis peritam",
+    "open_test_prep_hub": "Test Prep Hub aperi",
+    "open_test_prep_hub_done": "Test Prep Hub apertum.",
+    "open_test_prep_hub_hint": "Aperi exercitationes gratuitas et instrumenta studiorum",
+    "open_timeline_studio": "Timeline Studio aperi",
+    "open_timeline_studio_done": "Timeline Studio apertum.",
+    "open_timeline_studio_hint": "Construe et proba lineas temporum accessibiles",
+    "open_video_studio": "Video Studio aperi",
+    "open_video_studio_done": "Video Studio apertum.",
+    "open_video_studio_hint": "Memora, subscribe et recense pelliculas demonstrantes"
   },
   "palette": {
     "aria": "AlloFlow tabula mandatorum",
@@ -22277,7 +22298,14 @@
       "pipeline": "Hic — exitus Cursus",
       "reading": "Hic — modus lectionis",
       "stemLab": "Hic — STEM Lab",
-      "symbolStudio": "Hic — Symbol Studio"
+      "symbolStudio": "Hic — Symbol Studio",
+      "alloStudio": "Hic — AlloStudio",
+      "cinematicStudio": "Hic — Cinematic Studio",
+      "linguaPractice": "Hic — Lingua Practice",
+      "openGroove": "Hic — Open Groove Studio",
+      "testPrepHub": "Hic — Test Prep Hub",
+      "timelineStudio": "Hic — Timeline Studio",
+      "videoStudio": "Hic — Video Studio"
     },
     "footer": "Omnis actio nuntiatur. Ctrl+K commutat.",
     "group": {
@@ -22296,7 +22324,8 @@
     "nav": "naviga",
     "no_match": "Nullum mandatum congruens. Colloquium roboticum (et mox vox) postulationes liberas intellegit.",
     "placeholder": "Mandatum scribe — “textus maior”, “centrum educatoris”, “lege hanc paginam”…",
-    "run": "exsequere"
+    "run": "exsequere",
+    "close": "Tabulam mandatorum claude"
   },
   "voice_engine": {
     "preparing": "Machina vocis parans...",

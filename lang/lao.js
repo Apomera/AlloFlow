@@ -22027,7 +22027,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "ເປີດ AlloStudio",
+    "open_allo_studio_done": "ເປີດ AlloStudio ແລ້ວ.",
+    "open_allo_studio_hint": "ອອກແບບໂປສເຕີ, ໃບປິວ ແລະ ໃບວຽກທີ່ເຂົ້າເຖິງໄດ້",
+    "open_cinematic_studio": "ເປີດ Cinematic Studio",
+    "open_cinematic_studio_done": "ເປີດ Cinematic Studio ແລ້ວ.",
+    "open_cinematic_studio_hint": "ສ້າງບົດນຳແບບຮູບເງົາ ແລະ ວິດີໂອອະທິບາຍ",
+    "open_lingua_practice": "ເປີດ Lingua Practice",
+    "open_lingua_practice_done": "ເປີດ Lingua Practice ແລ້ວ.",
+    "open_lingua_practice_hint": "ຝຶກຄຳສັບ ແລະ ພາສາຈາກແຫຼ່ງປັດຈຸບັນ",
+    "open_open_groove": "ເປີດ Open Groove Studio",
+    "open_open_groove_done": "ເປີດ Open Groove Studio ແລ້ວ.",
+    "open_open_groove_hint": "ສ້າງບີດ, ຮູບແບບ synth ແລະ ດົນຕີທີ່ຮູ້ໂນດເພງ",
+    "open_test_prep_hub": "ເປີດ Test Prep Hub",
+    "open_test_prep_hub_done": "ເປີດ Test Prep Hub ແລ້ວ.",
+    "open_test_prep_hub_hint": "ເປີດຊຸດຝຶກຟຣີ ແລະ ເຄື່ອງມືການຮຽນ",
+    "open_timeline_studio": "ເປີດ Timeline Studio",
+    "open_timeline_studio_done": "ເປີດ Timeline Studio ແລ້ວ.",
+    "open_timeline_studio_hint": "ສ້າງ ແລະ ກວດສອບເສັ້ນເວລາທີ່ເຂົ້າເຖິງໄດ້",
+    "open_video_studio": "ເປີດ Video Studio",
+    "open_video_studio_done": "ເປີດ Video Studio ແລ້ວ.",
+    "open_video_studio_hint": "ບັນທຶກ, ໃສ່ຄຳບັນຍາຍ ແລະ ແກ້ໄຂວິດີໂອແນະນຳ"
   },
   "palette": {
     "aria": "ແຜງຄຳສັ່ງ AlloFlow",
@@ -22040,7 +22061,14 @@
       "pipeline": "ນີ້ — ຜົນລັບ Pipeline",
       "reading": "ນີ້ — ໂໝດການອ່ານ",
       "stemLab": "ນີ້ — STEM Lab",
-      "symbolStudio": "ນີ້ — Symbol Studio"
+      "symbolStudio": "ນີ້ — Symbol Studio",
+      "alloStudio": "ນີ້ — AlloStudio",
+      "cinematicStudio": "ນີ້ — Cinematic Studio",
+      "linguaPractice": "ນີ້ — Lingua Practice",
+      "openGroove": "ນີ້ — Open Groove Studio",
+      "testPrepHub": "ນີ້ — Test Prep Hub",
+      "timelineStudio": "ນີ້ — Timeline Studio",
+      "videoStudio": "ນີ້ — Video Studio"
     },
     "footer": "ທຸກການເຄື່ອນໄຫວຈະຖືກປະກາດ. Ctrl+K ສະຫຼັບເປີດ/ປິດ.",
     "group": {
@@ -22059,7 +22087,8 @@
     "nav": "ນຳທາງ",
     "no_match": "ບໍ່ມີຄຳສັ່ງທີ່ກົງກັນ. ການສົນທະນາກັບບອດ (ແລະ ໃນໄວໆນີ້ສຽງ) ເຂົ້າໃຈຄຳຮ້ອງຂໍແບບອິດສະຫຼະ.",
     "placeholder": "ພິມຄຳສັ່ງ — “ຕົວໜັງສືໃຫຍ່ຂຶ້ນ”, “ສູນຄູສອນ”, “ອ່ານໜ້ານີ້”…",
-    "run": "ດຳເນີນ"
+    "run": "ດຳເນີນ",
+    "close": "ປິດແຜງຄຳສັ່ງ"
   },
   "voice_engine": {
     "preparing": "ກຳລັງກະກຽມເຄື່ອງຈັກສຽງ...",

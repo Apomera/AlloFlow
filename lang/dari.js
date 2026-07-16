@@ -22038,7 +22038,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "باز کردن AlloStudio",
+    "open_allo_studio_done": "AlloStudio باز شد.",
+    "open_allo_studio_hint": "پوسترها، اعلامیه‌ها و کاربرگ‌های قابل دسترس طراحی کنید",
+    "open_cinematic_studio": "باز کردن Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio باز شد.",
+    "open_cinematic_studio_hint": "مقدمه‌های سینمایی و ویدیوهای توضیحی بسازید",
+    "open_lingua_practice": "باز کردن Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice باز شد.",
+    "open_lingua_practice_hint": "واژگان و زبان را از منبع فعلی تمرین کنید",
+    "open_open_groove": "باز کردن Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio باز شد.",
+    "open_open_groove_hint": "بیت، الگوهای سینت و موسیقی آگاه از نُت بسازید",
+    "open_test_prep_hub": "باز کردن Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub باز شد.",
+    "open_test_prep_hub_hint": "مجموعه‌های تمرین رایگان و ابزارهای مطالعه را باز کنید",
+    "open_timeline_studio": "باز کردن Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio باز شد.",
+    "open_timeline_studio_hint": "خط‌های زمانی قابل دسترس بسازید و بررسی کنید",
+    "open_video_studio": "باز کردن Video Studio",
+    "open_video_studio_done": "Video Studio باز شد.",
+    "open_video_studio_hint": "آموزش‌های گام‌به‌گام را ثبت، زیرنویس و ویرایش کنید"
   },
   "palette": {
     "aria": "پالت فرمان AlloFlow",
@@ -22051,7 +22072,14 @@
       "pipeline": "اینجا — نتایج مسیر",
       "reading": "اینجا — حالت خواندن",
       "stemLab": "اینجا — STEM Lab",
-      "symbolStudio": "اینجا — Symbol Studio"
+      "symbolStudio": "اینجا — Symbol Studio",
+      "alloStudio": "اینجا — AlloStudio",
+      "cinematicStudio": "اینجا — Cinematic Studio",
+      "linguaPractice": "اینجا — Lingua Practice",
+      "openGroove": "اینجا — Open Groove Studio",
+      "testPrepHub": "اینجا — Test Prep Hub",
+      "timelineStudio": "اینجا — Timeline Studio",
+      "videoStudio": "اینجا — Video Studio"
     },
     "footer": "هر کنش اعلام می‌شود. Ctrl+K تغییر وضعیت می‌دهد.",
     "group": {
@@ -22070,7 +22098,8 @@
     "nav": "پیمایش",
     "no_match": "هیچ فرمان مطابقی نیست. چت بات (و به‌زودی صدا) درخواست‌های آزاد را می‌فهمد.",
     "placeholder": "یک فرمان تایپ کنید — «متن بزرگ‌تر»، «مرکز آموزگار»، «این صفحه را بخوان»…",
-    "run": "اجرا"
+    "run": "اجرا",
+    "close": "بستن پالت فرمان"
   },
   "voice_engine": {
     "preparing": "در حال آماده‌سازی موتور صدا...",

@@ -22352,7 +22352,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Buksan ang AlloStudio",
+    "open_allo_studio_done": "Binuksan ang AlloStudio.",
+    "open_allo_studio_hint": "Magdisenyo ng mga accessible na poster, flyer, at worksheet",
+    "open_cinematic_studio": "Buksan ang Cinematic Studio",
+    "open_cinematic_studio_done": "Binuksan ang Cinematic Studio.",
+    "open_cinematic_studio_hint": "Gumawa ng mga cinematic na intro at video ng paliwanag",
+    "open_lingua_practice": "Buksan ang Lingua Practice",
+    "open_lingua_practice_done": "Binuksan ang Lingua Practice.",
+    "open_lingua_practice_hint": "Magsanay ng bokabularyo at wika mula sa kasalukuyang source",
+    "open_open_groove": "Buksan ang Open Groove Studio",
+    "open_open_groove_done": "Binuksan ang Open Groove Studio.",
+    "open_open_groove_hint": "Gumawa ng mga beat, synth pattern, at musikang may notasyon",
+    "open_test_prep_hub": "Buksan ang Test Prep Hub",
+    "open_test_prep_hub_done": "Binuksan ang Test Prep Hub.",
+    "open_test_prep_hub_hint": "Buksan ang mga libreng practice set at kagamitan sa pag-aaral",
+    "open_timeline_studio": "Buksan ang Timeline Studio",
+    "open_timeline_studio_done": "Binuksan ang Timeline Studio.",
+    "open_timeline_studio_hint": "Bumuo at beripikahin ang mga accessible na timeline",
+    "open_video_studio": "Buksan ang Video Studio",
+    "open_video_studio_done": "Binuksan ang Video Studio.",
+    "open_video_studio_hint": "Mag-record, maglagay ng caption, at mag-edit ng mga walkthrough"
   },
   "palette": {
     "aria": "AlloFlow command palette",
@@ -22365,7 +22386,14 @@
       "pipeline": "Dito — Mga resulta ng Pipeline",
       "reading": "Dito — Reading mode",
       "stemLab": "Dito — STEM Lab",
-      "symbolStudio": "Dito — Symbol Studio"
+      "symbolStudio": "Dito — Symbol Studio",
+      "alloStudio": "Dito — AlloStudio",
+      "cinematicStudio": "Dito — Cinematic Studio",
+      "linguaPractice": "Dito — Lingua Practice",
+      "openGroove": "Dito — Open Groove Studio",
+      "testPrepHub": "Dito — Test Prep Hub",
+      "timelineStudio": "Dito — Timeline Studio",
+      "videoStudio": "Dito — Video Studio"
     },
     "footer": "Bawat aksyon ay ipinapahayag. Nagto-toggle ang Ctrl+K.",
     "group": {
@@ -22384,7 +22412,8 @@
     "nav": "mag-navigate",
     "no_match": "Walang tugmang utos. Nauunawaan ng bot chat (at sa lalong madaling panahon, boses) ang mga malayang kahilingan.",
     "placeholder": "Mag-type ng utos — “mas malaking teksto”, “educator hub”, “basahin ang pahinang ito”…",
-    "run": "patakbuhin"
+    "run": "patakbuhin",
+    "close": "Isara ang command palette"
   },
   "voice_engine": {
     "preparing": "Inihahanda ang voice engine...",

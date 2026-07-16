@@ -22234,7 +22234,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Malfermi AlloStudio",
+    "open_allo_studio_done": "AlloStudio malfermita.",
+    "open_allo_studio_hint": "Desegnu alireblajn afiŝojn, flugfoliojn kaj laborfoliojn",
+    "open_cinematic_studio": "Malfermi Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio malfermita.",
+    "open_cinematic_studio_hint": "Kreu kinecajn enkondukojn kaj klarigajn videojn",
+    "open_lingua_practice": "Malfermi Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice malfermita.",
+    "open_lingua_practice_hint": "Ekzercu vortprovizon kaj lingvon el la nuna fonto",
+    "open_open_groove": "Malfermi Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio malfermita.",
+    "open_open_groove_hint": "Faru ritmojn, sintezilajn ŝablonojn kaj notacikonscian muzikon",
+    "open_test_prep_hub": "Malfermi Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub malfermita.",
+    "open_test_prep_hub_hint": "Malfermu senpagajn ekzercarojn kaj studilojn",
+    "open_timeline_studio": "Malfermi Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio malfermita.",
+    "open_timeline_studio_hint": "Konstruu kaj kontrolu alireblajn templiniojn",
+    "open_video_studio": "Malfermi Video Studio",
+    "open_video_studio_done": "Video Studio malfermita.",
+    "open_video_studio_hint": "Registru, subtekstigu kaj redaktu gvidvideojn"
   },
   "palette": {
     "aria": "AlloFlow komandopaletro",
@@ -22247,7 +22268,14 @@
       "pipeline": "Ĉi tie — Ĉenstabaj rezultoj",
       "reading": "Ĉi tie — Lega reĝimo",
       "stemLab": "Ĉi tie — STEM Lab",
-      "symbolStudio": "Ĉi tie — Symbol Studio"
+      "symbolStudio": "Ĉi tie — Symbol Studio",
+      "alloStudio": "Ĉi tie — AlloStudio",
+      "cinematicStudio": "Ĉi tie — Cinematic Studio",
+      "linguaPractice": "Ĉi tie — Lingua Practice",
+      "openGroove": "Ĉi tie — Open Groove Studio",
+      "testPrepHub": "Ĉi tie — Test Prep Hub",
+      "timelineStudio": "Ĉi tie — Timeline Studio",
+      "videoStudio": "Ĉi tie — Video Studio"
     },
     "footer": "Ĉiu ago estas anoncata. Ctrl+K baskuligas.",
     "group": {
@@ -22266,7 +22294,8 @@
     "nav": "navigi",
     "no_match": "Neniu kongrua komando. La robota babilo (kaj baldaŭ voĉo) komprenas liberformajn petojn.",
     "placeholder": "Tajpu komandon — “pli granda teksto”, “edukanta centro”, “legu ĉi tiun paĝon”…",
-    "run": "ruli"
+    "run": "ruli",
+    "close": "Fermi la komandopaletron"
   },
   "math_fluency": {
     "at_above_benchmark": "Ĉe/super la celo",

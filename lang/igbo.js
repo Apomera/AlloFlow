@@ -22361,7 +22361,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Mepee AlloStudio",
+    "open_allo_studio_done": "Emepela AlloStudio.",
+    "open_allo_studio_hint": "Chepụta akwụkwọ mgbasa ozi, akwụkwọ nkesa na akwụkwọ ọrụ ndị a na-enweta mfe",
+    "open_cinematic_studio": "Mepee Cinematic Studio",
+    "open_cinematic_studio_done": "Emepela Cinematic Studio.",
+    "open_cinematic_studio_hint": "Mepụta mmalite sinima na vidiyo nkọwa",
+    "open_lingua_practice": "Mepee Lingua Practice",
+    "open_lingua_practice_done": "Emepela Lingua Practice.",
+    "open_lingua_practice_hint": "Mụọ okwu na asụsụ site na isi mmalite ugbu a",
+    "open_open_groove": "Mepee Open Groove Studio",
+    "open_open_groove_done": "Emepela Open Groove Studio.",
+    "open_open_groove_hint": "Mee beats, ụkpụrụ synth na egwu maara edemede egwu",
+    "open_test_prep_hub": "Mepee Test Prep Hub",
+    "open_test_prep_hub_done": "Emepela Test Prep Hub.",
+    "open_test_prep_hub_hint": "Mepee usoro omume n’efu na ngwaọrụ ọmụmụ",
+    "open_timeline_studio": "Mepee Timeline Studio",
+    "open_timeline_studio_done": "Emepela Timeline Studio.",
+    "open_timeline_studio_hint": "Wuo ma nyochaa usoro oge ndị a na-enweta mfe",
+    "open_video_studio": "Mepee Video Studio",
+    "open_video_studio_done": "Emepela Video Studio.",
+    "open_video_studio_hint": "Dekọọ, tinye ndepụta okwu ma dezie vidiyo nduzi"
   },
   "palette": {
     "aria": "Palette iwu AlloFlow",
@@ -22374,7 +22395,14 @@
       "pipeline": "Ebe a — Nsonaazụ Pipeline",
       "reading": "Ebe a — Ụdị ọgụgụ",
       "stemLab": "Ebe a — STEM Lab",
-      "symbolStudio": "Ebe a — Symbol Studio"
+      "symbolStudio": "Ebe a — Symbol Studio",
+      "alloStudio": "Ebe a — AlloStudio",
+      "cinematicStudio": "Ebe a — Cinematic Studio",
+      "linguaPractice": "Ebe a — Lingua Practice",
+      "openGroove": "Ebe a — Open Groove Studio",
+      "testPrepHub": "Ebe a — Test Prep Hub",
+      "timelineStudio": "Ebe a — Timeline Studio",
+      "videoStudio": "Ebe a — Video Studio"
     },
     "footer": "A na-ekwupụta omume ọ bụla. Ctrl+K na-agbanwe ya.",
     "group": {
@@ -22393,7 +22421,8 @@
     "nav": "chọgharịa",
     "no_match": "Ọ dịghị iwu dabara adaba. Mkparịta ụka bot (na n'oge na-adịghị anya, olu) na-aghọta arịrịọ enweghị usoro.",
     "placeholder": "Pịnye iwu — “ederede buru ibu”, “educator hub”, “gụọ ibe a”…",
-    "run": "gbaa"
+    "run": "gbaa",
+    "close": "Mechie palette iwu"
   },
   "voice_engine": {
     "preparing": "Na-akwado igwe olu...",

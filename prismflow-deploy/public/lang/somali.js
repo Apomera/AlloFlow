@@ -22227,7 +22227,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Fur AlloStudio",
+    "open_allo_studio_done": "AlloStudio waa la furay.",
+    "open_allo_studio_hint": "Nashqadee boostarro, waraaqo xayeysiis iyo waraaqo shaqo oo la heli karo",
+    "open_cinematic_studio": "Fur Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio waa la furay.",
+    "open_cinematic_studio_hint": "Samee hordhacyo filim ah iyo muuqaallo sharraxaad ah",
+    "open_lingua_practice": "Fur Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice waa la furay.",
+    "open_lingua_practice_hint": "Ku celceli erayada iyo luqadda isha hadda jirta",
+    "open_open_groove": "Fur Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio waa la furay.",
+    "open_open_groove_hint": "Samee garaacis, qaabab synth iyo muusik garanaya qoraalka muusikada",
+    "open_test_prep_hub": "Fur Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub waa la furay.",
+    "open_test_prep_hub_hint": "Fur xirmooyin layli bilaash ah iyo qalab waxbarasho",
+    "open_timeline_studio": "Fur Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio waa la furay.",
+    "open_timeline_studio_hint": "Dhis oo xaqiiji khadadka waqtiga ee la heli karo",
+    "open_video_studio": "Fur Video Studio",
+    "open_video_studio_done": "Video Studio waa la furay.",
+    "open_video_studio_hint": "Duub, qoraal ku dar oo tafatir muuqaallo hagitaan ah"
   },
   "palette": {
     "aria": "Liiska amarrada AlloFlow",
@@ -22240,7 +22261,14 @@
       "pipeline": "Halkan — Natiijooyinka Pipeline",
       "reading": "Halkan — Habka Akhriska",
       "stemLab": "Halkan — STEM Lab",
-      "symbolStudio": "Halkan — Symbol Studio"
+      "symbolStudio": "Halkan — Symbol Studio",
+      "alloStudio": "Halkan — AlloStudio",
+      "cinematicStudio": "Halkan — Cinematic Studio",
+      "linguaPractice": "Halkan — Lingua Practice",
+      "openGroove": "Halkan — Open Groove Studio",
+      "testPrepHub": "Halkan — Test Prep Hub",
+      "timelineStudio": "Halkan — Timeline Studio",
+      "videoStudio": "Halkan — Video Studio"
     },
     "footer": "Tallaabo kasta waa la ku dhawaaqaa. Ctrl+K ayaa beddela.",
     "group": {
@@ -22259,7 +22287,8 @@
     "nav": "u soco",
     "no_match": "Ma jiro amar u dhigma. Sheekada bot-ka (iyo dhowaan codka) waxay fahmaan codsiyo qaab-furan.",
     "placeholder": "Qor amar — “qoraal weyn”, “xarunta macallinka”, “bogga ii akhri”…",
-    "run": "socodsii"
+    "run": "socodsii",
+    "close": "Xir liiska amarrada"
   },
   "voice_engine": {
     "preparing": "Diyaarinaya mishiinka codka...",

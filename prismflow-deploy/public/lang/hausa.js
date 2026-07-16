@@ -22361,7 +22361,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Buɗe AlloStudio",
+    "open_allo_studio_done": "An buɗe AlloStudio.",
+    "open_allo_studio_hint": "Ƙirƙiri fastoci, ƙasidu da takardun aiki masu sauƙin isa",
+    "open_cinematic_studio": "Buɗe Cinematic Studio",
+    "open_cinematic_studio_done": "An buɗe Cinematic Studio.",
+    "open_cinematic_studio_hint": "Ƙirƙiri gabatarwar fim da bidiyon bayani",
+    "open_lingua_practice": "Buɗe Lingua Practice",
+    "open_lingua_practice_done": "An buɗe Lingua Practice.",
+    "open_lingua_practice_hint": "Yi atisayen kalmomi da harshe daga tushen yanzu",
+    "open_open_groove": "Buɗe Open Groove Studio",
+    "open_open_groove_done": "An buɗe Open Groove Studio.",
+    "open_open_groove_hint": "Yi bugun kiɗa, salon synth da kiɗa mai fahimtar rubutun kiɗa",
+    "open_test_prep_hub": "Buɗe Test Prep Hub",
+    "open_test_prep_hub_done": "An buɗe Test Prep Hub.",
+    "open_test_prep_hub_hint": "Buɗe jerin atisaye kyauta da kayan karatu",
+    "open_timeline_studio": "Buɗe Timeline Studio",
+    "open_timeline_studio_done": "An buɗe Timeline Studio.",
+    "open_timeline_studio_hint": "Gina tare da tabbatar da jadawalin lokaci masu sauƙin isa",
+    "open_video_studio": "Buɗe Video Studio",
+    "open_video_studio_done": "An buɗe Video Studio.",
+    "open_video_studio_hint": "Nadi, saka rubutu da gyara bidiyon koyarwa"
   },
   "palette": {
     "aria": "Panel ɗin umarni na AlloFlow",
@@ -22374,7 +22395,14 @@
       "pipeline": "Nan — Sakamakon Pipeline",
       "reading": "Nan — Yanayin karatu",
       "stemLab": "Nan — STEM Lab",
-      "symbolStudio": "Nan — Symbol Studio"
+      "symbolStudio": "Nan — Symbol Studio",
+      "alloStudio": "Nan — AlloStudio",
+      "cinematicStudio": "Nan — Cinematic Studio",
+      "linguaPractice": "Nan — Lingua Practice",
+      "openGroove": "Nan — Open Groove Studio",
+      "testPrepHub": "Nan — Test Prep Hub",
+      "timelineStudio": "Nan — Timeline Studio",
+      "videoStudio": "Nan — Video Studio"
     },
     "footer": "Ana sanar da kowane aiki. Ctrl+K yana sauyawa.",
     "group": {
@@ -22393,7 +22421,8 @@
     "nav": "kewaya",
     "no_match": "Babu umarni mai dacewa. Hirar bot (kuma nan ba da jimawa ba murya) tana fahimtar buƙatu na 'yanci.",
     "placeholder": "Rubuta umarni — “babban rubutu”, “cibiyar malamai”, “karanta wannan shafin”…",
-    "run": "gudanar"
+    "run": "gudanar",
+    "close": "Rufe panel ɗin umarni"
   },
   "voice_engine": {
     "preparing": "Ana shirya injin murya...",

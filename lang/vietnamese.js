@@ -22021,7 +22021,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Mở AlloStudio",
+    "open_allo_studio_done": "Đã mở AlloStudio.",
+    "open_allo_studio_hint": "Thiết kế áp phích, tờ rơi và phiếu bài tập dễ tiếp cận",
+    "open_cinematic_studio": "Mở Cinematic Studio",
+    "open_cinematic_studio_done": "Đã mở Cinematic Studio.",
+    "open_cinematic_studio_hint": "Tạo phần mở đầu điện ảnh và video giải thích",
+    "open_lingua_practice": "Mở Lingua Practice",
+    "open_lingua_practice_done": "Đã mở Lingua Practice.",
+    "open_lingua_practice_hint": "Luyện từ vựng và ngôn ngữ từ nguồn hiện tại",
+    "open_open_groove": "Mở Open Groove Studio",
+    "open_open_groove_done": "Đã mở Open Groove Studio.",
+    "open_open_groove_hint": "Tạo beat, mẫu synth và âm nhạc hiểu ký hiệu nhạc",
+    "open_test_prep_hub": "Mở Test Prep Hub",
+    "open_test_prep_hub_done": "Đã mở Test Prep Hub.",
+    "open_test_prep_hub_hint": "Mở bộ luyện tập miễn phí và công cụ học tập",
+    "open_timeline_studio": "Mở Timeline Studio",
+    "open_timeline_studio_done": "Đã mở Timeline Studio.",
+    "open_timeline_studio_hint": "Xây dựng và kiểm tra dòng thời gian dễ tiếp cận",
+    "open_video_studio": "Mở Video Studio",
+    "open_video_studio_done": "Đã mở Video Studio.",
+    "open_video_studio_hint": "Quay, thêm phụ đề và chỉnh sửa video hướng dẫn"
   },
   "palette": {
     "aria": "Bảng lệnh AlloFlow",
@@ -22034,7 +22055,14 @@
       "pipeline": "Tại đây — Kết quả quy trình",
       "reading": "Tại đây — Chế độ đọc",
       "stemLab": "Tại đây — STEM Lab",
-      "symbolStudio": "Tại đây — Symbol Studio"
+      "symbolStudio": "Tại đây — Symbol Studio",
+      "alloStudio": "Tại đây — AlloStudio",
+      "cinematicStudio": "Tại đây — Cinematic Studio",
+      "linguaPractice": "Tại đây — Lingua Practice",
+      "openGroove": "Tại đây — Open Groove Studio",
+      "testPrepHub": "Tại đây — Test Prep Hub",
+      "timelineStudio": "Tại đây — Timeline Studio",
+      "videoStudio": "Tại đây — Video Studio"
     },
     "footer": "Mọi hành động đều được thông báo. Ctrl+K để bật/tắt.",
     "group": {
@@ -22053,7 +22081,8 @@
     "nav": "điều hướng",
     "no_match": "Không có lệnh phù hợp. Trò chuyện với bot (và sắp tới là giọng nói) hiểu được các yêu cầu tự do.",
     "placeholder": "Nhập một lệnh — “chữ to hơn”, “trung tâm giáo viên”, “đọc trang này”…",
-    "run": "chạy"
+    "run": "chạy",
+    "close": "Đóng bảng lệnh"
   },
   "voice_engine": {
     "preparing": "Đang chuẩn bị công cụ giọng nói...",

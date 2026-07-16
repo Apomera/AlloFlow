@@ -22057,7 +22057,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Ouvrir AlloStudio",
+    "open_allo_studio_done": "AlloStudio ouvert.",
+    "open_allo_studio_hint": "Concevez des affiches, prospectus et fiches accessibles",
+    "open_cinematic_studio": "Ouvrir Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio ouvert.",
+    "open_cinematic_studio_hint": "Créez des intros cinématiques et des vidéos explicatives",
+    "open_lingua_practice": "Ouvrir Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice ouvert.",
+    "open_lingua_practice_hint": "Pratiquez le vocabulaire et la langue à partir de la source actuelle",
+    "open_open_groove": "Ouvrir Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio ouvert.",
+    "open_open_groove_hint": "Créez des rythmes, des motifs synthé et de la musique avec notation",
+    "open_test_prep_hub": "Ouvrir Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub ouvert.",
+    "open_test_prep_hub_hint": "Ouvrez des séries d’exercices gratuites et des outils d’étude",
+    "open_timeline_studio": "Ouvrir Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio ouvert.",
+    "open_timeline_studio_hint": "Construisez et vérifiez des frises chronologiques accessibles",
+    "open_video_studio": "Ouvrir Video Studio",
+    "open_video_studio_done": "Video Studio ouvert.",
+    "open_video_studio_hint": "Enregistrez, sous-titrez et montez des démonstrations"
   },
   "palette": {
     "aria": "Palette de commandes AlloFlow",
@@ -22070,7 +22091,14 @@
       "pipeline": "Ici — Résultats du pipeline",
       "reading": "Ici — Mode lecture",
       "stemLab": "Ici — STEM Lab",
-      "symbolStudio": "Ici — Symbol Studio"
+      "symbolStudio": "Ici — Symbol Studio",
+      "alloStudio": "Ici — AlloStudio",
+      "cinematicStudio": "Ici — Cinematic Studio",
+      "linguaPractice": "Ici — Lingua Practice",
+      "openGroove": "Ici — Open Groove Studio",
+      "testPrepHub": "Ici — Test Prep Hub",
+      "timelineStudio": "Ici — Timeline Studio",
+      "videoStudio": "Ici — Video Studio"
     },
     "footer": "Chaque action est annoncée. Ctrl+K pour basculer.",
     "group": {
@@ -22089,7 +22117,8 @@
     "nav": "naviguer",
     "no_match": "Aucune commande correspondante. Le chat du bot (et bientôt la voix) comprend les demandes formulées librement.",
     "placeholder": "Tapez une commande — « texte plus grand », « espace enseignant », « lire cette page »…",
-    "run": "exécuter"
+    "run": "exécuter",
+    "close": "Fermer la palette de commandes"
   },
   "voice_engine": {
     "preparing": "Préparation du moteur vocal...",

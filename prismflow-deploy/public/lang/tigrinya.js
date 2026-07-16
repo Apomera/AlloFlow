@@ -22353,7 +22353,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio ክፈት",
+    "open_allo_studio_done": "AlloStudio ተኸፊቱ።",
+    "open_allo_studio_hint": "ተበጻሕቲ ፖስተራት፣ በራሪ ወረቓቕትን ናይ ስራሕ ወረቓቕትን ንደፍ",
+    "open_cinematic_studio": "Cinematic Studio ክፈት",
+    "open_cinematic_studio_done": "Cinematic Studio ተኸፊቱ።",
+    "open_cinematic_studio_hint": "ሲነማዊ መእተውታትን መብርሂ ቪድዮታትን ፍጠር",
+    "open_lingua_practice": "Lingua Practice ክፈት",
+    "open_lingua_practice_done": "Lingua Practice ተኸፊቱ።",
+    "open_lingua_practice_hint": "ካብቲ ህሉው ምንጪ ቃላትን ቋንቋን ተለማመድ",
+    "open_open_groove": "Open Groove Studio ክፈት",
+    "open_open_groove_done": "Open Groove Studio ተኸፊቱ።",
+    "open_open_groove_hint": "ቢታት፣ ናይ ሲንዝ ቅዲታትን ኖታ ዝፈልጥ ሙዚቃን ስራሕ",
+    "open_test_prep_hub": "Test Prep Hub ክፈት",
+    "open_test_prep_hub_done": "Test Prep Hub ተኸፊቱ።",
+    "open_test_prep_hub_hint": "ናጻ ናይ ልምምድ እኩባትን ናይ መጽናዕቲ መሳርሒታትን ክፈት",
+    "open_timeline_studio": "Timeline Studio ክፈት",
+    "open_timeline_studio_done": "Timeline Studio ተኸፊቱ።",
+    "open_timeline_studio_hint": "ተበጻሕቲ ናይ ግዜ መስመራት ህነጽን ኣረጋግጽን",
+    "open_video_studio": "Video Studio ክፈት",
+    "open_video_studio_done": "Video Studio ተኸፊቱ።",
+    "open_video_studio_hint": "መምርሒ ቪድዮታት ቅረጽ፣ ጽሑፍ ወስኽን ኣርትዕን"
   },
   "palette": {
     "aria": "ናይ AlloFlow ናይ ትእዛዝ ፓለት",
@@ -22366,7 +22387,14 @@
       "pipeline": "ኣብዚ — ናይ ፓይፕላይን ውጽኢታት",
       "reading": "ኣብዚ — ናይ ንባብ ኩነታት",
       "stemLab": "ኣብዚ — STEM Lab",
-      "symbolStudio": "ኣብዚ — Symbol Studio"
+      "symbolStudio": "ኣብዚ — Symbol Studio",
+      "alloStudio": "ኣብዚ — AlloStudio",
+      "cinematicStudio": "ኣብዚ — Cinematic Studio",
+      "linguaPractice": "ኣብዚ — Lingua Practice",
+      "openGroove": "ኣብዚ — Open Groove Studio",
+      "testPrepHub": "ኣብዚ — Test Prep Hub",
+      "timelineStudio": "ኣብዚ — Timeline Studio",
+      "videoStudio": "ኣብዚ — Video Studio"
     },
     "footer": "ነፍሲ-ወከፍ ተግባር ይግለጽ። Ctrl+K ይቐያይር።",
     "group": {
@@ -22385,7 +22413,8 @@
     "nav": "ምልሳስ",
     "no_match": "ዝሰማማዕ ትእዛዝ የለን። ናይ ቦት ዕላል (ብቐረባ ድማ ድምጺ) ናጻ ጠለባት ይርዳእ።",
     "placeholder": "ትእዛዝ ጽሓፍ — “ዓቢ ጽሑፍ”፣ “educator hub”፣ “ነዛ ገጽ ኣንብብ”…",
-    "run": "ኣካይድ"
+    "run": "ኣካይድ",
+    "close": "ናይ ትእዛዝ ፓለት ዕጸ"
   },
   "voice_engine": {
     "preparing": "ናይ ድምጺ ሞተር የዳሉ ኣሎ...",

@@ -22361,7 +22361,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio తెరవండి",
+    "open_allo_studio_done": "AlloStudio తెరవబడింది.",
+    "open_allo_studio_hint": "అందుబాటులో ఉండే పోస్టర్లు, కరపత్రాలు మరియు వర్క్‌షీట్లను రూపొందించండి",
+    "open_cinematic_studio": "Cinematic Studio తెరవండి",
+    "open_cinematic_studio_done": "Cinematic Studio తెరవబడింది.",
+    "open_cinematic_studio_hint": "సినిమాటిక్ పరిచయాలు మరియు వివరణ వీడియోలను సృష్టించండి",
+    "open_lingua_practice": "Lingua Practice తెరవండి",
+    "open_lingua_practice_done": "Lingua Practice తెరవబడింది.",
+    "open_lingua_practice_hint": "ప్రస్తుత మూలం నుండి పదజాలం మరియు భాషను సాధన చేయండి",
+    "open_open_groove": "Open Groove Studio తెరవండి",
+    "open_open_groove_done": "Open Groove Studio తెరవబడింది.",
+    "open_open_groove_hint": "బీట్స్, సింథ్ నమూనాలు మరియు స్వరలిపి-తెలిసిన సంగీతాన్ని రూపొందించండి",
+    "open_test_prep_hub": "Test Prep Hub తెరవండి",
+    "open_test_prep_hub_done": "Test Prep Hub తెరవబడింది.",
+    "open_test_prep_hub_hint": "ఉచిత సాధన సెట్లు మరియు అధ్యయన సాధనాలను తెరవండి",
+    "open_timeline_studio": "Timeline Studio తెరవండి",
+    "open_timeline_studio_done": "Timeline Studio తెరవబడింది.",
+    "open_timeline_studio_hint": "అందుబాటులో ఉండే కాలరేఖలను నిర్మించి ధృవీకరించండి",
+    "open_video_studio": "Video Studio తెరవండి",
+    "open_video_studio_done": "Video Studio తెరవబడింది.",
+    "open_video_studio_hint": "వాక్‌త్రూలను రికార్డ్ చేసి, శీర్షికలు జోడించి, సవరించండి"
   },
   "palette": {
     "aria": "AlloFlow కమాండ్ పాలెట్",
@@ -22374,7 +22395,14 @@
       "pipeline": "ఇక్కడ — పైప్‌లైన్ ఫలితాలు",
       "reading": "ఇక్కడ — పఠన మోడ్",
       "stemLab": "ఇక్కడ — STEM Lab",
-      "symbolStudio": "ఇక్కడ — Symbol Studio"
+      "symbolStudio": "ఇక్కడ — Symbol Studio",
+      "alloStudio": "ఇక్కడ — AlloStudio",
+      "cinematicStudio": "ఇక్కడ — Cinematic Studio",
+      "linguaPractice": "ఇక్కడ — Lingua Practice",
+      "openGroove": "ఇక్కడ — Open Groove Studio",
+      "testPrepHub": "ఇక్కడ — Test Prep Hub",
+      "timelineStudio": "ఇక్కడ — Timeline Studio",
+      "videoStudio": "ఇక్కడ — Video Studio"
     },
     "footer": "ప్రతి చర్య ప్రకటించబడుతుంది. Ctrl+K మారుస్తుంది.",
     "group": {
@@ -22393,7 +22421,8 @@
     "nav": "నావిగేట్",
     "no_match": "సరిపోలే ఆదేశం లేదు. బాట్ చాట్ (మరియు త్వరలో వాయిస్) స్వేచ్ఛా-రూప అభ్యర్థనలను అర్థం చేసుకుంటుంది.",
     "placeholder": "ఒక ఆదేశాన్ని టైప్ చేయండి — “పెద్ద టెక్స్ట్”, “educator hub”, “ఈ పేజీని చదవండి”…",
-    "run": "నడపండి"
+    "run": "నడపండి",
+    "close": "కమాండ్ పాలెట్ మూసివేయండి"
   },
   "voice_engine": {
     "preparing": "వాయిస్ ఇంజిన్ సిద్ధం చేయబడుతోంది...",

@@ -22376,7 +22376,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "פתח את AlloStudio",
+    "open_allo_studio_done": "AlloStudio נפתח.",
+    "open_allo_studio_hint": "עצבו כרזות, עלונים ודפי עבודה נגישים",
+    "open_cinematic_studio": "פתח את Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio נפתח.",
+    "open_cinematic_studio_hint": "צרו פתיחים קולנועיים וסרטוני הסבר",
+    "open_lingua_practice": "פתח את Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice נפתח.",
+    "open_lingua_practice_hint": "תרגלו אוצר מילים ושפה מהמקור הנוכחי",
+    "open_open_groove": "פתח את Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio נפתח.",
+    "open_open_groove_hint": "צרו ביטים, תבניות סינת׳ ומוזיקה מודעת-תווים",
+    "open_test_prep_hub": "פתח את Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub נפתח.",
+    "open_test_prep_hub_hint": "פתחו ערכות תרגול חינמיות וכלי למידה",
+    "open_timeline_studio": "פתח את Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio נפתח.",
+    "open_timeline_studio_hint": "בנו ואמתו צירי זמן נגישים",
+    "open_video_studio": "פתח את Video Studio",
+    "open_video_studio_done": "Video Studio נפתח.",
+    "open_video_studio_hint": "הקליטו, הוסיפו כתוביות וערכו סרטוני הדרכה"
   },
   "palette": {
     "aria": "לוח הפקודות של AlloFlow",
@@ -22389,7 +22410,14 @@
       "pipeline": "כאן — תוצאות הצינור",
       "reading": "כאן — מצב קריאה",
       "stemLab": "כאן — מעבדת STEM",
-      "symbolStudio": "כאן — Symbol Studio"
+      "symbolStudio": "כאן — Symbol Studio",
+      "alloStudio": "כאן — AlloStudio",
+      "cinematicStudio": "כאן — Cinematic Studio",
+      "linguaPractice": "כאן — Lingua Practice",
+      "openGroove": "כאן — Open Groove Studio",
+      "testPrepHub": "כאן — Test Prep Hub",
+      "timelineStudio": "כאן — Timeline Studio",
+      "videoStudio": "כאן — Video Studio"
     },
     "footer": "כל פעולה מוכרזת. Ctrl+K מחליף מצב.",
     "group": {
@@ -22408,7 +22436,8 @@
     "nav": "ניווט",
     "no_match": "אין פקודה תואמת. צ'אט הבוט (ובקרוב גם הקול) מבין בקשות בניסוח חופשי.",
     "placeholder": "הקלידו פקודה — „טקסט גדול יותר”, „מרכז מחנכים”, „הקרא את העמוד הזה”…",
-    "run": "הרץ"
+    "run": "הרץ",
+    "close": "סגור את לוח הפקודות"
   },
   "voice_engine": {
     "preparing": "מכין את מנוע הקול...",

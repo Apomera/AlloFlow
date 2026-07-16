@@ -22354,7 +22354,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Qhib AlloStudio",
+    "open_allo_studio_done": "Twb qhib AlloStudio lawm.",
+    "open_allo_studio_hint": "Tsim cov ntawv lo, ntawv tshaj thiab ntawv ua haujlwm uas siv tau yooj yim",
+    "open_cinematic_studio": "Qhib Cinematic Studio",
+    "open_cinematic_studio_done": "Twb qhib Cinematic Studio lawm.",
+    "open_cinematic_studio_hint": "Tsim cov yeeb yaj kiab pib thiab piav qhia zoo li xinesmas",
+    "open_lingua_practice": "Qhib Lingua Practice",
+    "open_lingua_practice_done": "Twb qhib Lingua Practice lawm.",
+    "open_lingua_practice_hint": "Xyaum cov lus thiab hom lus los ntawm qhov chaw tam sim no",
+    "open_open_groove": "Qhib Open Groove Studio",
+    "open_open_groove_done": "Twb qhib Open Groove Studio lawm.",
+    "open_open_groove_hint": "Tsim suab nruas, synth qauv thiab suab paj nruag paub ntawv suab",
+    "open_test_prep_hub": "Qhib Test Prep Hub",
+    "open_test_prep_hub_done": "Twb qhib Test Prep Hub lawm.",
+    "open_test_prep_hub_hint": "Qhib cov kev xyaum pub dawb thiab cov cuab yeej kawm",
+    "open_timeline_studio": "Qhib Timeline Studio",
+    "open_timeline_studio_done": "Twb qhib Timeline Studio lawm.",
+    "open_timeline_studio_hint": "Tsim thiab tshuaj xyuas cov kab sijhawm siv tau yooj yim",
+    "open_video_studio": "Qhib Video Studio",
+    "open_video_studio_done": "Twb qhib Video Studio lawm.",
+    "open_video_studio_hint": "Kaw, ntxiv lus thiab kho cov yeeb yaj kiab qhia"
   },
   "palette": {
     "aria": "AlloFlow lub khob qhia haujlwm",
@@ -22367,7 +22388,14 @@
       "pipeline": "Ntawm no — Cov tshwm sim Pipeline",
       "reading": "Ntawm no — Hom nyeem",
       "stemLab": "Ntawm no — STEM Lab",
-      "symbolStudio": "Ntawm no — Symbol Studio"
+      "symbolStudio": "Ntawm no — Symbol Studio",
+      "alloStudio": "Ntawm no — AlloStudio",
+      "cinematicStudio": "Ntawm no — Cinematic Studio",
+      "linguaPractice": "Ntawm no — Lingua Practice",
+      "openGroove": "Ntawm no — Open Groove Studio",
+      "testPrepHub": "Ntawm no — Test Prep Hub",
+      "timelineStudio": "Ntawm no — Timeline Studio",
+      "videoStudio": "Ntawm no — Video Studio"
     },
     "footer": "Txhua qhov haujlwm raug tshaj tawm. Ctrl+K hloov.",
     "group": {
@@ -22386,7 +22414,8 @@
     "nav": "mus taug",
     "no_match": "Tsis muaj lus haujlwm phim. Kev sib tham bot (thiab tsis ntev no suab) nkag siab cov lus thov dawb.",
     "placeholder": "Ntaus ib lo lus haujlwm — “ntawv loj dua”, “educator hub”, “nyeem nplooj no”…",
-    "run": "ua"
+    "run": "ua",
+    "close": "Kaw lub khob qhia haujlwm"
   },
   "voice_engine": {
     "preparing": "Tab tom npaj lub cav suab...",

@@ -22144,7 +22144,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio 열기",
+    "open_allo_studio_done": "AlloStudio를 열었습니다.",
+    "open_allo_studio_hint": "접근성 높은 포스터, 전단지, 학습지 디자인",
+    "open_cinematic_studio": "Cinematic Studio 열기",
+    "open_cinematic_studio_done": "Cinematic Studio를 열었습니다.",
+    "open_cinematic_studio_hint": "영화 같은 인트로와 설명 영상 만들기",
+    "open_lingua_practice": "Lingua Practice 열기",
+    "open_lingua_practice_done": "Lingua Practice를 열었습니다.",
+    "open_lingua_practice_hint": "현재 자료로 어휘와 언어 연습",
+    "open_open_groove": "Open Groove Studio 열기",
+    "open_open_groove_done": "Open Groove Studio를 열었습니다.",
+    "open_open_groove_hint": "비트, 신스 패턴, 악보 인식 음악 만들기",
+    "open_test_prep_hub": "Test Prep Hub 열기",
+    "open_test_prep_hub_done": "Test Prep Hub를 열었습니다.",
+    "open_test_prep_hub_hint": "무료 연습 세트와 학습 도구 열기",
+    "open_timeline_studio": "Timeline Studio 열기",
+    "open_timeline_studio_done": "Timeline Studio를 열었습니다.",
+    "open_timeline_studio_hint": "접근성 높은 타임라인 만들고 검증하기",
+    "open_video_studio": "Video Studio 열기",
+    "open_video_studio_done": "Video Studio를 열었습니다.",
+    "open_video_studio_hint": "튜토리얼 녹화, 자막 추가, 편집"
   },
   "palette": {
     "aria": "AlloFlow 명령 팔레트",
@@ -22157,7 +22178,14 @@
       "pipeline": "여기 — 파이프라인 결과",
       "reading": "여기 — 읽기 모드",
       "stemLab": "여기 — STEM Lab",
-      "symbolStudio": "여기 — Symbol Studio"
+      "symbolStudio": "여기 — Symbol Studio",
+      "alloStudio": "여기 — AlloStudio",
+      "cinematicStudio": "여기 — Cinematic Studio",
+      "linguaPractice": "여기 — Lingua Practice",
+      "openGroove": "여기 — Open Groove Studio",
+      "testPrepHub": "여기 — Test Prep Hub",
+      "timelineStudio": "여기 — Timeline Studio",
+      "videoStudio": "여기 — Video Studio"
     },
     "footer": "모든 작업이 안내됩니다. Ctrl+K로 전환합니다.",
     "group": {
@@ -22176,7 +22204,8 @@
     "nav": "이동",
     "no_match": "일치하는 명령이 없습니다. 봇 채팅(곧 음성도)이 자유로운 형식의 요청을 이해합니다.",
     "placeholder": "명령을 입력하세요 — “글자 크게”, “educator hub”, “이 페이지 읽기”…",
-    "run": "실행"
+    "run": "실행",
+    "close": "명령 팔레트 닫기"
   },
   "voice_engine": {
     "preparing": "음성 엔진을 준비하는 중...",

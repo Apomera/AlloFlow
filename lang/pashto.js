@@ -22240,7 +22240,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio پرانیزه",
+    "open_allo_studio_done": "AlloStudio پرانیستل شو.",
+    "open_allo_studio_hint": "د لاسرسي وړ پوسټرونه، پاڼې او کاري پاڼې ډیزاین کړئ",
+    "open_cinematic_studio": "Cinematic Studio پرانیزه",
+    "open_cinematic_studio_done": "Cinematic Studio پرانیستل شو.",
+    "open_cinematic_studio_hint": "سینمايي پیلونه او تشریحي ویډیوګانې جوړې کړئ",
+    "open_lingua_practice": "Lingua Practice پرانیزه",
+    "open_lingua_practice_done": "Lingua Practice پرانیستل شو.",
+    "open_lingua_practice_hint": "له اوسنۍ سرچینې څخه لغتونه او ژبه تمرین کړئ",
+    "open_open_groove": "Open Groove Studio پرانیزه",
+    "open_open_groove_done": "Open Groove Studio پرانیستل شو.",
+    "open_open_groove_hint": "بیټونه، د سینت بېلګې او له نوټ خبره موسیقي جوړه کړئ",
+    "open_test_prep_hub": "Test Prep Hub پرانیزه",
+    "open_test_prep_hub_done": "Test Prep Hub پرانیستل شو.",
+    "open_test_prep_hub_hint": "وړیا تمریني ټولګې او د زده کړې وسایل پرانیزئ",
+    "open_timeline_studio": "Timeline Studio پرانیزه",
+    "open_timeline_studio_done": "Timeline Studio پرانیستل شو.",
+    "open_timeline_studio_hint": "د لاسرسي وړ مهالویشونه جوړ او وڅارئ",
+    "open_video_studio": "Video Studio پرانیزه",
+    "open_video_studio_done": "Video Studio پرانیستل شو.",
+    "open_video_studio_hint": "لارښود ویډیوګانې ثبت کړئ، سرلیکونه ورزیات کړئ او سمې کړئ"
   },
   "palette": {
     "aria": "د AlloFlow د امر پالیټ",
@@ -22253,7 +22274,14 @@
       "pipeline": "دلته — د پایپلاین پایلې",
       "reading": "دلته — د لوستلو حالت",
       "stemLab": "دلته — STEM Lab",
-      "symbolStudio": "دلته — Symbol Studio"
+      "symbolStudio": "دلته — Symbol Studio",
+      "alloStudio": "دلته — AlloStudio",
+      "cinematicStudio": "دلته — Cinematic Studio",
+      "linguaPractice": "دلته — Lingua Practice",
+      "openGroove": "دلته — Open Groove Studio",
+      "testPrepHub": "دلته — Test Prep Hub",
+      "timelineStudio": "دلته — Timeline Studio",
+      "videoStudio": "دلته — Video Studio"
     },
     "footer": "هر کړنه اعلانیږي. Ctrl+K و گرځوي.",
     "group": {
@@ -22272,7 +22300,8 @@
     "nav": "تګ-راتګ",
     "no_match": "هیڅ سمون لرونکی امر نشته. د بوټ چټ (او ژر تر ژره غږ) آزاد غوښتنې پوهیږي.",
     "placeholder": "یو امر ولیکه — “لوی متن”، “د ښوونکي مرکز”، “دا پاڼه ولوله”…",
-    "run": "چلوه"
+    "run": "چلوه",
+    "close": "د امر پالیټ وتړه"
   },
   "voice_engine": {
     "preparing": "د غږ انجڼ چمتو کیږي...",

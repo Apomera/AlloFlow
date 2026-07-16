@@ -22353,7 +22353,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Fungura AlloStudio",
+    "open_allo_studio_done": "AlloStudio yafunguwe.",
+    "open_allo_studio_hint": "Tegura amaposita, udupapuro tw’amatangazo n’impapuro z’imirimo bigerwaho na bose",
+    "open_cinematic_studio": "Fungura Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio yafunguwe.",
+    "open_cinematic_studio_hint": "Kora intangiriro za sinema n’amashusho asobanura",
+    "open_lingua_practice": "Fungura Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice yafunguwe.",
+    "open_lingua_practice_hint": "Imenyereze amagambo n’ururimi ukoresheje inkomoko y’ubu",
+    "open_open_groove": "Fungura Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio yafunguwe.",
+    "open_open_groove_hint": "Kora injyana, uburyo bwa synth n’umuziki uzi inyandiko z’umuziki",
+    "open_test_prep_hub": "Fungura Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub yafunguwe.",
+    "open_test_prep_hub_hint": "Fungura imyitozo y’ubuntu n’ibikoresho byo kwiga",
+    "open_timeline_studio": "Fungura Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio yafunguwe.",
+    "open_timeline_studio_hint": "Ubaka kandi ugenzure imirongo y’igihe igerwaho na bose",
+    "open_video_studio": "Fungura Video Studio",
+    "open_video_studio_done": "Video Studio yafunguwe.",
+    "open_video_studio_hint": "Fata amajwi, shyiraho amagambo maze uhindure amashusho y’ubuyobozi"
   },
   "palette": {
     "aria": "Urutonde rw’amategeko rwa AlloFlow",
@@ -22366,7 +22387,14 @@
       "pipeline": "Hano — Ibyavuye muri Pipeline",
       "reading": "Hano — Uburyo bwo gusoma",
       "stemLab": "Hano — STEM Lab",
-      "symbolStudio": "Hano — Symbol Studio"
+      "symbolStudio": "Hano — Symbol Studio",
+      "alloStudio": "Hano — AlloStudio",
+      "cinematicStudio": "Hano — Cinematic Studio",
+      "linguaPractice": "Hano — Lingua Practice",
+      "openGroove": "Hano — Open Groove Studio",
+      "testPrepHub": "Hano — Test Prep Hub",
+      "timelineStudio": "Hano — Timeline Studio",
+      "videoStudio": "Hano — Video Studio"
     },
     "footer": "Buri gikorwa kiratangazwa. Ctrl+K irafungura ikanafunga.",
     "group": {
@@ -22385,7 +22413,8 @@
     "nav": "yobora",
     "no_match": "Nta tegeko rihuye. Ikiganiro cya bot (na vuba ijwi) cyumva ibyifuzo byanditse uko biri.",
     "placeholder": "Andika itegeko — “inyandiko nini”, “ihuriro ry’abarezi”, “soma uru rupapuro”…",
-    "run": "kora"
+    "run": "kora",
+    "close": "Funga urutonde rw’amategeko"
   },
   "voice_engine": {
     "preparing": "Itegura moteri y'ijwi...",

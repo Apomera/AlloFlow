@@ -22019,7 +22019,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "開啟 AlloStudio",
+    "open_allo_studio_done": "AlloStudio 已開啟。",
+    "open_allo_studio_hint": "設計無障礙海報、傳單與學習單",
+    "open_cinematic_studio": "開啟 Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio 已開啟。",
+    "open_cinematic_studio_hint": "製作電影感開場與講解影片",
+    "open_lingua_practice": "開啟 Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice 已開啟。",
+    "open_lingua_practice_hint": "根據目前素材練習詞彙與語言",
+    "open_open_groove": "開啟 Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio 已開啟。",
+    "open_open_groove_hint": "製作節拍、合成器音型與樂譜感知音樂",
+    "open_test_prep_hub": "開啟 Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub 已開啟。",
+    "open_test_prep_hub_hint": "開啟免費練習題組與學習工具",
+    "open_timeline_studio": "開啟 Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio 已開啟。",
+    "open_timeline_studio_hint": "建立並驗證無障礙時間軸",
+    "open_video_studio": "開啟 Video Studio",
+    "open_video_studio_done": "Video Studio 已開啟。",
+    "open_video_studio_hint": "錄製、加上字幕並編輯操作導覽"
   },
   "palette": {
     "aria": "AlloFlow 指令面板",
@@ -22032,7 +22053,14 @@
       "pipeline": "此處 — 流程結果",
       "reading": "此處 — 閱讀模式",
       "stemLab": "此處 — STEM 實驗室",
-      "symbolStudio": "此處 — Symbol Studio"
+      "symbolStudio": "此處 — Symbol Studio",
+      "alloStudio": "此處 — AlloStudio",
+      "cinematicStudio": "此處 — Cinematic Studio",
+      "linguaPractice": "此處 — Lingua Practice",
+      "openGroove": "此處 — Open Groove Studio",
+      "testPrepHub": "此處 — Test Prep Hub",
+      "timelineStudio": "此處 — Timeline Studio",
+      "videoStudio": "此處 — Video Studio"
     },
     "footer": "每個動作都會語音播報。Ctrl+K 可開關。",
     "group": {
@@ -22051,7 +22079,8 @@
     "nav": "瀏覽",
     "no_match": "找不到符合的指令。機器人對話（以及即將推出的語音）能理解自由輸入的需求。",
     "placeholder": "輸入指令 —「放大文字」、「教育者中心」、「讀出這個頁面」…",
-    "run": "執行"
+    "run": "執行",
+    "close": "關閉指令面板"
   },
   "voice_engine": {
     "preparing": "正在準備語音引擎…",

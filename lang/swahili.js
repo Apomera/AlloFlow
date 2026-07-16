@@ -22353,7 +22353,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Fungua AlloStudio",
+    "open_allo_studio_done": "AlloStudio imefunguliwa.",
+    "open_allo_studio_hint": "Buni mabango, vipeperushi na karatasi za kazi zinazofikika",
+    "open_cinematic_studio": "Fungua Cinematic Studio",
+    "open_cinematic_studio_done": "Cinematic Studio imefunguliwa.",
+    "open_cinematic_studio_hint": "Tengeneza utangulizi wa kisinema na video za maelezo",
+    "open_lingua_practice": "Fungua Lingua Practice",
+    "open_lingua_practice_done": "Lingua Practice imefunguliwa.",
+    "open_lingua_practice_hint": "Fanya mazoezi ya msamiati na lugha kutoka chanzo cha sasa",
+    "open_open_groove": "Fungua Open Groove Studio",
+    "open_open_groove_done": "Open Groove Studio imefunguliwa.",
+    "open_open_groove_hint": "Tengeneza midundo, ruwaza za synth na muziki unaotambua nota",
+    "open_test_prep_hub": "Fungua Test Prep Hub",
+    "open_test_prep_hub_done": "Test Prep Hub imefunguliwa.",
+    "open_test_prep_hub_hint": "Fungua seti za mazoezi za bure na zana za kujifunza",
+    "open_timeline_studio": "Fungua Timeline Studio",
+    "open_timeline_studio_done": "Timeline Studio imefunguliwa.",
+    "open_timeline_studio_hint": "Jenga na uthibitishe kalenda za matukio zinazofikika",
+    "open_video_studio": "Fungua Video Studio",
+    "open_video_studio_done": "Video Studio imefunguliwa.",
+    "open_video_studio_hint": "Rekodi, weka manukuu na uhariri video za maelekezo"
   },
   "palette": {
     "aria": "Paleti ya amri ya AlloFlow",
@@ -22366,7 +22387,14 @@
       "pipeline": "Hapa — Matokeo ya Pipeline",
       "reading": "Hapa — Hali ya kusoma",
       "stemLab": "Hapa — STEM Lab",
-      "symbolStudio": "Hapa — Symbol Studio"
+      "symbolStudio": "Hapa — Symbol Studio",
+      "alloStudio": "Hapa — AlloStudio",
+      "cinematicStudio": "Hapa — Cinematic Studio",
+      "linguaPractice": "Hapa — Lingua Practice",
+      "openGroove": "Hapa — Open Groove Studio",
+      "testPrepHub": "Hapa — Test Prep Hub",
+      "timelineStudio": "Hapa — Timeline Studio",
+      "videoStudio": "Hapa — Video Studio"
     },
     "footer": "Kila tendo hutangazwa. Ctrl+K hugeuza.",
     "group": {
@@ -22385,7 +22413,8 @@
     "nav": "nenda",
     "no_match": "Hakuna amri inayolingana. Gumzo la roboti (na hivi karibuni sauti) huelewa maombi ya namna yoyote.",
     "placeholder": "Andika amri — “maandishi makubwa”, “kitovu cha mwalimu”, “soma ukurasa huu”…",
-    "run": "endesha"
+    "run": "endesha",
+    "close": "Funga paleti ya amri"
   },
   "voice_engine": {
     "preparing": "Inatayarisha injini ya sauti...",

@@ -22361,7 +22361,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "Ṣí AlloStudio",
+    "open_allo_studio_done": "A ti ṣí AlloStudio.",
+    "open_allo_studio_hint": "Ṣe àgbékalẹ̀ àwọn pósítà, ìwé ìkéde àti ìwé iṣẹ́ tí ó rọrùn láti wọlé sí",
+    "open_cinematic_studio": "Ṣí Cinematic Studio",
+    "open_cinematic_studio_done": "A ti ṣí Cinematic Studio.",
+    "open_cinematic_studio_hint": "Ṣẹ̀dá àwọn ìbẹ̀rẹ̀ bí fíìmù àti fídíò àlàyé",
+    "open_lingua_practice": "Ṣí Lingua Practice",
+    "open_lingua_practice_done": "A ti ṣí Lingua Practice.",
+    "open_lingua_practice_hint": "Ṣe ìdánrawò àwọn ọ̀rọ̀ àti èdè láti orísun lọ́wọ́lọ́wọ́",
+    "open_open_groove": "Ṣí Open Groove Studio",
+    "open_open_groove_done": "A ti ṣí Open Groove Studio.",
+    "open_open_groove_hint": "Ṣe àwọn ìlù, àpẹẹrẹ synth àti orin tí ó mọ àkọsílẹ̀ orin",
+    "open_test_prep_hub": "Ṣí Test Prep Hub",
+    "open_test_prep_hub_done": "A ti ṣí Test Prep Hub.",
+    "open_test_prep_hub_hint": "Ṣí àwọn àkójọ ìdánrawò ọ̀fẹ́ àti irinṣẹ́ ìkẹ́kọ̀ọ́",
+    "open_timeline_studio": "Ṣí Timeline Studio",
+    "open_timeline_studio_done": "A ti ṣí Timeline Studio.",
+    "open_timeline_studio_hint": "Kọ́ kí o sì ṣàyẹ̀wò àwọn ìlà àkókò tí ó rọrùn láti wọlé sí",
+    "open_video_studio": "Ṣí Video Studio",
+    "open_video_studio_done": "A ti ṣí Video Studio.",
+    "open_video_studio_hint": "Ṣe àkọsílẹ̀, fi àkọlé sí i kí o sì ṣàtúnṣe àwọn fídíò ìtọ́nisọ́nà"
   },
   "palette": {
     "aria": "Pátákó àṣẹ AlloFlow",
@@ -22374,7 +22395,14 @@
       "pipeline": "Níbí — Àbájáde ìṣàn",
       "reading": "Níbí — Ipò ìkàwé",
       "stemLab": "Níbí — STEM Lab",
-      "symbolStudio": "Níbí — Symbol Studio"
+      "symbolStudio": "Níbí — Symbol Studio",
+      "alloStudio": "Níbí — AlloStudio",
+      "cinematicStudio": "Níbí — Cinematic Studio",
+      "linguaPractice": "Níbí — Lingua Practice",
+      "openGroove": "Níbí — Open Groove Studio",
+      "testPrepHub": "Níbí — Test Prep Hub",
+      "timelineStudio": "Níbí — Timeline Studio",
+      "videoStudio": "Níbí — Video Studio"
     },
     "footer": "A ń kéde gbogbo ìṣe. Ctrl+K ń yí padà.",
     "group": {
@@ -22393,7 +22421,8 @@
     "nav": "rìnnà",
     "no_match": "Kò sí àṣẹ tó bára mu. Ìfọ̀rọ̀wérọ̀ bọ́ọ̀tì (àti laìpẹ́ ohùn) lóye àwọn ìbéèrè aláìní-ìlànà.",
     "placeholder": "Tẹ àṣẹ kan — “ọ̀rọ̀ títóbi”, “ibùdó olùkọ́”, “ka ojú-ìwé yìí”…",
-    "run": "ṣiṣẹ́"
+    "run": "ṣiṣẹ́",
+    "close": "Ti pátákó àṣẹ pa"
   },
   "voice_engine": {
     "preparing": "Ń múra ẹ̀rọ ohùn sílẹ̀...",

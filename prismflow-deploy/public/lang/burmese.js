@@ -22353,7 +22353,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio ကို ဖွင့်ပါ",
+    "open_allo_studio_done": "AlloStudio ကို ဖွင့်လိုက်ပါပြီ။",
+    "open_allo_studio_hint": "လက်လှမ်းမီသော ပိုစတာ၊ လက်ကမ်းစာစောင်နှင့် လုပ်ငန်းစာရွက်များ ဒီဇိုင်းဆွဲပါ",
+    "open_cinematic_studio": "Cinematic Studio ကို ဖွင့်ပါ",
+    "open_cinematic_studio_done": "Cinematic Studio ကို ဖွင့်လိုက်ပါပြီ။",
+    "open_cinematic_studio_hint": "ရုပ်ရှင်ဆန်သော နိဒါန်းနှင့် ရှင်းလင်းချက် ဗီဒီယိုများ ဖန်တီးပါ",
+    "open_lingua_practice": "Lingua Practice ကို ဖွင့်ပါ",
+    "open_lingua_practice_done": "Lingua Practice ကို ဖွင့်လိုက်ပါပြီ။",
+    "open_lingua_practice_hint": "လက်ရှိ အရင်းအမြစ်မှ ဝေါဟာရနှင့် ဘာသာစကားကို လေ့ကျင့်ပါ",
+    "open_open_groove": "Open Groove Studio ကို ဖွင့်ပါ",
+    "open_open_groove_done": "Open Groove Studio ကို ဖွင့်လိုက်ပါပြီ။",
+    "open_open_groove_hint": "ဘိတ်များ၊ ဆင့်သ်ပုံစံများနှင့် ဂီတသင်္ကေတ နားလည်သော ဂီတကို ဖန်တီးပါ",
+    "open_test_prep_hub": "Test Prep Hub ကို ဖွင့်ပါ",
+    "open_test_prep_hub_done": "Test Prep Hub ကို ဖွင့်လိုက်ပါပြီ။",
+    "open_test_prep_hub_hint": "အခမဲ့ လေ့ကျင့်ခန်းအစုံနှင့် လေ့လာရေးကိရိယာများကို ဖွင့်ပါ",
+    "open_timeline_studio": "Timeline Studio ကို ဖွင့်ပါ",
+    "open_timeline_studio_done": "Timeline Studio ကို ဖွင့်လိုက်ပါပြီ။",
+    "open_timeline_studio_hint": "လက်လှမ်းမီသော အချိန်မျဉ်းများ တည်ဆောက်ပြီး စစ်ဆေးပါ",
+    "open_video_studio": "Video Studio ကို ဖွင့်ပါ",
+    "open_video_studio_done": "Video Studio ကို ဖွင့်လိုက်ပါပြီ။",
+    "open_video_studio_hint": "လမ်းညွှန်ဗီဒီယိုများ ရိုက်ကူး၊ စာတန်းထိုးပြီး တည်းဖြတ်ပါ"
   },
   "palette": {
     "aria": "AlloFlow အမိန့်ပေး ပါးလက်",
@@ -22366,7 +22387,14 @@
       "pipeline": "ဤနေရာ — Pipeline ရလဒ်များ",
       "reading": "ဤနေရာ — ဖတ်ရှုမှု မုဒ်",
       "stemLab": "ဤနေရာ — STEM Lab",
-      "symbolStudio": "ဤနေရာ — Symbol Studio"
+      "symbolStudio": "ဤနေရာ — Symbol Studio",
+      "alloStudio": "ဤနေရာ — AlloStudio",
+      "cinematicStudio": "ဤနေရာ — Cinematic Studio",
+      "linguaPractice": "ဤနေရာ — Lingua Practice",
+      "openGroove": "ဤနေရာ — Open Groove Studio",
+      "testPrepHub": "ဤနေရာ — Test Prep Hub",
+      "timelineStudio": "ဤနေရာ — Timeline Studio",
+      "videoStudio": "ဤနေရာ — Video Studio"
     },
     "footer": "လုပ်ဆောင်ချက်တိုင်းကို ကြေညာသည်။ Ctrl+K က ဖွင့်/ပိတ်သည်။",
     "group": {
@@ -22385,7 +22413,8 @@
     "nav": "လမ်းညွှန်",
     "no_match": "ကိုက်ညီသော အမိန့် မရှိပါ။ ဘော့ ချက်တ် (နှင့် မကြာမီ အသံ) သည် လွတ်လပ်သော တောင်းဆိုမှုများကို နားလည်သည်။",
     "placeholder": "အမိန့်တစ်ခု ရိုက်ပါ — “စာသားကြီးအောင်”၊ “educator hub”၊ “ဤစာမျက်နှာ ဖတ်ပါ”…",
-    "run": "လုပ်ဆောင်"
+    "run": "လုပ်ဆောင်",
+    "close": "အမိန့်ပေး ပါးလက်ကို ပိတ်ပါ"
   },
   "voice_engine": {
     "preparing": "အသံအင်ဂျင်ကို ပြင်ဆင်နေသည်...",

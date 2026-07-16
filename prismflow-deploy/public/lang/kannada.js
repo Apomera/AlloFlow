@@ -22234,7 +22234,28 @@
     "generate_simplified_ready": "Simpler version ready.",
     "open_reading_library": "Open the Reading Library",
     "open_reading_library_done": "Reading Library opened.",
-    "open_reading_library_hint": "Browse open picture books in 10 languages"
+    "open_reading_library_hint": "Browse open picture books in 10 languages",
+    "open_allo_studio": "AlloStudio ತೆರೆಯಿರಿ",
+    "open_allo_studio_done": "AlloStudio ತೆರೆಯಲಾಗಿದೆ.",
+    "open_allo_studio_hint": "ಪ್ರವೇಶಿಸಬಹುದಾದ ಪೋಸ್ಟರ್‌ಗಳು, ಕರಪತ್ರಗಳು ಮತ್ತು ವರ್ಕ್‌ಶೀಟ್‌ಗಳನ್ನು ವಿನ್ಯಾಸಗೊಳಿಸಿ",
+    "open_cinematic_studio": "Cinematic Studio ತೆರೆಯಿರಿ",
+    "open_cinematic_studio_done": "Cinematic Studio ತೆರೆಯಲಾಗಿದೆ.",
+    "open_cinematic_studio_hint": "ಸಿನಿಮೀಯ ಪರಿಚಯಗಳು ಮತ್ತು ವಿವರಣಾ ವೀಡಿಯೊಗಳನ್ನು ರಚಿಸಿ",
+    "open_lingua_practice": "Lingua Practice ತೆರೆಯಿರಿ",
+    "open_lingua_practice_done": "Lingua Practice ತೆರೆಯಲಾಗಿದೆ.",
+    "open_lingua_practice_hint": "ಪ್ರಸ್ತುತ ಮೂಲದಿಂದ ಪದಸಂಪತ್ತು ಮತ್ತು ಭಾಷೆಯನ್ನು ಅಭ್ಯಾಸ ಮಾಡಿ",
+    "open_open_groove": "Open Groove Studio ತೆರೆಯಿರಿ",
+    "open_open_groove_done": "Open Groove Studio ತೆರೆಯಲಾಗಿದೆ.",
+    "open_open_groove_hint": "ಬೀಟ್‌ಗಳು, ಸಿಂಥ್ ಮಾದರಿಗಳು ಮತ್ತು ಸ್ವರಲಿಪಿ-ಅರಿವಿನ ಸಂಗೀತವನ್ನು ರಚಿಸಿ",
+    "open_test_prep_hub": "Test Prep Hub ತೆರೆಯಿರಿ",
+    "open_test_prep_hub_done": "Test Prep Hub ತೆರೆಯಲಾಗಿದೆ.",
+    "open_test_prep_hub_hint": "ಉಚಿತ ಅಭ್ಯಾಸ ಸೆಟ್‌ಗಳು ಮತ್ತು ಅಧ್ಯಯನ ಸಾಧನಗಳನ್ನು ತೆರೆಯಿರಿ",
+    "open_timeline_studio": "Timeline Studio ತೆರೆಯಿರಿ",
+    "open_timeline_studio_done": "Timeline Studio ತೆರೆಯಲಾಗಿದೆ.",
+    "open_timeline_studio_hint": "ಪ್ರವೇಶಿಸಬಹುದಾದ ಕಾಲರೇಖೆಗಳನ್ನು ನಿರ್ಮಿಸಿ ಮತ್ತು ಪರಿಶೀಲಿಸಿ",
+    "open_video_studio": "Video Studio ತೆರೆಯಿರಿ",
+    "open_video_studio_done": "Video Studio ತೆರೆಯಲಾಗಿದೆ.",
+    "open_video_studio_hint": "ವಾಕ್‌ಥ್ರೂಗಳನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ, ಶೀರ್ಷಿಕೆ ಸೇರಿಸಿ ಮತ್ತು ಸಂಪಾದಿಸಿ"
   },
   "palette": {
     "aria": "AlloFlow ಆದೇಶ ಪ್ಯಾಲೆಟ್",
@@ -22247,7 +22268,14 @@
       "pipeline": "ಇಲ್ಲಿ — Pipeline ಫಲಿತಾಂಶಗಳು",
       "reading": "ಇಲ್ಲಿ — ಓದುವ ಮೋಡ್",
       "stemLab": "ಇಲ್ಲಿ — STEM Lab",
-      "symbolStudio": "ಇಲ್ಲಿ — Symbol Studio"
+      "symbolStudio": "ಇಲ್ಲಿ — Symbol Studio",
+      "alloStudio": "ಇಲ್ಲಿ — AlloStudio",
+      "cinematicStudio": "ಇಲ್ಲಿ — Cinematic Studio",
+      "linguaPractice": "ಇಲ್ಲಿ — Lingua Practice",
+      "openGroove": "ಇಲ್ಲಿ — Open Groove Studio",
+      "testPrepHub": "ಇಲ್ಲಿ — Test Prep Hub",
+      "timelineStudio": "ಇಲ್ಲಿ — Timeline Studio",
+      "videoStudio": "ಇಲ್ಲಿ — Video Studio"
     },
     "footer": "ಪ್ರತಿ ಕ್ರಿಯೆಯನ್ನೂ ಪ್ರಕಟಿಸಲಾಗುತ್ತದೆ. Ctrl+K ಟಾಗಲ್ ಮಾಡುತ್ತದೆ.",
     "group": {
@@ -22266,7 +22294,8 @@
     "nav": "ನ್ಯಾವಿಗೇಟ್",
     "no_match": "ಹೊಂದಾಣಿಕೆಯಾಗುವ ಆದೇಶವಿಲ್ಲ. ಬಾಟ್ ಚಾಟ್ (ಮತ್ತು ಶೀಘ್ರದಲ್ಲೇ ಧ್ವನಿ) ಮುಕ್ತ-ರೂಪದ ವಿನಂತಿಗಳನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳುತ್ತದೆ.",
     "placeholder": "ಒಂದು ಆದೇಶ ಟೈಪ್ ಮಾಡಿ — “bigger text”, “educator hub”, “read this page”…",
-    "run": "ಚಲಾಯಿಸಿ"
+    "run": "ಚಲಾಯಿಸಿ",
+    "close": "ಆದೇಶ ಪ್ಯಾಲೆಟ್ ಮುಚ್ಚಿರಿ"
   },
   "math_fluency": {
     "at_above_benchmark": "ಗುರಿಯಲ್ಲಿ/ಗುರಿಗಿಂತ ಮೇಲೆ",
