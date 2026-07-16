@@ -454,40 +454,144 @@
   // or window.alloDeviceStorage.__openProbePanel(). Plain DOM on purpose —
   // must work before/without React and inside any surface.
   var _probePanel = null;
+  function confirmDeviceStorageErase(info, opener) {
+    return new Promise(function (resolve) {
+      if (!document.body) { resolve(false); return; }
+      var blocked = Array.prototype.slice.call(document.body.children).map(function (el) {
+        return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+      });
+      var overlay = document.createElement('div');
+      overlay.setAttribute('data-allo-device-storage-confirm', '');
+      overlay.setAttribute('role', 'presentation');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483646;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
+      var dialog = document.createElement('div');
+      dialog.setAttribute('role', 'alertdialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', 'allo-device-storage-confirm-title');
+      dialog.setAttribute('aria-describedby', 'allo-device-storage-confirm-description');
+      dialog.style.cssText = 'box-sizing:border-box;width:min(100%,480px);max-height:calc(100vh - 32px);overflow:auto;background:#fff;color:#0f172a;border:2px solid #f59e0b;border-radius:16px;padding:24px;box-shadow:0 24px 70px rgba(0,0,0,.45);font:15px/1.55 system-ui,-apple-system,sans-serif;';
+      var title = document.createElement('h2');
+      title.id = 'allo-device-storage-confirm-title';
+      title.textContent = 'Erase stored app data?';
+      title.style.cssText = 'margin:0 0 10px;font-size:20px;line-height:1.3;color:#0f172a;';
+      var description = document.createElement('p');
+      description.id = 'allo-device-storage-confirm-description';
+      description.textContent = String(info.count) + ' record(s) in ' + info.ns + ' will be permanently removed from this device. This cannot be undone.';
+      description.style.cssText = 'margin:0 0 20px;color:#334155;';
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = 'Cancel';
+      cancel.style.cssText = 'min-height:44px;padding:10px 18px;border:1px solid #64748b;border-radius:10px;background:#fff;color:#1e293b;font:inherit;font-weight:800;cursor:pointer;';
+      var erase = document.createElement('button');
+      erase.type = 'button';
+      erase.textContent = 'Erase data';
+      erase.style.cssText = 'min-height:44px;padding:10px 18px;border:1px solid #991b1b;border-radius:10px;background:#b91c1c;color:#fff;font:inherit;font-weight:800;cursor:pointer;';
+      actions.appendChild(cancel);
+      actions.appendChild(erase);
+      dialog.appendChild(title);
+      dialog.appendChild(description);
+      dialog.appendChild(actions);
+      overlay.appendChild(dialog);
+
+      var finished = false;
+      var finish = function (confirmed) {
+        if (finished) return;
+        finished = true;
+        document.removeEventListener('keydown', onDialogKey, true);
+        try { overlay.remove(); } catch (_) {}
+        blocked.forEach(function (entry) {
+          if (!entry.hadInert) entry.el.removeAttribute('inert');
+          if (entry.ariaHidden === null) entry.el.removeAttribute('aria-hidden');
+          else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+        });
+        if (opener && opener.isConnected && opener.focus) {
+          try { opener.focus(); } catch (_) {}
+        }
+        resolve(!!confirmed);
+      };
+      var onDialogKey = function (event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          finish(false);
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var focusable = [cancel, erase];
+        var current = focusable.indexOf(document.activeElement);
+        if (event.shiftKey && current <= 0) {
+          event.preventDefault();
+          erase.focus();
+        } else if (!event.shiftKey && current === focusable.length - 1) {
+          event.preventDefault();
+          cancel.focus();
+        }
+      };
+      cancel.onclick = function () { finish(false); };
+      erase.onclick = function () { finish(true); };
+      overlay.addEventListener('click', function (event) { if (event.target === overlay) finish(false); });
+      blocked.forEach(function (entry) {
+        entry.el.setAttribute('inert', '');
+        entry.el.setAttribute('aria-hidden', 'true');
+      });
+      document.body.appendChild(overlay);
+      document.addEventListener('keydown', onDialogKey, true);
+      cancel.focus();
+    });
+  }
   api.__openProbePanel = function () {
     if (typeof document === 'undefined' || !document.body) return null;
-    if (_probePanel && _probePanel.isConnected) { _probePanel.remove(); _probePanel = null; return null; }
+    if (_probePanel && _probePanel.isConnected) {
+      if (typeof _probePanel._alloClose === 'function') _probePanel._alloClose(true);
+      else { _probePanel.remove(); _probePanel = null; }
+      return null;
+    }
+    var panelOpener = document.activeElement;
     var dark = false;
     try { dark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); } catch (_) {}
     var panel = document.createElement('div');
     _probePanel = panel;
     panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-label', 'Device storage probe');
+    panel.setAttribute('aria-labelledby', 'allo-device-storage-probe-title');
     panel.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:2147483000;width:360px;max-width:92vw;' +
       'font:13px/1.5 system-ui,-apple-system,sans-serif;border-radius:12px;padding:14px;text-align:left;' +
       (dark ? 'background:#1e293b;color:#e2e8f0;border:1px solid #475569;'
             : 'background:#ffffff;color:#0f172a;border:1px solid #cbd5e1;') +
       'box-shadow:0 8px 30px rgba(0,0,0,.35);';
-    var btnCss = 'font:inherit;font-weight:600;padding:5px 12px;border-radius:999px;cursor:pointer;' +
+    var btnCss = 'font:inherit;font-weight:600;min-height:44px;padding:5px 12px;border-radius:999px;cursor:pointer;' +
       (dark ? 'background:#334155;color:#e2e8f0;border:1px solid #64748b;'
             : 'background:#f1f5f9;color:#0f172a;border:1px solid #94a3b8;');
-    var close = function () {
+    var close = function (restoreFocus) {
       document.removeEventListener('keydown', onKey, true);
       panel.remove();
       _probePanel = null;
+      if (restoreFocus !== false && panelOpener && panelOpener.isConnected && panelOpener.focus) {
+        try { panelOpener.focus(); } catch (_) {}
+      }
     };
-    var onKey = function (e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+    panel._alloClose = close;
+    var onKey = function (e) {
+      if (e.key === 'Escape' && !document.querySelector('[data-allo-device-storage-confirm]')) {
+        e.preventDefault();
+        e.stopPropagation();
+        close(true);
+      }
+    };
     document.addEventListener('keydown', onKey, true);
 
     var head = document.createElement('div');
     head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;';
     var title = document.createElement('strong');
+    title.id = 'allo-device-storage-probe-title';
     title.textContent = '🔌 Device storage probe';
     var x = document.createElement('button');
+    x.type = 'button';
     x.textContent = '✕';
     x.setAttribute('aria-label', 'Close probe panel');
     x.style.cssText = btnCss;
-    x.onclick = close;
+    x.onclick = function () { close(true); };
     head.appendChild(title); head.appendChild(x);
 
     var blurb = document.createElement('p');
@@ -499,9 +603,11 @@
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;';
     var runBtn = document.createElement('button');
+    runBtn.type = 'button';
     runBtn.textContent = '▶ Run probe';
     runBtn.style.cssText = btnCss;
     var reviewBtn = document.createElement('button');
+    reviewBtn.type = 'button';
     reviewBtn.textContent = '🔍 Open review page';
     reviewBtn.style.cssText = btnCss;
     reviewBtn.onclick = function () {
@@ -512,6 +618,7 @@
     // the app's own data must be reviewable from HERE, through the same
     // transport the app uses.
     var dataBtn = document.createElement('button');
+    dataBtn.type = 'button';
     dataBtn.textContent = '📂 View app data';
     dataBtn.style.cssText = btnCss;
     row.appendChild(runBtn); row.appendChild(reviewBtn); row.appendChild(dataBtn);
@@ -539,6 +646,7 @@
           label.style.cssText = 'flex:1;';
           label.textContent = info.ns + ' — ' + info.count + ' record(s), ~' + info.bytes + ' B';
           var exp = document.createElement('button');
+          exp.type = 'button';
           exp.textContent = 'Export';
           exp.style.cssText = btnCss + 'padding:2px 8px;';
           exp.onclick = function () {
@@ -552,12 +660,13 @@
             }).catch(function (e) { out.appendChild(document.createTextNode('\nExport failed: ' + (e.code || e.message))); });
           };
           var del = document.createElement('button');
+          del.type = 'button';
           del.textContent = 'Erase';
           del.style.cssText = btnCss + 'padding:2px 8px;color:#dc2626;';
           del.onclick = function () {
-            if (window.confirm('Erase all ' + info.count + ' record(s) in ' + info.ns + ' from this device?')) {
-              api.clearNamespace(info.ns).then(function () { dataBtn.onclick(); });
-            }
+            confirmDeviceStorageErase(info, del).then(function (confirmed) {
+              if (confirmed) api.clearNamespace(info.ns).then(function () { dataBtn.onclick(); });
+            });
           };
           line.appendChild(label); line.appendChild(exp); line.appendChild(del);
           out.appendChild(line);
