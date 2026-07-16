@@ -910,6 +910,13 @@ body.app-focus-mode .focus-gear {
   box-sizing: border-box;
 }
 
+/* The app-wide `button { white-space: nowrap }` rule (upstream) turns the
+   wizard's card buttons into one unwrappable line and overflows the dialog
+   sideways — every wizard button must wrap like prose. */
+.setup-dialog.wiz button {
+  white-space: normal;
+}
+
 .wiz-step {
   display: grid;
   gap: 10px;
