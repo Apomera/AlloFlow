@@ -9701,81 +9701,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     var emo = ((allData.mytkEmotion || {}).checks || []);
 
-    function bigStat(label, value, color, icon) {
+    function bigStat(label, value, color, icon, progress) {
       return hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + color + '20, rgba(15,23,42,0.7))', border: '1px solid ' + color + '40' } },
-        hh('div', { style: { fontSize: 22, marginBottom: 4 } }, icon),
-        hh('div', { style: { fontSize: 26, fontWeight: 900, color: color, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, value),
-        hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 6 } }, label)
+        hh('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4 } }, icon),
+        hh('dt', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 6 } }, label),
+        hh('dd', { style: { margin: '4px 0 0', fontSize: 26, fontWeight: 900, color: color, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, value),
+        progress !== undefined ? hh('div', { role: 'progressbar', 'aria-label': label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progress, style: { height: 6, marginTop: 8, borderRadius: 999, overflow: 'hidden', background: 'rgba(15,23,42,0.65)' } },
+          hh('div', { 'aria-hidden': 'true', style: { width: progress + '%', height: '100%', background: color } })
+        ) : null
       );
     }
 
-    return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📊', 'My Progress Dashboard', 'Single screen of how everything\'s tracking. Use weekly to spot trends.', '#10b981'),
+    var activityDays = [];
+    for (var dayIndex = 13; dayIndex >= 0; dayIndex--) {
+      var activityDate = new Date(); activityDate.setDate(activityDate.getDate() - dayIndex);
+      var activityIso = activityDate.toISOString().slice(0, 10);
+      var activities = [];
+      if (focusSessions.some(function(session) { return session.date === activityIso; })) activities.push('focus session');
+      if (habits.some(function(habit) { return (habitLogs[habit.id] || []).indexOf(activityIso) >= 0; })) activities.push('habit');
+      if (reflections.some(function(reflection) { return reflection.date === activityIso; })) activities.push('reflection');
+      if (gratitudes.some(function(gratitude) { return gratitude.date === activityIso; })) activities.push('gratitude log');
+      if (journal.some(function(entry) { return entry.date === activityIso; })) activities.push('journal entry');
+      activityDays.push({ iso: activityIso, label: activityDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), activities: activities, isToday: activityIso === today });
+    }
 
-      // Hero stats
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 } },
+    var suggestions = [];
+    if (flashDue > 0) suggestions.push(flashDue + ' flashcard' + (flashDue !== 1 ? 's' : '') + ' due today. A quick review session may help.');
+    if (habitsToday < habits.length) suggestions.push('Habits left to check today: ' + (habits.length - habitsToday) + '.');
+    if (openTaskCount > 3) suggestions.push(openTaskCount + ' open tasks. Consider closing one or two today to maintain momentum.');
+    if (avgSleep !== '—' && parseFloat(avgSleep) < 7) suggestions.push('Average sleep is ' + avgSleep + ' hours, below seven. Consider what could shift earlier tonight.');
+    if (reflections.length === 0) suggestions.push('No weekly reflections yet. A five-minute reflection can support metacognition.');
+    if (gratitudes.length === 0) suggestions.push('No gratitude log yet. One to three items can be completed in about a minute.');
+    if (suggestions.length === 0) suggestions.push('Your tracked items look current. Choose the next action that best supports your goals.');
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📊', 'My Progress Dashboard', 'A single-screen summary of how everything is tracking. Review weekly to spot trends.', '#10b981'),
+
+      hh('dl', { 'aria-label': 'Progress summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, margin: '0 0 16px' } },
         bigStat('Active goals', activeGoals.length, '#9333ea', '🎯'),
-        bigStat('Avg goal progress', avgGoalProgress + '%', '#a855f7', '📈'),
+        bigStat('Average goal progress', avgGoalProgress + '%', '#a855f7', '📈', avgGoalProgress),
         bigStat('Focus this week', Math.round(weekFocus / 60 * 10) / 10 + 'h', '#ef4444', '⏱'),
-        bigStat('Habits today', habitsToday + '/' + habits.length, '#10b981', '✅'),
-        bigStat('Sleep avg (7d)', avgSleep + 'h', '#3b82f6', '😴'),
+        bigStat('Habits today', habitsToday + '/' + habits.length, '#10b981', '✅', habits.length > 0 ? Math.round(habitsToday / habits.length * 100) : 0),
+        bigStat('Sleep average, 7 days', avgSleep + 'h', '#3b82f6', '😴'),
         bigStat('Cards due', flashDue, '#06b6d4', '🃏'),
         bigStat('Open tasks', openTaskCount, '#f97316', '✂'),
-        bigStat('Brain dumps', brainOpen, '#60a5fa', '🧠'),
-        bigStat('EF avg', latestEF ? efAvg.toFixed(1) + '/10' : '—', '#a855f7', '🧩'),
+        bigStat('Open brain dumps', brainOpen, '#60a5fa', '🧠'),
+        bigStat('Executive function average', latestEF ? efAvg.toFixed(1) + '/10' : '—', '#a855f7', '🧩'),
         bigStat('Reflections', reflections.length, '#f472b6', '📔'),
         bigStat('Journal entries', journal.length, '#ec4899', '📓'),
-        bigStat('Gratitudes', gratitudes.length, '#10b981', '🙏')
+        bigStat('Gratitude logs', gratitudes.length, '#10b981', '🙏')
       ),
 
-      // Done celebration
-      doneGoals.length > 0 ? hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(34,197,94,0.18), rgba(15,23,42,0.7))', border: '2px solid #22c55e', marginBottom: 14, textAlign: 'center' } },
-        hh('div', { style: { fontSize: 32, marginBottom: 6 } }, '🏆'),
+      doneGoals.length > 0 ? hh('section', { role: 'status', 'aria-label': doneGoals.length + ' goals completed total', style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(34,197,94,0.18), rgba(15,23,42,0.7))', border: '2px solid #22c55e', marginBottom: 14, textAlign: 'center' } },
+        hh('div', { 'aria-hidden': 'true', style: { fontSize: 32, marginBottom: 6 } }, '🏆'),
         hh('div', { style: { fontSize: 24, fontWeight: 900, color: '#22c55e', fontFamily: 'ui-monospace, Menlo, monospace' } }, doneGoals.length),
-        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, 'goals completed total. ', hh('strong', { style: { color: '#22c55e' } }, 'You\'ve done this before. You\'ll do it again.'))
+        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, 'goals completed total. ', hh('strong', { style: { color: '#22c55e' } }, 'You have done this before. You can do it again.'))
       ) : null,
 
-      // Activity grid (last 14 days strip)
-      hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(2,6,23,0.5)', marginBottom: 14 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 } }, '📅 Last 14 days activity'),
-        hh('div', { style: { display: 'flex', gap: 3 } },
-          (function() {
-            var arr = [];
-            for (var i = 13; i >= 0; i--) {
-              var dt = new Date(); dt.setDate(dt.getDate() - i);
-              var iso = dt.toISOString().slice(0, 10);
-              var hasFocus = focusSessions.some(function(s) { return s.date === iso; });
-              var hasHabit = habits.some(function(h) { return (habitLogs[h.id] || []).indexOf(iso) >= 0; });
-              var hasReflect = reflections.some(function(r) { return r.date === iso; });
-              var hasGrat = gratitudes.some(function(g) { return g.date === iso; });
-              var hasJournal = journal.some(function(j) { return j.date === iso; });
-              var anyActivity = hasFocus || hasHabit || hasReflect || hasGrat || hasJournal;
-              var bg = anyActivity ? 'rgba(16,185,129,0.40)' : 'rgba(100,116,139,0.15)';
-              arr.push(hh('div', { key: 'da-' + iso, title: iso,
-                style: { flex: 1, height: 32, background: bg, borderRadius: 3, border: iso === today ? '1px solid #10b981' : 'none' }
-              }));
-            }
-            return arr;
-          })()
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-progress-activity-heading', style: { padding: 12, borderRadius: 10, background: 'rgba(2,6,23,0.5)', marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-progress-activity-heading', style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' } }, '📅 Last 14 days activity'),
+        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', gap: 3 } },
+          activityDays.map(function(day) {
+            var hasActivity = day.activities.length > 0;
+            var dayDescription = day.label + (day.isToday ? ', today' : '') + ': ' + (hasActivity ? day.activities.join(', ') : 'no tracked activity');
+            return hh('li', { key: 'da-' + day.iso, 'aria-label': dayDescription, style: { flex: 1, minWidth: 0 } },
+              hh('div', { 'aria-hidden': 'true', style: { height: 32, background: hasActivity ? 'rgba(16,185,129,0.40)' : 'rgba(100,116,139,0.15)', color: hasActivity ? '#ecfdf5' : '#cbd5e1', borderRadius: 3, border: day.isToday ? '2px solid #10b981' : '1px solid transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900 } }, hasActivity ? '✓' : '—')
+            );
+          })
+        ),
+        hh('div', { style: { marginTop: 8, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '✓ tracked activity · — no tracked activity · outlined square is today')
       ),
 
-      // Next actions suggestions
-      hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)' } },
-        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '✨ What might be useful right now'),
+      hh('section', { 'aria-labelledby': 'learning-lab-progress-suggestions-heading', style: { padding: 12, borderRadius: 10, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)' } },
+        hh('h3', { id: 'learning-lab-progress-suggestions-heading', style: { fontSize: 12, fontWeight: 800, color: '#c084fc', margin: '0 0 8px' } }, '✨ What might be useful right now'),
         hh('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
-          flashDue > 0 ? hh('li', null, flashDue + ' flashcard' + (flashDue !== 1 ? 's' : '') + ' due today. Quick review session?') : null,
-          habitsToday < habits.length ? hh('li', null, 'Habits left to check today: ' + (habits.length - habitsToday)) : null,
-          openTaskCount > 3 ? hh('li', null, openTaskCount + ' open tasks — consider closing 1-2 today to maintain momentum.') : null,
-          avgSleep !== '—' && parseFloat(avgSleep) < 7 ? hh('li', null, 'Avg sleep ' + avgSleep + 'h is below 7. Anything you can shift earlier tonight?') : null,
-          reflections.length === 0 ? hh('li', null, 'No weekly reflections yet. 5 minutes. Highest-leverage metacog tool.') : null,
-          gratitudes.length === 0 ? hh('li', null, 'No gratitude log yet. 3 things, 1 minute. Strongest single positive-psychology intervention.') : null
+          suggestions.map(function(suggestion, index) { return hh('li', { key: 'suggestion-' + index }, suggestion); })
         )
       )
     );
   }
 
-  // ── EE. PERSONAL CHALLENGE BOARD (Wave 7) ──
   // Declare a personal challenge (book in a month, learn a skill, save
   // money, etc.). Log daily progress. Mark complete or extend. Inspired
   // by 30-day challenges + Tiny Habits (Fogg 2019).
