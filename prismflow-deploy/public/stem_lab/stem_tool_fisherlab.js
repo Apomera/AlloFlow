@@ -692,9 +692,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       length: isFinite(measured) ? measured : null,
       action: entry.action === 'keep' ? 'keep' : 'release',
       correct: !!entry.correct,
+      identificationCorrect: typeof entry.identificationCorrect === 'boolean' ? entry.identificationCorrect : null,
+      ruleCorrect: typeof entry.ruleCorrect === 'boolean' ? entry.ruleCorrect : null,
       evidence: String(entry.evidence || 'Evidence not recorded')
     };
     return prior.concat([note]).slice(-4);
+  }
+
+  function getCoreCatchSkillSummary(identificationCorrect, identificationTotal, ruleCorrect, ruleTotal) {
+    var idTotal = Math.max(0, Math.floor(Number(identificationTotal) || 0));
+    var rulesTotal = Math.max(0, Math.floor(Number(ruleTotal) || 0));
+    var idCorrect = Math.min(idTotal, Math.max(0, Math.floor(Number(identificationCorrect) || 0)));
+    var rulesCorrect = Math.min(rulesTotal, Math.max(0, Math.floor(Number(ruleCorrect) || 0)));
+    var identificationPct = idTotal ? Math.round(idCorrect / idTotal * 100) : 0;
+    var rulePct = rulesTotal ? Math.round(rulesCorrect / rulesTotal * 100) : 0;
+    var hasData = idTotal > 0 || rulesTotal > 0;
+    var focusId = !hasData ? 'no-data' : identificationPct >= 80 && rulePct >= 80 ? 'balanced' : identificationPct < rulePct ? 'identification' : rulePct < identificationPct ? 'regulation' : 'workflow';
+    var focusLabels = {
+      'no-data': 'Complete a finfish inspection to build this skill profile.',
+      balanced: 'Balanced catch analysis: keep practicing both observation and regulation evidence.',
+      identification: 'Next focus: identify species from diagnostic field marks before opening the profile.',
+      regulation: 'Next focus: connect the measured catch to size, slot, and trip-limit evidence.',
+      workflow: 'Next focus: rehearse the complete identify, measure, and classify workflow.'
+    };
+    return { hasData: hasData, identificationCorrect: idCorrect, identificationTotal: idTotal, identificationPct: identificationPct, ruleCorrect: rulesCorrect, ruleTotal: rulesTotal, rulePct: rulePct, focusId: focusId, focusLabel: focusLabels[focusId] };
   }
 
   function getCoreTripLedger(retainedBySpecies, speciesList, focusSpeciesId) {
@@ -766,6 +787,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreShellfishHandlingGuidance: getCoreShellfishHandlingGuidance,
     getCoreFishHandlingGuidance: getCoreFishHandlingGuidance,
     appendCoreCatchDecision: appendCoreCatchDecision,
+    getCoreCatchSkillSummary: getCoreCatchSkillSummary,
     getCoreTripLedger: getCoreTripLedger,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
@@ -9102,6 +9124,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       decisionStreak: 0,
       correctDecisions: 0,
       totalDecisions: 0,
+      fishIdentificationCorrect: 0,
+      fishIdentificationTotal: 0,
+      fishRuleCorrect: 0,
+      fishRuleTotal: 0,
       catchDecisionHistory: [],
       retainedBySpecies: {},
       targetFishDecision: false,
@@ -9396,6 +9422,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.trapDecisionMade = correct || boatState.trapDecisionMade;
         if (action === 'keep' && correct) boatState.keeperLobsters += 1;
       } else {
+        if (fieldNote && typeof fieldNote.identificationCorrect === 'boolean') {
+          boatState.fishIdentificationTotal += 1;
+          if (fieldNote.identificationCorrect) boatState.fishIdentificationCorrect += 1;
+        }
+        if (fieldNote && typeof fieldNote.ruleCorrect === 'boolean') {
+          boatState.fishRuleTotal += 1;
+          if (fieldNote.ruleCorrect) boatState.fishRuleCorrect += 1;
+        }
         if (action === 'keep' && correct) boatState.retainedBySpecies[speciesId] = (boatState.retainedBySpecies[speciesId] || 0) + 1;
         if (speciesId === missionProfile.targetFishId && correct) boatState.targetFishDecision = true;
       }
@@ -9924,6 +9958,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         decisionStreak: boatState.decisionStreak,
         correctDecisions: boatState.correctDecisions,
         totalDecisions: boatState.totalDecisions,
+        fishIdentificationCorrect: boatState.fishIdentificationCorrect,
+        fishIdentificationTotal: boatState.fishIdentificationTotal,
+        fishRuleCorrect: boatState.fishRuleCorrect,
+        fishRuleTotal: boatState.fishRuleTotal,
         catchDecisionHistory: boatState.catchDecisionHistory.slice(),
         retainedBySpecies: Object.assign({}, boatState.retainedBySpecies),
         targetFishDecision: boatState.targetFishDecision,
@@ -10097,6 +10135,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.decisionStreak = 0;
         boatState.correctDecisions = 0;
         boatState.totalDecisions = 0;
+        boatState.fishIdentificationCorrect = 0;
+        boatState.fishIdentificationTotal = 0;
+        boatState.fishRuleCorrect = 0;
+        boatState.fishRuleTotal = 0;
         boatState.catchDecisionHistory = [];
         boatState.retainedBySpecies = {};
         boatState.fuelDepletedWarned = false;
@@ -11064,6 +11106,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var fuelValue = hud.fuel == null ? 100 : Math.max(0, hud.fuel);
       var decisionAccuracy = hud.totalDecisions ? Math.round((hud.correctDecisions || 0) / hud.totalDecisions * 100) : 0;
       var catchDecisionHistory = Array.isArray(hud.catchDecisionHistory) ? hud.catchDecisionHistory : [];
+      var catchSkillSummary = getCoreCatchSkillSummary(hud.fishIdentificationCorrect, hud.fishIdentificationTotal, hud.fishRuleCorrect, hud.fishRuleTotal);
       var tripLedger = getCoreTripLedger(hud.retainedBySpecies, getSpeciesForRegion(region), mission.targetFishId);
       var tripLedgerLabel = 'Scenario trip catch ledger. ' + tripLedger.map(function(row) { return row.name + ': ' + row.statusLabel + '.'; }).join(' ');
       var modeProfile = getCoreVoyageMode(voyageMode);
@@ -11419,7 +11462,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 var handling = getCoreFishHandlingGuidance(action, result.legalToRetain);
                 var msg = result.correct ? 'Correct. ' + identification.explanation + ' ' + result.explanation : 'Review needed. ' + (!identification.correct ? identification.explanation + ' ' : '') + result.explanation;
                 pushStatus({ type: result.correct && action === 'retain' ? 'fish' : result.correct ? 'complete' : 'guidance', species: activeFish.species, length: activeFish.length, isKeeper: result.correct && action === 'retain', text: msg });
-                if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', action === 'retain' ? 'keep' : 'release', result.correct, activeFish.species.id, true, { label: activeFish.species.name, length: activeFish.length, evidence: 'Identification: ' + identifiedSpecies.name + (identification.correct ? ' confirmed' : '; actual ' + identification.expectedLabel) + ' · ' + result.expectedLabel });
+                if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', action === 'retain' ? 'keep' : 'release', result.correct, activeFish.species.id, true, { label: activeFish.species.name, length: activeFish.length, identificationCorrect: identification.correct, ruleCorrect: ruleResult.correct, evidence: 'Identification: ' + identifiedSpecies.name + (identification.correct ? ' confirmed' : '; actual ' + identification.expectedLabel) + ' · ' + result.expectedLabel });
                 setFishDecisionResult({ result: result, identification: identification, handling: handling, message: msg });
                 flAnnounce(msg + ' ' + handling.label + '. ' + handling.text);
               }
@@ -11489,12 +11532,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('p', { style: { color: '#dbeafe', fontSize: 12 } }, (hud.correctDecisions || 0) + ' of ' + (hud.totalDecisions || 0) + ' decisions correct · ' + fuelValue.toFixed(0) + '% fuel remaining · ' + Math.max(0, Math.round((hud.elapsed || 0) / 60)) + ' min'),
                 h('p', { style: { color: trafficGradeColor, fontSize: 11, fontWeight: 800 } }, 'Traffic watch: ' + (hud.trafficGradeLabel || 'complete') + ' · CPA ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : '—') + ' · ' + (hud.trafficManeuverSeconds || 0).toFixed(1) + ' s'),
                 h('p', { style: { color: fuelValue >= modeProfile.requiredFuel && decisionAccuracy >= modeProfile.requiredAccuracy ? '#a7f3d0' : '#fdba74', fontSize: 11, lineHeight: 1.5 } }, fuelValue >= modeProfile.requiredFuel && decisionAccuracy >= modeProfile.requiredAccuracy ? 'Challenge standard met: accurate decisions and a prudent reserve.' : 'Next target: at least ' + modeProfile.requiredFuel + '% fuel and ' + modeProfile.requiredAccuracy + '% classification accuracy.'),
+                catchSkillSummary.hasData ? h('div', { 'aria-label': 'Catch skill breakdown. Species identification ' + catchSkillSummary.identificationCorrect + ' of ' + catchSkillSummary.identificationTotal + ', ' + catchSkillSummary.identificationPct + ' percent. Regulation evidence ' + catchSkillSummary.ruleCorrect + ' of ' + catchSkillSummary.ruleTotal + ', ' + catchSkillSummary.rulePct + ' percent. ' + catchSkillSummary.focusLabel, style: { margin: '12px 0', padding: '10px 0', borderTop: '1px solid rgba(186,230,253,0.28)', borderBottom: '1px solid rgba(186,230,253,0.28)', textAlign: 'left' } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 } },
+                    h('strong', { style: { color: '#bae6fd', fontSize: 11, textTransform: 'uppercase' } }, 'Catch skill breakdown'),
+                    h('span', { style: { color: '#a7f3d0', fontSize: 10, fontWeight: 800 } }, catchSkillSummary.identificationCorrect + '/' + catchSkillSummary.identificationTotal + ' ID · ' + catchSkillSummary.ruleCorrect + '/' + catchSkillSummary.ruleTotal + ' rules')),
+                  [
+                    { id: 'identification', label: 'Species identification', value: catchSkillSummary.identificationPct, color: '#34d399' },
+                    { id: 'regulation', label: 'Regulation evidence', value: catchSkillSummary.rulePct, color: '#38bdf8' }
+                  ].map(function(skill) {
+                    return h('div', { key: skill.id, style: { marginTop: 7 } },
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: '#e2e8f0', fontSize: 10 } }, h('span', null, skill.label), h('strong', null, skill.value + '%')),
+                      h('div', { role: 'progressbar', 'aria-label': skill.label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': skill.value, style: { height: 6, marginTop: 3, overflow: 'hidden', borderRadius: 4, background: 'rgba(148,163,184,0.22)' } },
+                        h('div', { 'aria-hidden': 'true', style: { width: skill.value + '%', height: '100%', background: skill.color } })));
+                  }),
+                  h('div', { style: { marginTop: 9, color: catchSkillSummary.focusId === 'balanced' ? '#a7f3d0' : '#fde68a', fontSize: 10, lineHeight: 1.45, fontWeight: 800 } }, catchSkillSummary.focusLabel)
+                ) : null,
                 catchDecisionHistory.length ? h('div', { 'aria-label': 'Catch field notes', style: { margin: '12px 0', paddingTop: 10, borderTop: '1px solid rgba(186,230,253,0.28)', textAlign: 'left' } },
                   h('div', { style: { marginBottom: 5, color: '#bae6fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Catch field notes'),
                   catchDecisionHistory.map(function(note, noteIndex) {
                     return h('div', { key: noteIndex, style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '3px 10px', padding: '7px 0', borderBottom: noteIndex < catchDecisionHistory.length - 1 ? '1px solid rgba(148,163,184,0.18)' : 'none' } },
                       h('strong', { style: { color: '#f8fafc', fontSize: 11 } }, note.label + (note.length == null ? '' : ' · ' + Number(note.length).toFixed(2) + ' in')),
                       h('span', { style: { color: note.correct ? '#86efac' : '#fde68a', fontSize: 10, fontWeight: 900 } }, note.correct ? 'Confirmed' : 'Review'),
+                      note.kind === 'finfish' && note.identificationCorrect !== null ? h('span', { style: { gridColumn: '1 / -1', color: '#bae6fd', fontSize: 9, fontWeight: 800 } }, 'Species ID ' + (note.identificationCorrect ? 'confirmed' : 'review') + ' · Rule evidence ' + (note.ruleCorrect ? 'confirmed' : 'review')) : null,
                       h('span', { style: { gridColumn: '1 / -1', color: '#cbd5e1', fontSize: 10, lineHeight: 1.4 } }, (note.action === 'keep' ? 'Retain' : 'Release') + ' · ' + note.evidence)
                     );
                   })

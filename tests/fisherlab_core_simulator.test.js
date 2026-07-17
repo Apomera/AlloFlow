@@ -281,6 +281,16 @@ describe('Fisher Lab catch evidence', () => {
     expect(getCoreFishHandlingGuidance('retain', false).id).toBe('release');
   });
 
+  it('separates species-identification and regulation-evidence performance', () => {
+    const { getCoreCatchSkillSummary } = window.__FisherLabCore;
+
+    expect(getCoreCatchSkillSummary(0, 0, 0, 0)).toMatchObject({ hasData: false, focusId: 'no-data' });
+    expect(getCoreCatchSkillSummary(1, 2, 2, 2)).toMatchObject({ identificationPct: 50, rulePct: 100, focusId: 'identification' });
+    expect(getCoreCatchSkillSummary(2, 2, 1, 2)).toMatchObject({ identificationPct: 100, rulePct: 50, focusId: 'regulation' });
+    expect(getCoreCatchSkillSummary(5, 2, 8, 2)).toMatchObject({ identificationCorrect: 2, ruleCorrect: 2, focusId: 'balanced' });
+    expect(getCoreCatchSkillSummary(1, 2, 1, 2).focusId).toBe('workflow');
+  });
+
   it('builds a compact scenario trip ledger around the mission target', () => {
     const { getCoreTripLedger } = window.__FisherLabCore;
     const species = [
@@ -430,6 +440,13 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('evaluateCoreFishIdentification');
     expect(source).toContain('Species identification review');
     expect(source).toContain("'Identification: ' + identifiedSpecies.name");
+    expect(source).toContain('getCoreCatchSkillSummary');
+    expect(source).toContain('Catch skill breakdown');
+    expect(source).toContain("role: 'progressbar'");
+    expect(source).toContain("'aria-valuenow': skill.value");
+    expect(source).toContain('boatState.fishIdentificationTotal += 1');
+    expect(source).toContain('boatState.fishRuleTotal += 1');
+    expect(source).toContain("'Species ID ' + (note.identificationCorrect ? 'confirmed' : 'review')");
     expect(source).toContain("disabled: !fishIdentification || !fishEvidence");
     expect(source).toContain("expectedReason = 'bag-limit'");
     expect(source).toContain('Scenario trip limit has been reached');
