@@ -806,6 +806,24 @@ describe('reader navigation, bookmarks, and continuous read-aloud', () => {
     expect(JSON.parse(window.localStorage.getItem('allo_reading_lib_words')).length).toBe(0);
   });
 
+  it('exports the word bank as a vocabulary handout via the Document Builder bridge', async () => {
+    const sent = [];
+    window.localStorage.setItem('allo_reading_lib_words', JSON.stringify([
+      { word: 'plenty', text: 'A lot of something.', language: 'English', bookTitle: 'Navigation Fixture' },
+    ]));
+    await mountBook(makeBook(), { isTeacherMode: true, handleGenerate: () => {}, onOpenInDocBuilder: (p) => sent.push(p) });
+    clickByText(host, 'button', 'My words (1)');
+    await flush();
+    clickByText(host.querySelector('[data-testid="word-bank"]'), 'button', 'Make a handout');
+    await flush();
+    expect(sent.length).toBe(1);
+    expect(sent[0].text).toContain('**plenty** — A lot of something.');
+    expect(sent[0].text).toContain('*(Navigation Fixture)*');
+    expect(sent[0].scopeLabel).toContain('1');
+    // panel closed after hand-off
+    expect(host.querySelector('[data-testid="word-bank"]')).toBe(null);
+  });
+
   it('renders page art with its caption, and the caption doubles as alt text', async () => {
     const book = makeBook();
     book.pages[0].img = 'https://www.gutenberg.org/cache/epub/1/images/test-art.jpg';

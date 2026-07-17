@@ -2021,6 +2021,27 @@
           e('div', { className: 'flex items-center justify-between gap-2 pb-2 border-b border-slate-200' },
             e('div', { className: 'font-bold text-slate-800' }, '📒 ' + tr('readinglib_my_words', 'My words') + ' · ' + wordBank.length),
             e('div', { className: 'flex gap-1.5' },
+              // Vocabulary handout: the word bank rides the same Document
+              // Builder bridge as book passages — a markdown list becomes an
+              // editable 'simplified' section, no extra host wiring needed.
+              (wordBank.length && props.isTeacherMode && typeof props.onOpenInDocBuilder === 'function') ? e('button', {
+                className: 'px-2 py-1 rounded-lg text-[12px] font-semibold text-teal-700 border border-teal-200 hover:bg-teal-50',
+                title: tr('readinglib_words_handout_hint', 'Turn these words into an editable vocabulary handout in the Document Builder'),
+                onClick: function () {
+                  setWordsOpen(false);
+                  props.onOpenInDocBuilder({
+                    slug: 'word-bank',
+                    title: tr('readinglib_words_handout_title', 'My words — vocabulary list'),
+                    text: wordBank.map(function (w) {
+                      return '- **' + w.word + '**' + (w.text ? ' — ' + w.text : '') +
+                        (w.bookTitle ? ' *(' + w.bookTitle + ')*' : '');
+                    }).join('\n'),
+                    scopeLabel: String(wordBank.length) + ' ' + tr('readinglib_words', 'words'),
+                    attribution: '',
+                    language: displayLanguage,
+                  });
+                },
+              }, '📄 ' + tr('readinglib_words_handout', 'Make a handout')) : null,
               wordBank.length ? e('button', {
                 className: 'px-2 py-1 rounded-lg text-[12px] font-semibold text-red-700 border border-red-200 hover:bg-red-50',
                 onClick: function () { saveWordBank([]); setWordBank([]); },
