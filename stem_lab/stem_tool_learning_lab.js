@@ -11513,134 +11513,230 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { palaces: [] };
     var setData = props.setData;
-    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
-    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
+    var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null); var activeId = as[0]; var setActiveId = as[1];
     var ns = R.useState({ name: '', description: '' });
     var newP = ns[0]; var setNewP = ns[1];
+    var pes = R.useState(''); var palaceError = pes[0]; var setPalaceError = pes[1];
     var ls = R.useState({ location: '', item: '', vivid: '' });
     var locForm = ls[0]; var setLocForm = ls[1];
-    var ts = R.useState(false);                        var practicing = ts[0]; var setPracticing = ts[1];
-    var ws = R.useState(0);                            var walkIdx = ws[0]; var setWalkIdx = ws[1];
+    var les = R.useState({ location: '', item: '' }); var locErrors = les[0]; var setLocErrors = les[1];
+    var ts = R.useState(false); var practicing = ts[0]; var setPracticing = ts[1];
+    var ws = R.useState(0); var walkIdx = ws[0]; var setWalkIdx = ws[1];
 
+    function focusById(id) {
+      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
+    }
     function createPalace() {
-      if (!newP.name.trim()) return;
-      var palace = { id: tkId(), name: newP.name.trim(), description: newP.description.trim(), loci: [], createdAt: todayISO() };
-      setData({ palaces: [palace].concat(data.palaces || []) });
+      var name = newP.name.trim();
+      if (!name) {
+        setPalaceError('Enter a name for the memory palace.');
+        focusById('learning-lab-palace-new-name');
+        return;
+      }
+      var palace = { id: tkId(), name: name, description: newP.description.trim(), loci: [], createdAt: todayISO() };
+      setData(Object.assign({}, data, { palaces: [palace].concat(data.palaces || []) }));
       setActiveId(palace.id);
       setNewP({ name: '', description: '' });
+      setPalaceError('');
       setView('edit');
+      llAnnounce('Memory palace created: ' + palace.name + '.');
+      focusById('learning-lab-palace-editor-heading');
     }
-    function getPalace() { return (data.palaces || []).filter(function(p) { return p.id === activeId; })[0]; }
+    function getPalace() { return (data.palaces || []).filter(function(palace) { return palace.id === activeId; })[0]; }
     function updatePalace(patch) {
-      setData({ palaces: (data.palaces || []).map(function(p) { return p.id === activeId ? Object.assign({}, p, patch) : p; }) });
+      setData(Object.assign({}, data, {
+        palaces: (data.palaces || []).map(function(palace) { return palace.id === activeId ? Object.assign({}, palace, patch) : palace; })
+      }));
     }
-    function removePalace(id) {
-      if (!confirm('Delete this memory palace?')) return;
-      setData({ palaces: (data.palaces || []).filter(function(p) { return p.id !== id; }) });
+    async function removePalace(id) {
+      var palace = (data.palaces || []).filter(function(item) { return item.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes' + (palace ? ' "' + palace.name + '" and every stop' : ' this memory palace') + '.', {
+        title: 'Delete this memory palace?', confirmText: 'Delete palace'
+      }))) return;
+      setData(Object.assign({}, data, { palaces: (data.palaces || []).filter(function(item) { return item.id !== id; }) }));
+      llAnnounce('Memory palace deleted.');
+      focusById('learning-lab-palace-new-name');
     }
-    function addLoci() {
-      if (!locForm.location.trim() || !locForm.item.trim()) { alert('Need location + item.'); return; }
-      var p = getPalace();
-      updatePalace({ loci: (p.loci || []).concat([Object.assign({ id: tkId() }, locForm)]) });
+    function addLocus() {
+      var nextErrors = {
+        location: locForm.location.trim() ? '' : 'Enter a location for this stop.',
+        item: locForm.item.trim() ? '' : 'Enter the item to remember.'
+      };
+      if (nextErrors.location || nextErrors.item) {
+        setLocErrors(nextErrors);
+        focusById(nextErrors.location ? 'learning-lab-palace-location' : 'learning-lab-palace-item');
+        return;
+      }
+      var palace = getPalace();
+      if (!palace) return;
+      var locus = { id: tkId(), location: locForm.location.trim(), item: locForm.item.trim(), vivid: locForm.vivid.trim() };
+      updatePalace({ loci: (palace.loci || []).concat([locus]) });
       setLocForm({ location: '', item: '', vivid: '' });
+      setLocErrors({ location: '', item: '' });
+      llAnnounce('Memory palace stop added: ' + locus.location + '.');
+      focusById('learning-lab-palace-location');
     }
-    function removeLoci(id) {
-      var p = getPalace();
-      updatePalace({ loci: p.loci.filter(function(l) { return l.id !== id; }) });
+    async function removeLocus(id) {
+      var palace = getPalace();
+      if (!palace) return;
+      var locus = (palace.loci || []).filter(function(item) { return item.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes the stop' + (locus ? ' "' + locus.location + '" and its memory item' : '') + '.', {
+        title: 'Delete this palace stop?', confirmText: 'Delete stop'
+      }))) return;
+      updatePalace({ loci: (palace.loci || []).filter(function(item) { return item.id !== id; }) });
+      llAnnounce('Memory palace stop deleted.');
+      focusById('learning-lab-palace-location');
+    }
+    function openPalace(id) {
+      setActiveId(id);
+      setView('edit');
+      focusById('learning-lab-palace-editor-heading');
+    }
+    function backToPalaces() {
+      var previousId = activeId;
+      setView('list');
+      setActiveId(null);
+      setPracticing(false);
+      setWalkIdx(0);
+      focusById('learning-lab-palace-open-' + previousId);
+    }
+    function startWalk(palace) {
+      if (!(palace.loci || []).length) return;
+      setPracticing(true);
+      setWalkIdx(0);
+      llAnnounce('Memory walk started. Stop 1 of ' + palace.loci.length + '.');
+      focusById('learning-lab-palace-walk-heading');
+    }
+    function nextStop(palace) {
+      var nextIndex = Math.min(palace.loci.length - 1, walkIdx + 1);
+      setWalkIdx(nextIndex);
+      llAnnounce('Stop ' + (nextIndex + 1) + ' of ' + palace.loci.length + '.');
+      focusById('learning-lab-palace-walk-heading');
+    }
+    function endWalk(palace, completed) {
+      setPracticing(false);
+      setWalkIdx(0);
+      llAnnounce(completed ? 'Memory walk complete.' : 'Memory walk stopped.');
+      focusById('learning-lab-palace-start-walk');
     }
 
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid rgba(168,85,247,0.50)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', marginBottom: 4 };
+    var hiddenLabelStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
+
     if (view === 'edit') {
-      var p = getPalace();
-      if (!p) { setView('list'); return null; }
-      if (practicing) {
-        var current = p.loci[walkIdx];
+      var activePalace = getPalace();
+      if (!activePalace) return hh('div', { role: 'status', style: { padding: 20, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'This memory palace is not available. Return to the palace list and choose another.');
+      var loci = activePalace.loci || [];
+      if (practicing && loci.length > 0) {
+        var safeIndex = Math.max(0, Math.min(loci.length - 1, walkIdx));
+        var current = loci[safeIndex];
+        var progress = Math.round((safeIndex + 1) / loci.length * 100);
         return hh('div', { style: { padding: 14 } },
-          tkSectionHeader('🚶', 'Walking through ' + p.name, 'Stop ' + (walkIdx + 1) + ' of ' + p.loci.length, '#10b981'),
-          hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(16,185,129,0.20), rgba(15,23,42,0.7))', border: '2px solid #10b981', marginBottom: 14 } },
-            hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8 } }, '📍 Location'),
-            hh('div', { style: { fontSize: 18, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 14, lineHeight: 1.5 } }, current ? current.location : ''),
-            hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8 } }, '🎯 Item to remember'),
-            hh('div', { style: { fontSize: 16, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12, lineHeight: 1.5, fontStyle: 'italic' } }, current ? current.item : ''),
-            current && current.vivid ? hh('div', null,
-              hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 } }, '🌈 Vivid image'),
-              hh('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, current.vivid)
-            ) : null
+          tkSectionHeader('🚶', 'Walking through ' + activePalace.name, 'Stop ' + (safeIndex + 1) + ' of ' + loci.length, '#10b981'),
+          hh('section', { 'aria-labelledby': 'learning-lab-palace-walk-heading' },
+            hh('h2', { id: 'learning-lab-palace-walk-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Stop ' + (safeIndex + 1) + ' of ' + loci.length + ': ' + current.location),
+            hh('div', { role: 'progressbar', 'aria-label': 'Memory walk progress', 'aria-valuemin': 1, 'aria-valuemax': loci.length, 'aria-valuenow': safeIndex + 1, 'aria-valuetext': 'Stop ' + (safeIndex + 1) + ' of ' + loci.length, style: { height: 10, background: 'rgba(15,23,42,0.7)', borderRadius: 5, overflow: 'hidden', marginBottom: 10 } },
+              hh('div', { 'aria-hidden': 'true', style: { width: progress + '%', height: '100%', background: '#10b981' } })
+            ),
+            hh('article', { 'aria-label': 'Memory stop ' + (safeIndex + 1), style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(16,185,129,0.20), rgba(15,23,42,0.7))', border: '2px solid #10b981', marginBottom: 14 } },
+              hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 8px' } }, 'Location'),
+              hh('p', { style: { fontSize: 18, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 14px', lineHeight: 1.5 } }, current.location),
+              hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 8px' } }, 'Item to remember'),
+              hh('p', { style: { fontSize: 16, color: 'var(--allo-stem-text, #cbd5e1)', margin: '0 0 12px', lineHeight: 1.5, fontStyle: 'italic' } }, current.item),
+              current.vivid ? hh('div', null,
+                hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 6px' } }, 'Vivid image'),
+                hh('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: 0 } }, current.vivid)
+              ) : null
+            )
           ),
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-            tkBtn('← Stop walk', function() { setPracticing(false); setWalkIdx(0); }, 'ghost'),
-            walkIdx + 1 >= p.loci.length
-              ? tkBtn('✓ Done walking', function() { setPracticing(false); setWalkIdx(0); }, 'good')
-              : tkBtn('Next stop →', function() { setWalkIdx(walkIdx + 1); }, 'primary')
+          hh('div', { role: 'group', 'aria-label': 'Memory walk controls', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+            hh('button', { type: 'button', onClick: function() { endWalk(activePalace, false); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Stop walk'),
+            safeIndex + 1 >= loci.length
+              ? hh('button', { type: 'button', onClick: function() { endWalk(activePalace, true); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Complete walk')
+              : hh('button', { type: 'button', onClick: function() { nextStop(activePalace); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Next stop')
           )
         );
       }
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🏛', p.name, p.description + ' · ' + (p.loci || []).length + ' loci', '#a855f7'),
-        hh('div', { style: { display: 'flex', gap: 6, marginBottom: 10 } },
-          tkBtn('← All palaces', function() { setView('list'); setActiveId(null); }, 'ghost'),
-          (p.loci || []).length > 0 ? tkBtn('🚶 Walk through', function() { setPracticing(true); setWalkIdx(0); }, 'primary') : null
+        tkSectionHeader('🏛', activePalace.name, (activePalace.description ? activePalace.description + ' · ' : '') + loci.length + (loci.length === 1 ? ' stop' : ' stops'), '#a855f7'),
+        hh('h2', { id: 'learning-lab-palace-editor-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Editing memory palace: ' + activePalace.name),
+        hh('div', { role: 'group', 'aria-label': 'Memory palace actions', style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+          hh('button', { type: 'button', onClick: backToPalaces, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '← All palaces'),
+          loci.length > 0 ? hh('button', { id: 'learning-lab-palace-start-walk', type: 'button', onClick: function() { startWalk(activePalace); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Start memory walk') : null
         ),
         tkCard('#a855f7',
-          hh('div', null,
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Add location → item'),
-            tkInput(locForm.location, function(v) { setLocForm(Object.assign({}, locForm, { location: v })); }, 'Location (e.g., "front door of my house")', { marginBottom: 6 }),
-            tkInput(locForm.item, function(v) { setLocForm(Object.assign({}, locForm, { item: v })); }, 'Item to remember (e.g., "mitochondria → cell powerhouse")', { marginBottom: 6 }),
-            tkTextarea(locForm.vivid, function(v) { setLocForm(Object.assign({}, locForm, { vivid: v })); }, 'Make it VIVID (e.g., "A giant glowing battery the size of my front door, sparking electricity")', 2, { marginBottom: 8 }),
-            tkBtn('+ Add this stop', addLoci, 'primary')
+          hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); addLocus(); }, 'aria-labelledby': 'learning-lab-palace-add-heading' },
+            hh('h3', { id: 'learning-lab-palace-add-heading', style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px' } }, 'Add a location and memory item'),
+            hh('label', { htmlFor: 'learning-lab-palace-location', style: labelStyle }, 'Location (required)'),
+            hh('input', { id: 'learning-lab-palace-location', type: 'text', value: locForm.location, required: true, maxLength: 500, 'aria-invalid': locErrors.location ? 'true' : undefined, 'aria-describedby': locErrors.location ? 'learning-lab-palace-location-error' : undefined, placeholder: 'e.g., Front door of my house', onChange: function(event) { setLocForm(Object.assign({}, locForm, { location: event.target.value })); if (locErrors.location) setLocErrors(Object.assign({}, locErrors, { location: '' })); }, style: Object.assign({}, fieldStyle, { marginBottom: locErrors.location ? 4 : 6 }) }),
+            hh('div', { id: 'learning-lab-palace-location-error', role: 'alert', style: { minHeight: locErrors.location ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: locErrors.location ? 6 : 0 } }, locErrors.location),
+            hh('label', { htmlFor: 'learning-lab-palace-item', style: labelStyle }, 'Item to remember (required)'),
+            hh('input', { id: 'learning-lab-palace-item', type: 'text', value: locForm.item, required: true, maxLength: 1000, 'aria-invalid': locErrors.item ? 'true' : undefined, 'aria-describedby': locErrors.item ? 'learning-lab-palace-item-error' : undefined, placeholder: 'e.g., Mitochondria are the cell powerhouse', onChange: function(event) { setLocForm(Object.assign({}, locForm, { item: event.target.value })); if (locErrors.item) setLocErrors(Object.assign({}, locErrors, { item: '' })); }, style: Object.assign({}, fieldStyle, { marginBottom: locErrors.item ? 4 : 6 }) }),
+            hh('div', { id: 'learning-lab-palace-item-error', role: 'alert', style: { minHeight: locErrors.item ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: locErrors.item ? 6 : 0 } }, locErrors.item),
+            hh('label', { htmlFor: 'learning-lab-palace-vivid', style: labelStyle }, 'Vivid image (optional)'),
+            hh('textarea', { id: 'learning-lab-palace-vivid', value: locForm.vivid, rows: 3, maxLength: 2000, placeholder: 'Describe an exaggerated or surprising mental image', onChange: function(event) { setLocForm(Object.assign({}, locForm, { vivid: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 76, resize: 'vertical', marginBottom: 8 }) }),
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Add stop')
           )
         ),
-        (p.loci || []).length === 0 ? tkEmptyState('🏛', 'No stops yet. Add 5-15 specific locations on your mental walk.', null, null)
-        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            (p.loci || []).map(function(l, i) {
-              return hh('div', { key: 'lc-' + l.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7' } },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                  hh('span', { style: { fontSize: 11, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, '📍 ' + (i + 1) + '. ' + l.location),
-                  hh('button', { onClick: function() { removeLoci(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                ),
-                hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: l.vivid ? 4 : 0 } }, '→ ' + l.item),
-                l.vivid ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '🌈 ' + l.vivid) : null
+        loci.length === 0 ? tkEmptyState('🏛', 'No stops yet. Add 5 to 15 specific locations on your mental walk.', null, null)
+        : hh('ol', { 'aria-label': 'Memory palace route', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+            loci.map(function(locus, index) {
+              return hh('li', { key: 'lc-' + locus.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7' } },
+                hh('article', { 'aria-labelledby': 'learning-lab-palace-locus-' + locus.id },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
+                    hh('h3', { id: 'learning-lab-palace-locus-' + locus.id, style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, margin: 0 } }, (index + 1) + '. ' + locus.location),
+                    hh('button', { type: 'button', 'aria-label': 'Delete memory stop ' + (index + 1) + ': ' + locus.location, onClick: function() { removeLocus(locus.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+                  ),
+                  hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: locus.vivid ? '0 0 4px' : 0 } }, 'Item: ' + locus.item),
+                  locus.vivid ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', margin: 0 } }, 'Vivid image: ' + locus.vivid) : null
+                )
               );
             })
           )
       );
     }
 
+    var palaces = data.palaces || [];
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🏛', 'Memory Palace Builder', 'Method of loci. Walk a familiar place, attach items to locations. Ancient + research-supported.', '#a855f7'),
+      tkSectionHeader('🏛', 'Memory Palace Builder', 'Use a familiar route and attach information to specific locations.', '#a855f7'),
       tkCard('#a855f7',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ New palace'),
-          tkInput(newP.name, function(v) { setNewP(Object.assign({}, newP, { name: v })); }, 'Palace name (e.g., "My house")', { marginBottom: 6 }),
-          tkInput(newP.description, function(v) { setNewP(Object.assign({}, newP, { description: v })); }, 'What\'s this palace for? (e.g., "AP Bio Unit 5 vocab")', { marginBottom: 8 }),
-          tkBtn('Create palace', createPalace, 'primary')
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); createPalace(); }, 'aria-labelledby': 'learning-lab-palace-new-heading' },
+          hh('h3', { id: 'learning-lab-palace-new-heading', style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px' } }, 'New memory palace'),
+          hh('label', { htmlFor: 'learning-lab-palace-new-name', style: labelStyle }, 'Palace name (required)'),
+          hh('input', { id: 'learning-lab-palace-new-name', type: 'text', value: newP.name, required: true, maxLength: 240, 'aria-invalid': palaceError ? 'true' : undefined, 'aria-describedby': palaceError ? 'learning-lab-palace-name-error' : undefined, placeholder: 'e.g., My house', onChange: function(event) { setNewP(Object.assign({}, newP, { name: event.target.value })); if (palaceError) setPalaceError(''); }, style: Object.assign({}, fieldStyle, { marginBottom: palaceError ? 4 : 6 }) }),
+          hh('div', { id: 'learning-lab-palace-name-error', role: 'alert', style: { minHeight: palaceError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: palaceError ? 6 : 0 } }, palaceError),
+          hh('label', { htmlFor: 'learning-lab-palace-new-description', style: labelStyle }, 'Purpose (optional)'),
+          hh('input', { id: 'learning-lab-palace-new-description', type: 'text', value: newP.description, maxLength: 500, placeholder: 'e.g., AP Biology Unit 5 vocabulary', onChange: function(event) { setNewP(Object.assign({}, newP, { description: event.target.value })); }, style: Object.assign({}, fieldStyle, { marginBottom: 8 }) }),
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Create palace')
         )
       ),
-      (data.palaces || []).length === 0 ? tkEmptyState('🏛', 'No memory palaces yet. Pick a place you know well to start.', null, null)
-      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-          (data.palaces || []).map(function(p) {
-            return hh('button', { key: 'pa-' + p.id,
-              onClick: function() { setActiveId(p.id); setView('edit'); },
-              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', borderLeft: '4px solid #a855f7', cursor: 'pointer' }
-            },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, '🏛 ' + p.name),
-                hh('span', { onClick: function(e) { e.stopPropagation(); removePalace(p.id); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
-              ),
-              p.description ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, p.description) : null,
-              hh('div', { style: { fontSize: 11, color: '#c084fc', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, (p.loci || []).length + ' loci')
+      palaces.length === 0 ? tkEmptyState('🏛', 'No memory palaces yet. Pick a place you know well to start.', null, null)
+      : hh('ul', { 'aria-label': 'Memory palaces', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          palaces.map(function(palace) {
+            return hh('li', { key: 'pa-' + palace.id, style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.45)', borderLeft: '4px solid #a855f7' } },
+              hh('article', { 'aria-labelledby': 'learning-lab-palace-name-' + palace.id },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+                  hh('h3', { id: 'learning-lab-palace-name-' + palace.id, style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, hh('span', { 'aria-hidden': 'true' }, '🏛 '), palace.name),
+                  hh('button', { type: 'button', 'aria-label': 'Delete memory palace: ' + palace.name, onClick: function() { removePalace(palace.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+                ),
+                palace.description ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0', fontStyle: 'italic' } }, palace.description) : null,
+                hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0 8px' } }, (palace.loci || []).length + ((palace.loci || []).length === 1 ? ' stop' : ' stops')),
+                hh('button', { id: 'learning-lab-palace-open-' + palace.id, type: 'button', 'aria-label': 'Open memory palace: ' + palace.name, onClick: function() { openPalace(palace.id); }, 'data-ll-focusable': true, style: { width: '100%', minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Open palace')
+              )
             );
           })
         ),
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🎓 The method of loci: '),
-        'Ancient Greek + Roman orators used this to memorize hour-long speeches. Modern memory champions still rely on it. Strong research support (Maguire et al. 2003 — World Memory Championship competitors show distinct hippocampal patterns). The vividness + specific-location combo bypasses normal forgetting curves.'
+      hh('aside', { 'aria-label': 'About the method of loci', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#d8b4fe' } }, 'The method of loci: '),
+        'Attach information to memorable places along a familiar route. Specific locations and vivid images create retrieval cues you can revisit in the same order.'
       )
     );
   }
 
   // ── PP. PERSONAL CLASS ROSTER (Wave 9) ──
-  // Track classes: name, teacher, period, when/where, friend in class.
-  // Subject-tagged for cross-reference with other toolkit tools.
+  // Track class names, teachers, periods, locations, and classmates.
   function PersonalClassRoster(props) {
     if (!R) return null;
     var data = props.data || { classes: [] };
