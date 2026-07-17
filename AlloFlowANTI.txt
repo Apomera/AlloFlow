@@ -24825,11 +24825,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     // their own CSS on repeated application. Slides mode stays history-based
     // (no remediation slide deck exists; the audit modal's accessible-PPTX
     // export covers decks).
+    if (exportPreviewSource === 'remediation' && pdfFixResult?.accessibleHtml && exportPreviewMode !== 'slides') {
       if (!_docPipeline || typeof _docPipeline.sanitizeRemediationHtml !== 'function') {
         throw new Error('Remediation security module unavailable ? reload after the application modules finish loading.');
       }
       const _safeRemediationHtml = _docPipeline.sanitizeRemediationHtml(pdfFixResult.accessibleHtml);
-    if (exportPreviewSource === 'remediation' && pdfFixResult?.accessibleHtml && exportPreviewMode !== 'slides') {
       try {
         if (_docPipeline && typeof _docPipeline.applyStyleSeedToHtml === 'function') {
           return _docPipeline.applyStyleSeedToHtml(_safeRemediationHtml, exportTheme, exportConfig.fontSize || 16);
