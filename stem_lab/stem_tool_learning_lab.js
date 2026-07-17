@@ -10721,103 +10721,138 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { sessions: [] };
     var setData = props.setData;
-    var as = R.useState(null);                       var activeId = as[0]; var setActiveId = as[1];
-    var ts = R.useState(0);                          var seconds = ts[0]; var setSeconds = ts[1];
-    var ps = R.useState(false);                      var playing = ps[0]; var setPlaying = ps[1];
+    var as = R.useState(null); var activeId = as[0]; var setActiveId = as[1];
+    var ts = R.useState(0); var seconds = ts[0]; var setSeconds = ts[1];
+    var ps = R.useState(false); var playing = ps[0]; var setPlaying = ps[1];
 
     var PRACTICES = [
-      { id: 'body',     label: 'Body scan',                icon: '🧘', color: '#a855f7', duration: 600,
+      { id: 'body', label: 'Body scan', icon: '🧘', color: '#a855f7', duration: 600,
         instructions: 'Lie down or sit comfortably. Close your eyes. Starting at your toes, slowly bring awareness to each part of your body. Notice sensations without judgment. Move up: feet, calves, thighs, hips, belly, chest, arms, hands, neck, face, top of head. Take your time. If your mind wanders, gently return to the body.',
-        research: 'Kabat-Zinn 1990 MBSR. Reduces anxiety + chronic pain. Activates parasympathetic nervous system (rest-and-digest).'
-      },
-      { id: 'breath',   label: 'Mindful breathing (5 min)', icon: '🌬', color: '#06b6d4', duration: 300,
-        instructions: 'Sit upright. Close your eyes or soften your gaze. Notice your natural breath. Don\'t change it. Feel the breath at the nostrils, or chest, or belly — whichever is easiest. When your mind wanders (it will), gently bring attention back to the breath. The noticing-and-returning IS the practice.',
-        research: 'Anchoring practice. Reduces rumination + builds attention control (Tang et al. 2007).'
-      },
-      { id: 'rain',     label: 'RAIN for difficult emotions', icon: '🌧', color: '#3b82f6', duration: 480,
-        instructions: 'Recognize the emotion — name it. Allow it to be present without resistance. Investigate where you feel it in the body. Nurture yourself — hand on heart, kind word. Sit with all four for 1-2 minutes each. Tara Brach\'s framework, integrating mindfulness + self-compassion.',
-        research: 'Brach 2013. Combines mindfulness (recognize/allow/investigate) + self-compassion (nurture). Strong evidence for emotion regulation.'
-      },
-      { id: 'open',     label: 'Open awareness (3 min)',     icon: '🌌', color: '#fbbf24', duration: 180,
-        instructions: 'Sit quietly. Instead of focusing on one thing, let your attention rest in open awareness. Notice whatever arises — sounds, sensations, thoughts — without grabbing onto anything. Like the sky watching weather pass through. If you find yourself caught up, return to open awareness.',
-        research: 'Advanced practice. Builds cognitive flexibility + reduces self-referential rumination.'
-      },
-      { id: 'walking',  label: 'Mindful walking (10 min)',   icon: '🚶', color: '#10b981', duration: 600,
-        instructions: 'Walk slowly outside or indoors. Feel each foot leaving and meeting the ground. Notice the rhythm of breath. Notice sights, sounds, sensations around you. When the mind wanders, return to the soles of your feet. Walking meditation accommodates restlessness — good when sitting is hard.',
-        research: 'Kabat-Zinn MBSR. Helpful for those who find still meditation difficult. Combines movement + attention.'
-      },
-      { id: 'eating',   label: 'Mindful eating (1 raisin)',  icon: '🍇', color: '#ec4899', duration: 300,
-        instructions: 'Pick one small piece of food (traditionally a raisin). Look at it for 30 seconds. Notice color, texture, shape. Smell it. Place it in your mouth without chewing — feel the texture on your tongue. Slowly bite — notice taste, texture changes. Swallow — feel it leave your mouth. Total ~5 min.',
-        research: 'Classic MBSR exercise. Trains attention + interrupts mindless eating patterns. Surprisingly profound in practice.'
-      }
+        research: 'Kabat-Zinn 1990 MBSR. Reduces anxiety and chronic pain. Activates the parasympathetic nervous system.' },
+      { id: 'breath', label: 'Mindful breathing', icon: '🌬', color: '#06b6d4', duration: 300,
+        instructions: 'Sit upright. Close your eyes or soften your gaze. Notice your natural breath without changing it. Feel the breath at the nostrils, chest, or belly. When your mind wanders, gently bring attention back. The noticing and returning is the practice.',
+        research: 'Anchoring practice. Reduces rumination and builds attention control (Tang et al. 2007).' },
+      { id: 'rain', label: 'RAIN for difficult emotions', icon: '🌧', color: '#3b82f6', duration: 480,
+        instructions: 'Recognize the emotion and name it. Allow it to be present without resistance. Investigate where you feel it in the body. Nurture yourself with a hand on your heart or a kind word. Sit with each step for one or two minutes.',
+        research: 'Brach 2013. Combines mindfulness with self-compassion for emotion regulation.' },
+      { id: 'open', label: 'Open awareness', icon: '🌌', color: '#fbbf24', duration: 180,
+        instructions: 'Sit quietly. Instead of focusing on one thing, let your attention rest in open awareness. Notice sounds, sensations, and thoughts without grabbing onto anything. If you become caught up, return to open awareness.',
+        research: 'Builds cognitive flexibility and reduces self-referential rumination.' },
+      { id: 'walking', label: 'Mindful walking', icon: '🚶', color: '#10b981', duration: 600,
+        instructions: 'Walk slowly outside or indoors. Feel each foot leave and meet the ground. Notice the rhythm of your breath and the sights, sounds, and sensations around you. When the mind wanders, return to the soles of your feet.',
+        research: 'Kabat-Zinn MBSR. Combines movement and attention for people who find still meditation difficult.' },
+      { id: 'eating', label: 'Mindful eating', icon: '🍇', color: '#ec4899', duration: 300,
+        instructions: 'Choose one small piece of food. Look closely at its color, texture, and shape. Smell it. Place it in your mouth without chewing and notice the texture. Slowly bite, notice changes in taste and texture, then swallow.',
+        research: 'Classic MBSR exercise. Trains attention and interrupts automatic eating patterns.' }
     ];
 
     R.useEffect(function() {
       if (!playing) return;
-      if (seconds <= 0) { setPlaying(false); return; }
-      var t = setTimeout(function() { setSeconds(seconds - 1); }, 1000);
-      return function() { clearTimeout(t); };
-    }, [playing, seconds]);
+      if (seconds <= 0) {
+        setPlaying(false);
+        var completedPractice = PRACTICES.filter(function(item) { return item.id === activeId; })[0];
+        llAnnounce((completedPractice ? completedPractice.label : 'Mindfulness') + ' timer complete.');
+        return;
+      }
+      var timer = setTimeout(function() { setSeconds(seconds - 1); }, 1000);
+      return function() { clearTimeout(timer); };
+    }, [playing, seconds, activeId]);
 
-    function start(p) {
-      setActiveId(p.id);
-      setSeconds(p.duration);
-      setPlaying(true);
+    function focusById(id) {
+      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
     }
-    function done(p) {
-      setData({ sessions: [{ id: tkId(), date: todayISO(), practiceId: p.id, duration: p.duration - seconds }].concat(data.sessions || []) });
+    function startPractice(practice) {
+      setActiveId(practice.id);
+      setSeconds(practice.duration);
+      setPlaying(true);
+      llAnnounce(practice.label + ' started. ' + Math.round(practice.duration / 60) + ' minutes.');
+      focusById('learning-lab-mindfulness-active-heading');
+    }
+    function togglePlayback(practice) {
+      if (seconds <= 0) {
+        setSeconds(practice.duration);
+        setPlaying(true);
+        llAnnounce(practice.label + ' timer restarted.');
+        return;
+      }
+      var nextPlaying = !playing;
+      setPlaying(nextPlaying);
+      llAnnounce(practice.label + (nextPlaying ? ' resumed.' : ' paused.'));
+    }
+    function finishPractice(practice) {
+      var elapsed = Math.max(0, practice.duration - seconds);
+      var session = { id: tkId(), date: todayISO(), time: Date.now(), practiceId: practice.id, duration: elapsed };
+      setData(Object.assign({}, data, { sessions: [session].concat(data.sessions || []) }));
       setActiveId(null);
       setPlaying(false);
+      setSeconds(0);
+      llAnnounce(practice.label + ' session saved. ' + Math.round(elapsed / 60) + ' minutes practiced.');
+      focusById('learning-lab-mindfulness-start-' + practice.id);
+    }
+    async function cancelPractice(practice) {
+      if (!(await askLearningLabConfirmation('This stops the ' + practice.label + ' timer without saving the session.', {
+        title: 'Cancel this mindfulness session?', confirmText: 'Cancel session'
+      }))) return;
+      setActiveId(null);
+      setPlaying(false);
+      setSeconds(0);
+      llAnnounce(practice.label + ' session canceled.');
+      focusById('learning-lab-mindfulness-start-' + practice.id);
     }
 
     var sessions = data.sessions || [];
-    var totalMin = Math.round(sessions.reduce(function(s, x) { return s + (x.duration || 0); }, 0) / 60);
+    var totalMin = Math.round(sessions.reduce(function(sum, session) { return sum + (Number(session.duration) || 0); }, 0) / 60);
 
     if (activeId) {
-      var p = PRACTICES.filter(function(x) { return x.id === activeId; })[0];
-      if (!p) { setActiveId(null); return null; }
-      var mm = Math.floor(seconds / 60);
-      var ss = seconds % 60;
-      var elapsedPct = ((p.duration - seconds) / p.duration) * 100;
+      var practice = PRACTICES.filter(function(item) { return item.id === activeId; })[0];
+      if (!practice) return hh('div', { role: 'status', style: { padding: 20, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'This mindfulness practice is not available. Return to the practice list.');
+      var minutes = Math.floor(seconds / 60);
+      var remainingSeconds = seconds % 60;
+      var elapsedSeconds = Math.max(0, practice.duration - seconds);
+      var elapsedPercent = Math.max(0, Math.min(100, Math.round(elapsedSeconds / practice.duration * 100)));
+      var statusText = seconds <= 0 ? 'Timer complete' : playing ? 'In practice' : 'Paused';
+      var toggleLabel = seconds <= 0 ? 'Restart timer' : playing ? 'Pause timer' : 'Resume timer';
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader(p.icon, p.label, 'Quiet space + this voice in your head.', p.color),
+        tkSectionHeader(practice.icon, practice.label, 'Use a quiet space if one is available. You can pause at any time.', practice.color),
+        hh('h2', { id: 'learning-lab-mindfulness-active-heading', tabIndex: -1, style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'Active mindfulness practice: ' + practice.label),
 
-        hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, ' + p.color + '25, rgba(15,23,42,0.7))', border: '2px solid ' + p.color, marginBottom: 14, textAlign: 'center' } },
-          hh('div', { style: { fontSize: 12, color: p.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 } }, playing ? '🧘 In practice' : '⏸ Paused'),
-          hh('div', { style: { fontSize: 64, fontWeight: 900, color: p.color, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1, marginBottom: 8 } }, String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0')),
-          hh('div', { style: { height: 6, background: 'rgba(15,23,42,0.5)', borderRadius: 3, overflow: 'hidden', marginBottom: 12 } },
-            hh('div', { style: { width: elapsedPct + '%', height: '100%', background: p.color, transition: 'width 1000ms linear' } })
-          )
+        hh('section', { 'aria-label': practice.label + ' timer', style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, ' + practice.color + '25, rgba(15,23,42,0.7))', border: '2px solid ' + practice.color, marginBottom: 14, textAlign: 'center' } },
+          hh('div', { role: 'status', style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 } }, statusText),
+          hh('div', { role: 'timer', 'aria-label': minutes + ' minutes and ' + remainingSeconds + ' seconds remaining', style: { fontSize: 64, fontWeight: 900, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1, marginBottom: 8 } }, String(minutes).padStart(2, '0') + ':' + String(remainingSeconds).padStart(2, '0')),
+          hh('div', { role: 'progressbar', 'aria-label': practice.label + ' progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': elapsedPercent, 'aria-valuetext': elapsedSeconds + ' seconds elapsed; ' + seconds + ' seconds remaining', style: { height: 10, background: 'rgba(15,23,42,0.7)', borderRadius: 5, overflow: 'hidden', marginBottom: 6 } },
+            hh('div', { 'aria-hidden': 'true', style: { width: elapsedPercent + '%', height: '100%', background: practice.color, transition: 'width 1000ms linear' } })
+          ),
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, elapsedPercent + '% complete')
         ),
 
-        hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + p.color, marginBottom: 14, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
-          p.instructions
+        hh('section', { 'aria-labelledby': 'learning-lab-mindfulness-instructions-heading', style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + practice.color, marginBottom: 14, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
+          hh('h3', { id: 'learning-lab-mindfulness-instructions-heading', style: { fontSize: 12, margin: '0 0 6px', color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Practice instructions'),
+          hh('p', { style: { margin: 0 } }, practice.instructions)
         ),
 
-        hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
-          tkBtn(playing ? '⏸ Pause' : '▶ Resume', function() { setPlaying(!playing); }, 'primary'),
-          tkBtn('✓ Finished', function() { done(p); }, 'good'),
-          tkBtn('Cancel', function() { setActiveId(null); setPlaying(false); }, 'ghost')
+        hh('div', { role: 'group', 'aria-label': 'Mindfulness timer controls', style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+          hh('button', { type: 'button', 'aria-pressed': playing ? 'true' : 'false', onClick: function() { togglePlayback(practice); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, toggleLabel),
+          hh('button', { type: 'button', onClick: function() { finishPractice(practice); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Finish and save'),
+          hh('button', { type: 'button', onClick: function() { cancelPractice(practice); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Cancel session')
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🧘', 'Mindfulness Practice', '6 guided practices from MBSR + RAIN traditions. 3-10 min each. No prior experience needed.', '#a855f7'),
+      tkSectionHeader('🧘', 'Mindfulness Practice', 'Six guided practices from MBSR and RAIN traditions. Each takes 3 to 10 minutes.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🧘 You\'ve practiced: '), totalMin, ' min total · ', sessions.length, ' session', sessions.length !== 1 ? 's' : ''
+      hh('section', { 'aria-label': 'Mindfulness practice totals', style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Practice history: '), totalMin, ' minutes total · ', sessions.length, ' session', sessions.length !== 1 ? 's' : ''
       ),
 
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-        PRACTICES.map(function(p) {
-          return hh('button', { key: 'pr-' + p.id,
-            onClick: function() { start(p); },
-            style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + p.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + p.color + '40', borderLeft: '4px solid ' + p.color, cursor: 'pointer' }
-          },
-            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, p.icon),
-            hh('div', { style: { fontSize: 13, fontWeight: 800, color: p.color } }, p.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, Math.round(p.duration / 60) + ' min · ' + p.research.split('.')[0])
+      hh('ul', { 'aria-label': 'Available mindfulness practices', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+        PRACTICES.map(function(practice) {
+          return hh('li', { key: 'pr-' + practice.id },
+            hh('button', { id: 'learning-lab-mindfulness-start-' + practice.id, type: 'button', 'aria-label': 'Start ' + practice.label + ', ' + Math.round(practice.duration / 60) + ' minutes', onClick: function() { startPractice(practice); }, 'data-ll-focusable': true, style: { boxSizing: 'border-box', width: '100%', minHeight: 44, display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + practice.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + practice.color + '55', borderLeft: '4px solid ' + practice.color, color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer' } },
+              hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 22, marginBottom: 4 } }, practice.icon),
+              hh('strong', { style: { display: 'block', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)' } }, practice.label),
+              hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, Math.round(practice.duration / 60) + ' minutes · ' + practice.research)
+            )
           );
         })
       )
@@ -10826,7 +10861,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
   // ── LL. PERSONAL ANXIETY TOOLKIT (Wave 8) ──
   // Quick-access tools when anxiety hits. Grounding, breathing, cognitive
-  // reframes, body release. Linked to crisis resources when severe.
+  // reframes, and body release. Links to crisis resources when severe.
   function PersonalAnxietyToolkit(props) {
     if (!R) return null;
     var data = props.data || { logs: [] };
