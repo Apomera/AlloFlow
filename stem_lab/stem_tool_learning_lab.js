@@ -9791,144 +9791,152 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
     var fs = R.useState({ title: '', why: '', target: '', startDate: todayISO(), days: 30, dailyAction: '' });
     var form = fs[0]; var setForm = fs[1];
+    var es = R.useState({ title: '', dailyAction: '' }); var errors = es[0]; var setErrors = es[1];
 
     function addChallenge() {
-      if (!form.title.trim() || !form.dailyAction.trim()) { alert('Need title + daily action.'); return; }
-      var ch = Object.assign({ id: tkId(), createdAt: todayISO(), logs: [] }, form);
-      setData({ challenges: [ch].concat(data.challenges || []) });
+      var nextErrors = {
+        title: form.title.trim() ? '' : 'Challenge name is required.',
+        dailyAction: form.dailyAction.trim() ? '' : 'Daily action is required.'
+      };
+      if (nextErrors.title || nextErrors.dailyAction) {
+        setErrors(nextErrors);
+        setTimeout(function() { var field = document.getElementById(nextErrors.title ? 'learning-lab-challenge-title' : 'learning-lab-challenge-action'); if (field) field.focus(); }, 0);
+        return;
+      }
+      var challenge = Object.assign({ id: tkId(), createdAt: todayISO(), logs: [] }, form, { title: form.title.trim(), dailyAction: form.dailyAction.trim(), why: form.why.trim(), days: Math.max(1, Math.min(365, Number(form.days) || 30)) });
+      setData(Object.assign({}, data, { challenges: [challenge].concat(data.challenges || []) }));
       setForm({ title: '', why: '', target: '', startDate: todayISO(), days: 30, dailyAction: '' });
+      setErrors({ title: '', dailyAction: '' });
       setView('list');
+      llAnnounce('Challenge started: ' + challenge.title + '.');
     }
-    function remove(id) {
-      if (!confirm('Delete this challenge?')) return;
-      setData({ challenges: (data.challenges || []).filter(function(c) { return c.id !== id; }) });
+    async function remove(id) {
+      var challenge = (data.challenges || []).filter(function(item) { return item.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes' + (challenge ? ' "' + challenge.title + '" and all daily logs' : ' this challenge and all daily logs') + '.', {
+        title: 'Delete this challenge?', confirmText: 'Delete challenge'
+      }))) return;
+      setData(Object.assign({}, data, { challenges: (data.challenges || []).filter(function(item) { return item.id !== id; }) }));
+      llAnnounce('Challenge deleted.');
     }
     function logDay(challengeId) {
-      var ch = (data.challenges || []).filter(function(c) { return c.id === challengeId; })[0];
-      if (!ch) return;
+      var challenge = (data.challenges || []).filter(function(item) { return item.id === challengeId; })[0];
+      if (!challenge) return;
       var today = todayISO();
-      var logs = (ch.logs || []).slice();
-      var idx = logs.findIndex(function(l) { return l.date === today; });
-      if (idx >= 0) logs.splice(idx, 1);
+      var logs = (challenge.logs || []).slice();
+      var index = logs.findIndex(function(log) { return log.date === today; });
+      var removing = index >= 0;
+      if (removing) logs.splice(index, 1);
       else logs.push({ date: today, time: Date.now() });
-      setData({
-        challenges: data.challenges.map(function(c) { return c.id === challengeId ? Object.assign({}, c, { logs: logs }) : c; })
-      });
+      setData(Object.assign({}, data, { challenges: data.challenges.map(function(item) { return item.id === challengeId ? Object.assign({}, item, { logs: logs }) : item; }) }));
+      llAnnounce(challenge.title + (removing ? ' marked incomplete for today.' : ' marked complete for today.'));
     }
 
     var challenges = data.challenges || [];
+    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(251,191,36,0.48)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 4 };
+    var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
 
-    function daysFromStart(c) {
-      var start = new Date(c.startDate + 'T12:00:00').getTime();
+    function daysFromStart(challenge) {
+      var start = new Date(challenge.startDate + 'T12:00:00').getTime();
       var now = new Date().getTime();
       return Math.floor((now - start) / 86400000);
     }
 
     if (view === 'new') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🏆', 'New challenge', 'Declare a 30 day (or other) challenge. Daily ONE action.', '#fbbf24'),
+        tkSectionHeader('🏆', 'New challenge', 'Declare a 30-day or custom challenge with one daily action.', '#fbbf24'),
         tkCard('#fbbf24',
-          hh('div', null,
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Challenge name'),
-            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'e.g., "Read 20 pages every day for 30 days"', { marginBottom: 10 }),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'The daily action (one specific thing)'),
-            tkInput(form.dailyAction, function(v) { setForm(Object.assign({}, form, { dailyAction: v })); }, 'e.g., "Read 20 pages"', { marginBottom: 10 }),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Why this challenge matters to you'),
-            tkTextarea(form.why, function(v) { setForm(Object.assign({}, form, { why: v })); }, 'Connect to a deeper "why" — important for sticking with it on hard days.', 3, { marginBottom: 10 }),
-            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+          hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); addChallenge(); }, 'aria-labelledby': 'learning-lab-challenge-form-heading' },
+            hh('h3', { id: 'learning-lab-challenge-form-heading', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'New personal challenge'),
+            hh('label', { htmlFor: 'learning-lab-challenge-title', style: labelStyle }, 'Challenge name (required)'),
+            hh('input', { id: 'learning-lab-challenge-title', type: 'text', value: form.title, required: true, maxLength: 180, 'aria-invalid': errors.title ? 'true' : undefined, 'aria-describedby': errors.title ? 'learning-lab-challenge-title-error' : undefined, placeholder: 'e.g., Read 20 pages every day for 30 days', onChange: function(event) { setForm(Object.assign({}, form, { title: event.target.value })); if (errors.title) setErrors(Object.assign({}, errors, { title: '' })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { marginBottom: errors.title ? 4 : 10 }) }),
+            hh('div', { id: 'learning-lab-challenge-title-error', role: 'alert', style: { minHeight: errors.title ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: errors.title ? 8 : 0 } }, errors.title),
+
+            hh('label', { htmlFor: 'learning-lab-challenge-action', style: labelStyle }, 'Daily action (required)'),
+            hh('input', { id: 'learning-lab-challenge-action', type: 'text', value: form.dailyAction, required: true, maxLength: 240, 'aria-invalid': errors.dailyAction ? 'true' : undefined, 'aria-describedby': errors.dailyAction ? 'learning-lab-challenge-action-error' : undefined, placeholder: 'e.g., Read 20 pages', onChange: function(event) { setForm(Object.assign({}, form, { dailyAction: event.target.value })); if (errors.dailyAction) setErrors(Object.assign({}, errors, { dailyAction: '' })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { marginBottom: errors.dailyAction ? 4 : 10 }) }),
+            hh('div', { id: 'learning-lab-challenge-action-error', role: 'alert', style: { minHeight: errors.dailyAction ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: errors.dailyAction ? 8 : 0 } }, errors.dailyAction),
+
+            hh('label', { htmlFor: 'learning-lab-challenge-why', style: labelStyle }, 'Why this challenge matters (optional)'),
+            hh('textarea', { id: 'learning-lab-challenge-why', value: form.why, rows: 3, maxLength: 2000, placeholder: 'Connect to a deeper “why” for hard days.', onChange: function(event) { setForm(Object.assign({}, form, { why: event.target.value })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { minHeight: 72, resize: 'vertical', marginBottom: 10 }) }),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 } },
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Start date'),
-                hh('input', { type: 'date', value: form.startDate,
-                  onChange: function(e) { setForm(Object.assign({}, form, { startDate: e.target.value })); },
-                  style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800 }
-                })
+                hh('label', { htmlFor: 'learning-lab-challenge-start', style: labelStyle }, 'Start date'),
+                hh('input', { id: 'learning-lab-challenge-start', type: 'date', value: form.startDate, required: true, onChange: function(event) { setForm(Object.assign({}, form, { startDate: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle })
               ),
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Days'),
-                hh('input', { type: 'number', min: 1, max: 365, value: form.days,
-                  onChange: function(e) { setForm(Object.assign({}, form, { days: parseInt(e.target.value, 10) || 30 })); },
-                  style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800, textAlign: 'center' }
-                })
+                hh('label', { htmlFor: 'learning-lab-challenge-days', style: labelStyle }, 'Number of days'),
+                hh('input', { id: 'learning-lab-challenge-days', type: 'number', min: 1, max: 365, step: 1, value: form.days, onChange: function(event) { setForm(Object.assign({}, form, { days: Math.max(1, Math.min(365, parseInt(event.target.value, 10) || 30)) })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { textAlign: 'center' }) })
               )
+            ),
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginTop: 14 } },
+              hh('button', { type: 'button', onClick: function() { setErrors({ title: '', dailyAction: '' }); setView('list'); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '← Cancel'),
+              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '🏆 Start challenge')
             )
           )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
-          tkBtn('🏆 Start challenge', addChallenge, 'primary')
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🏆', 'Challenge Board', '30-day (or any) personal challenges. One daily action. Cross off as you go.', '#fbbf24'),
-
+      tkSectionHeader('🏆', 'Challenge Board', 'Personal challenges with one daily action. Mark each day as you go.', '#fbbf24'),
       hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
-        tkBtn('+ New challenge', function() { setForm({ title: '', why: '', target: '', startDate: todayISO(), days: 30, dailyAction: '' }); setView('new'); }, 'primary')
+        hh('button', { type: 'button', onClick: function() { setErrors({ title: '', dailyAction: '' }); setForm({ title: '', why: '', target: '', startDate: todayISO(), days: 30, dailyAction: '' }); setView('new'); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '+ New challenge')
       ),
 
-      challenges.length === 0 ? tkEmptyState('🏆', 'No challenges yet. Pick something you want to build a habit around — daily action + 30 days.', '+ Start your first challenge', function() { setView('new'); })
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
-          challenges.map(function(c) {
-            var dayNum = daysFromStart(c);
-            var doneCount = (c.logs || []).length;
-            var pct = Math.min(100, (doneCount / c.days) * 100);
-            var todayDone = (c.logs || []).some(function(l) { return l.date === todayISO(); });
-            return hh('div', { key: 'ch-' + c.id, style: {
-              padding: 14, borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))',
-              border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24'
-            } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8 } },
-                hh('div', { style: { flex: 1, minWidth: 0 } },
-                  hh('strong', { style: { fontSize: 14, color: '#fbbf24' } }, '🏆 ' + c.title),
-                  c.why ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, 'why: ' + c.why) : null
+      challenges.length === 0 ? tkEmptyState('🏆', 'No challenges yet. Pick something you want to build a habit around.', '+ Start your first challenge', function() { setView('new'); })
+      : hh('ul', { 'aria-label': 'Personal challenges', style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 12 }) },
+          challenges.map(function(challenge) {
+            var elapsedDay = daysFromStart(challenge);
+            var doneCount = (challenge.logs || []).length;
+            var pct = Math.min(100, Math.round(doneCount / challenge.days * 100));
+            var todayDone = (challenge.logs || []).some(function(log) { return log.date === todayISO(); });
+            var displayDay = Math.max(0, Math.min(challenge.days, elapsedDay + 1));
+            return hh('li', { key: 'ch-' + challenge.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24' } },
+              hh('article', { 'aria-label': challenge.title + '. ' + doneCount + ' of ' + challenge.days + ' days complete.' },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
+                  hh('div', { style: { flex: 1, minWidth: 0 } },
+                    hh('strong', { style: { fontSize: 14, color: '#fbbf24' } }, hh('span', { 'aria-hidden': 'true' }, '🏆 '), challenge.title),
+                    challenge.why ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, 'Why: ' + challenge.why) : null
+                  ),
+                  hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: 'rgba(251,191,36,0.25)', color: '#fbbf24', fontSize: 14, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, doneCount + '/' + challenge.days)
                 ),
-                hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: 'rgba(251,191,36,0.25)', color: '#fbbf24', fontSize: 14, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, doneCount + '/' + c.days)
-              ),
-              hh('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 8, padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, borderLeft: '2px solid #fbbf24' } },
-                '📝 Today: ', c.dailyAction
-              ),
-              hh('div', { style: { height: 8, background: 'rgba(15,23,42,0.6)', borderRadius: 4, overflow: 'hidden', marginBottom: 8 } },
-                hh('div', { style: { width: pct + '%', height: '100%', background: 'linear-gradient(90deg, #fbbf24, #f97316)', transition: 'width 300ms ease' } })
-              ),
-              // Day strip
-              hh('div', { style: { display: 'flex', gap: 1, flexWrap: 'wrap', marginBottom: 10 } },
-                (function() {
-                  var arr = [];
-                  for (var i = 0; i < c.days; i++) {
-                    var dt = new Date(c.startDate + 'T12:00:00');
-                    dt.setDate(dt.getDate() + i);
-                    var iso = dt.toISOString().slice(0, 10);
-                    var done = (c.logs || []).some(function(l) { return l.date === iso; });
-                    var isToday = iso === todayISO();
-                    arr.push(hh('div', { key: 'cd-' + i,
-                      title: iso + (done ? ' ✓' : ''),
-                      style: { width: 10, height: 10, borderRadius: 2, background: done ? '#fbbf24' : 'rgba(100,116,139,0.20)', border: isToday ? '1px solid #fff' : 'none' }
-                    }));
-                  }
-                  return arr;
-                })()
-              ),
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 } },
-                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Day ' + (dayNum + 1) + ' of ' + c.days),
-                hh('div', { style: { display: 'flex', gap: 6 } },
-                  tkBtn(todayDone ? '✓ Done today (tap to undo)' : '+ Log today', function() { logDay(c.id); }, todayDone ? 'good' : 'primary', { padding: '6px 14px', fontSize: 11 }),
-                  hh('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer' } }, '✕')
+                hh('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 8, padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, borderLeft: '2px solid #fbbf24' } }, hh('strong', null, 'Today: '), challenge.dailyAction),
+                hh('div', { role: 'progressbar', 'aria-label': challenge.title + ' completion', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-valuetext': doneCount + ' of ' + challenge.days + ' days complete', style: { height: 8, background: 'rgba(15,23,42,0.6)', borderRadius: 4, overflow: 'hidden', marginBottom: 8 } },
+                  hh('div', { 'aria-hidden': 'true', style: { width: pct + '%', height: '100%', background: 'linear-gradient(90deg, #fbbf24, #f97316)', transition: 'width 300ms ease' } })
+                ),
+                hh('div', { role: 'img', 'aria-label': 'Daily completion history. ' + doneCount + ' of ' + challenge.days + ' days logged. Today is ' + (todayDone ? 'complete.' : 'not complete.'), style: { display: 'flex', gap: 2, flexWrap: 'wrap', marginBottom: 6 } },
+                  (function() {
+                    var days = [];
+                    for (var index = 0; index < challenge.days; index++) {
+                      var date = new Date(challenge.startDate + 'T12:00:00'); date.setDate(date.getDate() + index);
+                      var iso = date.toISOString().slice(0, 10);
+                      var done = (challenge.logs || []).some(function(log) { return log.date === iso; });
+                      var isToday = iso === todayISO();
+                      days.push(hh('span', { key: 'cd-' + index, 'aria-hidden': 'true', style: { width: 16, height: 16, borderRadius: 3, background: done ? '#fbbf24' : 'rgba(100,116,139,0.20)', color: done ? '#111827' : '#cbd5e1', border: isToday ? '2px solid #fff' : '1px solid transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, boxSizing: 'border-box' } }, done ? '✓' : '·'));
+                    }
+                    return days;
+                  })()
+                ),
+                hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, '✓ complete · · not complete · outlined square is today'),
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 } },
+                  hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Day ' + displayDay + ' of ' + challenge.days),
+                  hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                    hh('button', { type: 'button', 'aria-pressed': todayDone ? 'true' : 'false', onClick: function() { logDay(challenge.id); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '6px 14px', borderRadius: 8, border: '1px solid ' + (todayDone ? '#86efac' : '#fde68a'), background: todayDone ? '#166534' : '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, todayDone ? '✓ Done today — select to undo' : '+ Log today'),
+                    hh('button', { type: 'button', 'aria-label': 'Delete challenge: ' + challenge.title, onClick: function() { remove(challenge.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
+                  )
                 )
               )
             );
           })
         ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#fbbf24' } }, '🎓 BJ Fogg 2019 — Tiny Habits: '),
-        'Three things matter: (1) make it tiny enough to do on hard days, (2) attach it to an existing habit ("after I brush my teeth I will..."), (3) celebrate IMMEDIATELY (even just a smile). 30-day challenges work when the daily action is small enough to never skip.'
+      hh('aside', { 'aria-label': 'Tiny Habits guidance', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#fbbf24' } }, '🎓 BJ Fogg (2019), Tiny Habits: '),
+        'Make the action small enough for hard days, attach it to an existing routine, and celebrate immediately. Challenges are easier to sustain when the daily action is small enough not to skip.'
       )
     );
   }
 
-  // ── FF. PERSONAL TIME-ESTIMATION TRAINER (Wave 7) ──
   // Predict how long a task will take. Log actual. Calibration improves
   // over time. ADHD students often under-estimate by 30-100%; this builds
   // the meta-skill.
