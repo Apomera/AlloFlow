@@ -744,6 +744,34 @@ describe('reader navigation, bookmarks, and continuous read-aloud', () => {
 
   function pageInput() { return host.querySelector('input[aria-label="Go to page"]'); }
 
+  it('hands the selected scope to the Document Builder with license attribution', async () => {
+    const sent = [];
+    await mountBook(makeBook({ license: 'CC BY 4.0', authors: ['A. Author'] }), {
+      isTeacherMode: true,
+      handleGenerate: () => {},
+      onOpenInDocBuilder: (p) => sent.push(p),
+    });
+    clickByText(host, 'button', 'Create');
+    await flush();
+    clickByText(host, 'button', 'Open in Document Builder');
+    await flush();
+    expect(sent.length).toBe(1);
+    expect(sent[0].title).toBe('Navigation Fixture');
+    // full-text books default the scope to the current page
+    expect(sent[0].text).toContain('The first chapter opens here');
+    expect(sent[0].scopeLabel).toContain('Page 1');
+    // the CC credit travels with the passage into the handout
+    expect(sent[0].attribution).toContain('A. Author');
+    expect(sent[0].attribution).toContain('CC BY 4.0');
+  });
+
+  it('hides the Document Builder hand-off without teacher mode or host wiring', async () => {
+    await mountBook(makeBook(), { isTeacherMode: false, onOpenInDocBuilder: () => {}, handleGenerate: () => {} });
+    clickByText(host, 'button', 'Create');
+    await flush();
+    expect(Array.from(host.querySelectorAll('button')).some((b) => textOf(b).includes('Open in Document Builder'))).toBe(false);
+  });
+
   it('saves Define-mode lookups to the word bank and reviews them in My words', async () => {
     await mountBook(makeBook(), { callGemini: () => Promise.resolve('It means a lot of something.') });
     // empty state first

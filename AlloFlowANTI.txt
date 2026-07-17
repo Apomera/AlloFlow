@@ -39880,6 +39880,27 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         }];
                     });
                 },
+                // Reader → Document Builder: the selected scope arrives as a
+                // 'simplified' (reading passage) section — the builder renders
+                // it natively with karaoke tagging, and every export format
+                // (print/DOCX/a11y HTML) works. Attribution is appended INTO
+                // the passage body so the CC-BY credit ships with any handout
+                // a teacher distributes, not just on screen.
+                onOpenInDocBuilder: (payload) => {
+                    if (!payload || !payload.text) return;
+                    setHistory(prev => ([...prev, {
+                        id: 'readingpassage-' + (payload.slug || 'book') + '-' + Date.now(),
+                        type: 'simplified',
+                        title: payload.title || (t('readinglib_passage') || 'Reading passage'),
+                        meta: [payload.scopeLabel, payload.language].filter(Boolean).join(' · '),
+                        timestamp: new Date(),
+                        data: payload.text + (payload.attribution ? '\n\n— ' + payload.attribution : ''),
+                        config: {},
+                    }]));
+                    setIsReadingLibraryOpen(false);
+                    openExportPreview('print');
+                    addToast((t('readinglib_docbuilder_added') || '📄 Passage added — opening the Document Builder.'), 'success');
+                },
             })}
         </CDNModuleGate>
 

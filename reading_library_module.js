@@ -1950,6 +1950,34 @@
               title: tr('readinglib_open_as_doc_hint', 'Loads the book text into the Source panel so any tool can use it'),
               onClick: openAsDocument,
             }, tr('readinglib_open_as_doc', 'Use as source text…')),
+            // Document Builder hand-off: the selected scope becomes an
+            // editable reading-passage section (with full attribution — the
+            // CC-BY credit travels INTO the distributed handout) and the
+            // builder opens with every export format available. Teacher-gated
+            // like save-to-lesson; hidden when the host doesn't wire it
+            // (Canvas load order, older hosts).
+            (props.isTeacherMode && typeof props.onOpenInDocBuilder === 'function' && !isCardContent(book)) ? e('button', {
+              role: 'menuitem',
+              className: 'block w-full text-left px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-indigo-50',
+              title: tr('readinglib_docbuilder_hint', 'Turn this selection into an editable, exportable handout in the Document Builder'),
+              onClick: function () {
+                setGenOpen(false);
+                props.onOpenInDocBuilder({
+                  slug: book.slug,
+                  title: displayTitle,
+                  text: selectedSource.text,
+                  scopeLabel: selectedSource.label,
+                  attribution: [
+                    attributionLine(book),
+                    bookSourceName,
+                    book.license || 'CC BY 4.0',
+                    (bookSourceUrl && bookSourceUrl !== '#') ? bookSourceUrl : null,
+                    txReady ? ('🤖 ' + tr('readinglib_attr_ai_translated', 'AI-translated into') + ' ' + translation.language) : null,
+                  ].filter(Boolean).join(' · '),
+                  language: displayLanguage,
+                });
+              },
+            }, '📄 ' + tr('readinglib_open_docbuilder', 'Open in Document Builder…')) : null,
             !isCardContent(book) ? e('button', {
               role: 'menuitem',
               className: 'block w-full text-left px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-indigo-50',
