@@ -406,6 +406,24 @@ window.StemLab = window.StemLab || {
   }
 
   // ── SIR Euler Solver ──
+  function summarizeEpidemicRun(data, immuneAtStartPct, basicR0) {
+    var rows = Array.isArray(data) ? data : [];
+    var immune = Math.max(0, Math.min(100, Number(immuneAtStartPct) || 0));
+    var peakInfected = 0;
+    var peakDay = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var infected = Math.max(0, Number(rows[i].I) || 0);
+      if (infected > peakInfected) { peakInfected = infected; peakDay = Number(rows[i].day) || 0; }
+    }
+    var initialSusceptible = rows.length ? Math.max(0, Math.min(100, Number(rows[0].S) || 0)) : Math.max(0, 100 - immune);
+    var finalSusceptible = rows.length ? Math.max(0, Math.min(100, Number(rows[rows.length - 1].S) || 0)) : initialSusceptible;
+    var attackRate = rows.length ? Math.max(0, Math.min(100 - immune, 100 - finalSusceptible - immune)) : 0;
+    var initialEffectiveR = Math.max(0, Number(basicR0) || 0) * initialSusceptible / 100;
+    return { peakInfected: peakInfected, peakDay: peakDay, attackRate: attackRate, initialEffectiveR: initialEffectiveR };
+  }
+
+  window.__EpidemicCore = Object.assign({}, window.__EpidemicCore || {}, { summarizeEpidemicRun: summarizeEpidemicRun });
+
   function solveSIR(params) {
     var r0 = params.r0, vaccRate = params.vaccRate || 0, infectPeriod = params.infectPeriod, popSize = params.popSize;
     var gamma = 1 / infectPeriod;
@@ -923,6 +941,7 @@ window.StemLab = window.StemLab || {
       var infectPeriod = d.infectPeriod != null ? d.infectPeriod : 10;
       var latentPeriod = d.latentPeriod != null ? d.latentPeriod : 5;
       var popSize = d.popSize != null ? d.popSize : 1000000;
+      var sirRunNote = d.sirRunNote || null;
       var selectedPreset = d.selectedPreset != null ? d.selectedPreset : 0;
       var EPI_CORE_TABS = ['sir', 'seir', 'r0explorer', 'vaccination', 'interventions', 'outbreak', 'challenge', 'inquiry'];
       var showFullEpiNav = !!d.showEpiLibrary || EPI_CORE_TABS.indexOf(tab) === -1;
@@ -942,19 +961,13 @@ window.StemLab = window.StemLab || {
       // ── Derived stats ──
       var gamma = 1 / infectPeriod;
       var beta = r0 * gamma;
-      var effR0 = r0 * (1 - vaccRate / 100);
       var herdThresh = r0 > 1 ? ((1 - 1 / r0) * 100) : 0;
-      var peakI = 0, peakDay = 0, totalInf = 0;
       var activeData = tab === 'seir' ? seirData : sirData;
-      for (var i = 0; i < activeData.length; i++) {
-        if (activeData[i].I > peakI) {
-          peakI = activeData[i].I;
-          peakDay = activeData[i].day;
-        }
-      }
-      if (activeData.length > 0) {
-        totalInf = 100 - activeData[activeData.length - 1].S;
-      }
+      var runMetrics = summarizeEpidemicRun(activeData, vaccRate, r0);
+      var effR0 = runMetrics.initialEffectiveR;
+      var peakI = runMetrics.peakInfected;
+      var peakDay = runMetrics.peakDay;
+      var totalInf = runMetrics.attackRate;
 
       // ── Particle simulation state ──
       var particleRunning = d.particleRunning || false;
@@ -1207,7 +1220,7 @@ window.StemLab = window.StemLab || {
           ),
           h('input', {
             type: 'range', min: min, max: max, step: step, value: value,
-            onChange: function(e) { upd(key, parseFloat(e.target.value)); },
+            onChange: function(e) { var patch = {}; patch[key] = parseFloat(e.target.value); if (key === 'r0' || key === 'vaccRate' || key === 'infectPeriod' || key === 'latentPeriod' || key === 'popSize') patch.sirRunNote = null; updMulti(patch); },
             className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer',
             style: { accentColor: key === 'r0' ? r0Color(value) : '#6366f1' },
             'aria-label': label
@@ -1394,7 +1407,7 @@ window.StemLab = window.StemLab || {
         used[p.name] = true;
         updMulti({
           selectedPreset: idx, r0: p.r0, infectPeriod: p.period, latentPeriod: p.latent,
-          presetsUsed: used, hoverDay: null
+          presetsUsed: used, hoverDay: null, sirRunNote: null
         });
         if (Object.keys(used).length >= PRESETS.length) checkBadge('presetPro');
       }
@@ -1409,7 +1422,8 @@ window.StemLab = window.StemLab || {
         if (peakI < 20 && peakI > 0) checkBadge('flatCurve');
         if (vaccRate >= herdThresh && herdThresh > 0) checkBadge('vaccHero');
         awardXP(5, 'Ran simulation');
-        announceToSR('Simulation complete. Peak infected: ' + peakI.toFixed(1) + '% on day ' + peakDay);
+        upd('sirRunNote', { peak: peakI, day: peakDay, attackRate: totalInf, initialEffectiveR: effR0 });
+        announceToSR('Simulation complete. Initial R effective: ' + effR0.toFixed(2) + '. Peak infected: ' + peakI.toFixed(1) + '% on day ' + peakDay + '. Attack rate: ' + totalInf.toFixed(1) + '%.');
       }
 
       // ── Learn topics read tracking ──
@@ -1699,7 +1713,11 @@ window.StemLab = window.StemLab || {
             }
           },
             h('strong', { style: { color: '#0369a1' } }, 'Goal: '),
-            __alloT('stem.epidemic.find_vaccination_and_behavior_settings', 'find vaccination and behavior settings that keep the peak Infected curve below the hospital threshold, or that drive R-effective below 1 entirely. Pick a Disease Preset to load real R0 values; raise vaccination until the Herd Threshold readout flips to Achieved. The Effective R0 stat below the chart tells you whether the epidemic is still spreading or burning out.')
+            __alloT('stem.epidemic.find_vaccination_and_behavior_settings', 'find settings that keep the peak Infected curve below the hospital threshold, or drive the initial R-effective below 1. Disease presets load illustrative parameter estimates; real values vary across settings, variants, immunity, and time. Raise immunity until the Herd Threshold readout flips to Achieved.')
+          ),
+          h('div', { role: 'note', style: { padding: '10px 12px', borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(217,119,6,0.35)', color: '#78350f', fontSize: 11.5, lineHeight: 1.5 } },
+            h('strong', null, 'Model boundary: '),
+            'This deterministic, closed-population SIR model assumes homogeneous mixing, lasting recovery, no births or deaths, and immediate complete immunity for the vaccinated percentage. Presets are teaching estimates, not forecasts or medical guidance.'
           ),
           // Sliders
           h('div', { className: glassCard + ' space-y-3' },
@@ -1708,7 +1726,10 @@ window.StemLab = window.StemLab || {
             slider('Vaccination Rate (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period (days)', infectPeriod, 2, 30, 1, 'infectPeriod'),
             slider('Population', popSize, 1000, 10000000, 1000, 'popSize', fmtNum),
-            h('button', { 'aria-label': __alloT('stem.epidemic.run_simulation', 'Run Simulation'), onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md' }, __alloT('stem.epidemic.run_simulation_2', '\u25B6 Run Simulation'))
+            h('button', { 'aria-label': __alloT('stem.epidemic.run_simulation', 'Run Simulation'), onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md' }, __alloT('stem.epidemic.run_simulation_2', '\u25B6 Run Simulation')),
+            sirRunNote && h('div', { role: 'status', 'aria-live': 'polite', style: { padding: 10, borderRadius: 9, background: sirRunNote.initialEffectiveR < 1 ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.10)', border: '1px solid ' + (sirRunNote.initialEffectiveR < 1 ? 'rgba(5,150,105,0.38)' : 'rgba(220,38,38,0.32)'), color: '#334155', fontSize: 11.5, lineHeight: 1.5 } },
+              h('strong', { style: { color: sirRunNote.initialEffectiveR < 1 ? '#047857' : '#b91c1c' } }, sirRunNote.initialEffectiveR < 1 ? 'Initially declining. ' : 'Initially growing. '),
+              'Initial R-effective is ' + sirRunNote.initialEffectiveR.toFixed(2) + '. Peak active infection is ' + sirRunNote.peak.toFixed(1) + '% on day ' + sirRunNote.day + '; the attack rate is ' + sirRunNote.attackRate.toFixed(1) + '%.')
           ),
           // Chart
           h('div', { className: glassCard },
@@ -1719,8 +1740,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
             [
               { label: __alloT('stem.epidemic.peak_infected', 'Peak Infected'), value: peakI.toFixed(1) + '%', sub: 'Day ' + peakDay, color: '#ef4444' },
-              { label: __alloT('stem.epidemic.total_infected', 'Total Infected'), value: totalInf.toFixed(1) + '%', sub: fmtNum(Math.round(totalInf / 100 * popSize)) + ' people', color: '#f59e0b' },
-              { label: __alloT('stem.epidemic.effective_r', 'Effective R\u2080'), value: effR0.toFixed(2), sub: effR0 < 1 ? 'Declining' : 'Spreading', color: r0Color(effR0) },
+              { label: __alloT('stem.epidemic.attack_rate', 'Attack Rate'), value: totalInf.toFixed(1) + '%', sub: fmtNum(Math.round(totalInf / 100 * popSize)) + ' ever infected', color: '#f59e0b' },
+              { label: __alloT('stem.epidemic.initial_r_effective', 'Initial R-effective'), value: effR0.toFixed(2), sub: effR0 < 1 ? 'Initially declining' : 'Initially growing', color: r0Color(effR0) },
               { label: __alloT('stem.epidemic.herd_threshold', 'Herd Threshold'), value: herdThresh.toFixed(0) + '%', sub: vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet', color: '#6366f1' }
             ].map(function(s) {
               return h('div', { key: s.label, className: glassCard + ' text-center' },
