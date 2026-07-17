@@ -1223,7 +1223,7 @@ function _htmlToDaisyNcx(html, title, uid) {
   return '<?xml version="1.0" encoding="utf-8"?>\n' +
     '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">\n' +
     '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n' +
-    '<head><meta name="dtb:uid" content="' + _expXmlEsc(uid || 'alloflow-daisy') + '"/><meta name="dtb:depth" content="1"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n' +
+    '<head><meta name="dtb:uid" content="' + _expXmlEsc(uid || 'alloflow-daisy') + '"/><meta name="dtb:generator" content="AlloFlow"/><meta name="dtb:depth" content="1"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n' +
     '<docTitle><text>' + _expXmlEsc(title || spec.title || 'Document') + '</text></docTitle>\n' +
     '<navMap>' + (navPoints || '<navPoint id="np1" playOrder="1"><navLabel><text>' + _expXmlEsc(title || 'Document') + '</text></navLabel><content src="book.smil#par1"/></navPoint>') + '</navMap>\n' +
     '</ncx>';
@@ -1237,12 +1237,18 @@ function _htmlToDaisySmil(html, uid) {
   return '<?xml version="1.0" encoding="utf-8"?>\n' +
     '<!DOCTYPE smil PUBLIC "-//NISO//DTD dtbsmil 2005-2//EN" "http://www.daisy.org/z3986/2005/dtbsmil-2005-2.dtd">\n' +
     '<smil xmlns="http://www.w3.org/2001/SMIL20/"><head><meta name="dtb:uid" content="' + _expXmlEsc(uid || 'alloflow-daisy') +
-    '"/><meta name="dtb:totalElapsedTime" content="0:00:00"/></head><body><seq dur="0:00:00">' + pars + '</seq></body></smil>';
+    // seq id + dtb:generator: both flagged by ZedVal 2.1 (DTD/RNG requires
+    // seq@id; generator is a Schematron recommendation). (zedval-2026-07-17)
+    '"/><meta name="dtb:generator" content="AlloFlow"/><meta name="dtb:totalElapsedTime" content="0:00:00"/></head><body><seq id="seq1" dur="0:00:00">' + pars + '</seq></body></smil>';
 }
 const _DAISY_OPF_XML = (title, lang, uid) => '<?xml version="1.0" encoding="utf-8"?>\n' +
+  // OEB 1.2 DOCTYPE + dc:Date: ZedVal 2.1 requires the public identifier for
+  // its OPF DTD pass and RelaxNG requires dc:Date. (zedval-2026-07-17)
+  '<!DOCTYPE package PUBLIC "+//ISBN 0-9673008-1-9//DTD OEB 1.2 Package//EN" "http://openebook.org/dtds/oeb-1.2/oebpkg12.dtd">\n' +
   '<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="uid">\n' +
   '<metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/">' +
   '<dc:Title>' + _expXmlEsc(title) + '</dc:Title>' +
+  '<dc:Date>' + new Date().toISOString().slice(0, 10) + '</dc:Date>' +
   '<dc:Language>' + _expXmlEsc(lang || 'en') + '</dc:Language>' +
   '<dc:Format>ANSI/NISO Z39.86-2005</dc:Format>' +
   '<dc:Identifier id="uid">' + _expXmlEsc(uid || 'alloflow-daisy') + '</dc:Identifier>' +

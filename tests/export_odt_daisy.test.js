@@ -452,6 +452,17 @@ describe('DAISY conformance chain', () => {
     expect(opf).toContain('<spine><itemref idref="smil"/></spine>');
     expect(parseXml(opf).wellFormed, parseXml(opf).err).toBe(true);
   });
+  // Pinned after the 2026-07-17 ZedVal 2.1 run (real Z39.86 validator, see
+  // dev-tools/check_daisy_zedval.cjs): each of these was a reported failure.
+  it('keeps the ZedVal-required bits: OPF DOCTYPE + dc:Date, SMIL seq id, generator metas', () => {
+    const opf = _DAISY_OPF_XML('T', 'en', uid);
+    expect(opf).toContain('<!DOCTYPE package PUBLIC "+//ISBN 0-9673008-1-9//DTD OEB 1.2 Package//EN"');
+    expect(opf).toMatch(/<dc:Date>\d{4}-\d{2}-\d{2}<\/dc:Date>/);
+    const smil = _htmlToDaisySmil(html, uid);
+    expect(smil).toContain('<seq id="seq1"');
+    expect(smil).toContain('<meta name="dtb:generator" content="AlloFlow"/>');
+    expect(_htmlToDaisyNcx(html, 'T', uid)).toContain('<meta name="dtb:generator" content="AlloFlow"/>');
+  });
   it('keeps one dtb:uid across dtbook, ncx, smil, and opf (no fallback leak)', () => {
     const files = [
       _htmlToDtbookXml(html, 'en', uid),
