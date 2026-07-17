@@ -10262,86 +10262,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var allData = props.allData || {};
     var qs = R.useState(''); var query = qs[0]; var setQuery = qs[1];
-
+    var normalizedQuery = query.trim();
     var results = [];
-    if (query.length >= 2) {
-      var q = query.toLowerCase();
+
+    if (normalizedQuery.length >= 2) {
+      var q = normalizedQuery.toLowerCase();
       var notes = ((allData.mytkNotes || {}).notes || []);
-      notes.forEach(function(n) {
-        var match = (n.title || '').toLowerCase().indexOf(q) >= 0 ||
-                    (n.main || '').toLowerCase().indexOf(q) >= 0 ||
-                    (n.cue || '').toLowerCase().indexOf(q) >= 0 ||
-                    (n.summary || '').toLowerCase().indexOf(q) >= 0;
-        if (match) results.push({ source: 'Cornell Notes', sourceIcon: '📝', sourceColor: '#3b82f6', title: n.title, snippet: n.summary || n.main || '', date: n.createdAt });
+      notes.forEach(function(note) {
+        var match = (note.title || '').toLowerCase().indexOf(q) >= 0 ||
+                    (note.main || '').toLowerCase().indexOf(q) >= 0 ||
+                    (note.cue || '').toLowerCase().indexOf(q) >= 0 ||
+                    (note.summary || '').toLowerCase().indexOf(q) >= 0;
+        if (match) results.push({ source: 'Cornell Notes', sourceIcon: '📝', sourceColor: '#3b82f6', title: note.title, snippet: note.summary || note.main || '', date: note.createdAt });
       });
       var journal = ((allData.mytkJournal || {}).entries || []);
-      journal.forEach(function(j) {
-        var match = (j.title || '').toLowerCase().indexOf(q) >= 0 ||
-                    (j.body || '').toLowerCase().indexOf(q) >= 0 ||
-                    (j.tags || '').toLowerCase().indexOf(q) >= 0;
-        if (match) results.push({ source: 'Learning Journal', sourceIcon: '📓', sourceColor: '#ec4899', title: j.title || j.subject || 'untitled', snippet: j.body, date: j.date });
+      journal.forEach(function(entry) {
+        var match = (entry.title || '').toLowerCase().indexOf(q) >= 0 ||
+                    (entry.body || '').toLowerCase().indexOf(q) >= 0 ||
+                    (entry.tags || '').toLowerCase().indexOf(q) >= 0;
+        if (match) results.push({ source: 'Learning Journal', sourceIcon: '📓', sourceColor: '#ec4899', title: entry.title || entry.subject || 'Untitled', snippet: entry.body, date: entry.date });
       });
       var prompts = ((allData.mytkPrompts || {}).responses || []);
-      prompts.forEach(function(p) {
-        if ((p.text || '').toLowerCase().indexOf(q) >= 0 || (p.promptText || '').toLowerCase().indexOf(q) >= 0) {
-          results.push({ source: 'Reflection Prompts', sourceIcon: '📓', sourceColor: '#a855f7', title: p.promptText, snippet: p.text, date: p.date });
+      prompts.forEach(function(response) {
+        if ((response.text || '').toLowerCase().indexOf(q) >= 0 || (response.promptText || '').toLowerCase().indexOf(q) >= 0) {
+          results.push({ source: 'Reflection Prompts', sourceIcon: '📓', sourceColor: '#a855f7', title: response.promptText, snippet: response.text, date: response.date });
         }
       });
-      var reflect = ((allData.mytkReflect || {}).entries || []);
-      reflect.forEach(function(r) {
-        ['went_well', 'stuck', 'will_try', 'wins', 'proud'].forEach(function(k) {
-          if ((r[k] || '').toLowerCase().indexOf(q) >= 0) {
-            results.push({ source: 'Weekly Reflection', sourceIcon: '📔', sourceColor: '#f472b6', title: r.week, snippet: r[k], date: r.date });
+      var reflections = ((allData.mytkReflect || {}).entries || []);
+      reflections.forEach(function(reflection) {
+        ['went_well', 'stuck', 'will_try', 'wins', 'proud'].forEach(function(key) {
+          if ((reflection[key] || '').toLowerCase().indexOf(q) >= 0) {
+            results.push({ source: 'Weekly Reflection', sourceIcon: '📔', sourceColor: '#f472b6', title: reflection.week, snippet: reflection[key], date: reflection.date });
           }
         });
       });
       var goals = ((allData.mytkGoals || {}).goals || []);
-      goals.forEach(function(g) {
-        var match = (g.title || '').toLowerCase().indexOf(q) >= 0 ||
-                    ['specific', 'measurable', 'achievable', 'relevant', 'timebound'].some(function(k) {
-                      return (g[k] || '').toLowerCase().indexOf(q) >= 0;
+      goals.forEach(function(goal) {
+        var match = (goal.title || '').toLowerCase().indexOf(q) >= 0 ||
+                    ['specific', 'measurable', 'achievable', 'relevant', 'timebound'].some(function(key) {
+                      return (goal[key] || '').toLowerCase().indexOf(q) >= 0;
                     });
-        if (match) results.push({ source: 'Goals', sourceIcon: '🎯', sourceColor: '#9333ea', title: g.title, snippet: g.specific || '', date: g.createdAt });
+        if (match) results.push({ source: 'Goals', sourceIcon: '🎯', sourceColor: '#9333ea', title: goal.title, snippet: goal.specific || '', date: goal.createdAt });
       });
-      var brain = ((allData.mytkBrain || {}).items || []);
-      brain.forEach(function(b) {
-        if ((b.text || '').toLowerCase().indexOf(q) >= 0) {
-          results.push({ source: 'Brain Dump', sourceIcon: '🧠', sourceColor: '#60a5fa', title: b.cat, snippet: b.text, date: new Date(b.createdAt).toISOString().slice(0, 10) });
+      var brainItems = ((allData.mytkBrain || {}).items || []);
+      brainItems.forEach(function(item) {
+        if ((item.text || '').toLowerCase().indexOf(q) >= 0) {
+          results.push({ source: 'Brain Dump', sourceIcon: '🧠', sourceColor: '#60a5fa', title: item.cat, snippet: item.text, date: item.createdAt });
         }
       });
-      results.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+      results.sort(function(a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
     }
+
+    var visibleResults = results.slice(0, 30);
+    var resultSummary = normalizedQuery.length < 2 ? 'Enter at least 2 characters to search.'
+      : results.length === 0 ? 'No matches found across your toolkit.'
+      : results.length > visibleResults.length ? 'Showing the first ' + visibleResults.length + ' of ' + results.length + ' results.'
+      : results.length + (results.length === 1 ? ' result found.' : ' results found.');
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🔎', 'Search My Toolkit', 'Find anything across your notes, journal, reflections, prompts, goals, and brain dumps.', '#06b6d4'),
 
-      hh('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 14, border: '2px solid #06b6d4', marginBottom: 14 } },
-        hh('input', { type: 'text', value: query, autoFocus: true,
-          onChange: function(e) { setQuery(e.target.value); },
-          placeholder: 'Search across all your saved content...',
-          style: { width: '100%', padding: '12px 14px', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }
-        })
+      hh('form', { role: 'search', onSubmit: function(event) { event.preventDefault(); }, 'aria-labelledby': 'learning-lab-search-heading', style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 14, border: '2px solid #06b6d4', marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-search-heading', style: { fontSize: 12, color: '#67e8f9', margin: '0 0 8px' } }, 'Search saved toolkit content'),
+        hh('label', { htmlFor: 'learning-lab-toolkit-search', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4 } }, 'Search terms'),
+        hh('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+          hh('input', { id: 'learning-lab-toolkit-search', type: 'search', value: query, autoFocus: true, autoComplete: 'off', maxLength: 500, 'aria-describedby': 'learning-lab-toolkit-search-help', 'aria-controls': 'learning-lab-search-results-region', onChange: function(event) { setQuery(event.target.value); }, placeholder: 'Search across all your saved content', style: { flex: 1, minWidth: 0, minHeight: 44, padding: '10px 12px', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.55)', borderRadius: 8, boxSizing: 'border-box', font: 'inherit' } }),
+          query ? hh('button', { type: 'button', onClick: function() { setQuery(''); setTimeout(function() { var input = document.getElementById('learning-lab-toolkit-search'); if (input) input.focus(); }, 0); }, 'aria-label': 'Clear toolkit search', 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, border: '1px solid rgba(6,182,212,0.55)', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 16, cursor: 'pointer' } }, '×') : null
+        ),
+        hh('div', { id: 'learning-lab-toolkit-search-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 5 } }, 'Enter at least 2 characters. Results update as you type.')
       ),
 
-      query.length < 2 ? hh('div', { style: { padding: 20, textAlign: 'center', color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'Type 2+ characters to search.')
-      : results.length === 0 ? hh('div', { style: { padding: 20, textAlign: 'center', color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'No matches across your toolkit.')
-      : hh('div', null,
-          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, results.length + ' result' + (results.length !== 1 ? 's' : '')),
-          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            results.slice(0, 30).map(function(r, i) {
-              return hh('div', { key: 'sr-' + i, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + r.sourceColor } },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                  hh('span', { style: { fontSize: 10, color: r.sourceColor, fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, r.sourceIcon + ' ' + r.source),
-                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r.date)
+      hh('section', { id: 'learning-lab-search-results-region', 'aria-labelledby': 'learning-lab-search-results-heading' },
+        hh('h3', { id: 'learning-lab-search-results-heading', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'Toolkit search results'),
+        hh('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: normalizedQuery.length < 2 || results.length === 0 ? 20 : '0 0 10px', textAlign: normalizedQuery.length < 2 || results.length === 0 ? 'center' : 'left', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontStyle: normalizedQuery.length < 2 || results.length === 0 ? 'italic' : 'normal' } }, resultSummary),
+        visibleResults.length > 0 ? hh('ul', { 'aria-label': 'Search results', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+          visibleResults.map(function(result, index) {
+            var headingId = 'learning-lab-search-result-' + index;
+            var resultDate = result.date == null ? null : new Date(result.date);
+            var validDate = resultDate && Number.isFinite(resultDate.getTime());
+            var snippet = String(result.snippet || '');
+            return hh('li', { key: 'sr-' + index, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + result.sourceColor } },
+              hh('article', { 'aria-labelledby': headingId },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, hh('span', { 'aria-hidden': 'true' }, result.sourceIcon + ' '), result.source),
+                  result.date ? validDate ? hh('time', { dateTime: resultDate.toISOString(), style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, String(result.date)) : hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, String(result.date)) : null
                 ),
-                r.title ? hh('strong', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } }, r.title) : null,
-                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, lineHeight: 1.55 } },
-                  (r.snippet || '').substring(0, 200) + ((r.snippet || '').length > 200 ? '…' : '')
-                )
-              );
-            })
-          )
-        )
+                hh('h4', { id: headingId, style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 2px' } }, result.title || result.source + ' result'),
+                hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', margin: 0, lineHeight: 1.55 } }, snippet.substring(0, 200) + (snippet.length > 200 ? '…' : ''))
+              )
+            );
+          })
+        ) : null
+      )
     );
   }
 
