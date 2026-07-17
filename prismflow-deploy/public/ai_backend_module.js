@@ -268,6 +268,7 @@ const WebSearchProvider = {
     // API key is stored server-side in Firebase Secret Manager.
     // The proxy is accessed via Firebase Hosting rewrite → Cloud Function.
     _serperProxyUrl: null, // resolved at runtime by _initSearchProxy()
+    _serperProxyMode: null, // authenticated-post | canvas-compat-get
     _serperAvailable: true,
     _serperConsecutiveFailures: 0,
     _serperCooldownUntil: 0,
@@ -286,14 +287,28 @@ const WebSearchProvider = {
         const explicitHost = typeof window !== 'undefined'
             ? String(window.ALLOFLOW_FUNCTIONS_HOST || window.ALLOFLOW_HOST || '').replace(/\/$/, '')
             : '';
+        const canvasCompatibilityUrl = typeof window !== 'undefined'
+            ? String(window.ALLOFLOW_CANVAS_SEARCH_PROXY || '').trim()
+            : '';
+        const canvasCompatibilityEnabled = this._isCanvas
+            && typeof window !== 'undefined'
+            && !window.ALLOFLOW_DISABLE_CANVAS_SEARCH_PROXY
+            && /^https:\/\//i.test(canvasCompatibilityUrl);
         if (isOwnedFirebaseHost) {
             this._serperProxyUrl = '/api/searchProxy';
+            this._serperProxyMode = 'authenticated-post';
             console.log('[WebSearch] Owned Firebase site - optional authenticated search proxy enabled.');
         } else if (explicitHost) {
             this._serperProxyUrl = `${explicitHost}/api/searchProxy`;
+            this._serperProxyMode = 'authenticated-post';
             console.log('[WebSearch] Explicit optional search proxy configured.');
+        } else if (canvasCompatibilityEnabled) {
+            this._serperProxyUrl = canvasCompatibilityUrl;
+            this._serperProxyMode = 'canvas-compat-get';
+            console.log('[WebSearch] Canvas compatibility search transport enabled.');
         } else {
             this._serperProxyUrl = null;
+            this._serperProxyMode = null;
             console.log('[WebSearch] No optional Firebase search proxy configured; using the environment search path.');
         }
     },
@@ -632,22 +647,40 @@ const WebSearchProvider = {
      */
     async _fetchSerper(query, maxResults) {
         const url = this._serperProxyUrl;
+        const isCanvasCompatibility = this._isCanvas
+            && this._serperProxyMode === 'canvas-compat-get';
+        const safeQuery = String(query || '')
+            .replace(/[\u0000-\u001F\u007F]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 200);
+        const safeResultCount = Math.max(1, Math.min(Number(maxResults) || 5, 10));
+        if (!url || safeQuery.length < 2) {
+            throw new Error('Search proxy or query is not configured.');
+        }
         const getSecurityHeaders = typeof window !== 'undefined'
             && window.__alloFirebase
             && window.__alloFirebase.getFunctionSecurityHeaders;
-        if (!url || typeof getSecurityHeaders !== 'function') {
+        if (!isCanvasCompatibility && typeof getSecurityHeaders !== 'function') {
             throw new Error('Authenticated Firebase search is not configured.');
         }
-        const securityHeaders = await getSecurityHeaders();
+        const securityHeaders = isCanvasCompatibility ? {} : await getSecurityHeaders();
+        const requestUrl = isCanvasCompatibility
+            ? `${url}?q=${encodeURIComponent(safeQuery)}&num=${safeResultCount}`
+            : url;
 
         let response;
         try {
-            console.log('[WebSearch] Calling authenticated Serper proxy.');
-            response = await fetch(url, {
-                method: 'POST',
+            console.log(`[WebSearch] Calling ${isCanvasCompatibility ? 'Canvas compatibility' : 'authenticated'} Serper proxy.`);
+            response = await fetch(requestUrl, {
+                method: isCanvasCompatibility ? 'GET' : 'POST',
                 mode: 'cors',
-                headers: { 'Content-Type': 'application/json', ...securityHeaders },
-                body: JSON.stringify({ query, num: Math.min(maxResults, 10) }),
+                headers: isCanvasCompatibility
+                    ? { Accept: 'application/json' }
+                    : { 'Content-Type': 'application/json', ...securityHeaders },
+                ...(isCanvasCompatibility ? { referrerPolicy: 'no-referrer' } : {
+                    body: JSON.stringify({ query: safeQuery, num: safeResultCount }),
+                }),
                 signal: AbortSignal.timeout ? AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.webSearchMs) || 15000) : undefined,
             });
         } catch (fetchErr) {
@@ -700,7 +733,20 @@ const WebSearchProvider = {
         }
 
         // Results are already normalized by the Cloud Function
-        return (data.results || []).slice(0, maxResults);
+        return (Array.isArray(data.results) ? data.results : [])
+            .slice(0, safeResultCount)
+            .map((item) => ({
+                url: String(item && item.url || '').trim(),
+                title: String(item && item.title || 'Web source').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 300),
+                snippet: String(item && item.snippet || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 1000),
+                source: String(item && item.source || 'Search').trim().slice(0, 80),
+            }))
+            .filter((item) => {
+                try {
+                    const parsed = new URL(item.url);
+                    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+                } catch (_) { return false; }
+            });
     },
 
     // ─── Grounding Metadata Builder ─────────────────────────────────────
