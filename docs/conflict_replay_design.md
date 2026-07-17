@@ -171,7 +171,21 @@ proposes, the human disposes, same as pictionary guess-marking), and the Phase-2
 - **P4 (maybe-never, Aaron's call):** exportable de-identified debrief summary (tags only)
   through the existing FERPA-gated export path.
 
-**Open questions for Aaron:** (a) separate tool vs. conflicttheater wave? (b) audio-only v1
-to soften the camera-consent surface further? (c) should Phase 2 exist at all in the pilot
-year, or is roleplay-only the right 2026-27 scope? (d) K-2 register: the tag vocabulary above
-reads ~3rd-grade+; younger needs a picture-based variant.
+**Open questions — RESOLVED by Aaron 2026-07-17:**
+- (a) **Conflicttheater wave**, not a separate tool. Replay ships as an extension of the
+  existing roleplay tool; revisit a split only if real-footage mode later wants its own walls.
+- (b) **Video-first; audio-only v1 SKIPPED.** Rationale: the district DPA covers Gemini as a
+  core service (data-processing legality), the existing per-student AI-disable settings give
+  teachers/guardians a standing off-switch, and a new in-the-moment consent gate (nothing
+  records until participants affirm on screen) covers the session layer. Body language is
+  half the tag vocabulary — audio-only forfeited it for a privacy margin these three layers
+  already provide. ACTION ITEM: verify the DPA's enumerated data categories include
+  audio/video of students (usually text/work-product is listed; A/V sometimes separate).
+- (c) **Real-footage mode MAY exist in pilot year**, counselor-mediated, behind the policy
+  checklist — which must include parental-consent language (in-the-moment participants and
+  bystanders cannot consent). The EPHEMERAL-FOOTAGE invariant is the load-bearing safety
+  here and stays non-negotiable: analysis in memory, footage never persisted, only
+  de-identified Speaker-A/B tags savable by explicit adult action. No artifact → no
+  education record created, nothing to leak or produce.
+- (d) K-2 picture register: **deferred** (ship 3-8; pilot feedback decides).
+- (e) P4 tags-only export: **deferred** ("nothing leaves the room" stays the consent pitch).
