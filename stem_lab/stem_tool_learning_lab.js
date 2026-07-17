@@ -9061,6 +9061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var fs = R.useState({ title: '', body: '', subject: '', mood: 'neutral', tags: '' });
     var form = fs[0];                                  var setForm = fs[1];
     var sf = R.useState('all');                        var subFilter = sf[0]; var setSubFilter = sf[1];
+    var ers = R.useState('');                          var entryError = ers[0]; var setEntryError = ers[1];
 
     var MOODS = [
       { id: 'curious',     icon: '🤔', color: '#3b82f6' },
@@ -9074,162 +9075,165 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function save() {
-      if (!form.body.trim()) { alert('Need some content.'); return; }
+      if (!form.body.trim()) {
+        setEntryError('Journal entry content is required.');
+        setTimeout(function() { var field = document.getElementById('learning-lab-journal-body'); if (field) field.focus(); }, 0);
+        return;
+      }
       var id = editing || tkId();
-      var entry = Object.assign({ id: id, date: todayISO(), time: Date.now() }, form);
+      var entry = Object.assign({ id: id, date: todayISO(), time: Date.now() }, form, { title: form.title.trim(), body: form.body.trim(), subject: form.subject.trim(), tags: form.tags.trim() });
       var entries = (data.entries || []).slice();
-      var i = entries.findIndex(function(e) { return e.id === id; });
-      if (i >= 0) entries[i] = Object.assign({}, entries[i], entry);
+      var index = entries.findIndex(function(item) { return item.id === id; });
+      if (index >= 0) entries[index] = Object.assign({}, entries[index], entry);
       else entries.unshift(entry);
-      setData({ entries: entries });
+      setData(Object.assign({}, data, { entries: entries }));
       setForm({ title: '', body: '', subject: '', mood: 'neutral', tags: '' });
       setEditing(null);
+      setEntryError('');
       setView('list');
+      llAnnounce('Learning journal entry saved.');
     }
-    function remove(id) {
-      if (!confirm('Delete this journal entry?')) return;
-      setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) });
+    async function remove(id) {
+      var entry = (data.entries || []).filter(function(item) { return item.id === id; })[0];
+      var entryName = entry && (entry.title || entry.body) ? (entry.title || entry.body.slice(0, 80)) : 'this journal entry';
+      if (!(await askLearningLabConfirmation('This permanently removes "' + entryName + '".', {
+        title: 'Delete this journal entry?', confirmText: 'Delete entry'
+      }))) return;
+      setData(Object.assign({}, data, { entries: (data.entries || []).filter(function(item) { return item.id !== id; }) }));
+      llAnnounce('Learning journal entry deleted.');
     }
-    function startEdit(e) {
-      setEditing(e.id);
-      setForm({ title: e.title || '', body: e.body || '', subject: e.subject || '', mood: e.mood || 'neutral', tags: e.tags || '' });
+    function startEdit(entry) {
+      setEditing(entry.id);
+      setForm({ title: entry.title || '', body: entry.body || '', subject: entry.subject || '', mood: entry.mood || 'neutral', tags: entry.tags || '' });
+      setEntryError('');
       setView('new');
     }
 
     var entries = data.entries || [];
-    var subjects = entries.map(function(e) { return e.subject; }).filter(function(s, i, arr) { return s && arr.indexOf(s) === i; }).sort();
-    var filtered = entries.filter(function(e) {
-      if (subFilter !== 'all' && e.subject !== subFilter) return false;
+    var subjects = entries.map(function(entry) { return entry.subject; }).filter(function(subject, index, all) { return subject && all.indexOf(subject) === index; }).sort();
+    var filtered = entries.filter(function(entry) {
+      if (subFilter !== 'all' && entry.subject !== subFilter) return false;
       if (search) {
-        var q = search.toLowerCase();
-        return (e.title || '').toLowerCase().indexOf(q) >= 0 ||
-               (e.body || '').toLowerCase().indexOf(q) >= 0 ||
-               (e.tags || '').toLowerCase().indexOf(q) >= 0;
+        var query = search.toLowerCase();
+        return (entry.title || '').toLowerCase().indexOf(query) >= 0 ||
+               (entry.body || '').toLowerCase().indexOf(query) >= 0 ||
+               (entry.tags || '').toLowerCase().indexOf(query) >= 0;
       }
       return true;
     });
+    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(244,114,182,0.45)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', marginBottom: 4 };
+    var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
 
     if (view === 'new') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('📓', editing ? 'Edit journal entry' : 'New journal entry', 'A space for "I learned X about Y today" — builds personal knowledge over time.', '#ec4899'),
+        tkSectionHeader('📓', editing ? 'Edit journal entry' : 'New journal entry', 'A space for “I learned X about Y today” — building personal knowledge over time.', '#ec4899'),
         tkCard('#ec4899',
-          hh('div', null,
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Title (optional)'),
-            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'e.g., "Today\'s biology insight"', { marginBottom: 12 }),
+          hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-journal-editor-heading' },
+            hh('h3', { id: 'learning-lab-journal-editor-heading', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, editing ? 'Edit learning journal entry' : 'New learning journal entry'),
+            hh('label', { htmlFor: 'learning-lab-journal-title', style: labelStyle }, 'Title (optional)'),
+            hh('input', { id: 'learning-lab-journal-title', type: 'text', value: form.title, maxLength: 160, placeholder: 'e.g., Today\'s biology insight', onChange: function(event) { setForm(Object.assign({}, form, { title: event.target.value })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { marginBottom: 12 }) }),
 
-            hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10, marginBottom: 12 } },
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 12 } },
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Subject'),
-                tkInput(form.subject, function(v) { setForm(Object.assign({}, form, { subject: v })); }, 'e.g., "Biology"')
+                hh('label', { htmlFor: 'learning-lab-journal-subject', style: labelStyle }, 'Subject (optional)'),
+                hh('input', { id: 'learning-lab-journal-subject', type: 'text', value: form.subject, maxLength: 100, placeholder: 'e.g., Biology', onChange: function(event) { setForm(Object.assign({}, form, { subject: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle })
               ),
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Mood'),
-                hh('div', { style: { display: 'flex', gap: 2, flexWrap: 'wrap' } },
-                  MOODS.slice(0, 4).map(function(m) {
-                    var on = form.mood === m.id;
-                    return hh('button', { key: 'mo-' + m.id,
-                      onClick: function() { setForm(Object.assign({}, form, { mood: m.id })); },
-                      style: { padding: 6, borderRadius: 4, background: on ? m.color + '30' : 'rgba(15,23,42,0.5)', border: '1px solid ' + (on ? m.color : 'rgba(100,116,139,0.30)'), fontSize: 14, cursor: 'pointer' },
-                      title: m.id
-                    }, m.icon);
-                  })
-                ),
-                hh('div', { style: { display: 'flex', gap: 2, flexWrap: 'wrap', marginTop: 2 } },
-                  MOODS.slice(4).map(function(m) {
-                    var on = form.mood === m.id;
-                    return hh('button', { key: 'mo-' + m.id,
-                      onClick: function() { setForm(Object.assign({}, form, { mood: m.id })); },
-                      style: { padding: 6, borderRadius: 4, background: on ? m.color + '30' : 'rgba(15,23,42,0.5)', border: '1px solid ' + (on ? m.color : 'rgba(100,116,139,0.30)'), fontSize: 14, cursor: 'pointer' },
-                      title: m.id
-                    }, m.icon);
+                hh('div', { id: 'learning-lab-journal-mood-label', style: labelStyle }, 'Mood'),
+                hh('div', { role: 'group', 'aria-labelledby': 'learning-lab-journal-mood-label', style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                  MOODS.map(function(mood) {
+                    var on = form.mood === mood.id;
+                    return hh('button', { key: 'mo-' + mood.id, type: 'button', 'aria-label': mood.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { setForm(Object.assign({}, form, { mood: mood.id })); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 6, borderRadius: 6, background: on ? mood.color + '30' : 'rgba(15,23,42,0.5)', border: '1px solid ' + (on ? mood.color : 'rgba(100,116,139,0.30)'), fontSize: 18, cursor: 'pointer' } }, mood.icon);
                   })
                 )
               )
             ),
 
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Entry'),
-            tkTextarea(form.body, function(v) { setForm(Object.assign({}, form, { body: v })); }, 'What did you learn today? What surprised you? What\'s still unclear?', 8, { marginBottom: 12 }),
+            hh('label', { htmlFor: 'learning-lab-journal-body', style: labelStyle }, 'Entry (required)'),
+            hh('textarea', { id: 'learning-lab-journal-body', value: form.body, required: true, rows: 8, maxLength: 12000, 'aria-invalid': entryError ? 'true' : undefined, 'aria-describedby': entryError ? 'learning-lab-journal-error' : undefined, placeholder: 'What did you learn today? What surprised you? What\'s still unclear?', onChange: function(event) { setForm(Object.assign({}, form, { body: event.target.value })); if (entryError) setEntryError(''); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { minHeight: 160, resize: 'vertical' }) }),
+            hh('div', { id: 'learning-lab-journal-error', role: 'alert', style: { minHeight: entryError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, margin: entryError ? '4px 0 8px' : '0 0 12px' } }, entryError),
 
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Tags (comma-separated, optional)'),
-            tkInput(form.tags, function(v) { setForm(Object.assign({}, form, { tags: v })); }, 'e.g., "cells, mitochondria, energy"')
+            hh('label', { htmlFor: 'learning-lab-journal-tags', style: labelStyle }, 'Tags (comma-separated, optional)'),
+            hh('input', { id: 'learning-lab-journal-tags', type: 'text', value: form.tags, maxLength: 500, placeholder: 'e.g., cells, mitochondria, energy', onChange: function(event) { setForm(Object.assign({}, form, { tags: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle }),
+
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginTop: 14 } },
+              hh('button', { type: 'button', onClick: function() { setEntryError(''); setView('list'); setEditing(null); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '← Cancel'),
+              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #f9a8d4', background: '#be185d', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '💾 Save entry')
+            )
           )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setView('list'); setEditing(null); }, 'ghost'),
-          tkBtn('💾 Save entry', save, 'primary')
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📓', 'Learning Journal', 'Free-form journal of what you\'re learning. Tag by subject + mood. Search across all entries.', '#ec4899'),
+      tkSectionHeader('📓', 'Learning Journal', 'Free-form journal of what you\'re learning. Tag by subject and mood. Search across all entries.', '#ec4899'),
 
-      // Stats
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
+      hh('section', { 'aria-label': 'Learning journal summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
         [
           { label: 'Total entries', value: entries.length, color: '#ec4899', icon: '📓' },
           { label: 'Subjects', value: subjects.length, color: '#3b82f6', icon: '📚' },
-          { label: 'Words written', value: entries.reduce(function(s, e) { return s + (e.body || '').split(/\s+/).filter(Boolean).length; }, 0).toLocaleString(), color: '#a855f7', icon: '✍' }
-        ].map(function(s, i) {
-          return hh('div', { key: 'ljs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
-            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
-            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
+          { label: 'Words written', value: entries.reduce(function(sum, entry) { return sum + (entry.body || '').split(/\s+/).filter(Boolean).length; }, 0).toLocaleString(), color: '#a855f7', icon: '✍' }
+        ].map(function(stat, index) {
+          return hh('div', { key: 'ljs-' + index, style: { padding: 10, borderRadius: 8, background: stat.color + '12', border: '1px solid ' + stat.color + '30', textAlign: 'center' } },
+            hh('div', { 'aria-hidden': 'true', style: { fontSize: 14, marginBottom: 2 } }, stat.icon),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.value),
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, stat.label)
           );
         })
       ),
 
-      hh('div', { style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
-        tkInput(search, setSearch, '🔎 Search entries', { flex: 1, minWidth: 180 }),
-        subjects.length > 0 ? hh('select', { value: subFilter,
-          onChange: function(e) { setSubFilter(e.target.value); },
-          style: { padding: '10px 12px', fontSize: 12, color: '#f472b6', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(236,72,153,0.40)', borderRadius: 6 }
-        },
-          hh('option', { value: 'all' }, 'All subjects'),
-          subjects.map(function(s) { return hh('option', { key: 'so-' + s, value: s }, s); })
+      hh('div', { style: { display: 'flex', gap: 6, marginBottom: 4, flexWrap: 'wrap', alignItems: 'flex-end' } },
+        hh('div', { style: { flex: '1 1 12rem' } },
+          hh('label', { htmlFor: 'learning-lab-journal-search', style: labelStyle }, 'Search journal entries'),
+          hh('input', { id: 'learning-lab-journal-search', type: 'search', value: search, placeholder: 'Search titles, entries, and tags', onChange: function(event) { setSearch(event.target.value); }, 'data-ll-focusable': true, style: inputStyle })
+        ),
+        subjects.length > 0 ? hh('div', { style: { flex: '0 1 12rem' } },
+          hh('label', { htmlFor: 'learning-lab-journal-subject-filter', style: labelStyle }, 'Filter by subject'),
+          hh('select', { id: 'learning-lab-journal-subject-filter', value: subFilter, onChange: function(event) { setSubFilter(event.target.value); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { color: '#f472b6' }) },
+            hh('option', { value: 'all' }, 'All subjects'),
+            subjects.map(function(subject) { return hh('option', { key: 'so-' + subject, value: subject }, subject); })
+          )
         ) : null,
-        tkBtn('+ New entry', function() { setForm({ title: '', body: '', subject: '', mood: 'neutral', tags: '' }); setEditing(null); setView('new'); }, 'primary')
+        hh('button', { type: 'button', onClick: function() { setEntryError(''); setForm({ title: '', body: '', subject: '', mood: 'neutral', tags: '' }); setEditing(null); setView('new'); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #f9a8d4', background: '#be185d', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '+ New entry')
       ),
+      hh('div', { role: 'status', 'aria-live': 'polite', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, filtered.length + ' journal entr' + (filtered.length === 1 ? 'y' : 'ies') + ' shown.'),
 
       filtered.length === 0 ? tkEmptyState('📓', entries.length === 0 ? 'No journal entries yet. Start writing about what you\'re learning.' : 'No entries match your filter.', null, null)
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-          filtered.map(function(e) {
-            var m = MOODS.filter(function(x) { return x.id === e.mood; })[0] || MOODS[7];
-            return hh('div', { key: 'je-' + e.id, style: {
-              padding: 12, borderRadius: 10,
-              background: 'rgba(15,23,42,0.6)',
-              border: '1px solid rgba(236,72,153,0.30)',
-              borderLeft: '4px solid ' + m.color
-            } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 } },
-                hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                  hh('span', { style: { fontSize: 20 } }, m.icon),
-                  hh('div', null,
-                    e.title ? hh('strong', { style: { fontSize: 13, color: m.color } }, e.title) : null,
-                    hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } },
-                      e.subject ? hh('span', { style: { color: '#3b82f6' } }, '📚 ' + e.subject + ' · ') : null,
-                      relDate(e.date)
+      : hh('ul', { 'aria-label': 'Learning journal entries', style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }) },
+          filtered.map(function(entry) {
+            var mood = MOODS.filter(function(item) { return item.id === entry.mood; })[0] || MOODS[7];
+            var entryLabel = entry.title || entry.body.slice(0, 80);
+            return hh('li', { key: 'je-' + entry.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(236,72,153,0.30)', borderLeft: '4px solid ' + mood.color } },
+              hh('article', { 'aria-label': (entry.title ? entry.title + '. ' : '') + 'Mood: ' + mood.id },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
+                  hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                    hh('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, mood.icon),
+                    hh('div', null,
+                      entry.title ? hh('strong', { style: { fontSize: 13, color: mood.color } }, entry.title) : null,
+                      hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                        hh('span', { style: { color: mood.color, textTransform: 'capitalize' } }, mood.id + ' · '),
+                        entry.subject ? hh('span', { style: { color: '#60a5fa' } }, 'Subject: ' + entry.subject + ' · ') : null,
+                        relDate(entry.date)
+                      )
                     )
+                  ),
+                  hh('div', { style: { display: 'flex', gap: 4 } },
+                    hh('button', { type: 'button', 'aria-label': 'Edit journal entry: ' + entryLabel, onClick: function() { startEdit(entry); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: mood.color, fontSize: 14, cursor: 'pointer' } }, '✏'),
+                    hh('button', { type: 'button', 'aria-label': 'Delete journal entry: ' + entryLabel, onClick: function() { remove(entry.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
                   )
                 ),
-                hh('div', { style: { display: 'flex', gap: 4 } },
-                  hh('button', { onClick: function() { startEdit(e); }, style: { background: 'transparent', border: 'none', color: m.color, fontSize: 11, cursor: 'pointer' } }, '✏'),
-                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                )
-              ),
-              hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, e.body),
-              e.tags ? hh('div', { style: { marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' } },
-                e.tags.split(',').map(function(t, i) {
-                  return hh('span', { key: 'tg-' + i, style: { padding: '2px 8px', borderRadius: 999, background: 'rgba(236,72,153,0.15)', color: '#f472b6', fontSize: 9, fontWeight: 700 } }, '#' + t.trim());
-                })
-              ) : null
+                hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, entry.body),
+                entry.tags ? hh('ul', { 'aria-label': 'Tags', style: Object.assign({}, listStyle, { marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' }) },
+                  entry.tags.split(',').map(function(tag, index) { return hh('li', { key: 'tg-' + index, style: { padding: '2px 8px', borderRadius: 999, background: 'rgba(236,72,153,0.15)', color: '#f472b6', fontSize: 9, fontWeight: 700 } }, '#' + tag.trim()); })
+                ) : null
+              )
             );
           })
         )
     );
   }
 
-  // ── AA. PERSONAL GRATITUDE LOG (Wave 6) ──
   // 3 daily gratitudes. Emmons + McCullough 2003 — gratitude practice
   // strongest single positive-psychology intervention.
   function PersonalGratitudeLog(props) {
