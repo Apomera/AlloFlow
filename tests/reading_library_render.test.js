@@ -996,6 +996,39 @@ describe('AI translation', () => {
     expect(text).toContain('Buugga Tijaabada');
   });
 
+  it('side-by-side shows the original next to the translation and toggles off', async () => {
+    const translated = {
+      title: 'Buugga Tijaabada',
+      pages: rtlBook.pages.map((p, i) => (p.text ? 'Bog ' + (i + 1) + ' af-Soomaali' : '')),
+    };
+    await mount({ callGemini: () => Promise.resolve(JSON.stringify(translated)) });
+    await chooseStories();
+    selectLang('Arabic'); await flush();
+    clickByText(host, 'button', rtlEntry.title.slice(0, 12));
+    await flush();
+    clickByText(host, 'button', 'Translate');
+    await flush();
+    clickByText(host, 'button', 'Somali');
+    await flush();
+    // no original panel until the toggle is pressed
+    expect(host.querySelector('[data-testid="bilingual-original"]')).toBeFalsy();
+    clickByText(host, 'button', 'Side by side');
+    await flush();
+    const panel = host.querySelector('[data-testid="bilingual-original"]');
+    expect(panel).toBeTruthy();
+    // the panel is labeled, carries the ORIGINAL book's language/direction,
+    // and shows the original page text while the translation stays on screen
+    expect(textOf(panel)).toContain('Original');
+    expect(panel.getAttribute('dir')).toBe(rtlBook.isRtl ? 'rtl' : 'auto');
+    const firstTextPage = rtlBook.pages.find((p) => (p.text || '').trim());
+    expect(textOf(panel)).toContain(firstTextPage.text.split('\n')[0].slice(0, 20));
+    expect(textOf(host)).toContain('af-Soomaali');
+    // toggling off removes the panel
+    clickByText(host, 'button', 'Side by side');
+    await flush();
+    expect(host.querySelector('[data-testid="bilingual-original"]')).toBeFalsy();
+  });
+
   it('rejects a page-count mismatch and toasts instead of desyncing', async () => {
     const { calls } = await mount({
       callGemini: () => Promise.resolve(JSON.stringify({ title: 'X', pages: ['only one page'] })),

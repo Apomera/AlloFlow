@@ -1016,6 +1016,10 @@
     var _tx = useState(null); var translation = _tx[0]; var setTranslation = _tx[1];
     var _txm = useState(false); var txMenuOpen = _txm[0]; var setTxMenuOpen = _txm[1];
     var _txi = useState(''); var txInput = _txi[0]; var setTxInput = _txi[1];
+    // Bilingual side-by-side: show the ORIGINAL page next to the translation
+    // (dual-language families read together; ELL students check line by line).
+    // Only meaningful while a translation is ready; ephemeral like it.
+    var _bi = useState(false); var bilingual = _bi[0]; var setBilingual = _bi[1];
     // Reading supports: persisted text/display prefs + overlay launchers.
     var _prefs = useState(loadReaderPrefs); var readerPrefs = _prefs[0]; var setReaderPrefsState = _prefs[1];
     var _aa = useState(false); var aaOpen = _aa[0]; var setAaOpen = _aa[1];
@@ -1993,11 +1997,37 @@
           }, page.imgCaption) : null,
           translation && translation.status === 'loading' ? e('div', { className: 'mt-6 text-center text-slate-500 italic' },
             '🌐 ' + tr('readinglib_translating_into', 'Translating into') + ' ' + translation.language + '…') : null,
-          txReady ? e('div', { className: 'mt-3 mx-auto max-w-xl text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 text-center' },
-            '🤖 ' + tr('readinglib_translate_caveat', 'AI translation') + ' (' + translation.language + ') — ' +
-            tr('readinglib_translate_caveat_body', 'created by AI, not reviewed by the publisher. Word-by-word narration is only available on the original.')) : null,
+          txReady ? e('div', { className: 'mt-3 mx-auto max-w-xl text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 flex items-center justify-center gap-2 flex-wrap text-center' },
+            e('span', null, '🤖 ' + tr('readinglib_translate_caveat', 'AI translation') + ' (' + translation.language + ') — ' +
+              tr('readinglib_translate_caveat_body', 'created by AI, not reviewed by the publisher. Word-by-word narration is only available on the original.')),
+            // Side-by-side: keep the original visible next to the translation
+            // (a dual-language family reads together; an ELL student checks
+            // meaning line by line).
+            e('button', {
+              className: 'px-2 py-0.5 rounded-full border text-[11px] font-semibold whitespace-nowrap ' +
+                (bilingual ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-100'),
+              onClick: function () { setBilingual(!bilingual); },
+              'aria-pressed': bilingual,
+              title: tr('readinglib_bilingual_hint', 'Show the original text next to the translation'),
+            }, '◫ ' + tr('readinglib_bilingual', 'Side by side'))) : null,
+          e('div', { className: (txReady && bilingual) ? 'lg:grid lg:grid-cols-2 lg:gap-4 lg:items-start lg:max-w-4xl lg:mx-auto' : '' },
+          // Original text panel (bilingual mode). Plain paragraphs in the
+          // book's own direction/language — define/karaoke stay on the
+          // translation side, which remains the "displayed" text for every
+          // downstream feature (TTS, export, generate).
+          (txReady && bilingual) ? e('div', {
+            className: 'mt-4 mx-auto lg:mx-0 max-w-xl leading-relaxed text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2' + (fontClass ? ' ' + fontClass : ''),
+            dir: book.isRtl ? 'rtl' : 'auto',
+            lang: book.langCode || undefined,
+            'data-testid': 'bilingual-original',
+          },
+            e('div', { className: 'text-[10px] uppercase tracking-wide font-bold text-slate-400 mb-1' },
+              book.language + ' · ' + tr('readinglib_original', 'Original')),
+            pageTextForPipeline(page).split(/\n{2,}/).map(function (par, pi) {
+              return e('p', { key: pi, className: 'mb-2 whitespace-pre-line' }, par);
+            })) : null,
           e('div', {
-            className: 'mt-4 mx-auto max-w-xl leading-relaxed text-slate-800 ' + textLayoutClass(book.level, displayPageText) + (mode !== 'read' ? ' cursor-pointer' : '') + (fontClass ? ' ' + fontClass : ''),
+            className: 'mt-4 mx-auto ' + ((txReady && bilingual) ? 'lg:mx-0 ' : '') + 'max-w-xl leading-relaxed text-slate-800 ' + textLayoutClass(book.level, displayPageText) + (mode !== 'read' ? ' cursor-pointer' : '') + (fontClass ? ' ' + fontClass : ''),
             style: Object.keys(textStyle).length ? textStyle : undefined,
             dir: displayRtl ? 'rtl' : 'auto',
             lang: (txReady ? translation.langCode : book.langCode) || undefined,
@@ -2019,6 +2049,7 @@
               }, tok.w + (ti < line.length - 1 ? ' ' : ''));
             }));
           }))
+          ) // bilingual wrapper (single-column grid-less div when not bilingual)
         )
       ),
       // Reading ruler: a clear band that follows the pointer, with softly
