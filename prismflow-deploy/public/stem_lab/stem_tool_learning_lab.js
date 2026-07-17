@@ -9564,75 +9564,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
     ];
 
-    function logSession(ex, notes) {
-      var session = { id: tkId(), date: todayISO(), time: Date.now(), exerciseId: ex.id, notes: notes || '' };
-      setData({ sessions: [session].concat(data.sessions || []) });
+    function focusStepHeading() {
+      setTimeout(function() { var heading = document.getElementById('learning-lab-self-compassion-step-heading'); if (heading) heading.focus(); }, 0);
+    }
+    function openExercise(exercise, stepIndex) {
+      setActiveStep({ id: exercise.id, step: stepIndex });
+      setView('exercise');
+      focusStepHeading();
+    }
+    function logSession(exercise, notes) {
+      var session = { id: tkId(), date: todayISO(), time: Date.now(), exerciseId: exercise.id, notes: notes || '' };
+      setData(Object.assign({}, data, { sessions: [session].concat(data.sessions || []) }));
+      llAnnounce('Self-compassion practice completed: ' + exercise.label + '.');
     }
 
     var sessions = data.sessions || [];
+    var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
 
     if (view === 'exercise' && activeStep !== null) {
-      var ex = EXERCISES.filter(function(e) { return e.id === activeStep.id; })[0];
-      if (!ex) { setView('home'); return null; }
-      var step = ex.steps[activeStep.step] || ex.steps[0];
+      var exercise = EXERCISES.filter(function(item) { return item.id === activeStep.id; })[0];
+      if (!exercise) { setView('home'); return null; }
+      var step = exercise.steps[activeStep.step] || exercise.steps[0];
+      var currentStep = activeStep.step + 1;
 
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader(ex.icon, ex.label, 'Step ' + (activeStep.step + 1) + ' of ' + ex.steps.length + ': ' + step.name, '#f472b6'),
+        tkSectionHeader(exercise.icon, exercise.label, 'Step ' + currentStep + ' of ' + exercise.steps.length + ': ' + step.name, '#f472b6'),
 
-        hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(244,114,182,0.20), rgba(15,23,42,0.7))', border: '2px solid #f472b6', marginBottom: 14, minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
-          hh('div', { style: { fontSize: 10, color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center', marginBottom: 12 } }, step.name),
-          hh('div', { style: { fontSize: 16, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', lineHeight: 1.6, fontStyle: 'italic' } }, '"' + step.prompt + '"')
+        hh('section', { 'aria-labelledby': 'learning-lab-self-compassion-step-heading', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(244,114,182,0.20), rgba(15,23,42,0.7))', border: '2px solid #f472b6', marginBottom: 14, minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
+          hh('h3', { id: 'learning-lab-self-compassion-step-heading', tabIndex: -1, style: { fontSize: 12, color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center', margin: '0 0 12px' } }, 'Step ' + currentStep + ' of ' + exercise.steps.length + ': ' + step.name),
+          hh('p', { style: { fontSize: 16, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', lineHeight: 1.6, fontStyle: 'italic', margin: 0 } }, '“' + step.prompt + '”')
         ),
 
         hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
-          tkBtn('← Cancel', function() { setActiveStep(null); setView('home'); }, 'ghost'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            activeStep.step > 0 ? tkBtn('← Previous', function() { setActiveStep({ id: ex.id, step: activeStep.step - 1 }); }, 'secondary') : null,
-            activeStep.step + 1 < ex.steps.length
-              ? tkBtn('Next →', function() { setActiveStep({ id: ex.id, step: activeStep.step + 1 }); }, 'primary')
-              : tkBtn('✓ Finished', function() { logSession(ex); setActiveStep(null); setView('home'); }, 'good')
+          tkBtn('← Cancel', function() { setActiveStep(null); setView('home'); }, 'ghost', { minHeight: 44 }),
+          hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+            activeStep.step > 0 ? tkBtn('← Previous step', function() { openExercise(exercise, activeStep.step - 1); }, 'secondary', { minHeight: 44 }) : null,
+            activeStep.step + 1 < exercise.steps.length
+              ? tkBtn('Next step →', function() { openExercise(exercise, activeStep.step + 1); }, 'primary', { minHeight: 44 })
+              : tkBtn('✓ Finish practice', function() { logSession(exercise); setActiveStep(null); setView('home'); }, 'good', { minHeight: 44 })
           )
         ),
 
-        // Progress dots
-        hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 6 } },
-          ex.steps.map(function(_, i) {
-            return hh('div', { key: 'pd-' + i, style: { width: 10, height: 10, borderRadius: '50%', background: i <= activeStep.step ? '#f472b6' : 'rgba(244,114,182,0.20)', border: '1px solid #f472b6' } });
+        hh('div', { role: 'progressbar', 'aria-label': exercise.label + ' progress', 'aria-valuemin': 1, 'aria-valuemax': exercise.steps.length, 'aria-valuenow': currentStep, 'aria-valuetext': 'Step ' + currentStep + ' of ' + exercise.steps.length, style: { display: 'flex', justifyContent: 'center', gap: 6 } },
+          exercise.steps.map(function(_, index) {
+            return hh('span', { key: 'pd-' + index, 'aria-hidden': 'true', style: { width: 10, height: 10, borderRadius: '50%', background: index <= activeStep.step ? '#f472b6' : 'rgba(244,114,182,0.20)', border: '1px solid #f472b6' } });
           })
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('💖', 'Self-Compassion Practice', 'Three guided exercises (Neff 2003). Builds the muscle of treating yourself like a friend.', '#f472b6'),
+      tkSectionHeader('💖', 'Self-Compassion Practice', 'Three guided exercises based on Neff (2003). Build the skill of treating yourself like a friend.', '#f472b6'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(244,114,182,0.10)', border: '1px solid rgba(244,114,182,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#f472b6' } }, '🎓 Self-compassion vs self-esteem: '),
-        'Neff 2003: self-compassion correlates more strongly with well-being + motivation than self-esteem does — without the downsides (vulnerability to setbacks, comparison-trap). The skill is treating yourself the way you\'d treat a friend in the same situation.'
+      hh('aside', { 'aria-label': 'Self-compassion background', style: { padding: 10, borderRadius: 8, background: 'rgba(244,114,182,0.10)', border: '1px solid rgba(244,114,182,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#f472b6' } }, '🎓 Self-compassion versus self-esteem: '),
+        'Neff (2003) found that self-compassion correlates strongly with well-being and motivation without depending on comparison or being protected from setbacks. The skill is treating yourself the way you would treat a friend in the same situation.'
       ),
 
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
-        EXERCISES.map(function(ex) {
-          var count = sessions.filter(function(s) { return s.exerciseId === ex.id; }).length;
-          return hh('button', { key: 'ex-' + ex.id,
-            onClick: function() { setActiveStep({ id: ex.id, step: 0 }); setView('exercise'); },
-            style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,114,182,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(244,114,182,0.40)', borderLeft: '4px solid #f472b6', cursor: 'pointer' }
-          },
-            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, ex.icon),
-            hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#f472b6' } }, ex.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, ex.steps.length + ' steps · ' + (count > 0 ? 'practiced ' + count + 'x' : 'new'))
+      hh('ul', { 'aria-label': 'Self-compassion exercises', style: Object.assign({}, listStyle, { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 }) },
+        EXERCISES.map(function(exercise) {
+          var count = sessions.filter(function(session) { return session.exerciseId === exercise.id; }).length;
+          return hh('li', { key: 'ex-' + exercise.id },
+            hh('button', { type: 'button', onClick: function() { openExercise(exercise, 0); }, 'data-ll-focusable': true, style: { display: 'block', width: '100%', minHeight: 110, height: '100%', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,114,182,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(244,114,182,0.40)', borderLeft: '4px solid #f472b6', cursor: 'pointer' } },
+              hh('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4 } }, exercise.icon),
+              hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#f472b6' } }, exercise.label),
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, exercise.steps.length + ' steps · ' + (count > 0 ? 'practiced ' + count + ' time' + (count === 1 ? '' : 's') : 'not practiced yet'))
+            )
           );
         })
       ),
 
-      sessions.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Practice log'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          sessions.slice(0, 15).map(function(s) {
-            var ex = EXERCISES.filter(function(e) { return e.id === s.exerciseId; })[0] || EXERCISES[0];
-            return hh('div', { key: 'se-' + s.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #f472b6', display: 'flex', justifyContent: 'space-between' } },
-              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, ex.icon + ' ' + ex.label),
-              hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(s.date))
+      sessions.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-self-compassion-history-heading' },
+        hh('h3', { id: 'learning-lab-self-compassion-history-heading', style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📚 Practice log'),
+        hh('ul', { style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 4 }) },
+          sessions.slice(0, 15).map(function(session) {
+            var exercise = EXERCISES.filter(function(item) { return item.id === session.exerciseId; })[0] || EXERCISES[0];
+            return hh('li', { key: 'se-' + session.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #f472b6', display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, hh('span', { 'aria-hidden': 'true' }, exercise.icon + ' '), exercise.label),
+              hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(session.date))
             );
           })
         )
@@ -9640,7 +9649,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
-  // ── DD. PERSONAL PROGRESS DASHBOARD (Wave 6) ──
   // Aggregate view of everything: goals progress + focus minutes + habit
   // streaks + reflection count + sleep avg + recent activity. Single
   // overview screen for the "how am I doing?" question.
