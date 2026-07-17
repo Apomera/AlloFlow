@@ -3,6 +3,14 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const src = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// #6-full (2026-07-16): the round-evidence ASSEMBLY (validity gating, derive, binding, expert
+// base, field set) moved into the engine's canonical reducer — those pins now anchor in the
+// reducer slice of doc_pipeline_source.jsx; the host loop keeps only policy (revert, gen
+// guards, proof attachment) and DELEGATES the merge.
+const pipeSrc = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const reducerStart = pipeSrc.indexOf('const _finalizeRemediationRound = async (prev, round) => {');
+const reducerEnd = pipeSrc.indexOf('// acceptFixedHtmlDetailed:', reducerStart);
+const reducer = pipeSrc.slice(reducerStart, reducerEnd);
 
 const loopStart = src.indexOf('const runAutoFixLoop = React.useCallback');
 const loopEnd = src.indexOf('const saveProjectToFile = React.useCallback', loopStart);
@@ -34,7 +42,7 @@ describe('auto-continue canonical verification', () => {
       'aiFixChunked(',
       'const reVerify = await auditOutputAccessibility(result.html);',
       'const _detRegressed =',
-      'recomputeContentFidelity(cur.sourceText, result.html)',
+      '_mergedRound = await _finalizeRound(cur, {',
       'setPdfFixResult(snapshot);',
       'if (!_genStale()) {',
     ]) {
@@ -51,19 +59,23 @@ describe('auto-continue canonical verification', () => {
     expect(readyForSuccess({ verificationState: 'complete', afterScoreVerified: true, requiresManualReview: false, fidelityLimited: true })).toBe(false);
   });
 
-  it('derives each accepted round from current-byte evidence through the shared policy helper', () => {
-    expect(src).toContain("typeof _docPipeline.deriveVerificationState === 'function'");
-    expect(loop).toMatch(/deriveVerificationState\(\{\s*ai: reVerify,\s*axe: _freshAxe,\s*equalAccess: _freshEa,/);
-    expect(loop).toContain("const _freshAxeRaw = (result.axe && typeof result.axe.score === 'number' && Number.isFinite(result.axe.score)) ? result.axe : null;");
-    expect(loop).toContain("const _freshEaRaw = (_ea && typeof _ea.score === 'number' && Number.isFinite(_ea.score)) ? _ea : null;");
-    expect(loop).toContain("const _freshAxe = _freshAxeRaw || ((result._auditOnly && cur.axeAudit");
-    expect(loop).toContain("const _freshEa = _freshEaRaw || ((result._auditOnly && cur.secondEngineAudit");
+  it('derives each accepted round from current-byte evidence through the shared policy helper (in the reducer)', () => {
+    // the host hands the RAW audits to the reducer, which owns validity gating + the derive
+    expect(loop).toContain('_mergedRound = await _finalizeRound(cur, {');
+    expect(loop).toContain('html: result.html, aiAudit: reVerify, axeAudit: result.axe, eaAudit: _ea,');
+    expect(reducer).toMatch(/_alloDeriveVerificationState\(\{\s*ai: aiAudit,\s*axe: _freshAxe,\s*equalAccess: _freshEa,/);
+    expect(reducer).toContain("const _scored = (a) => !!(a && typeof a.score === 'number' && Number.isFinite(a.score));");
+    expect(reducer).toContain('const _freshAxe = _scored(round && round.axeAudit) ? round.axeAudit');
+    expect(reducer).toContain('const _freshEa = _scored(round && round.eaAudit) ? round.eaAudit');
   });
 
   it('never carries prior axe or Equal Access objects through a failed rewrite audit', () => {
-    expect(loop).toContain('axeAudit: _freshAxe,');
-    expect(loop).toContain('secondEngineAudit: _freshEa,');
-    expect(loop).toContain('axeScore: _freshAxe ? _freshAxe.score : null,');
+    expect(reducer).toContain('axeAudit: _freshAxe,');
+    expect(reducer).toContain('secondEngineAudit: _freshEa,');
+    expect(reducer).toContain('axeScore: _freshAxe ? _freshAxe.score : null,');
+    // rewrite rounds replace-not-inherit: inheritance is gated on auditOnly ONLY
+    expect(reducer).toContain('((auditOnly && _scored(cur.axeAudit)) ? cur.axeAudit : null)');
+    expect(reducer).toContain('((auditOnly && _scored(cur.secondEngineAudit)) ? cur.secondEngineAudit : null)');
     expect(loop).not.toContain('secondEngineAudit: _ea || cur.secondEngineAudit');
     expect(loop).not.toContain('axeViolations: result.axe ? result.axe.totalViolations : cur.axeViolations');
   });
@@ -89,12 +101,12 @@ describe('auto-continue canonical verification', () => {
       'needsExpertReview',
       'expertReviewReason',
     ]) {
-      expect(loop).toContain(field);
+      expect(reducer).toContain(field); // the assembly lives in the reducer; the loop commits its result
     }
     expect(loop).toContain('setPdfFixResult(snapshot);');
-    expect(loop).toContain('const _expertBase = { needed: !!_expertBaseReason, reason: _expertBaseReason };');
-    expect(loop).toContain('_verificationExpertReview: false');
-    expect(loop).toContain('_expertReviewBeforeVerification: null');
+    expect(reducer).toContain('needsExpertReview: !!_expertBaseReason,');
+    expect(reducer).toContain('_verificationExpertReview: false');
+    expect(reducer).toContain('_expertReviewBeforeVerification: null');
   });
 
   it('centrally enforces exact-HTML binding before every raw React state write', () => {
@@ -109,8 +121,8 @@ describe('auto-continue canonical verification', () => {
   });
 
   it('creates a fresh SHA binding and non-enumerable snapshot for each accepted round', () => {
-    expect(loop).toContain('const _verificationHtmlBinding = await createVerificationHtmlBinding(result.html);');
-    expect(loop).toContain('verificationHtmlBinding: _verificationHtmlBinding');
+    expect(reducer).toContain('const _verificationHtmlBinding = await _alloCreateVerificationHtmlBinding(html);');
+    expect(reducer).toContain('verificationHtmlBinding: _verificationHtmlBinding');
     expect(loop).toContain('!attachVerificationHtmlProof(cur, result.html)');
     expect(src).toContain("Object.defineProperty(result, '_verificationHtmlBindingDigest'");
     expect(loop).toContain('isLiveVerificationHtmlBound(c, c.accessibleHtml)');
@@ -120,9 +132,9 @@ describe('auto-continue canonical verification', () => {
   it('drops artifact-specific evidence after rewrites and cancels late rounds after manual edits', () => {
     expect(loop).toContain('const _roundHtmlRevision = pdfHtmlRevisionRef.current;');
     expect(loop.match(/pdfHtmlRevisionRef.current !== _roundHtmlRevision/g)?.length).toBeGreaterThanOrEqual(3);
-    expect(loop).toContain('const _sameRoundHtml = result.html === cur.accessibleHtml');
-    expect(loop).toContain('const _roundPdfUaSelfCheck = _sameRoundHtml');
-    expect(loop.match(/pdfUaSelfCheck: _roundPdfUaSelfCheck/g)).toHaveLength(2);
+    expect(reducer).toContain('const _sameRoundHtml = html === cur.accessibleHtml && _alloIsLiveVerificationHtmlBound(cur, cur.accessibleHtml);');
+    expect(reducer).toContain('const _roundPdfUaSelfCheck = _sameRoundHtml');
+    expect(reducer.match(/pdfUaSelfCheck: _roundPdfUaSelfCheck/g)).toHaveLength(2);
     expect(loop).toContain('cur = pdfFixResultRef.current;');
   });
 
@@ -224,13 +236,14 @@ describe('auto-continue canonical verification', () => {
       verificationState: 'partial', afterScoreVerified: false, requiresManualReview: true,
     });
   });
-  it('derives expert-review enum state from fresh fidelity and preserves a false base sentinel', () => {
-    const freshFidelity = loop.indexOf('const _nextFidelityLimited = _roundFid');
-    const expertDerivation = loop.indexOf('const _freshContentFidelityReview = !!_nextFidelityLimited;');
+  it('derives expert-review enum state from fresh fidelity and preserves a false base sentinel (in the reducer)', () => {
+    // #6-full: the fidelity-then-expert-base ordering moved verbatim into the reducer.
+    const freshFidelity = reducer.indexOf('const _nextFidelityLimited = _roundFid');
+    const expertDerivation = reducer.indexOf('const _freshContentFidelityReview = !!_nextFidelityLimited;');
     expect(freshFidelity).toBeGreaterThan(-1);
     expect(expertDerivation).toBeGreaterThan(freshFidelity);
-    expect(loop).toContain('const _expertBase = { needed: !!_expertBaseReason, reason: _expertBaseReason };');
-    expect(loop).toContain('? { needed: false, reason: null }');
+    expect(reducer).toContain('needsExpertReview: !!_expertBaseReason,');
+    expect(reducer).toContain('? { needed: false, reason: null }');
   });
 
   it('gates success stops/toasts and routes incomplete verification to a readable warning', () => {

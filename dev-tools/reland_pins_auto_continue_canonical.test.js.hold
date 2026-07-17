@@ -236,13 +236,14 @@ describe('auto-continue canonical verification', () => {
       verificationState: 'partial', afterScoreVerified: false, requiresManualReview: true,
     });
   });
-  it('derives expert-review enum state from fresh fidelity and preserves a false base sentinel', () => {
-    const freshFidelity = loop.indexOf('const _nextFidelityLimited = _roundFid');
-    const expertDerivation = loop.indexOf('const _freshContentFidelityReview = !!_nextFidelityLimited;');
+  it('derives expert-review enum state from fresh fidelity and preserves a false base sentinel (in the reducer)', () => {
+    // #6-full: the fidelity-then-expert-base ordering moved verbatim into the reducer.
+    const freshFidelity = reducer.indexOf('const _nextFidelityLimited = _roundFid');
+    const expertDerivation = reducer.indexOf('const _freshContentFidelityReview = !!_nextFidelityLimited;');
     expect(freshFidelity).toBeGreaterThan(-1);
     expect(expertDerivation).toBeGreaterThan(freshFidelity);
-    expect(loop).toContain('const _expertBase = { needed: !!_expertBaseReason, reason: _expertBaseReason };');
-    expect(loop).toContain('? { needed: false, reason: null }');
+    expect(reducer).toContain('needsExpertReview: !!_expertBaseReason,');
+    expect(reducer).toContain('? { needed: false, reason: null }');
   });
 
   it('gates success stops/toasts and routes incomplete verification to a readable warning', () => {

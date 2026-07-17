@@ -37,10 +37,15 @@ describe('C5 — web audit-unavailable screen cannot hide remediation results', 
 });
 
 describe('C6 — audit-only refresh inherits prior deterministic evidence on unchanged bytes', () => {
-  it('host keeps prior axe/EA when the refresh audit failed and the round changed nothing', () => {
+  it('the inherit rule lives in the canonical reducer; the host delegates the round merge to it (#6-full)', () => {
+    // 2026-07-16: the validity-gate + audit-only inheritance moved VERBATIM into
+    // finalizeRemediationRound (doc_pipeline) — the host passes raw audits + auditOnly.
+    expect(pipe).toContain('((auditOnly && _scored(cur.axeAudit)) ? cur.axeAudit : null)');
+    expect(pipe).toContain('((auditOnly && _scored(cur.secondEngineAudit)) ? cur.secondEngineAudit : null)');
+    expect(module_).toContain('((auditOnly && _scored(cur.axeAudit)) ? cur.axeAudit : null)');
     for (const src of [host, hostMirror]) {
-      expect(src).toContain("const _freshAxe = _freshAxeRaw || ((result._auditOnly && cur.axeAudit");
-      expect(src).toContain("const _freshEa = _freshEaRaw || ((result._auditOnly && cur.secondEngineAudit");
+      expect(src).toContain('auditOnly: !!result._auditOnly,');
+      expect(src).toContain('_mergedRound = await _finalizeRound(cur, {');
     }
   });
   it('behavioral mirror: failed refresh no longer nulls det for audit-only rounds', () => {

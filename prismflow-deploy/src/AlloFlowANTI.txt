@@ -23113,19 +23113,37 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // deterministic runs each round.
         let _ea = null;
         try { _ea = runEqualAccessAudit ? await runEqualAccessAudit(result.html) : null; } catch (_) {}
-        // Only scored fresh audits are retained. Empty/error objects replace, rather
-        // than inherit, a prior successful verifier object — EXCEPT on an audit-only
-        // refresh (C6, 2026-07-13): that round changed NOTHING, so the prior
-        // deterministic evidence still describes these exact bytes. Nulling it let a
-        // failed axe refresh RAISE an axe-governed 88 to an AI-only 97 on a no-change
-        // round. Rounds that rewrote the html keep the replace-not-inherit rule.
-        const _freshAxeRaw = (result.axe && typeof result.axe.score === 'number' && Number.isFinite(result.axe.score)) ? result.axe : null;
-        const _freshEaRaw = (_ea && typeof _ea.score === 'number' && Number.isFinite(_ea.score)) ? _ea : null;
-        const _freshAxe = _freshAxeRaw || ((result._auditOnly && cur.axeAudit && typeof cur.axeAudit.score === 'number' && Number.isFinite(cur.axeAudit.score)) ? cur.axeAudit : null);
-        const _freshEa = _freshEaRaw || ((result._auditOnly && cur.secondEngineAudit && typeof cur.secondEngineAudit.score === 'number' && Number.isFinite(cur.secondEngineAudit.score)) ? cur.secondEngineAudit : null);
-        let _det = _freshAxe ? _freshAxe.score : null;
-        if (_freshEa) _det = _det !== null ? Math.min(_det, _freshEa.score) : _freshEa.score;
-        const newScore = (_det !== null) ? blendAiAxe(reVerify.score, _det) : reVerify.score; // shared weakest-layer (delegates to computeHeadline)
+        // #6-full (2026-07-16): ALL round-evidence assembly — scored-audit validity gating,
+        // audit-only inheritance (C6), weakest-layer score, fidelity recompute-and-merge,
+        // verification snapshot + SHA binding, expert-review base separation — now happens in
+        // the engine's ONE canonical reducer (finalizeRemediationRound). The host keeps only
+        // loop POLICY: the noise-aware revert, gen guards, proof attachment, and toasts. The
+        // reducer returns the merged candidate; a reverted round simply discards it.
+        const _finalizeRound = _docPipeline && _docPipeline.finalizeRemediationRound;
+        if (typeof _finalizeRound !== 'function') {
+          // Module older than this host build (mismatched deploy) — stop improving rather than
+          // hand-merge with drift risk; the primary fixAndVerifyPdf result stands untouched.
+          warnLog('[AutoContinue] finalizeRemediationRound unavailable (engine module predates this host) — stopping the loop; the primary result stands.');
+          break;
+        }
+        // Recompute Issue-Resolution against THIS round's fresh audit so fixed issues drop off
+        // the Newly-Introduced / Remaining lists (baseline rides on cur.issueResolution).
+        let _roundIR = cur.issueResolution;
+        try { const _r = recomputeIssueResolution(cur.issueResolution, reVerify); if (_r) _roundIR = _r; } catch (_) {}
+        let _mergedRound = null;
+        try {
+          _mergedRound = await _finalizeRound(cur, {
+            html: result.html, aiAudit: reVerify, axeAudit: result.axe, eaAudit: _ea,
+            auditOnly: !!result._auditOnly, sourceText: cur.sourceText, issueResolution: _roundIR,
+            plainText: _plainTextOf(result.html), passes: result.passes || 0,
+            chunkState: result.chunkState, chunkWeightedScore: result.chunkWeightedScore,
+          });
+        } catch (_finErr) {
+          warnLog('[AutoContinue] round merge failed (' + ((_finErr && _finErr.message) || _finErr) + ') — preserving prior state and stopping the loop.');
+          break;
+        }
+        const _det = _mergedRound._detScore;
+        const newScore = _mergedRound.afterScore;
         // NOISE-AWARE COMMIT-OR-REVERT (loop fix, 2026-06-15): the blended score is half AI-rubric
         // (noisy), so reverting whenever newScore < prior threw away genuinely-improved rounds on a
         // mere AI wobble and stalled the loop short of target. Revert ONLY on a REAL regression: the
@@ -23143,123 +23161,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           // double-count that abandoned the loop on a single wobble).
           continue;
         }
-        const _newPlain = _plainTextOf(result.html);
-        // Recompute Issue-Resolution against THIS round's fresh audit so fixed issues drop off the
-        // Newly-Introduced / Remaining lists (computed once in fixAndVerifyPdf, otherwise stale). The
-        // baseline (original pre-fix issues) rides on cur.issueResolution and is unchanged across rounds.
-        let _roundIR = cur.issueResolution;
-        try { const _r = recomputeIssueResolution(cur.issueResolution, reVerify); if (_r) _roundIR = _r; } catch (_) {}
-        // #6-incremental: this round CHANGED the html — re-measure coverage/placement against the
-        // NEW output (pure pipeline helper; null when no text-layer ground truth → keep the prior
-        // fields). fidelityLimited keeps its original definition: coverage<90 OR structural notes.
-        let _roundFid = null;
-        try { _roundFid = (!result._auditOnly && recomputeContentFidelity) ? recomputeContentFidelity(cur.sourceText, result.html) : null; } catch (_) {}
-        // #6-ext (2026-07-10): merge fidelity notes — RECOMPUTABLE kinds (links/tables/refusal/
-        // placement/numeric) are replaced by this round's fresh measurements so a round that swaps
-        // a number or drops a table refreshes its warning; run-scoped kinds (pageEdge, OCR
-        // accuracy/confidence, dupe-collapse, folio leak, alt quality…) can't be re-derived from
-        // (sourceText, html) and carry forward from the original run.
-        const _recompKinds = (_docPipeline && _docPipeline.recomputableFidelityKinds) || { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1 };
-        const _roundNotes = _roundFid
-          ? (cur.fidelityNotes || []).filter((n) => !(n && _recompKinds[n.kind])).concat(_roundFid.fidelityNotes || [])
-          : (cur.fidelityNotes || []);
-        const _nextIntegrityCoverage = _roundFid ? _roundFid.integrityCoverage : cur.integrityCoverage;
-        const _nextIntegrityWarning = _roundFid
-          ? ([_roundFid.coverageWarning, _roundFid.placementWarn, _roundFid.numericWarn].filter(Boolean).join(' ') || null)
-          : cur.integrityWarning;
-        const _nextFidelityLimited = _roundFid
-          ? ((_roundFid.integrityCoverage != null && _roundFid.integrityCoverage < 90) || _roundNotes.length > 0)
-          : !!cur.fidelityLimited;
-
-        const _sameRoundHtml = result.html === cur.accessibleHtml
-          && isLiveVerificationHtmlBound(cur, cur.accessibleHtml);
-        const _roundPdfUaSelfCheck = _sameRoundHtml
-          ? ((cur.verificationCoverage && cur.verificationCoverage.pdfUaSelfCheck) || 'not-run')
-          : 'not-run';
-        // Every accepted round receives one canonical, fresh verification snapshot.
-        let _verification = deriveVerificationState({
-          ai: reVerify,
-          axe: _freshAxe,
-          equalAccess: _freshEa,
-          pdfUaSelfCheck: _roundPdfUaSelfCheck,
-        }) || {};
-        // Create a fresh SHA-256 binding only after all three audits have run on
-        // this exact accepted HTML. No digest means the round remains unverified.
-        const _verificationHtmlBinding = await createVerificationHtmlBinding(result.html);
-        _verification = applyVerificationHtmlBinding(
-          _verification,
-          !!_verificationHtmlBinding,
-          'verification-html-binding-unavailable'
-        ) || _verification;
-        const _verificationCoverage = _verification.coverage || _verification.verificationCoverage || {
-          standard: 'WCAG 2.2 AA', ai: 'unavailable', axe: 'unavailable', equalAccess: 'unavailable',
-          pdfUaSelfCheck: _roundPdfUaSelfCheck,
-        };
-        const _verificationState = _verification.verificationState || 'partial';
-        const _afterScoreVerified = _verification.afterScoreVerified === true && _verificationState === 'complete' && !_verification.requiresManualReview;
-        const _requiresManualReview = !_afterScoreVerified || !!_verification.requiresManualReview;
-        const _verificationReasons = Array.isArray(_verification.reasons) ? _verification.reasons.slice() : [];
-        const _verificationReviewCount = Number.isFinite(_verification.reviewCount)
-          ? Math.max(0, _verification.reviewCount)
-          : 0;
-        const _aiVerificationIncomplete = _verificationCoverage.ai !== 'complete';
-        const _scoreSource = _aiVerificationIncomplete
-          ? (_det !== null ? 'deterministic-only' : 'unverified')
-          : (_det !== null ? 'min' : 'content-only');
-
-        // Separate the verification contribution from the stable expert-review
-        // base. A false/null base is deliberately persisted as a sentinel so a
-        // later complete refresh can clear a verification-only warning.
-        const _storedExpertBase = (cur._expertReviewBeforeVerification && typeof cur._expertReviewBeforeVerification === 'object')
-          ? cur._expertReviewBeforeVerification
-          : null;
-        const _hadVerificationContribution = !!cur._verificationExpertReview;
-        const _rawExpertBase = _storedExpertBase || (_hadVerificationContribution
-          ? { needed: false, reason: null }
-          : { needed: !!cur.needsExpertReview, reason: cur.expertReviewReason || null });
-        const _baseAccessibilityReview = !!(_rawExpertBase.needed && (_rawExpertBase.reason === 'accessibility' || _rawExpertBase.reason === 'both' || !_rawExpertBase.reason));
-        const _freshContentFidelityReview = !!_nextFidelityLimited;
-        const _expertBaseReason = _baseAccessibilityReview
-          ? (_freshContentFidelityReview ? 'both' : 'accessibility')
-          : (_freshContentFidelityReview ? 'content-fidelity' : null);
-        const _expertBase = { needed: !!_expertBaseReason, reason: _expertBaseReason };
-        const _nextNeedsExpertReview = _expertBase.needed;
-        const _nextExpertReviewReason = _expertBase.reason;
-        cur = Object.assign({}, cur, {
-          accessibleHtml: result.html,
-          axeAudit: _freshAxe,
-          _detScore: _det,
-          verificationAudit: reVerify,
-          verificationHtmlBinding: _verificationHtmlBinding,
-          verificationCoverage: _verificationCoverage,
-          verificationState: _verificationState,
-          afterScoreVerified: _afterScoreVerified,
-          requiresManualReview: _requiresManualReview,
-          verificationReviewCount: _verificationReviewCount,
-          verificationReasons: _verificationReasons,
-          issueResolution: _roundIR,
-          integrityCoverage: _nextIntegrityCoverage,
-          integrityWarning: _nextIntegrityWarning,
-          fidelityNotes: _roundNotes,
-          fidelityLimited: _nextFidelityLimited,
-          afterScore: newScore,
-          _scoreIsBlended: _det !== null && !_aiVerificationIncomplete,
-          _aiVerificationIncomplete,
-          _scoreSource,
-          axeScore: _freshAxe ? _freshAxe.score : null,
-          axeViolations: _freshAxe && typeof _freshAxe.totalViolations === 'number' ? _freshAxe.totalViolations : null,
-          secondEngineAudit: _freshEa,
-          needsExpertReview: _nextNeedsExpertReview,
-          expertReviewReason: _nextExpertReviewReason,
-          _verificationExpertReview: false,
-          _expertReviewBeforeVerification: null,
-          finalText: _newPlain || cur.finalText,
-          autoFixPasses: (cur.autoFixPasses || 0) + (result.passes || 0),
-          htmlChars: result.html.length,
-          chunkState: result.chunkState || cur.chunkState,
-          chunkWeightedScore: result.chunkWeightedScore || cur.chunkWeightedScore,
-        });
-        if (_verificationHtmlBinding && !attachVerificationHtmlProof(cur, result.html)) {
+        // Commit: the reducer already assembled the complete next result for this round.
+        cur = _mergedRound;
+        if (cur.verificationHtmlBinding && !attachVerificationHtmlProof(cur, result.html)) {
           cur = enforceVerificationHtmlBinding(cur, 'verification-html-binding-unavailable');
         }
         const snapshot = cur;
