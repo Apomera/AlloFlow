@@ -89,6 +89,18 @@ const splitTextToSentences = (text, deps) => {
           // causing karaoke TTS to over-split + stall between roundtrips.
           protectedText = protectedText.replace(new RegExp(`(\\b${h})\\.(\\s)`, 'g'), `$1{{DOT}}$2`);
       });
+      // Structural boundaries (2026-07-16): a heading line is its own unit.
+      // "## Title\nBody..." used to merge the title into the first body
+      // sentence (the reader then painted that whole sentence as a header,
+      // TTS spoke both as one clip, and karaoke store keys diverged between
+      // surfaces). A blank line is likewise a hard boundary so a paragraph
+      // that ends without terminal punctuation ("# Dreams") never swallows
+      // the next paragraph — whole-text and per-paragraph callers now
+      // produce identical units. Multi-line LaTeX is already protected by
+      // the {{LATEX_n}} placeholders above, so these rules cannot split it.
+      protectedText = protectedText
+        .replace(/(^|\n)([ \t]*#{1,6}[ \t][^\n]*[^\s|])[ \t]*(?=\n|$)/g, "$1$2|")
+        .replace(/\n[ \t]*\n\s*/g, "|");
       const sentences = protectedText
         .replace(/([.!?]+["']?)(\s+|$)/g, "$1|")
         .split("|")

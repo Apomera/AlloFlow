@@ -31,6 +31,21 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   // (two sentences normalizing identically) just share a clip — harmless.
   function keyFor(sentence) {
     return String(sentence == null ? '' : sentence).toLowerCase()
+      // Markdown decoration is display-only (2026-07-16): the SPOKEN spelling
+      // has it stripped (phase_k sanitizeTtsText / view cleanSentenceForAudio)
+      // while list/lookup spellings can still carry it raw ("## Title",
+      // "**word**"). Strip it here so both spellings of the same sentence
+      // converge on one key — the same contract as the punctuation rules
+      // below. Mirrors the sanitizer's decoration rules exactly.
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+      .replace(/\[?⁽[⁰¹²³⁴-⁹]+⁾\]?/g, '')
+      .replace(/\[source\s+\d+\]/g, '')
+      .replace(/\[\d+\]/g, '')
+      .replace(/^[ \t]*#{1,6}[ \t]+/, '')
+      .replace(/^[ \t]*>[ \t]?/, '')
+      .replace(/^[ \t]*[-*+][ \t]+/, '')
+      .replace(/^[ \t]*\d+\.[ \t]+/, '')
+      .replace(/[*_~`]+/g, '')
       .replace(/[‘’]/g, "'")
       .replace(/[“”]/g, '"')
       .replace(/([a-z0-9À-ÿ])\s*'\s*([a-z0-9À-ÿ])/g, "$1'$2")
@@ -52,7 +67,8 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   //
   // ⚠ INVARIANT (2026-07-16): the boundaries this function produces MUST match
   // the playback path (phase_k handleSpeak/playSequence, which splits with
-  // splitTextToSentences and never at single line breaks or length caps).
+  // splitTextToSentences — terminators plus heading-line/blank-line
+  // boundaries; never at other single line breaks or length caps).
   // Store keys are derived from these units on BOTH sides. A 2026-07-15 change
   // exported a line-splitting + 120-char-capping variant here WITHOUT changing
   // playback: every Save-TTS/captured clip was then keyed differently from
@@ -62,15 +78,22 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   // fixed at the callTTS layer instead (kokoro speak() returns the COMPLETE
   // clip regardless of length), so no cap belongs here.
   function splitSentences(text) {
-    var cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-    if (!cleaned) return [];
+    var raw = String(text || '').replace(/<[^>]*>/g, '');
+    if (!raw.trim()) return [];
     try {
       var PH = window.AlloModules && window.AlloModules.PureHelpers;
       if (PH && typeof PH.splitTextToSentences === 'function') {
-        var viaApp = PH.splitTextToSentences(cleaned, {});
+        // Newlines pass through UNCOLLAPSED (2026-07-16): the canonical
+        // splitter treats heading lines and blank lines as hard unit
+        // boundaries, so flattening "\n" to " " here would rebuild the very
+        // divergence this delegation exists to prevent ("## Title\nBody"
+        // merging into one unit on this side but not in playback).
+        var viaApp = PH.splitTextToSentences(raw, {});
         if (Array.isArray(viaApp) && viaApp.length) return viaApp;
       }
     } catch (_) {}
+    var cleaned = raw.replace(/\s+/g, ' ').trim();
+    if (!cleaned) return [];
     var parts = cleaned.split(/([.!?]+["'”’]?)(\s+|$)/);
     var out = [];
     var buf = '';

@@ -8090,7 +8090,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=9362fc7bc');
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=9362fc7bc');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=9362fc7bc');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=3b0edd0a');
+    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=24c81e1c');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=9362fc7bc');
     loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=9362fc7bc');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=9362fc7bc');
@@ -9720,10 +9720,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // language is optional; when provided we route it to callTTS so a foreign
     // translation is voiced by the multilingual Gemini voice instead of the
     // default English one. Omitting it preserves the exact prior behavior.
+    // Voice comes from the live global (kept current by the selectedVoice
+    // effect) — this callback has [] deps, so reading state here would be
+    // stale and 'Puck' used to be hardcoded, overriding the user's choice.
     const _ttsOpts = language ? { maxRetries: 2, language } : 2;
+    const _voice = window.__alloSelectedVoice || 'Puck';
     try {
-      if (typeof callTTS === 'function') return await callTTS(text, 'Puck', 1, _ttsOpts);
-      if (typeof window.callTTS === 'function') return await window.callTTS(text, 'Puck', 1, _ttsOpts);
+      if (typeof callTTS === 'function') return await callTTS(text, _voice, 1, _ttsOpts);
+      if (typeof window.callTTS === 'function') return await window.callTTS(text, _voice, 1, _ttsOpts);
     } catch (e) { warnLog && warnLog('[handleAudio] TTS failed:', e); }
   }, []);
   // The interstitial->running battery advance now lives INSIDE the StudentAnalytics
@@ -20026,7 +20030,10 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       if (chunkReaderSweepRafRef.current) { cancelAnimationFrame(chunkReaderSweepRafRef.current); chunkReaderSweepRafRef.current = null; }
       (async () => {
           let url = null;
-          try { url = await callTTS(sentenceText); } catch (e) { url = null; }
+          // Pass the selected voice + language: a bare callTTS(text) falls back
+          // to the hardcoded default voice (Puck) even when the user chose
+          // another one in settings.
+          try { url = await callTTS(sentenceText, selectedVoice, voiceSpeed || 1, { language: leveledTextLanguage || currentUiLanguage || 'English' }); } catch (e) { url = null; }
           if (cancelled) { if (url) { try { URL.revokeObjectURL(url); } catch (e) {} } return; }
           if (url) {
               const audio = new Audio(url);
@@ -22147,6 +22154,22 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     }
     return meta;
   };
+  // True when a stored NON-HUMAN take was synthesized with a different voice
+  // than the active selection (legacy entries without voice metadata count as
+  // different, so one playthrough self-heals them). Human recordings are never
+  // mismatched — a teacher/student take is voice-setting-independent. Playback
+  // (phase_k getStoredReadAloudUrl) applies the same rule on lookup; this side
+  // lets capture/prep REPLACE the stale-voice clip instead of skipping it.
+  const _karaokeAiVoiceMismatch = (st, sentence) => {
+    try {
+      if (!st || typeof st.has !== 'function' || !st.has(sentence)) return false;
+      const src = String((typeof st.sourceOf === 'function' && st.sourceOf(sentence)) || 'ai');
+      if (src.indexOf('human') === 0) return false;
+      const meta = (typeof st.metadataOf === 'function' && st.metadataOf(sentence)) || {};
+      const cur = selectedVoice || window.__alloSelectedVoice || 'Puck';
+      return String(meta.voice || '') !== String(cur);
+    } catch (_) { return false; }
+  };
   const _karaokePutFailureDetail = (st) => {
     let error = null;
     try { error = st && typeof st.lastPutError === 'function' ? st.lastPutError() : null; } catch (_) {}
@@ -22334,7 +22357,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         if (!allowed.has(k) && String(_pruneSources[k] || 'ai').indexOf('human') !== 0) st.remove(k);
       });
     } catch (_) {}
-    const todo = st.missing(list);
+    // Missing clips plus stored AI takes whose voice no longer matches the
+    // active selection — Save TTS re-synthesizes those under the current
+    // voice instead of skipping them (human recordings are never re-synthed).
+    const _missingSet = new Set(st.missing(list));
+    const todo = list.filter(s => _missingSet.has(s) || _karaokeAiVoiceMismatch(st, s));
     let n = 0;
     let generatedCount = 0;
     let failedCount = 0;
@@ -22404,7 +22431,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const st = _ensureKaraokeStore('reference');
     if (!st) return false;
     const resourceId = generatedContent && generatedContent.id;
-    if (st.has(sentence)) return false;
+    // Skip only when the stored take still matches: an AI clip synthesized
+    // under a DIFFERENT voice is replaced by this freshly played one (the
+    // voice-aware lookup just refused it, which is why we re-synthesized).
+    if (st.has(sentence) && !_karaokeAiVoiceMismatch(st, sentence)) return false;
     const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
     const sentenceKey = KS && typeof KS.keyFor === 'function' ? KS.keyFor(sentence) : String(sentence).toLowerCase().replace(/\s+/g, ' ').trim();
     const captureKey = String(resourceId || 'unsaved') + '::' + sentenceKey;
@@ -22422,8 +22452,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
             else setTimeout(res, 250);
           } catch (_) { setTimeout(res, 250); }
         });
-        // An explicit regenerate/record may have won while capture was idle.
-        if (st.has(sentence)) return false;
+        // An explicit regenerate/record may have won while capture was idle
+        // (a matching-voice take or a human recording keeps priority; a
+        // stale-voice AI take is still replaced).
+        if (st.has(sentence) && !_karaokeAiVoiceMismatch(st, sentence)) return false;
         const bytes = new Uint8Array(buf);
         const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
         const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
@@ -40173,7 +40205,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   // callTTS returns a blob URL; wrap in <audio> + await ended,
                   // otherwise the URL is discarded and Read All runs silent.
                   let url = null;
-                  try { url = await callTTS(items[i].text); } catch(e) { warnLog && warnLog('[readToPlay] callTTS failed for item ' + i + ':', e); }
+                  try { url = await callTTS(items[i].text, selectedVoice); } catch(e) { warnLog && warnLog('[readToPlay] callTTS failed for item ' + i + ':', e); }
                   if (rtpStopRef.current) { if (url) { try { URL.revokeObjectURL(url); } catch(_) {} } break; }
                   if (url) {
                       await new Promise(resolve => {
@@ -40203,7 +40235,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           const handleItemClick = (idx) => {
               if (items[idx]) {
                   // callTTS returns a blob URL; wrap in <audio> + play.
-                  Promise.resolve(callTTS(items[idx].text)).then(url => {
+                  Promise.resolve(callTTS(items[idx].text, selectedVoice)).then(url => {
                       if (!url) return;
                       const audio = new Audio(url);
                       const revoke = () => { try { URL.revokeObjectURL(url); } catch(_) {} };

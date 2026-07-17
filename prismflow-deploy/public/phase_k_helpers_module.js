@@ -40,11 +40,30 @@ const READ_ALOUD_STORE_CONTENT_IDS = /* @__PURE__ */ new Set(["simplified-main",
 const shouldUseReadAloudStore = (contentId, mode) => {
   return mode === "standard" && READ_ALOUD_STORE_CONTENT_IDS.has(contentId || "");
 };
-const getStoredReadAloudUrl = (storeSentence, spokenSentence) => {
+const getStoredReadAloudUrl = (storeSentence, spokenSentence, currentVoice) => {
   try {
     const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
     if (!st) return null;
-    return st.get(storeSentence) || (spokenSentence && spokenSentence !== storeSentence ? st.get(spokenSentence) : null);
+    // A stored AI take only counts as a hit for the voice it was
+    // synthesized with — otherwise a session set to Kore keeps replaying
+    // clips captured under Puck. Human recordings are voice-setting-
+    // independent and always play. Legacy AI entries without voice
+    // metadata count as a mismatch so one playthrough re-synthesizes and
+    // self-heals them under the active voice (capture replaces them).
+    const urlFor = s => {
+      if (!s) return null;
+      const url = st.get(s);
+      if (!url) return null;
+      if (currentVoice) {
+        const src = String(typeof st.sourceOf === 'function' && st.sourceOf(s) || 'ai');
+        if (src.indexOf('human') !== 0 && typeof st.metadataOf === 'function') {
+          const meta = st.metadataOf(s) || {};
+          if (String(meta.voice || '') !== String(currentVoice)) return null;
+        }
+      }
+      return url;
+    };
+    return urlFor(storeSentence) || (spokenSentence && spokenSentence !== storeSentence ? urlFor(spokenSentence) : null);
   } catch (_) {
     return null;
   }
@@ -289,7 +308,7 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
     if (mode !== "persona") textToSpeak = sanitizeTtsText(textToSpeak);
     let audioStoreSentence = textToSpeak;
     let usingStoredReadAloud = false;
-    const storedReadAloudUrl = shouldUseReadAloudStore(contentId, mode) ? getStoredReadAloudUrl(sentences[index], audioStoreSentence) : null;
+    const storedReadAloudUrl = shouldUseReadAloudStore(contentId, mode) ? getStoredReadAloudUrl(sentences[index], audioStoreSentence, currentVoice) : null;
     const _browserTtsFallbackEnabled = (() => {
       try {
         const cfg = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
@@ -475,7 +494,7 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
         textToPreload = preparePersonaTtsText(targetText, preloadChar, targetVoice, selectedVoice, _isCanvasEnv, _ttsState);
       }
       const nextBufferKey = `${targetIdx}-${targetVoice}`;
-      const storedPreloadUrl = isReadAloudStorePlayback ? getStoredReadAloudUrl(sentences[targetIdx], textToPreload) : null;
+      const storedPreloadUrl = isReadAloudStorePlayback ? getStoredReadAloudUrl(sentences[targetIdx], textToPreload, targetVoice) : null;
       if (storedPreloadUrl) {
         if (offset === 1) {
           nextAudioElementPromise = Promise.resolve((() => {
