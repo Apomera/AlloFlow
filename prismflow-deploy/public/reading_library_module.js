@@ -335,6 +335,30 @@
     writeMap(READER_BM_KEY, m);
   }
 
+  // Personal word bank — every word a reader looks up in Define mode is
+  // worth keeping (the lookup IS the vocabulary-collection moment). Stored on
+  // this device only, like reading positions and bookmarks; nothing leaves
+  // the browser. Newest first; deduped per word+language; capped small.
+  var WORD_BANK_KEY = 'allo_reading_lib_words';
+  var WORD_BANK_CAP = 200;
+  function loadWordBank() {
+    try {
+      var v = JSON.parse(localStorage.getItem(WORD_BANK_KEY) || '[]');
+      return Array.isArray(v) ? v : [];
+    } catch (_) { return []; }
+  }
+  function saveWordBank(list) {
+    try { localStorage.setItem(WORD_BANK_KEY, JSON.stringify((list || []).slice(0, WORD_BANK_CAP))); } catch (_) {}
+  }
+  function addToWordBank(entry) {
+    var list = loadWordBank().filter(function (w) {
+      return !(w && w.word === entry.word && w.language === entry.language);
+    });
+    list.unshift(entry);
+    saveWordBank(list);
+    return loadWordBank();
+  }
+
   // Page-surface palettes (mirrors the host's reading-theme options; the host
   // map lives in ANTI and only styles the leveled-text area, so the reader
   // carries its own copy). fg applies to the book text, bg to the page area.
@@ -1031,6 +1055,9 @@
     // and the editable jump-to-page field.
     var _auto = useState(false); var autoRead = _auto[0]; var setAutoRead = _auto[1];
     var _bm = useState(function () { return loadBookmarks(book.slug); }); var bookmarks = _bm[0]; var setBookmarks = _bm[1];
+    // Word bank: Define-mode lookups saved for review (device-local).
+    var _wb = useState(loadWordBank); var wordBank = _wb[0]; var setWordBank = _wb[1];
+    var _wbo = useState(false); var wordsOpen = _wbo[0]; var setWordsOpen = _wbo[1];
     var _ji = useState('1'); var jumpInput = _ji[0]; var setJumpInput = _ji[1];
     var autoReadRef = useRef(false);
     var pageIdxRef = useRef(pageIdx);
@@ -1386,7 +1413,15 @@
         var dPrompt = 'A student is reading a level ' + book.level + ' text written in ' + displayLanguage + '. ' +
           'In ONE short, friendly sentence written in ' + displayLanguage + ', explain what the word "' + clean + '" means in this text\'s context. Answer with only that sentence.';
         props.callGemini(dPrompt).then(function (res) {
-          setPopup(function (p) { return p && p.word === clean ? { type: 'define', word: clean, x: x, y: y, loading: false, text: String(res || '').trim() } : p; });
+          var textClean = String(res || '').trim();
+          setPopup(function (p) { return p && p.word === clean ? { type: 'define', word: clean, x: x, y: y, loading: false, text: textClean } : p; });
+          // A successful lookup joins the personal word bank for later review.
+          if (textClean) {
+            setWordBank(addToWordBank({
+              word: clean, text: textClean, language: displayLanguage,
+              bookTitle: displayTitle, slug: book.slug, ts: Date.now(),
+            }));
+          }
         }).catch(function () {
           setPopup(function (p) { return p && p.word === clean ? { type: 'define', word: clean, x: x, y: y, loading: false, text: null } : p; });
         });
@@ -1658,6 +1693,11 @@
         }, autoRead ? '⏸ ' + tr('readinglib_stop_reading', 'Stop') : '▶ ' + tr('readinglib_read_aloud', 'Read aloud')) : null,
         modeBtn('define', '📖', tr('readinglib_mode_define', 'Define')),
         modeBtn('phonics', '🔤', tr('readinglib_mode_phonics', 'Sounds')),
+        e('button', {
+          className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-white text-slate-700 border-slate-200 hover:bg-slate-100',
+          onClick: function () { setWordsOpen(true); setPopup(null); },
+          title: tr('readinglib_words_hint', 'Words you looked up, saved on this device'),
+        }, '📒 ' + tr('readinglib_my_words', 'My words') + (wordBank.length ? ' (' + wordBank.length + ')' : '')),
         // Aa — reading supports (font, size, spacing, page color, ruler).
         e('div', { className: 'relative', 'data-rl-menu': 'aa' },
           e('button', {
@@ -1938,6 +1978,55 @@
         onError: function () { if (hasPageAudio) { handleClipError(); return; } narrationFallback(); },
       }) : null,
       showPractice ? e(PracticePanel, { book: book, refText: displayPlainText, onClose: function () { setShowPractice(false); } }) : null,
+      // My words — review panel for the personal word bank. allo-docsuite on
+      // the fixed backdrop keeps host dark-theme rules applying (see docsuite
+      // theme-reactivity convention for overlays outside the main modal).
+      wordsOpen ? e('div', {
+        className: 'allo-docsuite fixed inset-0 z-[70] bg-black/40 flex items-center justify-center p-3',
+        onClick: function (ev) { if (ev.target === ev.currentTarget) setWordsOpen(false); },
+      },
+        e('div', {
+          className: 'bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col p-4',
+          role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('readinglib_my_words', 'My words'),
+          'data-testid': 'word-bank',
+        },
+          e('div', { className: 'flex items-center justify-between gap-2 pb-2 border-b border-slate-200' },
+            e('div', { className: 'font-bold text-slate-800' }, '📒 ' + tr('readinglib_my_words', 'My words') + ' · ' + wordBank.length),
+            e('div', { className: 'flex gap-1.5' },
+              wordBank.length ? e('button', {
+                className: 'px-2 py-1 rounded-lg text-[12px] font-semibold text-red-700 border border-red-200 hover:bg-red-50',
+                onClick: function () { saveWordBank([]); setWordBank([]); },
+              }, tr('readinglib_words_clear', 'Clear all')) : null,
+              e('button', {
+                className: 'px-2 py-1 rounded-lg text-[12px] font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100',
+                onClick: function () { setWordsOpen(false); },
+              }, tr('readinglib_close', 'Close')))),
+          e('div', { className: 'text-[11px] text-slate-500 py-1' },
+            tr('readinglib_words_note', 'Words you look up in Define mode are saved here — on this device only.')),
+          e('div', { className: 'flex-1 min-h-0 overflow-y-auto' },
+            wordBank.length === 0 ? e('div', { className: 'text-sm text-slate-500 italic py-4 text-center' },
+              tr('readinglib_words_empty', 'No words yet — turn on Define mode and tap any word in a book.')) :
+            wordBank.map(function (w, i) {
+              return e('div', { key: (w.word || '') + '|' + (w.language || '') + '|' + i, className: 'py-2 border-b border-slate-100 flex items-start gap-2' },
+                e('button', {
+                  className: 'px-1.5 py-0.5 rounded-lg text-sm border border-slate-200 hover:bg-indigo-50',
+                  onClick: function () { speak(w.word, w.language); },
+                  'aria-label': tr('readinglib_speak_word', 'Say this word'), title: tr('readinglib_speak_word', 'Say this word'),
+                }, '🔊'),
+                e('div', { className: 'flex-1 min-w-0' },
+                  e('div', { className: 'font-bold text-slate-800', dir: 'auto' },
+                    w.word + (w.language && w.language !== book.language ? ' · ' + w.language : '')),
+                  w.text ? e('div', { className: 'text-sm text-slate-600', dir: 'auto' }, w.text) : null,
+                  w.bookTitle ? e('div', { className: 'text-[11px] text-slate-400 truncate' }, w.bookTitle) : null),
+                e('button', {
+                  className: 'px-1.5 py-0.5 rounded-lg text-[12px] text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent',
+                  onClick: function () {
+                    var next = wordBank.filter(function (x, xi) { return xi !== i; });
+                    saveWordBank(next); setWordBank(next);
+                  },
+                  'aria-label': tr('readinglib_words_remove', 'Remove word'), title: tr('readinglib_words_remove', 'Remove word'),
+                }, '✕'));
+            })))) : null,
       // page spread — the flex column + m-auto child centers short spreads
       // vertically in the leftover space (justify-center would clip the top
       // of tall pages inside overflow-y-auto; auto margins collapse to 0 and

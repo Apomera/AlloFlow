@@ -744,6 +744,40 @@ describe('reader navigation, bookmarks, and continuous read-aloud', () => {
 
   function pageInput() { return host.querySelector('input[aria-label="Go to page"]'); }
 
+  it('saves Define-mode lookups to the word bank and reviews them in My words', async () => {
+    await mountBook(makeBook(), { callGemini: () => Promise.resolve('It means a lot of something.') });
+    // empty state first
+    clickByText(host, 'button', 'My words');
+    await flush();
+    let panel = host.querySelector('[data-testid="word-bank"]');
+    expect(textOf(panel)).toContain('No words yet');
+    clickByText(panel, 'button', 'Close');
+    await flush();
+    // Define mode: tapping a word fetches a definition AND banks the word
+    clickByText(host, 'button', 'Define');
+    await flush();
+    clickByText(host, 'span', 'plenty');
+    await flush(); await flush();
+    expect(textOf(host)).toContain('It means a lot of something.');
+    // the toolbar badge counts it, and the panel lists word + definition + book
+    clickByText(host, 'button', 'My words (1)');
+    await flush();
+    panel = host.querySelector('[data-testid="word-bank"]');
+    expect(textOf(panel)).toContain('plenty');
+    expect(textOf(panel)).toContain('It means a lot of something.');
+    expect(textOf(panel)).toContain('Navigation Fixture');
+    // persisted device-locally
+    const stored = JSON.parse(window.localStorage.getItem('allo_reading_lib_words'));
+    expect(stored.length).toBe(1);
+    expect(stored[0].word).toBe('plenty');
+    // remove empties the bank and the store
+    const removeBtn = panel.querySelector('button[aria-label="Remove word"]');
+    act(() => { removeBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+    await flush();
+    expect(textOf(host.querySelector('[data-testid="word-bank"]'))).toContain('No words yet');
+    expect(JSON.parse(window.localStorage.getItem('allo_reading_lib_words')).length).toBe(0);
+  });
+
   it('renders page art with its caption, and the caption doubles as alt text', async () => {
     const book = makeBook();
     book.pages[0].img = 'https://www.gutenberg.org/cache/epub/1/images/test-art.jpg';
