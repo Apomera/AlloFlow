@@ -10982,202 +10982,278 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { decisions: [] };
     var setData = props.setData;
-    var vs = R.useState('list');                  var view = vs[0]; var setView = vs[1];
-    var as = R.useState(null);                    var activeId = as[0]; var setActiveId = as[1];
-    var ts = R.useState('');                      var newTitle = ts[0]; var setNewTitle = ts[1];
+    var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null); var activeId = as[0]; var setActiveId = as[1];
+    var ts = R.useState(''); var newTitle = ts[0]; var setNewTitle = ts[1];
+    var es = R.useState(''); var titleError = es[0]; var setTitleError = es[1];
 
+    function focusById(id) {
+      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
+    }
     function createDecision() {
-      if (!newTitle.trim()) return;
-      var d = {
-        id: tkId(), title: newTitle.trim(),
+      var title = newTitle.trim();
+      if (!title) {
+        setTitleError('Enter the decision you want to make.');
+        focusById('learning-lab-decision-new-title');
+        return;
+      }
+      var decision = {
+        id: tkId(), title: title,
         options: [{ id: tkId(), name: '' }, { id: tkId(), name: '' }],
         criteria: [{ id: tkId(), name: 'Important to me', weight: 5 }],
-        scores: {},
-        createdAt: todayISO()
+        scores: {}, createdAt: todayISO()
       };
-      setData({ decisions: [d].concat(data.decisions || []) });
-      setActiveId(d.id);
+      setData(Object.assign({}, data, { decisions: [decision].concat(data.decisions || []) }));
+      setActiveId(decision.id);
       setNewTitle('');
+      setTitleError('');
       setView('edit');
+      llAnnounce('Decision created: ' + decision.title + '.');
+      focusById('learning-lab-decision-editor-heading');
     }
-    function getDecision() { return (data.decisions || []).filter(function(x) { return x.id === activeId; })[0]; }
+    function getDecision() { return (data.decisions || []).filter(function(decision) { return decision.id === activeId; })[0]; }
     function updateDecision(patch) {
-      setData({ decisions: (data.decisions || []).map(function(d) { return d.id === activeId ? Object.assign({}, d, patch) : d; }) });
+      setData(Object.assign({}, data, {
+        decisions: (data.decisions || []).map(function(decision) { return decision.id === activeId ? Object.assign({}, decision, patch) : decision; })
+      }));
     }
-    function removeDecision(id) {
-      if (!confirm('Delete this decision?')) return;
-      setData({ decisions: (data.decisions || []).filter(function(d) { return d.id !== id; }) });
+    async function removeDecision(id) {
+      var decision = (data.decisions || []).filter(function(item) { return item.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes' + (decision ? ' "' + decision.title + '" and its options, criteria, and scores' : ' this decision') + '.', {
+        title: 'Delete this decision?', confirmText: 'Delete decision'
+      }))) return;
+      setData(Object.assign({}, data, { decisions: (data.decisions || []).filter(function(item) { return item.id !== id; }) }));
+      setView('list');
+      setActiveId(null);
+      llAnnounce('Decision deleted.');
+      focusById('learning-lab-decision-new-title');
     }
     function addOption() {
-      var d = getDecision();
-      updateDecision({ options: d.options.concat([{ id: tkId(), name: '' }]) });
+      var decision = getDecision();
+      if (!decision) return;
+      var option = { id: tkId(), name: '' };
+      updateDecision({ options: (decision.options || []).concat([option]) });
+      llAnnounce('Decision option added.');
+      focusById('learning-lab-decision-option-' + option.id);
     }
     function addCriterion() {
-      var d = getDecision();
-      updateDecision({ criteria: d.criteria.concat([{ id: tkId(), name: '', weight: 5 }]) });
+      var decision = getDecision();
+      if (!decision) return;
+      var criterion = { id: tkId(), name: '', weight: 5 };
+      updateDecision({ criteria: (decision.criteria || []).concat([criterion]) });
+      llAnnounce('Decision criterion added.');
+      focusById('learning-lab-decision-criterion-' + criterion.id);
     }
-    function updateOption(i, patch) {
-      var d = getDecision();
-      var opts = d.options.slice();
-      opts[i] = Object.assign({}, opts[i], patch);
-      updateDecision({ options: opts });
+    function updateOption(index, patch) {
+      var decision = getDecision();
+      if (!decision) return;
+      var options = (decision.options || []).slice();
+      options[index] = Object.assign({}, options[index], patch);
+      updateDecision({ options: options });
     }
-    function updateCriterion(i, patch) {
-      var d = getDecision();
-      var cs = d.criteria.slice();
-      cs[i] = Object.assign({}, cs[i], patch);
-      updateDecision({ criteria: cs });
+    function updateCriterion(index, patch) {
+      var decision = getDecision();
+      if (!decision) return;
+      var criteria = (decision.criteria || []).slice();
+      criteria[index] = Object.assign({}, criteria[index], patch);
+      updateDecision({ criteria: criteria });
     }
-    function removeOption(i) {
-      var d = getDecision();
-      updateDecision({ options: d.options.filter(function(_, j) { return j !== i; }) });
+    async function removeOption(index) {
+      var decision = getDecision();
+      if (!decision || (decision.options || []).length <= 2) return;
+      var option = decision.options[index];
+      if (!(await askLearningLabConfirmation('This permanently removes the option' + (option && option.name ? ' "' + option.name + '" and its scores' : ' and its scores') + '.', {
+        title: 'Delete this option?', confirmText: 'Delete option'
+      }))) return;
+      var scores = {};
+      Object.keys(decision.scores || {}).forEach(function(key) { if (key.indexOf(option.id + '|') !== 0) scores[key] = decision.scores[key]; });
+      updateDecision({ options: decision.options.filter(function(_, itemIndex) { return itemIndex !== index; }), scores: scores });
+      llAnnounce('Decision option deleted.');
+      focusById('learning-lab-decision-add-option');
     }
-    function removeCriterion(i) {
-      var d = getDecision();
-      updateDecision({ criteria: d.criteria.filter(function(_, j) { return j !== i; }) });
+    async function removeCriterion(index) {
+      var decision = getDecision();
+      if (!decision || (decision.criteria || []).length <= 1) return;
+      var criterion = decision.criteria[index];
+      if (!(await askLearningLabConfirmation('This permanently removes the criterion' + (criterion && criterion.name ? ' "' + criterion.name + '" and its scores' : ' and its scores') + '.', {
+        title: 'Delete this criterion?', confirmText: 'Delete criterion'
+      }))) return;
+      var scores = {};
+      Object.keys(decision.scores || {}).forEach(function(key) { if (key.slice(-(criterion.id.length + 1)) !== '|' + criterion.id) scores[key] = decision.scores[key]; });
+      updateDecision({ criteria: decision.criteria.filter(function(_, itemIndex) { return itemIndex !== index; }), scores: scores });
+      llAnnounce('Decision criterion deleted.');
+      focusById('learning-lab-decision-add-criterion');
     }
-    function setScore(optId, critId, val) {
-      var d = getDecision();
-      var scores = Object.assign({}, d.scores || {});
-      scores[optId + '|' + critId] = val;
+    function setScore(optionId, criterionId, value) {
+      var decision = getDecision();
+      if (!decision) return;
+      var scores = Object.assign({}, decision.scores || {});
+      scores[optionId + '|' + criterionId] = Math.max(0, Math.min(10, Number(value) || 0));
       updateDecision({ scores: scores });
     }
-    function getScore(optId, critId) {
-      var d = getDecision();
-      return (d.scores || {})[optId + '|' + critId] || 0;
+    function getScore(decision, optionId, criterionId) {
+      return Number((decision.scores || {})[optionId + '|' + criterionId]) || 0;
     }
-    function totalForOption(opt) {
-      var d = getDecision();
-      return d.criteria.reduce(function(sum, c) {
-        return sum + (getScore(opt.id, c.id) * (c.weight || 1));
+    function totalForOption(decision, option, criteria) {
+      return criteria.reduce(function(sum, criterion) {
+        return sum + getScore(decision, option.id, criterion.id) * Math.max(1, Math.min(10, Number(criterion.weight) || 1));
       }, 0);
     }
+    function openDecision(id) {
+      setActiveId(id);
+      setView('edit');
+      focusById('learning-lab-decision-editor-heading');
+    }
+    function backToList() {
+      var previousId = activeId;
+      setView('list');
+      setActiveId(null);
+      focusById('learning-lab-decision-open-' + previousId);
+    }
+
+    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid rgba(168,85,247,0.50)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var hiddenLabelStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
 
     if (view === 'edit') {
-      var d = getDecision();
-      if (!d) { setView('list'); return null; }
-      var winner = d.options.reduce(function(best, opt) {
-        return totalForOption(opt) > totalForOption(best) ? opt : best;
-      }, d.options[0]);
+      var activeDecision = getDecision();
+      if (!activeDecision) return hh('div', { role: 'status', style: { padding: 20, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'This decision is not available. Return to the decision list and choose another.');
+      var namedOptions = (activeDecision.options || []).filter(function(option) { return option.name.trim(); });
+      var namedCriteria = (activeDecision.criteria || []).filter(function(criterion) { return criterion.name.trim(); });
+      var totals = namedOptions.map(function(option) { return { option: option, total: totalForOption(activeDecision, option, namedCriteria) }; });
+      var maximum = totals.length ? Math.max.apply(null, totals.map(function(item) { return item.total; })) : 0;
+      var leaders = maximum > 0 ? totals.filter(function(item) { return item.total === maximum; }) : [];
+      var leaderIds = leaders.map(function(item) { return item.option.id; });
+      var resultSummary = leaders.length === 0 ? 'Enter scores to calculate a result.'
+        : leaders.length === 1 ? leaders[0].option.name + ' has the highest score: ' + maximum + '.'
+        : 'Tie for highest score at ' + maximum + ': ' + leaders.map(function(item) { return item.option.name; }).join(', ') + '.';
 
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('⚖️', d.title, d.options.length + ' options · ' + d.criteria.length + ' criteria', '#9333ea'),
+        tkSectionHeader('⚖', activeDecision.title, activeDecision.options.length + ' options · ' + activeDecision.criteria.length + ' criteria', '#9333ea'),
+        hh('h2', { id: 'learning-lab-decision-editor-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Editing decision: ' + activeDecision.title),
 
-        // Options
         tkCard('#9333ea',
-          hh('div', null,
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '🔢 Options I\'m considering'),
-            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-              d.options.map(function(o, i) {
-                return hh('div', { key: 'op-' + o.id, style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                  hh('span', { style: { color: '#c084fc', fontWeight: 800, minWidth: 16, fontFamily: 'ui-monospace, Menlo, monospace' } }, (i + 1) + '.'),
-                  tkInput(o.name, function(v) { updateOption(i, { name: v }); }, 'option name', { flex: 1 }),
-                  hh('button', { onClick: function() { removeOption(i); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+          hh('section', { 'aria-labelledby': 'learning-lab-decision-options-heading' },
+            hh('h3', { id: 'learning-lab-decision-options-heading', style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px' } }, 'Options I am considering'),
+            hh('ol', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+              activeDecision.options.map(function(option, index) {
+                var optionId = 'learning-lab-decision-option-' + option.id;
+                return hh('li', { key: 'op-' + option.id, style: { display: 'flex', gap: 6, alignItems: 'flex-start' } },
+                  hh('span', { 'aria-hidden': 'true', style: { color: '#d8b4fe', fontWeight: 800, minWidth: 20, fontFamily: 'ui-monospace, Menlo, monospace', paddingTop: 11 } }, (index + 1) + '.'),
+                  hh('div', { style: { flex: 1 } },
+                    hh('label', { htmlFor: optionId, style: hiddenLabelStyle }, 'Option ' + (index + 1) + ' name'),
+                    hh('input', { id: optionId, type: 'text', value: option.name, maxLength: 240, placeholder: 'Option ' + (index + 1), onChange: function(event) { updateOption(index, { name: event.target.value }); }, style: inputStyle })
+                  ),
+                  hh('button', { type: 'button', disabled: activeDecision.options.length <= 2, 'aria-label': 'Delete option ' + (index + 1) + (option.name ? ': ' + option.name : ''), onClick: function() { removeOption(index); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: activeDecision.options.length <= 2 ? 'not-allowed' : 'pointer', opacity: activeDecision.options.length <= 2 ? 0.5 : 1 } }, '×')
                 );
               })
             ),
-            tkBtn('+ Add option', addOption, 'secondary', { marginTop: 8, fontSize: 10, padding: '6px 12px' })
+            hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '6px 0' } }, 'A decision must keep at least two options.'),
+            hh('button', { id: 'learning-lab-decision-add-option', type: 'button', onClick: addOption, 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #d8b4fe', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '+ Add option')
           )
         ),
 
-        // Criteria
         tkCard('#a855f7',
-          hh('div', null,
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '⚖ Criteria (what matters in this decision)'),
-            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-              d.criteria.map(function(c, i) {
-                return hh('div', { key: 'cr-' + c.id, style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                  tkInput(c.name, function(v) { updateCriterion(i, { name: v }); }, 'criterion name', { flex: 2 }),
-                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'weight:'),
-                  hh('input', { type: 'number', min: 1, max: 10, value: c.weight,
-                    onChange: function(e) { updateCriterion(i, { weight: parseInt(e.target.value, 10) }); },
-                    style: { width: 50, padding: '6px 8px', fontSize: 11, color: '#c084fc', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 4, textAlign: 'center', fontWeight: 800 }
-                  }),
-                  hh('button', { onClick: function() { removeCriterion(i); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+          hh('section', { 'aria-labelledby': 'learning-lab-decision-criteria-heading' },
+            hh('h3', { id: 'learning-lab-decision-criteria-heading', style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px' } }, 'Criteria and weights'),
+            hh('ol', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+              activeDecision.criteria.map(function(criterion, index) {
+                var criterionId = 'learning-lab-decision-criterion-' + criterion.id;
+                var weightId = 'learning-lab-decision-weight-' + criterion.id;
+                return hh('li', { key: 'cr-' + criterion.id, style: { display: 'grid', gridTemplateColumns: 'minmax(150px, 2fr) minmax(100px, 1fr) 44px', gap: 6, alignItems: 'start' } },
+                  hh('div', null,
+                    hh('label', { htmlFor: criterionId, style: hiddenLabelStyle }, 'Criterion ' + (index + 1) + ' name'),
+                    hh('input', { id: criterionId, type: 'text', value: criterion.name, maxLength: 240, placeholder: 'Criterion ' + (index + 1), onChange: function(event) { updateCriterion(index, { name: event.target.value }); }, style: inputStyle })
+                  ),
+                  hh('div', null,
+                    hh('label', { htmlFor: weightId, style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, 'Weight 1–10'),
+                    hh('input', { id: weightId, type: 'number', min: 1, max: 10, step: 1, value: criterion.weight, onChange: function(event) { updateCriterion(index, { weight: Math.max(1, Math.min(10, parseInt(event.target.value, 10) || 1)) }); }, style: Object.assign({}, inputStyle, { textAlign: 'center', fontWeight: 800 }) })
+                  ),
+                  hh('button', { type: 'button', disabled: activeDecision.criteria.length <= 1, 'aria-label': 'Delete criterion ' + (index + 1) + (criterion.name ? ': ' + criterion.name : ''), onClick: function() { removeCriterion(index); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, marginTop: 14, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: activeDecision.criteria.length <= 1 ? 'not-allowed' : 'pointer', opacity: activeDecision.criteria.length <= 1 ? 0.5 : 1 } }, '×')
                 );
               })
             ),
-            tkBtn('+ Add criterion', addCriterion, 'secondary', { marginTop: 8, fontSize: 10, padding: '6px 12px' })
+            hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '6px 0' } }, 'A decision must keep at least one criterion.'),
+            hh('button', { id: 'learning-lab-decision-add-criterion', type: 'button', onClick: addCriterion, 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #d8b4fe', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '+ Add criterion')
           )
         ),
 
-        // Scoring grid
-        d.options.some(function(o) { return o.name; }) && d.criteria.some(function(c) { return c.name; }) ? tkCard('#9333ea',
-          hh('div', null,
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '📊 Score each option (1-10) on each criterion'),
-            hh('div', { style: { overflowX: 'auto' } },
+        namedOptions.length > 0 && namedCriteria.length > 0 ? tkCard('#9333ea',
+          hh('section', { 'aria-labelledby': 'learning-lab-decision-scoring-heading' },
+            hh('h3', { id: 'learning-lab-decision-scoring-heading', style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px' } }, 'Score each option from 0 to 10'),
+            hh('div', { tabIndex: 0, 'aria-label': 'Decision scoring table. Scroll horizontally if needed.', style: { overflowX: 'auto' } },
               hh('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
+                hh('caption', { style: hiddenLabelStyle }, 'Decision scoring matrix. Rows are weighted criteria and columns are options.'),
                 hh('thead', null,
                   hh('tr', null,
-                    hh('th', { style: { padding: 6, textAlign: 'left', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, fontSize: 10 } }, 'Criterion'),
-                    d.options.filter(function(o) { return o.name; }).map(function(o) {
-                      return hh('th', { key: 'th-' + o.id, style: { padding: 6, textAlign: 'center', color: '#c084fc', fontWeight: 800, fontSize: 11 } }, o.name);
+                    hh('th', { scope: 'col', style: { padding: 6, textAlign: 'left', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700, fontSize: 10 } }, 'Criterion and weight'),
+                    namedOptions.map(function(option) {
+                      return hh('th', { key: 'th-' + option.id, scope: 'col', style: { padding: 6, textAlign: 'center', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, fontSize: 11 } }, option.name);
                     })
                   )
                 ),
                 hh('tbody', null,
-                  d.criteria.filter(function(c) { return c.name; }).map(function(c) {
-                    return hh('tr', { key: 'tr-' + c.id },
-                      hh('td', { style: { padding: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, c.name, hh('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 4 } }, '(w' + c.weight + ')')),
-                      d.options.filter(function(o) { return o.name; }).map(function(o) {
-                        return hh('td', { key: 'td-' + o.id, style: { padding: 4, textAlign: 'center' } },
-                          hh('input', { type: 'number', min: 0, max: 10, value: getScore(o.id, c.id),
-                            onChange: function(e) { setScore(o.id, c.id, parseInt(e.target.value, 10) || 0); },
-                            style: { width: 50, padding: '4px 6px', fontSize: 11, color: '#c084fc', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 4, textAlign: 'center', fontWeight: 800 }
-                          })
+                  namedCriteria.map(function(criterion) {
+                    return hh('tr', { key: 'tr-' + criterion.id },
+                      hh('th', { scope: 'row', style: { padding: 6, textAlign: 'left', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, criterion.name + ' (weight ' + criterion.weight + ')'),
+                      namedOptions.map(function(option) {
+                        return hh('td', { key: 'td-' + option.id, style: { padding: 4, textAlign: 'center' } },
+                          hh('input', { type: 'number', min: 0, max: 10, step: 1, value: getScore(activeDecision, option.id, criterion.id), 'aria-label': 'Score ' + option.name + ' on ' + criterion.name + ', from 0 to 10', onChange: function(event) { setScore(option.id, criterion.id, event.target.value); }, style: { boxSizing: 'border-box', width: 64, minHeight: 44, padding: '7px 6px', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.50)', borderRadius: 4, textAlign: 'center', fontWeight: 800 } })
                         );
                       })
                     );
                   }),
                   hh('tr', { style: { borderTop: '2px solid #9333ea' } },
-                    hh('td', { style: { padding: 8, fontSize: 11, color: '#10b981', fontWeight: 800 } }, '★ Total score'),
-                    d.options.filter(function(o) { return o.name; }).map(function(o) {
-                      var total = totalForOption(o);
-                      var isWinner = o.id === winner.id && total > 0;
-                      return hh('td', { key: 'tot-' + o.id, style: { padding: 8, textAlign: 'center', fontSize: 14, color: isWinner ? '#10b981' : '#cbd5e1', fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                        total, isWinner && total > 0 ? ' 🏆' : ''
+                    hh('th', { scope: 'row', style: { padding: 8, textAlign: 'left', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800 } }, 'Total score'),
+                    totals.map(function(item) {
+                      var isLeader = leaderIds.indexOf(item.option.id) >= 0;
+                      return hh('td', { key: 'tot-' + item.option.id, style: { padding: 8, textAlign: 'center', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                        String(item.total), isLeader ? hh('span', null, ' — highest score') : null
                       );
                     })
                   )
                 )
               )
             ),
-            winner && totalForOption(winner) > 0 ? hh('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-              hh('strong', { style: { color: '#10b981' } }, '🏆 Highest-scoring: '), winner.name,
-              hh('div', { style: { marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Trust your gut too — if this doesn\'t feel right, your criteria or weights may need adjustment.')
-            ) : null
+            hh('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.35)', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+              hh('strong', null, resultSummary),
+              hh('div', { style: { marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'If the result feels wrong, review the criteria, weights, and scores. The matrix supports your judgment; it does not replace it.')
+            )
           )
         ) : null,
 
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← All decisions', function() { setView('list'); setActiveId(null); }, 'ghost'),
-          tkBtn('🗑 Delete', function() { removeDecision(d.id); setView('list'); setActiveId(null); }, 'bad')
+        hh('div', { role: 'group', 'aria-label': 'Decision actions', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+          hh('button', { type: 'button', onClick: backToList, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '← All decisions'),
+          hh('button', { type: 'button', onClick: function() { removeDecision(activeDecision.id); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fecaca', background: '#991b1b', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Delete decision')
         )
       );
     }
 
+    var decisions = data.decisions || [];
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('⚖️', 'Decision Maker', 'Structured choice tool. Options × criteria × weights × scores = clarity.', '#9333ea'),
+      tkSectionHeader('⚖', 'Decision Maker', 'Compare options using weighted criteria and scores, while keeping your own judgment in the process.', '#9333ea'),
 
       tkCard('#9333ea',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ New decision'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkInput(newTitle, setNewTitle, 'What are you deciding? (e.g., "Which college to apply to")', { flex: 1 }),
-            tkBtn('Create', createDecision, 'primary')
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); createDecision(); }, 'aria-labelledby': 'learning-lab-decision-new-heading' },
+          hh('h3', { id: 'learning-lab-decision-new-heading', style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px' } }, 'New decision'),
+          hh('label', { htmlFor: 'learning-lab-decision-new-title', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', marginBottom: 4 } }, 'What are you deciding? (required)'),
+          hh('div', { style: { display: 'flex', gap: 6, alignItems: 'flex-start', flexWrap: 'wrap' } },
+            hh('div', { style: { flex: '1 1 240px' } },
+              hh('input', { id: 'learning-lab-decision-new-title', type: 'text', value: newTitle, required: true, maxLength: 240, 'aria-invalid': titleError ? 'true' : undefined, 'aria-describedby': titleError ? 'learning-lab-decision-title-error' : undefined, placeholder: 'e.g., Which college should I apply to?', onChange: function(event) { setNewTitle(event.target.value); if (titleError) setTitleError(''); }, style: inputStyle }),
+              hh('div', { id: 'learning-lab-decision-title-error', role: 'alert', style: { minHeight: titleError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: titleError ? 4 : 0 } }, titleError)
+            ),
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Create decision')
           )
         )
       ),
 
-      (data.decisions || []).length === 0 ? tkEmptyState('⚖', 'No decisions tracked yet. Use this for big choices that overwhelm you.', null, null)
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          (data.decisions || []).map(function(d) {
-            return hh('button', { key: 'dec-' + d.id,
-              onClick: function() { setActiveId(d.id); setView('edit'); },
-              style: { display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea', cursor: 'pointer' }
-            },
-              hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, '⚖️ ' + d.title),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, d.options.length + ' options · ' + d.criteria.length + ' criteria · ' + relDate(d.createdAt))
+      decisions.length === 0 ? tkEmptyState('⚖', 'No decisions tracked yet. Use this for big choices that feel overwhelming.', null, null)
+      : hh('ul', { 'aria-label': 'Saved decisions', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
+          decisions.map(function(decision) {
+            return hh('li', { key: 'dec-' + decision.id },
+              hh('button', { id: 'learning-lab-decision-open-' + decision.id, type: 'button', 'aria-label': 'Open decision: ' + decision.title, onClick: function() { openDecision(decision.id); }, 'data-ll-focusable': true, style: { boxSizing: 'border-box', width: '100%', minHeight: 44, display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(147,51,234,0.40)', borderLeft: '4px solid #9333ea', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer' } },
+                hh('strong', { style: { display: 'block', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('span', { 'aria-hidden': 'true' }, '⚖ '), decision.title),
+                hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, (decision.options || []).length + ' options · ' + (decision.criteria || []).length + ' criteria · ' + relDate(decision.createdAt))
+              )
             );
           })
         )
@@ -11185,9 +11261,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   }
 
   // ── NN. PERSONAL VOCABULARY BUILDER (Wave 8) ──
-  // Personal vocab list per subject. Add word + definition + sentence.
-  // Review with self-quiz. Tracks mastery similar to flashcards but
-  // optimized for vocabulary specifically.
+  // Personal vocabulary lists by subject. Add a word, definition, and
+  // sentence; then review with self-quizzes and mastery tracking.
   function PersonalVocabBuilder(props) {
     if (!R) return null;
     var data = props.data || { lists: [] };
