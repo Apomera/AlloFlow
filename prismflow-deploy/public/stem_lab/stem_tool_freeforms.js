@@ -564,7 +564,10 @@ window.StemLab = window.StemLab || {
         ctx.setToolData(function(prev) {
           prev = prev || {};
           var p = Object.assign({}, prev); var im = p._ffImport; delete p._ffImport;
-          if (accept && im) { var nd = ffDocFromGenerated(im); if (nd) p.freeForms = nd; }
+          if (accept && im) {
+            var nd = ffDocFromGenerated(im);
+            if (nd) { pushUndo(p.freeForms); p.freeForms = nd; }   // ↩ can bring the replaced work back
+          }
           return p;
         });
         if (accept) { setChallenge(null); setChecked(null); setPlaced({}); setSelectedId(null); announce(t('stem.freeforms.sr_imported', 'Organizer imported — now make it yours')); }

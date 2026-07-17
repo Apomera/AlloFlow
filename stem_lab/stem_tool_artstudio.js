@@ -1834,7 +1834,10 @@ const d = labToolData.artStudio || {};
               }
               if (!THREE_OK && !window._artSculptThreeLoading) {
                 window._artSculptThreeLoading = true;
-                _loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', function() { upd('_sculptPing', Date.now()); });
+                _loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', function(ok) {
+                  if (!ok) window._artSculptThreeLoading = false;   // failed load must not latch "loading" forever — revisiting the tab retries
+                  upd('_sculptPing', Date.now());
+                });
               }
               if (!P3D && !window._artSculptP3dLoading) {
                 window._artSculptP3dLoading = true;
@@ -1847,7 +1850,10 @@ const d = labToolData.artStudio || {};
                     if (m) { base = m[1]; q = m[2] || ''; break; }
                   }
                 } catch (e) {}
-                _loadScript(base + 'prim3d_module.js' + q, function() { upd('_sculptPing', Date.now()); });
+                _loadScript(base + 'prim3d_module.js' + q, function(ok) {
+                  if (!ok) window._artSculptP3dLoading = false;
+                  upd('_sculptPing', Date.now());
+                });
               }
               if (!P3D || !window.THREE) {
                 return React.createElement("div", { className: "p-8 text-center text-slate-500 text-sm", role: "status" }, '🗿 ' + __alloT('stem.artstudio.sculpt_loading', 'Loading the sculpting engine…'));
@@ -1925,16 +1931,18 @@ const d = labToolData.artStudio || {};
               var SHAPE_ICONS = { box: '📦', sphere: '⚪', cylinder: '🛢', cone: '🔺', torus: '🍩' };
               var mini = "min-h-[40px] min-w-[40px] rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-pink-50";
               var doAiSculpt = function() {
-                if (typeof callGemini !== 'function' || d._sculptBusy) return;
+                // busy flag lives on window, NOT in toolData — a persisted busy
+                // flag from an interrupted request would disable the button forever.
+                if (typeof callGemini !== 'function' || window._artSculptBusy) return;
                 var subj = (d.sculptText || '').trim(); if (!subj) return;
-                upd('_sculptBusy', true);
+                window._artSculptBusy = true; upd('_sculptPing', (d._sculptPing || 0) + 1);
                 var prompt = recipe ? P3D.buildRefinePrompt(recipe, subj) : P3D.buildRecipePrompt(subj);
                 callGemini(prompt, false, false, 0.85).then(function(resp) {
                   var r = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
-                  upd('_sculptBusy', false);
+                  window._artSculptBusy = false;
                   if (r) { if (!recipe) r.name = subj.slice(0, 80); upd('sculptSel', 0); setRecipe(r); if (typeof announceToSR === 'function') announceToSR('Sculpture updated'); }
-                  else if (addToast) addToast('⚠️ ' + __alloT('stem.artstudio.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error');
-                }).catch(function() { upd('_sculptBusy', false); });
+                  else { upd('_sculptPing', (d._sculptPing || 0) + 2); if (addToast) addToast('⚠️ ' + __alloT('stem.artstudio.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error'); }
+                }).catch(function() { window._artSculptBusy = false; upd('_sculptPing', (d._sculptPing || 0) + 2); });
               };
               var doExportPng = function() {
                 var cnv = _cnvBox.current; if (!cnv || !cnv._p3d) return;
@@ -1989,7 +1997,7 @@ const d = labToolData.artStudio || {};
                   ) : null,
                   (typeof callGemini === 'function') ? React.createElement("div", { className: "flex gap-1" },
                     React.createElement("input", { value: d.sculptText || '', onChange: function(e) { upd('sculptText', e.target.value); }, placeholder: recipe ? __alloT('stem.artstudio.sculpt_refine_ph', 'Describe a change ("longer tail")…') : __alloT('stem.artstudio.sculpt_create_ph', 'Or describe something to sculpt…'), "aria-label": __alloT('stem.artstudio.sculpt_ai_label', 'Describe a sculpture or a change'), className: "flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-xs" }),
-                    React.createElement("button", { className: mini, onClick: doAiSculpt, disabled: !!d._sculptBusy, "aria-busy": d._sculptBusy ? 'true' : 'false' }, d._sculptBusy ? '…' : '✨')
+                    React.createElement("button", { className: mini, onClick: doAiSculpt, disabled: !!window._artSculptBusy, "aria-busy": window._artSculptBusy ? 'true' : 'false' }, window._artSculptBusy ? '…' : '✨')
                   ) : null,
                   // gallery — named recipes persisted in toolData
                   React.createElement("div", null,
