@@ -1247,7 +1247,7 @@ const _DAISY_OPF_XML = (title, lang, uid) => '<?xml version="1.0" encoding="utf-
   '<dc:Format>ANSI/NISO Z39.86-2005</dc:Format>' +
   '<dc:Identifier id="uid">' + _expXmlEsc(uid || 'alloflow-daisy') + '</dc:Identifier>' +
   '<dc:Publisher>AlloFlow</dc:Publisher>' +
-  '</dc-metadata><x-metadata><meta name="dtb:multimediaType" content="textNCX"/><meta name="dtb:totalTime" content="0:00:00"/></x-metadata></metadata>\n' +
+  '</dc-metadata><x-metadata><meta name="dtb:multimediaType" content="textNCX"/><meta name="dtb:multimediaContent" content="text"/><meta name="dtb:totalTime" content="0:00:00"/></x-metadata></metadata>\n' +
   '<manifest>' +
   '<item id="opf" href="package.opf" media-type="text/xml"/>' +
   '<item id="dtbook" href="dtbook.xml" media-type="application/x-dtbook+xml"/>' +

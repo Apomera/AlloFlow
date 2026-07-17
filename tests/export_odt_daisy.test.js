@@ -437,3 +437,46 @@ describe('read-along EPUB ids are unique (audit #25)', () => {
     expect(segments.map((s) => s.id)).toEqual(['intro', 'body']);
   });
 });
+
+// ── DAISY Z39.86-2005 conformance chain (SMIL layer) ─────────────────────────
+// The full-text package must declare its multimedia class in the OPF, share one
+// dtb:uid across all four files, and resolve NCX → SMIL → DTBook references.
+describe('DAISY conformance chain', () => {
+  const html = wrap('<h1>Alpha</h1><p>One.</p><h2>Beta</h2><p>Two.</p>');
+  const uid = 'urn:uuid:test-1234';
+  it('declares textNCX multimedia type AND text multimedia content in the OPF', () => {
+    const opf = _DAISY_OPF_XML('T', 'en', uid);
+    expect(opf).toContain('<meta name="dtb:multimediaType" content="textNCX"/>');
+    expect(opf).toContain('<meta name="dtb:multimediaContent" content="text"/>');
+    expect(opf).toContain('<item id="smil" href="book.smil"');
+    expect(opf).toContain('<spine><itemref idref="smil"/></spine>');
+    expect(parseXml(opf).wellFormed, parseXml(opf).err).toBe(true);
+  });
+  it('keeps one dtb:uid across dtbook, ncx, smil, and opf (no fallback leak)', () => {
+    const files = [
+      _htmlToDtbookXml(html, 'en', uid),
+      _htmlToDaisyNcx(html, 'T', uid),
+      _htmlToDaisySmil(html, uid),
+      _DAISY_OPF_XML('T', 'en', uid),
+    ];
+    for (const f of files) {
+      expect(f).toContain(uid);
+      expect(f).not.toContain('alloflow-daisy');
+    }
+  });
+  it('resolves the NCX → SMIL → DTBook reference chain', () => {
+    const ncx = _htmlToDaisyNcx(html, 'T', uid);
+    const smil = _htmlToDaisySmil(html, uid);
+    const dtbook = _htmlToDtbookXml(html, 'en', uid);
+    const smilTargets = [...ncx.matchAll(/src="book\.smil#(par\d+)"/g)].map((m) => m[1]);
+    expect(smilTargets.length).toBe(2);
+    smilTargets.forEach((id) => expect(smil).toContain('<par id="' + id + '"'));
+    const textSrcs = [...smil.matchAll(/src="dtbook\.xml#(h\d+)"/g)].map((m) => m[1]);
+    expect(textSrcs.length).toBe(2);
+    textSrcs.forEach((id) => expect(dtbook).toContain('id="' + id + '"'));
+  });
+  it('emits well-formed SMIL', () => {
+    const { wellFormed, err } = parseXml(_htmlToDaisySmil(html, uid));
+    expect(wellFormed, err).toBe(true);
+  });
+});
