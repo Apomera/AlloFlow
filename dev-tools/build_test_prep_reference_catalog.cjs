@@ -46,6 +46,46 @@ for (const file of fs.readdirSync(sourceDir).filter((name) => name.endsWith('_pa
   }
 }
 
+
+const explicitMetadataOverrides = {
+  'https://www.ets.org/pdfs/parapro/1755.pdf': {
+    title: 'ParaPro Assessment (1755) - Official Study Companion',
+    organization: 'Educational Testing Service (ETS)',
+    summary: 'The official study companion describes the current ParaPro structure, its reading, mathematics, and writing blueprint, the balance between basic skills and classroom application, tested content topics, sample questions, answer explanations, and test-taking guidance.',
+    credibility: 'ETS owns and administers the ParaPro Assessment, making this the primary source for its published blueprint and official samples. AlloFlow practice items are independently authored; they are not ETS questions and are not endorsed by ETS.',
+    metadataSource: 'explicit-override',
+  },
+  'https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published': {
+    title: 'Foundational Skills to Support Reading for Understanding in Kindergarten Through 3rd Grade',
+    organization: 'What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education',
+    summary: 'This K-3 practice guide presents four implementation-focused recommendations covering academic language and vocabulary, speech-sound awareness and letter links, decoding and word analysis, and daily connected-text reading. It reports an evidence rating for each recommendation and discusses common implementation obstacles.',
+    credibility: 'The WWC is an IES evidence-review program of the U.S. Department of Education. The guide was developed through an expert panel and systematic review, and it states the supporting-evidence level for each recommendation; users should retain those recommendation-specific ratings when applying the guidance.',
+    metadataSource: 'explicit-override',
+  },
+  'https://openstax.org/details/books/prealgebra-2e/': {
+    title: 'Prealgebra 2e',
+    organization: 'OpenStax, Rice University',
+    summary: 'This openly licensed textbook develops foundational mathematics through whole numbers, fractions, decimals, percents, elementary algebra, equations, geometry, measurement, graphs, and applied problem solving.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University. Its textbooks use expert authorship, faculty review, and a documented errata process, making this a credible instructional reference rather than an assessment blueprint.',
+    metadataSource: 'explicit-override',
+  },
+  'https://openstax.org/books/writing-guide/pages/handbook': {
+    title: 'Handbook - Writing Guide with Handbook',
+    organization: 'OpenStax, Rice University',
+    summary: 'This writing handbook is a concise reference for paragraphs and transitions, sentence clarity and errors, word choice, point of view, verbs, pronouns, punctuation, mechanics, quotations, and MLA and APA documentation.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University. This openly licensed, faculty-reviewed handbook provides transparent instructional guidance and examples, with corrections supported through OpenStax editorial and errata processes.',
+    metadataSource: 'explicit-override',
+  },
+  'https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text': {
+    title: '16.5 Writing Process: Thinking Critically About Text',
+    organization: 'OpenStax, Rice University',
+    summary: 'This section guides writers through planning, drafting, reviewing, revising, rewriting, editing, and peer review for a text-focused analytical essay, including thesis development, objective summary, structural and contextual analysis, and integration of textual evidence.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University. This openly licensed, faculty-reviewed section offers transparent writing-process instruction and examples, while its textbook status should be distinguished from empirical evidence or an official assessment specification.',
+    metadataSource: 'explicit-override',
+  },
+};
+Object.assign(catalog, explicitMetadataOverrides);
+
 const doiReferences = [...references].filter((reference) => /^https:\/\/doi\.org\/.+/i.test(reference));
 const unresolved = doiReferences.filter((reference) => !catalog[reference]?.title || catalog[reference].metadataSource === 'fallback' || catalog[reference].title.startsWith('Digital Object Identifier'));
 async function resolveDoi(reference) {

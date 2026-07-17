@@ -11,7 +11,7 @@ describe('EPPP native learning-library catalog', () => {
   const reviewOverrides = read('test_prep/eppp_learning_review_overrides.json');
 
   it('catalogs the complete preserved learning library with stable unique IDs', () => {
-    expect(catalog.summary).toMatchObject({ chapters: 49, sections: 278, diagrams: 25, diagramPlacements: 61, knowledgeChecks: 109, flashcards: 415, memoryAids: 255 });
+    expect(catalog.summary).toMatchObject({ chapters: 49, sections: 278, diagrams: 25, diagramPlacements: 58, knowledgeChecks: 109, flashcards: 415, memoryAids: 255 });
     expect(new Set(catalog.chapters.map((item) => item.id)).size).toBe(49);
     expect(new Set(catalog.flashcards.map((item) => item.id)).size).toBe(415);
     expect(new Set(catalog.memoryAids.map((item) => item.id)).size).toBe(255);
@@ -59,8 +59,8 @@ describe('EPPP native learning-library catalog', () => {
     expect(chapter).toContain('|r<sub>xy</sub>|');
     expect(chapter).not.toContain('item parameters are sample-independent');
     expect(chapter).not.toContain('Restriction of range always');
-    expect(diagrams).toContain('Validity is a unified argument for an intended score interpretation and use');
-    expect(diagrams).toContain('Face credibility (not validity evidence)');
+    expect(diagrams).toContain('Validity is a unified argument about whether accumulated evidence and theory support a particular interpretation');
+    expect(diagrams).toContain('Response processes:');
   });
 
   it('keeps Chapter 2 cognitive-assessment claims qualified and interaction metadata intact', () => {
@@ -113,7 +113,7 @@ describe('EPPP native learning-library catalog', () => {
 
     expect(behavioral).toMatchObject({
       reviewStatus: 'source-reviewed-editorial-pass',
-      diagramCount: 2,
+      diagramCount: 1,
       checks: { 'expert-review': 'pending-independent-behavioral-assessment-review' },
     });
     expect(behavioral.sections.filter((section) => section.hasKnowledgeCheck)).toHaveLength(2);

@@ -1,0 +1,1305 @@
+[
+  {
+    "id": "parapro-b3-reading-001",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. Each spring, the theater department used to discard costumes with torn seams or missing buttons. This year, volunteers taught students basic mending techniques and organized reusable fabric scraps by color. By the end of the semester, students had repaired forty-three costumes and purchased far fewer replacements. Which statement best expresses the main idea?",
+    "choices": [
+      "Teaching repair skills helped the theater department reuse costumes and reduce replacement purchases.",
+      "The theater department performs its largest production during the spring semester.",
+      "Sorting fabric scraps by color was the only reason students repaired forty-three costumes.",
+      "Volunteers decided that students should stop wearing costumes with buttons."
+    ],
+    "answerIndex": 0,
+    "rationale": "The passage connects instruction in mending and organized materials with repaired costumes and fewer purchases, so the first choice captures the central idea without adding unsupported claims.",
+    "choiceRationales": [
+      "This choice includes the department's new approach and both important results described in the passage.",
+      "Spring is mentioned only as the former disposal period; no production schedule is provided.",
+      "The passage describes instruction and organized scraps, so claiming one action was the only cause is too strong.",
+      "Students repaired missing buttons; the passage never suggests eliminating costumes that have buttons."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-002",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. When Imani's first paper bridge sagged during testing, she marked the two places where its sides bent. Before a second test, she added triangular braces at those exact points. The revised bridge supported twice as many books. Which detail best supports the conclusion that Imani used test results to improve her design?",
+    "choices": [
+      "The bridge was made from paper rather than from wood.",
+      "She placed braces at the same locations where the first bridge had bent.",
+      "The books used in the second test came from a classroom shelf.",
+      "She completed both tests before the end of the school day."
+    ],
+    "answerIndex": 1,
+    "rationale": "The matching locations link Imani's observation from the first test to a specific design change, directly supporting the conclusion that test evidence guided her revision.",
+    "choiceRationales": [
+      "The material identifies what she built but does not show how she responded to the test results.",
+      "This detail connects the observed failure points to the locations of Imani's corrective changes.",
+      "The books' storage location does not explain why Imani changed the bridge's structure.",
+      "The completion time provides no connection between evidence from testing and the revision."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-003",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. During lunch, Amir usually played soccer. On Thursday, however, he carried a field map, a magnifying lens, and a specimen notebook to the greenhouse door. He checked the clock twice while waiting for the ecology mentor to arrive. Which inference is best supported?",
+    "choices": [
+      "Amir has permanently lost interest in playing soccer.",
+      "The ecology mentor asked Amir to repair the greenhouse clock.",
+      "Amir plans to participate in a scheduled observation activity during lunch.",
+      "Amir intends to lend his field equipment to the soccer team."
+    ],
+    "answerIndex": 2,
+    "rationale": "Amir's field tools, notebook, meeting place, and attention to the mentor's arrival collectively support a scheduled observation activity; the other conclusions require facts not given.",
+    "choiceRationales": [
+      "Missing one usual soccer period does not show that Amir has permanently abandoned the activity.",
+      "Checking the time indicates waiting, not a request to repair a clock inside the greenhouse.",
+      "The materials and planned meeting with an ecology mentor provide converging evidence for an observation activity.",
+      "Nothing connects the field equipment to the soccer team or suggests that Amir will lend it."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-004",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the sentence. The committee's initial schedule was tentative: members penciled in possible dates and requested feedback before reserving any rooms. As used in the sentence, \"tentative\" most nearly means",
+    "choices": [
+      "unnecessarily complicated",
+      "secret from the public",
+      "certain to be approved",
+      "provisional and open to change"
+    ],
+    "answerIndex": 3,
+    "rationale": "Penciling in dates, requesting feedback, and delaying room reservations show that the schedule was provisional rather than final, which establishes the contextual meaning of tentative.",
+    "choiceRationales": [
+      "The sentence does not describe the schedule as confusing or containing too many steps.",
+      "Requesting feedback indicates that the plan is being shared rather than kept secret.",
+      "The lack of reservations and request for feedback show uncertainty, not guaranteed approval.",
+      "This meaning fits all three clues that the proposed dates may be revised before commitments are made."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-005",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Read the passage. In 1998, students recorded the morning announcements on cassette tapes for classroom playback. A decade later, the school posted weekly audio files on its website. In 2024, students began producing a live daily podcast that listeners could access from home. How is the passage primarily organized?",
+    "choices": [
+      "In chronological order showing changes over time",
+      "As a comparison of two equally current programs",
+      "As a problem followed by several proposed solutions",
+      "As a list ranked from least popular to most popular"
+    ],
+    "answerIndex": 0,
+    "rationale": "The dated examples move from 1998 to a decade later and then to 2024, tracing how the school's announcement format changed over time in chronological sequence.",
+    "choiceRationales": [
+      "The dates and progression from tapes to files to a live podcast establish chronological organization.",
+      "The formats belong to different time periods rather than two programs operating at the same time.",
+      "No central problem is identified, and the formats are developments rather than competing solutions.",
+      "The passage supplies no popularity data and does not state that its order is a ranking."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-006",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the studio notice. Wet clay may look firm before it is ready to move. Leave all unlabeled pieces on the drying shelves, and ask the instructor before touching another student's work. Lifting a piece too soon can bend its base or leave fingerprints. What is the notice's primary purpose?",
+    "choices": [
+      "To advertise a sale of finished ceramic pieces",
+      "To warn students about damage and explain how to handle unfinished work safely",
+      "To compare clay sculpture with other forms of art",
+      "To entertain students with a story about a pottery mistake"
+    ],
+    "answerIndex": 1,
+    "rationale": "The notice identifies ways wet clay can be damaged and gives direct handling rules, so its purpose is to warn and instruct rather than advertise, compare, or entertain.",
+    "choiceRationales": [
+      "Nothing is being sold, and the notice concerns unfinished rather than completed pieces.",
+      "The cautions and imperative directions work together to prevent damage to students' clay work.",
+      "No other artistic medium is discussed, so comparison is not the organizing purpose.",
+      "The text gives practical rules and consequences, not characters or events arranged as a story."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-007",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. Boxes of handwritten neighborhood newsletters were becoming brittle in a community center closet. A history class scanned each page, added dates and names to the files, and posted searchable copies in an online archive. Residents can now read the collection without handling the fragile originals. Which is the best summary?",
+    "choices": [
+      "The community center needs a larger closet for all of its stored boxes.",
+      "Residents prefer handwritten newsletters to every form of digital communication.",
+      "Students preserved fragile local records and made them easier for the public to use.",
+      "A history class wrote new newsletters describing the community center."
+    ],
+    "answerIndex": 2,
+    "rationale": "The third choice includes both essential outcomes of the class project—preserving deteriorating records digitally and improving access—without introducing claims absent from the passage.",
+    "choiceRationales": [
+      "Storage space is not the central issue, and scanning reduces the need to handle the boxes.",
+      "The passage reports access to digitized records but never compares residents' communication preferences.",
+      "This choice concisely represents the problem, the students' response, and the public benefit.",
+      "Students scanned and indexed existing newsletters; they did not create replacement newsletters."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-008",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. Before the international food fair, the cafeteria manager placed photographs beside each dish, printed ingredient labels in three languages, and moved the allergy-information binder to the entrance. She also asked servers to practice pointing visitors to the binder. Which inference is best supported?",
+    "choices": [
+      "The cafeteria manager expects every visitor to speak three languages.",
+      "The fair will serve only foods that contain common allergens.",
+      "Servers have been asked to memorize every ingredient in every dish.",
+      "The manager is trying to make food and allergy information accessible to more visitors."
+    ],
+    "answerIndex": 3,
+    "rationale": "Photographs, multilingual labels, a visible binder, and prepared servers are complementary access supports, making broader access to food and allergy information the best-supported inference.",
+    "choiceRationales": [
+      "Multiple languages increase access; they do not imply that each individual speaks all three.",
+      "Providing allergy information does not establish that every offered food contains an allergen.",
+      "Servers practice directing visitors to the binder rather than memorizing all ingredient lists.",
+      "Each preparation removes a different barrier to locating or understanding important food information."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-009",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Read the sentence. Attendance at the optional sunrise rehearsal was sparse; only six of the sixty choir members arrived. As used in the sentence, \"sparse\" most nearly means",
+    "choices": [
+      "limited or few",
+      "evenly spaced in time",
+      "unexpectedly noisy",
+      "required for everyone"
+    ],
+    "answerIndex": 0,
+    "rationale": "The numerical clue that only six of sixty members attended defines sparse as limited or few in this context, while the other choices conflict with or exceed the sentence.",
+    "choiceRationales": [
+      "The small fraction of members who arrived directly supports the meaning limited or few.",
+      "The sentence describes the number of attendees, not the amount of time between arrivals.",
+      "No information about volume or behavior indicates that the rehearsal was noisy.",
+      "The word optional and the low attendance directly contradict the idea that everyone was required to attend."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-010",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A wildlife club claims that a nesting platform installed beside the river was successfully used by peregrine falcons. Which evidence most directly supports the claim?",
+    "choices": [
+      "The platform is visible from a walking path across the river.",
+      "A motion camera recorded adult peregrines bringing food to three chicks in a nest on the platform.",
+      "Club members painted the platform before placing it beside the river.",
+      "Several kinds of birds migrate through the region each autumn."
+    ],
+    "answerIndex": 1,
+    "rationale": "Camera records of peregrines feeding chicks in a nest on the platform directly demonstrate successful nesting use; the other details concern visibility, construction, or unrelated birds.",
+    "choiceRationales": [
+      "Being visible to walkers does not establish that peregrines occupied or nested on the platform.",
+      "The recorded adults, chicks, feeding behavior, and exact location directly verify successful use.",
+      "Painting is a preparation detail and supplies no evidence about what happened after installation.",
+      "General migration through the region does not show that peregrines used this particular platform."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-011",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. Hikers in the canyon often could not reach park staff because steep rock walls blocked radio signals. In response, the park installed two solar-powered relay stations on high ridges. Rangers can now exchange messages from locations that previously had no reception. Which text structure is most prominent?",
+    "choices": [
+      "Chronological biography",
+      "Comparison and contrast",
+      "Problem and solution",
+      "Question and answer"
+    ],
+    "answerIndex": 2,
+    "rationale": "The passage first identifies blocked communication as a problem, then presents relay stations as the response and explains the improved result, which forms a problem-solution structure.",
+    "choiceRationales": [
+      "The passage contains no person's life history and is not organized around biographical milestones.",
+      "It does not develop two alternatives through corresponding similarities and differences.",
+      "The communication obstacle is followed by an installed solution and evidence that the solution worked.",
+      "No explicit question is posed and answered; the opening statement instead describes a practical problem."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-012",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "advanced",
+    "prompt": "Read the passage. The final activity bus leaves at 4:15 p.m., while tutoring ends at 4:30 p.m. The transportation office estimates that a later Tuesday route would cost $180 per month. Last month, twenty-eight students attended at least one tutoring session. Given those figures, a later Tuesday departure would be a wise investment. Which sentence is presented as an opinion rather than a verifiable fact?",
+    "choices": [
+      "The final activity bus leaves at 4:15 p.m., while tutoring ends at 4:30 p.m.",
+      "The transportation office estimates that a later Tuesday route would cost $180 per month.",
+      "Last month, twenty-eight students attended at least one tutoring session.",
+      "Given those figures, a later Tuesday departure would be a wise investment."
+    ],
+    "answerIndex": 3,
+    "rationale": "The schedule, cost estimate, and attendance count can be checked against records. Calling the departure a wise investment expresses a value judgment, so the final sentence is presented as opinion.",
+    "choiceRationales": [
+      "Published bus and tutoring schedules can verify both stated times.",
+      "The transportation office's documented estimate can be checked even though the eventual cost could differ.",
+      "Attendance records can verify how many students participated during the stated period.",
+      "The word wise evaluates the proposal's value rather than reporting a directly verifiable condition."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-013",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. The local museum began offering a quiet hour before regular opening. During that hour, lights remain low, attendance is limited, and visitors receive maps marking calm spaces. Families who had previously avoided crowded exhibits now report visiting more often. Which statement best expresses the main idea?",
+    "choices": [
+      "The museum's quiet hour reduced barriers for some families who had previously avoided crowded exhibits.",
+      "All museum visitors prefer low lighting and small groups at every time of day.",
+      "Museum maps are useful only when they identify rooms without exhibits.",
+      "The museum shortened its regular hours because families stopped attending."
+    ],
+    "answerIndex": 0,
+    "rationale": "The passage centers on several quiet-hour adjustments and increased participation by families who had avoided crowded exhibits, making improved access the appropriately broad central idea.",
+    "choiceRationales": [
+      "This choice synthesizes the quiet-hour changes and the reported participation outcome without adding a diagnosis or universal claim.",
+      "The passage reports one option for particular families, not a universal preference among all visitors.",
+      "The maps identify calm spaces, but the passage never limits their usefulness to empty rooms.",
+      "A quiet hour was added before opening; no reduction in regular hours or general attendance is stated."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-014",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. A biologist found a cracked shell below a shorebird nest. She photographed the nearby tracks, measured their width, installed a motion-activated camera facing the nest, and returned before sunrise the next day. Which inference is best supported?",
+    "choices": [
+      "The biologist already knows exactly which animal cracked the shell.",
+      "The biologist is gathering evidence to determine what happened at the nest.",
+      "The biologist plans to move every shorebird nest away from the beach.",
+      "The camera will prevent all animals from approaching the nest."
+    ],
+    "answerIndex": 1,
+    "rationale": "Documenting tracks and installing a camera are investigative actions aimed at collecting additional evidence, so the biologist is trying to determine what occurred rather than acting on certainty.",
+    "choiceRationales": [
+      "Collecting multiple forms of evidence suggests that the cause is not yet known with certainty.",
+      "The photographs, measurements, and camera all serve the shared purpose of investigating the nest event.",
+      "No relocation plan is mentioned, and evidence from one nest would not justify moving every nest.",
+      "A camera records activity; the passage gives no reason to believe it will block or deter every animal."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-015",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the sentence. The revised drop-off plan did not eliminate late arrivals, but it mitigated them: the weekly number fell from nineteen to seven. As used in the sentence, \"mitigated\" most nearly means",
+    "choices": [
+      "recorded without changing",
+      "made impossible to count",
+      "reduced in number or severity",
+      "moved to a different weekday"
+    ],
+    "answerIndex": 2,
+    "rationale": "The contrast with did not eliminate and the decline from nineteen late arrivals to seven show that the problem became smaller, which establishes that mitigated means reduced.",
+    "choiceRationales": [
+      "The numerical decrease shows a change in the problem, not merely an act of recording it.",
+      "The sentence supplies exact counts, so the arrivals clearly remained possible to count.",
+      "This definition fits both the partial improvement signaled by the contrast and the lower count.",
+      "The weekly totals changed, but no information indicates that arrivals shifted to another day."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-016",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "advanced",
+    "prompt": "A transit guide includes a route map showing station connections and a timetable showing departure times. A traveler needs to go from Lake Station to Museum Station, transfer once, and arrive before 10:00 a.m. Which approach would best answer the traveler's question?",
+    "choices": [
+      "Use only the guide's cover photograph to identify the fastest train.",
+      "Use only the alphabetical station index to calculate arrival time.",
+      "Use the timetable to select any train before checking whether the stations connect.",
+      "Use the map to identify a valid transfer route, then use the timetable to verify an arrival before 10:00."
+    ],
+    "answerIndex": 3,
+    "rationale": "The map answers the route-and-transfer part of the information need, while the timetable answers the departure-and-arrival part; both features are necessary to satisfy all conditions.",
+    "choiceRationales": [
+      "A cover image is decorative and does not provide route connections or scheduled travel times.",
+      "An index can locate station information but cannot by itself establish a transfer or arrival time.",
+      "A suitable time is not enough if the selected train does not follow a route connecting the stations.",
+      "This sequence uses each text feature for the information it is designed to provide and checks every constraint."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-017",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the excerpt. During the first mile of the trip, Lila gripped her ticket so tightly that its edges folded. When she spotted her aunt's red scarf beyond the station gate, her shoulders loosened and she carefully smoothed the ticket on her knee. Which detail most strongly supports the inference that Lila became less anxious?",
+    "choices": [
+      "After seeing her aunt, Lila's shoulders loosened and she smoothed the crumpled ticket.",
+      "Lila traveled for at least one mile before reaching the station gate.",
+      "Her aunt wore a red scarf while waiting beyond the gate.",
+      "The ticket's edges had folded while Lila held it."
+    ],
+    "answerIndex": 0,
+    "rationale": "Lila's relaxed shoulders and newly careful handling of the ticket show a physical shift after she recognizes her aunt, providing the clearest evidence that her anxiety decreased.",
+    "choiceRationales": [
+      "These changed physical behaviors occur after Lila sees a familiar person and directly signal reduced tension.",
+      "The distance establishes part of the setting but does not reveal a change in Lila's emotional state.",
+      "The scarf helps Lila recognize her aunt, but its color alone is not direct evidence of Lila's anxiety level.",
+      "The folded edges indicate earlier tension; without the later change, they do not show that anxiety decreased."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-018",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Read the paragraph. Families may borrow a violin, flute, or clarinet from the district instrument bank for one semester at no charge. Students enrolled in a school music course are eligible. Request forms are available from music teachers and must be returned by September 8. What is the author's primary purpose?",
+    "choices": [
+      "To argue that every student should learn the violin",
+      "To inform families about eligibility and procedures for borrowing an instrument",
+      "To describe how woodwind and string instruments are manufactured",
+      "To tell a story about a student's first music lesson"
+    ],
+    "answerIndex": 1,
+    "rationale": "The paragraph supplies available instruments, cost, eligibility, where to obtain a form, and a deadline, all of which serve the practical purpose of explaining a borrowing opportunity.",
+    "choiceRationales": [
+      "The paragraph presents three instruments and makes no claim that everyone should select one of them.",
+      "This choice accounts for the eligibility rule, request process, deadline, and loan terms.",
+      "No materials, factory processes, or construction methods for instruments are described.",
+      "The text contains no character, sequence of events, or personal experience forming a narrative."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-019",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. Students interviewed longtime residents about shops, celebrations, and transportation in the neighborhood decades ago. They paired audio excerpts with old photographs and marked remembered locations on a digital map. The finished exhibit lets visitors hear several perspectives while exploring how the area changed. Which statement best expresses the main idea?",
+    "choices": [
+      "Longtime residents agree about every change that occurred in the neighborhood.",
+      "Digital maps are more accurate than all photographs and spoken memories.",
+      "Students combined interviews and historical materials to create a multilayered record of neighborhood change.",
+      "The neighborhood replaced its shops with a museum devoted only to transportation."
+    ],
+    "answerIndex": 2,
+    "rationale": "The passage emphasizes students integrating interviews, images, and mapped locations to represent multiple perspectives on change, which the third choice captures at the right level of generality.",
+    "choiceRationales": [
+      "The exhibit preserves several perspectives, but the passage never says those perspectives agree completely.",
+      "The materials serve complementary purposes; the passage does not rank one type as universally more accurate.",
+      "This choice synthesizes the students' method, source types, and historical purpose without adding information.",
+      "Shops and transportation are interview topics, not evidence that shops were replaced by a museum."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-020",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. Before opening a 1910 attendance ledger, Dev washed and dried his hands. He rested the book's covers on foam supports, kept the binding from opening flat, and used a thin tool to turn each page slowly. Which inference is best supported?",
+    "choices": [
+      "Dev intends to rewrite the ledger in modern handwriting.",
+      "The ledger contains attendance records from every school in the state.",
+      "Foam supports are required for reading all books published after 1910.",
+      "The ledger is fragile and must be handled in ways that prevent damage."
+    ],
+    "answerIndex": 3,
+    "rationale": "Dev's clean hands, support of the covers and binding, and slow page turning are protective handling measures, strongly supporting the inference that the old ledger is fragile.",
+    "choiceRationales": [
+      "Careful page handling supports preservation, not an intention to replace the original handwriting.",
+      "The date and document type do not establish the geographic scope of the records inside.",
+      "The passage describes one old ledger and does not state a universal rule for books after a date.",
+      "Every observed action reduces physical stress or contamination, which is consistent with handling a fragile object."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-021",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the sentence. The original directions were opaque; even experienced club members could not tell which materials to gather or where to begin. As used in the sentence, \"opaque\" most nearly means",
+    "choices": [
+      "unclear or difficult to understand",
+      "printed on recycled paper",
+      "intended only for experienced members",
+      "brief enough to memorize"
+    ],
+    "answerIndex": 0,
+    "rationale": "The explanation after the semicolon shows that readers could not identify materials or a starting step, so opaque describes directions whose meaning is unclear or hard to understand.",
+    "choiceRationales": [
+      "This meaning directly explains why even experienced readers could not determine what to do.",
+      "The sentence provides no information about the paper or other physical medium used for the directions.",
+      "Experienced members were also confused, so the context does not indicate that they were the intended audience.",
+      "Difficulty understanding content says nothing about length, and memorability would not explain the confusion."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-022",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "advanced",
+    "prompt": "A table shows the number of books collected by four classes during two weeks. Class A: Week 1, 18; Week 2, 26. Class B: Week 1, 24; Week 2, 29. Class C: Week 1, 21; Week 2, 33. Class D: Week 1, 27; Week 2, 34. Which conclusion is supported by the table?",
+    "choices": [
+      "Class B had the greatest increase, adding 15 books.",
+      "Class C had the greatest increase, adding 12 books.",
+      "Class A collected 8 fewer books in Week 2 than in Week 1.",
+      "Together, the four classes collected fewer books in Week 2 than in Week 1."
+    ],
+    "answerIndex": 1,
+    "rationale": "The increases are 8 books for Class A, 5 for Class B, 12 for Class C, and 7 for Class D. Class C therefore had the greatest increase, and the other conclusions conflict with the displayed values.",
+    "choiceRationales": [
+      "Class B increased from 24 to 29 books, an increase of 5 rather than 15.",
+      "Class C increased from 21 to 33 books, so its increase of 12 is the largest of the four.",
+      "Class A increased by 8 books; it did not collect fewer books during Week 2.",
+      "Every class collected more in Week 2, making the combined Week 2 total larger, not smaller."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-023",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the astronomy-night announcement. Friday's program begins at 8:00 p.m. in the east field. It includes a telescope demonstration and a star-map activity. The telescope demonstration will be the evening's most fascinating event. Portable restrooms will be available near the field. Which sentence is presented as an opinion rather than a verifiable fact?",
+    "choices": [
+      "Friday's program begins at 8:00 p.m. in the east field.",
+      "It includes a telescope demonstration and a star-map activity.",
+      "The telescope demonstration will be the evening's most fascinating event.",
+      "Portable restrooms will be available near the field."
+    ],
+    "answerIndex": 2,
+    "rationale": "The schedule, activities, and available facilities can be verified. Describing one event as the most fascinating expresses a judgment about interest, so the third sentence is opinion.",
+    "choiceRationales": [
+      "The announced starting time and location can be checked against the program schedule.",
+      "The program listing can verify whether both named activities are included.",
+      "Most fascinating is a subjective evaluation that different attendees could reasonably judge differently.",
+      "The facilities plan can verify whether portable restrooms will be available at the stated location."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-024",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "advanced",
+    "prompt": "A student repeatedly chooses the catchy opening sentence as a passage's main idea even when later paragraphs develop a different central point. Which paraprofessional response would best preserve the student's reasoning role while building main-idea skill?",
+    "choices": [
+      "Tell the student that opening sentences are never important and should always be crossed out.",
+      "Provide the correct main idea before the student rereads so the student can copy it.",
+      "Ask the student to count the words in each sentence and select the longest sentence.",
+      "Have the student group recurring ideas across paragraphs, propose a statement that covers them, and cite details that support it."
+    ],
+    "answerIndex": 3,
+    "rationale": "Grouping recurring ideas, proposing a central statement, and testing it against evidence directly develops main-idea reasoning while leaving the analysis and decision with the student.",
+    "choiceRationales": [
+      "Opening sentences sometimes are important, so an absolute rejection would replace one faulty rule with another.",
+      "Supplying an answer removes the reasoning opportunity and provides little evidence that the student can transfer the skill.",
+      "Sentence length is a surface feature that does not determine which idea controls an entire passage.",
+      "This scaffold directs attention to coverage and evidence, then requires the student to construct and defend the main idea."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/29"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-025",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "advanced",
+    "prompt": "After reading a story, a student says, \"The character will leave the team because I just know it,\" but cannot identify a textual clue. What is the most appropriate next step for the paraprofessional?",
+    "choices": [
+      "Ask the student to record a specific clue, explain how it connects to the prediction, and revise the prediction if the evidence does not support it.",
+      "Accept the prediction because any possible ending is an equally valid inference.",
+      "Reveal the story's ending and ask the student to copy the final event into a notebook.",
+      "Shift to a spelling exercise so the unsupported prediction does not need to be discussed."
+    ],
+    "answerIndex": 0,
+    "rationale": "An evidence-and-reasoning prompt makes the inference process observable and invites revision based on the text, teaching the student to distinguish a supported inference from a guess.",
+    "choiceRationales": [
+      "This response explicitly links a conclusion to evidence while preserving the student's responsibility to evaluate it.",
+      "Possibility alone is insufficient; an inference should be traceable to relevant textual clues.",
+      "Giving away the ending replaces inferential reasoning with copying and changes the task being assessed.",
+      "Avoiding the misconception forfeits an immediate opportunity to teach evidence-based reasoning."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/29"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-026",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "developing",
+    "prompt": "A student does not know the meaning of resilient in this sentence: \"The resilient beach grass was flattened by the storm, but by morning its flexible stems had risen upright again.\" Which prompt would best help the student determine the word's meaning from context?",
+    "choices": [
+      "What is the first letter of resilient, and which dictionary page contains words beginning with that letter?",
+      "What happened to the grass after it was flattened, and what meaning for resilient fits that contrast?",
+      "Can you replace resilient with the longest word you know and keep reading without checking the sentence?",
+      "How many times does the letter i appear in the sentence containing resilient?"
+    ],
+    "answerIndex": 1,
+    "rationale": "The prompt focuses the student on the recovery described after but and asks the learner to test a meaning against that context, supporting an evidence-based vocabulary inference.",
+    "choiceRationales": [
+      "Alphabetical location may help with later dictionary use but does not draw meaning from the supplied context.",
+      "The grass's recovery and the contrast signal provide direct clues for a meaning such as able to recover.",
+      "Word length is unrelated to meaning, and skipping verification encourages guessing rather than contextual analysis.",
+      "Counting letters attends to spelling features but does not connect the unfamiliar word with the surrounding idea."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-027",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "developing",
+    "prompt": "A student understands grade-level text when it is read aloud but frequently loses the correct line when reading a densely printed page independently. Under the teacher's plan, which support should the paraprofessional try first?",
+    "choices": [
+      "Replace the assigned text with an unrelated book containing much shorter sentences.",
+      "Read every page aloud while the student listens without following the print.",
+      "Offer a line guide, teach the student to move it after each line, and fade it as tracking becomes consistent.",
+      "Ask the student to memorize the page before attempting to read it from print."
+    ],
+    "answerIndex": 2,
+    "rationale": "A line guide directly addresses visual tracking while preserving the assigned text and independent reading task; teaching its use and fading it also supports eventual independence.",
+    "choiceRationales": [
+      "Changing both the text and task may remove the grade-level goal without first addressing the observed access barrier.",
+      "Listening can support comprehension, but doing all the reading prevents practice with print tracking.",
+      "This targeted, temporary support matches the observed need and includes a plan to reduce assistance.",
+      "Memorization does not teach tracking and imposes an unnecessary demand unrelated to the reading goal."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-028",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "advanced",
+    "prompt": "A student writes summaries by copying nearly every detail, including examples and repeated explanations. Which instructional response would best help the student produce a concise, accurate summary?",
+    "choices": [
+      "Set a faster copying deadline so the student has less time to include details.",
+      "Tell the student to summarize only the final sentence, regardless of what earlier paragraphs explain.",
+      "Delete half of the copied sentences for the student without discussing why they are unnecessary.",
+      "Have the student state each paragraph's gist, combine the essential ideas, and justify why specific examples can be omitted."
+    ],
+    "answerIndex": 3,
+    "rationale": "Identifying paragraph gists and distinguishing essential ideas from illustrative examples teaches the decisions underlying summarization while keeping those decisions with the student.",
+    "choiceRationales": [
+      "Increasing speed does not teach how to distinguish central ideas from minor or repeated information.",
+      "A final sentence may not represent the whole text, so this fixed rule can produce incomplete summaries.",
+      "Silent deletion may improve one product but does not reveal the reasoning the student needs to transfer.",
+      "This process makes selection and compression explicit and asks the student to explain omissions using the text's structure."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/29"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-029",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "advanced",
+    "prompt": "A science article alternates between threats facing sea turtles and conservation responses to each threat. A student incorrectly arranges the information only by the dates mentioned in examples. Which support would best highlight the article's actual structure?",
+    "choices": [
+      "Guide the student to place each threat beside its corresponding response in a problem-solution chart and cite signal language from the article.",
+      "Ask the student to copy every date into a longer timeline and ignore the surrounding sentences.",
+      "Provide a list of sea turtle species and ask the student to alphabetize it.",
+      "Tell the student the structure is chronological and praise the first organizer."
+    ],
+    "answerIndex": 0,
+    "rationale": "Pairing each threat with its response represents the article's recurring problem-solution relationships, while citing signal language helps the student ground the structural analysis in text.",
+    "choiceRationales": [
+      "This organizer maps the passage's meaningful relationships and requires evidence for the selected structure.",
+      "Dates embedded in examples do not necessarily control organization, and isolating them reinforces the misconception.",
+      "Alphabetizing species neither represents threats and responses nor addresses text-structure understanding.",
+      "Confirming an inaccurate label prevents the student from revising the organizer in response to textual evidence."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/14"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-030",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "developing",
+    "prompt": "While reading a geography paragraph, a student stalls at the word transportation and begins guessing from its first letter. Which teacher-directed paraprofessional prompt would most appropriately support accurate word reading?",
+    "choices": [
+      "Skip the word permanently because a long word is unlikely to affect paragraph meaning.",
+      "Mark the prefix trans-, root port, and suffix -ation; blend the parts into the whole word; then reread the sentence to check pronunciation and meaning.",
+      "Supply an unrelated short word beginning with t so the student can finish quickly.",
+      "Ask the student to guess again without looking beyond the first letter."
+    ],
+    "answerIndex": 1,
+    "rationale": "Identifying the prefix, root, and suffix, blending the parts into the whole word, and rereading in context provide a reproducible decoding process and a meaning check rather than encouraging first-letter guessing.",
+    "choiceRationales": [
+      "Skipping removes practice and may obscure meaning because transportation is likely important in geography text.",
+      "This prompt names meaningful word parts, requires whole-word blending, and uses the sentence to verify pronunciation and meaning.",
+      "Substituting an unrelated word changes the text and does not help the student read the target word.",
+      "Repeating the same first-letter strategy preserves the behavior that produced the inaccurate attempt."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-031",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "developing",
+    "prompt": "A student reads the prose in a science section but skips the diagram caption and cannot explain what the arrows in the diagram represent. Which support would best help the student integrate the two sources of information?",
+    "choices": [
+      "Cover the diagram so the student can focus exclusively on memorizing the prose.",
+      "Explain the complete diagram while the student waits for the answer.",
+      "Prompt the student to read the caption, trace each labeled arrow, and explain how the diagram adds to a specific sentence in the prose.",
+      "Have the student copy the caption three times without viewing the diagram."
+    ],
+    "answerIndex": 2,
+    "rationale": "Coordinating the caption, labels, arrows, and a related sentence teaches the student to integrate visual and verbal evidence while retaining responsibility for explaining the relationship.",
+    "choiceRationales": [
+      "Removing the visual source prevents practice with the integration skill the task requires.",
+      "Giving a complete explanation may solve the immediate question but does not elicit the student's analysis.",
+      "This prompt directs attention to relevant features and asks the student to connect them explicitly with the prose.",
+      "Copying isolated words does not require interpreting arrows or relating visual information to the paragraph."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/29"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-032",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "advanced",
+    "prompt": "A student finds this dictionary entry while reading: channel 1. a narrow waterway; 2. a television station; 3. to direct toward a purpose. The sentence says, \"The council will channel grant funds toward roof repairs.\" Under the teacher's plan, what should the paraprofessional encourage the student to do?",
+    "choices": [
+      "Select definition 1 because the first dictionary meaning must fit every sentence.",
+      "Select definition 2 because channel is commonly associated with television.",
+      "Combine all three definitions and treat the sentence as having all three meanings at once.",
+      "Notice that channel follows will and is followed by funds toward repairs, then test definition 3 by substituting it and rereading the sentence."
+    ],
+    "answerIndex": 3,
+    "rationale": "The grammar after will identifies channel as a verb, and funds toward repairs supplies a purpose being directed. Substituting definition 3 and rereading uses both the dictionary and sentence context to confirm the correct sense.",
+    "choiceRationales": [
+      "Dictionary meanings are not ranked as universally correct; the sentence determines which sense applies.",
+      "A familiar association does not override the word's grammatical role and the surrounding context.",
+      "A word normally carries one relevant sense in a particular use, so merging incompatible meanings creates nonsense.",
+      "This response uses syntax and nearby meaning clues, then verifies the selected dictionary sense in the original sentence."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-033",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "advanced",
+    "prompt": "A multilingual learner says scarce and abundant are synonyms after reading, \"Water was scarce on the trail but abundant near the spring.\" Which response would best help the learner distinguish the words?",
+    "choices": [
+      "Ask the learner to use but and the contrast between the two locations to infer that scarce means limited and abundant means plentiful, then identify the words as antonyms.",
+      "Tell the learner that words appearing in the same sentence are always synonyms.",
+      "Translate only spring and supply the relationship without examining the two target words.",
+      "Have the learner count the letters in scarce and abundant to decide whether their meanings match."
+    ],
+    "answerIndex": 0,
+    "rationale": "The conjunction but signals contrast, and the locations differ in water availability. Using those clues shows that scarce and abundant have opposite meanings and are therefore antonyms.",
+    "choiceRationales": [
+      "This scaffold uses a signal word and sentence meaning to establish both definitions and the antonym relationship.",
+      "Co-occurrence does not determine a word relationship, and this rule would reinforce the student's misconception.",
+      "Translating an unrelated context word and giving the answer do not teach comparison of the target meanings.",
+      "Word length has no reliable relationship to whether two words are synonyms or antonyms."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-reading-034",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "advanced",
+    "prompt": "A student can use headings to predict a section's content, but only after the paraprofessional points to each heading and asks what it means. Recent work shows the predictions are usually accurate. What is the best next instructional move?",
+    "choices": [
+      "Continue giving every prompt indefinitely because accurate performance proves the prompts are necessary.",
+      "Fade the support by asking the student to preview headings independently, then review the prediction and provide a prompt only when needed.",
+      "Stop allowing the student to use headings and require predictions from page numbers alone.",
+      "Advance immediately to a much harder text and remove all opportunities for feedback."
+    ],
+    "answerIndex": 1,
+    "rationale": "Because performance is accurate with the scaffold, a planned reduction in prompting tests and develops independent strategy use while retaining responsive feedback if the student needs it.",
+    "choiceRationales": [
+      "Maintaining unnecessary prompts can create dependence and provides no information about independent use.",
+      "This gradual-release step preserves the strategy, shifts initiation to the student, and keeps support available based on performance.",
+      "Headings are relevant text features; banning them changes an effective strategy rather than increasing independence.",
+      "An abrupt jump in difficulty with no feedback does not provide a measured transition from guided to independent practice."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/14"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  }
+]

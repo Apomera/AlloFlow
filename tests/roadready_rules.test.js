@@ -1858,11 +1858,27 @@ describe('RoadReady rules-of-road content', () => {
 });
 
 describe('RoadReady visual geometry invariants', () => {
+  it.each(ROADREADY_FILES)('%s keeps streamed stop controls aligned with visible crosswalk geometry', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function intersectionStopLineCoordinate(intersectionCenter, travelSign)');
+    expect(src).toContain('function vehicleStopCenterCoordinate(intersectionCenter, travelSign, vehicleLength)');
+    expect(src).toContain('[-RR_INTERSECTION_CROSSWALK_OFFSET, RR_INTERSECTION_CROSSWALK_OFFSET]');
+    expect(src).toContain('var stopLineWidth = chunk.oneWay ? roadHalfW * 2 - 0.6 : roadHalfW - 0.3');
+    expect(src).toContain('var crossApproachDirections = chunk.crossStreetOneWayDirection');
+    expect(src).toContain('var activeControl = null');
+    expect(src).toContain('var aiFrontOverhang = vehicleFootprint(t.type).length * 0.5 + 0.25');
+    expect(src).toContain('var playerFrontY = car.y + playerTravelSign * playerLength * 0.5');
+    expect(src).toContain('var pedCrosswalkY = worldY + crosswalkSide * RR_INTERSECTION_CROSSWALK_OFFSET');
+    expect(src).not.toContain('var stopLineOff = cwOffset < 0 ? 1.3 : -1.3');
+    expect(src).not.toContain('var sbZ = cwCtrZ - 1.5');
+    expect(src).not.toContain('var slZ = crossZ - 4');
+  });
+
   it.each(ROADREADY_FILES)('%s keeps downtown one-way markings, traffic, and routing aligned', (relPath) => {
     const src = readRoadReady(relPath);
     expect(src).toContain('oneWay: true, oneWayDirection: -1, oneWayLanes: 2');
     expect(src).toContain('function oneWayRoadLayoutFor(profileOrChunk)');
-    expect(src).toContain('if (chunk.oneWay && arrowPointsTowardIntersection !== chunk.oneWayDirection) return');
+    expect(src).toContain('if (chunk.oneWay && approachDirection !== chunk.oneWayDirection) return');
     expect(src).toContain('color: chunk.crossStreetOneWayDirection ? 0xffffff : 0xfacc15');
     expect(src).toContain("owCtx.fillText('ONE WAY', 192, 52)");
     expect(src).toContain('var crossDirections = sigChunk.crossStreetOneWayDirection');

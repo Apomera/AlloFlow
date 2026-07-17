@@ -2155,11 +2155,13 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('Generate demo plan</button>');
     expect(html).toContain('id="demoPlanCancelBtn"');
     expect(html).toContain('var demoPlanRequestGeneration = 0');
-    expect(html).toContain("setAttribute('aria-busy', busy ? 'true' : 'false')");
+    expect(html).toContain("setAttribute('aria-busy', planning ? 'true' : 'false')");
+    expect(html).toContain("setAttribute('aria-busy', loadingOfficial ? 'true' : 'false')");
     expect(html).toContain('Planning cancelled. Nothing ran, and AlloFlow was asked to stop the AI request.');
     expect(html).toContain('if (generation !== demoPlanRequestGeneration) return;');
     expect(html).toContain('var demoPlanBridgeRequestId = null');
     expect(html).toContain('var demoPlanBridgeController = null');
+    expect(html).toContain("var demoPlanSourceKind = '';");
     expect(html).toContain("postToOpener({ type: 'allostudio-demoplan-cancel'");
     expect(html).toContain("typeof options.onRequestId === 'function'");
     expect(html).toContain("signal.addEventListener('abort', onAbort, { once: true })");
@@ -2179,7 +2181,9 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('async function runManualDemoPreflight()');
     expect(html).toContain("$('demoPreflightBtn').setAttribute('aria-busy', 'true')");
     expect(html).toContain("$('demoPreflightBtn').addEventListener('click', runManualDemoPreflight)");
-    expect(html).toContain("btn.setAttribute('aria-busy', 'true')");
+    expect(html).toContain("setDemoPlanningBusy(true, 'official')");
+    expect(html).toContain("Official tutorial loading cancelled. Nothing ran, and the current plan was left unchanged.");
+    expect(html).toContain("bridgeRequest('allostudio-official-tutorial-request', { tutorialId: 'text-adaptation' }, 30000, { signal:");
     expect(html).toContain('demoState.running || demoStartPending || demoRehearsePending');
     expect(html).toContain("if (e.key !== 'Enter' || (!e.ctrlKey && !e.metaKey)");
     expect(html).toContain("if (!$('demoPlanBtn').disabled) $('demoPlanBtn').click();");

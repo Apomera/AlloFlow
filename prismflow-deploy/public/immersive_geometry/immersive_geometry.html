@@ -160,12 +160,13 @@
   <div class="btnrow">
     <button class="q" id="uiAxis" aria-label="Cycle the editable axis">Axis</button>
     <button class="q" id="uiUndo" aria-label="Undo the last geometry change">↶ undo</button>
+    <button class="q" id="uiRedo" aria-label="Redo the last undone geometry change">↷ redo</button>
     <button class="q" id="uiReset" aria-label="Reset to a point">↺ reset</button>
   </div>
 
 
   <div class="kbd">
-    Keyboard: <kbd>↑</kbd>/<kbd>↓</kbd> stretch &amp; collapse · <kbd>→</kbd>/<kbd>←</kbd> grow &amp; shrink · <kbd>A</kbd> axis · <kbd>U</kbd> undo · <kbd>R</kbd> reset · <kbd>Shift</kbd>+<kbd>R</kbd> start over · <kbd>M</kbd> boundary measures · <kbd>F</kbd> focus next step · <kbd>1</kbd>–<kbd>4</kbd> missions<br>Scene handles: click the active handle to grow · <kbd>Shift</kbd>+click to shrink · rapid resizes group into one undo step
+    Keyboard: <kbd>↑</kbd>/<kbd>↓</kbd> stretch &amp; collapse · <kbd>→</kbd>/<kbd>←</kbd> grow &amp; shrink · <kbd>A</kbd> axis · <kbd>U</kbd> undo · <kbd>Y</kbd> redo · <kbd>C</kbd> center workspace · <kbd>R</kbd> reset · <kbd>Shift</kbd>+<kbd>R</kbd> start over · <kbd>M</kbd> boundary measures · <kbd>F</kbd> focus next step · <kbd>1</kbd>–<kbd>4</kbd> missions<br>Scene handles: click the active handle to grow · <kbd>Shift</kbd>+click to shrink · rapid resizes group into one undo step · target crossings snap exactly
   </div>
 
   <div class="credit">
@@ -225,14 +226,19 @@
       <a-text value="reset" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
     </a-entity>
     <a-entity class="clickable vrbtn" id="vrAxis"
-              geometry="primitive: box; width: 0.68; height: 0.17; depth: 0.04"
-              material="color: #315f78" position="-0.38 -0.22 0">
+              geometry="primitive: box; width: 0.62; height: 0.17; depth: 0.04"
+              material="color: #315f78" position="-0.5 -0.22 0">
       <a-text id="vrAxisText" value="axis" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
     </a-entity>
     <a-entity class="clickable vrbtn" id="vrUndo"
-              geometry="primitive: box; width: 0.5; height: 0.17; depth: 0.04"
-              material="color: #4a6094" position="0.38 -0.22 0">
+              geometry="primitive: box; width: 0.4; height: 0.17; depth: 0.04"
+              material="color: #4a6094" position="0.08 -0.22 0">
       <a-text value="undo" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
+    </a-entity>
+    <a-entity class="clickable vrbtn" id="vrRedo"
+              geometry="primitive: box; width: 0.4; height: 0.17; depth: 0.04"
+              material="color: #4a6094" position="0.52 -0.22 0">
+      <a-text value="redo" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
     </a-entity>
     <a-entity class="clickable vrbtn" id="vrMission"
               geometry="primitive: box; width: 0.94; height: 0.16; depth: 0.04"
@@ -244,7 +250,7 @@
               material="color: #315f78" position="0.54 -0.43 0">
       <a-text id="vrMeasureText" value="P/SA off" align="center" position="0 0 0.03" width="1.25" color="#f7faff"></a-text>
     </a-entity>
-    <a-text value="Trigger grows handle. Stick: resize/axis; press: target. P/SA adds boundary measures."
+    <a-text value="Trigger grows handle. Stick: resize/axis; press: target. Menu centers workspace. P/SA adds boundary measures."
             align="center" position="0 -0.64 0.02" width="2.1" color="#dbe7ff"></a-text>
   </a-entity>
 
@@ -309,7 +315,7 @@ AFRAME.registerComponent('stretch-lab', {
     var saved = SAVED_STATE;
     this.d = saved ? saved.d : 0;
     this.L = saved ? saved.L : 1.6; this.W = saved ? saved.W : 1.1; this.H = saved ? saved.H : 1.1;
-    this.axis = saved ? saved.axis : 0; this.history = [];
+    this.axis = saved ? saved.axis : 0; this.history = []; this.future = [];
     this.cx = THIN; this.cy = THIN; this.cz = THIN;
     this.reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -386,6 +392,7 @@ AFRAME.registerComponent('stretch-lab', {
 
   setTarget: function (mission, complete, visible) {
     if (!this.targetGhost || !mission) return;
+    this.activeMission = mission;
     var x = mission.L || THIN, z = mission.d >= 2 ? mission.W : THIN, y = mission.d >= 3 ? mission.H : THIN;
     var color = complete ? '#4ade80' : '#facc15';
     this.targetGhost.object3D.scale.set(x, y, z);
@@ -398,16 +405,22 @@ AFRAME.registerComponent('stretch-lab', {
   },
 
   setMissionHint: function (axisIndex, direction, complete, mission, dimensions) {
-    var axisNames = ['X', 'Z', 'Y'], keys = ['L', 'W', 'H'];
+    var axisNames = ['X', 'Z', 'Y'], keys = ['L', 'W', 'H'], axisColors = ['#38bdf8', '#4ade80', '#f472b6'];
     if (this.targetLabel) this.targetLabel.setAttribute('value', complete ? 'TARGET\nDONE' : axisIndex >= 0 ? 'TARGET\n' + (direction > 0 ? 'GROW ' : 'SHRINK ') + axisNames[axisIndex] : 'TARGET');
     if (this.handleTags) this.handleTags.forEach(function (tag, i) {
       var current = dimensions && isFinite(dimensions[keys[i]]) ? r1(dimensions[keys[i]]) : '';
+      var matched = !!(mission && i < mission.d && current !== '' && Math.abs(current - mission[keys[i]]) <= 0.03);
       var value = axisNames[i] + (current !== '' ? ' ' + current : '');
-      if (i === axisIndex && mission) value += ' → ' + r1(mission[keys[i]]) + '\n' + (direction > 0 ? 'GROW' : 'SHRINK');
+      if (matched) value += '\nMATCHED';
+      else if (i === axisIndex && mission) value += ' → ' + r1(mission[keys[i]]) + '\n' + (direction > 0 ? 'GROW' : 'SHRINK');
       tag.setAttribute('value', value);
-      tag.setAttribute('color', i === axisIndex ? '#facc15' : '#ffffff');
-      tag.setAttribute('width', i === axisIndex ? '0.95' : '0.7');
-    });
+      tag.setAttribute('color', matched ? '#4ade80' : i === axisIndex ? '#facc15' : '#ffffff');
+      tag.setAttribute('width', matched || i === axisIndex ? '0.95' : '0.7');
+      if (this.handles && this.handles[i]) {
+        var handleColor = matched ? '#4ade80' : i === this.axis ? '#facc15' : axisColors[i];
+        this.handles[i].setAttribute('material', 'color: ' + handleColor + '; emissive: ' + handleColor + '; emissiveIntensity: ' + (matched ? '0.75' : i === this.axis ? '0.85' : '0.35') + '; roughness: 0.3');
+      }
+    }, this);
   },
 
   tick: function (t, dt) {
@@ -440,8 +453,8 @@ AFRAME.registerComponent('stretch-lab', {
   },
 
   capture: function () { return { d: this.d, L: this.L, W: this.W, H: this.H, axis: this.axis }; },
-  remember: function () { this.endNudge(true); this.history.push(this.capture()); if (this.history.length > 50) this.history.shift(); },
-  rememberSnapshot: function (snapshot) { this.history.push(snapshot); if (this.history.length > 50) this.history.shift(); },
+  remember: function () { this.endNudge(true); this.future = []; this.history.push(this.capture()); if (this.history.length > 50) this.history.shift(); },
+  rememberSnapshot: function (snapshot) { this.future = []; this.history.push(snapshot); if (this.history.length > 50) this.history.shift(); },
   beginNudge: function () {
     if (!this.nudgeStart) this.nudgeStart = this.capture();
     if (this.nudgeTimer) clearTimeout(this.nudgeTimer);
@@ -486,15 +499,25 @@ AFRAME.registerComponent('stretch-lab', {
   freshStart: function () {
     this.endNudge(true);
     if (this.nudgeTimer) clearTimeout(this.nudgeTimer);
-    this.nudgeTimer = null; this.nudgeStart = null; this.resizeStart = null; this.history = [];
+    this.nudgeTimer = null; this.nudgeStart = null; this.resizeStart = null; this.history = []; this.future = [];
     this.d = 0; this.L = 1.6; this.W = 1.1; this.H = 1.1; this.axis = 0;
     this.apply(false, 'Started over with a fresh point and first mission.');
   },
   undo: function () {
     this.endNudge(true);
     if (!this.history.length) { this.emitState('Nothing to undo yet.'); return; }
-    var s = this.history.pop(); this.d = s.d; this.L = s.L; this.W = s.W; this.H = s.H; this.axis = s.axis;
+    var current = this.capture(), s = this.history.pop();
+    this.future.push(current); if (this.future.length > 50) this.future.shift();
+    this.d = s.d; this.L = s.L; this.W = s.W; this.H = s.H; this.axis = s.axis;
     this.apply(false, 'Undid the last geometry change.');
+  },
+  redo: function () {
+    this.endNudge(true);
+    if (!this.future.length) { this.emitState('Nothing to redo yet.'); return; }
+    var current = this.capture(), s = this.future.pop();
+    this.history.push(current); if (this.history.length > 50) this.history.shift();
+    this.d = s.d; this.L = s.L; this.W = s.W; this.H = s.H; this.axis = s.axis;
+    this.apply(false, 'Redid the last geometry change.');
   },
   selectAxis: function (index, message) {
     this.endNudge(true);
@@ -511,10 +534,14 @@ AFRAME.registerComponent('stretch-lab', {
   grow: function (sign) {
     var key = ['L', 'W', 'H'][this.axis];
     if (!key || this.axis >= this.d) { this.emitState('Stretch the point before resizing an axis.'); return; }
-    var next = Math.max(MINV, Math.min(MAXV, this[key] + sign * STEP));
+    var current = this[key], rawNext = current + sign * STEP;
+    var target = this.activeMission && this.axis < this.activeMission.d ? Number(this.activeMission[key]) : NaN;
+    var crossesTarget = isFinite(target) && ((sign > 0 && current < target && rawNext > target) || (sign < 0 && current > target && rawNext < target));
+    var next = Math.max(MINV, Math.min(MAXV, crossesTarget ? target : rawNext));
     if (next === this[key]) { this.endNudge(true); this.emitState((sign > 0 ? 'Maximum' : 'Minimum') + ' size reached for this axis.'); return; }
     this.beginNudge();
     this[key] = next;
+    if (crossesTarget) this.el.emit('targetsnap', { axis: this.axis, target: target }, false);
     this.emitState(null, true);
     this.nudgeTimer = setTimeout(function () { this.endNudge(false); }.bind(this), 360);
   },
@@ -537,6 +564,7 @@ AFRAME.registerComponent('stretch-lab', {
     info.dimensions = { L: this.L, W: this.W, H: this.H };
     info.boundary = this.d === 2 ? 'P = 2 × (L + W) = 2 × (' + r1(this.L) + ' + ' + r1(this.W) + ') = ' + r1(2 * (this.L + this.W)) + ' units' : this.d === 3 ? 'SA = 2 × (LW + LH + WH) = ' + r1(2 * (this.L * this.W + this.L * this.H + this.W * this.H)) + ' units²' : '';
     info.canUndo = this.history.length > 0;
+    info.canRedo = this.future.length > 0;
     info.silent = !!silent;
     if (this.guides) this.guides.forEach(function (guide, i) {
       guide.setAttribute('visible', i < this.d);
@@ -567,7 +595,7 @@ window.addEventListener('load', function () {
   var uiStretch = document.getElementById('uiStretch');
   var uiCollapse = document.getElementById('uiCollapse');
   var uiGrow = document.getElementById('uiGrow'), uiShrink = document.getElementById('uiShrink');
-  var uiAxis = document.getElementById('uiAxis'), uiUndo = document.getElementById('uiUndo');
+  var uiAxis = document.getElementById('uiAxis'), uiUndo = document.getElementById('uiUndo'), uiRedo = document.getElementById('uiRedo');
   var uiAxisValue = document.getElementById('uiAxisValue');
   var axisSliderLabel = document.getElementById('axisSliderLabel'), axisValueOut = document.getElementById('axisValueOut');
   var axisTargetOut = document.getElementById('axisTargetOut'), axisTargetTick = document.getElementById('axisTargetTick');
@@ -578,6 +606,7 @@ window.addEventListener('load', function () {
   var uiGhost = document.getElementById('uiGhost'), uiBoundary = document.getElementById('uiBoundary');
   var missionIndex = SAVED_STATE ? SAVED_STATE.missionIndex : 0, missionComplete = false, showTarget = SAVED_STATE ? SAVED_STATE.showTarget : true, lastMissionState = null;
   var showBoundary = SAVED_STATE ? SAVED_STATE.showBoundary : false, completedMask = SAVED_STATE ? SAVED_STATE.completedMask : 0, suppressNextSave = false, currentMissionAction = null;
+  var workspacePose = { x: 0, z: -2.4, baseY: 1.1, yaw: 0 };
   if (uiGhost) uiGhost.checked = showTarget;
   if (uiBoundary) uiBoundary.checked = showBoundary;
 
@@ -597,6 +626,14 @@ window.addEventListener('load', function () {
     if (vrMeasureText) vrMeasureText.setAttribute('value', 'P/SA ' + (showBoundary ? 'on' : 'off'));
   }
 
+  function setSpatialButtonEnabled(button, enabled, activeColor) {
+    if (!button) return;
+    button.setAttribute('data-disabled', enabled ? 'false' : 'true');
+    button.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+    button.setAttribute('material', 'color', enabled ? activeColor : '#252d46');
+    if (!enabled && button.object3D) button.object3D.scale.setScalar(1);
+  }
+
   figure.addEventListener('statechange', function (e) {
     var s = e.detail;
     stateline.textContent = s.title;
@@ -610,6 +647,7 @@ window.addEventListener('load', function () {
     if (axisline) axisline.textContent = s.d ? 'Editing: ' + s.axisLabel + ' = ' + r1(s.activeValue) + ' units' : 'No editable axis yet.';
     if (uiAxis) { uiAxis.disabled = (s.d <= 0); uiAxis.textContent = s.d ? 'Axis: ' + s.axisLabel : 'Axis'; }
     if (uiUndo) uiUndo.disabled = !s.canUndo;
+    if (uiRedo) uiRedo.disabled = !s.canRedo;
     if (uiGrow) { uiGrow.disabled = (s.d <= 0 || s.activeValue >= MAXV); uiGrow.setAttribute('aria-label', 'Grow ' + s.axisLabel); }
     if (uiShrink) { uiShrink.disabled = (s.d <= 0 || s.activeValue <= MINV); uiShrink.setAttribute('aria-label', 'Shrink ' + s.axisLabel); }
     var activeKey = ['L', 'W', 'H'][s.axis], activeMission = MISSIONS[missionIndex];
@@ -630,7 +668,14 @@ window.addEventListener('load', function () {
       else { axisTargetTick.removeAttribute('value'); axisTargetTick.label = ''; axisTargetTick.disabled = true; }
     }
     var vat = document.getElementById('vrAxisText'); if (vat) vat.setAttribute('value', s.d ? s.axisLabel : 'axis');
-    var vu = document.getElementById('vrUndo'); if (vu) vu.setAttribute('material', 'color', s.canUndo ? '#4a6094' : '#252d46');
+    setSpatialButtonEnabled(vrStretch, s.d < 3, '#665cf5');
+    setSpatialButtonEnabled(vrCollapse, s.d > 0, '#4a6094');
+    setSpatialButtonEnabled(vrAxis, s.d > 0, '#315f78');
+    setSpatialButtonEnabled(vrUndo, s.canUndo, '#4a6094');
+    setSpatialButtonEnabled(vrRedo, s.canRedo, '#4a6094');
+    setSpatialButtonEnabled(vrReset, true, '#4a6094');
+    setSpatialButtonEnabled(vrMission, true, '#3b4d7a');
+    setSpatialButtonEnabled(vrMeasure, true, '#315f78');
     if (!s.silent && lastHapticState) {
       if (s.d !== lastHapticState.d) pulseControllers(0.55, 55);
       else if (s.axis !== lastHapticState.axis || s.activeValue !== lastHapticState.activeValue) pulseControllers(0.28, 35);
@@ -640,12 +685,19 @@ window.addEventListener('load', function () {
     saveLabState(s);
   });
 
+  figure.addEventListener('targetsnap', function (e) {
+    var detail = e.detail || {}, axisName = ['Length X', 'Width Z', 'Height Y'][detail.axis] || 'Axis';
+    live.textContent = axisName + ' snapped to mission target ' + r1(detail.target) + ' units.';
+    pulseControllers(0.5, 55);
+  });
+
   function doStretch()  { var c = comp(); if (c) c.stretch(); }
   function doCollapse() { var c = comp(); if (c) c.collapse(); }
   function doGrow()     { var c = comp(); if (c) c.grow(1); }
   function doShrink()   { var c = comp(); if (c) c.grow(-1); }
   function doReset()    { var c = comp(); if (c) c.reset(); }
   function doUndo()     { var c = comp(); if (c) c.undo(); }
+  function doRedo()     { var c = comp(); if (c) c.redo(); }
   function doAxis(sign) { var c = comp(); if (c) c.cycleAxis(sign || 1); }
   function startOver() {
     if (!window.confirm('Start over? This clears the saved geometry, mission, preferences, and undo history.')) return;
@@ -694,8 +746,10 @@ window.addEventListener('load', function () {
     var currentHeight = s.d >= 3 ? s.dimensions.H : THIN;
     var targetHeight = showTarget && mission && mission.d >= 3 ? mission.H : THIN;
     var clearance = showBoundary && s.boundary ? 0.68 : 0.42;
-    var y = Math.max(2.5, 1.1 + Math.max(currentHeight, targetHeight) + clearance);
-    labelWrap.setAttribute('position', '0 ' + r1(y) + ' -2.4');
+    var defaultY = Math.max(2.5, 1.1 + Math.max(currentHeight, targetHeight) + clearance);
+    var y = workspacePose.baseY + defaultY - 1.1;
+    labelWrap.object3D.position.set(workspacePose.x, y, workspacePose.z);
+    labelWrap.object3D.rotation.set(0, workspacePose.yaw, 0);
   }
 
   function completedCount() {
@@ -833,6 +887,7 @@ window.addEventListener('load', function () {
   document.getElementById('uiShrink').addEventListener('click', doShrink);
   document.getElementById('uiReset').addEventListener('click', doReset);
   document.getElementById('uiUndo').addEventListener('click', doUndo);
+  document.getElementById('uiRedo').addEventListener('click', doRedo);
   document.getElementById('uiAxis').addEventListener('click', function () { doAxis(1); });
   if (uiMission) uiMission.addEventListener('click', nextMission);
   if (missionHint) missionHint.addEventListener('click', focusMissionStep);
@@ -864,18 +919,42 @@ window.addEventListener('load', function () {
   var vrStretch = document.getElementById('vrStretch');
   var vrCollapse = document.getElementById('vrCollapse');
   var vrReset = document.getElementById('vrReset');
-  var vrAxis = document.getElementById('vrAxis'), vrUndo = document.getElementById('vrUndo');
+  var vrAxis = document.getElementById('vrAxis'), vrUndo = document.getElementById('vrUndo'), vrRedo = document.getElementById('vrRedo');
   var vrMission = document.getElementById('vrMission'), vrMeasure = document.getElementById('vrMeasure');
-  if (vrStretch) vrStretch.addEventListener('click', doStretch);
-  if (vrCollapse) vrCollapse.addEventListener('click', doCollapse);
-  if (vrReset) vrReset.addEventListener('click', doReset);
-  if (vrAxis) vrAxis.addEventListener('click', function () { doAxis(1); });
-  if (vrUndo) vrUndo.addEventListener('click', doUndo);
-  if (vrMission) vrMission.addEventListener('click', nextMission);
-  if (vrMeasure) vrMeasure.addEventListener('click', function () { toggleBoundaryMeasures(!showBoundary, true); });
+  function wireSpatialButton(button, action, unavailableMessage) {
+    if (!button) return;
+    button.addEventListener('click', function () {
+      if (button.getAttribute('data-disabled') === 'true') {
+        live.textContent = unavailableMessage;
+        pulseControllers(0.18, 28);
+        return;
+      }
+      action();
+    });
+    button.addEventListener('mouseenter', function () {
+      if (button.getAttribute('data-disabled') !== 'true' && button.object3D) button.object3D.scale.setScalar(1.06);
+    });
+    button.addEventListener('mouseleave', function () {
+      if (button.object3D) button.object3D.scale.setScalar(1);
+    });
+  }
+  wireSpatialButton(vrStretch, doStretch, 'Already a solid. Resize an axis or collapse first.');
+  wireSpatialButton(vrCollapse, doCollapse, 'Already a point. Stretch to begin.');
+  wireSpatialButton(vrReset, doReset, 'Reset is unavailable.');
+  wireSpatialButton(vrAxis, function () { doAxis(1); }, 'Stretch the point before choosing an axis.');
+  wireSpatialButton(vrUndo, doUndo, 'Nothing to undo yet.');
+  wireSpatialButton(vrRedo, doRedo, 'Nothing to redo yet.');
+  wireSpatialButton(vrMission, nextMission, 'Mission navigation is unavailable.');
+  wireSpatialButton(vrMeasure, function () { toggleBoundaryMeasures(!showBoundary, true); }, 'Boundary measures are unavailable.');
 
   // Keyboard path (no mouse or headset required — the accessibility route)
   window.addEventListener('keydown', function (e) {
+    var textEntry = e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName) && e.target.type !== 'range';
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !textEntry) {
+      var shortcut = String(e.key).toLowerCase();
+      if (shortcut === 'z') { if (e.shiftKey) doRedo(); else doUndo(); e.preventDefault(); return; }
+      if (shortcut === 'y') { doRedo(); e.preventDefault(); return; }
+    }
     if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
     switch (e.key) {
       case 'ArrowUp':    doStretch();  e.preventDefault(); break;
@@ -885,6 +964,8 @@ window.addEventListener('load', function () {
       case 'r': case 'R': if (e.shiftKey) startOver(); else doReset(); break;
       case 'a': case 'A': doAxis(1);   break;
       case 'u': case 'U': doUndo();    break;
+      case 'y': case 'Y': doRedo();    break;
+      case 'c': case 'C': recenterSpatialPanel(true); break;
       case 'm': case 'M': toggleBoundaryMeasures(!showBoundary, true); break;
       case 'f': case 'F': focusMissionStep(); break;
       case '1': case '2': case '3': case '4': selectMission(Number(e.key) - 1); break;
@@ -914,13 +995,52 @@ window.addEventListener('load', function () {
     hand.addEventListener('ybuttondown', doCollapse);
     hand.addEventListener('gripdown', function () { doAxis(1); });
     hand.addEventListener('thumbstickdown', function () { toggleTargetOutline(!showTarget, true); });
+    hand.addEventListener('menudown', function () { recenterSpatialPanel(true); });
   });
 
-  // Hide the flatscreen HUD while an immersive session owns the display
+  // Coordinate focus and pending input while an immersive session owns the display.
   var scene = document.querySelector('a-scene');
   var hud = document.getElementById('hud');
-  scene.addEventListener('enter-vr', function () { hud.style.display = 'none'; });
-  scene.addEventListener('exit-vr', function () { hud.style.display = ''; });
+  var spatialPanel = document.getElementById('panel'), cameraEl = document.getElementById('camera');
+  var lastHudFocus = null;
+  function recenterSpatialPanel(announce) {
+    if (!spatialPanel || !cameraEl || !window.THREE) return;
+    var cameraObject = cameraEl.getObject3D('camera') || cameraEl.object3D;
+    var eye = new THREE.Vector3(), view = new THREE.Vector3();
+    cameraObject.getWorldPosition(eye); cameraObject.getWorldDirection(view);
+    view.y = 0;
+    if (view.lengthSq() < 0.0001) view.set(0, 0, -1); else view.normalize();
+    var yaw = Math.atan2(-view.x, -view.z);
+    workspacePose.x = eye.x + view.x * 2.4; workspacePose.z = eye.z + view.z * 2.4;
+    workspacePose.baseY = Math.max(0.35, eye.y - 0.5); workspacePose.yaw = yaw;
+    figure.object3D.position.set(workspacePose.x, workspacePose.baseY, workspacePose.z);
+    figure.object3D.rotation.set(0, yaw, 0);
+    positionMeasurePanel(lastMissionState, MISSIONS[missionIndex]);
+    spatialPanel.object3D.position.set(eye.x + view.x * 1.35, Math.max(0.75, eye.y - 0.65), eye.z + view.z * 1.35);
+    spatialPanel.object3D.rotation.set(THREE.MathUtils.degToRad(-22), yaw, 0);
+    if (announce) live.textContent = 'Spatial workspace centered in front of you.';
+  }
+  function setImmersiveMode(active) {
+    commitPendingGesture();
+    if (active) {
+      recenterSpatialPanel(false);
+      if (hud.contains(document.activeElement)) lastHudFocus = document.activeElement;
+      hud.style.display = 'none';
+      hud.setAttribute('aria-hidden', 'true');
+      if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+      live.textContent = 'Immersive mode entered. Trigger grows the active handle. Grip changes axis. Thumbstick resizes; press it to toggle the target outline.';
+      return;
+    }
+    hud.style.display = '';
+    hud.removeAttribute('aria-hidden');
+    live.textContent = 'Immersive mode exited. Desktop controls restored.';
+    window.setTimeout(function () {
+      var restore = lastHudFocus && !lastHudFocus.disabled ? lastHudFocus : missionHint;
+      if (restore && restore.focus) restore.focus();
+    }, 0);
+  }
+  scene.addEventListener('enter-vr', function () { setImmersiveMode(true); });
+  scene.addEventListener('exit-vr', function () { setImmersiveMode(false); });
 
   // Boot the figure now that the component is registered and the statechange
   // listener above is ready to catch its first emit.

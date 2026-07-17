@@ -5387,10 +5387,12 @@ window.StemLab = window.StemLab || {
         var spanTotal = 252 - 23;
         var rows = PERIODS.map(function (p) {
           var members = DINOS.filter(function (dn) { return dn.period === p.id && dn.group !== 'other'; }); // exclude the non-dinosaur foils (Pteranodon, Mosasaurus) — they were appearing as dinosaurs in the timeline
-          var widthPct = Math.round(((p.myaHi - p.myaLo) / spanTotal) * 100);
-          return el('div', { key: p.id, style: { marginBottom: 14 } },
-            el('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } }, el('span', { style: { width: 12, height: 12, borderRadius: 3, background: pColor(p.id), display: 'inline-block' } }), el('span', { style: { fontWeight: 800, fontSize: 15 } }, p.name), el('span', { style: { fontSize: 12, color: T.soft } }, p.myaHi + ' to ' + p.myaLo + ' million years ago')),
-            el('div', { style: { height: 10, borderRadius: 6, background: pColor(p.id) + '33', margin: '6px 0', overflow: 'hidden' } }, el('div', { style: { height: '100%', width: Math.max(8, widthPct) + '%', background: pColor(p.id) } })),
+          var periodDuration = p.myaHi - p.myaLo;
+          var widthPct = Math.round((periodDuration / spanTotal) * 100);
+          var periodSummary = p.name + ' lasted about ' + periodDuration + ' million years, from ' + p.myaHi + ' to ' + p.myaLo + ' million years ago, with ' + members.length + ' listed dinosaurs.';
+          return el('div', { key: p.id, role: 'group', 'aria-label': periodSummary, style: { marginBottom: 14 } },
+            el('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } }, el('span', { 'aria-hidden': 'true', style: { width: 12, height: 12, borderRadius: 3, background: pColor(p.id), display: 'inline-block' } }), el('span', { style: { fontWeight: 800, fontSize: 15 } }, p.name), el('span', { style: { fontSize: 12, color: T.soft } }, p.myaHi + ' to ' + p.myaLo + ' million years ago')),
+            el('div', { role: 'progressbar', 'aria-label': p.name + ' duration on the Mesozoic timeline', 'aria-valuemin': 0, 'aria-valuemax': spanTotal, 'aria-valuenow': periodDuration, 'aria-valuetext': periodSummary, style: { height: 10, borderRadius: 6, background: pColor(p.id) + '33', margin: '6px 0', overflow: 'hidden' } }, el('div', { style: { height: '100%', width: Math.max(8, widthPct) + '%', background: pColor(p.id) } })),
             el('div', { style: { fontSize: 12.5, color: T.text, marginBottom: 4 } }, p.headline),
             el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6, marginBottom: 6 } }, el('div', { key: 'cl', style: { fontSize: 11.5, color: T.soft } }, '🌡️ ' + p.climate), el('div', { key: 'pl', style: { fontSize: 11.5, color: T.soft } }, '🌿 ' + p.plants), el('div', { key: 'se', style: { fontSize: 11.5, color: T.soft } }, '🌊 ' + p.sea)),
             members.length ? el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5 } }, members.map(function (dn) { return el('button', { key: dn.id, onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, 'aria-label': 'Open ' + dn.common, style: { fontSize: 11, padding: '3px 9px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: T.deeper, color: T.text } }, dn.common); })) : el('div', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic' } }, 'No non-bird dinosaurs after the asteroid. Birds carry on.')
@@ -5448,6 +5450,7 @@ window.StemLab = window.StemLab || {
         var dinoSpan = (DINO_HI - DINO_LO) / ORIGIN * (scale === 'day' ? 24 * 60 : 365);
         var dinoSpanStr = scale === 'day' ? (Math.round(dinoSpan) + ' minutes') : (Math.round(dinoSpan) + ' days');
         var humanLast = scale === 'day' ? (Math.round(0.3 / ORIGIN * 86400) + ' seconds') : (Math.round(0.3 / ORIGIN * 365 * 24 * 60) + ' minutes');
+        var deepTimeSummary = 'Compressed Earth history timeline: all 4.6 billion years are shown as ' + unit + '. Dinosaurs appear at ' + clock(233) + ', end at ' + clock(66) + ', and Homo sapiens appear in the final ' + humanLast + '.';
 
         var toggle = el('div', { style: { display: 'flex', gap: 6, marginBottom: 12 } }, [['year', '📅 Calendar year'], ['day', '🕛 24-hour clock']].map(function (o) {
           var on = scale === o[0];
@@ -5459,7 +5462,7 @@ window.StemLab = window.StemLab || {
           return el('div', { key: 'tk' + e.mya, 'aria-hidden': 'true', style: { position: 'absolute', left: posOf(e.mya) * 100 + '%', top: 0, width: 2, height: '100%', background: T.text, opacity: 0.45 } });
         });
         var bar = el('div', { key: 'bar' },
-          el('div', { style: { position: 'relative', height: 30, borderRadius: 8, background: T.deeper, border: '1px solid ' + T.border, overflow: 'hidden' } }, [].concat(ticks, [
+          el('div', { role: 'img', 'aria-label': deepTimeSummary, style: { position: 'relative', height: 30, borderRadius: 8, background: T.deeper, border: '1px solid ' + T.border, overflow: 'hidden' } }, [].concat(ticks, [
             el('div', { key: 'band', 'aria-hidden': 'true', style: { position: 'absolute', left: bandL + '%', width: Math.max(0.8, bandW) + '%', top: 0, height: '100%', background: '#22c55e', opacity: 0.85 } }),
             el('div', { key: 'now', 'aria-hidden': 'true', title: 'Now', style: { position: 'absolute', right: 0, top: 0, width: 3, height: '100%', background: '#ef4444' } })
           ])),
@@ -6227,9 +6230,11 @@ window.StemLab = window.StemLab || {
         var scanPathCount = scanPathLinks.reduce(function (n, link) { return n + (scanLogged[link.a] && scanLogged[link.b] ? 1 : 0); }, 0);
         var scanComplete = scanLoggedCount >= scanTargets.length;
         var nextOpenTarget = scanTargets.filter(function (target) { return !scanLogged[target.id]; })[0] || null;
+        var scanStatusText = 'Evidence log ' + scanLoggedCount + '/' + scanTargets.length + (scanComplete ? ' | Field scan complete' : (nextOpenTarget ? ' | Next open: ' + nextOpenTarget.label : ''));
         var claimReadinessScore = Math.min(5, scanLoggedCount + scanPathCount);
         var claimReadinessPct = Math.round((claimReadinessScore / 5) * 100);
         var claimReadinessLabel = scanComplete ? 'CER ready' : (scanPathCount > 0 ? 'Connected evidence' : (scanLoggedCount > 0 ? 'Anchor evidence' : 'Start scanning'));
+        var claimReadinessText = 'Claim strength ' + claimReadinessScore + ' of 5. ' + claimReadinessLabel + '.';
         var claimReadinessHint = scanComplete ? 'All anchors and path links are logged. Build a claim with evidence and reasoning.' : (scanPathCount > 0 ? 'A linked path connects anchors. Finish the scan for the strongest claim.' : (scanLoggedCount > 0 ? 'One or more anchors are logged. Link neighboring anchors for stronger reasoning.' : 'Log at least one anchor before writing a claim.'));
         var assemblyPieces = [
           { id: 'skull', label: 'Skull', role: 'feeding and senses', scan: 'skull', insight: 'diet and sensory evidence', claimId: 'function', claimLabel: 'Function', claimHint: 'Skull evidence is strongest for function claims about feeding, bite style, and sensory placement.', detail: 'Teeth, jaw joints, and eye sockets help scientists infer diet, bite style, and how the head was carried.' },
@@ -6249,6 +6254,7 @@ window.StemLab = window.StemLab || {
         var assemblyUnlocked = scanComplete;
         var assemblyComplete = assemblyPlacedCount >= assemblyPieces.length;
         var assemblyStatus = assemblyComplete ? 'Skeleton assembled' : (assemblyUnlocked ? 'Place fossils into sockets' : 'Complete field scan to unlock');
+        var assemblyProgressText = 'Assembly ' + assemblyPlacedCount + ' of ' + assemblyPieces.length + '. ' + assemblyStatus + '.';
         var assemblyFocusPlaced = !!assemblyPlaced[assemblyFocus.id];
         var assemblyScanCue = assemblyUnlocked ? 'Field scan complete: all fossil pieces are cataloged for assembly.' : 'Finish the Skull -> Shoulder -> Hip scan to catalog the fossil tray.';
         var assemblyInsightPieces = assemblyPieces.filter(function (piece) { return !!assemblyPlaced[piece.id]; });
@@ -6383,7 +6389,7 @@ window.StemLab = window.StemLab || {
         });
         var scanCoachPanel = panel([
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Scan focus'),
-          el('div', { key: 'progress', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, 'Evidence log ' + scanLoggedCount + '/' + scanTargets.length + (scanComplete ? ' | Field scan complete' : (nextOpenTarget ? ' | Next open: ' + nextOpenTarget.label : ''))),
+          el('div', { key: 'progress', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, scanStatusText),
           el('div', { key: 'chips', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))', gap: 6, marginBottom: 8 } }, scanTargets.map(function (target, idx) {
             var active = idx === scanTargetIdx;
             var logged = !!scanLogged[target.id];
@@ -6391,6 +6397,7 @@ window.StemLab = window.StemLab || {
               key: target.id,
               onClick: function () { setScanTarget(idx); },
               'aria-pressed': active ? 'true' : 'false',
+              'aria-label': target.label + ' scan anchor, ' + (logged ? 'logged' : 'not logged') + (active ? ', current focus' : '') + '. ' + target.prompt,
               style: {
                 textAlign: 'left',
                 padding: '7px 8px',
@@ -6419,8 +6426,8 @@ window.StemLab = window.StemLab || {
             el('div', { style: { fontSize: 13, fontWeight: 900 } }, '3D fossil assembly puzzle'),
             el('div', { style: { fontSize: 11.5, color: T.soft, fontWeight: 800 } }, 'Assembly ' + assemblyPlacedCount + '/' + assemblyPieces.length)
           ),
-          el('div', { key: 'status', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, assemblyStatus),
-          el('div', { key: 'meter', style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 7 } },
+          el('div', { key: 'status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, assemblyProgressText),
+          el('div', { key: 'meter', role: 'progressbar', 'aria-label': 'Fossil assembly progress', 'aria-valuemin': 0, 'aria-valuemax': assemblyPieces.length, 'aria-valuenow': assemblyPlacedCount, 'aria-valuetext': assemblyProgressText, style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 7 } },
             el('div', { style: { height: '100%', width: Math.round((assemblyPlacedCount / assemblyPieces.length) * 100) + '%', background: 'linear-gradient(90deg, #a78bfa, #f59e0b, #22c55e)' } })
           ),
           el('div', { key: 'cue', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, assemblyScanCue),
@@ -6431,6 +6438,7 @@ window.StemLab = window.StemLab || {
               key: piece.id,
               onClick: function () { setAssemblyFocus(idx); },
               'aria-pressed': active ? 'true' : 'false',
+              'aria-label': piece.label + ' fossil, ' + (placed ? 'placed' : (assemblyUnlocked ? 'ready to place' : 'locked until field scan is complete')) + ', supports ' + piece.role + '.',
               style: {
                 textAlign: 'left',
                 padding: '7px 8px',
@@ -6530,9 +6538,9 @@ window.StemLab = window.StemLab || {
         }
         var claimBuilderPanel = panel([
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Field claim builder'),
-          el('div', { key: 'status', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, 'Using ' + scanLoggedCount + '/' + scanTargets.length + ' logged anchors' + (scanComplete ? ' | Ready for CER' : ' | Scan more for a stronger claim')),
+          el('div', { key: 'status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, 'Using ' + scanLoggedCount + '/' + scanTargets.length + ' logged anchors' + (scanComplete ? ' | Ready for CER' : ' | Scan more for a stronger claim')),
           el('div', { key: 'readiness', style: { fontSize: 12, color: T.text, fontWeight: 900, marginBottom: 5 } }, 'Claim strength ' + claimReadinessScore + '/5 | ' + claimReadinessLabel),
-          el('div', { key: 'readinessMeter', style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 6 } }, el('div', { style: { height: '100%', width: claimReadinessPct + '%', background: 'linear-gradient(90deg, #f59e0b, #14b8a6, #22c55e)' } })),
+          el('div', { key: 'readinessMeter', role: 'progressbar', 'aria-label': 'Claim strength', 'aria-valuemin': 0, 'aria-valuemax': 5, 'aria-valuenow': claimReadinessScore, 'aria-valuetext': claimReadinessText, style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 6 } }, el('div', { style: { height: '100%', width: claimReadinessPct + '%', background: 'linear-gradient(90deg, #f59e0b, #14b8a6, #22c55e)' } })),
           el('div', { key: 'readinessHint', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, claimReadinessHint),
           el('div', { key: 'cerTitle', style: { paddingTop: 8, borderTop: '1px solid ' + T.border, fontSize: 12, color: T.text, fontWeight: 900, marginBottom: 6 } }, 'CER rehearsal | Checklist ' + cerChecklistCount + '/' + cerChecklist.length),
           el('div', { key: 'cerChecks', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 5, marginBottom: 7 } }, cerChecklist.map(function (item) {
@@ -6616,7 +6624,7 @@ window.StemLab = window.StemLab || {
             el('div', { style: { fontSize: 13, fontWeight: 900 } }, 'Reconstruction challenge'),
             el('div', { style: { fontSize: 11.5, color: T.soft, fontWeight: 800 } }, challengeCaseLabel + ' | Score: ' + challengeScore + '/' + challengeDone)
           ),
-          el('div', { key: 'meter', style: { height: 6, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 8 } },
+          el('div', { key: 'meter', role: 'progressbar', 'aria-label': 'Reconstruction challenge progress', 'aria-valuemin': 1, 'aria-valuemax': challengeSteps.length, 'aria-valuenow': challengeIdx + 1, 'aria-valuetext': challengeCaseLabel, style: { height: 6, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 8 } },
             el('div', { style: { height: '100%', width: challengeCyclePct + '%', background: 'linear-gradient(90deg, #14b8a6, #38bdf8)' } })
           ),
           el('div', { key: 'q', style: { fontSize: 12.5, color: T.text, lineHeight: 1.5, padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, marginBottom: 8 } }, challengeStep.prompt),
@@ -6641,7 +6649,7 @@ window.StemLab = window.StemLab || {
               }
             }, choice.label);
           })),
-          challengePicked ? el('div', { key: 'fb', style: { marginTop: 8 } },
+          challengePicked ? el('div', { key: 'fb', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 8 } },
             el('div', { style: { fontSize: 12, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, (challengePicked === challengeStep.kind ? 'Correct. ' : 'Not quite. ') + challengeStep.feedback),
             el('button', { onClick: nextChallenge, style: { fontSize: 12, fontWeight: 800, padding: '7px 12px', borderRadius: 8, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, 'Next challenge')
           ) : el('div', { key: 'hint', style: { marginTop: 8, fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, 'Classify the statement before using it in a claim.')
@@ -6690,8 +6698,10 @@ window.StemLab = window.StemLab || {
           return el('select', { key: slot, value: current || '', 'aria-label': 'Choose dinosaur ' + slot, onChange: function (e) { var v = e.target.value || null; upd(slot === 'A' ? 'compareA' : 'compareB', v); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, [el('option', { key: 'none', value: '' }, 'Pick a dinosaur...')].concat(DINOS.slice().sort(function (x, y) { return x.common < y.common ? -1 : 1; }).map(function (dn) { return el('option', { key: dn.id, value: dn.id }, dn.common); })));
         }
         function bar(label, value, max, unit, color) {
-          var pct = max > 0 ? Math.max(2, Math.round((value / max) * 100)) : 0;
-          return el('div', { style: { marginBottom: 8 } }, el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 2 } }, el('span', { style: { color: T.soft } }, label), el('span', { style: { fontWeight: 700 } }, value != null ? (value + ' ' + unit) : '?')), el('div', { style: { height: 12, borderRadius: 6, background: T.deeper, overflow: 'hidden' } }, el('div', { style: { height: '100%', width: pct + '%', background: color, borderRadius: 6 } })));
+          var safeValue = value != null ? value : 0;
+          var pct = max > 0 ? Math.max(2, Math.round((safeValue / max) * 100)) : 0;
+          var valueText = value != null ? (label + ': ' + value + ' ' + unit + ', ' + pct + '% of the comparison maximum ' + max + ' ' + unit + '.') : (label + ': value unknown.');
+          return el('div', { style: { marginBottom: 8 } }, el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 2 } }, el('span', { style: { color: T.soft } }, label), el('span', { style: { fontWeight: 700 } }, value != null ? (value + ' ' + unit) : '?')), el('div', { role: 'progressbar', 'aria-label': label + ' comparison value', 'aria-valuemin': 0, 'aria-valuemax': max, 'aria-valuenow': safeValue, 'aria-valuetext': valueText, style: { height: 12, borderRadius: 6, background: T.deeper, overflow: 'hidden' } }, el('div', { style: { height: '100%', width: pct + '%', background: color, borderRadius: 6 } })));
         }
         var content;
         if (picks.length < 2) { content = el('div', { style: { color: T.soft, fontSize: 13 } }, 'Pick two dinosaurs to compare.'); }
@@ -6734,6 +6744,8 @@ window.StemLab = window.StemLab || {
           { at: 15, text: 'Trait: ' + (chosen.traits[0] || 'distinctive build') + '.' }
         ];
         var clues = clueList.filter(function (c) { return revealed.length >= c.at; });
+        var digStatusText = 'Site #' + seed + ' | bones found: ' + dugBones + '/' + totalBones + ' | cells dug: ' + revealed.length + '/' + CELLS;
+        var digGridDesc = 'Dig grid with ' + ROWS + ' rows and ' + COLS + ' columns. Revealed cells stay focusable so bone and rock results can be reviewed.';
         function dig(i) { if (revealed.indexOf(i) !== -1) return; upd('digRevealed', revealed.concat([i])); announceToSR(boneCells[i] ? 'Bone found' : 'Just rock'); }
         function newDig() { upd({ digSeed: seed + 1, digRevealed: [], digGuess: null, digSolvedFor: null }); announceToSR('New dig site loaded'); }
         function makeGuess(id) { var correct = id === chosen.id; var patch = { digGuess: id }; if (correct && !solved) { patch.digSolvedFor = seed; patch.digsSolved = (d.digsSolved || 0) + 1; } upd(patch); announceToSR(correct ? 'Correct identification' : 'Not quite, keep digging'); }
@@ -6741,17 +6753,21 @@ window.StemLab = window.StemLab || {
         for (var c = 0; c < CELLS; c++) {
           (function (cellIdx) {
             var isDug = revealed.indexOf(cellIdx) !== -1, hasBone = boneCells[cellIdx];
-            gridCells.push(el('button', { key: 'cell' + cellIdx, onClick: function () { dig(cellIdx); }, 'aria-label': isDug ? (hasBone ? 'Bone fragment' : 'Empty rock') : ('Dig cell ' + (cellIdx + 1)), disabled: isDug, style: { aspectRatio: '1 / 1', borderRadius: 8, cursor: isDug ? 'default' : 'pointer', border: '1px solid ' + T.border, background: isDug ? (hasBone ? 'rgba(245,158,11,0.25)' : T.deeper) : '#7c5e3b', color: T.text, fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, isDug ? (hasBone ? '🦴' : '·') : ''));
+            var row = Math.floor(cellIdx / COLS) + 1, col = (cellIdx % COLS) + 1;
+            var cellState = isDug ? (hasBone ? 'bone fragment uncovered' : 'empty rock uncovered') : 'unopened rock';
+            var cellLabel = 'Cell ' + (cellIdx + 1) + ', row ' + row + ', column ' + col + ', ' + cellState + (isDug ? '.' : '. Press to dig.');
+            gridCells.push(el('button', { key: 'cell' + cellIdx, onClick: function () { dig(cellIdx); }, 'aria-label': cellLabel, 'aria-disabled': isDug ? 'true' : 'false', style: { aspectRatio: '1 / 1', borderRadius: 8, cursor: isDug ? 'default' : 'pointer', border: '1px solid ' + T.border, background: isDug ? (hasBone ? 'rgba(245,158,11,0.25)' : T.deeper) : '#7c5e3b', color: T.text, fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, isDug ? (hasBone ? '\uD83E\uDDB4' : '\u00b7') : ''));
           })(c);
         }
         var guessGrid = pool.slice().sort(function (x, y) { return x.common < y.common ? -1 : 1; }).map(function (dn) {
           var picked = guess === dn.id, isAnswer = solved && dn.id === chosen.id;
-          return el('button', { key: 'g' + dn.id, onClick: function () { makeGuess(dn.id); }, 'aria-label': 'Guess ' + dn.common, style: { fontSize: 11.5, padding: '6px 8px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', border: '1px solid ' + (isAnswer ? '#22c55e' : (picked ? '#ef4444' : T.border)), background: isAnswer ? 'rgba(34,197,94,0.18)' : (picked && !solved ? 'rgba(239,68,68,0.15)' : T.deeper), color: T.text } }, dn.common);
+          var guessState = isAnswer ? 'correct answer' : (picked ? 'selected guess' : 'not selected');
+          return el('button', { key: 'g' + dn.id, onClick: function () { makeGuess(dn.id); }, 'aria-label': 'Guess ' + dn.common + ', ' + guessState, 'aria-pressed': (picked || isAnswer) ? 'true' : 'false', style: { fontSize: 11.5, padding: '6px 8px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', border: '1px solid ' + (isAnswer ? '#22c55e' : (picked ? '#ef4444' : T.border)), background: isAnswer ? 'rgba(34,197,94,0.18)' : (picked && !solved ? 'rgba(239,68,68,0.15)' : T.deeper), color: T.text } }, dn.common);
         });
         return el('div', null, sectionTitle('⛏️', 'Excavate a fossil', 'Dig cells to uncover bones. Clues appear as you go. Then identify what you found.'),
           el('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 1fr)', gap: 16 } },
-            el('div', { key: 'left' }, el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } }, el('span', { style: { fontSize: 12.5, color: T.soft } }, 'Site #' + seed + '  ·  bones found: ' + dugBones + '/' + totalBones), el('button', { onClick: newDig, style: { fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: 'transparent', color: T.text, cursor: 'pointer' } }, '🔄 New dig')), el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + COLS + ', 1fr)', gap: 6 } }, gridCells), solved ? panel([el('div', { key: 's', style: { fontWeight: 800, color: T.text, marginBottom: 4 } }, '✅ It is ' + chosen.common + '!'), el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft } }, chosen.blurb)], { marginTop: 12, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.35)' }) : null),
-            el('div', { key: 'right' }, panel([el('div', { key: 't', style: { fontWeight: 700, marginBottom: 6 } }, '🔎 Field clues'), clues.length ? el('ul', { key: 'u', style: { margin: 0, paddingLeft: 18, fontSize: 12.5, lineHeight: 1.6 } }, clues.map(function (cl, i) { return el('li', { key: i }, cl.text); })) : el('div', { key: 'n', style: { fontSize: 12.5, color: T.soft } }, 'Dig at least two cells to reveal your first clue.')]), el('div', { style: { marginTop: 12, fontSize: 12, fontWeight: 700, color: T.soft, marginBottom: 6 } }, 'Identify the find'), el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 6, maxHeight: 280, overflowY: 'auto' } }, guessGrid))
+            el('div', { key: 'left' }, el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } }, el('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 12.5, color: T.soft } }, digStatusText), el('button', { onClick: newDig, style: { fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: 'transparent', color: T.text, cursor: 'pointer' } }, '🔄 New dig')), el('div', { role: 'group', 'aria-label': digGridDesc, style: { display: 'grid', gridTemplateColumns: 'repeat(' + COLS + ', 1fr)', gap: 6 } }, gridCells), solved ? panel([el('div', { key: 's', style: { fontWeight: 800, color: T.text, marginBottom: 4 } }, '✅ It is ' + chosen.common + '!'), el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft } }, chosen.blurb)], { marginTop: 12, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.35)' }) : null),
+            el('div', { key: 'right' }, panel([el('div', { key: 't', style: { fontWeight: 700, marginBottom: 6 } }, '🔎 Field clues'), clues.length ? el('ul', { key: 'u', style: { margin: 0, paddingLeft: 18, fontSize: 12.5, lineHeight: 1.6 } }, clues.map(function (cl, i) { return el('li', { key: i }, cl.text); })) : el('div', { key: 'n', style: { fontSize: 12.5, color: T.soft } }, 'Dig at least two cells to reveal your first clue.')]), el('div', { style: { marginTop: 12, fontSize: 12, fontWeight: 700, color: T.soft, marginBottom: 6 } }, 'Identify the find'), el('div', { role: 'group', 'aria-label': 'Identify the find choices', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 6, maxHeight: 280, overflowY: 'auto' } }, guessGrid))
           )
         );
       }

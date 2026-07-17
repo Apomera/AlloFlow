@@ -1,0 +1,406 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-diagram-review-wave-02",
+  "reviewDate": "2026-07-16",
+  "status": "assisted-editorial-source-review-complete-expert-pending",
+  "standard": {
+    "meaning": "This wave records an assisted editorial and source-alignment pass for shared instructional diagrams. It is not independent expert validation, psychometric evidence, or clinical guidance.",
+    "releaseBoundary": "Source-reviewed editorial status identifies corrected and traceable content; independent qualified expert validation remains pending."
+  },
+  "summary": {
+    "reviewedDiagramTemplates": 8,
+    "correctedDiagramTemplates": 8,
+    "sourceReviewedDiagramTemplates": 8,
+    "placementRecords": 8,
+    "distinctNamedSources": 14,
+    "independentExpertValidated": 0,
+    "status": "pass"
+  },
+  "items": [
+    {
+      "sequence": 1,
+      "key": "neuronActionPotential",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-02",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Reframed the animation as a schematic sequence, corrected axon-initial-segment and terminal terminology, qualified dendritic input, and raised the smallest labels to a readable size.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Reframed the animation as a schematic sequence, corrected axon-initial-segment and terminal terminology, qualified dendritic input, and raised the smallest labels to a readable size. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-20",
+          "chapterTitle": "Neuroanatomy & Brain Function",
+          "sectionIndex": 2,
+          "sectionHeading": "The Neuron & Neural Communication",
+          "legacySource": "js/textbook_ch20.js"
+        }
+      ],
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC5992072/",
+        "https://www.ncbi.nlm.nih.gov/books/NBK526047/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Axon initial segments: structure, function, and disease",
+          "organization": "Annals of the New York Academy of Sciences; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5992072/",
+          "whyReputable": "This peer-reviewed Baylor College of Medicine review synthesizes evidence about somatodendritic input, action-potential initiation at the axon initial segment, and propagation through myelinated axons and nodes. PubMed Central provides stable full text and traceable publication metadata."
+        },
+        {
+          "title": "Physiology, Synapse",
+          "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK526047/",
+          "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter explains synaptic anatomy, the synaptic cleft, action-potential arrival at terminals, and neurotransmitter release. It directly supports the diagram’s terminal and synapse labels."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "not-applicable"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 2,
+      "key": "brainRegions",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-02",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Added orientation, modernized lobe-function wording, and replaced pulsing localization circles with approximate dominant-left language-network landmarks.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Added orientation, modernized lobe-function wording, and replaced pulsing localization circles with approximate dominant-left language-network landmarks. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-20",
+          "chapterTitle": "Neuroanatomy & Brain Function",
+          "sectionIndex": 3,
+          "sectionHeading": "Cerebral Cortex: The Four Lobes",
+          "legacySource": "js/textbook_ch20.js"
+        }
+      ],
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK542179/",
+        "https://www.nature.com/articles/s41583-024-00802-4"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Anatomy, Central Nervous System",
+          "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine (updated 2026)",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK542179/",
+          "whyReputable": "This current clinician-authored and medically reviewed anatomy reference describes the cerebral lobes, major cortical landmarks, cerebellum, brainstem, and their broad functions. NCBI Bookshelf supplies editorial oversight and traceable revision information."
+        },
+        {
+          "title": "The language network as a natural kind within the broader landscape of the human brain",
+          "organization": "Nature Reviews Neuroscience (2024)",
+          "url": "https://www.nature.com/articles/s41583-024-00802-4",
+          "whyReputable": "This peer-reviewed state-of-the-field review describes language as a distributed functional network and addresses individual variability. It supports presenting Broca and Wernicke regions as approximate historical landmarks rather than isolated universal language centers."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "editorial-pass"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 3,
+      "key": "eriksonStages",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-02",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Replaced rigid ages and a moving lifespan dot with approximate life-period labels, identified ego strengths, and stated that the classic conflicts can be revisited.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Replaced rigid ages and a moving lifespan dot with approximate life-period labels, identified ego strengths, and stated that the classic conflicts can be revisited. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-38",
+          "chapterTitle": "Adolescence & Emerging Adulthood",
+          "sectionIndex": 2,
+          "sectionHeading": "Erikson & Marcia: Identity as Developmental Work",
+          "legacySource": "js/textbook_ch38.js"
+        }
+      ],
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK556096/",
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+        "https://www.ncbi.nlm.nih.gov/books/NBK615351/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Erikson's Stages of Psychosocial Development",
+          "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine (updated 2026)",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK556096/",
+          "whyReputable": "This current clinician-authored and medically reviewed reference summarizes Erikson’s eight proposed conflicts and ego strengths, notes that the original formulation did not supply exact initial ages, and explains that conflicts can be revisited."
+        },
+        {
+          "title": "Psychology 2e: Lifespan Theories",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+          "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-authored, peer-reviewed psychology chapter presents Erikson’s stages as a classic lifespan theory and supplies the conventional conflicts and associated life periods used for introductory instruction."
+        },
+        {
+          "title": "Nursing Health Promotion, Chapter 13: Nursing Care for Infancy Through Adolescence",
+          "organization": "Open RN; NCBI Bookshelf, U.S. National Library of Medicine (2025)",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK615351/",
+          "whyReputable": "This current academic health-sciences text is published through NCBI Bookshelf and explicitly cautions that developmental ages vary and that Erikson’s framework has cultural limitations. It supports non-rigid period labels and qualification of universality."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "editorial-pass"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 4,
+      "key": "operantConditioning",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-02",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Defined all four contingencies by presentation or removal and by observed future behavior, replaced intent-based examples, and removed visual privileging of negative reinforcement.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Defined all four contingencies by presentation or removal and by observed future behavior, replaced intent-based examples, and removed visual privileging of negative reinforcement. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-14",
+          "chapterTitle": "Cognitive & Behavioral Therapies",
+          "sectionIndex": 7,
+          "sectionHeading": "Behavioral Techniques: Operant Approaches",
+          "legacySource": "js/textbook_ch14.js"
+        }
+      ],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+        "https://iris.peabody.vanderbilt.edu/module/bp/cresource/q1/p04/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Operant Conditioning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+          "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-authored, peer-reviewed psychology chapter defines positive and negative contingencies by presentation or removal and reinforcement or punishment by their effects on future behavior."
+        },
+        {
+          "title": "Behavioral Principles: The Basics of Understanding Student Behavior — Page 4: Consequences",
+          "organization": "IRIS Center, Vanderbilt University, supported by the U.S. Department of Education Office of Special Education Programs",
+          "url": "https://iris.peabody.vanderbilt.edu/module/bp/cresource/q1/p04/",
+          "whyReputable": "The IRIS Center develops evidence-based educator resources with subject-matter and accessibility review. This BCBA-D-informed module defines consequences by observed changes in future behavior and distinguishes reinforcement from punishment without relying on intent."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "not-applicable"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 5,
+      "key": "reliabilityValidity",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-02",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Relabeled the target analogy as precision and bias rather than direct proof of validity and narrowed it to the intended reliability section.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Relabeled the target analogy as precision and bias rather than direct proof of validity and narrowed it to the intended reliability section. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-1",
+          "chapterTitle": "Psychometric Foundations",
+          "sectionIndex": 3,
+          "sectionHeading": "Reliability: Is the Test Consistent?",
+          "legacySource": "js/textbook_ch5_1.js"
+        }
+      ],
+      "references": [
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Standards for Educational and Psychological Testing (2014 Edition)",
+          "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf",
+          "whyReputable": "This joint professional standard is the authoritative U.S. framework for educational and psychological testing. It defines validity in relation to intended score interpretations and uses and distinguishes precision under replications from systematic and random measurement error."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "editorial-pass"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 6,
+      "key": "typesOfValidity",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-02",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Reorganized older validity-type labels into the unified validity framework and its current sources of evidence, while preserving a concise note about historical terminology.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Reorganized older validity-type labels into the unified validity framework and its current sources of evidence, while preserving a concise note about historical terminology. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-1",
+          "chapterTitle": "Psychometric Foundations",
+          "sectionIndex": 5,
+          "sectionHeading": "Validity: Does the Test Measure What It Claims?",
+          "legacySource": "js/textbook_ch5_1.js"
+        }
+      ],
+      "references": [
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Standards for Educational and Psychological Testing (2014 Edition)",
+          "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf",
+          "whyReputable": "This joint professional standard is the authoritative U.S. framework for educational and psychological testing. It defines validity in relation to intended score interpretations and uses and distinguishes precision under replications from systematic and random measurement error."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "editorial-pass"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 7,
+      "key": "cbtTriangle",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-02",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Presented the triangle as a simplified individualized formulation aid, added omitted contextual limits, removed a false affordance, and routed the generic overview away from the Ellis-specific section.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Presented the triangle as a simplified individualized formulation aid, added omitted contextual limits, removed a false affordance, and routed the generic overview away from the Ellis-specific section. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-14",
+          "chapterTitle": "Cognitive & Behavioral Therapies",
+          "sectionIndex": 1,
+          "sectionHeading": "Why This Chapter Matters",
+          "legacySource": "js/textbook_ch14.js"
+        }
+      ],
+      "references": [
+        "https://beckinstitute.org/about/understanding-cbt/",
+        "https://pubmed.ncbi.nlm.nih.gov/24387236/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Understanding CBT",
+          "organization": "Beck Institute for Cognitive Behavior Therapy",
+          "url": "https://beckinstitute.org/about/understanding-cbt/",
+          "whyReputable": "Beck Institute is a specialist nonprofit founded by CBT developer Aaron T. Beck. Its clinician-facing educational material describes contemporary cognitive-behavioral formulation, collaborative treatment planning, and the interaction of thoughts, emotions, and behavior."
+        },
+        {
+          "title": "Advances in cognitive theory and therapy: the generic cognitive model",
+          "organization": "Annual Review of Clinical Psychology; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/24387236/",
+          "whyReputable": "This peer-reviewed review by Aaron T. Beck and Emily A. P. Haigh presents the generic cognitive model and situates cognition within a broader formulation of psychopathology. PubMed supplies traceable author, journal, and publication metadata."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "not-applicable"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 8,
+      "key": "dbtModules",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-02",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Clarified the four skills modules, distinguished skills training from comprehensive DBT, added the treatment target hierarchy, and improved module-label precision.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Clarified the four skills modules, distinguished skills training from comprehensive DBT, added the treatment target hierarchy, and improved module-label precision. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-14",
+          "chapterTitle": "Cognitive & Behavioral Therapies",
+          "sectionIndex": 4,
+          "sectionHeading": "Dialectical Behavior Therapy (Linehan)",
+          "legacySource": "js/textbook_ch14.js"
+        }
+      ],
+      "references": [
+        "https://depts.washington.edu/uwbrtc/about-us/dialectical-behavior-therapy/",
+        "https://pubmed.ncbi.nlm.nih.gov/25806661/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Dialectical Behavior Therapy",
+          "organization": "University of Washington Behavioral Research & Therapy Clinics",
+          "url": "https://depts.washington.edu/uwbrtc/about-us/dialectical-behavior-therapy/",
+          "whyReputable": "This University of Washington specialty clinic was founded by DBT developer Marsha Linehan. Its institutional overview describes the treatment components, target hierarchy, and four skills-training modules of comprehensive dialectical behavior therapy."
+        },
+        {
+          "title": "Dialectical behavior therapy for high suicide risk in individuals with borderline personality disorder: a randomized clinical trial and component analysis",
+          "organization": "JAMA Psychiatry; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/25806661/",
+          "whyReputable": "This peer-reviewed randomized component trial directly distinguishes DBT skills training from other components of comprehensive DBT. The PubMed record provides traceable authorship, methods, journal, and publication information."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "not-applicable"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

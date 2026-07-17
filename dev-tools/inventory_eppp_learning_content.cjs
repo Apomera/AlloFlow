@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { buildDiagramCatalog } = require('./eppp_diagram_catalog.cjs');
 
 const root = path.resolve(__dirname, '..');
 const runtimeRoot = path.join(root, 'test_prep', 'eppp_legacy');
@@ -49,11 +50,17 @@ const memoryAidTypes = memoryAids.reduce((counts, aid) => {
 }, {});
 
 const chapterScripts = scriptPaths.filter((entry) => /^js\/textbook_ch(?:\d+|\d+_\d+)\.js$/i.test(entry));
-for (const relativePath of chapterScripts) run(relativePath);
+const chapterSourceById = new Map();
+for (const relativePath of chapterScripts) {
+  const before = (windowObject.TextbookChapters || []).length;
+  run(relativePath);
+  for (const chapter of (windowObject.TextbookChapters || []).slice(before)) chapterSourceById.set(String(chapter.id || ''), relativePath);
+}
 run('js/textbook_diagrams.js');
 run('js/textbook_term_defs.js');
 const chapters = windowObject.TextbookChapters || [];
 const diagrams = windowObject._epppDiagrams || {};
+const diagramCatalog = buildDiagramCatalog({ root, chapters, diagramTemplates: diagrams, chapterSourceById });
 const termDefinitions = windowObject._epppTermDefs || {};
 
 const chapterByDomain = {};
@@ -61,17 +68,19 @@ let sections = 0;
 let knowledgeChecks = 0;
 let chapterReferences = 0;
 let aiCodas = 0;
-let diagramPlacements = 0;
+let observedDiagramPlacements = 0;
 for (const chapter of chapters) {
   const domain = String(chapter.domain || 'Unassigned');
   chapterByDomain[domain] = (chapterByDomain[domain] || 0) + 1;
   const chapterSections = Array.isArray(chapter.sections) ? chapter.sections : [];
   sections += chapterSections.length;
   knowledgeChecks += chapterSections.filter((section) => section && section.knowledgeCheck).length;
-  diagramPlacements += chapterSections.filter((section) => section && section.interactiveDiagram).length;
+  observedDiagramPlacements += chapterSections.filter((section) => section && section.interactiveDiagram).length;
   chapterReferences += Array.isArray(chapter.references) ? chapter.references.length : 0;
   if (chapter.aiCoda) aiCodas += 1;
 }
+
+if (observedDiagramPlacements !== diagramCatalog.placements.length) throw new Error('Diagram placement catalog does not match learner-visible chapter placements.');
 
 const legacyAudit = JSON.parse(fs.readFileSync(path.join(runtimeRoot, 'content_audit.json'), 'utf8'));
 const nativeQaPath = path.join(root, 'test_prep', 'eppp_native_qa.json');
@@ -107,7 +116,7 @@ const nativeTargetQuestions = domainTargets.reduce((sum, domain) => sum + domain
 const nativeCurrentQuestions = domainTargets.reduce((sum, domain) => sum + domain.currentQaPassed, 0);
 
 const report = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   generatedAt: new Date().toISOString(),
   summary: {
     legacyQuestions: legacyAudit.summary.totalItems,
@@ -122,8 +131,14 @@ const report = {
     textbookChapters: chapters.length,
     textbookSections: sections,
     knowledgeChecks,
-    diagramTemplates: Object.keys(diagrams).length,
-    diagramPlacements,
+    diagramTemplates: diagramCatalog.summary.diagramTemplates,
+    usedDiagramTemplates: diagramCatalog.summary.usedDiagramTemplates,
+    unusedDiagramTemplates: diagramCatalog.summary.unusedDiagramTemplates,
+    diagramPlacements: diagramCatalog.summary.diagramPlacements,
+    sharedTemplateDiagramPlacements: diagramCatalog.summary.sharedTemplateDiagramPlacements,
+    inlineDiagramPlacements: diagramCatalog.summary.inlineDiagramPlacements,
+    sourceReviewedDiagramTemplates: diagramCatalog.summary.sourceReviewedDiagramTemplates,
+    sourceReviewedDiagramPlacements: diagramCatalog.summary.sourceReviewedDiagramPlacements,
     termDefinitions: Object.keys(termDefinitions).length,
     chapterReferences,
     aiReflectiveCodas: aiCodas,
@@ -137,11 +152,16 @@ const report = {
   },
   flashcardsByDomain,
   memoryAidTypes,
+  diagramInventory: {
+    summary: diagramCatalog.summary,
+    templates: diagramCatalog.templates,
+    placements: diagramCatalog.placements,
+  },
   chaptersByDomain: Object.entries(chapterByDomain).map(([domain, count]) => ({ domain, count })),
   migrationTracks: [
     { contentType: 'legacy questions', count: legacyAudit.summary.totalItems, status: 'active-full-review', nextGate: 're-author or correct, source QA, item-writing QA, accessibility, independent expert validation' },
     { contentType: 'textbook chapters', count: chapters.length, status: reviewedChapters ? 'review-in-progress' : 'legacy-preserved-review-not-started', reviewedCount: reviewedChapters, nextGate: `${chapters.length - reviewedChapters} chapters still need claim-level source audit and editorial review; all chapters still require independent expert review` },
-    { contentType: 'interactive diagrams', count: Object.keys(diagrams).length, status: 'legacy-preserved-review-not-started', nextGate: 'concept accuracy, labels, keyboard/screen-reader alternative, reduced-motion review' },
+    { contentType: 'interactive diagrams', count: diagramCatalog.summary.diagramPlacements, templateCount: diagramCatalog.summary.diagramTemplates, usedTemplateCount: diagramCatalog.summary.usedDiagramTemplates, unusedTemplateCount: diagramCatalog.summary.unusedDiagramTemplates, inlinePlacementCount: diagramCatalog.summary.inlineDiagramPlacements, reviewedCount: diagramCatalog.summary.sourceReviewedDiagramPlacements, status: diagramCatalog.summary.sourceReviewedDiagramPlacements === diagramCatalog.summary.diagramPlacements ? 'first-pass-complete-expert-pending' : (diagramCatalog.summary.sourceReviewedDiagramPlacements ? 'review-in-progress' : 'legacy-preserved-review-not-started'), nextGate: 'remaining placements need concept accuracy, label, text-alternative, source-support, bias/context, and independent expert review' },
     { contentType: 'flashcards', count: flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0), status: reviewedFlashcards === flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0) ? 'first-pass-complete-expert-pending' : (reviewedFlashcards ? 'review-in-progress' : 'legacy-preserved-review-not-started'), reviewedCount: reviewedFlashcards, retainedCount: retainedReviewedFlashcards, retiredRedundantCount: retiredRedundantFlashcards, nextGate: reviewedFlashcards === flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0) ? 'independent qualified expert validation and release decisions for retained cards; retired duplicate cards remain excluded' : 'remaining cards need deduplication, atomic-answer review, source support and clue checks' },
     { contentType: 'memory aids', count: memoryAids.length, status: (reviewedMemoryAids || editorialMemoryAids) ? 'review-in-progress' : 'legacy-preserved-review-not-started', reviewedCount: reviewedMemoryAids, editorialSourcePendingCount: editorialMemoryAids, nextGate: 'remaining aids need oversimplification, outdated-guidance, bias, and source review' },
     { contentType: 'term definitions', count: Object.keys(termDefinitions).length, status: 'legacy-preserved-review-not-started', nextGate: 'definition/source/version audit and cross-link review' },
@@ -173,7 +193,11 @@ Generated: ${report.generatedAt}
 | Textbook sections | ${s.textbookSections} |
 | Embedded knowledge checks | ${s.knowledgeChecks} |
 | Interactive diagram templates | ${s.diagramTemplates} |
+| Used shared diagram templates | ${s.usedDiagramTemplates} |
+| Unused shared diagram templates | ${s.unusedDiagramTemplates} |
 | Diagram placements in chapters | ${s.diagramPlacements} |
+| Shared-template diagram placements | ${s.sharedTemplateDiagramPlacements} |
+| Inline diagram placements | ${s.inlineDiagramPlacements} |
 | Searchable term definitions | ${s.termDefinitions} |
 | Chapter reference entries | ${s.chapterReferences} |
 | AI-reflective chapter codas | ${s.aiReflectiveCodas} |

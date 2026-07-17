@@ -10,6 +10,10 @@
     return root && root.LumenEvidence;
   }
 
+  function documentsApi() {
+    return root && root.LumenDocuments;
+  }
+
   function storageApi(ctx) {
     if (ctx && ctx.storageDB) return ctx.storageDB;
     try { return root.AlloModules && root.AlloModules.UtilsPure && root.AlloModules.UtilsPure.storageDB; } catch (_) { return null; }
@@ -271,6 +275,7 @@
     var React = ctx && ctx.React;
     var h = React && React.createElement;
     var E = evidenceApi();
+    var D = documentsApi();
     if (!h) return null;
     if (!E) {
       return h('div', { role: 'status', className: 'p-5 rounded-xl border border-amber-300 bg-amber-50 text-slate-800' },
@@ -295,6 +300,11 @@
     var _draftLocator = React.useState(''), draftLocator = _draftLocator[0], setDraftLocator = _draftLocator[1];
     var _draftText = React.useState(''), draftText = _draftText[0], setDraftText = _draftText[1];
     var _showAdd = React.useState(false), showAdd = _showAdd[0], setShowAdd = _showAdd[1];
+    var _showFiles = React.useState(false), showFiles = _showFiles[0], setShowFiles = _showFiles[1];
+    var _selectedFiles = React.useState([]), selectedFiles = _selectedFiles[0], setSelectedFiles = _selectedFiles[1];
+    var _fileBusy = React.useState(false), fileBusy = _fileBusy[0], setFileBusy = _fileBusy[1];
+    var _fileStatus = React.useState({}), fileStatus = _fileStatus[0], setFileStatus = _fileStatus[1];
+    var _fileMessage = React.useState(''), fileMessage = _fileMessage[0], setFileMessage = _fileMessage[1];
     var _showDiscover = React.useState(false), showDiscover = _showDiscover[0], setShowDiscover = _showDiscover[1];
     var _discoverQuery = React.useState(''), discoverQuery = _discoverQuery[0], setDiscoverQuery = _discoverQuery[1];
     var _discoverResults = React.useState([]), discoverResults = _discoverResults[0], setDiscoverResults = _discoverResults[1];
@@ -394,6 +404,43 @@
         setShowAdd(false);
         announce('Source added to the evidence project.');
       } catch (err) { setError(err.message || 'Could not add this source.'); }
+    }
+
+    function fileKey(file) {
+      return String(file && file.name || '') + '|' + String(file && file.size || 0) + '|' + String(file && file.lastModified || 0);
+    }
+
+    async function importSelectedFiles(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      setError(''); setFileMessage('');
+      if (!D || typeof D.extractLocalDocument !== 'function') {
+        setError('The local document adapter is still loading. Reload the workspace and try again.');
+        return;
+      }
+      var files = selectedFiles.slice(0, D.MAX_FILES_PER_IMPORT || 5);
+      if (!files.length) { setError('Choose at least one document to import.'); return; }
+      setFileBusy(true);
+      var next = project, imported = 0, failed = 0;
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i], key = fileKey(file);
+        setFileStatus(function (previous) { var copy = Object.assign({}, previous); copy[key] = { state: 'extracting', message: 'Extracting locally…' }; return copy; });
+        try {
+          var spec = await D.extractLocalDocument(file, { root: root, evidence: E });
+          next = E.upsertSource(next, spec);
+          imported++;
+          setFileStatus(function (previous) { var copy = Object.assign({}, previous); copy[key] = { state: 'imported', message: 'Imported as evidence' }; return copy; });
+        } catch (err) {
+          failed++;
+          var message = err && err.message ? err.message : 'This document could not be extracted.';
+          setFileStatus(function (previous) { var copy = Object.assign({}, previous); copy[key] = { state: 'failed', message: message }; return copy; });
+        }
+      }
+      if (imported) {
+        setProject(next); clearStudyOutput();
+        announce(imported + ' local document' + (imported === 1 ? '' : 's') + ' imported as evidence.');
+      }
+      setFileMessage(imported + ' imported' + (failed ? ' · ' + failed + ' not added' : '') + '. File contents stayed on this device.');
+      setFileBusy(false);
     }
 
     async function discoverSources(event) {
@@ -589,6 +636,7 @@
       setProject(fresh);
       setQuestion(''); setRetrieved([]); setAnswer(null); setError(''); setViewerEvidenceId(''); setSourceLabelDrafts({});
       setShowDiscover(false); setDiscoverQuery(''); setDiscoverResults([]); setSelectedDiscovery({}); setImportStatus({}); setDiscoverMessage('');
+      setShowFiles(false); setSelectedFiles([]); setFileStatus({}); setFileMessage('');
       storeRef.current.clear();
       announce('New evidence project started.');
     }
@@ -630,6 +678,7 @@
           h('div', { className: 'min-w-0 flex-1' },
             h('label', { htmlFor: 'lumen-source-active-' + sourceDomId, className: 'font-bold text-sm text-slate-800 m-0 break-words cursor-pointer' }, source.title),
             h('p', { className: 'text-[11px] text-slate-500 mt-1 mb-0' }, count + ' evidence passage' + (count === 1 ? '' : 's') + ' · version ' + source.version + (eligibleLookup[source.id] ? ' · in study scope' : ' · excluded')),
+            source.fileName ? h('p', { className: 'text-[10px] text-slate-500 mt-1 mb-0' }, (source.fileFormat || source.type || 'file').toUpperCase() + ' · ' + Math.max(1, Number(source.documentPartCount) || 1) + ' document part' + (Number(source.documentPartCount) === 1 ? '' : 's') + ' · extracted locally') : null,
             (source.labels || []).length ? h('div', { className: 'mt-2 flex gap-1 flex-wrap', 'aria-label': 'Source labels' }, source.labels.map(function (label) {
               return h('span', { key: label, className: 'px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 text-[10px] font-bold' }, label);
             })) : null,
@@ -749,8 +798,9 @@
             h('h3', { id: 'lumen-sources-title', className: 'font-extrabold text-sm text-slate-800 m-0' }, 'Project sources (' + project.sources.length + ')'),
             h('span', { className: 'text-[11px] text-slate-500' }, eligibleIds.length + ' in current study scope'),
             h('div', { className: 'ml-auto flex gap-2' },
-              h('button', { type: 'button', onClick: function () { setShowDiscover(!showDiscover); setShowAdd(false); }, className: 'text-xs font-bold text-blue-800 underline', 'aria-expanded': showDiscover, 'aria-controls': 'lumen-discover-panel' }, showDiscover ? 'Close discovery' : 'Discover web sources'),
-              h('button', { type: 'button', onClick: function () { setShowAdd(!showAdd); setShowDiscover(false); }, className: 'text-xs font-bold text-amber-800 underline', 'aria-expanded': showAdd }, showAdd ? 'Close' : 'Paste source'))),
+              h('button', { type: 'button', onClick: function () { setShowDiscover(!showDiscover); setShowAdd(false); setShowFiles(false); }, className: 'text-xs font-bold text-blue-800 underline', 'aria-expanded': showDiscover, 'aria-controls': 'lumen-discover-panel' }, showDiscover ? 'Close discovery' : 'Discover web sources'),
+              h('button', { type: 'button', onClick: function () { setShowFiles(!showFiles); setShowDiscover(false); setShowAdd(false); }, className: 'text-xs font-bold text-emerald-800 underline', 'aria-expanded': showFiles, 'aria-controls': 'lumen-file-panel' }, showFiles ? 'Close files' : 'Import files'),
+              h('button', { type: 'button', onClick: function () { setShowAdd(!showAdd); setShowDiscover(false); setShowFiles(false); }, className: 'text-xs font-bold text-amber-800 underline', 'aria-expanded': showAdd }, showAdd ? 'Close' : 'Paste source'))),
 
           allSourceLabels.length ? h('div', { className: 'mt-3 p-2 rounded-lg border border-violet-200 bg-violet-50' },
             h('label', { htmlFor: 'lumen-study-label-filter', className: 'block text-[11px] font-bold text-violet-950' }, 'Study source label'),
@@ -760,6 +810,26 @@
               className: 'mt-1 w-full rounded-lg border border-violet-300 bg-white p-2 text-xs'
             }, h('option', { value: '' }, 'All active sources'), allSourceLabels.map(function (label) { return h('option', { key: label, value: label }, label); })),
             h('p', { className: 'mt-1 mb-0 text-[10px] text-violet-800' }, 'This filter affects both the source list and retrieval. Individual source switches still apply.')) : null,
+
+          showFiles ? h('section', { id: 'lumen-file-panel', 'aria-labelledby': 'lumen-file-title', className: 'mt-3 p-3 rounded-xl border border-emerald-300 bg-emerald-50/70' },
+            h('h4', { id: 'lumen-file-title', className: 'font-extrabold text-sm text-emerald-950 m-0' }, 'Import local documents'),
+            h('p', { className: 'mt-1 mb-0 text-xs text-slate-700' }, 'PDF, Word, PowerPoint, spreadsheets, text, Markdown, CSV, and EPUB are extracted into a stored text snapshot with page, slide, sheet, or section context when available.'),
+            h('p', { className: 'mt-2 mb-0 p-2 rounded-lg border border-emerald-300 bg-white text-[11px] text-emerald-950' }, 'Privacy: document contents stay on this device and are not sent to AI during import. Parser code may be downloaded from AlloFlow’s configured library CDN when it is not already cached.'),
+            h('form', { onSubmit: importSelectedFiles, className: 'mt-3' },
+              h('label', { htmlFor: 'lumen-local-files', className: 'block text-xs font-bold text-slate-800' }, 'Choose up to ' + (D ? D.MAX_FILES_PER_IMPORT : 5) + ' documents'),
+              h('input', { id: 'lumen-local-files', type: 'file', multiple: true, accept: D ? D.ACCEPT : '', disabled: fileBusy || !D,
+                onChange: function (event) { var rows = Array.prototype.slice.call(event.target.files || [], 0, D ? D.MAX_FILES_PER_IMPORT : 5); setSelectedFiles(rows); setFileStatus({}); setFileMessage(''); },
+                className: 'mt-1 block w-full text-xs text-slate-700' }),
+              !D ? h('p', { role: 'status', className: 'mt-2 mb-0 text-xs text-rose-800' }, 'The document adapter is still loading.') : null,
+              selectedFiles.length ? h('ul', { className: 'mt-3 space-y-2 list-none p-0 m-0' }, selectedFiles.map(function (file) {
+                var status = fileStatus[fileKey(file)];
+                return h('li', { key: fileKey(file), className: 'p-2 rounded-lg border border-emerald-200 bg-white text-xs' },
+                  h('p', { className: 'm-0 font-bold break-words' }, file.name),
+                  h('p', { className: 'mt-1 mb-0 text-[10px] text-slate-500' }, Math.max(1, Math.ceil((Number(file.size) || 0) / 1024)) + ' KB'),
+                  status ? h('p', { role: 'status', className: 'mt-1 mb-0 text-[11px] ' + (status.state === 'failed' ? 'text-rose-800' : status.state === 'imported' ? 'text-emerald-800 font-bold' : 'text-blue-800') }, status.message) : null);
+              })) : null,
+              h('button', { type: 'submit', disabled: fileBusy || !D || !selectedFiles.length, className: 'mt-3 w-full px-3 py-2 rounded-lg bg-emerald-700 text-white text-xs font-bold disabled:opacity-50' }, fileBusy ? 'Extracting documents locally…' : 'Import selected documents')),
+            fileMessage ? h('p', { role: 'status', 'aria-live': 'polite', className: 'mt-2 mb-0 text-xs font-semibold text-emerald-900' }, fileMessage) : null) : null,
 
           showDiscover ? h('section', { id: 'lumen-discover-panel', 'aria-labelledby': 'lumen-discover-title', className: 'mt-3 p-3 rounded-xl border border-blue-300 bg-blue-50/70' },
             h('h4', { id: 'lumen-discover-title', className: 'font-extrabold text-sm text-blue-950 m-0' }, 'Discover sources on the web'),
@@ -833,6 +903,7 @@
     sourceDescriptor: sourceDescriptor,
     normalizeProviderResult: normalizeProviderResult,
     hasProvider: hasProvider,
+    documentsApi: documentsApi,
     checkSessionAllowance: checkSessionAllowance,
     checkSearchAllowance: checkSearchAllowance,
     hasWebSearch: hasWebSearch,

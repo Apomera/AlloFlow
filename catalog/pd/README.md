@@ -18,6 +18,14 @@ The runtime logic lives in [`pd_core_module.js`](../../pd_core_module.js)
 
 ```
 catalog/pd/
+Catalog identity has two deliberately separate fields: entry `slug` is the
+lowercase URL/path handle used by learning paths, while entry `moduleId` must
+exactly equal `pd_module.metadata.id` and is the authoritative progress,
+history, and completion identity. New IDs may therefore be namespaced (for
+example, `ums:microcredential:inclusive-course-design`) without changing a
+friendly catalog URL. Slug fallback exists only for older manifest entries that
+do not yet declare `moduleId`.
+
   index.json            # the pd_catalog manifest the app reads (approved only)
   approved/<slug>.json  # one pd_module per file
 ```
@@ -27,6 +35,27 @@ optional printable **certificate**. Both are explicitly *not* accredited contact
 hours or a verified credential. A separate protected server-to-server adapter
 can sign reviewed decisions, but it is not yet connected to UMS identity,
 reviewer authorization, evidence storage, Open Badges, or Parchment systems.
+
+## Local evidence package
+
+After completion, a learner can explicitly prepare a local
+`pd-review-candidate-1.0` JSON package for human review. AI advisory notes and
+aggregate paste-event counts are independent optional scopes and default off.
+The learner sees an artifact-kind/count preview, a warning that written
+responses may contain personal data typed or pasted into free text, and a
+second confirmation before download. Nothing is uploaded by this action.
+
+The package omits structured identity and raw clipboard fields, but its
+written evidence is labeled `learner-provided-unverified`, not anonymous. It
+is bound to the exact module ID, version, language, module digest, activity
+roster, consent notice payload/digest, artifact digests, and package digest.
+It remains a review candidate rather than an institutional decision.
+
+In-progress response drafts stay in the browser for at most 30 days; stale or
+module-mismatched drafts are purged and completed responses are not kept in
+persistent progress. **My learning** offers a separate **Delete all saved PD
+responses** control. Completion history is summary-only and imported entries
+are reduced to an allowlist, so hidden response/identity fields are dropped.
 
 ## `pd_module` schema (v `pd-1.0`)
 
@@ -116,12 +145,40 @@ presentation layer over completion history — they add no new storage or gating
    with the `ADMIN_TOKEN`).
 2. Review for accuracy, PII, and license. Save the approved `pd_module` to
    `approved/<slug>.json`.
-3. Add an entry to `index.json` (`slug`, `title`, `topic`, `summary`,
-   `estMinutes`, `credit`, `license`, `path`) and push to `main`.
+3. Run the standalone preflight while editing:
+   `node dev-tools/check_pd_publish.cjs --module catalog/pd/approved/<slug>.json --json`.
+4. Add an entry to `index.json` (`slug`, exact `moduleId`, `title`,
+   `topic`, `summary`, `estMinutes`, `credit`, `license`, `path`,
+   `version`, `language`, and `contentDigest`).
+5. Run `npm run pd:check`. Resolve every blocking finding before review or
+   publication. Warnings and the manual-review checklist remain reviewer work.
+6. Optionally create a shareable machine report with
+   `npm run pd:report -- --out reports/pd/<new-report-name>.json --quiet`,
+   then push the approved module and bound manifest entry to `main`. Reports
+   are created exclusively: existing files, paths outside `reports/pd`, and
+   symlink/junction/reparse traversal are rejected rather than overwritten.
+
+The checker is read-only unless `--out` is explicitly provided. Its
+`pd-publish-report-1.0` output contains stable identity, version, language,
+digests, paths, and check results, but never module bodies, response content,
+unknown key/value samples, or suspected PII. Strict `pd-1.0` preflight rejects
+unknown fields, prohibited control characters, oversized inputs, excessive
+nested collections, and approved paths that fail `lstat` plus `realpath`
+containment. Quiet blocking runs still print content-free findings to stderr.
+
+Catalog reports include binding-only `runtime_build_digest`,
+`renderer_digest`, `styles_digest`, and `state_inventory_digest` values
+for the runtime, deploy mirrors, style inputs, and canonical interaction-state
+inventory. These hashes identify what must be audited; they do not assert that
+an audit ran. Every report says `conformanceClaim: false` and can advance only
+to `ready-for-render-audit`, never WCAG or institutional approval. The focused
+repository gate is `npm run verify:pd`.
+
 ## Immutable publishing and accessibility readiness
 
-Every approved manifest entry should carry `version`, `language`, and the
-`contentDigest` returned by `PdCore.moduleContentDigest(module)`. The learner
+Every approved manifest entry must carry exact `moduleId`, `version`,
+`language`, and the `contentDigest` returned by
+`PdCore.moduleContentDigest(module)`. The learner
 runtime fails closed when a bound manifest digest does not match the fetched
 module. Completion records retain both the publisher version and exact digest.
 

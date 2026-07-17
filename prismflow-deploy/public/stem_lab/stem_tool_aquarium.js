@@ -13770,8 +13770,13 @@ var d = (labToolData && labToolData._aquarium) || {};
           var fishNames = migrateFishState(d.fishNames);
           var fishBirthTicks = migrateFishState(d.fishBirthTicks, 0, true);
           var fishCareLog = migrateFishState(d.fishCareLog);
+          var expandedCareFish = d.expandedCareFish || null;
+          var quarantinedFish = migrateFishState(d.quarantinedFish); // { fishInstanceId: { sinceTick, reason } }
 
           var fishSickness = migrateFishState(d.fishSickness); // { fishInstanceId: { disease: 'ich', severity: 1-3, tick: when } }
+          var mainTankSickFishIds = Object.keys(fishSickness).filter(function (fishId) { return fishInstanceIds.indexOf(fishId) !== -1 && !quarantinedFish[fishId]; });
+          var quarantinedSickCount = Object.keys(fishSickness).filter(function (fishId) { return !!quarantinedFish[fishId]; }).length;
+          var hospitalFishCount = Object.keys(quarantinedFish).filter(function (fishId) { return fishInstanceIds.indexOf(fishId) !== -1; }).length;
 
           React.useEffect(function () {
             var restoreWasRunning = restoreRunningRef.current;
@@ -13791,6 +13796,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 aq.hungerLevels = hungerLevels;
                 aq.fishStress = fishStress;
                 aq.fishSickness = fishSickness;
+                aq.quarantinedFish = quarantinedFish;
               }
               if (waterChemNeedsMigration) aq.waterChem = waterChem;
               if (eventLogNeedsMigration) aq.eventLog = eventLog;
@@ -14821,7 +14827,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               fishNames: {},
               breedingState: {}, breedingCooldowns: {}, totalFryBorn: 0,
               equipment: equipment.filter !== undefined ? equipment : { filter: 0, heater: 0, light: 0, airPump: 0 },
-              perfectWaterTicks: 0, algaeLevel: 0, fishSickness: {}, fishStress: {},
+              perfectWaterTicks: 0, algaeLevel: 0, fishSickness: {}, fishStress: {}, quarantinedFish: {},
               hungerLevels: {}, simDay: 0, simHour: 8, lightsOn: true
 
             });
@@ -14889,6 +14895,7 @@ var d = (labToolData && labToolData._aquarium) || {};
             var newFish = tankFish.slice();
             var newBirthTicks = Object.assign({}, fishBirthTicks);
             var newCareLog = Object.assign({}, fishCareLog);
+            var newQuarantined = Object.assign({}, quarantinedFish);
             var newFishInstanceIds = fishInstanceIds.slice();
             var removedInstanceId = newFishInstanceIds.splice(idx, 1)[0];
 
@@ -14900,6 +14907,7 @@ var d = (labToolData && labToolData._aquarium) || {};
             var newHealth = Object.assign({}, fishHealth);
             delete newBirthTicks[removedInstanceId];
             delete newCareLog[removedInstanceId];
+            delete newQuarantined[removedInstanceId];
             var newHunger = Object.assign({}, hungerLevels);
             var newSickness = Object.assign({}, fishSickness);
             var newStress = Object.assign({}, fishStress);
@@ -14907,7 +14915,7 @@ var d = (labToolData && labToolData._aquarium) || {};
             var newBreeding = Object.assign({}, breedingState);
             var newCooldowns = Object.assign({}, breedingCooldowns);
             newHealth[removed] = Math.max(0, (newHealth[removed] || 1) - 1);
-            updMulti({ fishInstanceIds: newFishInstanceIds, fishNames: newNames, fishBirthTicks: newBirthTicks, fishCareLog: newCareLog });
+            updMulti({ fishInstanceIds: newFishInstanceIds, fishNames: newNames, fishBirthTicks: newBirthTicks, fishCareLog: newCareLog, quarantinedFish: newQuarantined, expandedCareFish: expandedCareFish === removedInstanceId ? null : expandedCareFish });
             if (newHealth[removed] === 0) delete newHealth[removed];
             delete newHunger[removedInstanceId];
             delete newSickness[removedInstanceId];
@@ -15087,10 +15095,12 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             if (!waterChem) return;
             if (tankFish.length === 0) { if (addToast) addToast('Add fish before feeding. Empty-tank food would only decay into ammonia.', 'warning'); return; }
+            var displayFishCount = fishInstanceIds.filter(function (fishId) { return !quarantinedFish[fishId]; }).length;
+            if (displayFishCount === 0) { if (addToast) addToast('All fish are in the hospital tank. Feed them individually from their care cards.', 'warning'); return; }
 
             var newChem = Object.assign({}, waterChem, {
 
-              ammonia: waterChem.ammonia + 0.15 * (tankFish.length || 1),
+              ammonia: waterChem.ammonia + 0.15 * displayFishCount,
 
             });
 
@@ -15105,6 +15115,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             tankFish.forEach(function (fId, idx) {
               var fishKey = fishInstanceIds[idx];
+              if (quarantinedFish[fishKey]) return;
 
               var cur = newHunger[fishKey] !== undefined ? newHunger[fishKey] : 50;
 
@@ -15119,7 +15130,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             });
 
-            var avgDrop = tankFish.length > 0 ? Math.round(totalDrop / tankFish.length) : 0;
+            var avgDrop = Math.round(totalDrop / displayFishCount);
 
             var tips = [
 
@@ -15142,7 +15153,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               hungerLevels: newHunger,
               fishCareLog: newCareLog,
 
-              feedingLog: { fishCount: tankFish.length, avgHungerDrop: avgDrop, ammoniaAdded: 0.15 * (tankFish.length || 1), overfedCount: overfedCount, tip: tips[Math.floor(Math.random() * tips.length)] },
+              feedingLog: { fishCount: displayFishCount, avgHungerDrop: avgDrop, ammoniaAdded: 0.15 * displayFishCount, overfedCount: overfedCount, tip: tips[Math.floor(Math.random() * tips.length)] },
 
               eventLog: eventLog.concat([{ tick: simTick, msg: '🍽️ Fish fed — hunger reduced by ' + avgDrop + ' avg' }])
 
@@ -15161,9 +15172,11 @@ var d = (labToolData && labToolData._aquarium) || {};
             if (!waterChem) return;
             if (tankFish.length === 0) { if (addToast) addToast('Add fish before feeding live food.', 'warning'); return; }
 
+            var displayFishCount = fishInstanceIds.filter(function (fishId) { return !quarantinedFish[fishId]; }).length;
+            if (displayFishCount === 0) { if (addToast) addToast('All fish are in the hospital tank. Feed them individually from their care cards.', 'warning'); return; }
             var newChem = Object.assign({}, waterChem, {
 
-              ammonia: waterChem.ammonia + 0.22 * (tankFish.length || 1)
+              ammonia: waterChem.ammonia + 0.22 * displayFishCount
 
             });
 
@@ -15179,6 +15192,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               var fishKey = fishInstanceIds[idx];
               var diet = SPECIES_DIET[fId] || 'omnivore';
 
+              if (quarantinedFish[fishKey]) return;
               var cur = newHunger[fishKey] !== undefined ? newHunger[fishKey] : 50;
 
               if (diet === 'carnivore') {
@@ -15213,7 +15227,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               hungerLevels: newHunger,
               fishCareLog: newCareLog,
 
-              feedingLog: { fishCount: tankFish.length, avgHungerDrop: fedCarnivores > 0 ? 45 : 0, ammoniaAdded: 0.22 * (tankFish.length || 1), overfedCount: 0, tip: tipText },
+              feedingLog: { fishCount: displayFishCount, avgHungerDrop: fedCarnivores > 0 ? 45 : 0, ammoniaAdded: 0.22 * displayFishCount, overfedCount: 0, tip: tipText },
 
               eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83E\uDD90 Live feed added — ' + fedCarnivores + ' carnivores fed' + (ignoredHerbivores > 0 ? ', ' + ignoredHerbivores + ' ignored it' : '') }])
 
@@ -15221,6 +15235,26 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             sfxFeed(); sfxSplash();
 
+          };
+
+          var feedIndividual = function (fishId, speciesId) {
+            if (!waterChem || fishInstanceIds.indexOf(fishId) === -1) return;
+            var currentHunger = hungerLevels[fishId] !== undefined ? hungerLevels[fishId] : 50;
+            var displayName = fishNames[fishId] || speciesId || 'Fish';
+            if (currentHunger <= 10) {
+              if (addToast) addToast(displayName + ' is already full. Extra food would only pollute the water.', 'warning');
+              return;
+            }
+            var hungerDrop = Math.min(30, currentHunger);
+            var updatedHunger = Object.assign({}, hungerLevels);
+            var updatedCareLog = Object.assign({}, fishCareLog);
+            updatedHunger[fishId] = Math.max(0, currentHunger - hungerDrop);
+            updatedCareLog[fishId] = (updatedCareLog[fishId] || []).concat([{ tick: simTick, day: simDay, hour: simHour, msg: 'Individually fed; hunger reduced by ' + hungerDrop }]).slice(-8);
+            var individualAmmonia = quarantinedFish[fishId] ? 0 : 0.05;
+            var updatedChem = Object.assign({}, waterChem, { ammonia: waterChem.ammonia + individualAmmonia });
+            updMulti({ waterChem: updatedChem, hungerLevels: updatedHunger, fishCareLog: updatedCareLog, eventLog: appendTankEvent('Fed ' + displayName + ' individually') });
+            if (addToast) addToast('Fed ' + displayName + (individualAmmonia ? '. Small ammonia impact: +0.05 ppm.' : ' in the hospital tank. Display tank chemistry was protected.'), 'success');
+            sfxFeed();
           };
 
 
@@ -15244,6 +15278,70 @@ var d = (labToolData && labToolData._aquarium) || {};
             if (addToast) addToast(msg, 'info');
 
           };
+          var toggleFishQuarantine = function (fishId) {
+
+            var fishIndex = fishInstanceIds.indexOf(fishId);
+            if (fishIndex === -1) return;
+
+            var speciesId = tankFish[fishIndex];
+            var species = (SPECIES_BY_TANK[selectedTank] || []).find(function (candidate) { return candidate.id === speciesId; });
+            var displayName = fishNames[fishId] || (species ? species.name : 'Fish');
+            var nextQuarantined = Object.assign({}, quarantinedFish);
+            var nextCareLog = Object.assign({}, fishCareLog);
+            var nextStress = Object.assign({}, fishStress);
+            var message;
+
+            if (nextQuarantined[fishId]) {
+              if (fishSickness[fishId]) {
+                if (addToast) addToast(displayName + ' should stay isolated until treatment clears the illness.', 'warning');
+                return;
+              }
+              delete nextQuarantined[fishId];
+              message = 'Released from hospital tank';
+            } else {
+              nextQuarantined[fishId] = {
+                sinceTick: simTick,
+                reason: fishSickness[fishId] ? fishSickness[fishId].disease : 'observation'
+              };
+              nextStress[fishId] = Math.max(0, (nextStress[fishId] || 0) - 10);
+              message = fishSickness[fishId] ? 'Moved to hospital tank for ' + fishSickness[fishId].disease : 'Moved to hospital tank for observation';
+            }
+
+            nextCareLog[fishId] = (nextCareLog[fishId] || []).concat([{ tick: simTick, day: simDay, hour: simHour, msg: message }]).slice(-8);
+            updMulti({
+              quarantinedFish: nextQuarantined,
+              fishCareLog: nextCareLog,
+              fishStress: nextStress,
+              eventLog: appendTankEvent(displayName + ': ' + message)
+            });
+            if (addToast) addToast(displayName + ': ' + message + '.', nextQuarantined[fishId] ? 'info' : 'success');
+          };
+          var quarantineAllSickFish = function () {
+            if (mainTankSickFishIds.length === 0) {
+              if (addToast) addToast('No sick fish remain in the display tank.', 'info');
+              return;
+            }
+
+            var nextQuarantined = Object.assign({}, quarantinedFish);
+            var nextCareLog = Object.assign({}, fishCareLog);
+            var nextStress = Object.assign({}, fishStress);
+            mainTankSickFishIds.forEach(function (fishId) {
+              var illness = fishSickness[fishId];
+              nextQuarantined[fishId] = { sinceTick: simTick, reason: illness ? illness.disease : 'observation' };
+              nextStress[fishId] = Math.max(0, (nextStress[fishId] || 0) - 10);
+              nextCareLog[fishId] = (nextCareLog[fishId] || []).concat([{ tick: simTick, day: simDay, hour: simHour, msg: 'Moved to hospital tank during outbreak response' }]).slice(-8);
+            });
+
+            updMulti({
+              quarantinedFish: nextQuarantined,
+              fishCareLog: nextCareLog,
+              fishStress: nextStress,
+              eventLog: appendTankEvent('Outbreak response: isolated ' + mainTankSickFishIds.length + ' sick fish')
+            });
+            if (addToast) addToast('Isolated ' + mainTankSickFishIds.length + ' sick fish. Contact transmission is now contained.', 'success');
+          };
+
+
 
 
 
@@ -15254,6 +15352,7 @@ var d = (labToolData && labToolData._aquarium) || {};
             if (!waterChem) return;
 
             var targetId = typeof targetFishId === 'string' && fishSickness[targetFishId] ? targetFishId : null;
+            var targetInQuarantine = targetId && quarantinedFish[targetId];
             var sickCount = targetId ? 1 : Object.keys(fishSickness).length;
 
             if (sickCount === 0) {
@@ -15276,7 +15375,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               var illness = newSickness[fId];
               var treatmentMessage;
 
-              if (illness.severity <= 2) {
+              if (illness.severity <= 2 || (targetId && quarantinedFish[fId])) {
                 delete newSickness[fId];
                 cured++;
                 treatmentMessage = 'Medication cured ' + illness.disease;
@@ -15292,10 +15391,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var newChem = Object.assign({}, waterChem, {
 
-              ammonia: waterChem.ammonia + (targetId ? 0.1 : 0.25)
+              ammonia: waterChem.ammonia + (targetInQuarantine ? 0 : targetId ? 0.1 : 0.25)
 
             });
 
+            var treatmentNote = targetInQuarantine ? 'Hospital treatment protected the display tank biofilter.' : 'Beneficial bacteria reduced.';
             updMulti({
 
               fishSickness: newSickness,
@@ -15306,6 +15406,11 @@ var d = (labToolData && labToolData._aquarium) || {};
               eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83D\uDC8A Medication applied — ' + cured + ' fish cured. Beneficial bacteria reduced.' }])
 
             });
+            if (targetInQuarantine) {
+              upd('eventLog', appendTankEvent('Hospital medication applied ? ' + cured + ' fish cured. ' + treatmentNote));
+              if (addToast) addToast('Treated ' + cured + ' fish in the hospital tank. Display tank chemistry was protected.', cured > 0 ? 'success' : 'warning');
+              return;
+            }
 
             if (addToast) addToast('\uD83D\uDC8A Treated ' + cured + ' fish. Watch ammonia — medication disrupts the nitrogen cycle.', cured > 0 ? 'success' : 'warning');
 
@@ -15393,6 +15498,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               var _fishSickness = migrateTickFishState(aq.fishSickness);
 
               var _fishStress = migrateTickFishState(aq.fishStress);
+              var _quarantinedFish = migrateTickFishState(aq.quarantinedFish);
 
               var _lightsOn = aq.lightsOn !== undefined ? aq.lightsOn : true;
 
@@ -15427,7 +15533,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var breedingChanged = false;
 
-              var bioload = _tankFish.reduce(function (sum, f) {
+              var bioload = _tankFish.reduce(function (sum, f, index) {
+                if (_quarantinedFish[_fishInstanceIds[index]]) return sum;
 
                 var sp = (SPECIES_BY_TANK[_selectedTank] || []).find(function (s) { return s.id === f; });
 
@@ -15712,9 +15819,10 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var sickChanged = false;
 
-              if (_waterChem.ammonia > 0.8 && Math.random() < 0.15 && _tankFish.length > 0) {
+              var susceptibleIndexes = _tankFish.map(function (fId, index) { return index; }).filter(function (index) { return !_quarantinedFish[_fishInstanceIds[index]]; });
+              if (_waterChem.ammonia > 0.8 && Math.random() < 0.15 && susceptibleIndexes.length > 0) {
 
-                var victimIndex = Math.floor(Math.random() * _tankFish.length);
+                var victimIndex = susceptibleIndexes[Math.floor(Math.random() * susceptibleIndexes.length)];
                 var victim = _fishInstanceIds[victimIndex];
 
                 if (!newSickness[victim]) {
@@ -15732,10 +15840,31 @@ var d = (labToolData && labToolData._aquarium) || {};
                 }
 
               }
+              var contagiousFishIds = Object.keys(newSickness).filter(function (fishId) {
+                var illness = newSickness[fishId];
+                return _fishInstanceIds.indexOf(fishId) !== -1 && !_quarantinedFish[fishId] && illness && /^(ich|velvet)$/.test(illness.disease);
+              });
+              var healthyMainTankFishIds = _fishInstanceIds.filter(function (fishId) {
+                return !_quarantinedFish[fishId] && !newSickness[fishId];
+              });
+              var transmissionChance = Math.min(0.35, contagiousFishIds.length * 0.08);
+              if (contagiousFishIds.length > 0 && healthyMainTankFishIds.length > 0 && Math.random() < transmissionChance) {
+                var sourceFishId = contagiousFishIds[Math.floor(Math.random() * contagiousFishIds.length)];
+                var exposedFishId = healthyMainTankFishIds[Math.floor(Math.random() * healthyMainTankFishIds.length)];
+                var sourceIllness = newSickness[sourceFishId];
+                newSickness[exposedFishId] = { disease: sourceIllness.disease, severity: 1, tick: newTick, source: sourceFishId };
+                sickChanged = true;
+                var sourceName = newFishNames[sourceFishId] || 'a sick fish';
+                var exposedName = newFishNames[exposedFishId] || 'A tankmate';
+                newFishCareLog[exposedFishId] = (newFishCareLog[exposedFishId] || []).concat([{ tick: newTick, day: newDay, hour: newHour, msg: 'Contact exposure to ' + sourceIllness.disease + ' from ' + sourceName }]).slice(-8);
+                newLog.push({ tick: newTick, msg: '\u26A0\uFE0F ' + exposedName + ' contracted ' + sourceIllness.disease + ' through display-tank contact. Isolate sick fish to contain the outbreak.' });
+              }
+
 
               Object.keys(newSickness).forEach(function (fId) {
 
-                if (newSickness[fId] && newTick - newSickness[fId].tick > 10 && newSickness[fId].severity < 3) {
+                var progressionWindow = _quarantinedFish[fId] ? 16 : 10;
+                if (newSickness[fId] && newTick - newSickness[fId].tick > progressionWindow && newSickness[fId].severity < 3) {
 
                   newSickness[fId] = Object.assign({}, newSickness[fId], { severity: newSickness[fId].severity + 1, tick: newTick });
 
@@ -15754,7 +15883,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 var total = 0;
                 var count = 0;
                 _tankFish.forEach(function (candidateSpeciesId, index) {
-                  if (candidateSpeciesId !== speciesId || fishToRemove.indexOf(index) !== -1) return;
+                  if (candidateSpeciesId !== speciesId || fishToRemove.indexOf(index) !== -1 || _quarantinedFish[_fishInstanceIds[index]]) return;
                   var value = store[_fishInstanceIds[index]];
                   total += value !== undefined ? value : fallback;
                   count++;
@@ -15767,6 +15896,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               _tankFish.forEach(function (fId, idx) {
 
                 var fishKey = _fishInstanceIds[idx]; var hunger = newHunger[fishKey] !== undefined ? newHunger[fishKey] : 50;
+                if (_quarantinedFish[fishKey]) newStress[fishKey] = Math.max(0, (newStress[fishKey] || 0) - 4);
 
                 if (hunger >= 100 && Math.random() < 0.25) {
 
@@ -15778,7 +15908,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 }
 
-                if (hunger > 80) {
+                if (hunger > 80 && !_quarantinedFish[fishKey]) {
 
                   var predSp = species.find(function (s) { return s.id === fId; });
 
@@ -15788,7 +15918,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     _tankFish.forEach(function (pId, pi) {
 
-                      if (pi === idx || fishToRemove.indexOf(pi) !== -1) return;
+                      if (pi === idx || fishToRemove.indexOf(pi) !== -1 || _quarantinedFish[_fishInstanceIds[pi]]) return;
 
                       if (pId === fId) return;
 
@@ -15828,13 +15958,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var maxLoad = tank ? Math.floor(tank.size / 2) : 10;
 
-              var currentLoad = _tankFish.reduce(function (s, f) { var sp = species.find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
+              var currentLoad = _tankFish.reduce(function (s, f, index) { if (_quarantinedFish[_fishInstanceIds[index]]) return s; var sp = species.find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
 
               var overcrowded = currentLoad > maxLoad * 0.85;
 
               var speciesCounts = {};
 
-              _tankFish.forEach(function (fId) { speciesCounts[fId] = (speciesCounts[fId] || 0) + 1; });
+              _tankFish.forEach(function (fId, index) { if (!_quarantinedFish[_fishInstanceIds[index]]) speciesCounts[fId] = (speciesCounts[fId] || 0) + 1; });
 
               var uniqueSpecies = Object.keys(speciesCounts);
 
@@ -15854,8 +15984,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     var aggressionChance = overcrowded ? 0.08 : 0.03;
 
-                    var sp1Idx = _tankFish.indexOf(sp1.id);
-                    var sp2Idx = _tankFish.indexOf(sp2.id);
+                    var sp1Idx = _tankFish.findIndex(function (speciesId, index) { return speciesId === sp1.id && !_quarantinedFish[_fishInstanceIds[index]]; });
+                    var sp2Idx = _tankFish.findIndex(function (speciesId, index) { return speciesId === sp2.id && !_quarantinedFish[_fishInstanceIds[index]]; });
                     var sp1Key = sp1Idx >= 0 ? _fishInstanceIds[sp1Idx] : null;
                     var sp2Key = sp2Idx >= 0 ? _fishInstanceIds[sp2Idx] : null;
                     var avgH = (averageFishStateForSpecies(newHunger, sp1.id, 50) + averageFishStateForSpecies(newHunger, sp2.id, 50)) / 2;
@@ -15919,6 +16049,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   delete newFishBirthTicks[removedKey];
                   delete newFishCareLog[removedKey];
                   delete newStress[removedKey];
+                  delete _quarantinedFish[removedKey];
                   if (newSickness[removedKey]) { delete newSickness[removedKey]; sickChanged = true; }
                   finalTankFish.splice(ri, 1);
                   finalFishInstanceIds.splice(ri, 1);
@@ -15984,7 +16115,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var _speciesPopCounts = {};
 
-              finalTankFish.forEach(function (fId) { _speciesPopCounts[fId] = (_speciesPopCounts[fId] || 0) + 1; });
+              finalTankFish.forEach(function (fId, index) { if (!_quarantinedFish[finalFishInstanceIds[index]]) _speciesPopCounts[fId] = (_speciesPopCounts[fId] || 0) + 1; });
 
               var speciesList = SPECIES_BY_TANK[_selectedTank] || [];
 
@@ -15992,7 +16123,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var _maxLoad = tank ? Math.floor(tank.size / 2) : 10;
 
-              var _currentLoad = finalTankFish.reduce(function (s, f) { var sp = speciesList.find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
+              var _currentLoad = finalTankFish.reduce(function (s, f, index) { if (_quarantinedFish[finalFishInstanceIds[index]]) return s; var sp = speciesList.find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
 
               var _totalPlantBiomass = _tankPlants.reduce(function (s, pId) { return s + (_plantBiomass[pId] || 0); }, 0);
 
@@ -16276,9 +16407,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 fishHealth: finalFishHealth,
                 fishBirthTicks: newFishBirthTicks,
+                expandedCareFish: finalFishInstanceIds.indexOf(aq.expandedCareFish) !== -1 ? aq.expandedCareFish : null,
                 fishCareLog: newFishCareLog,
-                algaeLevel: Math.round(newAlgae * 10) / 10, fishStress: newStress
+                algaeLevel: Math.round(newAlgae * 10) / 10, fishStress: newStress,
 
+                quarantinedFish: _quarantinedFish,
               };
 
               if (sickChanged) tickUpdate.fishSickness = newSickness;
@@ -18798,7 +18931,22 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 tankFish.length > 0 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
 
-                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, __alloT('stem.aquarium.fish_hunger_status', "\uD83C\uDF7D\uFE0F Fish Hunger Status")),
+                  React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" },
+                    React.createElement("h4", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.aquarium.fish_hunger_status', "\uD83D\uDC1F Individual Fish Care")),
+                    mainTankSickFishIds.length > 0 && React.createElement("button", {
+                      type: "button",
+                      onClick: quarantineAllSickFish,
+                      'aria-label': "Move all " + mainTankSickFishIds.length + " sick fish to the hospital tank",
+                      className: "rounded-lg border border-violet-500 bg-violet-50 px-2 py-1 text-[10px] font-bold text-violet-700 hover:bg-violet-100"
+                    }, "\uD83C\uDFE5 Isolate all sick (" + mainTankSickFishIds.length + ")")
+                  ),
+                  (mainTankSickFishIds.length > 0 || hospitalFishCount > 0) && React.createElement("div", {
+                    role: "status",
+                    'aria-live': "polite",
+                    className: "mb-2 rounded-lg border px-2 py-1 text-[10px] font-semibold " + (mainTankSickFishIds.length > 0 ? "border-amber-300 bg-amber-50 text-amber-800" : "border-violet-200 bg-violet-50 text-violet-700")
+                  }, mainTankSickFishIds.length > 0
+                    ? "\u26A0\uFE0F Outbreak risk: " + mainTankSickFishIds.length + " sick fish remain in the display tank. Contact spread is possible."
+                    : "\uD83C\uDFE5 Hospital active: " + hospitalFishCount + " fish isolated" + (quarantinedSickCount > 0 ? ", " + quarantinedSickCount + " recovering." : ".")),
 
                   React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
 
@@ -18827,14 +18975,24 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         var hungerTextColor = hunger >= 80 ? 'text-red-600' : hunger >= 50 ? 'text-amber-600' : 'text-green-600';
 
-                        return React.createElement("div", { key: fishKey, className: "flex items-center gap-2 bg-slate-50 rounded-lg p-1.5" },
+                        var illnessSeverity = fishSickness[fishKey] ? fishSickness[fishKey].severity : 0;
+                        var careScore = Math.max(0, Math.round(100 - hunger * 0.35 - stress * 0.35 - illnessSeverity * 15));
+                        var careScoreColor = careScore >= 80 ? 'text-green-700' : careScore >= 55 ? 'text-amber-700' : 'text-red-700';
+                        var historyExpanded = expandedCareFish === fishKey;
+                        var historyId = 'aquarium-care-history-' + fishKey;
+                        var isQuarantined = !!quarantinedFish[fishKey];
+                        var quarantineHours = isQuarantined ? Math.max(0, simTick - quarantinedFish[fishKey].sinceTick) : 0;
+                        return React.createElement("div", { key: fishKey, className: "flex items-center gap-2 rounded-lg border p-1.5 " + (isQuarantined ? "border-violet-300 bg-violet-50" : "border-transparent bg-slate-50") },
 
                           React.createElement("span", { className: "text-sm" }, sp ? sp.icon : '\uD83D\uDC1F'),
 
                           React.createElement("div", { className: "flex-1 min-w-0" },
                             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                               React.createElement("span", { className: "text-[11px] font-bold text-slate-600 truncate" }, displayName),
-                              React.createElement("span", { className: "text-[11px] font-bold " + hungerTextColor }, hungerText)
+                              React.createElement("div", { className: "flex items-center gap-1" },
+                                isQuarantined && React.createElement("span", { className: "rounded bg-violet-100 px-1 text-[9px] font-bold text-violet-700", title: "In hospital tank for " + quarantineHours + " hours" }, "\uD83C\uDFE5 Hospital"),
+                                React.createElement("span", { className: "text-[11px] font-bold " + hungerTextColor }, hungerText)
+                              )
                             ),
                             React.createElement("input", {
                               type: "text",
@@ -18846,24 +19004,62 @@ var d = (labToolData && labToolData._aquarium) || {};
                               onBlur: function (event) { var completedName = event.target.value.trim(); if (completedName && (!lastCare || lastCare.msg !== 'Named ' + completedName)) appendFishCare(fishKey, 'Named ' + completedName); },
                               className: "mb-1 w-full rounded border border-slate-300 bg-white px-1 py-0.5 text-[10px] text-slate-700"
                             }),
-                            React.createElement("div", { className: "mb-1 flex items-center gap-1 text-[10px] text-slate-600", 'aria-label': displayName + " age " + ageLabel + (lastCare ? ". Latest care: " + lastCare.msg : "") },
-                              React.createElement("span", { className: "font-bold whitespace-nowrap" }, "Age " + ageLabel),
+                            React.createElement("div", { className: "mb-1 flex items-center gap-1 text-[10px] text-slate-600", 'aria-label': displayName + " care score " + careScore + " out of 100, age " + ageLabel + (isQuarantined ? ", in hospital tank for " + quarantineHours + " hours" : "") + (lastCare ? ". Latest care: " + lastCare.msg : "") },
+                              React.createElement("span", { className: "font-bold whitespace-nowrap " + careScoreColor, title: "Care score combines hunger, stress, and illness" }, "Care " + careScore + "/100"),
+                              React.createElement("span", { className: "whitespace-nowrap" }, "\u2022 Age " + ageLabel),
                               lastCare && React.createElement("span", { className: "truncate", title: lastCare.msg }, "\u2022 " + lastCare.msg)
                             ),
                             React.createElement("div", { className: "flex items-center gap-1" },
                               React.createElement("div", { className: "h-1.5 flex-1 bg-slate-200 rounded-full overflow-hidden" },
                                 React.createElement("div", { style: { width: (100 - hunger) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hungerColor })
                               ),
+                              React.createElement("button", {
+                                type: "button",
+                                disabled: hunger <= 10,
+                                'aria-label': hunger <= 10 ? displayName + " is full" : "Feed " + displayName + " individually",
+                                onClick: function () { feedIndividual(fishKey, fId); },
+                                className: "rounded-md border px-1.5 py-0.5 text-[10px] font-bold " + (hunger <= 10 ? "cursor-not-allowed border-slate-300 bg-slate-100 text-slate-400" : "border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100")
+                              }, hunger <= 10 ? "Full" : "Feed"),
                               fishSickness[fishKey] && React.createElement("button", {
                                 type: "button",
                                 'aria-label': "Treat " + displayName + " for " + fishSickness[fishKey].disease,
                                 onClick: function () { medicateFish(fishKey); },
                                 className: "rounded-md border border-rose-500 bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 hover:bg-rose-100"
-                              }, "Treat")
+                              }, "Treat"),
+                              React.createElement("button", {
+                                type: "button",
+                                'aria-pressed': isQuarantined,
+                                'aria-label': isQuarantined ? (fishSickness[fishKey] ? displayName + " is recovering in the hospital tank" : "Release " + displayName + " from the hospital tank") : "Move " + displayName + " to the hospital tank",
+                                onClick: function () { toggleFishQuarantine(fishKey); },
+                                className: "rounded-md border px-1.5 py-0.5 text-[10px] font-bold " + (isQuarantined ? "border-violet-500 bg-violet-100 text-violet-700 hover:bg-violet-200" : "border-violet-400 bg-white text-violet-700 hover:bg-violet-50")
+                              }, isQuarantined ? (fishSickness[fishKey] ? "Hospital" : "Release") : "Isolate"),
+                              React.createElement("button", {
+                                type: "button",
+                                'aria-expanded': historyExpanded,
+                                'aria-controls': historyId,
+                                onClick: function () { upd('expandedCareFish', historyExpanded ? null : fishKey); },
+                                className: "rounded-md border border-sky-400 bg-sky-50 px-1.5 py-0.5 text-[10px] font-bold text-sky-700 hover:bg-sky-100"
+                              }, historyExpanded ? "Hide" : "History")
+                            ),
+                            historyExpanded && React.createElement("div", {
+                              id: historyId,
+                              role: "list",
+                              'aria-label': displayName + " care history",
+                              className: "mt-1 max-h-28 overflow-y-auto rounded-lg border border-sky-200 bg-white p-1"
+                            },
+                              careEntries.length === 0
+                                ? React.createElement("p", { className: "px-1 py-0.5 text-[10px] text-slate-500" }, "No care events yet.")
+                                : careEntries.slice().reverse().map(function (entry, historyIndex) {
+                                  var historyHour = (entry.hour < 10 ? '0' : '') + entry.hour;
+                                  return React.createElement("div", { role: "listitem", key: fishKey + '-care-' + historyIndex, className: "flex gap-1 border-b border-slate-100 px-1 py-0.5 text-[10px] last:border-b-0" },
+                                    React.createElement("span", { className: "shrink-0 font-bold text-sky-700" }, "Day " + entry.day + " " + historyHour + ":00"),
+                                    React.createElement("span", { className: "text-slate-600" }, entry.msg)
+                                  );
+                                })
                             )
                           ),
 
-                          stress > 30 && React.createElement("span", { className: "text-[11px] text-red-500", title: 'Stress: ' + Math.round(stress) + '%' }, '\u26A0\uFE0F')
+                          isQuarantined ? React.createElement("span", { className: "text-[11px] text-violet-600", title: 'Hospital tank' }, '\uD83C\uDFE5') : stress > 30 && React.createElement("span", { className: "text-[11px] text-red-500", title: 'Stress: ' + Math.round(stress) + '%' }, '\u26A0\uFE0F')
 
                         );
 

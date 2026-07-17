@@ -10,7 +10,7 @@
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null), function () {
   'use strict';
 
-  var SCHEMA_VERSION = 2;
+  var SCHEMA_VERSION = 3;
   var MAX_SOURCE_CHARS = 600000;
   var MAX_SOURCE_LABELS = 8;
   var MAX_SOURCE_LABEL_CHARS = 48;
@@ -168,6 +168,13 @@
     if (spec.discoveryQueryHash) normalized.discoveryQueryHash = cleanLabel(spec.discoveryQueryHash, '').slice(0, 120);
     if (spec.searchProvider) normalized.searchProvider = cleanLabel(spec.searchProvider, '').slice(0, 80);
     if (Number.isFinite(Number(spec.searchRank)) && Number(spec.searchRank) > 0) normalized.searchRank = Math.floor(Number(spec.searchRank));
+    if (spec.fileName) normalized.fileName = cleanLabel(spec.fileName, '').slice(0, 240);
+    if (spec.fileFormat) normalized.fileFormat = cleanLabel(spec.fileFormat, '').toLowerCase().slice(0, 20);
+    if (Number.isFinite(Number(spec.fileSize)) && Number(spec.fileSize) >= 0) normalized.fileSize = Math.floor(Number(spec.fileSize));
+    if (Number.isFinite(Number(spec.fileLastModified)) && Number(spec.fileLastModified) > 0) normalized.fileLastModified = nowIso(Number(spec.fileLastModified));
+    if (spec.fileContentHash) normalized.fileContentHash = cleanLabel(spec.fileContentHash, '').slice(0, 120);
+    if (spec.extractionMethod) normalized.extractionMethod = cleanLabel(spec.extractionMethod, '').slice(0, 80);
+    if (Number.isFinite(Number(spec.documentPartCount)) && Number(spec.documentPartCount) > 0) normalized.documentPartCount = Math.floor(Number(spec.documentPartCount));
     return normalized;
   }
 
@@ -269,6 +276,13 @@
     return out;
   }
 
+  function documentPartFromHeading(value) {
+    var heading = cleanLabel(value, '');
+    var match = heading.match(/^(Page|Slide|Sheet|Section)\s+(\d+)(?::\s*(.*))?$/i);
+    if (!match) return null;
+    return { kind: match[1].toLowerCase(), index: Number(match[2]), label: heading };
+  }
+
   function chunkSource(source, options) {
     options = options || {};
     var target = Math.max(400, Math.min(MAX_PASSAGE_CHARS, Number(options.targetChars) || DEFAULT_PASSAGE_CHARS));
@@ -301,6 +315,8 @@
           charEnd: end,
           heading: heading || null
         };
+        var documentPart = documentPartFromHeading(heading);
+        if (documentPart) loc.documentPart = documentPart;
         nodes.push({
           id: 'ev_' + hashString(source.id + '|' + source.contentHash + '|' + ordinal + '|' + piece),
           sourceId: source.id,
@@ -733,6 +749,7 @@
     normalizeDiscoveryResults: normalizeDiscoveryResults,
     cleanFetchedWebText: cleanFetchedWebText,
     discoveryCandidateToSourceSpec: discoveryCandidateToSourceSpec,
+    documentPartFromHeading: documentPartFromHeading,
     chunkSource: chunkSource,
     upsertSource: upsertSource,
     removeSource: removeSource,

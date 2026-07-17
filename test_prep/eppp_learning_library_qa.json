@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-16T14:49:41.420Z",
+  "generatedAt": "2026-07-17T04:15:36.084Z",
   "libraryId": "eppp-learning-library",
   "standard": {
     "checks": [
@@ -12,13 +12,21 @@
       "expert-review"
     ],
     "meaning": "Content remains review-required until claim-level source, accuracy, instructional, accessibility, bias/context, and qualified expert gates are complete.",
-    "accessibilityBaseline": "The shared renderer provides keyboard controls, persistent section progress, diagram text alternatives, learner motion controls, and reduced-motion support."
+    "accessibilityBaseline": "The shared renderer provides keyboard controls, persistent section progress, diagram text alternatives, learner motion controls, and reduced-motion support.",
+    "diagramCatalog": "Shared templates and concrete learner-visible placements are cataloged separately. Inline diagrams exist only as placements; unused templates remain visible in the template registry but are not counted as placements."
   },
   "summary": {
     "chapters": 49,
     "sections": 278,
     "diagrams": 25,
-    "diagramPlacements": 61,
+    "diagramTemplates": 25,
+    "usedDiagramTemplates": 15,
+    "unusedDiagramTemplates": 10,
+    "diagramPlacements": 58,
+    "sharedTemplateDiagramPlacements": 16,
+    "inlineDiagramPlacements": 42,
+    "sourceReviewedDiagramTemplates": 15,
+    "sourceReviewedDiagramPlacements": 16,
     "knowledgeChecks": 109,
     "flashcards": 415,
     "memoryAids": 255,
@@ -37,7 +45,8 @@
   "status": "review-in-progress",
   "findings": [
     "Legacy content is preserved but is not automatically approved for native publication.",
-    "Shared renderer accessibility controls are implemented; each diagram still needs concept and label review.",
+    "Shared renderer accessibility controls are implemented. 16 of 58 learner-visible placements have source-review records; 42 placements still need concept and label review.",
+    "58 learner-visible diagram placements are cataloged: 16 use shared templates and 42 are inline chapter diagrams. 10 shared templates are currently unused.",
     "415 of 415 flashcards have source-review records; 0 remain in first-pass review, and independent qualified expert validation is still pending.",
     "79 source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets."
   ]

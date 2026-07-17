@@ -43,6 +43,8 @@ beforeAll(() => {
       getItem: (k) => (k in store ? store[k] : null),
       setItem: (k, v) => { store[k] = String(v); },
       removeItem: (k) => { delete store[k]; },
+      key: (i) => Object.keys(store)[i] ?? null,
+      get length() { return Object.keys(store).length; },
     };
   }
 });
@@ -396,9 +398,12 @@ describe('certificate + completion history', () => {
 
 describe('runner resume + home history (render)', () => {
   it('PdRunner resumes from saved progress', () => {
-    const { CC } = loadWithCore();
+    const { CC, PdCore } = loadWithCore();
     const KEY = 'alloflow_pd_progress::udl-representation-quickstart';
-    globalThis.localStorage.setItem(KEY, JSON.stringify({ idx: 1, rawById: { 'read-representation': { acknowledged: true } }, done: false }));
+    globalThis.localStorage.setItem(KEY, JSON.stringify({
+      idx: 1, rawById: { 'read-representation': { acknowledged: true } }, done: false,
+      fp: CC._pdFingerprint(SEED, PdCore), savedAt: new Date().toISOString(),
+    }));
     try {
       const html = render(CC.PdRunner, { module: SEED, addToast() {}, onExit() {} });
       expect(html).toContain('step 2 of 3');                 // resumed at the quiz
@@ -407,6 +412,96 @@ describe('runner resume + home history (render)', () => {
     } finally {
       globalThis.localStorage.removeItem(KEY);
     }
+  });
+
+  it('offers only an explicit-consent local review-candidate export after completion', () => {
+    const { CC, PdCore } = loadWithCore();
+    const KEY = 'alloflow_pd_progress::udl-representation-quickstart';
+    globalThis.localStorage.setItem(KEY, JSON.stringify({
+      idx: 2,
+      done: true,
+      fp: CC._pdFingerprint(SEED, PdCore),
+      savedAt: new Date().toISOString(),
+      rawById: {
+        'read-representation': { acknowledged: true },
+        'quiz-representation': { answers: [1, 2, 3, 1], submitted: true },
+        'reflect-representation': { text: 'I will add captions and a transcript.' },
+      },
+    }));
+    try {
+      const html = render(CC.PdRunner, { module: SEED, addToast() {}, onExit() {} });
+      expect(html).toContain('Prepare evidence for human review');
+      expect(html).toContain('learner-device-unverified');
+      expect(html).toContain('Nothing is uploaded or submitted by this action');
+      expect(html).toContain('Structured identity fields and raw clipboard event/content fields are omitted');
+      expect(html).toContain('may contain names, email addresses, or other personal data');
+      expect(html).toContain('Optional - Include AI-assisted advisory notes');
+      expect(html).toContain('Optional - Include an aggregate paste-event summary');
+      expect(html).toContain('Preview review-candidate package');
+      expect(SRC).toContain('var reviewAi$ = useState(false)');
+      expect(SRC).toContain('disabled: !reviewConsent || !reviewNotice');
+      expect(SRC).toContain('Core.buildReviewCandidatePackage(mod, resultsById()');
+      expect(SRC).toContain('setReviewPreview(built.package)');
+      expect(SRC).toContain('disabled: !reviewPreviewConfirmed');
+      expect(SRC).toContain('Confirm and download review-candidate package (JSON)');
+      expect(SRC).toContain('downloadJsonFile(reviewPreview');
+      const previewStart = SRC.indexOf("reviewPreview && e('div', {");
+      const previewEnd = SRC.indexOf('ev.complete && !allowSelfPacedSigning', previewStart);
+      expect(SRC.slice(previewStart, previewEnd)).not.toMatch(/artifact[.]value|JSON[.]stringify[(]reviewPreview/);
+      const exportStart = SRC.indexOf("ev.complete && e('section', {");
+      const exportEnd = SRC.indexOf('ev.complete && !allowSelfPacedSigning', exportStart);
+      expect(SRC.slice(exportStart, exportEnd)).not.toMatch(/fetch\(|issuePd/i);
+    } finally {
+      globalThis.localStorage.removeItem(KEY);
+    }
+  });
+
+  it('purges expired and digest-mismatched drafts and never persists completed response evidence', () => {
+    const { CC, PdCore } = loadWithCore();
+    const KEY = 'alloflow_pd_progress::udl-representation-quickstart';
+    const fp = CC._pdFingerprint(SEED, PdCore);
+    CC._clearAllPdProgress();
+
+    globalThis.localStorage.setItem(KEY, JSON.stringify({
+      idx: 1, rawById: { secret: { text: 'expired' } }, done: false, fp,
+      savedAt: new Date(Date.now() - CC._PD_PROGRESS_TTL_MS - 1000).toISOString(),
+    }));
+    expect(CC._loadPdProgress(SEED, PdCore)).toBeNull();
+    expect(globalThis.localStorage.getItem(KEY)).toBeNull();
+
+    globalThis.localStorage.setItem(KEY, JSON.stringify({
+      idx: 1, rawById: { secret: { text: 'wrong module' } }, done: false,
+      fp: 'sha256:' + '0'.repeat(64), savedAt: new Date().toISOString(),
+    }));
+    expect(CC._loadPdProgress(SEED, PdCore)).toBeNull();
+    expect(globalThis.localStorage.getItem(KEY)).toBeNull();
+
+    globalThis.localStorage.setItem(KEY, JSON.stringify({
+      idx: 2, rawById: { secret: { text: 'screen only' } }, done: true, fp,
+      savedAt: new Date().toISOString(),
+    }));
+    expect(CC._loadPdProgress(SEED, PdCore)).toMatchObject({ done: true });
+    expect(globalThis.localStorage.getItem(KEY)).toBeNull();
+    expect(CC._loadPdProgress(SEED, PdCore)).toBeNull();
+  });
+
+  it('exposes a separate delete-all-responses control and the 30-day local retention disclosure', () => {
+    const { CC } = loadWithCore();
+    CC._clearAllPdProgress();
+    globalThis.localStorage.setItem('alloflow_pd_progress::one', '{}');
+    globalThis.localStorage.setItem('alloflow_pd_progress::two', '{}');
+    globalThis.localStorage.setItem('alloflow_pd_history', '[]');
+    expect(CC._clearAllPdProgress()).toBe(2);
+    expect(globalThis.localStorage.getItem('alloflow_pd_progress::one')).toBeNull();
+    expect(globalThis.localStorage.getItem('alloflow_pd_progress::two')).toBeNull();
+    expect(globalThis.localStorage.getItem('alloflow_pd_history')).toBe('[]');
+
+    const html = render(CC.PdRunner, { module: SEED, addToast() {}, onExit() {} });
+    expect(html).toContain('stay only in this browser for up to 30 days');
+    expect(html).toContain('completed response data is removed from browser storage');
+    expect(SRC).toContain('Delete all saved PD responses');
+    expect(SRC).toContain('In-progress responses are retained in this browser for at most 30 days');
+    globalThis.localStorage.removeItem('alloflow_pd_history');
   });
 
   it('PdHome surfaces a "My learning" entry point when history exists', () => {
@@ -451,6 +546,32 @@ describe('My learning export/import', () => {
     expect(hist.find((h) => h.moduleId === 'a').moduleTitle).toBe('A v2');
     expect(hist.find((h) => h.moduleId === 'b')).toBeTruthy();
     try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
+  });
+
+  it('drops imported responses, learner identity, and arbitrary private fields from stored summaries', () => {
+    const { CC } = loadWithCore();
+    globalThis.localStorage.removeItem('alloflow_pd_history');
+    const secret = 'PRIVATE-RESPONSE-MUST-NOT-PERSIST';
+    const res = CC._importPdHistory({ entries: [{
+      moduleId: 'private-summary', moduleTitle: 'Private summary', topic: 'UDL',
+      moduleVersion: '1.0.0', contentDigest: 'sha256:' + 'a'.repeat(64),
+      completedAt: '2026-06-25', passed: 2, total: 2, complete: true,
+      responses: { reflection: secret }, learner: { name: 'Private Person', email: 'private@example.test' },
+      arbitraryPrivateField: secret,
+    }] });
+    expect(res.ok).toBe(true);
+    const entry = CC._loadPdHistory()[0];
+    expect(Object.keys(entry).sort()).toEqual([
+      'complete', 'completedAt', 'contentDigest', 'historyOrigin', 'moduleId', 'moduleTitle',
+      'moduleVersion', 'passed', 'topic', 'total', 'trust', 'verificationStatus', 'verified',
+    ].sort());
+    expect(entry).not.toHaveProperty('responses');
+    expect(entry).not.toHaveProperty('learner');
+    expect(entry).not.toHaveProperty('arbitraryPrivateField');
+    const stored = globalThis.localStorage.getItem('alloflow_pd_history');
+    expect(stored).not.toContain(secret);
+    expect(stored).not.toContain('private@example.test');
+    globalThis.localStorage.removeItem('alloflow_pd_history');
   });
 
   it('rejects a file that is not a PD history export', () => {
@@ -539,14 +660,24 @@ describe('path-certificate rows + import edge cases', () => {
   it('pdPathCertificateRows resolves titles (entry > history > slug) + completion dates', () => {
     const { CC } = loadWithCore();
     const path = { moduleSlugs: ['a', 'b', 'gone'] };
-    const entries = [{ slug: 'a', title: 'Module A' }];
-    const history = [{ moduleId: 'a', moduleTitle: 'A (hist)', completedAt: '2026-06-20' }, { moduleId: 'b', moduleTitle: 'Module B', completedAt: '2026-06-21' }];
+    const entries = [{ slug: 'a', moduleId: 'ums:pd:module-a', title: 'Module A' }];
+    const history = [{ moduleId: 'ums:pd:module-a', moduleTitle: 'A (hist)', completedAt: '2026-06-20' }, { moduleId: 'b', moduleTitle: 'Module B', completedAt: '2026-06-21' }];
     const rows = CC._pdPathCertificateRows(path, entries, history);
     expect(rows.map((r) => r.title)).toEqual(['Module A', 'Module B', 'gone']); // entry title wins, then history, then slug
     expect(rows[0].completedAt).toBe('2026-06-20');
     expect(rows[2].completedAt).toBeFalsy();
   });
 
+  it('uses moduleId as authoritative identity and slug only for legacy entries', () => {
+    const { CC } = loadWithCore();
+    const current = { slug: 'short-handle', moduleId: 'ums:pd:module-a', title: 'Current' };
+    const legacy = { slug: 'legacy-handle', title: 'Legacy' };
+    expect(CC._pdManifestModuleId(current)).toBe('ums:pd:module-a');
+    expect(CC._pdManifestModuleId(legacy)).toBe('legacy-handle');
+    expect(CC._pdEntryForHistoryModuleId([current, legacy], 'ums:pd:module-a')).toBe(current);
+    expect(CC._pdEntryForHistoryModuleId([current, legacy], 'short-handle')).toBeNull();
+    expect(CC._pdEntryForHistoryModuleId([current, legacy], 'legacy-handle')).toBe(legacy);
+  });
   it('importPdHistory keeps the existing entry on an equal timestamp and filters malformed entries', () => {
     const { CC } = loadWithCore();
     try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
@@ -622,10 +753,14 @@ describe('PD manifest content binding', () => {
     const { CC, PdCore } = loadWithCore();
     const mod = validModuleObj();
     const digest = PdCore.moduleContentDigest(mod);
-    const binding = { contentDigest: digest, version: '1.0.0', language: 'en-US' };
+    const binding = { moduleId: mod.metadata.id, contentDigest: digest, version: '1.0.0', language: 'en-US' };
     expect(CC._verifyPdManifestEntryDigest(PdCore, {}, mod).ok).toBe(false);
     expect(CC._verifyPdManifestEntryDigest(PdCore, binding, mod)).toMatchObject({ ok: true, verified: true });
     expect(CC._verifyPdManifestEntryDigest(PdCore, { ...binding, version: '' }, mod).ok).toBe(false);
+    expect(CC._verifyPdManifestEntryDigest(PdCore, { ...binding, moduleId: '' }, mod).ok).toBe(false);
+    expect(CC._verifyPdManifestEntryDigest(PdCore, { ...binding, moduleId: 'ums:other' }, mod).ok).toBe(false);
+    expect(CC._verifyPdManifestEntryDigest(PdCore,
+      { ...binding, moduleId: undefined, slug: mod.metadata.id }, mod).ok).toBe(true);
     expect(CC._verifyPdManifestEntryDigest(PdCore, { ...binding, version: '2.0.0' }, mod).ok).toBe(false);
     expect(CC._verifyPdManifestEntryDigest(PdCore, { ...binding, language: 'fr' }, mod).ok).toBe(false);
     expect(CC._verifyPdManifestEntryDigest(PdCore, { ...binding, contentDigest: 'wrong' }, mod).ok).toBe(false);
@@ -669,7 +804,7 @@ describe('PD local-history trust semantics', () => {
     const { CC } = loadWithCore();
     const entry = CC._normalizePdHistoryEntry({
       moduleId: 'module-a', moduleVersion: '1.0.0',
-      contentDigest: 'sha256:' + 'a'.repeat(64), complete: true,
+      contentDigest: 'sha256:' + 'a'.repeat(64), complete: true, completedAt: '2026-06-25',
     }, 'local-device');
     expect(CC._pdHistoryEntryMatchesBinding(entry, {
       version: '1.0.0', contentDigest: 'sha256:' + 'a'.repeat(64),
@@ -709,13 +844,27 @@ describe('credential client orchestration (mocked fetch)', () => {
     expect(r.disabled).toBe(true);
   });
 
-  it('verifyPdCredential uses the server fallback when WebCrypto is absent', async () => {
-    const { CC } = loadWithCore(); // sandbox window has no crypto.subtle → server path
-    stubFetch((url) => (url.indexOf('/verifyPd') !== -1 ? { status: 200, body: { ok: true, valid: true, credential_profile: 'reviewed-evidence', assurance: { institutional: true, reviewed: true } } } : { status: 404, body: {} }));
+  it('always routes reviewed credentials through authoritative server verification', async () => {
+    const { CC } = loadWithCore();
+    const urls = [];
+    stubFetch((url) => {
+      urls.push(url);
+      return { status: 200, body: { ok: true, valid: true, credential_profile: 'reviewed-evidence', accessibility_current: true, assurance: { institutional: true, reviewed: true } } };
+    });
     const r = await CC._verifyPdCredential({ payload: { credential_profile: 'reviewed-evidence', a: 1 }, signature: 'x' });
-    expect(r.valid).toBe(true);
-    expect(r.method).toBe('server');
-    expect(r.assurance).toMatchObject({ institutional: true, reviewed: true });
+    expect(r).toMatchObject({ valid: true, method: 'server', accessibilityCurrent: true, assurance: { institutional: true, reviewed: true } });
+    expect(urls).toHaveLength(1);
+    expect(urls[0]).toContain('/verifyPd');
+    expect(SRC).not.toContain('/pdIssuerKey');
+    expect(SRC).not.toContain("method: 'client'");
+  });
+
+  it('propagates an expired accessibility window without invalidating the reviewed achievement', async () => {
+    const { CC } = loadWithCore();
+    stubFetch(() => ({ status: 200, body: { ok: true, valid: true, credential_profile: 'reviewed-evidence', accessibility_current: false, assurance: { institutional: true, reviewed: true } } }));
+    expect(await CC._verifyPdCredential({ payload: { credential_profile: 'reviewed-evidence' }, signature: 'x' })).toMatchObject({
+      valid: true, accessibilityCurrent: false, assurance: { institutional: true, reviewed: true },
+    });
   });
 
   it('routes self-paced profiles through trusted server verification and preserves non-institutional assurance', async () => {
@@ -744,6 +893,20 @@ describe('credential client orchestration (mocked fetch)', () => {
     stubFetch(() => ({ status: 200, body: { ok: true, valid: true, credential_profile: 'self-paced-non-institutional', assurance: { institutional: true, reviewed: true } } }));
     r = await CC._verifyPdCredential(credential);
     expect(r.error).toMatch(/assurance mismatch/i);
+  });
+
+  it('never accepts assurance on invalid credentials or a reviewed verdict missing accessibility state', async () => {
+    const { CC } = loadWithCore();
+    const credential = { payload: { credential_profile: 'reviewed-evidence' }, signature: 'x' };
+    stubFetch(() => ({ status: 200, body: { ok: true, valid: false, credential_profile: 'reviewed-evidence', assurance: { institutional: true, reviewed: true } } }));
+    let r = await CC._verifyPdCredential(credential);
+    expect(r).toMatchObject({ valid: false, assurance: { institutional: false, reviewed: false } });
+    expect(r.error).toMatch(/invalid credentials cannot carry assurance/i);
+
+    stubFetch(() => ({ status: 200, body: { ok: true, valid: true, credential_profile: 'reviewed-evidence', assurance: { institutional: true, reviewed: true } } }));
+    r = await CC._verifyPdCredential(credential);
+    expect(r).toMatchObject({ valid: false, assurance: { institutional: false, reviewed: false } });
+    expect(r.error).toMatch(/accessibility verification state is missing/i);
   });
 
   it('verifyPdCredential reports "could not check" (not "invalid") when the server returns no verdict', async () => {

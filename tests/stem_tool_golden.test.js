@@ -109,12 +109,23 @@ describe('STEM tool render goldens (default state)', () => {
       colonyPolicyChangedTurn: 0,
       colonyCharterClaim: 'Publish resource allocations and reserve public review time.',
       colonyCharterReasoning: 'Transparency may improve equity, but maintaining the ledger costs materials; revise it if resource pauses become frequent.',
+      colonyCharterResponse: 'If material reserves fall below 10, pause the compact and revise toward a cheaper audit.',
       colonyCharterProposal: {
         name: 'Open Ledger Compact',
         principle: 'Publish resource allocations and reserve a science dividend for public review.',
         rule: { trigger: 'always', benefitResource: 'science', benefitAmount: 1, costResource: 'materials', costAmount: 1, socialAxis: 'equity', socialDelta: 1, duration: 4 },
         explanation: 'A transparent ledger benefits public oversight while imposing a visible material and administrative cost.',
       },
+      colonyCharterReviewId: 'charter-old',
+      colonyCharterConclusion: 'The public ledger helped some oversight, but the repeated material pauses made the rule too brittle for this phase.',
+      colonyCharterVerdict: 'revise',
+      colonyCharterHistory: [{
+        id: 'charter-old', name: 'Public Ledger Trial', principle: 'Publish resource allocations for civic review.', enactedTurn: 2, retiredTurn: 6,
+        studentClaim: 'Publish every allocation so residents can challenge hidden priorities.',
+        reasoning: 'Transparency may raise equity, but it should be revised if resource pauses keep blocking the promised oversight.',
+        rule: { trigger: 'always', benefitResource: 'science', benefitAmount: 1, costResource: 'materials', costAmount: 2, socialAxis: 'equity', socialDelta: 1, duration: 4 },
+        stats: { turnsObserved: 4, triggerMet: 4, appliedTurns: 1, resourceBlocked: 3, benefitTotal: 1, costTotal: 2, socialTotal: 1 },
+      }],
       colonyForgeBrief: 'A light-catching ecological observatory.',
       colonyForgeReasoning: 'The colony needs science, but water should remain an explicit operating cost.',
       colonyForgeSite: { x: 2, y: 3, type: 'ice', name: 'Frost Basin' },
@@ -213,8 +224,22 @@ describe('STEM tool render goldens (default state)', () => {
     expect(html).toContain('Public amendment draft');
     expect(html).toContain('Open Ledger Compact');
     expect(html).toContain('+1 equity per activation');
+    expect(html).toContain('Council deliberation');
+    expect(html).toContain('Systems desk');
+    expect(html).toContain('Commons assembly');
+    expect(html).toContain('Evidence council');
+    expect(html).toContain('Respond to one council concern before enactment');
     expect(html).toContain('Deliberation cost: 3 science');
     expect(html).toContain('Enact trial rule');
+    expect(html).toContain('Completed civic trials');
+    expect(html).toContain('Public Ledger Trial');
+    expect(html).toContain('Needs review');
+    expect(html).toContain('Read: resource-constrained');
+    expect(html).toContain('Civic review hearing');
+    expect(html).toContain('Was the civic goal worth a rule that the colony could not reliably afford?');
+    expect(html).toContain('Supports principle');
+    expect(html).toContain('Publish civic finding');
+    expect(html).toContain('Draft revision');
   });
 });
 
@@ -290,6 +315,11 @@ describe('Kepler Charter Lab bounded social-engineering contract', () => {
     expect(normalized.enactCostScience).toBe(4);
     expect(charter.parse('not json')).toBeNull();
     expect(charter.buildPrompt('share reserves', 'because public evidence matters', 'Sol 8')).toContain('No scripts, formulas, new triggers, arbitrary state keys, permanent effects, or hidden mechanics');
+    const voices = charter.stakeholders(normalized, { resources: { energy: 9, science: 14 }, equity: 55, morale: 68 });
+    expect(voices).toHaveLength(3);
+    expect(voices.map((voice) => voice.name)).toEqual(['Systems desk', 'Commons assembly', 'Evidence council']);
+    expect(voices[0].stance).toContain('reserves are thin');
+    expect(voices[2].asks).toContain('fair test');
 
     const run = charter.evaluate({
       id: 'charter-test', name: 'Equity Reserve', principle: 'Share research gains during inequity.', turnsLeft: 2,
@@ -310,6 +340,15 @@ describe('Kepler Charter Lab bounded social-engineering contract', () => {
     expect(blocked.effect).toMatchObject({ applied: false, triggerMet: true, affordable: false });
     expect(blocked.active).toBeNull();
     expect(blocked.expired).toMatchObject({ id: 'charter-blocked', retiredTurn: 10, stats: { turnsObserved: 1, triggerMet: 1, appliedTurns: 0, resourceBlocked: 1, benefitTotal: 0, costTotal: 0, socialTotal: 0 } });
+
+    const summary = charter.summarize(Object.assign({}, blocked.expired, { reasoning: 'Revise if hearings repeatedly pause because water is scarce.' }));
+    expect(summary).toMatchObject({ name: 'Water Hearings', reliability: 'resource-constrained', triggerMet: 1, resourceBlocked: 1, benefitTotal: 0, socialTotal: 0 });
+    expect(summary.question).toContain('could not reliably afford');
+    expect(summary.reasoning).toContain('Revise if hearings');
+    const revised = charter.revise(Object.assign({}, blocked.expired, { conclusion: 'Water pauses made hearings unreliable.' }));
+    expect(revised.name).toBe('Revised Water Hearings');
+    expect(revised.rule).toMatchObject({ costResource: 'water', costAmount: 1, benefitResource: 'science' });
+    expect(revised.explanation).toContain('affordability pauses');
   });
 });
 import { readFileSync as _readFileSync } from 'node:fs';
@@ -404,6 +443,11 @@ describe('STEM invariant · AI-gating sweep stays in force', () => {
     expect(s).toContain('Founder Forge field trial');
     expect(s).toContain('spaceColonyCharterPure');
     expect(s).toContain('evaluateColonyCharterAmendment');
+    expect(s).toContain('summarizeColonyCharterTrial');
+    expect(s).toContain('buildColonyCharterStakeholders');
+    expect(s).toContain('reviseColonyCharterFromTrial');
+    expect(s).toContain('colonyCharterResponse');
+    expect(s).toContain("source: 'Charter Lab civic trial'");
     expect(s).toContain("'data-spacecolony-charter-lab': 'true'");
     expect(s).toContain('charterEffect: charterEffect');
     expect(s).toContain('colonyPolicyChangedTurn');

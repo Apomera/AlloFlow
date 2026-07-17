@@ -80,13 +80,18 @@ Official references:
 1. **Refresh and compare.** Add a refresh button for web sources. Show changed/unchanged, preserve the prior hash/version, and expose which saved notes became stale.
 2. **Import reliability.** Add cancel, retry-per-result, bounded parallel imports, robots/site-error explanations, and a visible “first-party/legacy/manual” import-path label.
 
-### P1 — broaden source types without weakening provenance
+### Completed P1 — local document sources
 
-1. Reuse AlloFlow's existing local extractors to add PDF, DOCX, PPTX, TXT, Markdown, CSV, and EPUB files to Study Sources.
-2. Add URL-PDF support through a distinct byte-limited download/extraction path; do not pass binary formats through the HTML reader.
-3. Add public YouTube transcript import only when captions are available, preserving video URL and time ranges.
-4. Add audio transcription through the existing local desktop ASR path where available, explicitly labeling transcript confidence and keeping audio on-device.
-5. Treat images as evidence only after OCR/description provenance is explicit; never silently promote generated descriptions to source text.
+1. PDF, DOCX, PPTX, XLSX/XLS/XLSB/ODS, TXT, Markdown, CSV, and EPUB now import through local deterministic extraction paths.
+2. Page, slide, sheet, section, file, version, and extraction provenance flows into exact stored-passage citations.
+3. Partial, truncated, scanned-without-text, encrypted, malformed, oversized, and unreadable inputs fail closed.
+
+### Remaining P1 — additional media sources
+
+1. Add URL-PDF support through a distinct byte-limited download/extraction path; do not pass binary formats through the HTML reader.
+2. Add public YouTube transcript import only when captions are available, preserving video URL and time ranges.
+3. Add audio transcription through the existing local desktop ASR path where available, explicitly labeling transcript confidence and keeping audio on-device.
+4. Treat images as evidence only after OCR/description provenance is explicit; never silently promote generated descriptions to source text.
 
 ### P2 — improve multi-source reasoning
 
@@ -114,14 +119,14 @@ NotebookLM currently marks Deep Research as over-18 only. Lumen serves education
 
 ## Recommended next implementation slice
 
-Build **local document import for PDF, TXT, Markdown, DOCX, PPTX, CSV, and EPUB** through AlloFlow's existing extraction paths. This is now the largest practical NotebookLM parity gap and can reuse the active-source, label, version, and exact-passage controls already in place.
+Build **refresh and compare for web and local-file sources**. Lumen now has enough source types and control surfaces that keeping snapshots current—without hiding what changed—is the highest-value next step.
 
 Acceptance should require:
 
-- extraction stays local whenever the existing AlloFlow parser supports it;
-- every passage retains file name, format, page/slide/sheet or section locator, source version, and hash;
-- unsupported/encrypted files fail honestly without partial evidence promotion;
-- active state and labels behave identically across pasted, web, and file sources;
-- citations open the exact stored extracted passage without rereading the original file;
-- keyboard and screen-reader users can add, label, filter, and inspect file sources;
-- no document content reaches an AI until local retrieval selects passages for a user question.
+- unchanged refreshes do not create a new version or stale saved work;
+- changed refreshes preserve the previous hash/version and show a readable difference summary;
+- dependent notes become stale only when their source content changed;
+- a local replacement file must match the source format and is never uploaded;
+- a web refresh repeats the safe first-party fetch boundary and never bypasses a safety rejection;
+- users can cancel, retry per source, and distinguish current, changed, failed, and stale states;
+- keyboard and screen-reader users can inspect changes and choose whether to accept the new snapshot.

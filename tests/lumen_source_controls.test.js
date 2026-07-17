@@ -26,7 +26,7 @@ describe('Lumen source-control schema and migration', () => {
     legacy.sources[0].labels = [' Science ', 'science', '', 'Primary source'];
     legacy.retrievalLabel = 'missing label';
     const migrated = E.migrateProject(legacy);
-    expect(migrated.schemaVersion).toBe(2);
+    expect(migrated.schemaVersion).toBe(3);
     expect(migrated.sources[0]).toMatchObject({ active: true, labels: ['Science', 'Primary source'] });
     expect(migrated.retrievalLabel).toBe('');
   });

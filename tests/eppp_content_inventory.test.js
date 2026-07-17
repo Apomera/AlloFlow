@@ -18,14 +18,14 @@ describe('EPPP learning-library inventory and full-review program', () => {
       textbookSections: 278,
       knowledgeChecks: 109,
       diagramTemplates: 25,
-      diagramPlacements: 61,
+      diagramPlacements: 58,
       termDefinitions: 1583,
       chapterReferences: 383,
       sourceReviewedChapters: 49,
       sourceReviewedFlashcards: 415,
       retainedReviewedFlashcards: 336,
       retiredRedundantFlashcards: 79,
-      sourceReviewedMemoryAids: 8,
+      sourceReviewedMemoryAids: 40,
       editorialReviewedSourcePendingMemoryAids: 2,
       aiReflectiveCodas: 49,
       learnerModes: 14,
@@ -35,8 +35,9 @@ describe('EPPP learning-library inventory and full-review program', () => {
     expect(report.migrationTracks.find((track) => track.contentType === 'legacy questions')).toMatchObject({ count: 2933, status: 'active-full-review' });
     expect(report.migrationTracks.find((track) => track.contentType === 'textbook chapters')).toMatchObject({ status: 'review-in-progress', reviewedCount: 49 });
     expect(report.migrationTracks.find((track) => track.contentType === 'flashcards')).toMatchObject({ status: 'first-pass-complete-expert-pending', reviewedCount: 415, retainedCount: 336, retiredRedundantCount: 79 });
-    expect(report.migrationTracks.find((track) => track.contentType === 'memory aids')).toMatchObject({ status: 'review-in-progress', reviewedCount: 8, editorialSourcePendingCount: 2 });
-    expect(report.migrationTracks.filter((track) => ['interactive diagrams', 'term definitions'].includes(track.contentType)).every((track) => track.status === 'legacy-preserved-review-not-started')).toBe(true);
+    expect(report.migrationTracks.find((track) => track.contentType === 'memory aids')).toMatchObject({ status: 'review-in-progress', reviewedCount: 40, editorialSourcePendingCount: 2 });
+    expect(report.migrationTracks.find((track) => track.contentType === 'interactive diagrams')).toMatchObject({ count: 58, reviewedCount: 16, status: 'review-in-progress' });
+    expect(report.migrationTracks.find((track) => track.contentType === 'term definitions')).toMatchObject({ count: 1583, status: 'legacy-preserved-review-not-started' });
   });
 
   it('tracks all 2,933 legacy questions without mixing in native-original items', () => {

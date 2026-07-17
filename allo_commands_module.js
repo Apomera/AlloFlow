@@ -351,6 +351,10 @@ const PLAN_CONTRACTS = Object.freeze({
     interaction: "external",
     reason: "Starts a file download outside the recorded workflow."
   },
+  set_grade_level: { params: ["grade"] },
+  set_source_tone: { params: ["tone"] },
+  set_source_length: { params: ["length"] },
+  set_output_language: { params: ["language"] },
   set_font_size: { params: ["size"] },
   translate_document: {
     demoSafe: false,
@@ -509,6 +513,14 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_source_input", icon: "\u{1F4DD}", roles: "all", label: t("cmd.open_source_input", "Open source input"), aliases: ["source input", "source material", "input panel", "paste text", "write text", "add source", "new source"], hint: t("cmd.open_source_input_hint", "Paste, write, search, or generate source material"), run: (c) => {
       c.openSourceInput();
       return t("cmd.open_source_input_done", "Source input opened.");
+    } },
+    { id: "open_source_url", icon: "\u{1F50E}", roles: "all", label: t("cmd.open_source_url", "Find a resource online"), aliases: ["find a resource online", "resource online", "paste a link", "add a link", "url input", "import from url", "web source", "source link"], hint: t("cmd.open_source_url_hint", "Paste a URL or search for a source"), run: (c) => {
+      c.openSourceUrl();
+      return t("cmd.open_source_url_done", "Resource finder opened.");
+    } },
+    { id: "open_source_generator", icon: "\u2728", roles: "all", label: t("cmd.open_source_generator", "Generate source from a topic"), aliases: ["generate source", "generate from a topic", "source generator", "write source text", "make source text", "generate reading passage", "ai writes it"], hint: t("cmd.open_source_generator_hint", "Open the topic-to-source generator"), run: (c) => {
+      c.openSourceGenerator();
+      return t("cmd.open_source_generator_done", "Source generator opened.");
     } },
     { id: "open_history", icon: "\u{1F558}", roles: "all", label: t("cmd.open_history", "Open history"), aliases: ["history", "my history", "saved work", "previous work", "recent lessons", "projects"], hint: t("cmd.open_history_hint", "Browse saved lessons and projects"), run: (c) => {
       c.openHistory();
@@ -816,6 +828,22 @@ function buildAlloCommands(ctx, opts = {}) {
       c.startLessonFlow(p || {});
       return p && p.topic ? t("cmd.create_lesson_done", "Starting a lesson flow about \u201C") + p.topic + "\u201D" + (p.grade ? t("cmd.create_lesson_done2", " for grade ") + p.grade : "") + t("cmd.create_lesson_done3", " \u2014 AlloBot will guide the next steps.") : t("cmd.create_lesson_done_blank", "Starting the guided lesson flow \u2014 AlloBot will ask for your topic.");
     } },
+    { id: "set_grade_level", icon: "\u{1F39A}\uFE0F", roles: "all", when: (c) => !!c.setSetupGradeLevel, label: t("cmd.set_grade_level", "Set the grade level"), aliases: ["set grade level", "grade level", "target grade", "reading level", "set target level"], hint: t("cmd.set_grade_level_hint", "e.g. set grade level to 5"), run: (c, p) => {
+      const v = c.setSetupGradeLevel(p && p.grade);
+      return v ? t("cmd.set_grade_level_done", "Grade level set to ") + v + "." : t("cmd.set_grade_level_pick", "Say a grade like grade 5.");
+    } },
+    { id: "set_source_tone", icon: "\u{1F399}\uFE0F", roles: "all", when: (c) => !!c.setSetupSourceTone, label: t("cmd.set_source_tone", "Set source tone"), aliases: ["set source tone", "source tone", "change tone", "tone to", "make the tone"], hint: t("cmd.set_source_tone_hint", "Informative, narrative, dialogue, persuasive, humorous, or step-by-step"), run: (c, p) => {
+      const v = c.setSetupSourceTone(p && p.tone);
+      return v ? t("cmd.set_source_tone_done", "Source tone set to ") + v + "." : t("cmd.set_source_tone_pick", "Say a tone like narrative.");
+    } },
+    { id: "set_source_length", icon: "\u{1F4CF}", roles: "all", when: (c) => !!c.setSetupSourceLength, label: t("cmd.set_source_length", "Set source length"), aliases: ["set source length", "source length", "text length", "reading length", "word count"], hint: t("cmd.set_source_length_hint", "Short, medium, long, or a word count"), run: (c, p) => {
+      const v = c.setSetupSourceLength(p && p.length);
+      return v ? t("cmd.set_source_length_done", "Source length set to about ") + v + t("cmd.set_source_length_done2", " words.") : t("cmd.set_source_length_pick", "Say a length like 500 words.");
+    } },
+    { id: "set_output_language", icon: "\u{1F310}", roles: "all", when: (c) => !!c.setSetupLanguage, label: t("cmd.set_output_language", "Set output language"), aliases: ["set output language", "output language", "text language", "reading language", "lesson language", "write in"], hint: t("cmd.set_output_language_hint", "Set the language used for generated resources"), run: (c, p) => {
+      const v = c.setSetupLanguage(p && p.language);
+      return v ? t("cmd.set_output_language_done", "Output language set to ") + v + "." : t("cmd.set_output_language_pick", "Say a language like Spanish.");
+    } },
     { id: "set_font_size", icon: "\u{1F520}", roles: "all", when: (c) => !!c.setFontSizeTo, label: t("cmd.set_font_size", "Set the text size (say a number)"), aliases: ["set text size", "text size to", "font size to"], hint: t("cmd.set_font_size_hint", "e.g. \u201Cset text size to 20\u201D (10\u201332)"), run: (c, p) => {
       const v = c.setFontSizeTo(p && p.size);
       return t("cmd.set_font_size_done", "Text size set to ") + v + ".";
@@ -951,6 +979,11 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     { id: "find_reading", re: /^(?:find|recommend|suggest|show|get|help me find)\s+(?:me\s+)?(?:a\s+|some\s+|the\s+)?(?:books|book|readings|reading|stories|story|articles|article|sources|source|texts|text)\s*(?:about|on|for)?\s*(.*?)\??$/i, params: (m) => _readingParams(m[1], null) },
     { id: "find_reading", re: /^(?:i\s+want\s+to\s+(?:learn|read)\s+about|i'?m\s+looking\s+for\s+(?:a\s+)?(?:book|source|reading|article|text)\s+about|something\s+about|what\s+can\s+i\s+read\s+about)\s+(.+?)\??$/i, params: (m) => _readingParams(m[1], null) },
     { id: "create_lesson", re: /^(?:create|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || "").trim() || null, grade: m[2] || null }) },
+    { id: "set_grade_level", re: /^(?:set|change|make)\s+(?:the\s+)?(?:grade|grade level|target grade|reading level|level)\s*(?:to|for)?\s*(kindergarten|k|pre[-\s]?k|college|graduate(?: level)?|\d{1,2}(?:st|nd|rd|th)?(?:\s*grade)?)\s*\??$/i, params: (m) => ({ grade: m[1] || null }) },
+    { id: "set_source_tone", re: /^(?:set|change|make)\s+(?:the\s+)?(?:source\s+)?tone\s*(?:to)?\s*([a-z -]{3,40})\s*\??$/i, params: (m) => ({ tone: m[1].trim() }) },
+    { id: "set_source_length", re: /^(?:set|change|make)\s+(?:the\s+)?(?:source|text|reading|passage)?\s*(?:length|word count)\s*(?:to)?\s*([a-z]+|\d{1,4})(?:\s*words?)?\s*\??$/i, params: (m) => ({ length: m[1] || null }) },
+    { id: "set_output_language", re: /^(?:set|change)\s+(?:the\s+)?(?:output|text|reading|lesson|response)\s+language\s*(?:to)?\s+([^?]{2,40})\s*\??$/i, params: (m) => ({ language: m[1].trim() }) },
+    { id: "set_output_language", re: /^write\s+(?:this|it|the\s+text|the\s+lesson|resources)?\s*(?:in|into)\s+([^?]{2,40})\s*\??$/i, params: (m) => ({ language: m[1].trim() }) },
     { id: "set_font_size", re: /^(?:set\s+)?(?:the\s+)?(?:text|font)\s*(?:size)?\s*(?:to)?\s*(\d{1,2})\s*\.?$/i, params: (m) => ({ size: m[1] }) },
     { id: "translate_document", re: /^translate\s+(?:this|the\s+document|document|it)?\s*(?:to|into)\s+([a-z\u00C0-\u024F\s()-]{2,40})\??$/i, params: (m) => ({ language: m[1].trim() }) },
     { id: "generate_simplified", re: /^(?:simplify|make (?:this|it) (?:easier|simpler)|lower the (?:reading )?level)(?:\s+(?:this|it))?(?:\s+(?:to|for)?\s*(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade)?)?\s*\??$/i, params: (m) => ({ grade: m[1] || null }) }
@@ -1340,6 +1373,8 @@ const CMD_GROUP = {
   open_educator_hub: "navigate",
   open_learning_hub: "navigate",
   open_source_input: "navigate",
+  open_source_url: "navigate",
+  open_source_generator: "navigate",
   open_history: "navigate",
   open_document_builder: "navigate",
   open_wizard: "navigate",
@@ -1364,6 +1399,10 @@ const CMD_GROUP = {
   generate_sentence_frames: "create",
   generate_analysis: "create",
   create_lesson: "create",
+  set_grade_level: "create",
+  set_source_tone: "create",
+  set_source_length: "create",
+  set_output_language: "create",
   submit_work: "create",
   font_bigger: "accessibility",
   font_smaller: "accessibility",
@@ -1448,7 +1487,9 @@ const CMD_CONTEXT = {
   pipeline_tour: ["pipeline"],
   translate_document: ["pipeline"],
   open_document_builder: ["educatorHub", "content"],
-  open_source_input: ["content"],
+  open_source_input: ["sourceSetup"],
+  open_source_url: ["sourceSetup"],
+  open_source_generator: ["sourceSetup"],
   open_history: ["content"],
   open_wizard: ["educatorHub"],
   create_lesson: ["educatorHub"],
@@ -1476,6 +1517,10 @@ const CMD_CONTEXT = {
   open_lit_lab: ["learningHub", "litLab"],
   open_mind_map: ["learningHub", "content", "mindMap"],
   open_poet_tree: ["learningHub", "poetTree"],
+  set_grade_level: ["sourceSetup"],
+  set_source_tone: ["sourceSetup"],
+  set_source_length: ["sourceSetup"],
+  set_output_language: ["sourceSetup"],
   generate_quiz: ["content"],
   generate_glossary: ["content"],
   generate_simplified: ["content", "reading"],
@@ -1512,9 +1557,9 @@ const GROUP_ORDER = ["navigate", "live", "create", "tools", "accessibility", "di
 const GROUP_LABEL_FALLBACK = { navigate: "Navigate", live: "Live class", create: "Create from this content", tools: "Open a tool", accessibility: "Reading & access", display: "Display & motion", pipeline: "Pipeline results", help: "Help", voice: "Voice" };
 const COMMAND_RECENTS_KEY = "allo_command_recents_v1";
 const COMMAND_RECENTS_LIMIT = 5;
-const CTX_FLAG = { liveSession: "liveSessionActive", pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", symbolStudio: "symbolStudioOpen", videoStudio: "videoStudioOpen", alloStudio: "alloStudioOpen", cinematicStudio: "cinematicStudioOpen", stemLab: "stemLabOpen", openGroove: "openGrooveOpen", timelineStudio: "timelineStudioOpen", linguaPractice: "linguaPracticeOpen", testPrepHub: "testPrepHubOpen", researchHub: "researchHubOpen", litLab: "litLabOpen", mindMap: "mindMapOpen", poetTree: "poetTreeOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
-const CTX_PRIORITY = ["liveSession", "videoStudio", "alloStudio", "cinematicStudio", "symbolStudio", "stemLab", "openGroove", "timelineStudio", "linguaPractice", "testPrepHub", "researchHub", "litLab", "mindMap", "poetTree", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
-const CONTEXT_LABEL_FALLBACK = { liveSession: "Here \u2014 Live session", pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 AlloStudio", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", researchHub: "Here \u2014 Research Hub", litLab: "Here \u2014 Lit Lab", mindMap: "Here \u2014 Throughline", poetTree: "Here \u2014 Poet Tree", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
+const CTX_FLAG = { liveSession: "liveSessionActive", pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", sourceSetup: "sourceSetupOpen", symbolStudio: "symbolStudioOpen", videoStudio: "videoStudioOpen", alloStudio: "alloStudioOpen", cinematicStudio: "cinematicStudioOpen", stemLab: "stemLabOpen", openGroove: "openGrooveOpen", timelineStudio: "timelineStudioOpen", linguaPractice: "linguaPracticeOpen", testPrepHub: "testPrepHubOpen", researchHub: "researchHubOpen", litLab: "litLabOpen", mindMap: "mindMapOpen", poetTree: "poetTreeOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
+const CTX_PRIORITY = ["sourceSetup", "liveSession", "videoStudio", "alloStudio", "cinematicStudio", "symbolStudio", "stemLab", "openGroove", "timelineStudio", "linguaPractice", "testPrepHub", "researchHub", "litLab", "mindMap", "poetTree", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
+const CONTEXT_LABEL_FALLBACK = { sourceSetup: "Here \u2014 Source setup", liveSession: "Here \u2014 Live session", pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 AlloStudio", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", researchHub: "Here \u2014 Research Hub", litLab: "Here \u2014 Lit Lab", mindMap: "Here \u2014 Throughline", poetTree: "Here \u2014 Poet Tree", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
 function _activeContexts(ctx) {
   if (!ctx) return [];
   return CTX_PRIORITY.filter((k) => {

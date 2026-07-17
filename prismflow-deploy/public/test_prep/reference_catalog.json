@@ -6,6 +6,13 @@
     "credibility": "OpenStax is a Rice University nonprofit publisher. Psychology 2e is openly peer reviewed, cites its evidence base, and is maintained through an editorial revision process; this section directly covers the tested foundational concept.",
     "metadataSource": "pack-authored"
   },
+  "https://dictionary.apa.org/luria-nebraska-neuropsychological-battery": {
+    "title": "Luria–Nebraska Neuropsychological Battery (LNNB)",
+    "organization": "APA Dictionary of Psychology, American Psychological Association",
+    "summary": "The APA Dictionary identifies the LNNB as a standardized battery derived from Luria’s approach and distinguishes the adult and children’s forms.",
+    "credibility": "The APA Dictionary of Psychology is an edited professional reference published by the American Psychological Association and provides a traceable construct-specific entry.",
+    "metadataSource": "pack-authored"
+  },
   "https://doi.org/10.1001/archneur.57.3.317": {
     "title": "Phantom Limbs and Neural Plasticity",
     "organization": "Archives of Neurology",
@@ -1650,6 +1657,13 @@
     "metadataSource": "Crossref",
     "doi": "10.4103/2229-3485.83221"
   },
+  "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published": {
+    "title": "Foundational Skills to Support Reading for Understanding in Kindergarten Through 3rd Grade",
+    "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+    "summary": "This K-3 practice guide presents four implementation-focused recommendations covering academic language and vocabulary, speech-sound awareness and letter links, decoding and word analysis, and daily connected-text reading. It reports an evidence rating for each recommendation and discusses common implementation obstacles.",
+    "credibility": "The WWC is an IES evidence-review program of the U.S. Department of Education. The guide was developed through an expert panel and systematic review, and it states the supporting-evidence level for each recommendation; users should retain those recommendation-specific ratings when applying the guidance.",
+    "metadataSource": "explicit-override"
+  },
   "https://openstax.org/books/psychology-2e/pages/10-introduction": {
     "title": "Chapter 10: Emotion and Motivation - Psychology 2e, OpenStax, Rice University",
     "organization": "",
@@ -1816,6 +1830,34 @@
     "organization": "",
     "summary": "OpenStax Psychology 2e is published by Rice University, openly peer reviewed, evidence-cited, and maintained through an editorial revision process; this named chapter covers the tested foundational concept.",
     "credibility": "OpenStax Psychology 2e is published by Rice University, openly peer reviewed, evidence-cited, and maintained through an editorial revision process; this named chapter covers the tested foundational concept.",
+    "metadataSource": "pack-authored"
+  },
+  "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text": {
+    "title": "16.5 Writing Process: Thinking Critically About Text",
+    "organization": "OpenStax, Rice University",
+    "summary": "This section guides writers through planning, drafting, reviewing, revising, rewriting, editing, and peer review for a text-focused analytical essay, including thesis development, objective summary, structural and contextual analysis, and integration of textual evidence.",
+    "credibility": "OpenStax is a nonprofit educational initiative at Rice University. This openly licensed, faculty-reviewed section offers transparent writing-process instruction and examples, while its textbook status should be distinguished from empirical evidence or an official assessment specification.",
+    "metadataSource": "explicit-override"
+  },
+  "https://openstax.org/books/writing-guide/pages/handbook": {
+    "title": "Handbook - Writing Guide with Handbook",
+    "organization": "OpenStax, Rice University",
+    "summary": "This writing handbook is a concise reference for paragraphs and transitions, sentence clarity and errors, word choice, point of view, verbs, pronouns, punctuation, mechanics, quotations, and MLA and APA documentation.",
+    "credibility": "OpenStax is a nonprofit educational initiative at Rice University. This openly licensed, faculty-reviewed handbook provides transparent instructional guidance and examples, with corrections supported through OpenStax editorial and errata processes.",
+    "metadataSource": "explicit-override"
+  },
+  "https://openstax.org/details/books/prealgebra-2e/": {
+    "title": "Prealgebra 2e",
+    "organization": "OpenStax, Rice University",
+    "summary": "This openly licensed textbook develops foundational mathematics through whole numbers, fractions, decimals, percents, elementary algebra, equations, geometry, measurement, graphs, and applied problem solving.",
+    "credibility": "OpenStax is a nonprofit educational initiative at Rice University. Its textbooks use expert authorship, faculty review, and a documented errata process, making this a credible instructional reference rather than an assessment blueprint.",
+    "metadataSource": "explicit-override"
+  },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC2963469/": {
+    "title": "Dialectical Behavior Therapy: Current Indications and Unique Elements",
+    "organization": "PubMed Central, U.S. National Library of Medicine",
+    "summary": "This peer-reviewed clinical review describes the DBT hierarchy of life-threatening, therapy-interfering, and quality-of-life-interfering behavioral targets.",
+    "credibility": "PubMed Central preserves the complete peer-reviewed article and its journal, author, citation, and reference metadata through the U.S. National Library of Medicine.",
     "metadataSource": "pack-authored"
   },
   "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf": {
@@ -2063,11 +2105,25 @@
     "credibility": "ETS is the assessment owner, so this is the primary public source for current test logistics and official preparation links.",
     "metadataSource": "pack-derived"
   },
+  "https://pubmed.ncbi.nlm.nih.gov/18567623/": {
+    "title": "Debris clearance by microglia: an essential link between degeneration and regeneration",
+    "organization": "PubMed, U.S. National Library of Medicine",
+    "summary": "This peer-reviewed review describes microglial recruitment to injured CNS tissue and the phagocytic clearance of cellular debris.",
+    "credibility": "PubMed is maintained by the U.S. National Library of Medicine and provides traceable journal, author, abstract, and publication metadata; the cited article synthesizes experimental evidence specifically about microglial debris clearance.",
+    "metadataSource": "pack-authored"
+  },
   "https://r-pas.org/Home/About": {
     "title": "About the Rorschach Performance Assessment System (R-PAS) - R-PAS, LLC",
     "organization": "",
     "summary": "This is the current official documentation from the instrument owner, publisher, or originating academic team. It is a primary source for the instrument’s name, edition, purpose, structure, and intended use; it is not treated as independent evidence of comparative superiority.",
     "credibility": "This is the current official documentation from the instrument owner, publisher, or originating academic team. It is a primary source for the instrument’s name, edition, purpose, structure, and intended use; it is not treated as independent evidence of comparative superiority.",
+    "metadataSource": "pack-authored"
+  },
+  "https://www.apa.org/about/policy/guidelines-psychological-assessment-evaluation.pdf": {
+    "title": "APA Guidelines for Psychological Assessment and Evaluation",
+    "organization": "American Psychological Association",
+    "summary": "The official guidelines address appropriate interpretation, multimethod integration, contextual evidence, and limits on conclusions drawn from psychological assessment results.",
+    "credibility": "These are official American Psychological Association professional guidelines for assessment and evaluation, including integration of multiple data sources and appropriately qualified conclusions.",
     "metadataSource": "pack-authored"
   },
   "https://www.apa.org/about/policy/multicultural-guidelines.pdf": {
@@ -2084,12 +2140,19 @@
     "credibility": "The American Psychological Association publishes the controlling professional ethics standards cited by this item, making this the primary source for stable APA Ethics Code concepts.",
     "metadataSource": "pack-authored"
   },
+  "https://www.ets.org/Media/Research/pdf/RM-20-06.pdf": {
+    "title": "Basic Concepts of Item Response Theory: A Nonmathematical Introduction",
+    "organization": "Educational Testing Service Research Institute",
+    "summary": "This research memorandum defines item information as the information an item provides at each point on the ability scale and explains its relationship to IRT-based measurement.",
+    "credibility": "Educational Testing Service is a major nonprofit assessment and psychometrics organization; this technical memorandum is authored, dated, and published through its research program.",
+    "metadataSource": "pack-authored"
+  },
   "https://www.ets.org/pdfs/parapro/1755.pdf": {
-    "title": "ParaPro diagnostic batches 1-2 — Official ETS Study Companion",
+    "title": "ParaPro Assessment (1755) - Official Study Companion",
     "organization": "Educational Testing Service (ETS)",
-    "summary": "The official study companion describes the ParaPro diagnostic batches 1-2 format, blueprint, tested content, and sample question guidance.",
-    "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
-    "metadataSource": "pack-derived"
+    "summary": "The official study companion describes the current ParaPro structure, its reading, mathematics, and writing blueprint, the balance between basic skills and classroom application, tested content topics, sample questions, answer explanations, and test-taking guidance.",
+    "credibility": "ETS owns and administers the ParaPro Assessment, making this the primary source for its published blueprint and official samples. AlloFlow practice items are independently authored; they are not ETS questions and are not endorsed by ETS.",
+    "metadataSource": "explicit-override"
   },
   "https://www.ets.org/pdfs/praxis/5622.pdf": {
     "title": "PLT K–6 (5622) — Official ETS Study Companion",
@@ -2131,6 +2194,13 @@
     "organization": "",
     "summary": "NIST is the U.S. federal measurement-science agency. Its statistical handbook provides technically reviewed definitions and methods appropriate to this research-methods item.",
     "credibility": "NIST is the U.S. federal measurement-science agency. Its statistical handbook provides technically reviewed definitions and methods appropriate to this research-methods item.",
+    "metadataSource": "pack-authored"
+  },
+  "https://www.ncbi.nlm.nih.gov/books/NBK10869/": {
+    "title": "Neuroglial Cells, in Neuroscience (2nd edition)",
+    "organization": "National Center for Biotechnology Information, U.S. National Library of Medicine",
+    "summary": "This neuroscience textbook chapter distinguishes astrocyte, oligodendrocyte, and microglial functions, including ionic homeostasis, CNS myelination, and debris removal after injury.",
+    "credibility": "NCBI Bookshelf is maintained by the U.S. National Library of Medicine and preserves the complete scholarly textbook chapter, its authorship, edition, publisher, and references for verification.",
     "metadataSource": "pack-authored"
   },
   "https://www.ncbi.nlm.nih.gov/sites/books/NBK459285/": {
@@ -2196,11 +2266,25 @@
     "credibility": "This is the current official documentation from the instrument owner, publisher, or originating academic team. It is a primary source for the instrument’s name, edition, purpose, structure, and intended use; it is not treated as independent evidence of comparative superiority.",
     "metadataSource": "pack-authored"
   },
+  "https://www.sciencedirect.com/topics/medicine-and-dentistry/luria-nebraska-neuropsychological-battery": {
+    "title": "Luria-Nebraska Neuropsychological Battery: Structure and Content",
+    "organization": "ScienceDirect, Elsevier",
+    "summary": "The referenced clinical-neurology and assessment textbook excerpts describe the battery’s quantitative scales, intended interpretations, and important psychometric limitations.",
+    "credibility": "ScienceDirect is Elsevier’s scholarly publishing platform and exposes the source book titles and chapter context for the clinical descriptions, allowing the claims to be traced to named academic references.",
+    "metadataSource": "pack-authored"
+  },
   "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf": {
     "title": "Standards for Educational and Psychological Testing - AERA, APA, and NCME",
     "organization": "",
     "summary": "The Standards are the joint professional consensus of AERA, the American Psychological Association, and the National Council on Measurement in Education and are the primary U.S. standards source for test validity, fairness, and use.",
     "credibility": "The Standards are the joint professional consensus of AERA, the American Psychological Association, and the National Council on Measurement in Education and are the primary U.S. standards source for test validity, fairness, and use.",
+    "metadataSource": "pack-authored"
+  },
+  "https://www.thebowencenter.org/differentiation-of-self": {
+    "title": "Differentiation of Self",
+    "organization": "Bowen Center for the Study of the Family",
+    "summary": "The Bowen Center describes differentiation as maintaining thoughtful principles and a defined self while remaining realistically connected to other people under relationship pressure.",
+    "credibility": "The Bowen Center is the institution founded to advance Murray Bowen’s family systems theory and provides a direct, theory-specific account of its central construct.",
     "metadataSource": "pack-authored"
   },
   "https://www.upress.umn.edu/test-division/mmpi-2/": {

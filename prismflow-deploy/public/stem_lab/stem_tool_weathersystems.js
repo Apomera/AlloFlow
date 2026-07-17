@@ -530,6 +530,89 @@
     return { score: score, truth: truth, notes: notes, expectedAction: expectedAction, actionCorrect: actionCorrect, calibration: calibration };
   }
 
+  function cleanLocationPart(value) {
+    return String(value == null ? '' : value).trim().replace(/\s+/g, ' ');
+  }
+
+  function buildLocationQuery(fields) {
+    var values = fields || {};
+    return [cleanLocationPart(values.city), cleanLocationPart(values.region), cleanLocationPart(values.postalCode), cleanLocationPart(values.country)].filter(Boolean).join(', ');
+  }
+
+  function parseLocationCoordinates(value) {
+    var query = cleanLocationPart(value);
+    var number = '([+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+))';
+    var pattern = '^' + number + '\\s*\\u00b0?\\s*([NS])?(?:\\s*[,;]\\s*|\\s+)' + number + '\\s*\\u00b0?\\s*([EW])?$';
+    var match = query.match(new RegExp(pattern, 'i'));
+    if (!match) return null;
+    var latitude = Number(match[1]);
+    var longitude = Number(match[3]);
+    var latitudeHemisphere = (match[2] || '').toUpperCase();
+    var longitudeHemisphere = (match[4] || '').toUpperCase();
+    if (latitudeHemisphere) latitude = Math.abs(latitude) * (latitudeHemisphere === 'S' ? -1 : 1);
+    if (longitudeHemisphere) longitude = Math.abs(longitude) * (longitudeHemisphere === 'W' ? -1 : 1);
+    if (!isFinite(latitude) || !isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+    return { latitude: latitude, longitude: longitude };
+  }
+
+  function locationSearchCandidates(query, fields) {
+    var candidates = [];
+    function add(value) {
+      var candidate = cleanLocationPart(value).replace(/\s*[|/]\s*/g, ', ');
+      if (candidate && candidates.indexOf(candidate) === -1) candidates.push(candidate);
+    }
+    var fullQuery = cleanLocationPart(query);
+    add(fullQuery);
+    if (fields) {
+      var city = cleanLocationPart(fields.city);
+      var region = cleanLocationPart(fields.region);
+      var postalCode = cleanLocationPart(fields.postalCode);
+      var country = cleanLocationPart(fields.country);
+      if (city) {
+        add([city, region, country].filter(Boolean).join(', '));
+        add([city, country].filter(Boolean).join(', '));
+        add(city);
+      }
+      if (postalCode) {
+        add([postalCode, country].filter(Boolean).join(', '));
+        add(postalCode);
+      }
+    } else {
+      var commaParts = fullQuery.split(',').map(cleanLocationPart).filter(Boolean);
+      if (commaParts.length > 1) add(commaParts[0]);
+      var withoutPostal = fullQuery.replace(/(?:,?\s*)\b\d{5}(?:-\d{4})?\b\s*$/, '').trim().replace(/,\s*$/, '');
+      if (withoutPostal !== fullQuery) add(withoutPostal);
+      var tokens = withoutPostal.split(/\s+/);
+      if (tokens.length > 1 && (fullQuery.indexOf(',') === -1 || /^[A-Za-z]{2,3}$/.test(tokens[tokens.length - 1]))) add(tokens.slice(0, -1).join(' '));
+    }
+    return candidates;
+  }
+
+  function chooseLocationResult(results, fields) {
+    if (!results || !results.length) return null;
+    var values = fields || {};
+    var city = cleanLocationPart(values.city).toLowerCase();
+    var region = cleanLocationPart(values.region).toLowerCase();
+    var postalCode = cleanLocationPart(values.postalCode).toLowerCase();
+    var country = cleanLocationPart(values.country).toLowerCase();
+    function includes(value, expected) {
+      return !expected || cleanLocationPart(value).toLowerCase().indexOf(expected) !== -1;
+    }
+    return results.slice().sort(function (left, right) {
+      function score(place) {
+        var total = 0;
+        if (city && includes(place.name, city)) total += 12;
+        if (region && (includes(place.admin1, region) || includes(place.admin2, region))) total += 7;
+        if (country && (includes(place.country, country) || cleanLocationPart(place.country_code).toLowerCase() === country)) total += 6;
+        var postcodes = place.postcodes || place.postcode || '';
+        if (postalCode && includes(Array.isArray(postcodes) ? postcodes.join(' ') : postcodes, postalCode)) total += 4;
+        if (place.feature_code && /^(PPL|PPLA|PPLC)/.test(place.feature_code)) total += 1;
+        return total;
+      }
+      return score(right) - score(left);
+    })[0];
+  }
+
   function weatherCodeLabel(code) {
     var value = Number(code);
     if (value === 0) return 'Clear sky';
@@ -584,6 +667,11 @@
     runExperiment: runExperiment,
     compareScenarioPatterns: compareScenarioPatterns,
     scoreForecast: scoreForecast,
+    cleanLocationPart: cleanLocationPart,
+    buildLocationQuery: buildLocationQuery,
+    parseLocationCoordinates: parseLocationCoordinates,
+    locationSearchCandidates: locationSearchCandidates,
+    chooseLocationResult: chooseLocationResult,
     weatherCodeLabel: weatherCodeLabel,
     normalizeLiveWeatherResponse: normalizeLiveWeatherResponse,
     resolvedState: resolvedState
@@ -1009,21 +1097,50 @@
         }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
       }
 
-      function searchLiveWeather() {
-        var query = (d.liveLocationQuery || '').trim();
-        if (query.length < 2) {
-          if (addToast) addToast('Enter a city or place name.', 'warning');
-          if (announce) announce('Enter at least two characters for a place search.');
+      function searchLiveWeather(mode) {
+        var structured = mode === 'structured';
+        var fields = structured ? {
+          city: d.liveLocationCity,
+          region: d.liveLocationRegion,
+          postalCode: d.liveLocationPostalCode,
+          country: d.liveLocationCountry
+        } : null;
+        var query = structured ? buildLocationQuery(fields) : cleanLocationPart(d.liveLocationQuery);
+        if (!query) {
+          var emptyMessage = structured ? 'Enter at least one location field.' : 'Enter a place, postal code, or coordinates.';
+          if (addToast) addToast(emptyMessage, 'warning');
+          if (announce) announce(emptyMessage);
           return;
         }
+        var coordinates = parseLocationCoordinates(query);
+        if (coordinates) {
+          var coordinateLabel = 'Coordinates ' + coordinates.latitude.toFixed(4) + ', ' + coordinates.longitude.toFixed(4);
+          fetchLiveWeather(coordinates.latitude, coordinates.longitude, coordinateLabel);
+          return;
+        }
+        if (query.length < 2) {
+          if (addToast) addToast('Enter at least two characters for a location search.', 'warning');
+          if (announce) announce('Enter at least two characters for a location search.');
+          return;
+        }
+        var candidates = locationSearchCandidates(query, fields);
         update({ liveWeatherLoading: true, liveWeatherError: '', liveWeatherStatus: 'Searching for ' + query + '...' });
-        var url = 'https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(query) + '&count=5&language=en&format=json';
-        window.fetch(url).then(function (response) {
-          if (!response.ok) throw new Error('Location search returned ' + response.status + '.');
-          return response.json();
-        }).then(function (payload) {
-          if (!payload.results || !payload.results.length) throw new Error('No matching place was found. Try a city and state or country.');
-          var place = payload.results[0];
+
+        function searchCandidate(index) {
+          if (index >= candidates.length) return Promise.resolve(null);
+          var url = 'https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(candidates[index]) + '&count=10&language=en&format=json';
+          return window.fetch(url).then(function (response) {
+            if (!response.ok) throw new Error('Location search returned ' + response.status + '.');
+            return response.json();
+          }).then(function (payload) {
+            if (payload.results && payload.results.length) return payload.results;
+            return searchCandidate(index + 1);
+          });
+        }
+
+        searchCandidate(0).then(function (results) {
+          if (!results || !results.length) throw new Error('No matching location was found. Try a city, postal code, country, or coordinates.');
+          var place = chooseLocationResult(results, fields);
           var parts = [place.name, place.admin1, place.country].filter(Boolean);
           return fetchLiveWeather(place.latitude, place.longitude, parts.join(', '));
         }).catch(function (error) {
@@ -3538,11 +3655,43 @@
                 h('section', { className: 'rounded-xl border border-emerald-400/20 bg-emerald-950/20 p-4', 'data-weather-live-control': true },
                   h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-emerald-300' }, 'Live weather connection'),
                   h('h4', { className: 'text-sm font-black' }, 'Bring local conditions into 3D'),
-                  h('p', { className: 'mt-1 text-[10px] text-slate-300' }, 'Nothing loads automatically. Choose location access or search for a place.'),
-                  h('button', { type: 'button', onClick: requestDeviceWeather, disabled: !!d.liveWeatherLoading, className: 'mt-3 w-full rounded-lg bg-emerald-500 px-3 py-2 text-xs font-black text-emerald-950 disabled:opacity-50' }, d.liveWeatherLoading ? 'Connecting...' : '\uD83D\uDCCD Use my location'),
-                  h('form', { className: 'mt-2 flex gap-2', onSubmit: function (event) { event.preventDefault(); searchLiveWeather(); } },
-                    h('label', { className: 'min-w-0 flex-1' }, h('span', { className: 'sr-only' }, 'Search city or place'), h('input', { type: 'search', value: d.liveLocationQuery || '', onChange: function (event) { update({ liveLocationQuery: event.target.value }); }, placeholder: 'City, state, or country', className: 'w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-white placeholder:text-slate-500' })),
-                    h('button', { type: 'submit', disabled: !!d.liveWeatherLoading, className: 'rounded-lg border border-emerald-300/30 bg-white/5 px-3 py-2 text-xs font-black text-emerald-200 disabled:opacity-50' }, 'Search')
+                  h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-300' }, 'Nothing loads automatically. Use device location, type a flexible location, or open separate address fields.'),
+                  h('button', { type: 'button', onClick: requestDeviceWeather, disabled: !!d.liveWeatherLoading, className: 'mt-3 min-h-11 w-full rounded-lg bg-emerald-500 px-3 py-2 text-xs font-black text-emerald-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:opacity-50' }, d.liveWeatherLoading ? 'Connecting...' : '\uD83D\uDCCD Use my location'),
+                  h('form', { className: 'mt-3 space-y-2', onSubmit: function (event) { event.preventDefault(); searchLiveWeather('quick'); }, 'aria-describedby': 'weather-location-format-help' },
+                    h('label', { htmlFor: 'weather-location-quick', className: 'block text-xs font-bold text-emerald-100' }, 'Quick location search'),
+                    h('div', { className: 'flex gap-2' },
+                      h('input', { id: 'weather-location-quick', type: 'search', value: d.liveLocationQuery || '', onChange: function (event) { update({ liveLocationQuery: event.target.value }); }, placeholder: 'Boston, MA or 42.36, -71.06', autoComplete: 'off', inputMode: 'search', className: 'min-h-11 min-w-0 flex-1 rounded-lg border border-white/20 bg-black/30 px-3 py-2 text-xs text-white placeholder:text-slate-400 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' }),
+                      h('button', { type: 'submit', disabled: !!d.liveWeatherLoading, className: 'min-h-11 rounded-lg border border-emerald-300/40 bg-white/10 px-3 py-2 text-xs font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:opacity-50' }, 'Search')
+                    ),
+                    h('p', { id: 'weather-location-format-help', className: 'text-[11px] leading-relaxed text-slate-300' }, 'Accepts city, region, country, postal or ZIP code, or decimal coordinates. Examples: Paris, France; 02108; Tokyo Japan; 42.36 N, 71.06 W.')
+                  ),
+                  h('button', {
+                    type: 'button',
+                    onClick: function () { update({ liveLocationDetailsOpen: !d.liveLocationDetailsOpen }); },
+                    'aria-expanded': !!d.liveLocationDetailsOpen,
+                    'aria-controls': 'weather-location-details',
+                    className: 'mt-2 flex min-h-11 w-full items-center justify-between rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-left text-xs font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200'
+                  }, h('span', null, d.liveLocationDetailsOpen ? 'Hide location fields' : 'More location fields'), h('span', { 'aria-hidden': true }, d.liveLocationDetailsOpen ? '\u2212' : '+')),
+                  h('div', { id: 'weather-location-details', hidden: !d.liveLocationDetailsOpen },
+                    d.liveLocationDetailsOpen && h('form', { className: 'mt-2 rounded-xl border border-white/15 bg-black/20 p-3', onSubmit: function (event) { event.preventDefault(); searchLiveWeather('structured'); }, 'aria-labelledby': 'weather-location-details-title' },
+                      h('p', { id: 'weather-location-details-title', className: 'text-xs font-black text-white' }, 'Search with separate fields'),
+                      h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, 'Fill in any fields you know. City and country usually give the best match.'),
+                      h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                        h('label', { htmlFor: 'weather-location-city', className: 'col-span-2 block text-[11px] font-bold text-emerald-100' }, 'City or locality',
+                          h('input', { id: 'weather-location-city', type: 'text', value: d.liveLocationCity || '', onChange: function (event) { update({ liveLocationCity: event.target.value }); }, autoComplete: 'address-level2', className: 'mt-1 min-h-11 w-full rounded-lg border border-white/20 bg-slate-950/70 px-3 py-2 text-xs font-normal text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' })
+                        ),
+                        h('label', { htmlFor: 'weather-location-region', className: 'block text-[11px] font-bold text-emerald-100' }, 'State, province, or region',
+                          h('input', { id: 'weather-location-region', type: 'text', value: d.liveLocationRegion || '', onChange: function (event) { update({ liveLocationRegion: event.target.value }); }, autoComplete: 'address-level1', className: 'mt-1 min-h-11 w-full rounded-lg border border-white/20 bg-slate-950/70 px-3 py-2 text-xs font-normal text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' })
+                        ),
+                        h('label', { htmlFor: 'weather-location-postal', className: 'block text-[11px] font-bold text-emerald-100' }, 'Postal or ZIP code',
+                          h('input', { id: 'weather-location-postal', type: 'text', value: d.liveLocationPostalCode || '', onChange: function (event) { update({ liveLocationPostalCode: event.target.value }); }, autoComplete: 'postal-code', inputMode: 'text', className: 'mt-1 min-h-11 w-full rounded-lg border border-white/20 bg-slate-950/70 px-3 py-2 text-xs font-normal text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' })
+                        ),
+                        h('label', { htmlFor: 'weather-location-country', className: 'col-span-2 block text-[11px] font-bold text-emerald-100' }, 'Country',
+                          h('input', { id: 'weather-location-country', type: 'text', value: d.liveLocationCountry || '', onChange: function (event) { update({ liveLocationCountry: event.target.value }); }, autoComplete: 'country-name', className: 'mt-1 min-h-11 w-full rounded-lg border border-white/20 bg-slate-950/70 px-3 py-2 text-xs font-normal text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' })
+                        )
+                      ),
+                      h('button', { type: 'submit', disabled: !!d.liveWeatherLoading, className: 'mt-3 min-h-11 w-full rounded-lg bg-emerald-400 px-3 py-2 text-xs font-black text-emerald-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-50' }, 'Search these fields')
+                    )
                   ),
                   d.liveWeatherStatus && h('p', { className: 'mt-2 text-[10px] font-bold text-emerald-200', role: 'status', 'aria-live': 'polite' }, d.liveWeatherStatus),
                   d.liveWeatherError && h('p', { className: 'mt-2 rounded-lg bg-rose-950/40 p-2 text-[10px] text-rose-200', role: 'alert' }, d.liveWeatherError),
@@ -3572,6 +3721,414 @@
           ['6-8', 'Analyze station contrasts, fronts, pressure, humidity, dew point, wind shifts, and radar as interacting evidence.'],
           ['9-12', 'Evaluate model assumptions, instability, terrain lift, uncertainty, controlled experiments, and forecast verification.']
         ];
+        function teacherMissionBuilder() {
+          var early = band === 'K-2';
+          var elementary = band === '3-5';
+          var missions = early ? [
+            {
+              id: 'weatherStory', icon: '\uD83D\uDD2D', title: 'Weather Detective Story', tab: 'map',
+              launch: 'What weather clues can help us tell what may happen next?',
+              steps: ['Save one useful weather clue.', 'Compare what changed over time.', 'Share a picture or spoken forecast using the clue.'],
+              deliverable: 'A picture or spoken forecast that names one weather clue.',
+              lookFors: ['Names an observable clue', 'Describes one change', 'Connects the clue to the forecast']
+            },
+            {
+              id: 'oneChange', icon: '\uD83E\uDDEA', title: 'One-Change Weather Test', tab: 'experiment',
+              launch: 'What happens when we change one weather ingredient?',
+              steps: ['Choose one ingredient.', 'Predict what may happen.', 'Run the test and tell what changed.'],
+              deliverable: 'A before-and-after explanation using words, pictures, or gestures.',
+              lookFors: ['Changes one ingredient', 'Makes a prediction', 'Describes the result']
+            },
+            {
+              id: 'safeSchool', icon: '\uD83D\uDEE1\uFE0F', title: 'Safe School Weather Plan', tab: 'forecast',
+              launch: 'How can weather clues help our school make a safe choice?',
+              steps: ['Notice a weather clue.', 'Choose what may happen.', 'Match the weather to a safe action.'],
+              deliverable: 'A short weather message with one safe action.',
+              lookFors: ['Uses a clue', 'Names likely weather', 'Connects weather to an action']
+            }
+          ] : [
+            {
+              id: 'frontBoundary', icon: '\uD83C\uDF2C\uFE0F', title: 'Front Boundary Detective', tab: 'map',
+              launch: elementary ? 'Where is the biggest weather change across the station network?' : 'Which station contrasts provide the strongest evidence for an air-mass boundary?',
+              steps: ['Inspect and save station evidence.', 'Compare patterns across space and time.', 'Defend the boundary location with measurements.'],
+              deliverable: elementary ? 'An annotated station comparison and evidence sentence.' : 'A boundary claim supported by multiple station measurements and a mechanism.',
+              lookFors: ['Selects relevant measurements', 'Identifies a meaningful contrast', 'Explains why the contrast supports the boundary']
+            },
+            {
+              id: 'causeEffect', icon: '\uD83E\uDDEA', title: elementary ? 'Weather Ingredient Lab' : 'Atmospheric Cause & Effect Lab', tab: 'experiment',
+              launch: elementary ? 'How does changing one weather ingredient affect clouds or precipitation?' : 'How does one starting variable influence moisture, lift, saturation, or precipitation potential?',
+              steps: ['Choose one variable and predict.', 'Run a controlled comparison.', 'Explain the result and its limitations.'],
+              deliverable: elementary ? 'A before-and-after explanation that names what stayed the same.' : 'A causal explanation using baseline, test result, mechanism, and model limitation.',
+              lookFors: ['Changes one variable', 'Uses baseline and test evidence', 'Explains a plausible mechanism']
+            },
+            {
+              id: 'safeForecast', icon: '\uD83D\uDCE1', title: 'Evidence-Based School Forecast', tab: 'forecast',
+              launch: 'What weather is most likely, when will it begin, and what should the school do?',
+              steps: ['Select multiple evidence sources.', 'Issue and verify a CER forecast.', 'Revise the claim and communicate a readiness action.'],
+              deliverable: 'A verified forecast briefing with evidence, reasoning, confidence, and an actionable school decision.',
+              lookFors: ['Uses multiple evidence sources', 'Connects evidence to the claim', 'Matches a hazard with a readiness action']
+            }
+          ].concat(!early && !elementary ? [{
+            id: 'uncertainty', icon: '\uD83C\uDF9A\uFE0F', title: 'Ensemble Uncertainty Challenge', tab: 'forecast',
+            launch: 'How should ensemble spread change forecast confidence and decision-making?',
+            steps: ['Compare the nine modeled outcomes.', 'Calibrate confidence to the evidence.', 'Explain what could change the forecast.'],
+            deliverable: 'An uncertainty statement that distinguishes model agreement from operational probability.',
+            lookFors: ['Interprets ensemble agreement carefully', 'Calibrates confidence', 'Names assumptions or missing evidence']
+          }] : []);
+          var durations = {
+            '20': { label: '20-minute sprint', timing: 'Launch 3 min | Investigate 10 min | Share 7 min' },
+            '35': { label: '35-minute lesson', timing: 'Launch 5 min | Investigate 20 min | Share 10 min' },
+            '50': { label: '50-minute deep dive', timing: 'Launch 8 min | Investigate 30 min | Share 12 min' }
+          };
+          var groupingLabels = { solo: 'Individual', pairs: 'Pairs', teams: 'Teams of 3-4' };
+          var supportSets = {
+            scaffold: {
+              label: 'Scaffolded access',
+              description: early ? 'Reduce language load while keeping the weather thinking visible.' : 'Make the evidence pathway explicit without reducing the science goal.',
+              supports: early ? [
+                'Preview picture icons for cloud, wind, temperature, and rain.',
+                'Rehearse with a partner using: I think ___ because I noticed ___.',
+                'Accept pointing, drawing, speaking, or acting out the explanation.'
+              ] : [
+                'Preteach pressure, dew point, boundary, evidence, and uncertainty.',
+                'Use a claim-evidence-reasoning organizer with one completed example.',
+                'Allow oral, visual, or written evidence explanations.'
+              ]
+            },
+            core: {
+              label: 'Core pathway',
+              description: 'Keep the grade-banded science target while offering multiple ways to engage and respond.',
+              supports: early ? [
+                'Offer picture, spoken, or drawn response options.',
+                'Ask learners to point to the clue they used.',
+                'Use partner talk before whole-group sharing.'
+              ] : [
+                'Provide the standard mission directions and evidence tools.',
+                'Allow written, oral, visual, or broadcast responses.',
+                'Require at least two linked evidence sources where grade-appropriate.'
+              ]
+            },
+            extension: {
+              label: 'Extension challenge',
+              description: early ? 'Transfer the weather idea to a new story and compare patterns.' : 'Increase transfer, uncertainty analysis, and model critique.',
+              supports: early ? [
+                'Compare a second weather story.',
+                'Explain what stayed the same and what changed.',
+                'Ask what new clue would make the forecast stronger.'
+              ] : [
+                'Test the mission in a contrasting scenario.',
+                'Critique one model assumption or missing measurement.',
+                'Explain how uncertainty changes confidence or action.'
+              ]
+            }
+          };
+          var alignmentById = {
+            weatherStory: {
+              practice: 'Analyzing and interpreting data',
+              concept: 'Patterns',
+              artifact: 'A picture or spoken forecast that cites an observable weather clue.',
+              press: 'What pattern did you notice, and what makes that clue useful?'
+            },
+            oneChange: {
+              practice: 'Planning and carrying out investigations',
+              concept: 'Cause and effect',
+              artifact: 'A before-and-after explanation that identifies the changed ingredient.',
+              press: 'What changed, what stayed the same, and what happened because of the change?'
+            },
+            safeSchool: {
+              practice: 'Constructing explanations and designing solutions',
+              concept: 'Cause and effect',
+              artifact: 'A weather message that links a clue, likely condition, and safe action.',
+              press: 'How does the weather clue support the action you chose?'
+            },
+            frontBoundary: {
+              practice: 'Analyzing and interpreting data',
+              concept: 'Patterns',
+              artifact: 'A boundary claim supported by spatial and temporal station contrasts.',
+              press: 'Which station pair provides the strongest contrast, and which measurement matters most?'
+            },
+            causeEffect: {
+              practice: 'Planning and carrying out investigations',
+              concept: 'Cause and effect',
+              artifact: 'A controlled-comparison explanation using baseline, test evidence, and mechanism.',
+              press: 'How does holding the other variables fixed strengthen the causal claim?'
+            },
+            safeForecast: {
+              practice: 'Engaging in argument from evidence',
+              concept: 'Systems and system models',
+              artifact: 'A verified CER forecast with calibrated confidence and an actionable readiness decision.',
+              press: 'How do the interacting measurements support both the forecast and the school action?'
+            },
+            uncertainty: {
+              practice: 'Developing and using models',
+              concept: 'Stability and change',
+              artifact: 'A calibrated uncertainty statement that distinguishes agreement from probability.',
+              press: 'What ensemble disagreement or model assumption should limit confidence?'
+            }
+          };
+          var selectedId = d.teacherMissionId || missions[0].id;
+          var mission = missions.filter(function (item) { return item.id === selectedId; })[0] || missions[0];
+          var alignment = alignmentById[mission.id];
+          var durationId = durations[d.teacherMissionDuration] ? d.teacherMissionDuration : '35';
+          var duration = durations[durationId];
+          var groupingId = groupingLabels[d.teacherMissionGrouping] ? d.teacherMissionGrouping : 'pairs';
+          var supportId = supportSets[d.teacherMissionSupport] ? d.teacherMissionSupport : 'core';
+          var support = supportSets[supportId];
+          var missionLines = [
+            'WEATHER SYSTEMS CLASSROOM MISSION',
+            'Grade band: ' + band,
+            'Mission: ' + mission.title,
+            'Time: ' + duration.label,
+            'Grouping: ' + groupingLabels[groupingId],
+            'Learning pathway: ' + support.label,
+            '',
+            'LAUNCH QUESTION',
+            mission.launch,
+            '',
+            'STUDENT WORKFLOW'
+          ];
+          mission.steps.forEach(function (step, index) { missionLines.push((index + 1) + '. ' + step); });
+          missionLines.push('', 'DELIVERABLE', mission.deliverable, '', 'SUCCESS LOOK-FORS');
+          mission.lookFors.forEach(function (item) { missionLines.push('- ' + item); });
+          missionLines.push('', 'THREE-DIMENSIONAL LEARNING LENS');
+          missionLines.push('Science and engineering practice: ' + alignment.practice);
+          missionLines.push('Crosscutting concept: ' + alignment.concept);
+          missionLines.push('Evidence artifact: ' + alignment.artifact);
+          missionLines.push('Teacher press: ' + alignment.press);
+          missionLines.push('Local alignment note: Connect this mission to district performance expectations and adopted curriculum.');
+          missionLines.push('', 'UDL ACCESS AND CHALLENGE', support.label + ': ' + support.description);
+          support.supports.forEach(function (item) { missionLines.push('- ' + item); });
+          missionLines.push('', 'TIMING', duration.timing, '', 'This mission uses a transparent teaching model. Compare with authentic local weather observations when possible.');
+          var missionText = missionLines.join('\n');
+          var studentSupportSets = {
+            scaffold: early ? [
+              'Use the picture icons and point to the weather clue you chose.',
+              'Practice with a partner: I think ___ because I noticed ___.',
+              'You may point, draw, speak, or act out your explanation.'
+            ] : [
+              'Use the vocabulary bank and completed CER example.',
+              'Organize your thinking with the claim-evidence-reasoning frame.',
+              'You may respond orally, visually, or in writing.'
+            ],
+            core: early ? [
+              'You may draw, speak, or use pictures for your response.',
+              'Point to the clue that supports your weather idea.',
+              'Practice with a partner before sharing.'
+            ] : [
+              'Use the mission evidence tools and grade-level directions.',
+              'Choose a written, oral, visual, or broadcast response.',
+              'Connect at least two evidence sources when the mission asks for them.'
+            ],
+            extension: early ? [
+              'Compare this weather story with a second story.',
+              'Explain what stayed the same and what changed.',
+              'Name a new clue that would make your forecast stronger.'
+            ] : [
+              'Repeat the mission in a contrasting scenario.',
+              'Identify one model assumption or missing measurement.',
+              'Explain how uncertainty should change confidence or action.'
+            ]
+          };
+          var studentSupports = studentSupportSets[supportId];
+          var studentLines = [
+            'STUDENT WEATHER MISSION',
+            mission.title,
+            '',
+            'YOUR QUESTION',
+            mission.launch,
+            '',
+            'TIME AND TEAM',
+            duration.label + ' | ' + groupingLabels[groupingId],
+            '',
+            'WHAT TO DO'
+          ];
+          mission.steps.forEach(function (step, index) { studentLines.push((index + 1) + '. ' + step); });
+          studentLines.push('', 'WHAT TO SHARE', mission.deliverable, '', 'CHECK YOUR WORK');
+          mission.lookFors.forEach(function (item) { studentLines.push('\u2610 ' + item); });
+          studentLines.push('', 'YOUR LEARNING PATHWAY', support.label);
+          studentSupports.forEach(function (item) { studentLines.push('- ' + item); });
+          studentLines.push(
+            '',
+            'BEFORE YOU FINISH',
+            'Explain what evidence changed your thinking and leave one weather question you still have.',
+            '',
+            'Remember: This simulation is a teaching model. Model outcomes are evidence to analyze, not a real local forecast.'
+          );
+          var studentMissionText = studentLines.join('\n');
+          function copyStatus(ok, label) {
+            var message = ok ? label + ' copied to clipboard.' : 'Copy failed. Select the visible text and copy it manually.';
+            if (addToast) addToast(message, ok ? 'success' : 'info');
+            if (announce) announce(message);
+          }
+          function legacyCopy(text, label) {
+            try {
+              var field = document.createElement('textarea');
+              field.value = text;
+              field.setAttribute('readonly', '');
+              field.style.position = 'fixed';
+              field.style.left = '-9999px';
+              field.style.top = '0';
+              document.body.appendChild(field);
+              field.focus();
+              field.select();
+              var copied = false;
+              try { copied = document.execCommand('copy'); } catch (error) { copied = false; }
+              document.body.removeChild(field);
+              copyStatus(copied, label);
+            } catch (error) { copyStatus(false, label); }
+          }
+          function copyText(text, label) {
+            try {
+              if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
+                window.navigator.clipboard.writeText(text).then(function () { copyStatus(true, label); }).catch(function () { legacyCopy(text, label); });
+                return;
+              }
+            } catch (error) {}
+            legacyCopy(text, label);
+          }
+          function copyMission() {
+            copyText(missionText, 'Classroom mission');
+          }
+          function copyStudentDirections() {
+            copyText(studentMissionText, 'Student directions');
+          }
+          return h('section', {
+            className: panelClass + ' overflow-hidden',
+            'data-weather-mission-builder': true,
+            'aria-labelledby': 'weather-mission-builder-title'
+          },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-slate-700 bg-gradient-to-r from-slate-900 via-sky-950/30 to-indigo-950/30' : 'border-sky-200 bg-gradient-to-r from-sky-50 via-white to-indigo-50') },
+              h('div', { className: 'max-w-2xl' },
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Lesson planning studio'),
+                h('h3', { id: 'weather-mission-builder-title', className: 'mt-1 text-lg font-black' }, 'Classroom Mission Builder'),
+                h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, 'Build a grade-banded investigation brief without changing any recorded student evidence.')
+              ),
+              h('button', {
+                type: 'button',
+                onClick: copyMission,
+                'aria-label': 'Copy classroom mission brief to clipboard',
+                className: 'min-h-11 rounded-lg bg-sky-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-sky-600 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
+              }, '\uD83D\uDCCB Copy mission brief')
+            ),
+            h('div', { className: 'p-4' },
+              h('div', { className: 'grid gap-2 sm:grid-cols-2', role: 'list', 'aria-label': band + ' classroom mission choices' }, missions.map(function (item) {
+                var selected = item.id === mission.id;
+                return h('button', {
+                  key: item.id,
+                  type: 'button',
+                  role: 'listitem',
+                  onClick: function () { update({ teacherMissionId: item.id }); },
+                  'aria-pressed': selected,
+                  className: 'min-h-16 rounded-xl border p-3 text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (selected ? (dark ? 'border-sky-300 bg-sky-900 text-white' : 'border-sky-600 bg-sky-100 text-sky-950') : (dark ? 'border-slate-700 bg-slate-950/60 hover:bg-slate-800' : 'border-slate-200 bg-white hover:bg-sky-50'))
+                },
+                  h('span', { className: 'mr-2 text-lg', 'aria-hidden': true }, item.icon),
+                  h('span', { className: 'text-sm font-black' }, item.title)
+                );
+              })),
+              h('div', { className: 'mt-4 grid gap-3 sm:grid-cols-3' },
+                selectField('weather-mission-duration', 'Lesson length', durationId, [
+                  { value: '20', label: durations['20'].label },
+                  { value: '35', label: durations['35'].label },
+                  { value: '50', label: durations['50'].label }
+                ], function (event) { update({ teacherMissionDuration: event.target.value }); }),
+                selectField('weather-mission-grouping', 'Student grouping', groupingId, [
+                  { value: 'solo', label: groupingLabels.solo },
+                  { value: 'pairs', label: groupingLabels.pairs },
+                  { value: 'teams', label: groupingLabels.teams }
+                ], function (event) { update({ teacherMissionGrouping: event.target.value }); }),
+                selectField('weather-mission-support', 'Learning pathway', supportId, [
+                  { value: 'scaffold', label: supportSets.scaffold.label },
+                  { value: 'core', label: supportSets.core.label },
+                  { value: 'extension', label: supportSets.extension.label }
+                ], function (event) { update({ teacherMissionSupport: event.target.value }); })
+              ),
+              h('div', { className: 'mt-4 grid gap-4 lg:grid-cols-[1fr_.85fr]' },
+                h('div', { className: 'rounded-xl border p-4 ' + (dark ? 'border-indigo-800 bg-indigo-950/20' : 'border-indigo-200 bg-indigo-50') },
+                  h('p', { className: 'text-xs font-black uppercase tracking-widest ' + indigoAccentClass }, 'Launch question'),
+                  h('h4', { className: 'mt-2 text-base font-black' }, mission.launch),
+                  h('p', { className: 'mt-3 text-xs font-black uppercase tracking-widest ' + indigoAccentClass }, 'Student deliverable'),
+                  h('p', { className: 'mt-1 text-sm leading-relaxed ' + mutedClass }, mission.deliverable)
+                ),
+                h('div', { className: 'rounded-xl border p-4 ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') },
+                  h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, duration.label + ' | ' + groupingLabels[groupingId]),
+                  h('p', { className: 'mt-2 text-xs font-bold leading-relaxed ' + mutedClass }, duration.timing),
+                  h('button', {
+                    type: 'button',
+                    onClick: function () {
+                      update({ tab: mission.tab });
+                      if (announce) announce(mission.title + ' first student stage opened. Recorded student evidence was not changed.');
+                    },
+                    className: buttonClass + ' mt-3 w-full'
+                  }, 'Open first student stage \u2192')
+                )
+              ),
+              h('section', { className: 'mt-4 rounded-xl border p-4 ' + (dark ? 'border-emerald-800 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50'), 'aria-labelledby': 'weather-mission-support-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                  h('div', null,
+                    h('p', { className: 'text-xs font-black uppercase tracking-widest ' + emeraldAccentClass }, 'UDL access & challenge'),
+                    h('h4', { id: 'weather-mission-support-title', className: 'mt-1 text-base font-black' }, support.label)
+                  ),
+                  h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (dark ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-900') }, band + ' pathway')
+                ),
+                h('p', { className: 'mt-2 text-sm leading-relaxed ' + mutedClass }, support.description),
+                h('ul', { className: 'mt-3 grid gap-2 md:grid-cols-3', 'aria-label': support.label + ' mission supports' }, support.supports.map(function (item) {
+                  return h('li', { key: item, className: 'rounded-lg border p-3 text-xs font-bold leading-relaxed ' + (dark ? 'border-emerald-900 bg-slate-950/60' : 'border-emerald-100 bg-white') }, '\u2713 ' + item);
+                }))
+              ),
+              h('section', { className: 'mt-4 overflow-hidden rounded-xl border ' + (dark ? 'border-violet-800 bg-violet-950/20' : 'border-violet-200 bg-violet-50'), 'data-weather-learning-lens': true, 'aria-labelledby': 'weather-learning-lens-title' },
+                h('div', { className: 'border-b p-4 ' + (dark ? 'border-violet-900' : 'border-violet-200') },
+                  h('p', { className: 'text-xs font-black uppercase tracking-widest ' + violetAccentClass }, 'Standards-oriented planning'),
+                  h('h4', { id: 'weather-learning-lens-title', className: 'mt-1 text-base font-black' }, 'Three-Dimensional Learning Lens'),
+                  h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, 'Connect the mission to a science practice, crosscutting concept, and observable evidence artifact.')
+                ),
+                h('dl', { className: 'grid gap-3 p-4 sm:grid-cols-2' },
+                  [
+                    ['Science practice', alignment.practice],
+                    ['Crosscutting concept', alignment.concept],
+                    ['Evidence artifact', alignment.artifact],
+                    ['Teacher press', alignment.press]
+                  ].map(function (item) {
+                    return h('div', { key: item[0], className: 'rounded-lg border p-3 ' + (dark ? 'border-violet-900 bg-slate-950/60' : 'border-violet-100 bg-white') },
+                      h('dt', { className: 'text-[11px] font-black uppercase tracking-widest ' + violetAccentClass }, item[0]),
+                      h('dd', { className: 'mt-1 text-xs font-bold leading-relaxed ' + mutedClass }, item[1])
+                    );
+                  })
+                ),
+                h('p', { className: 'border-t px-4 py-3 text-xs leading-relaxed ' + (dark ? 'border-violet-900 text-violet-300' : 'border-violet-200 text-violet-900') }, 'Local alignment note: Connect this mission to district performance expectations and adopted curriculum.')
+              ),
+              h('details', { className: 'mt-4 overflow-hidden rounded-xl border ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') },
+                h('summary', { className: 'flex min-h-11 cursor-pointer items-center px-4 py-3 text-sm font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-400' }, 'Preview copy-ready mission brief'),
+                h('pre', { className: 'whitespace-pre-wrap break-words border-t p-4 font-sans text-xs leading-relaxed ' + (dark ? 'border-slate-700 text-slate-200' : 'border-slate-200 text-slate-700'), 'aria-label': 'Classroom mission brief plain text' }, missionText)
+              ),
+              h('section', {
+                className: 'mt-4 overflow-hidden rounded-xl border ' + (dark ? 'border-cyan-800 bg-cyan-950/20' : 'border-cyan-200 bg-cyan-50'),
+                'data-weather-student-mission-card': true,
+                'aria-labelledby': 'weather-student-mission-card-title'
+              },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-cyan-900' : 'border-cyan-200') },
+                  h('div', { className: 'max-w-2xl' },
+                    h('p', { className: 'text-xs font-black uppercase tracking-widest ' + cyanAccentClass }, 'LMS-ready student handout'),
+                    h('h4', { id: 'weather-student-mission-card-title', className: 'mt-1 text-base font-black' }, 'Student Mission Card'),
+                    h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, 'A student-facing version with directions, evidence expectations, response options, and reflection.')
+                  ),
+                  h('button', {
+                    type: 'button',
+                    onClick: copyStudentDirections,
+                    'aria-label': 'Copy student mission directions to clipboard',
+                    className: 'min-h-11 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-cyan-600 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
+                  }, '\uD83D\uDCCB Copy student directions')
+                ),
+                h('details', null,
+                  h('summary', { className: 'flex min-h-11 cursor-pointer items-center px-4 py-3 text-sm font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-400' }, 'Preview student directions'),
+                  h('pre', { className: 'whitespace-pre-wrap break-words border-t p-4 font-sans text-xs leading-relaxed ' + (dark ? 'border-cyan-900 text-slate-200' : 'border-cyan-200 text-slate-700'), 'aria-label': 'Student mission directions plain text' }, studentMissionText)
+                ),
+                h('p', { className: 'border-t px-4 py-3 text-xs leading-relaxed ' + (dark ? 'border-cyan-900 text-cyan-300' : 'border-cyan-200 text-cyan-900') }, 'Student directions exclude teacher press questions, conference records, and local alignment notes.')
+              ),
+              h('p', { className: 'mt-3 text-xs leading-relaxed ' + mutedClass }, 'Builder selections affect this planning card only. Opening a stage does not reset the scenario, observations, forecasts, or teacher records.')
+            )
+          );
+        }
+
         function teacherCheckpointDashboard() {
           var observationCount = (d.observationLog || []).length;
           var stationCount = Object.keys(d.stationsViewed || {}).length;
@@ -3951,6 +4508,7 @@
               ].map(function (item) { return h('div', { key: item[0], className: 'rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') }, h('p', { className: 'text-sm font-black ' + skyAccentClass }, item[0]), h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, item[1])); })
             )
           ),
+          teacherMissionBuilder(),
           teacherCheckpointDashboard(),
           teacherConferencePlanner(),
           h('div', { className: panelClass + ' overflow-hidden' },

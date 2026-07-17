@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-diagram-review-wave-01",
+  "reviewDate": "2026-07-16",
+  "status": "assisted-editorial-source-review-complete-expert-pending",
+  "standard": {
+    "meaning": "This wave records an assisted editorial and source-alignment pass for shared instructional diagrams. It is not independent expert validation, psychometric evidence, or clinical guidance.",
+    "releaseBoundary": "Source-reviewed editorial status identifies corrected and traceable content; independent qualified expert validation remains pending."
+  },
+  "summary": {
+    "reviewedDiagramTemplates": 7,
+    "correctedDiagramTemplates": 7,
+    "sourceReviewedDiagramTemplates": 7,
+    "placementRecords": 8,
+    "distinctNamedSources": 13,
+    "independentExpertValidated": 0,
+    "status": "pass"
+  },
+  "items": [
+    {
+      "sequence": 1,
+      "key": "hpaAxis",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-01",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Replaced deterministic hippocampal-damage and disorder language with a qualified association and replaced a simplistic cortisol-effects list with an energy-mobilization and feedback description.",
+      "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Replaced deterministic hippocampal-damage and disorder language with a qualified association and replaced a simplistic cortisol-effects list with an energy-mobilization and feedback description. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-21",
+          "chapterTitle": "Neurotransmitters, Endocrine System & Genetics",
+          "sectionIndex": 3,
+          "sectionHeading": "The Endocrine System & Stress Response",
+          "legacySource": "js/textbook_ch21.js"
+        }
+      ],
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4561403/",
+        "https://pubmed.ncbi.nlm.nih.gov/27065163/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Stress effects on the hippocampus: a critical review",
+          "organization": "Progress in Neuro-Psychopharmacology & Biological Psychiatry; PubMed Central, U.S. National Library of Medicine (2015)",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4561403/",
+          "whyReputable": "This peer-reviewed critical review evaluates human and animal evidence about stress-related hippocampal structural and functional change. PubMed Central supplies stable full text and traceable publication metadata; the review supports qualified associations rather than deterministic claims."
+        },
+        {
+          "title": "Regulation of the Hypothalamic-Pituitary-Adrenocortical Stress Response",
+          "organization": "Comprehensive Physiology; PubMed, U.S. National Library of Medicine (2016)",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/27065163/",
+          "whyReputable": "This peer-reviewed mechanistic review explains CRH, ACTH, adrenal glucocorticoid secretion, feedback regulation, and adaptation of the hypothalamic-pituitary-adrenocortical response. PubMed provides traceable journal and author metadata for the cascade shown."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "not-applicable"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 2,
+      "key": "memoryModel",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-01",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Reframed the figure as the historical modal model, removed the unqualified 7±2 capacity rule, separated short-term storage from modern working-memory models, and removed claims that sensory traces are exact or long-term memories permanent.",
+      "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Reframed the figure as the historical modal model, removed the unqualified 7±2 capacity rule, separated short-term storage from modern working-memory models, and removed claims that sensory traces are exact or long-term memories permanent. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-25",
+          "chapterTitle": "Memory Systems",
+          "sectionIndex": 2,
+          "sectionHeading": "Atkinson-Shiffrin Model (Multi-Store Model)",
+          "legacySource": "js/textbook_ch25.js"
+        }
+      ],
+      "references": [
+        "https://openstax.org/books/psychology/pages/8-1-how-memory-functions",
+        "https://pubmed.ncbi.nlm.nih.gov/11515286/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology: How Memory Functions",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology/pages/8-1-how-memory-functions",
+          "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. Its expert-authored, peer-reviewed psychology text identifies the Atkinson–Shiffrin framework as a stage model and distinguishes sensory, short-term, and long-term storage for foundational instruction."
+        },
+        {
+          "title": "The magical number 4 in short-term memory: A reconsideration of mental storage capacity",
+          "organization": "Behavioral and Brain Sciences; PubMed, U.S. National Library of Medicine (2001)",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11515286/",
+          "whyReputable": "Cowan’s peer-reviewed theoretical review is a widely cited reappraisal of short-term-memory capacity. The PubMed record makes the journal, author, and publication details traceable and supports avoiding an unqualified seven-plus-or-minus-two rule."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "editorial-pass"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 3,
+      "key": "synapseDrugs",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-01",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Placed monoamine oxidase inside the presynaptic terminal, distinguished serotonin-transporter inhibition from intracellular monoamine-metabolism inhibition, and removed the claim that the two classes simply create the same generic increase in neurotransmitter activity.",
+      "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Placed monoamine oxidase inside the presynaptic terminal, distinguished serotonin-transporter inhibition from intracellular monoamine-metabolism inhibition, and removed the claim that the two classes simply create the same generic increase in neurotransmitter activity. Independent qualified expert validation remains pending.",
+      "placementCount": 2,
+      "placements": [
+        {
+          "chapterId": "ch-16",
+          "chapterTitle": "Evidence-Based Practice & Psychopharmacology",
+          "sectionIndex": 5,
+          "sectionHeading": "Antidepressant Medications",
+          "legacySource": "js/textbook_ch16.js"
+        },
+        {
+          "chapterId": "ch-47",
+          "chapterTitle": "High-Yield Clinical Psychopharmacology",
+          "sectionIndex": 2,
+          "sectionHeading": "Antidepressants",
+          "legacySource": "js/textbook_ch47.js"
+        }
+      ],
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK539848/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3025168/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Monoamine Oxidase Inhibitors (MAOIs)",
+          "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK539848/",
+          "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter describes monoamine oxidase as an intracellular mitochondrial enzyme and explains how MAO inhibitors reduce monoamine metabolism. It is an appropriate mechanism-level clinical reference."
+        },
+        {
+          "title": "How antidepressant drugs act: A primer on neuroplasticity as the eventual mediator of antidepressant efficacy",
+          "organization": "Indian Journal of Psychiatry; PubMed Central, U.S. National Library of Medicine (2010)",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3025168/",
+          "whyReputable": "This peer-reviewed review separates acute monoamine actions from downstream adaptations associated with therapeutic effects. PubMed Central provides the full article and publication metadata, supporting a mechanism description that does not collapse all antidepressants into generic neurotransmitter activity."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "not-applicable"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 4,
+      "key": "visualPathway",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-01",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Clarified which retinal fibers cross and replaced the claim that every postchiasmal lesion removes an entire visual field with lesion-location and lesion-extent dependent homonymous defects.",
+      "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Clarified which retinal fibers cross and replaced the claim that every postchiasmal lesion removes an entire visual field with lesion-location and lesion-extent dependent homonymous defects. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-20",
+          "chapterTitle": "Neuroanatomy & Brain Function",
+          "sectionIndex": 6,
+          "sectionHeading": "Lateralization & Split-Brain Research",
+          "legacySource": "js/textbook_ch20.js"
+        }
+      ],
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK553189/",
+        "https://www.ncbi.nlm.nih.gov/books/NBK562262/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Neuroanatomy, Visual Pathway",
+          "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK553189/",
+          "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter traces retinal projections through the optic chiasm, tracts, lateral geniculate nuclei, optic radiations, and visual cortex. It directly supports the crossing and laterality labels in the diagram."
+        },
+        {
+          "title": "Hemianopsia",
+          "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK562262/",
+          "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter relates lesion location to visual-field patterns, including homonymous hemianopia and quadrantanopia. It supports stating that a postchiasmal deficit depends on the location and extent of injury."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "not-applicable"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 5,
+      "key": "freudIceberg",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-01",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Labeled the figure as a historical theoretical metaphor, distinguished structural constructs from levels of consciousness, and removed wording that presented the id as a literal hidden brain structure.",
+      "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Labeled the figure as a historical theoretical metaphor, distinguished structural constructs from levels of consciousness, and removed wording that presented the id as a literal hidden brain structure. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-13",
+          "chapterTitle": "Psychodynamic & Humanistic Therapies",
+          "sectionIndex": 2,
+          "sectionHeading": "Classical Psychoanalysis (Freud)",
+          "legacySource": "js/textbook_ch13.js"
+        }
+      ],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/11-2-freud-and-the-psychodynamic-perspective",
+        "https://www.freud.org.uk/schools/resources/what-is-psychoanalysis-part-4-the-ego-the-id-and-the-superego/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Freud and the Psychodynamic Perspective",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/11-2-freud-and-the-psychodynamic-perspective",
+          "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-authored, peer-reviewed chapter presents the id, ego, superego, and levels of consciousness as Freud’s historical theory while explicitly noting the limited modern research support for many Freudian ideas."
+        },
+        {
+          "title": "What is Psychoanalysis? – The Ego, the Id and the Superego",
+          "organization": "Freud Museum London educational resources",
+          "url": "https://www.freud.org.uk/schools/resources/what-is-psychoanalysis-part-4-the-ego-the-id-and-the-superego/",
+          "whyReputable": "The Freud Museum London preserves and interprets Freud’s historical work. Its educational resource directly distinguishes the topographic and structural models and explains that they do not map one-to-one, making it a strong primary-institution source for faithful historical labeling rather than evidence of modern validity."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "editorial-pass"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 6,
+      "key": "kohlbergMoral",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-01",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Removed fixed childhood/adolescent/adult labels, framed the sequence as a proposed model of moral reasoning, modernized the stage-three label, and replaced a binary gender claim with the meta-analytic finding of small average differences.",
+      "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Removed fixed childhood/adolescent/adult labels, framed the sequence as a proposed model of moral reasoning, modernized the stage-three label, and replaced a binary gender claim with the meta-analytic finding of small average differences. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-38",
+          "chapterTitle": "Adolescence & Emerging Adulthood",
+          "sectionIndex": 3,
+          "sectionHeading": "Moral Reasoning: Kohlberg, Care & Context",
+          "legacySource": "js/textbook_ch38.js"
+        }
+      ],
+      "references": [
+        "https://openstax.org/books/lifespan-development/pages/11-4-cognitive-development-in-early-adulthood",
+        "https://pubmed.ncbi.nlm.nih.gov/10989620/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Lifespan Development: Cognitive Development in Early Adulthood",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/lifespan-development/pages/11-4-cognitive-development-in-early-adulthood",
+          "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-reviewed lifespan text summarizes Kohlberg’s proposed moral-reasoning levels and discusses cultural, sampling, justice-orientation, and care-orientation limitations instead of treating age labels as fixed rules."
+        },
+        {
+          "title": "Gender differences in moral orientation: A meta-analysis",
+          "organization": "Psychological Bulletin; PubMed, U.S. National Library of Medicine (2000)",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10989620/",
+          "whyReputable": "This peer-reviewed meta-analysis by Jaffee and Hyde synthesized empirical studies of care and justice orientations. Its PubMed-indexed record supports the conclusion that average gender differences were small, contradicting a uniform women-use-care claim."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "editorial-pass"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 7,
+      "key": "aschConformity",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-01",
+      "reviewDate": "2026-07-16",
+      "correctionSummary": "Changed the statistic to Asch’s 36.8% of critical trials, emphasized that many judgments remained independent, qualified generalization beyond the classic conditions, and removed an animation that automatically made the participant choose the majority’s wrong line.",
+      "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Changed the statistic to Asch’s 36.8% of critical trials, emphasized that many judgments remained independent, qualified generalization beyond the classic conditions, and removed an animation that automatically made the participant choose the majority’s wrong line. Independent qualified expert validation remains pending.",
+      "placementCount": 1,
+      "placements": [
+        {
+          "chapterId": "ch-31",
+          "chapterTitle": "Social Influence & Group Dynamics",
+          "sectionIndex": 2,
+          "sectionHeading": "Conformity, Unanimity & Dissent",
+          "legacySource": "js/textbook_ch31.js"
+        }
+      ],
+      "references": [
+        "https://doi.org/10.1037/h0093718"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Studies of independence and conformity: I. A minority of one against a unanimous majority",
+          "organization": "Psychological Monographs: General and Applied, American Psychological Association (Asch, 1956)",
+          "url": "https://doi.org/10.1037/h0093718",
+          "whyReputable": "This is Solomon Asch’s primary published report of the line-judgment experiments, linked by its persistent DOI. It is the direct source for the 36.8% critical-trial yielding result and for distinguishing majority pressure from inevitable participant conformity."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "shared-renderer-pass",
+        "keyboardDependency": "shared-renderer-pass",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "editorial-pass"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

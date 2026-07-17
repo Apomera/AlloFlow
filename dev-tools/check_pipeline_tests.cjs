@@ -27,7 +27,7 @@ const TESTS = path.join(ROOT, 'tests');
 const QUIET = process.argv.includes('--quiet');
 
 // Filename substrings that mark a test as belonging to the remediation pipeline / Document Builder /
-// scoring / security / export surface. Broad on purpose so new tests in these domains gate automatically.
+// scoring / security / export / professional-development surface. Broad so new tests gate automatically.
 const INCLUDE = [
   'doc_pipeline', 'pdf', 'pdfua', 'view_pdf_audit', 'audit_', 'audit_trail', 'scoring', 'ocr_', 'table_',
   'export_css', 'export_odt', 'epub', 'rawhtml', 'expert_direct', 'skip_link', 'residual', 'restoration', 'palette', 'region_select', 'block_restyle', 'contrast_pair', 'footnote', 'sanitize_style', 'brand_profile', 'verapdf',
@@ -41,7 +41,7 @@ const INCLUDE = [
   'prompt_fence', 'writing_check', 'text_pipeline', 'review_queue', 'recon_note', 'start_new_audit',
   'batch_report', 'placeholder_chrome', 'compare_popup', 'compare_tagged', 'crop_sparse', 'force_reocr',
   'sentence_restore', 'tier3_locator', 'verify_recovery', 'run_outcome', 'gemini_api_build',
-  'gemini_auth', 'submission_crypto', 'scan_score', 'heading_demote', 'heading_skip',
+  'gemini_auth', 'submission_crypto', 'scan_score', 'heading_demote', 'heading_skip', 'pd_',
 ];
 // Safety denylist: other-track suites that could substring-match an INCLUDE keyword (kept explicit so the
 // gate can never be coupled to STEM/SEL/lang/lab/game churn even if a name overlaps).
@@ -71,10 +71,18 @@ if (!QUIET) console.log('[pipeline-tests] running ' + files.length + ' pipeline/
 // DOM-heavy axe/ACE and live-module suites can exhaust a high-core desktop when
 // Vitest auto-fans out every available worker, producing random hook timeouts.
 // Bound concurrency for a deterministic deploy gate; coverage remains identical.
-const res = spawnSync('npx', ['vitest', 'run', '--reporter=dot', '--maxWorkers=4', ...files.map((f) => 'tests/' + f)], {
-  cwd: ROOT, encoding: 'utf-8', shell: true,
+// Do not route this through cmd.exe on Windows: cmd's ~8K command limit is
+// smaller than the selected suite list. Invoke Vitest's installed Node entry
+// directly so argument boundaries and the larger CreateProcess limit apply.
+const vitestCli = path.join(ROOT, 'node_modules', 'vitest', 'vitest.mjs');
+const res = spawnSync(process.execPath, [vitestCli, 'run', '--reporter=dot', '--maxWorkers=4', ...files.map((f) => 'tests/' + f)], {
+  cwd: ROOT, encoding: 'utf-8', shell: false, maxBuffer: 64 * 1024 * 1024,
 });
 const out = (res.stdout || '') + (res.stderr || '');
+if (res.error) {
+  console.error('[pipeline-tests] could not launch Vitest: ' + res.error.message);
+  process.exit(2);
+}
 if (res.status === 0) {
   const rendererHarness = path.join(ROOT, '_test_doc_builder_renderers.cjs');
   if (!fs.existsSync(rendererHarness)) {

@@ -25,6 +25,10 @@ describe('Persona Chat WCAG dialog behavior', () => {
     expect(countMatches(/aria-labelledby="persona-reflection-title"/g)).toBeGreaterThanOrEqual(2);
     expect(countMatches(/id="persona-reflection-title"/g)).toBeGreaterThanOrEqual(2);
     expect(source).toContain("dialog.querySelector('[data-definition-initial-focus]')");
+    expect(source).toContain('data-persona-definition-dialog');
+    expect(source).toContain("dialog.querySelector('[data-persona-summary-dialog]')");
+    expect(source).toContain("dialog.querySelector('[data-persona-reflection-dialog]')");
+    expect(source).toContain("dialog.querySelector('[data-persona-definition-dialog]')");
     expect(source).toContain('personaDefinitionReturnFocusRef.current');
     expect(source).toContain('handleSetPersonaDefinitionDataToNull();');
   });
@@ -38,7 +42,18 @@ describe('Persona Chat WCAG dialog behavior', () => {
     expect(source).toContain('aria-valuenow={rapport}');
     expect(source).toContain('aria-valuenow={xp}');
     expect(source).toContain('aria-valuemin={0} aria-valuemax={100}');
-    expect(source).toContain('aria-valuenow={personaState.selectedCharacter?.accumulatedXP || 0}');
+    expect(source).toContain('aria-valuenow={singleXp}');
+  });
+
+  it('uses purpose-specific names and described reflection limits', () => {
+    expect(countMatches(/aria-label=\{personaAutoRead \?/g)).toBe(2);
+    expect(countMatches(/aria-label=\{personaAutoSend \?/g)).toBe(2);
+    expect(countMatches(/aria-describedby="persona-reflection-count"/g)).toBe(2);
+    expect(countMatches(/maxLength=\{4000\}/g)).toBeGreaterThanOrEqual(2);
+    expect(source).toContain("aria-label={t('persona.speak_translation')}");
+    expect(source).not.toContain("aria-label={t('common.volume')}");
+    expect(source).not.toContain("aria-label={t('common.show')}");
+    expect(source).not.toContain("aria-label={t('common.refresh')}");
   });
 
   it('uses explicit non-submit types for all native buttons', () => {

@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { buildDiagramCatalog } = require('./eppp_diagram_catalog.cjs');
 
 const root = path.resolve(__dirname, '..');
 const legacyRoot = path.join(root, 'test_prep', 'eppp_legacy');
@@ -62,6 +63,8 @@ const domains = vm.runInContext('EPPPData.domains', context);
 const memoryAids = vm.runInContext('MemoryAids.aids', context);
 const chapters = windowObject.TextbookChapters || [];
 const diagramTemplates = windowObject._epppDiagrams || {};
+const diagramCatalog = buildDiagramCatalog({ root, chapters, diagramTemplates, chapterSourceById });
+const diagramPlacementBySectionId = new Map(diagramCatalog.placements.map((placement) => [placement.sectionId, placement]));
 const overridesPath = path.join(root, 'test_prep', 'eppp_learning_review_overrides.json');
 const reviewOverrides = fs.existsSync(overridesPath) ? JSON.parse(fs.readFileSync(overridesPath, 'utf8')) : { memoryAids: {} };
 const flashcardWavePattern = /^eppp_flashcard_review_wave_\d+\.json$/i;
@@ -92,17 +95,28 @@ const reviewChecks = ['source-support', 'accuracy-and-currency', 'instructional-
 
 const chapterRecords = chapters.map((chapter, chapterIndex) => {
   const override = reviewOverrides.chapters && reviewOverrides.chapters[String(chapter.id || '')] || {};
-  const sections = (Array.isArray(chapter.sections) ? chapter.sections : []).map((section, sectionIndex) => ({
-    id: String(chapter.id || 'chapter-' + (chapterIndex + 1)) + '-section-' + (sectionIndex + 1),
-    heading: cleanText(section && section.heading) || 'Untitled section',
-    preview: cleanText(section && section.content).slice(0, 320),
-    keyTerms: (Array.isArray(section && section.keyTerms) ? section.keyTerms : []).map(cleanText).filter(Boolean),
-    hasDiagram: !!(section && section.interactiveDiagram),
-    diagramDescription: cleanText(section && section.interactiveDiagram && section.interactiveDiagram.description),
-    hasKnowledgeCheck: !!(section && section.knowledgeCheck),
-    hasExpandableCase: !!(section && section.expandableCase),
-    reviewStatus: 'review-required',
-  }));
+  const sections = (Array.isArray(chapter.sections) ? chapter.sections : []).map((section, sectionIndex) => {
+    const chapterId = String(chapter.id || 'chapter-' + (chapterIndex + 1));
+    const id = chapterId + '-section-' + (sectionIndex + 1);
+    const runtimeSectionId = chapterId + '-section-' + sectionIndex;
+    const placement = diagramPlacementBySectionId.get(runtimeSectionId);
+    return {
+      id,
+      runtimeSectionId,
+      heading: cleanText(section && section.heading) || 'Untitled section',
+      preview: cleanText(section && section.content).slice(0, 320),
+      keyTerms: (Array.isArray(section && section.keyTerms) ? section.keyTerms : []).map(cleanText).filter(Boolean),
+      hasDiagram: Boolean(placement),
+      diagramPlacementId: placement ? placement.id : null,
+      diagramId: placement ? placement.diagramId : null,
+      diagramOrigin: placement ? placement.origin : null,
+      diagramTemplateKey: placement ? placement.templateKey : null,
+      diagramDescription: placement ? placement.description : '',
+      hasKnowledgeCheck: !!(section && section.knowledgeCheck),
+      hasExpandableCase: !!(section && section.expandableCase),
+      reviewStatus: 'review-required',
+    };
+  });
   return {
     id: String(chapter.id || 'chapter-' + (chapterIndex + 1)),
     title: cleanText(chapter.title) || 'Untitled chapter',
@@ -214,20 +228,8 @@ const aidRecords = memoryAids.map((aid) => {
   });
 });
 
-const diagramRecords = Object.entries(diagramTemplates).map(([key, diagram]) => ({
-  id: 'diagram-' + key.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase(),
-  key,
-  description: cleanText(diagram && diagram.description),
-  hasSvg: /<svg\b/i.test(String(diagram && diagram.svg || '')),
-  reviewStatus: 'review-required',
-  checks: {
-    textAlternative: cleanText(diagram && diagram.description) ? 'shared-renderer-pass-content-review-pending' : 'review-required',
-    reducedMotion: 'shared-renderer-pass',
-    keyboardDependency: 'shared-renderer-pass',
-    conceptAccuracy: 'pending',
-    labelQuality: 'pending',
-  },
-}));
+const diagramRecords = diagramCatalog.templates;
+const diagramPlacementRecords = diagramCatalog.placements;
 
 const catalog = {
   schemaVersion: 1,
@@ -237,12 +239,13 @@ const catalog = {
     checks: reviewChecks,
     meaning: 'Content remains review-required until claim-level source, accuracy, instructional, accessibility, bias/context, and qualified expert gates are complete.',
     accessibilityBaseline: 'The shared renderer provides keyboard controls, persistent section progress, diagram text alternatives, learner motion controls, and reduced-motion support.',
+    diagramCatalog: 'Shared templates and concrete learner-visible placements are cataloged separately. Inline diagrams exist only as placements; unused templates remain visible in the template registry but are not counted as placements.',
   },
   summary: {
     chapters: chapterRecords.length,
     sections: chapterRecords.reduce((sum, chapter) => sum + chapter.sectionCount, 0),
     diagrams: diagramRecords.length,
-    diagramPlacements: chapterRecords.reduce((sum, chapter) => sum + chapter.diagramCount, 0),
+    ...diagramCatalog.summary,
     knowledgeChecks: chapterRecords.reduce((sum, chapter) => sum + chapter.knowledgeCheckCount, 0),
     flashcards: flashcards.length,
     memoryAids: aidRecords.length,
@@ -260,6 +263,7 @@ const catalog = {
   },
   chapters: chapterRecords,
   diagrams: diagramRecords,
+  diagramPlacements: diagramPlacementRecords,
   flashcards,
   memoryAids: aidRecords,
 };
@@ -273,7 +277,8 @@ const report = {
   status: 'review-in-progress',
   findings: [
     'Legacy content is preserved but is not automatically approved for native publication.',
-    'Shared renderer accessibility controls are implemented; each diagram still needs concept and label review.',
+    `Shared renderer accessibility controls are implemented. ${catalog.summary.sourceReviewedDiagramPlacements} of ${catalog.summary.diagramPlacements} learner-visible placements have source-review records; ${catalog.summary.diagramPlacements - catalog.summary.sourceReviewedDiagramPlacements} placements still need concept and label review.`,
+    `${catalog.summary.diagramPlacements} learner-visible diagram placements are cataloged: ${catalog.summary.sharedTemplateDiagramPlacements} use shared templates and ${catalog.summary.inlineDiagramPlacements} are inline chapter diagrams. ${catalog.summary.unusedDiagramTemplates} shared templates are currently unused.`,
     `${catalog.summary.sourceReviewedFlashcards} of ${catalog.summary.flashcards} flashcards have source-review records; ${catalog.summary.flashcards - catalog.summary.sourceReviewedFlashcards} remain in first-pass review, and independent qualified expert validation is still pending.`,
     `${catalog.summary.retiredRedundantFlashcards} source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets.`,
   ],

@@ -514,14 +514,22 @@
         .diagram-box { transition: filter 0.3s; }
         .textbook-study-toolbar { position:sticky;top:8px;z-index:20;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#111827;border:1px solid rgba(167,139,250,.3);border-radius:14px;padding:12px 14px;margin-bottom:18px;box-shadow:0 10px 28px rgba(0,0,0,.28); }
         .textbook-study-toolbar button,.section-complete-btn { border:1px solid rgba(167,139,250,.35);background:#312e81;color:#ede9fe;border-radius:9px;padding:7px 10px;font-weight:700;cursor:pointer; }
-        .textbook-study-toolbar button:focus-visible,.section-complete-btn:focus-visible,.chapter-header:focus-visible,.case-header:focus-visible { outline:3px solid #fbbf24;outline-offset:3px; }
+        .textbook-study-toolbar button:focus-visible,.section-complete-btn:focus-visible,.chapter-header:focus-visible,.case-header:focus-visible,.diagram-study-controls button:focus-visible { outline:3px solid #fbbf24;outline-offset:3px; }
         .textbook-progress { margin-left:auto;color:#c4b5fd;font-size:.84rem;font-weight:700; }
         .section-study-row { display:flex;justify-content:flex-end;margin-top:14px; }
         .section-complete-btn[aria-pressed="true"] { background:#065f46;border-color:#34d399;color:#d1fae5; }
         .diagram-text-alternative { margin-top:10px;padding:10px 12px;border-left:3px solid #38bdf8;background:rgba(56,189,248,.08);color:#cbd5e1;font-size:.86rem;line-height:1.5; }
+        .diagram-visual[hidden],.diagram-caption[hidden],.diagram-text-alternative[hidden],.diagram-study-controls[hidden] { display:none !important; }
+        .diagram-study-controls { display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;padding:12px;border:1px solid rgba(56,189,248,.25);border-radius:10px;background:rgba(15,23,42,.96);text-align:left; }
+        .diagram-study-controls button { border:1px solid rgba(125,211,252,.45);background:#0c4a6e;color:#e0f2fe;border-radius:8px;padding:7px 10px;font-weight:700;cursor:pointer; }
+        .diagram-study-controls button[aria-pressed="true"] { background:#5b21b6;border-color:#c4b5fd;color:#fff; }
+        .diagram-study-controls button:disabled { opacity:.48;cursor:not-allowed; }
+        .diagram-study-status { flex:1 1 100%;color:#bae6fd;font-size:.84rem;line-height:1.45; }
         .textbook-container.hide-diagrams .interactive-diagram svg { display:none; }
+        .textbook-container.hide-diagrams .diagram-study-controls { display:none; }
         .textbook-container.reduce-motion svg animate,.textbook-container.reduce-motion svg animateTransform { display:none; }
-        @media (prefers-reduced-motion: reduce) { .interactive-diagram svg animate,.interactive-diagram svg animateTransform { display:none; } .diagram-box { transition:none; } }
+        .textbook-container.reduce-motion .interactive-diagram * { animation:none !important;transition:none !important; }
+        @media (prefers-reduced-motion: reduce) { .interactive-diagram svg animate,.interactive-diagram svg animateTransform { display:none; } .interactive-diagram * { animation:none !important;transition:none !important; } }
         @media (max-width:640px) { .textbook-progress { width:100%;margin-left:0; } .textbook-study-toolbar { position:static; } }
 
     `;
@@ -602,11 +610,24 @@
                 // Interactive Diagram
                 if (sec.interactiveDiagram) {
                     var diagramLabel = sec.interactiveDiagram.description || (sec.heading + ' diagram');
-                    html += '<figure class="interactive-diagram" role="group" aria-label="' + escapeAttribute(diagramLabel) + '">';
+                    var diagramId = sectionId + '-diagram';
+                    var diagramControlIds = diagramId + '-visual';
+                    if (sec.interactiveDiagram.description) diagramControlIds += ' ' + diagramId + '-caption ' + diagramId + '-alternative';
+                    html += '<figure class="interactive-diagram" role="group" aria-label="' + escapeAttribute(diagramLabel) + '" data-guided-diagram="' + diagramId + '">';
+                    html += '<div class="diagram-visual" id="' + diagramId + '-visual">';
                     html += sec.interactiveDiagram.svg.replace('<svg ', '<svg role="img" aria-label="' + escapeAttribute(diagramLabel) + '" focusable="false" ');
+                    html += '</div>';
                     if (sec.interactiveDiagram.description) {
-                        html += '<figcaption class="diagram-caption">' + sec.interactiveDiagram.description + '</figcaption>';
-                        html += '<div class="diagram-text-alternative"><strong>Text alternative:</strong> ' + sec.interactiveDiagram.description + '</div>';
+                        html += '<div class="diagram-text-alternative" id="' + diagramId + '-alternative"><strong>Text alternative:</strong> ' + sec.interactiveDiagram.description + '</div>';
+                    }
+                    html += '<div class="diagram-study-controls" role="group" aria-label="Guided diagram reveal controls" hidden>';
+                    html += '<button type="button" data-diagram-action="toggle" aria-pressed="false" aria-controls="' + diagramControlIds + '">Start guided reveal</button>';
+                    html += '<button type="button" data-diagram-action="previous" aria-controls="' + diagramControlIds + '" disabled>Previous diagram step</button>';
+                    html += '<button type="button" data-diagram-action="next" aria-controls="' + diagramControlIds + '" disabled>Next diagram step</button>';
+                    html += '<span class="diagram-study-status" role="status" aria-live="polite" aria-atomic="true">Complete diagram and explanation shown.</span>';
+                    html += '</div>';
+                    if (sec.interactiveDiagram.description) {
+                        html += '<figcaption class="diagram-caption" id="' + diagramId + '-caption">' + sec.interactiveDiagram.description + '</figcaption>';
                     }
                     html += '</figure>';
                 }
@@ -700,9 +721,67 @@
         return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
+    function setupDiagramStudyControls(root) {
+        Array.from(root.querySelectorAll('.interactive-diagram')).forEach(function(figure) {
+            var visual = figure.querySelector('.diagram-visual');
+            var caption = figure.querySelector('.diagram-caption');
+            var textAlternative = figure.querySelector('.diagram-text-alternative');
+            var controls = figure.querySelector('.diagram-study-controls');
+            if (!visual || !controls) return;
+            var toggleButton = controls.querySelector('[data-diagram-action="toggle"]');
+            var previousButton = controls.querySelector('[data-diagram-action="previous"]');
+            var nextButton = controls.querySelector('[data-diagram-action="next"]');
+            var status = controls.querySelector('.diagram-study-status');
+            var hasExplanation = !!(caption || textAlternative);
+            var totalSteps = hasExplanation ? 3 : 2;
+            var guided = false;
+            var step = totalSteps - 1;
+
+            function updateDiagramStep() {
+                figure.classList.toggle('diagram-guided', guided);
+                figure.dataset.diagramStep = guided ? String(step + 1) : 'complete';
+                visual.hidden = guided && step === 0;
+                if (caption) caption.hidden = guided && step < 2;
+                if (textAlternative) textAlternative.hidden = guided && step < 2;
+                toggleButton.setAttribute('aria-pressed', String(guided));
+                toggleButton.textContent = guided ? 'Show complete diagram' : 'Start guided reveal';
+                previousButton.disabled = !guided || step === 0;
+                nextButton.disabled = !guided || step === totalSteps - 1;
+                if (!guided) {
+                    status.textContent = 'Complete diagram and explanation shown. Guided reveal is off.';
+                } else if (step === 0) {
+                    status.textContent = 'Step 1 of ' + totalSteps + ': Preview the topic and predict the important relationships before viewing the diagram.';
+                } else if (step === 1 && hasExplanation) {
+                    status.textContent = 'Step 2 of ' + totalSteps + ': Study the visual. Trace its labels, contrasts, and directional relationships.';
+                } else if (hasExplanation) {
+                    status.textContent = 'Step ' + (step + 1) + ' of ' + totalSteps + ': Complete view. Compare the visual with its caption and text alternative.';
+                } else {
+                    status.textContent = 'Step ' + (step + 1) + ' of ' + totalSteps + ': Complete view. Study the visual and connect it with the section text.';
+                }
+            }
+
+            controls.hidden = false;
+            controls.addEventListener('click', function(event) {
+                var button = event.target.closest('[data-diagram-action]');
+                if (!button || button.disabled) return;
+                if (button.dataset.diagramAction === 'toggle') {
+                    guided = !guided;
+                    step = guided ? 0 : totalSteps - 1;
+                } else if (button.dataset.diagramAction === 'previous') {
+                    step = Math.max(0, step - 1);
+                } else if (button.dataset.diagramAction === 'next') {
+                    step = Math.min(totalSteps - 1, step + 1);
+                }
+                updateDiagramStep();
+            });
+            updateDiagramStep();
+        });
+    }
+
     function setupTextbookInteractions(root) {
         var shell = root.querySelector('.textbook-container');
         if (!shell) return;
+        setupDiagramStudyControls(root);
         var storageKey = 'alloflow_eppp_textbook_progress_v1';
         var completed = {};
         try { completed = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catch (_) { completed = {}; }

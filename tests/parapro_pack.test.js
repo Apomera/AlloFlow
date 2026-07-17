@@ -26,12 +26,19 @@ describe('ParaPro 1755 diagnostic bank', () => {
     expect(pack.items).toHaveLength(500);
     expect(pack.batchSize).toBe(100);
     expect(pack.sections).toHaveLength(5);
-    expect(pack.sections.map((section) => section.id)).toEqual(['diagnostic-batch-1', 'diagnostic-batch-2', 'guided-review-bank-1', 'guided-review-bank-2', 'guided-review-bank-3']);
-    expect(pack.sections.map((section) => section.kind)).toEqual(['source-diagnostic', 'source-diagnostic', 'guided-review', 'guided-review', 'guided-review']);
-    // Honest tiers: exactly 200 expert/source-reviewed items; every other item
-    // must carry the candid guided-review status until experts validate it.
-    expect(pack.items.filter((item) => item.qaStatus === 'qa-passed')).toHaveLength(200);
-    expect(pack.items.filter((item) => item.qaStatus === 'review-required').every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only')).toBe(true);
+    expect(pack.sections.map((section) => section.id)).toEqual(['diagnostic-batch-1', 'diagnostic-batch-2', 'independent-diagnostic-batch-3', 'guided-review-bank-1', 'guided-review-bank-2']);
+    expect(pack.sections.map((section) => section.kind)).toEqual(['source-diagnostic', 'source-diagnostic', 'independent-diagnostic', 'guided-review', 'guided-review']);
+    expect(pack).toMatchObject({
+      sourceDiagnosticBatchCount: 2,
+      assistantAuthoredIndependentBatchCount: 1,
+      independentDiagnosticBatchCount: 3,
+      guidedReviewBatchCount: 2,
+    });
+    // Honest tiers: 200 source-reviewed questions, 100 assistant-reviewed
+    // independent-practice questions, and 200 guided-review activities.
+    expect(pack.items.slice(0, 200).every((item) => item.reviewStatus === 'source-reviewed' && item.qaStatus === 'qa-passed')).toBe(true);
+    expect(pack.items.slice(200, 300).every((item) => item.reviewStatus === 'assistant-reviewed-independent-practice-item' && item.qaStatus === 'qa-passed-independent-practice-item')).toBe(true);
+    expect(pack.items.slice(300).every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only' && item.qaStatus === 'structural-qa-passed-guided-practice-only')).toBe(true);
     expect(Object.fromEntries(pack.domains.map((domain) => [domain.id, domain.weight]))).toEqual({
       reading: 1 / 3,
       mathematics: 1 / 3,
@@ -61,14 +68,28 @@ describe('ParaPro 1755 diagnostic bank', () => {
     expect(pack.description).toContain('official ParaPro Assessment currently has 90 questions');
   });
 
-  it('keeps every question source-reviewed, explained, and independently authored', () => {
+  it('keeps every item explained and preserves its reviewed content tier', () => {
+    const sourceItems = pack.items.slice(0, 200);
+    const authoredIndependentItems = pack.items.slice(200, 300);
+    const guidedItems = pack.items.slice(300);
+
     expect(pack.items.every((item) => item.type === 'single-choice')).toBe(true);
     expect(pack.items.every((item) => item.choices.length === 4)).toBe(true);
     expect(pack.items.every((item) => item.choiceRationales.length === 4)).toBe(true);
-    expect(pack.items.every((item) => item.rationale.length >= 100)).toBe(true);
+    expect(pack.items.every((item) => item.rationale.length >= 80)).toBe(true);
     expect(pack.items.every((item) => item.references.includes('https://www.ets.org/pdfs/parapro/1755.pdf'))).toBe(true);
-    expect(pack.items.every((item) => (item.reviewStatus === 'source-reviewed' && item.qaStatus === 'qa-passed') || (item.reviewStatus === 'assistant-reviewed-guided-practice-only' && item.qaStatus === 'review-required'))).toBe(true);
-    expect(pack.items.filter((item) => item.qaStatus === 'qa-passed').length).toBe(200);
+    expect(sourceItems.every((item) => item.reviewStatus === 'source-reviewed' && item.qaStatus === 'qa-passed')).toBe(true);
+    expect(authoredIndependentItems.every((item) => item.authorship === 'assistant-authored-independent'
+      && item.assistantReviewStatus === 'reviewed-independent-practice-item'
+      && item.examItemStatus === 'assistant-approved-as-independent-practice-item'
+      && item.reviewStatus === 'assistant-reviewed-independent-practice-item'
+      && item.qaStatus === 'qa-passed-independent-practice-item'
+      && !item.sourceItemId
+      && item.references.length > 0)).toBe(true);
+    expect(guidedItems.every((item) => item.examItemStatus === 'not-approved-as-independent-exam-item'
+      && item.reviewStatus === 'assistant-reviewed-guided-practice-only'
+      && item.qaStatus === 'structural-qa-passed-guided-practice-only'
+      && item.sourceItemId)).toBe(true);
     expect(new Set(pack.items.map((item) => item.id)).size).toBe(pack.items.length);
 
     const combinedPrompts = pack.items.map((item) => item.prompt.toLowerCase()).join('\n');

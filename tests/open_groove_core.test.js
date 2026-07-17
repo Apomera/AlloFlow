@@ -502,6 +502,37 @@ describe('Open Groove project core', () => {
     expect(notes).toHaveLength(1);
     expect(notes[0]).toMatchObject({ pitch: 'A3', startTick: 3840, durationTicks: 960 });
   });
+  it('uses wrapper time signatures for sparse score-timewise selected parts', () => {
+    const project = OG.ogCreateProject({ ppq: 960, timeSignature: [4, 4] });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<score-timewise version="3.1">
+  <part-list>
+    <score-part id="P1"><part-name>Lead</part-name></score-part>
+    <score-part id="P2"><part-name>Bass</part-name></score-part>
+  </part-list>
+  <measure number="1">
+    <part id="P1">
+      <attributes><divisions>1</divisions><time><beats>3</beats><beat-type>4</beat-type></time></attributes>
+      <note><rest/><duration>3</duration></note>
+    </part>
+  </measure>
+  <measure number="2">
+    <part id="P2">
+      <attributes><divisions>1</divisions></attributes>
+      <note><pitch><step>A</step><octave>3</octave></pitch><duration>1</duration></note>
+    </part>
+  </measure>
+</score-timewise>`;
+    const result = OG.ogImportMusicXmlSketch(project, pattern.id, synth.id, xml, { partId: 'P2' });
+    const notes = pattern.events.filter((event) => event.type === 'note' && event.trackId === synth.id);
+    expect(result).toMatchObject({ noteCount: 1, measureCount: 2, partId: 'P2', timeSignature: [3, 4] });
+    expect(project.timeSignature).toEqual([3, 4]);
+    expect(OG.ogTicksPerMeasure(project)).toBe(2880);
+    expect(notes).toHaveLength(1);
+    expect(notes[0]).toMatchObject({ pitch: 'A3', startTick: 2880, durationTicks: 960 });
+  });
   it('merges tied MusicXML notes into one sustained notation event', () => {
     const project = OG.ogCreateProject({ ppq: 960 });
     const pattern = project.patterns[0];

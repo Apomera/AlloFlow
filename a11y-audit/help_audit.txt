@@ -2,10 +2,10 @@
   HELP MODE COVERAGE AUDIT
 ====================================================
 
-Files scanned: 566
-Defined help keys (help_strings.js): 924
-Referenced help keys (data-help-key attrs): 888
-  - With definition: 888
+Files scanned: 584
+Defined help keys (help_strings.js): 927
+Referenced help keys (data-help-key attrs): 891
+  - With definition: 891
   - MISSING definition: 0
 Dead entries (defined but never referenced): 36
 

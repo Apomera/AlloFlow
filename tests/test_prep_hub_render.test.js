@@ -518,6 +518,12 @@ describe('Test Prep Hub render flow', () => {
 
     expect(host.textContent).toContain('Start Practice Bank 1');
     expect(host.textContent).toContain('Start Practice Bank 2');
+    expect(host.textContent).toContain('Start Practice Bank 3');
+    expect(host.textContent).toContain('Start Guided Review 1');
+    expect(host.textContent).toContain('Start Guided Review 2');
+    expect(host.textContent).toContain('2 source-question diagnostic banks');
+    expect(host.textContent).toContain('1 assistant-authored independent diagnostic bank');
+    expect(host.textContent).toContain('2 guided-reasoning review banks');
     expect(host.textContent).toContain('90 questions');
     expect(host.textContent).toContain('150 minutes');
 
@@ -526,6 +532,14 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('Practice Bank 2 of 5');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
+
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start Practice Bank 3');
+    expect(host.textContent).toContain('Practice Bank 3 of 5');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain(pack.items[200].prompt);
+    expect(host.textContent).toContain('Independent-practice bank item 201 of 500');
 
     await clickButton('Practice options');
     await waitForText('Resume saved practice');

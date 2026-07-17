@@ -1830,8 +1830,11 @@ if (dryRun) {
         'ui_strings.js',
         'qrcode.js',
         'escape_room_module.js',
-        // stem_lab hub
-        'stem_lab/stem_lab_module.js'
+        // stem_lab hub and Lumen support modules
+        'stem_lab/stem_lab_module.js',
+        'stem_lab/stem_lumen_evidence.js',
+        'stem_lab/stem_lumen_documents.js',
+        'stem_lab/stem_lumen_study.js'
     ];
     let copyCount = 0;
     modulesToCopy.forEach(f => {

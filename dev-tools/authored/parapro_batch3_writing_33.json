@@ -1,0 +1,1311 @@
+[
+  {
+    "id": "parapro-b3-writing-001",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "According to today's agenda, the robotics team, along with its two advisers, ___ scheduled to present first.",
+    "choices": [
+      "are",
+      "were",
+      "is",
+      "have"
+    ],
+    "answerIndex": 2,
+    "rationale": "The subject is the singular collective noun \"team,\" so it takes the singular verb \"is.\" The intervening phrase \"along with its two advisers\" does not change the number of the subject.",
+    "choiceRationales": [
+      "\"Are\" incorrectly treats the plural noun in the intervening phrase as the subject.",
+      "\"Were\" is plural and also conflicts with the present-time cue in today's agenda.",
+      "\"Is\" agrees with the singular subject \"team\" and fits the sentence's present context.",
+      "\"Have\" is a plural verb form and cannot complete the passive construction before \"scheduled.\""
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-002",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Which word correctly completes the sentence? Yesterday, the custodian ___ the new mats beside the stage.",
+    "choices": [
+      "laid",
+      "layed",
+      "lain",
+      "lied"
+    ],
+    "answerIndex": 0,
+    "rationale": "The transitive verb \"lay\" means to place something, and its simple past form is \"laid.\" Here, \"the new mats\" is the direct object that the custodian placed beside the stage.",
+    "choiceRationales": [
+      "\"Laid\" is the correct simple past form of \"lay\" when an object is placed somewhere.",
+      "\"Layed\" is not a standard English past-tense spelling of \"lay.\"",
+      "\"Lain\" is the past participle of the intransitive verb \"lie\" and does not take a direct object.",
+      "\"Lied\" means made an untrue statement and does not express placing the mats."
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-003",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "The clause \"which won the recycling contest\" is nonessential in the sentence \"Ms. Patel's class which won the recycling contest will lead the assembly.\" Which punctuation change is correct?",
+    "choices": [
+      "Place a comma only after \"contest.\"",
+      "Place a comma only after \"class.\"",
+      "Place a comma only after \"lead.\"",
+      "Place one comma after \"class\" and a second comma after \"contest.\""
+    ],
+    "answerIndex": 3,
+    "rationale": "A nonessential clause must be set off from the main clause on both sides. A comma after \"class\" opens the interruption, and a comma after \"contest\" closes it.",
+    "choiceRationales": [
+      "A comma after \"contest\" would close the nonessential clause, but a comma is also needed before \"which.\"",
+      "A comma after \"class\" would open the nonessential clause, but another comma is needed after \"contest.\"",
+      "A comma after \"lead\" would incorrectly separate the verb from its object and would not set off the nonessential clause.",
+      "The two commas correctly enclose the entire nonessential clause \"which won the recycling contest.\""
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-004",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Which relative pronoun correctly completes the sentence? The student ___ designed the new club logo will present it at lunch.",
+    "choices": [
+      "whom",
+      "who",
+      "whose",
+      "which"
+    ],
+    "answerIndex": 1,
+    "rationale": "Within the relative clause, the pronoun performs the action \"designed\" and therefore functions as its subject. The subjective form \"who\" is correct for a person in that role.",
+    "choiceRationales": [
+      "\"Whom\" is an objective form, but the missing pronoun is the subject of \"designed.\"",
+      "\"Who\" is the subjective form used for the person performing the designing action.",
+      "\"Whose\" shows possession and would require a noun after it, such as \"whose design.\"",
+      "\"Which\" generally refers to things, not to the student who performed the action."
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-005",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Where should a colon be inserted in the sentence \"The emergency kit included three supplies bandages, gloves, and a flashlight\"?",
+    "choices": [
+      "After \"included\"",
+      "After \"kit\"",
+      "After \"supplies\"",
+      "After \"three\""
+    ],
+    "answerIndex": 2,
+    "rationale": "A colon may follow the complete independent clause \"The emergency kit included three supplies\" to introduce the list naming those supplies. It should therefore appear after \"supplies.\"",
+    "choiceRationales": [
+      "A colon after \"included\" would separate the verb from the words that complete its meaning.",
+      "A colon after \"kit\" would separate the subject from its predicate.",
+      "A colon after \"supplies\" would follow a complete clause and correctly introduce the list.",
+      "A colon after \"three\" would interrupt the noun phrase \"three supplies.\""
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-006",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Which sentence correctly hyphenates a compound modifier before a noun?",
+    "choices": [
+      "The class read a well known poem.",
+      "We adopted a five week schedule.",
+      "The after school program begins Monday.",
+      "Mara submitted a well-organized portfolio."
+    ],
+    "answerIndex": 3,
+    "rationale": "In \"well-organized portfolio,\" the two words work together before the noun as one modifier, so the hyphen clarifies their connection. Each other option omits a needed hyphen.",
+    "choiceRationales": [
+      "\"Well known\" should be hyphenated when the combined modifier appears before \"poem.\"",
+      "The measurement used before \"schedule\" should be written \"five-week.\"",
+      "The compound modifier before \"program\" should be written \"after-school.\"",
+      "\"Well-organized\" is correctly hyphenated because it jointly modifies \"portfolio.\""
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-007",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Which verb phrase correctly completes the sentence? By the time the late bus arrived, the other students ___ their seats.",
+    "choices": [
+      "had taken",
+      "had took",
+      "have took",
+      "taking"
+    ],
+    "answerIndex": 0,
+    "rationale": "The students took their seats before another past event, the bus's arrival, so the past perfect \"had taken\" expresses the sequence. \"Taken\" is the required past participle after \"had.\"",
+    "choiceRationales": [
+      "\"Had taken\" correctly uses past perfect for an action completed before another past event.",
+      "The auxiliary \"had\" requires the participle \"taken,\" not the simple past \"took.\"",
+      "This form mismatches the present auxiliary \"have\" with the incorrect participle \"took.\"",
+      "\"Taking\" cannot serve as the complete finite verb phrase required by the sentence."
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-008",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Which revision turns the fragment \"Although the alarm rang before sunrise\" into a complete sentence?",
+    "choices": [
+      "The alarm although ringing before sunrise.",
+      "Although the alarm rang before sunrise, the volunteers reached the site by seven.",
+      "Although the alarm rang. Before sunrise the volunteers arrived.",
+      "The volunteers reaching the site, although before sunrise."
+    ],
+    "answerIndex": 1,
+    "rationale": "The word \"although\" makes the original clause dependent, so it cannot stand alone. Adding the independent clause \"the volunteers reached the site by seven\" completes the contrast and the sentence.",
+    "choiceRationales": [
+      "This group lacks a finite main verb and remains a fragment.",
+      "The dependent opening clause is correctly joined to an independent clause that completes its meaning.",
+      "Ending after \"rang\" leaves the dependent clause as a fragment despite the second sentence.",
+      "This word group has no finite main verb and therefore remains a fragment."
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-009",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Which revision correctly fixes the comma splice? \"The microscope lens was dusty, Ava cleaned it with lens paper.\"",
+    "choices": [
+      "The microscope lens was dusty, Ava wiped it with lens paper.",
+      "The microscope lens was dusty; because Ava cleaned it with lens paper.",
+      "Because the microscope lens was dusty. Ava cleaned it with lens paper.",
+      "The microscope lens was dusty, so Ava cleaned it with lens paper."
+    ],
+    "answerIndex": 3,
+    "rationale": "The original joins two independent clauses with only a comma. Adding the coordinating conjunction \"so\" after the comma creates a correct compound sentence and preserves the cause-and-result relationship.",
+    "choiceRationales": [
+      "This revision still joins two independent clauses with only a comma, so the comma splice remains.",
+      "A semicolon cannot introduce the dependent \"because\" clause, and this wording also reverses the intended cause-and-result relationship.",
+      "The period incorrectly separates the dependent \"Because\" clause from the independent clause it modifies.",
+      "The comma plus \"so\" correctly joins the independent clauses and signals the result."
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-010",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Which revision makes the comparison logical? \"The attendance at Friday's concert was larger than Thursday.\"",
+    "choices": [
+      "Friday's concert was larger in attendance than Thursday was a day.",
+      "The attendance at Friday's concert was larger than the concert occurred Thursday.",
+      "Friday's concert attendance was greater than Thursday's concert attendance.",
+      "Compared with Thursday, Friday's concert was attendance that was larger."
+    ],
+    "answerIndex": 2,
+    "rationale": "The revision compares the attendance for one concert with the attendance for the other concert. The original illogically compares a number of attendees with a day of the week.",
+    "choiceRationales": [
+      "This wording compares a concert with a day and adds an irrelevant observation.",
+      "This construction is ungrammatical and still does not compare like measures.",
+      "This option clearly compares Friday's attendance with Thursday's attendance.",
+      "This wording is awkward and treats \"attendance\" incorrectly as a complement."
+    ],
+    "skillIds": [
+      "writing-revision-clarity"
+    ],
+    "chapterIds": [
+      "parapro-ch-10"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-011",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "A supply request reads, \"Please order separate containers for the laboratory equipment and cleaning acessories.\" Which word is misspelled?",
+    "choices": [
+      "separate",
+      "acessories",
+      "laboratory",
+      "equipment"
+    ],
+    "answerIndex": 1,
+    "rationale": "The word \"acessories\" is missing the second c. The standard spelling is \"accessories.\" The other three words are spelled correctly.",
+    "choiceRationales": [
+      "\"Separate\" is spelled correctly.",
+      "\"Acessories\" is misspelled; the correct spelling is \"accessories.\"",
+      "\"Laboratory\" is spelled correctly.",
+      "\"Equipment\" is spelled correctly."
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-012",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A procedure begins, \"First, measure 20 milliliters of water. Next, record the temperature.\" Which sentence best maintains the same point of view and style?",
+    "choices": [
+      "Then enter the measurement in the first row of the table.",
+      "Then you should have the measurement entered in the first row of the table.",
+      "Then the measurement was entered by the student in the first row of the table.",
+      "Then we enter your measurement in the first row of their table."
+    ],
+    "answerIndex": 0,
+    "rationale": "The first two directions use concise imperative verbs with the understood subject \"you.\" \"Then enter\" continues that viewpoint and grammatical pattern without an unnecessary shift.",
+    "choiceRationales": [
+      "The imperative \"enter\" matches the earlier imperative verbs \"measure\" and \"record.\"",
+      "This shifts to an indirect second-person construction and is unnecessarily wordy.",
+      "This shifts to past tense and passive voice, unlike the preceding directions.",
+      "This sentence shifts inconsistently among \"we,\" \"your,\" and \"their.\""
+    ],
+    "skillIds": [
+      "writing-revision-clarity"
+    ],
+    "chapterIds": [
+      "parapro-ch-10"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-013",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "The writer means that the aide read nearly every page, but not all of them. Which revision expresses that meaning most clearly? \"The aide almost read every page of the packet aloud.\"",
+    "choices": [
+      "Almost the aide read every page of the packet aloud.",
+      "The aide read every page almost of the packet aloud.",
+      "The aide read every page of the packet almost aloud.",
+      "The aide read almost every page of the packet aloud."
+    ],
+    "answerIndex": 3,
+    "rationale": "Placing \"almost\" immediately before \"every page\" shows that the number of pages was nearly complete. In the original position, \"almost read\" can suggest that the reading did not occur.",
+    "choiceRationales": [
+      "Placing \"almost\" before the subject is unidiomatic and does not clarify what was nearly complete.",
+      "This placement breaks apart the phrase \"every page of the packet.\"",
+      "This placement suggests that the reading was not quite aloud rather than that a few pages were omitted.",
+      "This placement makes \"almost\" modify \"every page,\" which conveys the intended quantity."
+    ],
+    "skillIds": [
+      "writing-revision-clarity"
+    ],
+    "chapterIds": [
+      "parapro-ch-10"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-014",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Which sentence most clearly combines the ideas and shows their cause-and-effect relationship? \"The grow light was unplugged. The seedlings wilted.\"",
+    "choices": [
+      "The grow light was unplugged, the seedlings wilted.",
+      "The seedlings wilted because the grow light was unplugged.",
+      "The grow light was unplugged, although the seedlings wilted.",
+      "The seedlings wilted; however, the grow light was unplugged because of them."
+    ],
+    "answerIndex": 1,
+    "rationale": "The conjunction \"because\" explicitly identifies the unplugged grow light as the cause of the seedlings' wilting. The revision is grammatical and preserves the intended sequence of ideas.",
+    "choiceRationales": [
+      "This is a comma splice and merely places the events side by side without a valid connector.",
+      "\"Because\" clearly and grammatically links the seedlings' condition to its cause.",
+      "\"Although\" signals contrast rather than the intended causal relationship.",
+      "This wording reverses the causal logic by suggesting the seedlings caused the light to be unplugged."
+    ],
+    "skillIds": [
+      "writing-revision-clarity"
+    ],
+    "chapterIds": [
+      "parapro-ch-10"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-015",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Which replacement for the underlined words makes the observation most precise? \"After two minutes on the hot plate, the beaker's contents DID SOMETHING STRANGE.\"",
+    "choices": [
+      "went along",
+      "acted differently",
+      "began to bubble vigorously",
+      "were quite interesting"
+    ],
+    "answerIndex": 2,
+    "rationale": "\"Began to bubble vigorously\" names an observable action and its intensity, giving the reader useful information. The other choices rely on vague judgments or nonspecific verbs.",
+    "choiceRationales": [
+      "\"Went along\" does not identify what changed in the beaker.",
+      "\"Acted differently\" signals a change but does not describe any observable behavior.",
+      "This wording reports a specific, observable change and how strongly it occurred.",
+      "\"Interesting\" expresses an opinion rather than describing what the contents did."
+    ],
+    "skillIds": [
+      "writing-revision-clarity"
+    ],
+    "chapterIds": [
+      "parapro-ch-10"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-016",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Which revision uses parallel structure for all three orientation tasks?",
+    "choices": [
+      "The orientation asks volunteers to sign in, collect a badge, and report to the gym.",
+      "The orientation asks volunteers to sign in, collecting a badge, and that they report to the gym.",
+      "The orientation asks volunteers for signing in, to collect a badge, and reporting to the gym.",
+      "The orientation asks that volunteers sign in, a badge should be collected, and to report to the gym."
+    ],
+    "answerIndex": 0,
+    "rationale": "The correct revision presents each task with the same verb pattern: \"to sign,\" \"collect,\" and \"report,\" all governed by the first \"to.\" This makes the series easy to follow.",
+    "choiceRationales": [
+      "All three tasks use coordinate base-form verbs governed by \"to,\" creating a parallel series.",
+      "This shifts from an infinitive to a participle and then to a clause.",
+      "This mixes a gerund, an infinitive, and another gerund instead of using one pattern.",
+      "This mixes an active clause, a passive clause, and an infinitive phrase."
+    ],
+    "skillIds": [
+      "writing-revision-clarity"
+    ],
+    "chapterIds": [
+      "parapro-ch-10"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-017",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "In the sentence \"The student council delivered the donated books to the shelter after lunch,\" which words form the complete predicate?",
+    "choices": [
+      "the student council",
+      "delivered the donated books to the shelter after lunch",
+      "the donated books",
+      "after lunch"
+    ],
+    "answerIndex": 1,
+    "rationale": "The complete predicate includes the verb and all the words that complete or modify it. In this sentence, \"delivered the donated books to the shelter after lunch\" tells what the subject, \"the student council,\" did.",
+    "choiceRationales": [
+      "\"The student council\" is the complete subject, not the predicate.",
+      "This group contains the verb \"delivered\" and all of its complements and modifiers, so it is the complete predicate.",
+      "\"The donated books\" is the direct object within the predicate, not the complete predicate.",
+      "\"After lunch\" is a prepositional phrase within the predicate, not the complete predicate."
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-018",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "In the sentence \"The volunteers sorted the supplies efficiently,\" what part of speech is \"efficiently\"?",
+    "choices": [
+      "noun",
+      "adjective",
+      "preposition",
+      "adverb"
+    ],
+    "answerIndex": 3,
+    "rationale": "\"Efficiently\" modifies the verb \"sorted\" by telling how the volunteers performed the action. A word that modifies a verb in this way is an adverb.",
+    "choiceRationales": [
+      "A noun names a person, place, thing, or idea; \"efficiently\" does not name one here.",
+      "An adjective modifies a noun or pronoun, but \"efficiently\" modifies the verb \"sorted.\"",
+      "A preposition introduces a phrase and shows a relationship; \"efficiently\" does not perform that function.",
+      "\"Efficiently\" is an adverb because it tells how the action \"sorted\" was performed."
+    ],
+    "skillIds": [
+      "writing-grammar-mechanics"
+    ],
+    "chapterIds": [
+      "parapro-ch-09"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-019",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A writer claims that ten minutes of daily partner reading improved fluency in a fifth-grade class. Which evidence would most directly support the claim?",
+    "choices": [
+      "One student said that partner reading was the favorite part of the school day.",
+      "The classroom library contains fiction and nonfiction books on six shelves.",
+      "Class averages on comparable one-minute reading checks rose from 104 to 118 correct words per minute after six weeks, during which partner reading was the only change to the fluency routine.",
+      "The teacher has used several different literacy activities during the year."
+    ],
+    "answerIndex": 2,
+    "rationale": "The before-and-after class averages use comparable fluency measures, and the statement identifies partner reading as the only change to the fluency routine. This evidence therefore addresses both the measured improvement and the claimed explanation more directly than the other details do.",
+    "choiceRationales": [
+      "A preference statement concerns enjoyment, not whether reading fluency improved.",
+      "The number and types of books do not show a change in students' fluency.",
+      "Comparable pre- and post-routine rates document class fluency growth, and the unchanged remainder of the routine strengthens the connection to partner reading.",
+      "The existence of other activities is too general and supplies no fluency outcome."
+    ],
+    "skillIds": [
+      "writing-organization-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-11"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-020",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A student is using a 2024 report by L. Nguyen that states native plants generally need less irrigation after they are established. Which sentence most effectively integrates and attributes that information?",
+    "choices": [
+      "Nguyen's 2024 report explains that established native plants generally require less irrigation, a benefit that could lower the garden's water use.",
+      "Native plants need less water, and everyone already knows this important fact about gardens.",
+      "The source says, native plants generally need less irrigation after they are established, which proves the plan is perfect.",
+      "In 2024 there was a report, and gardens have plants that can be native and established."
+    ],
+    "answerIndex": 0,
+    "rationale": "The first sentence names the source, accurately paraphrases the reported finding, and explains its relevance to garden water use. It neither presents the source's idea as common knowledge nor overstates it.",
+    "choiceRationales": [
+      "This sentence provides attribution, an accurate paraphrase, and a relevant connection to the writer's point.",
+      "This option gives no attribution and substitutes an unsupported claim about what everyone knows.",
+      "This option lacks correct quotation punctuation and overstates the finding as proof of a perfect plan.",
+      "This option mentions a report but does not communicate its useful information or identify its author."
+    ],
+    "skillIds": [
+      "writing-organization-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-11"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-021",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Which transition best completes the passage? \"Installing LED fixtures requires an initial expense. ___, their lower energy use can reduce operating costs over time.\"",
+    "choices": [
+      "Therefore",
+      "For example",
+      "Similarly",
+      "However"
+    ],
+    "answerIndex": 3,
+    "rationale": "The second sentence contrasts an up-front cost with later savings. \"However\" signals that shift clearly, whereas the other transitions indicate result, illustration, or similarity.",
+    "choiceRationales": [
+      "\"Therefore\" signals a result, but lower operating costs do not result from the initial expense itself.",
+      "\"For example\" would introduce an illustration rather than a contrasting long-term consideration.",
+      "\"Similarly\" signals likeness, but the sentences present opposing cost considerations.",
+      "\"However\" appropriately marks the contrast between initial expense and eventual savings."
+    ],
+    "skillIds": [
+      "writing-organization-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-11"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-022",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A report explains that 61 percent of surveyed bus riders arrive before the building opens and that one adjusted route could shorten the earliest students' wait without adding a bus. Which concluding sentence best synthesizes those findings?",
+    "choices": [
+      "School buses come in several sizes and are usually painted yellow.",
+      "Together, the survey and route analysis support piloting the adjustment to reduce long waits without increasing the fleet.",
+      "Some students enjoy waiting with friends, while other students have different morning routines.",
+      "The transportation office should immediately change every route in the district."
+    ],
+    "answerIndex": 1,
+    "rationale": "The conclusion brings together both major findings and proposes a measured response that matches their scope. It does not introduce an unrelated detail or make a recommendation broader than the evidence.",
+    "choiceRationales": [
+      "This general fact about buses does not synthesize either finding in the report.",
+      "This sentence connects the survey result and route analysis to a proportionate pilot recommendation.",
+      "This introduces unsupported preferences and does not address the route analysis.",
+      "Changing every route goes far beyond evidence about one possible adjustment and one group of riders."
+    ],
+    "skillIds": [
+      "writing-organization-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-11"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-023",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "application-classroom",
+    "difficulty": "applied",
+    "prompt": "A student has listed six events for a personal narrative, but the events are out of order and the student cannot decide where the story should begin. Which support is most appropriate?",
+    "choices": [
+      "Correct the spelling in the event list before the student plans the narrative.",
+      "Choose the most dramatic event and write the opening paragraph for the student.",
+      "Have the student arrange each event on a separate card, orally retell the sequence, and then choose an opening.",
+      "Ask the student to replace the narrative topic with one that requires fewer events."
+    ],
+    "answerIndex": 2,
+    "rationale": "Sequencing movable event cards and rehearsing the story aloud directly address the student's planning difficulty. The student still makes the organizational and wording decisions, preserving ownership.",
+    "choiceRationales": [
+      "Editing spelling does not resolve the current planning and sequencing problem.",
+      "Writing the opening for the student removes the key composition decision from the learner.",
+      "The cards make sequence visible, and oral rehearsal helps the student test the order before drafting.",
+      "Changing topics avoids rather than teaches the planning skill the student needs."
+    ],
+    "skillIds": [
+      "writing-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-12"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-024",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "application-classroom",
+    "difficulty": "applied",
+    "prompt": "A student's instructional plan permits speech-to-text for writing. The student can explain detailed ideas orally, but the motor demands of handwriting prevent the student from completing drafts. Which response best supports access while preserving authorship?",
+    "choices": [
+      "Reduce every writing assignment to a single copied sentence.",
+      "Have a classmate decide which of the student's ideas should appear in the draft.",
+      "Ask the student to submit only an oral response and skip the writing process entirely.",
+      "Provide speech-to-text for drafting, then have the student review and revise the generated text."
+    ],
+    "answerIndex": 3,
+    "rationale": "Using the permitted speech-to-text support reduces the motor barrier without changing the composition goal. Having the student review and revise the transcription ensures that the ideas, wording choices, and final decisions remain the student's.",
+    "choiceRationales": [
+      "Copying a reduced sentence changes the task and does not let the student express developed ideas.",
+      "A classmate's content decisions would transfer authorship away from the student.",
+      "An oral-only response bypasses opportunities to organize, revise, and edit written language.",
+      "Speech-to-text provides access, while student-led review keeps the written product under the student's control."
+    ],
+    "skillIds": [
+      "writing-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-12"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-025",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "application-classroom",
+    "difficulty": "applied",
+    "prompt": "A student's science explanation includes accurate data after each claim but never explains how the data support the claim. Which instructional prompt would best target the missing reasoning?",
+    "choices": [
+      "Color-code each claim and its evidence, then add a sentence answering, \"Why does this evidence make the claim more likely?\"",
+      "Replace each data value with a general word so the explanation sounds less technical.",
+      "Copy the strongest claim three times at the end of the explanation for emphasis.",
+      "Correct all capitalization before discussing the relationship between claims and evidence."
+    ],
+    "answerIndex": 0,
+    "rationale": "The color coding makes existing claim-evidence pairs visible, and the focused question prompts the student to supply the missing logical connection. It targets reasoning without replacing the student's explanation.",
+    "choiceRationales": [
+      "This support identifies the relevant parts and directly elicits the reasoning that connects them.",
+      "Removing precise data would weaken the evidence and would not add an explanation of its relevance.",
+      "Repeating a claim adds emphasis but does not explain why the evidence supports it.",
+      "Capitalization is an editing concern and does not address the missing reasoning."
+    ],
+    "skillIds": [
+      "writing-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-12"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-026",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "application-classroom",
+    "difficulty": "applied",
+    "prompt": "Before an explanatory-writing assignment, a student says, \"I have nothing to write about.\" Which response would best help the student generate a workable topic?",
+    "choices": [
+      "Assign the student the same topic and thesis used by the nearest classmate.",
+      "Invite the student to list familiar processes, identify a likely audience for each, and choose one process to explain.",
+      "Begin correcting sentence mechanics even though the student has not produced a draft.",
+      "Write an introduction for the student and require the student to copy it before continuing."
+    ],
+    "answerIndex": 1,
+    "rationale": "Connecting familiar knowledge to a real audience narrows the broad task and gives the student meaningful choices. This scaffolds idea generation while leaving topic selection and composition with the learner.",
+    "choiceRationales": [
+      "Using a classmate's topic and thesis removes choice and may not connect to the student's knowledge.",
+      "The strategy activates prior knowledge, clarifies purpose, and preserves the student's decision-making.",
+      "Mechanics cannot be edited before ideas are generated and a draft exists.",
+      "Requiring a copied introduction substitutes adult composition for student authorship."
+    ],
+    "skillIds": [
+      "writing-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-12"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-027",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "application-classroom",
+    "difficulty": "applied",
+    "prompt": "A student is preparing a report on changes in the town's population from 2000 to 2020 and has copied figures from an undated personal blog. Which guidance would best help the student choose and use an appropriate reference?",
+    "choices": [
+      "Keep the blog figures because the page appeared first in the search results.",
+      "Replace the figures with estimates so no source information is needed.",
+      "Locate official census tables for both years, verify that the categories are comparable, and record the source information.",
+      "Use a recent social-media post that gives population figures but does not identify where they came from."
+    ],
+    "answerIndex": 2,
+    "rationale": "Official census tables are authoritative sources for population data. Checking that the years use comparable categories prevents a misleading comparison, and recording source information supports accurate attribution.",
+    "choiceRationales": [
+      "Search-result order does not establish a source's authority, currency, or accuracy.",
+      "Inventing estimates removes verifiable evidence rather than solving the reference problem.",
+      "This guidance selects an authoritative source, checks comparability, and preserves the information needed for attribution.",
+      "A post with no traceable source does not provide reliable evidence for the report."
+    ],
+    "skillIds": [
+      "writing-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-12"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook",
+      "https://data.census.gov/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-028",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "application-classroom",
+    "difficulty": "applied",
+    "prompt": "A student repeatedly writes fragments such as \"Because the temperature dropped overnight.\" Which support is most likely to build the student's ability to correct this pattern independently?",
+    "choices": [
+      "Delete every sentence that begins with \"because\" from the student's draft.",
+      "Tell the student that fragments are wrong without examining an example.",
+      "Supply a fully corrected draft and ask the student to copy it neatly.",
+      "Compare an example and nonexample, then have the student attach each \"because\" clause to a complete thought and explain the change."
+    ],
+    "answerIndex": 3,
+    "rationale": "The comparison makes the sentence-boundary pattern explicit, while guided correction and explanation require the student to apply it. This teaches a transferable strategy rather than merely fixing the current page.",
+    "choiceRationales": [
+      "Sentences may correctly begin with \"because,\" so deleting all of them teaches an inaccurate rule.",
+      "A judgment without a model or guided practice does not show the student how to revise the fragment.",
+      "Copying an adult's corrections produces a clean draft but little independent understanding.",
+      "Examples, application, and explanation together develop recognition and independent correction of the pattern."
+    ],
+    "skillIds": [
+      "writing-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-12"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-029",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "application-classroom",
+    "difficulty": "applied",
+    "prompt": "A student is revising a museum label about erosion for visitors in grades 1 and 2. The draft uses the terms \"sediment transport\" and \"abrasion\" without explanation. Which guidance best helps the student address the audience while preserving the science?",
+    "choices": [
+      "Ask the student to define or replace the technical terms, add a familiar example, and keep the explanation scientifically accurate.",
+      "Add several more technical terms so the label sounds more advanced.",
+      "Remove the explanation of erosion and replace it with an unrelated joke.",
+      "Copy a paragraph from a college geology text without adapting or citing it."
+    ],
+    "answerIndex": 0,
+    "rationale": "Young visitors need accessible language and concrete examples, but audience adaptation should preserve accurate content. The first guidance helps the student make deliberate language choices rather than removing the science or substituting someone else's writing.",
+    "choiceRationales": [
+      "This guidance adjusts vocabulary and examples to the audience while retaining the scientific meaning.",
+      "More unexplained terminology would increase the mismatch between the label and its intended readers.",
+      "An unrelated joke would not communicate the label's scientific purpose.",
+      "Unadapted, unattributed college-level prose would be inappropriate for both the audience and responsible source use."
+    ],
+    "skillIds": [
+      "writing-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-12"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-030",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "application-classroom",
+    "difficulty": "applied",
+    "prompt": "A student is asked to write a persuasive letter to the city council supporting or opposing a proposed crosswalk. The draft only narrates one walk to school. Which guidance best helps the student match the required form and purpose?",
+    "choices": [
+      "Add more events in chronological order without stating a position on the crosswalk.",
+      "Turn the account into a dialogue-only scene and omit any request to the council.",
+      "State a position, organize relevant reasons and evidence, and close the letter with a specific request to the council.",
+      "Replace each sentence with a list of words that rhyme with \"street.\""
+    ],
+    "answerIndex": 2,
+    "rationale": "A persuasive letter needs a clear position, reasons and evidence suited to the decision-making audience, and an explicit request or conclusion. The keyed guidance retains any useful experience from the draft while redirecting it toward the assigned form and purpose.",
+    "choiceRationales": [
+      "Additional events would extend the narrative but would not create a persuasive position or request.",
+      "Dialogue alone does not supply the claim, support, and audience-directed conclusion the letter requires.",
+      "This guidance addresses the persuasive purpose, the city-council audience, and the conventions of a letter.",
+      "A rhyming list is unrelated to the persuasive task and audience."
+    ],
+    "skillIds": [
+      "writing-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-12"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-031",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "application-classroom",
+    "difficulty": "applied",
+    "prompt": "A multilingual learner can explain a comparison orally but pauses when turning the ideas into an English paragraph. Which scaffold best supports language development and student ownership?",
+    "choices": [
+      "Replace the comparison task with copying vocabulary words alphabetically.",
+      "Let the student rehearse with a comparison frame and a relevant word bank, then select and adapt the language for the paragraph.",
+      "Write the complete English paragraph while the student watches silently.",
+      "Require the student to draft without discussion, models, or language resources."
+    ],
+    "answerIndex": 1,
+    "rationale": "Oral rehearsal, a flexible frame, and a focused word bank reduce the language-production barrier while requiring the learner to choose and adapt the final wording. The scaffold supports rather than replaces composition.",
+    "choiceRationales": [
+      "Copying an alphabetical list changes the writing purpose and removes the comparison task.",
+      "This scaffold connects oral knowledge to written language while keeping decisions with the learner.",
+      "An adult-written paragraph would conceal what the student can express and remove authorship.",
+      "Withholding relevant scaffolds adds difficulty without developing a bridge from oral to written expression."
+    ],
+    "skillIds": [
+      "writing-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-12"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-032",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "application-classroom",
+    "difficulty": "applied",
+    "prompt": "During a small-group argument-writing task, one student supplies nearly all the ideas while the other three wait. Which paraeducator action best increases meaningful participation without composing for the group?",
+    "choices": [
+      "Allow the fastest student to finish alone so the group can submit early.",
+      "Dictate a complete argument and assign each student one sentence to copy.",
+      "Ask the quiet students to decorate the page while the first student continues writing.",
+      "Use a turn-taking structure in which each student proposes evidence and explains its relevance before the group selects and organizes ideas."
+    ],
+    "answerIndex": 3,
+    "rationale": "Structured turns give every student an authentic reasoning role and generate material the group can evaluate together. The paraeducator facilitates participation while students retain responsibility for content and organization.",
+    "choiceRationales": [
+      "Finishing quickly does not justify excluding most group members from the writing decisions.",
+      "Dictation transfers authorship to the adult and reduces students' work to copying.",
+      "Decoration is not equivalent to contributing claims, evidence, reasoning, or organization.",
+      "The structure distributes substantive thinking and leaves selection and composition to the students."
+    ],
+    "skillIds": [
+      "writing-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-12"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  },
+  {
+    "id": "parapro-b3-writing-033",
+    "type": "single-choice",
+    "domainId": "writing",
+    "contentFocus": "application-classroom",
+    "difficulty": "applied",
+    "prompt": "The teacher asks a paraeducator to collect progress-monitoring data for a student's goal of organizing opinion paragraphs with a clear claim, two related reasons, and a conclusion. Which method would provide the most useful evidence of progress toward that goal?",
+    "choices": [
+      "Use the teacher-provided opinion prompts regularly, score each response with the teacher's claim-reasons-conclusion rubric, and graph the results over time.",
+      "Record only how long the student holds a pencil during independent work.",
+      "Count every word in one final paper without examining the paragraph's parts.",
+      "Ask the student once whether writing feels easier and use that answer as the only measure."
+    ],
+    "answerIndex": 0,
+    "rationale": "Repeated comparable writing samples scored with criteria that match the goal show whether the targeted organizational elements are improving. Graphing the scores makes the pattern across time visible.",
+    "choiceRationales": [
+      "This method repeatedly measures the exact paragraph elements named in the student's goal.",
+      "Pencil-use duration does not show whether claims, reasons, and conclusions are organized.",
+      "Word count measures length, not the presence or relationship of the targeted paragraph parts.",
+      "A single self-report can add context but is insufficient as the only evidence of writing performance."
+    ],
+    "skillIds": [
+      "writing-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-12"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-16"
+  }
+]

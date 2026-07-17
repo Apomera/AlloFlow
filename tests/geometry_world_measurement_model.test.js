@@ -7,7 +7,7 @@ function loadMeasurementMath() {
   const start = SOURCE.indexOf('  function formatVolume(vol)');
   const end = SOURCE.indexOf('  var ACHIEVEMENTS = [', start);
   const body = SOURCE.slice(start, end);
-  return new Function(body + '\nreturn { measuredVolume, enrichMeasurement, formatVolume, parseVolumePrediction, compareVolumePrediction, diagnoseVolumePrediction, comparePredictionRevision, evaluateVolumePrediction, objectiveEvidenceFor, buildEvidenceReflectionPrompt, buildVolumeRepresentations, buildRepresentationExploration, determinePredictionScaffold, buildRetrievalCheckpoint, checkRetrievalAnswer, escapeReportHtml, misconceptionGuidance, summarizeLearningEvidence, countExposedCubeFaces, completeMeasurementRecords, summarizePredictionAccuracy, serializeEventDetailValue, formatSessionEventDetails, measurementDetailsForReport, elapsedSecondsForEvent, questionDetailsForReport, compareMeasurementRecords, measurementLayerFor, belongsToMeasuredComponent };')();
+  return new Function(body + '\nreturn { measuredVolume, enrichMeasurement, formatVolume, parseVolumePrediction, compareVolumePrediction, diagnoseVolumePrediction, comparePredictionRevision, evaluateVolumePrediction, objectiveEvidenceFor, buildEvidenceReflectionPrompt, buildVolumeRepresentations, buildRepresentationExploration, recommendVolumeRepresentation, buildRepresentationConnectionReadiness, determinePredictionScaffold, buildRetrievalCheckpoint, checkRetrievalAnswer, escapeReportHtml, misconceptionGuidance, summarizeLearningEvidence, countExposedCubeFaces, completeMeasurementRecords, summarizePredictionAccuracy, serializeEventDetailValue, formatSessionEventDetails, measurementDetailsForReport, elapsedSecondsForEvent, questionDetailsForReport, compareMeasurementRecords, measurementLayerFor, belongsToMeasuredComponent };')();
 }
 
 describe('Geometry World measurement model', () => {
@@ -240,6 +240,55 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain('viewsExplored: representationExploration.visitedCount');
   });
 
+  it('recommends representations that respond to diagnosed misconceptions', () => {
+    const solid = { isComplete: true, occupiedVolume: 24, isSolidPrism: true, hasFractions: false, L: 2, W: 3, H: 4, shapeCounts: { cube: 24 } };
+    const solidViews = math.buildVolumeRepresentations(solid);
+    expect(math.recommendVolumeRepresentation(solid, { diagnosisCode: 'one_layer' }, solidViews)).toMatchObject({
+      key: 'layers',
+      diagnosisCode: 'one_layer',
+      reason: expect.stringContaining('area of one layer')
+    });
+    expect(math.recommendVolumeRepresentation(solid, { diagnosisCode: 'underestimate' }, solidViews).key).toBe('layers');
+    expect(math.recommendVolumeRepresentation(solid, { diagnosisCode: 'exact' }, solidViews)).toBeNull();
+
+    const composite = { isComplete: true, occupiedVolume: 8, boundingVolume: 12, missingVolume: 4, isSolidPrism: false, hasFractions: false, shapeCounts: { cube: 8 } };
+    const compositeViews = math.buildVolumeRepresentations(composite);
+    expect(math.recommendVolumeRepresentation(composite, { diagnosisCode: 'bounding_box' }, compositeViews).key).toBe('bounding_subtraction');
+    expect(math.recommendVolumeRepresentation(composite, { diagnosisCode: 'underestimate' }, compositeViews).key).toBe('decomposition');
+
+    const fractional = { isComplete: true, occupiedVolume: 1.5, boundingVolume: 2, isSolidPrism: false, hasFractions: true, shapeCounts: { cube: 1, halfA: 1 } };
+    expect(math.recommendVolumeRepresentation(fractional, { diagnosisCode: 'fraction_count' }, math.buildVolumeRepresentations(fractional)).key).toBe('fraction_composition');
+    expect(math.recommendVolumeRepresentation({ ...solid, isComplete: false }, { diagnosisCode: 'one_layer' }, solidViews)).toBeNull();
+    expect(math.recommendVolumeRepresentation(solid, { diagnosisCode: 'unknown' }, solidViews)).toBeNull();
+
+    const fallback = math.recommendVolumeRepresentation(solid, { diagnosisCode: 'one_layer' }, [{ key: 'occupied_units', label: 'Occupied unit cubes' }]);
+    expect(fallback).toMatchObject({ key: 'occupied_units', label: 'Occupied unit cubes' });
+    expect(SOURCE).toContain('data-geometry-representation-recommendation');
+    expect(SOURCE).toContain("source: 'misconception_recommendation'");
+    expect(SOURCE).toContain('Open recommended view');
+  });
+
+
+  it('uses a learner self-check instead of auto-grading representation explanations', () => {
+    const blank = math.buildRepresentationConnectionReadiness('', false, false);
+    expect(blank).toMatchObject({ ready: false, hasExplanation: false, invariantChecked: false, evidenceChecked: false });
+    expect(blank.missing).toEqual(['a fuller explanation', 'what stays the same', 'evidence from the structure or equation']);
+    expect(blank.message).toContain('Write a fuller explanation');
+
+    const unchecked = math.buildRepresentationConnectionReadiness('Both equations equal 24.', false, false);
+    expect(unchecked).toMatchObject({ ready: false, hasExplanation: true });
+    expect(unchecked.message).toContain('what stays the same');
+
+    const oneCheck = math.buildRepresentationConnectionReadiness('Both equations equal 24.', true, false);
+    expect(oneCheck.missing).toEqual(['evidence from the structure or equation']);
+    expect(oneCheck.message).toBe('Add evidence from the structure or equation before saving.');
+
+    expect(math.buildRepresentationConnectionReadiness('Both equations count the same 24 cubes.', true, true)).toMatchObject({ ready: true, missing: [], message: '' });
+    expect(SOURCE).toContain("'aria-label': 'Explanation self-check'");
+    expect(SOURCE).toContain('I named what stays the same.');
+    expect(SOURCE).toContain('I used evidence from the structure or equation.');
+    expect(SOURCE).toContain('selfCheck: { invariant: true, evidence: true }');
+  });
   it('records representation switching as teacher learning evidence', () => {
     const summary = math.summarizeLearningEvidence([
       { type: 'representation_view', data: { representation: 'layers' } },

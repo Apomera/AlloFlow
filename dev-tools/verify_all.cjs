@@ -175,6 +175,11 @@ const checks = [
     description: 'examples/*.json parse + have valid history shape',
   },
   {
+    name: 'PD catalog publishability',
+    cmd: ['node', 'dev-tools/check_pd_publish.cjs', '--catalog', '--quiet'],
+    description: 'Approved PD modules pass PdCore schema/readiness checks and immutable catalog bindings',
+  },
+  {
     name: 'CSS-in-template backticks',
     cmd: ['node', 'dev-tools/check_css_template_literals.cjs', '--quiet'],
     description: 'Catches stray backticks inside CSS template literals (April 2026 production bug class)',

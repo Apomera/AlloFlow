@@ -157,7 +157,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('var currentHeight = s.d >= 3 ? s.dimensions.H : THIN');
     expect(source).toContain('var targetHeight = showTarget && mission && mission.d >= 3 ? mission.H : THIN');
     expect(source).toContain('var clearance = showBoundary && s.boundary ? 0.68 : 0.42');
-    expect(source).toContain('Math.max(2.5, 1.1 + Math.max(currentHeight, targetHeight) + clearance)');
+    expect(source).toContain('var defaultY = Math.max(2.5, 1.1 + Math.max(currentHeight, targetHeight) + clearance)');
     expect(source).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
   });
   it('restores only validated local session state', () => {
@@ -224,7 +224,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('id="vrMeasure"');
     expect(source).toContain("case 'm': case 'M': toggleBoundaryMeasures(!showBoundary, true)");
     expect(source).toContain("uiBoundary.addEventListener('change'");
-    expect(source).toContain("vrMeasure.addEventListener('click'");
+    expect(source).toContain("wireSpatialButton(vrMeasure, function ()");
     expect(source).toContain("'Boundary measures ' + (showBoundary ? 'shown.' : 'hidden.')");
   });
 
@@ -328,5 +328,132 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain("allComplete ? 'Review next' : count > 0 ? 'Next unfinished' : 'Next mission'");
     expect(source).toContain("uiMission.setAttribute('aria-label', nextLabel + ' stretch mission')");
     expect(source).toContain("' All stretch missions complete. Choose any mission to review.'");
+  });
+  it('coordinates pending edits and accessibility state across immersive transitions', () => {
+    expect(source).toContain('function setImmersiveMode(active)');
+    expect(source).toContain('commitPendingGesture();');
+    expect(source).toContain("hud.setAttribute('aria-hidden', 'true')");
+    expect(source).toContain("hud.removeAttribute('aria-hidden')");
+    expect(source).toContain("scene.addEventListener('enter-vr', function () { setImmersiveMode(true); })");
+    expect(source).toContain("scene.addEventListener('exit-vr', function () { setImmersiveMode(false); })");
+    expect(source).toContain('Immersive mode entered. Trigger grows the active handle.');
+    expect(source).toContain('Immersive mode exited. Desktop controls restored.');
+  });
+
+  it('restores a usable desktop focus target after leaving immersive mode', () => {
+    expect(source).toContain('if (hud.contains(document.activeElement)) lastHudFocus = document.activeElement');
+    expect(source).toContain('if (document.activeElement && document.activeElement.blur) document.activeElement.blur()');
+    expect(source).toContain('var restore = lastHudFocus && !lastHudFocus.disabled ? lastHudFocus : missionHint');
+    expect(source).toContain('if (restore && restore.focus) restore.focus()');
+  });
+  it('keeps spatial controls visually and semantically in sync with geometry state', () => {
+    expect(source).toContain('function setSpatialButtonEnabled(button, enabled, activeColor)');
+    expect(source).toContain("button.setAttribute('data-disabled', enabled ? 'false' : 'true')");
+    expect(source).toContain("button.setAttribute('aria-disabled', enabled ? 'false' : 'true')");
+    expect(source).toContain("setSpatialButtonEnabled(vrStretch, s.d < 3, '#665cf5')");
+    expect(source).toContain("setSpatialButtonEnabled(vrCollapse, s.d > 0, '#4a6094')");
+    expect(source).toContain("setSpatialButtonEnabled(vrAxis, s.d > 0, '#315f78')");
+    expect(source).toContain("setSpatialButtonEnabled(vrUndo, s.canUndo, '#4a6094')");
+  });
+
+  it('adds consistent hover and unavailable-action feedback to spatial controls', () => {
+    expect(source).toContain('function wireSpatialButton(button, action, unavailableMessage)');
+    expect(source).toContain("button.getAttribute('data-disabled') === 'true'");
+    expect(source).toContain('pulseControllers(0.18, 28)');
+    expect(source).toContain("button.addEventListener('mouseenter'");
+    expect(source).toContain('button.object3D.scale.setScalar(1.06)');
+    expect(source).toContain("button.addEventListener('mouseleave'");
+    expect(source).toContain('wireSpatialButton(vrMission, nextMission');
+    expect(source).toContain('wireSpatialButton(vrMeasure, function ()');
+  });
+  it('snaps directional nudges that would cross the active mission target', () => {
+    expect(source).toContain('this.activeMission = mission');
+    expect(source).toContain('var current = this[key], rawNext = current + sign * STEP');
+    expect(source).toContain('this.activeMission && this.axis < this.activeMission.d');
+    expect(source).toContain('sign > 0 && current < target && rawNext > target');
+    expect(source).toContain('sign < 0 && current > target && rawNext < target');
+    expect(source).toContain('crossesTarget ? target : rawNext');
+  });
+
+  it('keeps target snapping bounded and discoverable across resize controls', () => {
+    expect(source).toContain('Math.max(MINV, Math.min(MAXV, crossesTarget ? target : rawNext))');
+    expect(source).toContain('target crossings snap exactly');
+    expect(source).toContain('this.grow(shrink ? -1 : 1)');
+    expect(source).toContain('var c = comp(); if (c) c.grow(y < 0 ? 1 : -1)');
+  });
+  it('marks every matched spatial axis independently', () => {
+    expect(source).toContain("var matched = !!(mission && i < mission.d");
+    expect(source).toContain("if (matched) value += '\\nMATCHED'");
+    expect(source).toContain("tag.setAttribute('color', matched ? '#4ade80'");
+    expect(source).toContain("var handleColor = matched ? '#4ade80'");
+    expect(source).toContain("emissive: ' + handleColor");
+    expect(source).toContain("matched ? '0.75'");
+  });
+
+  it('announces and haptically confirms target-crossing snaps', () => {
+    expect(source).toContain("this.el.emit('targetsnap', { axis: this.axis, target: target }, false)");
+    expect(source).toContain("figure.addEventListener('targetsnap'");
+    expect(source).toContain("' snapped to mission target ' + r1(detail.target) + ' units.'");
+    expect(source).toContain('pulseControllers(0.5, 55)');
+  });
+  it('provides bounded redo without mixing it into persistence', () => {
+    expect(source).toContain('this.history = []; this.future = []');
+    expect(source).toContain('redo: function ()');
+    expect(source).toContain("if (!this.future.length) { this.emitState('Nothing to redo yet.')");
+    expect(source).toContain('this.future.push(current); if (this.future.length > 50) this.future.shift()');
+    expect(source).toContain('this.history.push(current); if (this.history.length > 50) this.history.shift()');
+    expect(source).toContain("this.apply(false, 'Redid the last geometry change.')");
+    expect(source).toContain('info.canRedo = this.future.length > 0');
+  });
+
+  it('clears the redo branch after any fresh geometry edit', () => {
+    expect(source).toContain('remember: function () { this.endNudge(true); this.future = []');
+    expect(source).toContain('rememberSnapshot: function (snapshot) { this.future = []');
+    expect(source).toContain('this.resizeStart = null; this.history = []; this.future = []');
+    const writer = source.match(/function saveLabState\(s\) \{[\s\S]*?\n  \}/);
+    expect(writer).not.toBeNull();
+    expect(writer[0]).not.toContain('future');
+  });
+
+  it('exposes redo across desktop, spatial, and standard keyboard controls', () => {
+    expect(source).toContain('id="uiRedo"');
+    expect(source).toContain('id="vrRedo"');
+    expect(source).toContain('if (uiRedo) uiRedo.disabled = !s.canRedo');
+    expect(source).toContain("setSpatialButtonEnabled(vrRedo, s.canRedo, '#4a6094')");
+    expect(source).toContain("wireSpatialButton(vrRedo, doRedo, 'Nothing to redo yet.')");
+    expect(source).toContain("case 'y': case 'Y': doRedo()");
+    expect(source).toContain("if (shortcut === 'z') { if (e.shiftKey) doRedo(); else doUndo()");
+    expect(source).toContain("if (shortcut === 'y') { doRedo()");
+    expect(source).toContain('<kbd>Y</kbd> redo');
+  });
+  it('recenters the spatial panel from the viewer world pose', () => {
+    expect(source).toContain('function recenterSpatialPanel(announce)');
+    expect(source).toContain("cameraEl.getObject3D('camera') || cameraEl.object3D");
+    expect(source).toContain('cameraObject.getWorldPosition(eye); cameraObject.getWorldDirection(view)');
+    expect(source).toContain('view.y = 0');
+    expect(source).toContain('if (view.lengthSq() < 0.0001) view.set(0, 0, -1); else view.normalize()');
+    expect(source).toContain('eye.x + view.x * 1.35');
+    expect(source).toContain('Math.max(0.75, eye.y - 0.65)');
+    expect(source).toContain('Math.atan2(-view.x, -view.z)');
+  });
+
+  it('offers automatic, keyboard, and controller panel recentering', () => {
+    expect(source).toContain("case 'c': case 'C': recenterSpatialPanel(true)");
+    expect(source).toContain("hand.addEventListener('menudown', function () { recenterSpatialPanel(true); })");
+    expect(source).toContain('recenterSpatialPanel(false)');
+    expect(source).toContain('Spatial workspace centered in front of you.');
+    expect(source).toContain('<kbd>C</kbd> center workspace');
+    expect(source).toContain('Menu centers workspace.');
+  });
+  it('keeps geometry and measures aligned with the recentered workspace', () => {
+    expect(source).toContain('var workspacePose = { x: 0, z: -2.4, baseY: 1.1, yaw: 0 }');
+    expect(source).toContain('workspacePose.x = eye.x + view.x * 2.4');
+    expect(source).toContain('workspacePose.baseY = Math.max(0.35, eye.y - 0.5)');
+    expect(source).toContain('figure.object3D.position.set(workspacePose.x, workspacePose.baseY, workspacePose.z)');
+    expect(source).toContain('figure.object3D.rotation.set(0, yaw, 0)');
+    expect(source).toContain('var y = workspacePose.baseY + defaultY - 1.1');
+    expect(source).toContain('labelWrap.object3D.position.set(workspacePose.x, y, workspacePose.z)');
+    expect(source).toContain('labelWrap.object3D.rotation.set(0, workspacePose.yaw, 0)');
+    expect(source).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
   });
 });

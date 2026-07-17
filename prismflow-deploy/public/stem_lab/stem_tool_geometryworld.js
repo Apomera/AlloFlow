@@ -583,6 +583,63 @@
     };
   }
 
+  function recommendVolumeRepresentation(measurement, prediction, views) {
+    if (!measurement || measurement.isComplete === false || !prediction || !prediction.diagnosisCode) return null;
+    var code = prediction.diagnosisCode;
+    if (code === 'exact' || code === 'close') return null;
+    var recommendations = {
+      one_layer: {
+        key: 'layers',
+        reason: 'Use the layer view to connect the area of one layer to the number of equal layers.'
+      },
+      bounding_box: {
+        key: 'bounding_subtraction',
+        reason: 'Use bounding-box subtraction to separate occupied cubes from empty space.'
+      },
+      fraction_count: {
+        key: 'fraction_composition',
+        reason: 'Compose the fractional pieces to see their whole-cube equivalent.'
+      },
+      overestimate: {
+        key: measurement.isSolidPrism ? 'occupied_units' : 'bounding_subtraction',
+        reason: measurement.isSolidPrism ? 'Check the occupied units against your multiplication.' : 'Check whether empty bounding-box space was included.'
+      },
+      underestimate: {
+        key: measurement.isSolidPrism ? 'layers' : 'decomposition',
+        reason: measurement.isSolidPrism ? 'Use equal layers to check whether every layer was counted.' : 'Decompose the structure to check that every occupied part was included.'
+      }
+    };
+    var recommendation = recommendations[code];
+    if (!recommendation) return null;
+    var matchingView = (views || []).find(function(view) { return view && view.key === recommendation.key; });
+    if (!matchingView) matchingView = (views || []).find(function(view) { return view && view.key === 'occupied_units'; });
+    if (!matchingView) return null;
+    return { key: matchingView.key, label: matchingView.label, reason: recommendation.reason, diagnosisCode: code };
+  }
+
+  function buildRepresentationConnectionReadiness(text, invariantChecked, evidenceChecked) {
+    var missing = [];
+    if (String(text || '').trim().length < 8) missing.push('a fuller explanation');
+    if (!invariantChecked) missing.push('what stays the same');
+    if (!evidenceChecked) missing.push('evidence from the structure or equation');
+    var message = '';
+    if (missing.length === 1) {
+      message = 'Add ' + missing[0] + ' before saving.';
+    } else if (missing.length === 2) {
+      message = 'Add ' + missing[0] + ' and ' + missing[1] + ' before saving.';
+    } else if (missing.length > 2) {
+      message = 'Write a fuller explanation, then confirm what stays the same and the evidence you used.';
+    }
+    return {
+      ready: missing.length === 0,
+      missing: missing,
+      hasExplanation: String(text || '').trim().length >= 8,
+      invariantChecked: !!invariantChecked,
+      evidenceChecked: !!evidenceChecked,
+      message: message
+    };
+  }
+
   function determinePredictionScaffold(history) {
     var complete = completeMeasurementRecords(history || []);
     var explained = complete.filter(function(record) {
@@ -1985,6 +2042,9 @@
       var volumePrediction = d.volumePrediction || '';
       var volumeRepresentationFromKey = d.volumeRepresentationFromKey || '';
       var volumeRepresentationReason = d.volumeRepresentationReason || '';
+      var volumeRepresentationInvariantChecked = !!d.volumeRepresentationInvariantChecked;
+      var volumeRepresentationEvidenceChecked = !!d.volumeRepresentationEvidenceChecked;
+      var representationConnectionReadiness = buildRepresentationConnectionReadiness(volumeRepresentationReason, volumeRepresentationInvariantChecked, volumeRepresentationEvidenceChecked);
       var volumeRepresentationConnectionSaved = d.volumeRepresentationConnectionSaved || false;
       var predictionResult = d.predictionResult || null;
       var volumeRepresentationKey = d.volumeRepresentationKey || '';
@@ -1993,6 +2053,7 @@
       var predictionStrategy = d.predictionStrategy || '';
       var volumeRepresentationVisitedKeys = d.volumeRepresentationVisitedKeys || [];
       var representationExploration = buildRepresentationExploration(volumeRepresentations, volumeRepresentationVisitedKeys, activeVolumeRepresentation && activeVolumeRepresentation.key);
+      var recommendedVolumeRepresentation = recommendVolumeRepresentation(measureResult, predictionResult, volumeRepresentations);
       var predictionReason = d.predictionReason || '';
       var predictionRevision = d.predictionRevision || '';
       var predictionRevisionResult = d.predictionRevisionResult || null;
@@ -3306,7 +3367,7 @@
                     : m.isSolidPrism
                       ? m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
                       : m.formattedOccupiedVolume + ' cubic units occupied (' + m.fillPercent + '% of ' + m.boundingVolume + '-unit bounding box)';
-                  upd({ measureResult: m, measureHistory: mh, predictionResult: predictionComparison, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: '\uD83D\uDCCF Measured: ' + measurementFeedback + (predictionComparison ? ' \u2022 ' + predictionComparison.accuracyLabel : '') });
+                  upd({ measureResult: m, measureHistory: mh, predictionResult: predictionComparison, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: '\uD83D\uDCCF Measured: ' + measurementFeedback + (predictionComparison ? ' \u2022 ' + predictionComparison.accuracyLabel : '') });
                   announceToSR((m.isComplete === false
                     ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete'
                     : m.isSolidPrism
@@ -5415,7 +5476,7 @@
                   'aria-label': 'Choose an equivalent volume representation',
                   onChange: function(ev) {
                     var key = ev.target.value;
-                    upd({ volumeRepresentationFromKey: activeVolumeRepresentation.key, volumeRepresentationKey: key, volumeRepresentationVisitedKeys: representationExploration.visitedKeys.concat([key]).filter(function(item, index, list) { return list.indexOf(item) === index; }), volumeRepresentationReason: '', volumeRepresentationConnectionSaved: false });
+                    upd({ volumeRepresentationFromKey: activeVolumeRepresentation.key, volumeRepresentationKey: key, volumeRepresentationVisitedKeys: representationExploration.visitedKeys.concat([key]).filter(function(item, index, list) { return list.indexOf(item) === index; }), volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false });
                     var eng = window[engineKey];
                     if (eng && eng.logEvent) eng.logEvent('representation_view', { representation: key, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite', volume: measureResult.occupiedVolume });
                   },
@@ -5438,6 +5499,31 @@
               el('div', { style: { color: '#cbd5e1', fontSize: '8px', marginBottom: '3px' } }, representationExploration.prompt),
               el('div', { style: { color: '#bfdbfe', fontSize: '9px', marginTop: '2px' } }, 'Connect: ' + activeVolumeRepresentation.question),
               volumeRepresentationFromKey && volumeRepresentationFromKey !== activeVolumeRepresentation.key && el('div', { 'data-geometry-representation-connection': 'true', style: { marginTop: '5px', display: 'grid', gap: '4px' } },
+              recommendedVolumeRepresentation && el('div', {
+                'data-geometry-representation-recommendation': recommendedVolumeRepresentation.diagnosisCode,
+                style: { marginBottom: '4px', padding: '4px 5px', borderRadius: '4px', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a', fontSize: '8px', lineHeight: 1.35 }
+              },
+                el('div', { style: { fontWeight: 800 } }, 'Recommended next: ' + recommendedVolumeRepresentation.label),
+                el('div', null, recommendedVolumeRepresentation.reason),
+                recommendedVolumeRepresentation.key !== activeVolumeRepresentation.key && el('button', {
+                  type: 'button',
+                  onClick: function() {
+                    var key = recommendedVolumeRepresentation.key;
+                    upd({
+                      volumeRepresentationFromKey: activeVolumeRepresentation.key,
+                      volumeRepresentationKey: key,
+                      volumeRepresentationVisitedKeys: representationExploration.visitedKeys.concat([key]).filter(function(item, index, list) { return list.indexOf(item) === index; }),
+                      volumeRepresentationReason: '',
+                      volumeRepresentationInvariantChecked: false,
+                      volumeRepresentationEvidenceChecked: false,
+                      volumeRepresentationConnectionSaved: false
+                    });
+                    var eng = window[engineKey];
+                    if (eng && eng.logEvent) eng.logEvent('representation_view', { representation: key, source: 'misconception_recommendation', misconception: recommendedVolumeRepresentation.diagnosisCode, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite', volume: measureResult.occupiedVolume });
+                  },
+                  style: { marginTop: '3px', background: '#b45309', border: 'none', borderRadius: '4px', padding: '3px 6px', color: '#fff', fontSize: '8px', fontWeight: 800, cursor: 'pointer' }
+                }, 'Open recommended view')
+              ),
                 el('label', { htmlFor: 'gw-representation-reason', style: { color: '#ddd6fe', fontSize: '9px', fontWeight: 700 } }, 'Explain: Both views show the same volume because...'),
                 el('textarea', {
                   id: 'gw-representation-reason',
@@ -5448,17 +5534,27 @@
                   onChange: function(ev) { upd({ volumeRepresentationReason: ev.target.value, volumeRepresentationConnectionSaved: false }); },
                   style: { resize: 'vertical', minHeight: '34px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '4px', color: '#fff', fontSize: '9px', lineHeight: 1.35 }
                 }),
+                el('div', { role: 'group', 'aria-label': 'Explanation self-check', style: { display: 'grid', gap: '2px', color: '#ddd6fe', fontSize: '8px' } },
+                  el('label', { style: { display: 'flex', gap: '4px', alignItems: 'flex-start', cursor: 'pointer' } },
+                    el('input', { type: 'checkbox', checked: volumeRepresentationInvariantChecked, disabled: volumeRepresentationConnectionSaved, onChange: function(ev) { upd({ volumeRepresentationInvariantChecked: ev.target.checked, volumeRepresentationConnectionSaved: false }); } }),
+                    el('span', null, 'I named what stays the same.')
+                  ),
+                  el('label', { style: { display: 'flex', gap: '4px', alignItems: 'flex-start', cursor: 'pointer' } },
+                    el('input', { type: 'checkbox', checked: volumeRepresentationEvidenceChecked, disabled: volumeRepresentationConnectionSaved, onChange: function(ev) { upd({ volumeRepresentationEvidenceChecked: ev.target.checked, volumeRepresentationConnectionSaved: false }); } }),
+                    el('span', null, 'I used evidence from the structure or equation.')
+                  )
+                ),
                 el('button', {
                   type: 'button',
                   disabled: volumeRepresentationConnectionSaved,
                   onClick: function() {
                     var response = volumeRepresentationReason.trim();
-                    if (response.length < 8) { if (addToast) addToast('Add a little more evidence about why the views are equal.', 'info'); return; }
+                    if (!representationConnectionReadiness.ready) { if (addToast) addToast(representationConnectionReadiness.message, 'info'); return; }
                     upd('volumeRepresentationConnectionSaved', true);
                     var eng = window[engineKey];
-                    if (eng && eng.logEvent) eng.logEvent('representation_connection', { from: volumeRepresentationFromKey, to: activeVolumeRepresentation.key, text: response, viewsExplored: representationExploration.visitedCount, volume: measureResult.occupiedVolume, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite' });
+                    if (eng && eng.logEvent) eng.logEvent('representation_connection', { from: volumeRepresentationFromKey, to: activeVolumeRepresentation.key, text: response, viewsExplored: representationExploration.visitedCount, selfCheck: { invariant: true, evidence: true }, volume: measureResult.occupiedVolume, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite' });
                   },
-                  style: { justifySelf: 'start', background: volumeRepresentationConnectionSaved ? '#166534' : '#7c3aed', border: 'none', borderRadius: '4px', padding: '3px 7px', color: '#fff', fontSize: '9px', fontWeight: 700, cursor: volumeRepresentationConnectionSaved ? 'default' : 'pointer' }
+                  style: { justifySelf: 'start', background: volumeRepresentationConnectionSaved ? '#166534' : representationConnectionReadiness.ready ? '#7c3aed' : '#475569', border: 'none', borderRadius: '4px', padding: '3px 7px', color: '#fff', fontSize: '9px', fontWeight: 700, cursor: volumeRepresentationConnectionSaved ? 'default' : 'pointer' }
                 }, volumeRepresentationConnectionSaved ? '\u2713 Connection saved' : 'Save connection'),
                 volumeRepresentationConnectionSaved && el('div', { role: 'status', style: { color: '#86efac', fontSize: '9px', fontWeight: 700 } }, 'Your explanation is part of the learning evidence.')
               )
@@ -6737,7 +6833,7 @@
                     var mobilePrediction = m.isComplete === false ? null : evaluateVolumePrediction(m, engine._predictionState || {});
                     var mobileHistory = (measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, boundingVolume: m.boundingVolume, missingVolume: m.missingVolume, hasFractions: m.hasFractions, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: mobilePrediction ? mobilePrediction.prediction : null, percentError: mobilePrediction ? mobilePrediction.percentError : null, strategy: mobilePrediction ? mobilePrediction.strategy : '', reason: mobilePrediction ? mobilePrediction.reason : '', diagnosisCode: mobilePrediction ? mobilePrediction.diagnosisCode : '', t: Date.now() }]);
                     if (mobileHistory.length > 10) mobileHistory = mobileHistory.slice(-10);
-                    upd({ measureResult: m, measureHistory: mobileHistory, predictionResult: mobilePrediction, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: (m.isComplete === false
+                    upd({ measureResult: m, measureHistory: mobileHistory, predictionResult: mobilePrediction, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: (m.isComplete === false
                       ? '\uD83D\uDCCF Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
                       : m.isSolidPrism
                       ? '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume

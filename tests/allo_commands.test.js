@@ -120,7 +120,7 @@ describe('command coverage drift guards', () => {
     expect(grammarBlock).toBeTruthy();
     const entries = grammarBlock[1].split(/\n\s*\{/).filter((entry) => entry.includes("id: '"));
     const paramGrammarIds = [...new Set(entries.filter((entry) => /\bparams\s*:/.test(entry)).map((entry) => entry.match(/id:\s*'([^']+)'/)[1]))];
-    expect(paramGrammarIds).toEqual(expect.arrayContaining(['find_reading', 'create_lesson', 'set_font_size', 'translate_document', 'generate_simplified']));
+    expect(paramGrammarIds).toEqual(expect.arrayContaining(['find_reading', 'create_lesson', 'set_grade_level', 'set_source_tone', 'set_source_length', 'set_output_language', 'set_font_size', 'translate_document', 'generate_simplified']));
     const missingContracts = paramGrammarIds.filter((id) => AC.getCommandContract(id).params.length === 0);
     expect(missingContracts).toEqual([]);
   });
@@ -179,11 +179,26 @@ describe('buildAlloCommands (role + when filtering)', () => {
   it('exposes source/history and Learning Hub tool launchers across roles', () => {
     const teacher = ids({});
     expect(teacher).toEqual(expect.arrayContaining([
-      'open_source_input', 'open_history', 'open_research_hub', 'open_lit_lab', 'open_mind_map', 'open_poet_tree',
+      'open_source_input', 'open_source_url', 'open_source_generator', 'open_history', 'open_research_hub', 'open_lit_lab', 'open_mind_map', 'open_poet_tree',
     ]));
     const student = ids({ isIndependentMode: true });
     expect(student).toEqual(expect.arrayContaining([
-      'open_source_input', 'open_history', 'open_research_hub', 'open_lit_lab', 'open_mind_map', 'open_poet_tree',
+      'open_source_input', 'open_source_url', 'open_source_generator', 'open_history', 'open_research_hub', 'open_lit_lab', 'open_mind_map', 'open_poet_tree',
+    ]));
+  });
+
+  it('exposes setup-setting commands when host setters are available', () => {
+    const ctx = {
+      setSetupGradeLevel: vi.fn(),
+      setSetupSourceTone: vi.fn(),
+      setSetupSourceLength: vi.fn(),
+      setSetupLanguage: vi.fn(),
+    };
+    expect(ids(ctx)).toEqual(expect.arrayContaining([
+      'set_grade_level', 'set_source_tone', 'set_source_length', 'set_output_language',
+    ]));
+    expect(ids({ ...ctx, isIndependentMode: true })).toEqual(expect.arrayContaining([
+      'set_grade_level', 'set_source_tone', 'set_source_length', 'set_output_language',
     ]));
   });
 
@@ -227,6 +242,10 @@ describe('command param contracts', () => {
       topic: 'climate',
       raw: expect.stringMatching(/^x{200}$/),
     });
+    expect(AC.sanitizeCommandParams('set_grade_level', { grade: '5', hidden: 'drop me' })).toEqual({ grade: '5' });
+    expect(AC.sanitizeCommandParams('set_source_tone', { tone: 'narrative', hidden: 'drop me' })).toEqual({ tone: 'narrative' });
+    expect(AC.sanitizeCommandParams('set_source_length', { length: 'long', hidden: 'drop me' })).toEqual({ length: 'long' });
+    expect(AC.sanitizeCommandParams('set_output_language', { language: 'Spanish', hidden: 'drop me' })).toEqual({ language: 'Spanish' });
     expect(AC.sanitizeCommandParams('open_learning_hub', { hidden: 'drop me' })).toEqual({});
   });
 });
@@ -272,6 +291,26 @@ describe('routeUtterance', () => {
         text: 'create a lesson about volcanoes for grade 5',
         ctx: { startLessonFlow: vi.fn() },
         keys: ['topic', 'grade'],
+      },
+      {
+        text: 'set grade level to 5',
+        ctx: { setSetupGradeLevel: vi.fn() },
+        keys: ['grade'],
+      },
+      {
+        text: 'set source tone to narrative',
+        ctx: { setSetupSourceTone: vi.fn() },
+        keys: ['tone'],
+      },
+      {
+        text: 'set source length to 500 words',
+        ctx: { setSetupSourceLength: vi.fn() },
+        keys: ['length'],
+      },
+      {
+        text: 'set output language to Spanish',
+        ctx: { setSetupLanguage: vi.fn() },
+        keys: ['language'],
       },
       {
         text: 'set text size to 20',
@@ -585,10 +624,43 @@ describe('runCommandById (executes a confirmed, previewed command)', () => {
     expect(source).toMatchObject({ handled: true, commandId: 'open_source_input' });
     expect(openSourceInput).toHaveBeenCalledTimes(1);
 
+
+    const openSourceUrl = vi.fn();
+    const url = AC.runCommandById({ openSourceUrl }, 'open_source_url', {});
+    expect(url).toMatchObject({ handled: true, commandId: 'open_source_url' });
+    expect(openSourceUrl).toHaveBeenCalledTimes(1);
+
+    const openSourceGenerator = vi.fn();
+    const generator = AC.runCommandById({ openSourceGenerator }, 'open_source_generator', {});
+    expect(generator).toMatchObject({ handled: true, commandId: 'open_source_generator' });
+    expect(openSourceGenerator).toHaveBeenCalledTimes(1);
+
     const openHistory = vi.fn();
     const history = AC.runCommandById({ openHistory }, 'open_history', {});
     expect(history).toMatchObject({ handled: true, commandId: 'open_history' });
     expect(openHistory).toHaveBeenCalledTimes(1);
+  });
+
+  it('applies setup settings through validated host handlers', () => {
+    const setSetupGradeLevel = vi.fn(() => '5th Grade');
+    const grade = AC.runCommandById({ setSetupGradeLevel }, 'set_grade_level', { grade: '5', hidden: 'drop' });
+    expect(grade).toMatchObject({ handled: true, commandId: 'set_grade_level' });
+    expect(setSetupGradeLevel).toHaveBeenCalledWith('5');
+
+    const setSetupSourceTone = vi.fn(() => 'Narrative');
+    const tone = AC.runCommandById({ setSetupSourceTone }, 'set_source_tone', { tone: 'narrative', hidden: 'drop' });
+    expect(tone).toMatchObject({ handled: true, commandId: 'set_source_tone' });
+    expect(setSetupSourceTone).toHaveBeenCalledWith('narrative');
+
+    const setSetupSourceLength = vi.fn(() => '500');
+    const length = AC.runCommandById({ setSetupSourceLength }, 'set_source_length', { length: '500', hidden: 'drop' });
+    expect(length).toMatchObject({ handled: true, commandId: 'set_source_length' });
+    expect(setSetupSourceLength).toHaveBeenCalledWith('500');
+
+    const setSetupLanguage = vi.fn(() => 'Spanish');
+    const language = AC.runCommandById({ setSetupLanguage }, 'set_output_language', { language: 'Spanish', hidden: 'drop' });
+    expect(language).toMatchObject({ handled: true, commandId: 'set_output_language' });
+    expect(setSetupLanguage).toHaveBeenCalledWith('Spanish');
   });
 
   it('opens Learning Hub subtools through one host handler and closes peer panels', () => {

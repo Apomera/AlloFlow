@@ -336,6 +336,16 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await studio.locator('#demoAudioMode').selectOption('auto-Kore');
   await studio.locator('#demoOfficialTextBtn').click();
   await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'true');
+  await expect(studio.locator('#demoOfficialTextBtn')).toHaveText('Loading tutorial...');
+  await expect(studio.locator('#demoPlanCancelBtn')).toHaveText('Cancel tutorial load');
+  await studio.locator('#demoPlanCancelBtn').click();
+  await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'false');
+  await expect(studio.locator('#demoOfficialTextBtn')).toBeFocused();
+  await expect(studio.locator('#demoStatus')).toContainText('Official tutorial loading cancelled. Nothing ran');
+  await studio.waitForTimeout(900);
+  await expect(studio.locator('#demoPlanList')).not.toContainText('Text Adaptation');
+  await studio.locator('#demoOfficialTextBtn').click();
+  await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'true');
   await expect.poll(demoTransitionLocks).toEqual(allDemoTransitionsLocked);
   await expect(studio.locator('#demoPlanList')).toContainText('Text Adaptation');
   await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'false');

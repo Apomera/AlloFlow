@@ -645,6 +645,18 @@ function HeaderBar(props) {
                           <span className='hidden lg:inline'>{window.__alloStudentAiConfigured ? 'AI ready' : 'Set up AI'}</span>
                         </button>
                         )}
+                        {!isTeacherMode && window.__alloStudentAiSetupAllowed && window.__alloStudentAiConfigured && (
+                        <button type='button'
+                          onClick={() => { if (typeof window.__alloDisconnectStudentAi === 'function') window.__alloDisconnectStudentAi(); }}
+                          data-help-key='header_student_ai_disconnect'
+                          className='px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider border bg-slate-900/40 text-white border-white/30 hover:bg-rose-700'
+                          title='Disconnect personal AI and erase the key from this browser tab'
+                          aria-label='Disconnect personal AI and erase session key'
+                        >
+                          <X size={14} aria-hidden='true' />
+                          <span className='hidden xl:inline'>Disconnect AI</span>
+                        </button>
+                        )}
                         {isTeacherMode && (
                             <button type="button"
                                 onClick={handleSetShowHintsModalToTrue}

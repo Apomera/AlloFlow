@@ -220,7 +220,7 @@ describe('evaluateModule + buildCompletionRecord', () => {
   });
 
   it('builds an honestly-labelled, deterministic completion record', () => {
-    const rec = PD.buildCompletionRecord(m, results(1, true, true), { name: 'Pat' }, '2026-06-19T00:00:00.000Z');
+    const rec = PD.buildCompletionRecord(m, results(1, true, true), { name: ' Pat ', email: 'do-not-export@example.test', secret: { id: 7 } }, '2026-06-19T00:00:00.000Z');
     expect(rec.schema_version).toBe('pd-completion-1.0');
     expect(rec.moduleVersion).toBe(null);
     expect(rec.contentDigest).toBe(PD.moduleContentDigest(m));
@@ -230,6 +230,7 @@ describe('evaluateModule + buildCompletionRecord', () => {
     expect(rec.issuer.kind).toBe('self-paced');
     expect(rec.issuer.verified).toBe(false);
     expect(rec.issuer.note).toMatch(/not an accredited credential/i);
+    expect(rec.learner).toEqual({ name: 'Pat' });
     expect(rec.perActivity).toHaveLength(3);
   });
 
@@ -311,6 +312,321 @@ describe('evaluateModule + buildCompletionRecord', () => {
       wordCount: 20, blocked: false, fieldId: 'reflection-1'
     }]);
     expect(JSON.stringify(rec.integrityEvents)).not.toContain('NEVER STORE THIS');
+  });
+});
+
+describe('pd-review-candidate-1.0 evidence packages', () => {
+  const NOW = '2026-07-16T18:00:00Z';
+
+  function reviewModule() {
+    return {
+      schema_version: 'pd-1.0',
+      kind: 'pd_module',
+      metadata: { id: 'review-fixture', version: '1.2.0', language: 'en-US', title: 'Review fixture', topic: 'Practice' },
+      assessmentPolicy: { paste: { mode: 'monitored' } },
+      sections: [{ title: 'Apply', activities: [
+        { id: 'read-one', type: 'read', title: 'Read', content: { body: 'Read this.' }, gate: { kind: 'none' } },
+        { id: 'reflect-one', type: 'reflect', title: 'Reflect', content: { prompt: 'What changed?' }, gate: { kind: 'none' } },
+        { id: 'commit-one', type: 'checklist', title: 'Commit', content: { items: ['Try captions', 'Offer a transcript'] }, gate: { kind: 'none' } },
+        { id: 'sim-one', type: 'sim', title: 'Scenario', content: { scenario: 'Respond to a learner.', rubric: 'Name an accessible next step.' }, gate: { kind: 'none' } },
+      ] }],
+    };
+  }
+
+  function reviewResults(mod, overrides = {}) {
+    const acts = Object.fromEntries(mod.sections[0].activities.map((act) => [act.id, act]));
+    const raw = {
+      'read-one': { acknowledged: true },
+      'reflect-one': {
+        text: 'I will offer equivalent ways to engage.',
+        integrityEvents: [{
+          type: 'paste', timestamp: '2026-07-16T17:59:00Z', charCount: 18, wordCount: 4,
+          blocked: false, fieldId: 'reflect-one-reflect', clipboardText: 'NEVER EXPORT THIS',
+        }],
+      },
+      'commit-one': { checked: [true, false] },
+      'sim-one': {
+        response: 'I would ask which accessible format works.',
+        masteryScore: 84,
+        feedback: 'Specific and practical.',
+        qualitativeAnalysis: {
+          strengths: ['Names an accessible option'],
+          growthAreas: ['Add a follow-up'],
+          criterionEvidence: [{ criterion: 'Access', assessment: 'met', evidence: 'Offers a format choice.', feedback: 'Keep checking access.' }],
+        },
+      },
+      ...overrides,
+    };
+    return Object.fromEntries(Object.keys(acts).map((id) => [id, PD.normalizeResult(acts[id], raw[id] || {})]));
+  }
+
+  function build(options = {}) {
+    const mod = reviewModule();
+    const results = reviewResults(mod);
+    return {
+      mod,
+      result: PD.buildReviewCandidatePackage(mod, results, {
+        consent: { granted: true, grantedAt: NOW },
+        includeAiAnalysis: true,
+        includeIntegritySummary: true,
+        learner: { name: 'Pat', email: 'never@example.test' },
+        ...options,
+      }, NOW),
+    };
+  }
+
+  function rehashPackage(pkg) {
+    pkg.package_digest = PD.reviewCandidateDigest(pkg);
+    return pkg;
+  }
+
+  function rehashArtifactAndPackage(pkg, artifact) {
+    artifact.digest = PD.reviewArtifactDigest(artifact);
+    return rehashPackage(pkg);
+  }
+
+  it('builds deterministic, exact-bound, unverified evidence with explicit source labels', () => {
+    const first = build();
+    const second = build();
+    expect(first.result.ok).toBe(true);
+    expect(second.result).toEqual(first.result);
+
+    const pkg = first.result.package;
+    expect(pkg).toMatchObject({
+      schema_version: 'pd-review-candidate-1.0',
+      kind: 'pd_review_candidate',
+      trust_model: 'learner-device-unverified',
+      purpose: 'human-review-candidate',
+      module: {
+        id: 'review-fixture', version: '1.2.0', language: 'en-US',
+        content_digest: PD.moduleContentDigest(first.mod),
+        activity_ids: ['read-one', 'reflect-one', 'commit-one', 'sim-one'],
+      },
+      consent: {
+        notice_version: 'pd-review-candidate-consent-1.0',
+        notice_locale: 'en-US',
+        notice_payload: PD.reviewConsentNotice('en-US'),
+      },
+      privacy_manifest: {
+        structured_identity_fields_included: false,
+        raw_clipboard_events_included: false,
+        raw_clipboard_content_included: false,
+        free_text_may_contain_personal_data: true,
+        learner_response_text_included: true,
+        exact_event_times_included: false,
+        field_identifiers_included: false,
+        ai_advisory_analysis_included: true,
+        integrity_summary_included: true,
+      },
+    });
+    expect(pkg.package_digest).toBe(PD.reviewCandidateDigest(pkg));
+    expect(PD.validateReviewCandidatePackage(pkg)).toEqual({ ok: true });
+    expect(Object.prototype.hasOwnProperty.call(pkg, 'learner')).toBe(false);
+
+    const learnerArtifact = pkg.artifacts.find((a) => a.kind === 'learner-response');
+    expect(learnerArtifact).toMatchObject({
+      source: 'learner-provided-unverified',
+      provenance: { capture: 'learner-device', verified: false },
+    });
+    const checklistArtifact = pkg.artifacts.find((a) => a.kind === 'learner-selection-of-module-authored-options');
+    expect(checklistArtifact).toMatchObject({
+      source: 'learner-provided-unverified', value: ['Try captions'],
+      provenance: { capture: 'learner-device', verified: false },
+    });
+    const aiArtifact = pkg.artifacts.find((a) => a.kind === 'ai-advisory-analysis');
+    expect(aiArtifact).toMatchObject({
+      source: 'ai-assisted-advisory',
+      provenance: { advisory: true, provider: 'not-recorded', model: 'not-recorded', human_review_required: true },
+    });
+
+    expect(pkg.integrity_summary.activities).toEqual([{
+      activity_id: 'reflect-one', policy_mode: 'monitored', event_count: 1,
+      blocked_event_count: 0, character_count: 18, word_count: 4,
+    }]);
+    expect(JSON.stringify(pkg.integrity_summary)).not.toMatch(/timestamp|fieldId|clipboard/i);
+    const serialized = JSON.stringify(pkg);
+    expect(serialized).not.toContain('NEVER EXPORT THIS');
+    expect(serialized).not.toContain('never@example.test');
+    expect(serialized).not.toMatch(/"satisfied"|credential/i);
+  });
+
+  it('keeps AI analysis and integrity summaries off unless each optional scope is explicitly selected', () => {
+    const mod = reviewModule();
+    const result = PD.buildReviewCandidatePackage(mod, reviewResults(mod), {
+      consent: { granted: true, grantedAt: NOW },
+    }, NOW);
+    expect(result.ok).toBe(true);
+    const pkg = result.package;
+    expect(pkg.consent.scopes).toEqual(['learner-response-evidence']);
+    expect(pkg.artifacts.some((a) => a.kind === 'ai-advisory-analysis')).toBe(false);
+    expect(pkg.integrity_summary).toBeNull();
+    expect(pkg.privacy_manifest).toMatchObject({
+      ai_advisory_analysis_included: false, integrity_summary_included: false,
+    });
+    expect(PD.validateReviewCandidatePackage(pkg)).toEqual({ ok: true });
+  });
+
+  it('rejects hidden AI advisory properties instead of silently sanitizing them', () => {
+    const mod = reviewModule();
+    let results = reviewResults(mod, {
+      'sim-one': {
+        response: 'answer', masteryScore: 80, feedback: 'advisory',
+        qualitativeAnalysis: { strengths: ['Specific'], hiddenPrivateField: 'do not accept' },
+      },
+    });
+    expect(PD.buildReviewCandidatePackage(mod, results, {
+      consent: { granted: true, grantedAt: NOW }, includeAiAnalysis: true,
+    }, NOW)).toMatchObject({ ok: false, code: 'invalid_ai_analysis' });
+
+    results = reviewResults(mod, {
+      'sim-one': {
+        response: 'answer', masteryScore: 80, feedback: 'advisory',
+        qualitativeAnalysis: {
+          criterionEvidence: [{ criterion: 'Access', assessment: 'met', hiddenPrivateField: 'do not accept' }],
+        },
+      },
+    });
+    expect(PD.buildReviewCandidatePackage(mod, results, {
+      consent: { granted: true, grantedAt: NOW }, includeAiAnalysis: true,
+    }, NOW)).toMatchObject({ ok: false, code: 'oversized_ai_analysis' });
+  });
+
+  it('fails closed without consent, completion, version, or language binding', () => {
+    const mod = reviewModule();
+    const results = reviewResults(mod);
+    expect(PD.buildReviewCandidatePackage(mod, results, { consent: { granted: false, grantedAt: NOW } }, NOW))
+      .toMatchObject({ ok: false, code: 'explicit_consent_required' });
+
+    expect(PD.buildReviewCandidatePackage(mod, results, {
+      consent: { granted: true, grantedAt: '2026-07-16T18:00:01Z' },
+    }, NOW)).toMatchObject({ ok: false, code: 'invalid_consent_time' });
+
+    mod.metadata.language = 'en--US';
+    expect(PD.buildReviewCandidatePackage(mod, results, { consent: { granted: true, grantedAt: NOW } }, NOW))
+      .toMatchObject({ ok: false, code: 'module_language_required' });
+    mod.metadata.language = 'en-US';
+
+    const incomplete = reviewResults(mod, { 'reflect-one': { text: '' } });
+    expect(PD.buildReviewCandidatePackage(mod, incomplete, { consent: { granted: true, grantedAt: NOW } }, NOW))
+      .toMatchObject({ ok: false, code: 'incomplete_module' });
+
+    delete mod.metadata.version;
+    expect(PD.buildReviewCandidatePackage(mod, results, { consent: { granted: true, grantedAt: NOW } }, NOW))
+      .toMatchObject({ ok: false, code: 'module_version_required' });
+    mod.metadata.version = '1.2.0';
+    delete mod.metadata.language;
+    expect(PD.buildReviewCandidatePackage(mod, results, { consent: { granted: true, grantedAt: NOW } }, NOW))
+      .toMatchObject({ ok: false, code: 'module_language_required' });
+  });
+
+  it('hard-rejects oversized response, AI, and integrity data', () => {
+    const mod = reviewModule();
+    let results = reviewResults(mod, { 'reflect-one': { text: 'x'.repeat(20001) } });
+    expect(PD.buildReviewCandidatePackage(mod, results, { consent: { granted: true, grantedAt: NOW } }, NOW))
+      .toMatchObject({ ok: false, code: 'response_too_large' });
+
+    results = reviewResults(mod, { 'sim-one': { response: 'answer', masteryScore: 80, feedback: 'x'.repeat(2001) } });
+    expect(PD.buildReviewCandidatePackage(mod, results, { consent: { granted: true, grantedAt: NOW }, includeAiAnalysis: true }, NOW))
+      .toMatchObject({ ok: false, code: 'oversized_ai_analysis' });
+
+    const many = Array.from({ length: PD.MAX_COMPLETION_INTEGRITY_EVENTS + 1 }, () => ({ type: 'paste', charCount: 1, wordCount: 1 }));
+    results = reviewResults(mod, { 'reflect-one': { text: 'answer', integrityEvents: many } });
+    expect(PD.buildReviewCandidatePackage(mod, results, {
+      consent: { granted: true, grantedAt: NOW }, includeIntegritySummary: true,
+    }, NOW)).toMatchObject({ ok: false, code: 'integrity_event_limit' });
+
+    results = reviewResults(mod, {
+      'reflect-one': { text: 'answer', integrityEvents: [{ type: 'paste', charCount: PD.REVIEW_MAX_INTEGRITY_CHARS_PER_EVENT + 1 }] },
+    });
+    expect(PD.buildReviewCandidatePackage(mod, results, {
+      consent: { granted: true, grantedAt: NOW }, includeIntegritySummary: true,
+    }, NOW)).toMatchObject({ ok: false, code: 'invalid_integrity_count' });
+
+    const aggregateTooLarge = Array.from({ length: 6 }, () => ({ type: 'paste', charCount: 90000, wordCount: 1 }));
+    results = reviewResults(mod, { 'reflect-one': { text: 'answer', integrityEvents: aggregateTooLarge } });
+    expect(PD.buildReviewCandidatePackage(mod, results, {
+      consent: { granted: true, grantedAt: NOW }, includeIntegritySummary: true,
+    }, NOW)).toMatchObject({ ok: false, code: 'integrity_count_limit' });
+  });
+
+  it('detects artifact and package tampering', () => {
+    const pkg = build().result.package;
+    const tampered = JSON.parse(JSON.stringify(pkg));
+    tampered.artifacts.find((a) => a.kind === 'learner-response').value = 'changed';
+    expect(PD.validateReviewCandidatePackage(tampered)).toMatchObject({ ok: false, code: 'invalid_artifact' });
+    expect(PD.reviewCandidateDigest(tampered)).not.toBe(pkg.package_digest);
+  });
+
+  it('rejects rehashed activity/artifact semantic tampering rather than relying only on stale digests', () => {
+    let pkg = JSON.parse(JSON.stringify(build().result.package));
+    const reflectActivity = pkg.activities.find((a) => a.activity_id === 'reflect-one');
+    reflectActivity.type = 'quiz';
+    reflectActivity.client_observation.score = 0.5;
+    reflectActivity.client_observation.score_interpretation = 'module-answer-key';
+    rehashPackage(pkg);
+    expect(PD.validateReviewCandidatePackage(pkg)).toMatchObject({ ok: false, code: 'invalid_artifact' });
+
+    pkg = JSON.parse(JSON.stringify(build().result.package));
+    const moved = pkg.artifacts.find((a) => a.kind === 'learner-response' && a.activity_id === 'reflect-one');
+    pkg.activities.find((a) => a.activity_id === 'reflect-one').artifact_refs = [];
+    pkg.activities.find((a) => a.activity_id === 'read-one').artifact_refs = [moved.artifact_id];
+    moved.activity_id = 'read-one';
+    rehashArtifactAndPackage(pkg, moved);
+    expect(PD.validateReviewCandidatePackage(pkg)).toMatchObject({ ok: false, code: 'invalid_artifact' });
+  });
+
+  it('requires the expected learner evidence even after a package digest is recomputed', () => {
+    const pkg = JSON.parse(JSON.stringify(build().result.package));
+    const reflectArtifact = pkg.artifacts.find((a) => a.kind === 'learner-response' && a.activity_id === 'reflect-one');
+    pkg.artifacts = pkg.artifacts.filter((a) => a.artifact_id !== reflectArtifact.artifact_id);
+    const reflectActivity = pkg.activities.find((a) => a.activity_id === 'reflect-one');
+    reflectActivity.artifact_refs = reflectActivity.artifact_refs.filter((id) => id !== reflectArtifact.artifact_id);
+    rehashPackage(pkg);
+    expect(PD.validateReviewCandidatePackage(pkg)).toMatchObject({ ok: false, code: 'required_evidence_missing' });
+  });
+
+  it('binds consent text/locale and language syntax even when an attacker recomputes the package digest', () => {
+    let pkg = JSON.parse(JSON.stringify(build().result.package));
+    pkg.consent.notice_payload.privacy += ' changed';
+    rehashPackage(pkg);
+    expect(PD.validateReviewCandidatePackage(pkg)).toMatchObject({ ok: false, code: 'invalid_consent' });
+
+    pkg = JSON.parse(JSON.stringify(build().result.package));
+    pkg.module.language = 'en--US';
+    rehashPackage(pkg);
+    expect(PD.validateReviewCandidatePackage(pkg)).toMatchObject({ ok: false, code: 'invalid_module_binding' });
+  });
+
+  it('rejects duplicate and oversized rehashed integrity summaries', () => {
+    let pkg = JSON.parse(JSON.stringify(build().result.package));
+    pkg.integrity_summary.activities.push({ ...pkg.integrity_summary.activities[0] });
+    rehashPackage(pkg);
+    expect(PD.validateReviewCandidatePackage(pkg)).toMatchObject({ ok: false, code: 'invalid_integrity_summary' });
+
+    pkg = JSON.parse(JSON.stringify(build().result.package));
+    const row = pkg.integrity_summary.activities[0];
+    row.event_count = 6;
+    row.character_count = PD.REVIEW_MAX_INTEGRITY_TOTAL_CHARS + 1;
+    rehashPackage(pkg);
+    expect(PD.validateReviewCandidatePackage(pkg)).toMatchObject({ ok: false, code: 'integrity_event_limit' });
+  });
+
+  it('rejects hidden AI fields after both artifact and package digests are recomputed', () => {
+    const pkg = JSON.parse(JSON.stringify(build().result.package));
+    const artifact = pkg.artifacts.find((a) => a.kind === 'ai-advisory-analysis');
+    artifact.value.qualitativeAnalysis.hiddenPrivateField = 'must not pass validation';
+    rehashArtifactAndPackage(pkg, artifact);
+    expect(PD.validateReviewCandidatePackage(pkg)).toMatchObject({ ok: false, code: 'invalid_ai_analysis' });
+  });
+
+  it('caps completion-record integrity events even for a non-UI caller', () => {
+    const mod = reviewModule();
+    const events = Array.from({ length: PD.MAX_COMPLETION_INTEGRITY_EVENTS + 25 }, () => ({ type: 'paste', charCount: 1e9, wordCount: 1e9 }));
+    const results = reviewResults(mod, { 'reflect-one': { text: 'answer', integrityEvents: events } });
+    const rec = PD.buildCompletionRecord(mod, results, { name: 'Pat' }, NOW);
+    expect(rec.integrityEvents).toHaveLength(PD.MAX_COMPLETION_INTEGRITY_EVENTS);
+    expect(rec.integrityEvents[0].characterCount).toBe(PD.REVIEW_MAX_INTEGRITY_CHARS_PER_EVENT);
+    expect(rec.integrityEvents[0].wordCount).toBe(PD.REVIEW_MAX_INTEGRITY_WORDS_PER_EVENT);
   });
 });
 

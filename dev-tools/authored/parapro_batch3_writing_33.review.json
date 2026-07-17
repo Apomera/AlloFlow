@@ -1,0 +1,175 @@
+{
+  "reviewedAt": "2026-07-16T22:57:00-04:00",
+  "reviewer": "OpenAI Codex independent cross-review",
+  "itemCount": 33,
+  "correctionsMade": [
+    {
+      "itemId": "parapro-b3-writing-003",
+      "issue": "The answer options differed only by punctuation, so the integration validator canonicalized them as duplicate choices.",
+      "change": "Recast the item as four distinct comma-placement directions while preserving the nonessential-clause skill and answer position."
+    },
+    {
+      "itemId": "parapro-b3-writing-005",
+      "issue": "The answer options differed only by colon position, so the integration validator canonicalized them as duplicate choices.",
+      "change": "Recast the item as four distinct insertion-location choices while preserving the colon skill and answer position."
+    },
+    {
+      "itemId": "parapro-b3-writing-008",
+      "issue": "One distractor contained an independent clause followed by an elliptical although phrase and could be read as a complete, though awkward, sentence.",
+      "change": "Replaced it with a clearly nonfinite fragment and revised its choice rationale."
+    },
+    {
+      "itemId": "parapro-b3-writing-009",
+      "issue": "The first distractor could function as a grammatical nominative absolute, and the semicolon-plus-and distractor was stylistically weak rather than unambiguously invalid.",
+      "change": "Replaced both with clear comma-splice and semicolon-before-dependent-clause errors and supplied accurate rationales."
+    },
+    {
+      "itemId": "parapro-b3-writing-011",
+      "issue": "The 22 basic-skills items did not explicitly assess spelling, an ETS-listed writing topic, while the original concision task repeated an existing bank competency.",
+      "change": "Replaced the item with a contextual misspelling-identification question and updated its skill, chapter, rationales, and references."
+    },
+    {
+      "itemId": "parapro-b3-writing-017",
+      "issue": "The 22 basic-skills items did not explicitly assess parts of a sentence, and the original process-order task closely paralleled an existing source question.",
+      "change": "Replaced the item with an unambiguous complete-predicate question and updated its skill, chapter, rationales, and references."
+    },
+    {
+      "itemId": "parapro-b3-writing-018",
+      "issue": "The 22 basic-skills items did not explicitly assess parts of speech, an ETS-listed writing topic.",
+      "change": "Replaced the item with an adverb-identification question and updated its skill, chapter, rationales, and references."
+    },
+    {
+      "itemId": "parapro-b3-writing-019",
+      "issue": "The keyed evidence showed a before-and-after association but did not adequately support the stated causal explanation; its fluency unit also omitted per minute.",
+      "change": "Specified correct words per minute and that partner reading was the only change to the fluency routine, then narrowed the rationale to evidentiary support rather than proof."
+    },
+    {
+      "itemId": "parapro-b3-writing-024",
+      "issue": "The original stem did not establish that speech-to-text was authorized, which could imply that a paraeducator selects an accommodation independently.",
+      "change": "Established that the student's instructional plan permits speech-to-text and aligned the rationale with implementation of the permitted support."
+    },
+    {
+      "itemId": "parapro-b3-writing-026",
+      "issue": "The keyed wording could imply that the adult, rather than the student, generates the list of possible topics.",
+      "change": "Reworded the support so the adult invites the student to generate, evaluate, and choose from familiar processes."
+    },
+    {
+      "itemId": "parapro-b3-writing-027",
+      "issue": "The original revision-before-editing scenario was a semantic parallel to an existing ParaPro source question and initially left ownership of the central-idea statement unclear.",
+      "change": "Replaced the entire item with a distinct classroom task about selecting authoritative census references, checking comparability, and recording source information."
+    },
+    {
+      "itemId": "parapro-b3-writing-029",
+      "issue": "The original vague-peer-feedback scenario was a semantic parallel to an existing ParaPro source question.",
+      "change": "Replaced it with an audience-adaptation item requiring accessible but scientifically accurate museum-label language."
+    },
+    {
+      "itemId": "parapro-b3-writing-030",
+      "issue": "The original unattributed-copying scenario was a semantic parallel to an existing ParaPro source question.",
+      "change": "Replaced it with a form-and-purpose item about revising a narrative draft into a persuasive letter to a decision-making audience."
+    },
+    {
+      "itemId": "parapro-b3-writing-033",
+      "issue": "The progress-monitoring option did not identify teacher direction or teacher-provided measures, leaving paraeducator scope ambiguous.",
+      "change": "Specified the teacher's request, prompts, and rubric while retaining data collection and graphing as the paraeducator's assigned role."
+    }
+  ],
+  "checks": {
+    "currentBlueprintAlignment": {
+      "status": "pass-after-corrections",
+      "officialReference": "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "verifiedOn": "2026-07-16",
+      "details": [
+        "All 33 items assess writing.",
+        "The bank contains 22 basic-skills-and-knowledge items and 11 classroom-application items, matching the current ETS approximate two-thirds/one-third split.",
+        "The basic bank explicitly samples grammar, word usage, punctuation, sentence parts, parts of speech, and spelling.",
+        "The application bank samples prewriting, reference selection, drafting, revising, editing, audience and purpose, and writing forms in classroom-support contexts."
+      ]
+    },
+    "keyedAnswerDefensibility": {
+      "status": "pass-after-corrections",
+      "itemsReviewed": 33,
+      "remainingMultipleDefensibleKeys": 0
+    },
+    "grammarAndPunctuationAccuracy": {
+      "status": "pass-after-corrections",
+      "itemsReviewed": 33
+    },
+    "ambiguity": {
+      "status": "pass-after-corrections",
+      "itemsReviewed": 33,
+      "remainingMaterialAmbiguities": 0
+    },
+    "distractorPlausibility": {
+      "status": "pass-after-corrections",
+      "itemsReviewed": 33,
+      "choiceCountPerItem": 4,
+      "duplicateChoices": 0
+    },
+    "promptOriginality": {
+      "status": "pass-after-corrections",
+      "existingPack": "test_prep/parapro_pack.json",
+      "existingWritingActivitiesCompared": 165,
+      "existingSourceDiagnosticWritingPromptsCompared": 66,
+      "normalizedExactMatchesToExistingWriting": 0,
+      "normalizedPromptDuplicatesWithinBatch": 0,
+      "semanticParallelKernelsReplaced": [
+        "parapro-b3-writing-017",
+        "parapro-b3-writing-027",
+        "parapro-b3-writing-029",
+        "parapro-b3-writing-030"
+      ],
+      "remainingOverlap": "Recurring blueprint competencies use independently written stimuli, choices, and response decisions."
+    },
+    "classroomRoleAppropriateness": {
+      "status": "pass-after-corrections",
+      "applicationItemsReviewed": 11,
+      "details": "Supports preserve student authorship and, where authorization matters, explicitly follow teacher direction or the student's instructional plan."
+    },
+    "choiceRationales": {
+      "status": "pass-after-corrections",
+      "itemsWithFourSubstantiveChoiceRationales": 33
+    },
+    "references": {
+      "status": "pass",
+      "allItemsIncludeCurrentEtsStudyCompanion": true,
+      "allReferencesUseHttps": true,
+      "validatedReferenceHosts": [
+        "www.ets.org",
+        "openstax.org",
+        "data.census.gov"
+      ]
+    },
+    "answerQuota": {
+      "status": "pass",
+      "countsByAnswerIndex": {
+        "0": 8,
+        "1": 8,
+        "2": 8,
+        "3": 9
+      },
+      "expected": "Each answer position appears 8 or 9 times."
+    },
+    "contentFocusQuota": {
+      "status": "pass",
+      "counts": {
+        "basic-skills-knowledge": 22,
+        "application-classroom": 11
+      },
+      "expected": {
+        "basic-skills-knowledge": 22,
+        "application-classroom": 11
+      }
+    },
+    "structureAndIntegrationFields": {
+      "status": "pass",
+      "sequentialUniqueIds": true,
+      "singleChoiceItems": 33,
+      "itemsWithFourUniqueChoices": 33,
+      "itemsWithValidAnswerIndex": 33,
+      "itemsWithSkillAndChapterLinks": 33,
+      "itemsWithIndependentDraftProvenance": 33
+    }
+  },
+  "verdict": "pass-after-corrections"
+}

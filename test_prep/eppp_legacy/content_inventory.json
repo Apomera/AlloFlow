@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-07-15T13:35:21.093Z",
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-17T04:12:48.180Z",
   "summary": {
     "legacyQuestions": 2933,
     "nativeQaQuestions": 1500,
@@ -15,13 +15,19 @@
     "textbookSections": 278,
     "knowledgeChecks": 109,
     "diagramTemplates": 25,
-    "diagramPlacements": 61,
+    "usedDiagramTemplates": 15,
+    "unusedDiagramTemplates": 10,
+    "diagramPlacements": 58,
+    "sharedTemplateDiagramPlacements": 16,
+    "inlineDiagramPlacements": 42,
+    "sourceReviewedDiagramTemplates": 15,
+    "sourceReviewedDiagramPlacements": 16,
     "termDefinitions": 1583,
     "chapterReferences": 383,
     "aiReflectiveCodas": 49,
     "sourceReviewedChapters": 49,
     "sourceReviewedFlashcards": 415,
-    "sourceReviewedMemoryAids": 8,
+    "sourceReviewedMemoryAids": 40,
     "retainedReviewedFlashcards": 336,
     "retiredRedundantFlashcards": 79,
     "editorialReviewedSourcePendingMemoryAids": 2,
@@ -72,6 +78,3000 @@
   "memoryAidTypes": {
     "mnemonic": 218,
     "analogy": 37
+  },
+  "diagramInventory": {
+    "summary": {
+      "diagramTemplates": 25,
+      "usedDiagramTemplates": 15,
+      "unusedDiagramTemplates": 10,
+      "diagramPlacements": 58,
+      "sharedTemplateDiagramPlacements": 16,
+      "inlineDiagramPlacements": 42,
+      "sourceReviewedDiagramTemplates": 15,
+      "sourceReviewedDiagramPlacements": 16
+    },
+    "templates": [
+      {
+        "id": "diagram-neuron-action-potential",
+        "key": "neuronActionPotential",
+        "origin": "shared-template",
+        "description": "🔬 Simplified example of a myelinated multipolar neuron. Dendrites and the soma commonly receive and integrate synaptic inputs, and the soma contains the nucleus. Action potentials usually initiate at the axon initial segment, propagate along the axon, and trigger neurotransmitter release from axon terminals into the synaptic cleft. In a myelinated axon, active regeneration occurs at nodes of Ranvier while depolarizing current spreads beneath myelin. The green marker represents direction and sequence, not a physical particle or an exact continuous voltage trace.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-20-section-02"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Reframed the animation as a schematic sequence, corrected axon-initial-segment and terminal terminology, qualified dendritic input, and raised the smallest labels to a readable size. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://pmc.ncbi.nlm.nih.gov/articles/PMC5992072/",
+          "https://www.ncbi.nlm.nih.gov/books/NBK526047/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Axon initial segments: structure, function, and disease",
+            "organization": "Annals of the New York Academy of Sciences; PubMed Central, U.S. National Library of Medicine",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5992072/",
+            "whyReputable": "This peer-reviewed Baylor College of Medicine review synthesizes evidence about somatodendritic input, action-potential initiation at the axon initial segment, and propagation through myelinated axons and nodes. PubMed Central provides stable full text and traceable publication metadata."
+          },
+          {
+            "title": "Physiology, Synapse",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK526047/",
+            "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter explains synaptic anatomy, the synaptic cleft, action-potential arrival at terminals, and neurotransmitter release. It directly supports the diagram’s terminal and synapse labels."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-classical-conditioning",
+        "key": "classicalConditioning",
+        "origin": "shared-template",
+        "description": "🧠 Classical conditioning: a neutral stimulus (bell) becomes a conditioned stimulus through repeated pairing with an unconditioned stimulus (food). The glowing box shows the active learning phase.",
+        "hasSvg": true,
+        "usageStatus": "unused",
+        "placementCount": 0,
+        "placementIds": [],
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-hpa-axis",
+        "key": "hpaAxis",
+        "origin": "shared-template",
+        "description": "🔴 The HPA axis stress cascade: hypothalamic CRH stimulates pituitary ACTH, which stimulates adrenal-cortex cortisol release; cortisol participates in negative feedback. Prolonged or dysregulated stress-system activity is associated with hippocampal structural and functional changes and greater risk for stress-related disorders, but it does not determine that a person will develop a disorder.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-21-section-03"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Replaced deterministic hippocampal-damage and disorder language with a qualified association and replaced a simplistic cortisol-effects list with an energy-mobilization and feedback description. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://pmc.ncbi.nlm.nih.gov/articles/PMC4561403/",
+          "https://pubmed.ncbi.nlm.nih.gov/27065163/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Stress effects on the hippocampus: a critical review",
+            "organization": "Progress in Neuro-Psychopharmacology & Biological Psychiatry; PubMed Central, U.S. National Library of Medicine (2015)",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4561403/",
+            "whyReputable": "This peer-reviewed critical review evaluates human and animal evidence about stress-related hippocampal structural and functional change. PubMed Central supplies stable full text and traceable publication metadata; the review supports qualified associations rather than deterministic claims."
+          },
+          {
+            "title": "Regulation of the Hypothalamic-Pituitary-Adrenocortical Stress Response",
+            "organization": "Comprehensive Physiology; PubMed, U.S. National Library of Medicine (2016)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/27065163/",
+            "whyReputable": "This peer-reviewed mechanistic review explains CRH, ACTH, adrenal glucocorticoid secretion, feedback regulation, and adaptation of the hypothalamic-pituitary-adrenocortical response. PubMed provides traceable journal and author metadata for the cascade shown."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-brain-regions",
+        "key": "brainRegions",
+        "origin": "shared-template",
+        "description": "🧩 Simplified left lateral view of the four conventionally named cerebral lobes and selected landmarks. The frontal lobe participates in executive and motor functions; the parietal lobe in somatosensory processing and spatial attention; the temporal lobe in auditory, memory, and language networks; and the occipital lobe in visual processing. The central sulcus separates frontal and parietal cortex. The outlined Broca and Wernicke regions are approximate, classically named regions in the usually dominant left hemisphere; language depends on a broader connected network whose precise functional locations vary across people. The cerebellum and brainstem are orientation landmarks, not cerebral lobes.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-20-section-03"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Added orientation, modernized lobe-function wording, and replaced pulsing localization circles with approximate dominant-left language-network landmarks. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.ncbi.nlm.nih.gov/books/NBK542179/",
+          "https://www.nature.com/articles/s41583-024-00802-4"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Anatomy, Central Nervous System",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine (updated 2026)",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK542179/",
+            "whyReputable": "This current clinician-authored and medically reviewed anatomy reference describes the cerebral lobes, major cortical landmarks, cerebellum, brainstem, and their broad functions. NCBI Bookshelf supplies editorial oversight and traceable revision information."
+          },
+          {
+            "title": "The language network as a natural kind within the broader landscape of the human brain",
+            "organization": "Nature Reviews Neuroscience (2024)",
+            "url": "https://www.nature.com/articles/s41583-024-00802-4",
+            "whyReputable": "This peer-reviewed state-of-the-field review describes language as a distributed functional network and addresses individual variability. It supports presenting Broca and Wernicke regions as approximate historical landmarks rather than isolated universal language centers."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-dopamine-pathways",
+        "key": "dopaminePathways",
+        "origin": "shared-template",
+        "description": "🧬 The four dopamine pathways: Mesocortical (VTA→PFC, cognition), Mesolimbic (VTA→NAc, reward/psychosis), Nigrostriatal (SN→Caudate, movement), Tuberoinfundibular (hypothalamus→pituitary, prolactin). Flowing dashes show signal direction.",
+        "hasSvg": true,
+        "usageStatus": "unused",
+        "placementCount": 0,
+        "placementIds": [],
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-erikson-stages",
+        "key": "eriksonStages",
+        "origin": "shared-template",
+        "description": "📊 Erikson’s classic theory proposes eight psychosocial tensions and associated ego strengths: trust versus mistrust—hope; autonomy versus shame and doubt—will; initiative versus guilt—purpose; industry versus inferiority—competence; identity versus role confusion—fidelity; intimacy versus isolation—love; generativity versus stagnation—care; and integrity versus despair—wisdom. The life periods are approximate teaching conventions, not rigid deadlines; within the theory, earlier conflicts can be revisited across the lifespan. This is a developmental framework, not a universal timetable.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-38-section-02"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Replaced rigid ages and a moving lifespan dot with approximate life-period labels, identified ego strengths, and stated that the classic conflicts can be revisited. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.ncbi.nlm.nih.gov/books/NBK556096/",
+          "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+          "https://www.ncbi.nlm.nih.gov/books/NBK615351/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Erikson's Stages of Psychosocial Development",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine (updated 2026)",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK556096/",
+            "whyReputable": "This current clinician-authored and medically reviewed reference summarizes Erikson’s eight proposed conflicts and ego strengths, notes that the original formulation did not supply exact initial ages, and explains that conflicts can be revisited."
+          },
+          {
+            "title": "Psychology 2e: Lifespan Theories",
+            "organization": "OpenStax, Rice University",
+            "url": "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+            "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-authored, peer-reviewed psychology chapter presents Erikson’s stages as a classic lifespan theory and supplies the conventional conflicts and associated life periods used for introductory instruction."
+          },
+          {
+            "title": "Nursing Health Promotion, Chapter 13: Nursing Care for Infancy Through Adolescence",
+            "organization": "Open RN; NCBI Bookshelf, U.S. National Library of Medicine (2025)",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK615351/",
+            "whyReputable": "This current academic health-sciences text is published through NCBI Bookshelf and explicitly cautions that developmental ages vary and that Erikson’s framework has cultural limitations. It supports non-rigid period labels and qualification of universality."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-differential-dx",
+        "key": "differentialDx",
+        "origin": "shared-template",
+        "description": "📋 The 5-step differential diagnosis hierarchy: always rule out malingering, substances, and medical conditions BEFORE determining the primary mental disorder. The green scanner shows the systematic evaluation process.",
+        "hasSvg": true,
+        "usageStatus": "unused",
+        "placementCount": 0,
+        "placementIds": [],
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-normal-distribution",
+        "key": "normalDistribution",
+        "origin": "shared-template",
+        "description": "📊 The Normal Distribution (Bell Curve). Shows the 68-95-99.7 rule. 1 Standard Deviation (±1 SD) contains ~68% of the population. 2 SDs contain ~95%. The green pulsing area highlights the 68% between -1 and +1 SD.",
+        "hasSvg": true,
+        "usageStatus": "unused",
+        "placementCount": 0,
+        "placementIds": [],
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-operant-conditioning",
+        "key": "operantConditioning",
+        "origin": "shared-template",
+        "description": "🐀 Operant consequences are classified on two axes. Positive means a stimulus is presented; negative means a stimulus is removed. Reinforcement means the target behavior becomes more likely in similar future conditions; punishment means it becomes less likely. Thus the four standard contingencies are positive reinforcement (present; behavior increases), negative reinforcement (remove; behavior increases), positive punishment (present; behavior decreases), and negative punishment (remove; behavior decreases). A consequence is classified by its observed effect on future behavior—not by whether someone intended it as a reward or penalty or assumed it was desirable or aversive.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-14-section-07"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Defined all four contingencies by presentation or removal and by observed future behavior, replaced intent-based examples, and removed visual privileging of negative reinforcement. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+          "https://iris.peabody.vanderbilt.edu/module/bp/cresource/q1/p04/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Psychology 2e: Operant Conditioning",
+            "organization": "OpenStax, Rice University",
+            "url": "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+            "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-authored, peer-reviewed psychology chapter defines positive and negative contingencies by presentation or removal and reinforcement or punishment by their effects on future behavior."
+          },
+          {
+            "title": "Behavioral Principles: The Basics of Understanding Student Behavior — Page 4: Consequences",
+            "organization": "IRIS Center, Vanderbilt University, supported by the U.S. Department of Education Office of Special Education Programs",
+            "url": "https://iris.peabody.vanderbilt.edu/module/bp/cresource/q1/p04/",
+            "whyReputable": "The IRIS Center develops evidence-based educator resources with subject-matter and accessibility review. This BCBA-D-informed module defines consequences by observed changes in future behavior and distinguishes reinforcement from punishment without relying on intent."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-piaget-stages",
+        "key": "piagetStages",
+        "origin": "shared-template",
+        "description": "👶 Piaget's Cognitive Stages: A staircase model. Sensorimotor (learn via senses/movement; achieve Object Permanence). Preoperational (symbols, language; but Egocentric and lacking conservation). Concrete Operational (logical thinking about physical objects; achieve Conservation). Formal Operational (abstract and hypothetical reasoning).",
+        "hasSvg": true,
+        "usageStatus": "unused",
+        "placementCount": 0,
+        "placementIds": [],
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-synapse-drugs",
+        "key": "synapseDrugs",
+        "origin": "shared-template",
+        "description": "💊 Selected antidepressant mechanisms. SSRIs inhibit the serotonin transporter and reduce serotonin reuptake. Monoamine oxidase is an intracellular, mitochondrial enzyme; MAOIs inhibit monoamine metabolism. These are distinct acute mechanisms, and therapeutic effects involve downstream adaptations rather than one interchangeable increase in generic “neurotransmitter activity.”",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 2,
+        "placementIds": [
+          "diagram-placement-ch-16-section-05",
+          "diagram-placement-ch-47-section-02"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Placed monoamine oxidase inside the presynaptic terminal, distinguished serotonin-transporter inhibition from intracellular monoamine-metabolism inhibition, and removed the claim that the two classes simply create the same generic increase in neurotransmitter activity. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.ncbi.nlm.nih.gov/books/NBK539848/",
+          "https://pmc.ncbi.nlm.nih.gov/articles/PMC3025168/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Monoamine Oxidase Inhibitors (MAOIs)",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK539848/",
+            "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter describes monoamine oxidase as an intracellular mitochondrial enzyme and explains how MAO inhibitors reduce monoamine metabolism. It is an appropriate mechanism-level clinical reference."
+          },
+          {
+            "title": "How antidepressant drugs act: A primer on neuroplasticity as the eventual mediator of antidepressant efficacy",
+            "organization": "Indian Journal of Psychiatry; PubMed Central, U.S. National Library of Medicine (2010)",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3025168/",
+            "whyReputable": "This peer-reviewed review separates acute monoamine actions from downstream adaptations associated with therapeutic effects. PubMed Central provides the full article and publication metadata, supporting a mechanism description that does not collapse all antidepressants into generic neurotransmitter activity."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-freud-iceberg",
+        "key": "freudIceberg",
+        "origin": "shared-template",
+        "description": "🧊 Historical theory, not an anatomical map. This teaching metaphor combines Freud’s structural constructs (id, ego, and superego) with the related topographic ideas of conscious, preconscious, and unconscious mental life. It is useful for recognizing Freudian terminology, but these constructs should not be presented as literal brain regions or as conclusions established by modern empirical research.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-13-section-02"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Labeled the figure as a historical theoretical metaphor, distinguished structural constructs from levels of consciousness, and removed wording that presented the id as a literal hidden brain structure. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://openstax.org/books/psychology-2e/pages/11-2-freud-and-the-psychodynamic-perspective",
+          "https://www.freud.org.uk/schools/resources/what-is-psychoanalysis-part-4-the-ego-the-id-and-the-superego/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Psychology 2e: Freud and the Psychodynamic Perspective",
+            "organization": "OpenStax, Rice University",
+            "url": "https://openstax.org/books/psychology-2e/pages/11-2-freud-and-the-psychodynamic-perspective",
+            "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-authored, peer-reviewed chapter presents the id, ego, superego, and levels of consciousness as Freud’s historical theory while explicitly noting the limited modern research support for many Freudian ideas."
+          },
+          {
+            "title": "What is Psychoanalysis? – The Ego, the Id and the Superego",
+            "organization": "Freud Museum London educational resources",
+            "url": "https://www.freud.org.uk/schools/resources/what-is-psychoanalysis-part-4-the-ego-the-id-and-the-superego/",
+            "whyReputable": "The Freud Museum London preserves and interprets Freud’s historical work. Its educational resource directly distinguishes the topographic and structural models and explains that they do not map one-to-one, making it a strong primary-institution source for faithful historical labeling rather than evidence of modern validity."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-reliability-validity",
+        "key": "reliabilityValidity",
+        "origin": "shared-template",
+        "description": "🎯 This target analogy illustrates random versus systematic measurement error. Grouping represents reliability/precision across a defined set of replications; distance from the center represents bias or accuracy in this analogy. Neither feature, by itself, establishes validity. Validity is a unitary, evidence-based judgment about a specified interpretation of scores for a proposed use. Reliable/precise scores can still support an invalid interpretation when systematic error or other evidence undermines that use.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-1-section-03"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Relabeled the target analogy as precision and bias rather than direct proof of validity and narrowed it to the intended reliability section. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Standards for Educational and Psychological Testing (2014 Edition)",
+            "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education",
+            "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf",
+            "whyReputable": "This joint professional standard is the authoritative U.S. framework for educational and psychological testing. It defines validity in relation to intended score interpretations and uses and distinguishes precision under replications from systematic and random measurement error."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-memory-model",
+        "key": "memoryModel",
+        "origin": "shared-template",
+        "description": "🧠 The Atkinson–Shiffrin modal model is a historical, simplified framework: sensory registers briefly retain incoming information; attention supports transfer to a limited short-term store; and rehearsal or other control processes can support encoding and retrieval. Long-term storage can be durable but is not guaranteed permanent, and modern working-memory models add processes not shown in this three-store flow.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-25-section-02"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Reframed the figure as the historical modal model, removed the unqualified 7±2 capacity rule, separated short-term storage from modern working-memory models, and removed claims that sensory traces are exact or long-term memories permanent. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://openstax.org/books/psychology/pages/8-1-how-memory-functions",
+          "https://pubmed.ncbi.nlm.nih.gov/11515286/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Psychology: How Memory Functions",
+            "organization": "OpenStax, Rice University",
+            "url": "https://openstax.org/books/psychology/pages/8-1-how-memory-functions",
+            "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. Its expert-authored, peer-reviewed psychology text identifies the Atkinson–Shiffrin framework as a stage model and distinguishes sensory, short-term, and long-term storage for foundational instruction."
+          },
+          {
+            "title": "The magical number 4 in short-term memory: A reconsideration of mental storage capacity",
+            "organization": "Behavioral and Brain Sciences; PubMed, U.S. National Library of Medicine (2001)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/11515286/",
+            "whyReputable": "Cowan’s peer-reviewed theoretical review is a widely cited reappraisal of short-term-memory capacity. The PubMed record makes the journal, author, and publication details traceable and supports avoiding an unqualified seven-plus-or-minus-two rule."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-maslow-hierarchy",
+        "key": "maslowHierarchy",
+        "origin": "shared-template",
+        "description": "🔺 Maslow's Hierarchy of Needs. Lower four levels are Deficiency Needs (D-Needs) — motivated by lack. The top level, Self-Actualization, is a Being Need (B-Need) — achieving one's full potential.",
+        "hasSvg": true,
+        "usageStatus": "unused",
+        "placementCount": 0,
+        "placementIds": [],
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-visual-pathway",
+        "key": "visualPathway",
+        "origin": "shared-template",
+        "description": "👁️ The visual pathway. Information from the left visual hemifield falls on the left nasal retina and right temporal retina. Nasal retinal axons cross at the optic chiasm while temporal retinal axons remain ipsilateral, bringing left-field information into the right postchiasmal pathway; the reverse applies to the right field. Prechiasmal lesions can produce monocular deficits. Postchiasmal lesions produce contralateral homonymous field defects whose extent depends on lesion site and completeness; optic-radiation lesions can produce quadrantanopia rather than loss of an entire hemifield.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-20-section-06"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Clarified which retinal fibers cross and replaced the claim that every postchiasmal lesion removes an entire visual field with lesion-location and lesion-extent dependent homonymous defects. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.ncbi.nlm.nih.gov/books/NBK553189/",
+          "https://www.ncbi.nlm.nih.gov/books/NBK562262/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Neuroanatomy, Visual Pathway",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK553189/",
+            "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter traces retinal projections through the optic chiasm, tracts, lateral geniculate nuclei, optic radiations, and visual cortex. It directly supports the crossing and laterality labels in the diagram."
+          },
+          {
+            "title": "Hemianopsia",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK562262/",
+            "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter relates lesion location to visual-field patterns, including homonymous hemianopia and quadrantanopia. It supports stating that a postchiasmal deficit depends on the location and extent of injury."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-cognitive-dissonance",
+        "key": "cognitiveDissonance",
+        "origin": "shared-template",
+        "description": "⚡ Festinger's Cognitive Dissonance Theory. When our attitudes and behaviors clash, we experience an uncomfortable tension (dissonance). Because changing behavior (quitting smoking) is often difficult, people frequently resolve the tension by changing their attitude or rationalizing the behavior (e.g., adding a new belief like \"smoking lowers my stress\").",
+        "hasSvg": true,
+        "usageStatus": "unused",
+        "placementCount": 0,
+        "placementIds": [],
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-types-of-validity",
+        "key": "typesOfValidity",
+        "origin": "shared-template",
+        "description": "📊 Validity is a unified argument about whether accumulated evidence and theory support a particular interpretation of test scores for a proposed use; it is not a fixed property of a test. The Standards describe sources of validity evidence—not separate “types of validity”—including test content, response processes, internal structure, and relations to other variables (such as concurrent or later criteria and convergent/discriminant patterns). The evidence needed depends on the claims being made. Perceived face relevance is not a separate psychometric validity type, although it can affect engagement or response processes. Older textbooks and exam items may still use “content validity,” “criterion-related validity” (concurrent/predictive), and “construct validity.” Treat those as historical labels; the current Standards organize a unified validity argument around sources of evidence.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-1-section-05"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Reorganized older validity-type labels into the unified validity framework and its current sources of evidence, while preserving a concise note about historical terminology. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Standards for Educational and Psychological Testing (2014 Edition)",
+            "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education",
+            "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf",
+            "whyReputable": "This joint professional standard is the authoritative U.S. framework for educational and psychological testing. It defines validity in relation to intended score interpretations and uses and distinguishes precision under replications from systematic and random measurement error."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-kohlberg-moral",
+        "key": "kohlbergMoral",
+        "origin": "shared-template",
+        "description": "⚖️ Kohlberg’s framework classifies the reasoning used to justify moral choices, not whether a particular choice is correct. Its levels are not fixed to childhood, adolescence, and adulthood, and the proposed sequence is not a rule for every person or culture. Gilligan challenged its justice emphasis and sampling; a meta-analysis found only small average gender differences in care versus justice orientations, not a uniform women-use-care distinction.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-38-section-03"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Removed fixed childhood/adolescent/adult labels, framed the sequence as a proposed model of moral reasoning, modernized the stage-three label, and replaced a binary gender claim with the meta-analytic finding of small average differences. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://openstax.org/books/lifespan-development/pages/11-4-cognitive-development-in-early-adulthood",
+          "https://pubmed.ncbi.nlm.nih.gov/10989620/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Lifespan Development: Cognitive Development in Early Adulthood",
+            "organization": "OpenStax, Rice University",
+            "url": "https://openstax.org/books/lifespan-development/pages/11-4-cognitive-development-in-early-adulthood",
+            "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-reviewed lifespan text summarizes Kohlberg’s proposed moral-reasoning levels and discusses cultural, sampling, justice-orientation, and care-orientation limitations instead of treating age labels as fixed rules."
+          },
+          {
+            "title": "Gender differences in moral orientation: A meta-analysis",
+            "organization": "Psychological Bulletin; PubMed, U.S. National Library of Medicine (2000)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/10989620/",
+            "whyReputable": "This peer-reviewed meta-analysis by Jaffee and Hyde synthesized empirical studies of care and justice orientations. Its PubMed-indexed record supports the conclusion that average gender differences were small, contradicting a uniform women-use-care claim."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-cbt-triangle",
+        "key": "cbtTriangle",
+        "origin": "shared-template",
+        "description": "🔺 A simplified CBT formulation. In a situation, appraisals, emotions, behavior, and physiological responses can influence one another, while deeper beliefs can shape appraisals. Changing one element may affect others, but change is not guaranteed and cognition is not presented as the sole cause of distress. CBT uses an individualized, evolving formulation to select cognitive, behavioral, and other interventions.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-14-section-01"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Presented the triangle as a simplified individualized formulation aid, added omitted contextual limits, removed a false affordance, and routed the generic overview away from the Ellis-specific section. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://beckinstitute.org/about/understanding-cbt/",
+          "https://pubmed.ncbi.nlm.nih.gov/24387236/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Understanding CBT",
+            "organization": "Beck Institute for Cognitive Behavior Therapy",
+            "url": "https://beckinstitute.org/about/understanding-cbt/",
+            "whyReputable": "Beck Institute is a specialist nonprofit founded by CBT developer Aaron T. Beck. Its clinician-facing educational material describes contemporary cognitive-behavioral formulation, collaborative treatment planning, and the interaction of thoughts, emotions, and behavior."
+          },
+          {
+            "title": "Advances in cognitive theory and therapy: the generic cognitive model",
+            "organization": "Annual Review of Clinical Psychology; PubMed, U.S. National Library of Medicine",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/24387236/",
+            "whyReputable": "This peer-reviewed review by Aaron T. Beck and Emily A. P. Haigh presents the generic cognitive model and situates cognition within a broader formulation of psychopathology. PubMed supplies traceable author, journal, and publication metadata."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-systematic-desensitization",
+        "key": "systematicDesensitization",
+        "origin": "shared-template",
+        "description": "🪜 Systematic Desensitization relies on 'reciprocal inhibition' (anxiety and relaxation are physiologically mutually exclusive). The therapist builds a graduated fear hierarchy, trains the client in deep relaxation, and successfully pairs the relaxation response with each escalating exposure step.",
+        "hasSvg": true,
+        "usageStatus": "unused",
+        "placementCount": 0,
+        "placementIds": [],
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-dbt-modules",
+        "key": "dbtModules",
+        "origin": "shared-template",
+        "description": "☯️ These are the four DBT skills-training modules. Mindfulness and distress tolerance are acceptance-oriented; emotion regulation and interpersonal effectiveness are change-oriented. Skills training is one component of comprehensive DBT, which also includes individual therapy, between-session phone coaching, and a therapist consultation team. DBT uses a target hierarchy that prioritizes life-threatening behavior, therapy-interfering behavior, quality-of-life-interfering behavior, and then skills acquisition. Teaching selected skills alone should not be labeled comprehensive DBT.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-14-section-04"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Clarified the four skills modules, distinguished skills training from comprehensive DBT, added the treatment target hierarchy, and improved module-label precision. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://depts.washington.edu/uwbrtc/about-us/dialectical-behavior-therapy/",
+          "https://pubmed.ncbi.nlm.nih.gov/25806661/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Dialectical Behavior Therapy",
+            "organization": "University of Washington Behavioral Research & Therapy Clinics",
+            "url": "https://depts.washington.edu/uwbrtc/about-us/dialectical-behavior-therapy/",
+            "whyReputable": "This University of Washington specialty clinic was founded by DBT developer Marsha Linehan. Its institutional overview describes the treatment components, target hierarchy, and four skills-training modules of comprehensive dialectical behavior therapy."
+          },
+          {
+            "title": "Dialectical behavior therapy for high suicide risk in individuals with borderline personality disorder: a randomized clinical trial and component analysis",
+            "organization": "JAMA Psychiatry; PubMed, U.S. National Library of Medicine",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/25806661/",
+            "whyReputable": "This peer-reviewed randomized component trial directly distinguishes DBT skills training from other components of comprehensive DBT. The PubMed record provides traceable authorship, methods, journal, and publication information."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-asch-conformity",
+        "key": "aschConformity",
+        "origin": "shared-template",
+        "description": "👥 In Asch’s 1956 line-judgment report, participants yielded to a unanimous majority’s wrong answer on 36.8% of critical trials—not on all trials—and many judgments remained independent. Breaking unanimity and changing response conditions reduced yielding. The classic paradigm demonstrates majority influence under specified conditions; it does not imply that a participant will conform or establish one universal conformity rate across settings.",
+        "hasSvg": true,
+        "usageStatus": "used",
+        "placementCount": 1,
+        "placementIds": [
+          "diagram-placement-ch-31-section-02"
+        ],
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Changed the statistic to Asch’s 36.8% of critical trials, emphasized that many judgments remained independent, qualified generalization beyond the classic conditions, and removed an animation that automatically made the participant choose the majority’s wrong line. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://doi.org/10.1037/h0093718"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Studies of independence and conformity: I. A minority of one against a unanimous majority",
+            "organization": "Psychological Monographs: General and Applied, American Psychological Association (Asch, 1956)",
+            "url": "https://doi.org/10.1037/h0093718",
+            "whyReputable": "This is Solomon Asch’s primary published report of the line-judgment experiments, linked by its persistent DOI. It is the direct source for the 36.8% critical-trial yielding result and for distinguishing majority pressure from inevitable participant conformity."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-bystander-intervention",
+        "key": "bystanderIntervention",
+        "origin": "shared-template",
+        "description": "🛑 Bystander Intervention Tree. A prosocial act requires completing ALL 5 steps. \"Pluralistic Ignorance\" breaks Step 2 (if no one acts, you assume it's not an emergency). \"Diffusion of Responsibility\" breaks Step 3 (assuming someone else called 911).",
+        "hasSvg": true,
+        "usageStatus": "unused",
+        "placementCount": 0,
+        "placementIds": [],
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-autonomic-nervous-system",
+        "key": "autonomicNervousSystem",
+        "origin": "shared-template",
+        "description": "🧬 Autonomic Nervous System. Remember: \"Sympathy\" for a stressful situation (Sympathetic = Fight/Flight). A \"Parachute\" calms you down (Parasympathetic = Rest/Digest). Everything the sympathetic nervous system turns on during an emergency (heart rate, breathing), the parasympathetic reverses when safe.",
+        "hasSvg": true,
+        "usageStatus": "unused",
+        "placementCount": 0,
+        "placementIds": [],
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      }
+    ],
+    "placements": [
+      {
+        "id": "diagram-placement-ch-1-section-03",
+        "diagramId": "diagram-reliability-validity",
+        "origin": "shared-template",
+        "templateKey": "reliabilityValidity",
+        "chapterId": "ch-1",
+        "chapterTitle": "Psychometric Foundations",
+        "legacySource": "js/textbook_ch5_1.js",
+        "sectionId": "ch-1-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "Reliability: Is the Test Consistent?",
+        "title": "",
+        "description": "🎯 This target analogy illustrates random versus systematic measurement error. Grouping represents reliability/precision across a defined set of replications; distance from the center represents bias or accuracy in this analogy. Neither feature, by itself, establishes validity. Validity is a unitary, evidence-based judgment about a specified interpretation of scores for a proposed use. Reliable/precise scores can still support an invalid interpretation when systematic error or other evidence undermines that use.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Relabeled the target analogy as precision and bias rather than direct proof of validity and narrowed it to the intended reliability section. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Standards for Educational and Psychological Testing (2014 Edition)",
+            "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education",
+            "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf",
+            "whyReputable": "This joint professional standard is the authoritative U.S. framework for educational and psychological testing. It defines validity in relation to intended score interpretations and uses and distinguishes precision under replications from systematic and random measurement error."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-1-section-05",
+        "diagramId": "diagram-types-of-validity",
+        "origin": "shared-template",
+        "templateKey": "typesOfValidity",
+        "chapterId": "ch-1",
+        "chapterTitle": "Psychometric Foundations",
+        "legacySource": "js/textbook_ch5_1.js",
+        "sectionId": "ch-1-section-4",
+        "sectionIndex": 5,
+        "sectionHeading": "Validity: Does the Test Measure What It Claims?",
+        "title": "",
+        "description": "📊 Validity is a unified argument about whether accumulated evidence and theory support a particular interpretation of test scores for a proposed use; it is not a fixed property of a test. The Standards describe sources of validity evidence—not separate “types of validity”—including test content, response processes, internal structure, and relations to other variables (such as concurrent or later criteria and convergent/discriminant patterns). The evidence needed depends on the claims being made. Perceived face relevance is not a separate psychometric validity type, although it can affect engagement or response processes. Older textbooks and exam items may still use “content validity,” “criterion-related validity” (concurrent/predictive), and “construct validity.” Treat those as historical labels; the current Standards organize a unified validity argument around sources of evidence.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Reorganized older validity-type labels into the unified validity framework and its current sources of evidence, while preserving a concise note about historical terminology. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Standards for Educational and Psychological Testing (2014 Edition)",
+            "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education",
+            "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf",
+            "whyReputable": "This joint professional standard is the authoritative U.S. framework for educational and psychological testing. It defines validity in relation to intended score interpretations and uses and distinguishes precision under replications from systematic and random measurement error."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-2-section-02",
+        "diagramId": "diagram-inline-ch-2-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-2",
+        "chapterTitle": "Cognitive & Intellectual Assessment",
+        "legacySource": "js/textbook_ch5_2.js",
+        "sectionId": "ch-2-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "CHC Theory: The Map of Human Intelligence",
+        "title": "CHC Hierarchy: From General to Specific",
+        "description": "Accessible hierarchy showing general ability, illustrative broad CHC abilities, and narrower examples, with a reminder that test tasks can reflect multiple abilities.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-3-section-11",
+        "diagramId": "diagram-inline-ch-3-section-11",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-3",
+        "chapterTitle": "Personality Assessment",
+        "legacySource": "js/textbook_ch5_3.js",
+        "sectionId": "ch-3-section-10",
+        "sectionIndex": 11,
+        "sectionHeading": "Choosing and Integrating Personality Assessment Methods",
+        "title": "Personality Assessment: From Referral to Inference",
+        "description": "Accessible workflow from defining the decision through checking applicability and response quality to integrating findings, with a feedback path for invalid or out-of-scope evidence.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-4-section-03",
+        "diagramId": "diagram-inline-ch-4-section-03",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-4",
+        "chapterTitle": "Behavioral Assessment & Functional Analysis",
+        "legacySource": "js/textbook_ch4.js",
+        "sectionId": "ch-4-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "ABC Recording: Observation Before Inference",
+        "title": "Function-Based Assessment Cycle",
+        "description": "Accessible four-step cycle separating operational measurement, descriptive evidence, functional hypothesis or analysis, and intervention monitoring, with a reminder that an observed consequence is not automatically a reinforcer.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-5-section-07",
+        "diagramId": "diagram-inline-ch-5-section-07",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-5",
+        "chapterTitle": "Clinical Interviewing & DSM-5-TR Diagnosis",
+        "legacySource": "js/textbook_ch5.js",
+        "sectionId": "ch-5-section-6",
+        "sectionIndex": 7,
+        "sectionHeading": "Differential Diagnosis",
+        "title": "",
+        "description": "Differential Diagnosis Hierarchy",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-6-section-02",
+        "diagramId": "diagram-inline-ch-6-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-6",
+        "chapterTitle": "Specialized Assessment: Forensic, Neuropsychological, and Pediatric",
+        "legacySource": "js/textbook_ch6.js",
+        "sectionId": "ch-6-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Forensic Assessment: Competency vs. Insanity",
+        "title": "",
+        "description": "Competency to Stand Trial vs. Insanity Defense",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-7-section-03",
+        "diagramId": "diagram-inline-ch-7-section-03",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-7",
+        "chapterTitle": "APA Ethics Code: General Principles & Ethical Standards",
+        "legacySource": "js/textbook_ch7.js",
+        "sectionId": "ch-7-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "The Five General Principles",
+        "title": "",
+        "description": "The Five APA General Principles (Aspirational)",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-8-section-05",
+        "diagramId": "diagram-inline-ch-8-section-05",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-8",
+        "chapterTitle": "Professional Competence & Supervision Ethics",
+        "legacySource": "js/textbook_ch8.js",
+        "sectionId": "ch-8-section-4",
+        "sectionIndex": 5,
+        "sectionHeading": "Supervision Models",
+        "title": "",
+        "description": "Integrated Developmental Model (IDM) — Supervisee Levels",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-9-section-03",
+        "diagramId": "diagram-inline-ch-9-section-03",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-9",
+        "chapterTitle": "Legal & Regulatory Issues in Psychology",
+        "legacySource": "js/textbook_ch9.js",
+        "sectionId": "ch-9-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "Malpractice: The Four Ds",
+        "title": "",
+        "description": "The Four Ds of Malpractice — All Must Be Present",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-9-section-07",
+        "diagramId": "diagram-inline-ch-9-section-07",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-9",
+        "chapterTitle": "Legal & Regulatory Issues in Psychology",
+        "legacySource": "js/textbook_ch9.js",
+        "sectionId": "ch-9-section-6",
+        "sectionIndex": 7,
+        "sectionHeading": "Privilege, Subpoenas, and Court Orders",
+        "title": "Responding to Legal Demands for Records",
+        "description": "Decision path: preserve records and deadlines, identify the demand, verify authority and jurisdiction, consult the client and counsel as appropriate, assert privilege or seek protection when available, and disclose only through a legally authorized route and only within its scope.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-10-section-03",
+        "diagramId": "diagram-inline-ch-10-section-03",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-10",
+        "chapterTitle": "Psychological Testing Ethics & Assessment Standards",
+        "legacySource": "js/textbook_ch10.js",
+        "sectionId": "ch-10-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "Test Data vs. Test Materials (9.04 vs. 9.11)",
+        "title": "",
+        "description": "Test Data vs. Test Materials Decision Flowchart",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-11-section-05",
+        "diagramId": "diagram-inline-ch-11-section-05",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-11",
+        "chapterTitle": "Professional Issues & Contemporary Challenges",
+        "legacySource": "js/textbook_ch11.js",
+        "sectionId": "ch-11-section-4",
+        "sectionIndex": 5,
+        "sectionHeading": "Integrated Care and Interprofessional Practice",
+        "title": "",
+        "description": "The Spectrum of Integrated Care",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-12-section-02",
+        "diagramId": "diagram-inline-ch-12-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-12",
+        "chapterTitle": "Research Ethics & the Belmont Report",
+        "legacySource": "js/textbook_ch12.js",
+        "sectionId": "ch-12-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "The Belmont Report (1979)",
+        "title": "From Belmont Principles to Protocol Questions",
+        "description": "Three-column concept map connecting Respect for Persons to informed and voluntary consent, Beneficence to risk-benefit assessment, and Justice to equitable subject selection. Each column ends with a protocol-review question.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-13-section-02",
+        "diagramId": "diagram-freud-iceberg",
+        "origin": "shared-template",
+        "templateKey": "freudIceberg",
+        "chapterId": "ch-13",
+        "chapterTitle": "Psychodynamic & Humanistic Therapies",
+        "legacySource": "js/textbook_ch13.js",
+        "sectionId": "ch-13-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Classical Psychoanalysis (Freud)",
+        "title": "",
+        "description": "🧊 Historical theory, not an anatomical map. This teaching metaphor combines Freud’s structural constructs (id, ego, and superego) with the related topographic ideas of conscious, preconscious, and unconscious mental life. It is useful for recognizing Freudian terminology, but these constructs should not be presented as literal brain regions or as conclusions established by modern empirical research.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Labeled the figure as a historical theoretical metaphor, distinguished structural constructs from levels of consciousness, and removed wording that presented the id as a literal hidden brain structure. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://openstax.org/books/psychology-2e/pages/11-2-freud-and-the-psychodynamic-perspective",
+          "https://www.freud.org.uk/schools/resources/what-is-psychoanalysis-part-4-the-ego-the-id-and-the-superego/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Psychology 2e: Freud and the Psychodynamic Perspective",
+            "organization": "OpenStax, Rice University",
+            "url": "https://openstax.org/books/psychology-2e/pages/11-2-freud-and-the-psychodynamic-perspective",
+            "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-authored, peer-reviewed chapter presents the id, ego, superego, and levels of consciousness as Freud’s historical theory while explicitly noting the limited modern research support for many Freudian ideas."
+          },
+          {
+            "title": "What is Psychoanalysis? – The Ego, the Id and the Superego",
+            "organization": "Freud Museum London educational resources",
+            "url": "https://www.freud.org.uk/schools/resources/what-is-psychoanalysis-part-4-the-ego-the-id-and-the-superego/",
+            "whyReputable": "The Freud Museum London preserves and interprets Freud’s historical work. Its educational resource directly distinguishes the topographic and structural models and explains that they do not map one-to-one, making it a strong primary-institution source for faithful historical labeling rather than evidence of modern validity."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-13-section-05",
+        "diagramId": "diagram-inline-ch-13-section-05",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-13",
+        "chapterTitle": "Psychodynamic & Humanistic Therapies",
+        "legacySource": "js/textbook_ch13.js",
+        "sectionId": "ch-13-section-4",
+        "sectionIndex": 5,
+        "sectionHeading": "Person-Centered Therapy (Rogers)",
+        "title": "",
+        "description": "Rogers’s six-condition relational pathway",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-14-section-01",
+        "diagramId": "diagram-cbt-triangle",
+        "origin": "shared-template",
+        "templateKey": "cbtTriangle",
+        "chapterId": "ch-14",
+        "chapterTitle": "Cognitive & Behavioral Therapies",
+        "legacySource": "js/textbook_ch14.js",
+        "sectionId": "ch-14-section-0",
+        "sectionIndex": 1,
+        "sectionHeading": "Why This Chapter Matters",
+        "title": "",
+        "description": "🔺 A simplified CBT formulation. In a situation, appraisals, emotions, behavior, and physiological responses can influence one another, while deeper beliefs can shape appraisals. Changing one element may affect others, but change is not guaranteed and cognition is not presented as the sole cause of distress. CBT uses an individualized, evolving formulation to select cognitive, behavioral, and other interventions.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Presented the triangle as a simplified individualized formulation aid, added omitted contextual limits, removed a false affordance, and routed the generic overview away from the Ellis-specific section. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://beckinstitute.org/about/understanding-cbt/",
+          "https://pubmed.ncbi.nlm.nih.gov/24387236/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Understanding CBT",
+            "organization": "Beck Institute for Cognitive Behavior Therapy",
+            "url": "https://beckinstitute.org/about/understanding-cbt/",
+            "whyReputable": "Beck Institute is a specialist nonprofit founded by CBT developer Aaron T. Beck. Its clinician-facing educational material describes contemporary cognitive-behavioral formulation, collaborative treatment planning, and the interaction of thoughts, emotions, and behavior."
+          },
+          {
+            "title": "Advances in cognitive theory and therapy: the generic cognitive model",
+            "organization": "Annual Review of Clinical Psychology; PubMed, U.S. National Library of Medicine",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/24387236/",
+            "whyReputable": "This peer-reviewed review by Aaron T. Beck and Emily A. P. Haigh presents the generic cognitive model and situates cognition within a broader formulation of psychopathology. PubMed supplies traceable author, journal, and publication metadata."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-14-section-02",
+        "diagramId": "diagram-inline-ch-14-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-14",
+        "chapterTitle": "Cognitive & Behavioral Therapies",
+        "legacySource": "js/textbook_ch14.js",
+        "sectionId": "ch-14-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Beck’s Cognitive Therapy",
+        "title": "",
+        "description": "Beck's Cognitive Model of Depression",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-14-section-04",
+        "diagramId": "diagram-dbt-modules",
+        "origin": "shared-template",
+        "templateKey": "dbtModules",
+        "chapterId": "ch-14",
+        "chapterTitle": "Cognitive & Behavioral Therapies",
+        "legacySource": "js/textbook_ch14.js",
+        "sectionId": "ch-14-section-3",
+        "sectionIndex": 4,
+        "sectionHeading": "Dialectical Behavior Therapy (Linehan)",
+        "title": "",
+        "description": "☯️ These are the four DBT skills-training modules. Mindfulness and distress tolerance are acceptance-oriented; emotion regulation and interpersonal effectiveness are change-oriented. Skills training is one component of comprehensive DBT, which also includes individual therapy, between-session phone coaching, and a therapist consultation team. DBT uses a target hierarchy that prioritizes life-threatening behavior, therapy-interfering behavior, quality-of-life-interfering behavior, and then skills acquisition. Teaching selected skills alone should not be labeled comprehensive DBT.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Clarified the four skills modules, distinguished skills training from comprehensive DBT, added the treatment target hierarchy, and improved module-label precision. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://depts.washington.edu/uwbrtc/about-us/dialectical-behavior-therapy/",
+          "https://pubmed.ncbi.nlm.nih.gov/25806661/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Dialectical Behavior Therapy",
+            "organization": "University of Washington Behavioral Research & Therapy Clinics",
+            "url": "https://depts.washington.edu/uwbrtc/about-us/dialectical-behavior-therapy/",
+            "whyReputable": "This University of Washington specialty clinic was founded by DBT developer Marsha Linehan. Its institutional overview describes the treatment components, target hierarchy, and four skills-training modules of comprehensive dialectical behavior therapy."
+          },
+          {
+            "title": "Dialectical behavior therapy for high suicide risk in individuals with borderline personality disorder: a randomized clinical trial and component analysis",
+            "organization": "JAMA Psychiatry; PubMed, U.S. National Library of Medicine",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/25806661/",
+            "whyReputable": "This peer-reviewed randomized component trial directly distinguishes DBT skills training from other components of comprehensive DBT. The PubMed record provides traceable authorship, methods, journal, and publication information."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-14-section-06",
+        "diagramId": "diagram-inline-ch-14-section-06",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-14",
+        "chapterTitle": "Cognitive & Behavioral Therapies",
+        "legacySource": "js/textbook_ch14.js",
+        "sectionId": "ch-14-section-5",
+        "sectionIndex": 6,
+        "sectionHeading": "Behavioral Techniques: Exposure Therapies",
+        "title": "",
+        "description": "Exposure learning cycle: prediction, safe approach, response prevention, and new learning",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-14-section-07",
+        "diagramId": "diagram-operant-conditioning",
+        "origin": "shared-template",
+        "templateKey": "operantConditioning",
+        "chapterId": "ch-14",
+        "chapterTitle": "Cognitive & Behavioral Therapies",
+        "legacySource": "js/textbook_ch14.js",
+        "sectionId": "ch-14-section-6",
+        "sectionIndex": 7,
+        "sectionHeading": "Behavioral Techniques: Operant Approaches",
+        "title": "",
+        "description": "🐀 Operant consequences are classified on two axes. Positive means a stimulus is presented; negative means a stimulus is removed. Reinforcement means the target behavior becomes more likely in similar future conditions; punishment means it becomes less likely. Thus the four standard contingencies are positive reinforcement (present; behavior increases), negative reinforcement (remove; behavior increases), positive punishment (present; behavior decreases), and negative punishment (remove; behavior decreases). A consequence is classified by its observed effect on future behavior—not by whether someone intended it as a reward or penalty or assumed it was desirable or aversive.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Defined all four contingencies by presentation or removal and by observed future behavior, replaced intent-based examples, and removed visual privileging of negative reinforcement. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+          "https://iris.peabody.vanderbilt.edu/module/bp/cresource/q1/p04/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Psychology 2e: Operant Conditioning",
+            "organization": "OpenStax, Rice University",
+            "url": "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+            "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-authored, peer-reviewed psychology chapter defines positive and negative contingencies by presentation or removal and reinforcement or punishment by their effects on future behavior."
+          },
+          {
+            "title": "Behavioral Principles: The Basics of Understanding Student Behavior — Page 4: Consequences",
+            "organization": "IRIS Center, Vanderbilt University, supported by the U.S. Department of Education Office of Special Education Programs",
+            "url": "https://iris.peabody.vanderbilt.edu/module/bp/cresource/q1/p04/",
+            "whyReputable": "The IRIS Center develops evidence-based educator resources with subject-matter and accessibility review. This BCBA-D-informed module defines consequences by observed changes in future behavior and distinguishes reinforcement from punishment without relying on intent."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-15-section-02",
+        "diagramId": "diagram-inline-ch-15-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-15",
+        "chapterTitle": "Family, Couples & Group Therapy",
+        "legacySource": "js/textbook_ch15.js",
+        "sectionId": "ch-15-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Structural Family Therapy (Minuchin)",
+        "title": "",
+        "description": "Structural family therapy boundary continuum",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-16-section-02",
+        "diagramId": "diagram-inline-ch-16-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-16",
+        "chapterTitle": "Evidence-Based Practice & Psychopharmacology",
+        "legacySource": "js/textbook_ch16.js",
+        "sectionId": "ch-16-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Evidence-Based Practice in Psychology (EBPP)",
+        "title": "",
+        "description": "The Three-Legged Stool of Evidence-Based Practice",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-16-section-05",
+        "diagramId": "diagram-synapse-drugs",
+        "origin": "shared-template",
+        "templateKey": "synapseDrugs",
+        "chapterId": "ch-16",
+        "chapterTitle": "Evidence-Based Practice & Psychopharmacology",
+        "legacySource": "js/textbook_ch16.js",
+        "sectionId": "ch-16-section-4",
+        "sectionIndex": 5,
+        "sectionHeading": "Antidepressant Medications",
+        "title": "",
+        "description": "💊 Selected antidepressant mechanisms. SSRIs inhibit the serotonin transporter and reduce serotonin reuptake. Monoamine oxidase is an intracellular, mitochondrial enzyme; MAOIs inhibit monoamine metabolism. These are distinct acute mechanisms, and therapeutic effects involve downstream adaptations rather than one interchangeable increase in generic “neurotransmitter activity.”",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Placed monoamine oxidase inside the presynaptic terminal, distinguished serotonin-transporter inhibition from intracellular monoamine-metabolism inhibition, and removed the claim that the two classes simply create the same generic increase in neurotransmitter activity. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.ncbi.nlm.nih.gov/books/NBK539848/",
+          "https://pmc.ncbi.nlm.nih.gov/articles/PMC3025168/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Monoamine Oxidase Inhibitors (MAOIs)",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK539848/",
+            "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter describes monoamine oxidase as an intracellular mitochondrial enzyme and explains how MAO inhibitors reduce monoamine metabolism. It is an appropriate mechanism-level clinical reference."
+          },
+          {
+            "title": "How antidepressant drugs act: A primer on neuroplasticity as the eventual mediator of antidepressant efficacy",
+            "organization": "Indian Journal of Psychiatry; PubMed Central, U.S. National Library of Medicine (2010)",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3025168/",
+            "whyReputable": "This peer-reviewed review separates acute monoamine actions from downstream adaptations associated with therapeutic effects. PubMed Central provides the full article and publication metadata, supporting a mechanism description that does not collapse all antidepressants into generic neurotransmitter activity."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-17-section-02",
+        "diagramId": "diagram-inline-ch-17-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-17",
+        "chapterTitle": "Prevention & Community Psychology",
+        "legacySource": "js/textbook_ch17.js",
+        "sectionId": "ch-17-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Caplan’s Prevention Model",
+        "title": "",
+        "description": "Caplan’s historical prevention continuum",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-18-section-02",
+        "diagramId": "diagram-inline-ch-18-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-18",
+        "chapterTitle": "Crisis Intervention & Trauma Treatment",
+        "legacySource": "js/textbook_ch18.js",
+        "sectionId": "ch-18-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Crisis Theory and Intervention",
+        "title": "",
+        "description": "Roberts' Seven-Stage Crisis Intervention Model",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-19-section-02",
+        "diagramId": "diagram-inline-ch-19-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-19",
+        "chapterTitle": "Stages of Change, MI & Special Populations",
+        "legacySource": "js/textbook_ch19.js",
+        "sectionId": "ch-19-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "The Transtheoretical Model (Prochaska & DiClemente)",
+        "title": "",
+        "description": "TTM stages as a revisable change snapshot",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-20-section-02",
+        "diagramId": "diagram-neuron-action-potential",
+        "origin": "shared-template",
+        "templateKey": "neuronActionPotential",
+        "chapterId": "ch-20",
+        "chapterTitle": "Neuroanatomy & Brain Function",
+        "legacySource": "js/textbook_ch20.js",
+        "sectionId": "ch-20-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "The Neuron & Neural Communication",
+        "title": "",
+        "description": "🔬 Simplified example of a myelinated multipolar neuron. Dendrites and the soma commonly receive and integrate synaptic inputs, and the soma contains the nucleus. Action potentials usually initiate at the axon initial segment, propagate along the axon, and trigger neurotransmitter release from axon terminals into the synaptic cleft. In a myelinated axon, active regeneration occurs at nodes of Ranvier while depolarizing current spreads beneath myelin. The green marker represents direction and sequence, not a physical particle or an exact continuous voltage trace.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Reframed the animation as a schematic sequence, corrected axon-initial-segment and terminal terminology, qualified dendritic input, and raised the smallest labels to a readable size. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://pmc.ncbi.nlm.nih.gov/articles/PMC5992072/",
+          "https://www.ncbi.nlm.nih.gov/books/NBK526047/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Axon initial segments: structure, function, and disease",
+            "organization": "Annals of the New York Academy of Sciences; PubMed Central, U.S. National Library of Medicine",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5992072/",
+            "whyReputable": "This peer-reviewed Baylor College of Medicine review synthesizes evidence about somatodendritic input, action-potential initiation at the axon initial segment, and propagation through myelinated axons and nodes. PubMed Central provides stable full text and traceable publication metadata."
+          },
+          {
+            "title": "Physiology, Synapse",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK526047/",
+            "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter explains synaptic anatomy, the synaptic cleft, action-potential arrival at terminals, and neurotransmitter release. It directly supports the diagram’s terminal and synapse labels."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-20-section-03",
+        "diagramId": "diagram-brain-regions",
+        "origin": "shared-template",
+        "templateKey": "brainRegions",
+        "chapterId": "ch-20",
+        "chapterTitle": "Neuroanatomy & Brain Function",
+        "legacySource": "js/textbook_ch20.js",
+        "sectionId": "ch-20-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "Cerebral Cortex: The Four Lobes",
+        "title": "",
+        "description": "🧩 Simplified left lateral view of the four conventionally named cerebral lobes and selected landmarks. The frontal lobe participates in executive and motor functions; the parietal lobe in somatosensory processing and spatial attention; the temporal lobe in auditory, memory, and language networks; and the occipital lobe in visual processing. The central sulcus separates frontal and parietal cortex. The outlined Broca and Wernicke regions are approximate, classically named regions in the usually dominant left hemisphere; language depends on a broader connected network whose precise functional locations vary across people. The cerebellum and brainstem are orientation landmarks, not cerebral lobes.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Added orientation, modernized lobe-function wording, and replaced pulsing localization circles with approximate dominant-left language-network landmarks. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.ncbi.nlm.nih.gov/books/NBK542179/",
+          "https://www.nature.com/articles/s41583-024-00802-4"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Anatomy, Central Nervous System",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine (updated 2026)",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK542179/",
+            "whyReputable": "This current clinician-authored and medically reviewed anatomy reference describes the cerebral lobes, major cortical landmarks, cerebellum, brainstem, and their broad functions. NCBI Bookshelf supplies editorial oversight and traceable revision information."
+          },
+          {
+            "title": "The language network as a natural kind within the broader landscape of the human brain",
+            "organization": "Nature Reviews Neuroscience (2024)",
+            "url": "https://www.nature.com/articles/s41583-024-00802-4",
+            "whyReputable": "This peer-reviewed state-of-the-field review describes language as a distributed functional network and addresses individual variability. It supports presenting Broca and Wernicke regions as approximate historical landmarks rather than isolated universal language centers."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-20-section-04",
+        "diagramId": "diagram-inline-ch-20-section-04",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-20",
+        "chapterTitle": "Neuroanatomy & Brain Function",
+        "legacySource": "js/textbook_ch20.js",
+        "sectionId": "ch-20-section-3",
+        "sectionIndex": 4,
+        "sectionHeading": "Language Areas: Broca’s and Wernicke’s",
+        "title": "",
+        "description": "Classic language model and modern network qualification",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-20-section-06",
+        "diagramId": "diagram-visual-pathway",
+        "origin": "shared-template",
+        "templateKey": "visualPathway",
+        "chapterId": "ch-20",
+        "chapterTitle": "Neuroanatomy & Brain Function",
+        "legacySource": "js/textbook_ch20.js",
+        "sectionId": "ch-20-section-5",
+        "sectionIndex": 6,
+        "sectionHeading": "Lateralization & Split-Brain Research",
+        "title": "",
+        "description": "👁️ The visual pathway. Information from the left visual hemifield falls on the left nasal retina and right temporal retina. Nasal retinal axons cross at the optic chiasm while temporal retinal axons remain ipsilateral, bringing left-field information into the right postchiasmal pathway; the reverse applies to the right field. Prechiasmal lesions can produce monocular deficits. Postchiasmal lesions produce contralateral homonymous field defects whose extent depends on lesion site and completeness; optic-radiation lesions can produce quadrantanopia rather than loss of an entire hemifield.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Clarified which retinal fibers cross and replaced the claim that every postchiasmal lesion removes an entire visual field with lesion-location and lesion-extent dependent homonymous defects. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.ncbi.nlm.nih.gov/books/NBK553189/",
+          "https://www.ncbi.nlm.nih.gov/books/NBK562262/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Neuroanatomy, Visual Pathway",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK553189/",
+            "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter traces retinal projections through the optic chiasm, tracts, lateral geniculate nuclei, optic radiations, and visual cortex. It directly supports the crossing and laterality labels in the diagram."
+          },
+          {
+            "title": "Hemianopsia",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK562262/",
+            "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter relates lesion location to visual-field patterns, including homonymous hemianopia and quadrantanopia. It supports stating that a postchiasmal deficit depends on the location and extent of injury."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-21-section-02",
+        "diagramId": "diagram-inline-ch-21-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-21",
+        "chapterTitle": "Neurotransmitters, Endocrine System & Genetics",
+        "legacySource": "js/textbook_ch21.js",
+        "sectionId": "ch-21-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Major Neurotransmitters",
+        "title": "",
+        "description": "Four dopamine pathways: associations and D2-blockade effects",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-21-section-03",
+        "diagramId": "diagram-hpa-axis",
+        "origin": "shared-template",
+        "templateKey": "hpaAxis",
+        "chapterId": "ch-21",
+        "chapterTitle": "Neurotransmitters, Endocrine System & Genetics",
+        "legacySource": "js/textbook_ch21.js",
+        "sectionId": "ch-21-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "The Endocrine System & Stress Response",
+        "title": "",
+        "description": "🔴 The HPA axis stress cascade: hypothalamic CRH stimulates pituitary ACTH, which stimulates adrenal-cortex cortisol release; cortisol participates in negative feedback. Prolonged or dysregulated stress-system activity is associated with hippocampal structural and functional changes and greater risk for stress-related disorders, but it does not determine that a person will develop a disorder.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Replaced deterministic hippocampal-damage and disorder language with a qualified association and replaced a simplistic cortisol-effects list with an energy-mobilization and feedback description. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://pmc.ncbi.nlm.nih.gov/articles/PMC4561403/",
+          "https://pubmed.ncbi.nlm.nih.gov/27065163/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Stress effects on the hippocampus: a critical review",
+            "organization": "Progress in Neuro-Psychopharmacology & Biological Psychiatry; PubMed Central, U.S. National Library of Medicine (2015)",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4561403/",
+            "whyReputable": "This peer-reviewed critical review evaluates human and animal evidence about stress-related hippocampal structural and functional change. PubMed Central supplies stable full text and traceable publication metadata; the review supports qualified associations rather than deterministic claims."
+          },
+          {
+            "title": "Regulation of the Hypothalamic-Pituitary-Adrenocortical Stress Response",
+            "organization": "Comprehensive Physiology; PubMed, U.S. National Library of Medicine (2016)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/27065163/",
+            "whyReputable": "This peer-reviewed mechanistic review explains CRH, ACTH, adrenal glucocorticoid secretion, feedback regulation, and adaptation of the hypothalamic-pituitary-adrenocortical response. PubMed provides traceable journal and author metadata for the cascade shown."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-22-section-04",
+        "diagramId": "diagram-inline-ch-22-section-04",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-22",
+        "chapterTitle": "Clinical Neuropsychology & Neurological Disorders",
+        "legacySource": "js/textbook_ch22.js",
+        "sectionId": "ch-22-section-3",
+        "sectionIndex": 4,
+        "sectionHeading": "Dementia Types",
+        "title": "",
+        "description": "Educational cognitive-change triage by onset and course",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-23-section-03",
+        "diagramId": "diagram-inline-ch-23-section-03",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-23",
+        "chapterTitle": "Neuroplasticity, Consciousness & Psychophysiology",
+        "legacySource": "js/textbook_ch23.js",
+        "sectionId": "ch-23-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "The Autonomic Nervous System",
+        "title": "",
+        "description": "Autonomic two-neuron pathways and major transmitter exceptions",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-24-section-03",
+        "diagramId": "diagram-inline-ch-24-section-03",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-24",
+        "chapterTitle": "Learning Theory",
+        "legacySource": "js/textbook_ch24.js",
+        "sectionId": "ch-24-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "Operant (Instrumental) Conditioning",
+        "title": "",
+        "description": "Classify operant contingencies by whether a stimulus is added or removed and whether the future behavior increases or decreases",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-25-section-02",
+        "diagramId": "diagram-memory-model",
+        "origin": "shared-template",
+        "templateKey": "memoryModel",
+        "chapterId": "ch-25",
+        "chapterTitle": "Memory Systems",
+        "legacySource": "js/textbook_ch25.js",
+        "sectionId": "ch-25-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Atkinson-Shiffrin Model (Multi-Store Model)",
+        "title": "",
+        "description": "🧠 The Atkinson–Shiffrin modal model is a historical, simplified framework: sensory registers briefly retain incoming information; attention supports transfer to a limited short-term store; and rehearsal or other control processes can support encoding and retrieval. Long-term storage can be durable but is not guaranteed permanent, and modern working-memory models add processes not shown in this three-store flow.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Reframed the figure as the historical modal model, removed the unqualified 7±2 capacity rule, separated short-term storage from modern working-memory models, and removed claims that sensory traces are exact or long-term memories permanent. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://openstax.org/books/psychology/pages/8-1-how-memory-functions",
+          "https://pubmed.ncbi.nlm.nih.gov/11515286/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Psychology: How Memory Functions",
+            "organization": "OpenStax, Rice University",
+            "url": "https://openstax.org/books/psychology/pages/8-1-how-memory-functions",
+            "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. Its expert-authored, peer-reviewed psychology text identifies the Atkinson–Shiffrin framework as a stage model and distinguishes sensory, short-term, and long-term storage for foundational instruction."
+          },
+          {
+            "title": "The magical number 4 in short-term memory: A reconsideration of mental storage capacity",
+            "organization": "Behavioral and Brain Sciences; PubMed, U.S. National Library of Medicine (2001)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/11515286/",
+            "whyReputable": "Cowan’s peer-reviewed theoretical review is a widely cited reappraisal of short-term-memory capacity. The PubMed record makes the journal, author, and publication details traceable and supports avoiding an unqualified seven-plus-or-minus-two rule."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-26-section-03",
+        "diagramId": "diagram-inline-ch-26-section-03",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-26",
+        "chapterTitle": "Cognition, Problem-Solving & Decision-Making",
+        "legacySource": "js/textbook_ch26.js",
+        "sectionId": "ch-26-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "Dual-Process Theory (System 1 & System 2)",
+        "title": "",
+        "description": "Dual-process reasoning as interacting modes with a structured cross-check rather than two literal brain modules",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-27-section-03",
+        "diagramId": "diagram-inline-ch-27-section-03",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-27",
+        "chapterTitle": "Emotion & Motivation",
+        "legacySource": "js/textbook_ch27.js",
+        "sectionId": "ch-27-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "Theories of Motivation",
+        "title": "",
+        "description": "Arousal and performance are related conditionally: task complexity, skill, stressor, and the measured outcome can shift the useful range",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-28-section-04",
+        "diagramId": "diagram-inline-ch-28-section-04",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-28",
+        "chapterTitle": "Language & Intelligence",
+        "legacySource": "js/textbook_ch28.js",
+        "sectionId": "ch-28-section-3",
+        "sectionIndex": 4,
+        "sectionHeading": "Bilingualism & Language Diversity",
+        "title": "",
+        "description": "Multilingual assessment workflow: define the question, map language experience, select valid methods, triangulate evidence, and document limits",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-29-section-02",
+        "diagramId": "diagram-inline-ch-29-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-29",
+        "chapterTitle": "Metacognition, Self-Regulation & Executive Function",
+        "legacySource": "js/textbook_ch29.js",
+        "sectionId": "ch-29-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Executive Functions: Unity, Diversity & Task Impurity",
+        "title": "Executive-Function Inference Ladder",
+        "description": "Accessible four-step diagram showing why a task score supports a component hypothesis only after task demands, validity, context, and converging evidence are considered.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-30-section-02",
+        "diagramId": "diagram-inline-ch-30-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-30",
+        "chapterTitle": "Social Cognition & Attribution",
+        "legacySource": "js/textbook_ch30.js",
+        "sectionId": "ch-30-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Causal Attribution: Person, Entity & Circumstance",
+        "title": "Kelley Covariation Inference Map",
+        "description": "Accessible decision map showing canonical circumstance, person, and entity patterns while emphasizing that mixed evidence supports uncertainty or multiple causes.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-31-section-02",
+        "diagramId": "diagram-asch-conformity",
+        "origin": "shared-template",
+        "templateKey": "aschConformity",
+        "chapterId": "ch-31",
+        "chapterTitle": "Social Influence & Group Dynamics",
+        "legacySource": "js/textbook_ch31.js",
+        "sectionId": "ch-31-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Conformity, Unanimity & Dissent",
+        "title": "",
+        "description": "👥 In Asch’s 1956 line-judgment report, participants yielded to a unanimous majority’s wrong answer on 36.8% of critical trials—not on all trials—and many judgments remained independent. Breaking unanimity and changing response conditions reduced yielding. The classic paradigm demonstrates majority influence under specified conditions; it does not imply that a participant will conform or establish one universal conformity rate across settings.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Changed the statistic to Asch’s 36.8% of critical trials, emphasized that many judgments remained independent, qualified generalization beyond the classic conditions, and removed an animation that automatically made the participant choose the majority’s wrong line. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://doi.org/10.1037/h0093718"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Studies of independence and conformity: I. A minority of one against a unanimous majority",
+            "organization": "Psychological Monographs: General and Applied, American Psychological Association (Asch, 1956)",
+            "url": "https://doi.org/10.1037/h0093718",
+            "whyReputable": "This is Solomon Asch’s primary published report of the line-judgment experiments, linked by its persistent DOI. It is the direct source for the 36.8% critical-trial yielding result and for distinguishing majority pressure from inevitable participant conformity."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-31-section-03",
+        "diagramId": "diagram-inline-ch-31-section-03",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-31",
+        "chapterTitle": "Social Influence & Group Dynamics",
+        "legacySource": "js/textbook_ch31.js",
+        "sectionId": "ch-31-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "Obedience, Roles & the Limits of a Study",
+        "title": "From Classic Study to Defensible Inference",
+        "description": "Accessible evidence map separating an observed result, moderators and design features, and the bounded conclusion supported for Asch, Milgram, and the Stanford Prison study.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-32-section-02",
+        "diagramId": "diagram-inline-ch-32-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-32",
+        "chapterTitle": "Attitudes, Persuasion & Prejudice",
+        "legacySource": "js/textbook_ch32.js",
+        "sectionId": "ch-32-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Attitudes, Dissonance & Persuasion",
+        "title": "Persuasion Inference Map",
+        "description": "Accessible diagram showing how motivation, ability, message features, and context shape elaboration and why processing route does not guarantee an outcome.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-33-section-02",
+        "diagramId": "diagram-inline-ch-33-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-33",
+        "chapterTitle": "Prosocial Behavior, Aggression & Relationships",
+        "legacySource": "js/textbook_ch33.js",
+        "sectionId": "ch-33-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Helping, Altruism & Bystander Action",
+        "title": "Helping Decision and Safety Map",
+        "description": "Accessible diagram separating recognition, responsibility, response selection, safety, and action while showing contextual moderators.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-34-section-03",
+        "diagramId": "diagram-inline-ch-34-section-03",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-34",
+        "chapterTitle": "Cultural Psychology & Multicultural Competence",
+        "legacySource": "js/textbook_ch34.js",
+        "sectionId": "ch-34-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "Acculturation as Person–Context Process",
+        "title": "Culture-in-Context Formulation Loop",
+        "description": "Accessible diagram showing a collaborative loop from asking about identity and meaning through context, adaptation, and outcome checking.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-35-section-05",
+        "diagramId": "diagram-inline-ch-35-section-05",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-35",
+        "chapterTitle": "Prenatal Development & Infancy",
+        "legacySource": "js/textbook_ch35.js",
+        "sectionId": "ch-35-section-4",
+        "sectionIndex": 5,
+        "sectionHeading": "Infant Perception, Action & Developmental Inference",
+        "title": "Developmental Observation-to-Action Ladder",
+        "description": "Accessible diagram showing how observation, context, combined measurement, and proportionate action prevent a milestone from becoming a diagnosis.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-36-section-02",
+        "diagramId": "diagram-inline-ch-36-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-36",
+        "chapterTitle": "Attachment & Early Childhood",
+        "legacySource": "js/textbook_ch36.js",
+        "sectionId": "ch-36-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Attachment Theory & the Strange Situation",
+        "title": "Attachment Observation Inference Boundaries",
+        "description": "Accessible diagram separating observed reunion behavior, research classification, contextual formulation, and clinical diagnosis.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-37-section-02",
+        "diagramId": "diagram-inline-ch-37-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-37",
+        "chapterTitle": "Cognitive Development",
+        "legacySource": "js/textbook_ch37.js",
+        "sectionId": "ch-37-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Piaget: Structures, Tasks & Modern Qualifications",
+        "title": "One Task, Multiple Developmental Demands",
+        "description": "Accessible diagram showing that observed performance reflects interacting demands rather than a pure stage or single ability.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-38-section-02",
+        "diagramId": "diagram-erikson-stages",
+        "origin": "shared-template",
+        "templateKey": "eriksonStages",
+        "chapterId": "ch-38",
+        "chapterTitle": "Adolescence & Emerging Adulthood",
+        "legacySource": "js/textbook_ch38.js",
+        "sectionId": "ch-38-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Erikson & Marcia: Identity as Developmental Work",
+        "title": "",
+        "description": "📊 Erikson’s classic theory proposes eight psychosocial tensions and associated ego strengths: trust versus mistrust—hope; autonomy versus shame and doubt—will; initiative versus guilt—purpose; industry versus inferiority—competence; identity versus role confusion—fidelity; intimacy versus isolation—love; generativity versus stagnation—care; and integrity versus despair—wisdom. The life periods are approximate teaching conventions, not rigid deadlines; within the theory, earlier conflicts can be revisited across the lifespan. This is a developmental framework, not a universal timetable.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Replaced rigid ages and a moving lifespan dot with approximate life-period labels, identified ego strengths, and stated that the classic conflicts can be revisited. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.ncbi.nlm.nih.gov/books/NBK556096/",
+          "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+          "https://www.ncbi.nlm.nih.gov/books/NBK615351/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Erikson's Stages of Psychosocial Development",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine (updated 2026)",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK556096/",
+            "whyReputable": "This current clinician-authored and medically reviewed reference summarizes Erikson’s eight proposed conflicts and ego strengths, notes that the original formulation did not supply exact initial ages, and explains that conflicts can be revisited."
+          },
+          {
+            "title": "Psychology 2e: Lifespan Theories",
+            "organization": "OpenStax, Rice University",
+            "url": "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+            "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-authored, peer-reviewed psychology chapter presents Erikson’s stages as a classic lifespan theory and supplies the conventional conflicts and associated life periods used for introductory instruction."
+          },
+          {
+            "title": "Nursing Health Promotion, Chapter 13: Nursing Care for Infancy Through Adolescence",
+            "organization": "Open RN; NCBI Bookshelf, U.S. National Library of Medicine (2025)",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK615351/",
+            "whyReputable": "This current academic health-sciences text is published through NCBI Bookshelf and explicitly cautions that developmental ages vary and that Erikson’s framework has cultural limitations. It supports non-rigid period labels and qualification of universality."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_02.json",
+        "reviewWave": "eppp-diagram-review-wave-02",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-38-section-03",
+        "diagramId": "diagram-kohlberg-moral",
+        "origin": "shared-template",
+        "templateKey": "kohlbergMoral",
+        "chapterId": "ch-38",
+        "chapterTitle": "Adolescence & Emerging Adulthood",
+        "legacySource": "js/textbook_ch38.js",
+        "sectionId": "ch-38-section-2",
+        "sectionIndex": 3,
+        "sectionHeading": "Moral Reasoning: Kohlberg, Care & Context",
+        "title": "",
+        "description": "⚖️ Kohlberg’s framework classifies the reasoning used to justify moral choices, not whether a particular choice is correct. Its levels are not fixed to childhood, adolescence, and adulthood, and the proposed sequence is not a rule for every person or culture. Gilligan challenged its justice emphasis and sampling; a meta-analysis found only small average gender differences in care versus justice orientations, not a uniform women-use-care distinction.",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Removed fixed childhood/adolescent/adult labels, framed the sequence as a proposed model of moral reasoning, modernized the stage-three label, and replaced a binary gender claim with the meta-analytic finding of small average differences. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://openstax.org/books/lifespan-development/pages/11-4-cognitive-development-in-early-adulthood",
+          "https://pubmed.ncbi.nlm.nih.gov/10989620/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Lifespan Development: Cognitive Development in Early Adulthood",
+            "organization": "OpenStax, Rice University",
+            "url": "https://openstax.org/books/lifespan-development/pages/11-4-cognitive-development-in-early-adulthood",
+            "whyReputable": "OpenStax is Rice University’s nonprofit educational publisher. This expert-reviewed lifespan text summarizes Kohlberg’s proposed moral-reasoning levels and discusses cultural, sampling, justice-orientation, and care-orientation limitations instead of treating age labels as fixed rules."
+          },
+          {
+            "title": "Gender differences in moral orientation: A meta-analysis",
+            "organization": "Psychological Bulletin; PubMed, U.S. National Library of Medicine (2000)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/10989620/",
+            "whyReputable": "This peer-reviewed meta-analysis by Jaffee and Hyde synthesized empirical studies of care and justice orientations. Its PubMed-indexed record supports the conclusion that average gender differences were small, contradicting a uniform women-use-care claim."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "editorial-pass"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-38-section-04",
+        "diagramId": "diagram-inline-ch-38-section-04",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-38",
+        "chapterTitle": "Adolescence & Emerging Adulthood",
+        "legacySource": "js/textbook_ch38.js",
+        "sectionId": "ch-38-section-3",
+        "sectionIndex": 4,
+        "sectionHeading": "Adolescent Brain Development, Sleep & Risk Context",
+        "title": "Adolescent Decision Context Mixer",
+        "description": "Accessible diagram showing how person, development, immediate context, and structural opportunity combine before a decision rather than a single immature-brain cause.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-39-section-02",
+        "diagramId": "diagram-inline-ch-39-section-02",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-39",
+        "chapterTitle": "Adulthood, Aging & End of Life",
+        "legacySource": "js/textbook_ch39.js",
+        "sectionId": "ch-39-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Cognitive Aging, MCI & Dementia Assessment",
+        "title": "Cognitive Concern to Clinical Inference",
+        "description": "Accessible flow diagram moving from concern through function, time course, reversible contributors, multiple cognitive domains, and etiologic evaluation.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-47-section-01",
+        "diagramId": "diagram-inline-ch-47-section-01",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-47",
+        "chapterTitle": "High-Yield Clinical Psychopharmacology",
+        "legacySource": "js/textbook_ch47.js",
+        "sectionId": "ch-47-section-0",
+        "sectionIndex": 1,
+        "sectionHeading": "Antipsychotics (Neuroleptics)",
+        "title": "Psychotropic Safety Recognition Map",
+        "description": "A recognition—not prescribing—map linking antipsychotics to movement, metabolic, and severe neutropenia monitoring; serotonergic combinations to serotonin toxicity; lithium to level, renal, thyroid, hydration, and interaction monitoring; lamotrigine to serious-rash vigilance; and sedatives or stimulants to individualized safety monitoring.",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-47-section-02",
+        "diagramId": "diagram-synapse-drugs",
+        "origin": "shared-template",
+        "templateKey": "synapseDrugs",
+        "chapterId": "ch-47",
+        "chapterTitle": "High-Yield Clinical Psychopharmacology",
+        "legacySource": "js/textbook_ch47.js",
+        "sectionId": "ch-47-section-1",
+        "sectionIndex": 2,
+        "sectionHeading": "Antidepressants",
+        "title": "",
+        "description": "💊 Selected antidepressant mechanisms. SSRIs inhibit the serotonin transporter and reduce serotonin reuptake. Monoamine oxidase is an intracellular, mitochondrial enzyme; MAOIs inhibit monoamine metabolism. These are distinct acute mechanisms, and therapeutic effects involve downstream adaptations rather than one interchangeable increase in generic “neurotransmitter activity.”",
+        "hasSvg": true,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "reviewNote": "Diagram wording and labels were corrected for accuracy, nuance, source alignment, and learner interpretation. Placed monoamine oxidase inside the presynaptic terminal, distinguished serotonin-transporter inhibition from intracellular monoamine-metabolism inhibition, and removed the claim that the two classes simply create the same generic increase in neurotransmitter activity. Independent qualified expert validation remains pending.",
+        "references": [
+          "https://www.ncbi.nlm.nih.gov/books/NBK539848/",
+          "https://pmc.ncbi.nlm.nih.gov/articles/PMC3025168/"
+        ],
+        "sourceDetails": [
+          {
+            "title": "Monoamine Oxidase Inhibitors (MAOIs)",
+            "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+            "url": "https://www.ncbi.nlm.nih.gov/books/NBK539848/",
+            "whyReputable": "This clinician-authored and medically reviewed NCBI Bookshelf chapter describes monoamine oxidase as an intracellular mitochondrial enzyme and explains how MAO inhibitors reduce monoamine metabolism. It is an appropriate mechanism-level clinical reference."
+          },
+          {
+            "title": "How antidepressant drugs act: A primer on neuroplasticity as the eventual mediator of antidepressant efficacy",
+            "organization": "Indian Journal of Psychiatry; PubMed Central, U.S. National Library of Medicine (2010)",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3025168/",
+            "whyReputable": "This peer-reviewed review separates acute monoamine actions from downstream adaptations associated with therapeutic effects. PubMed Central provides the full article and publication metadata, supporting a mechanism description that does not collapse all antidepressants into generic neurotransmitter activity."
+          }
+        ],
+        "reviewArtifact": "eppp_diagram_review_wave_01.json",
+        "reviewWave": "eppp-diagram-review-wave-01",
+        "reviewDate": "2026-07-16",
+        "checks": {
+          "textAlternative": "editorial-pass",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+          "labelQuality": "editorial-pass",
+          "sourceSupport": "topically-aligned-reputable-source",
+          "expertReview": "pending-independent-review",
+          "historicalContext": "not-applicable"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-48-section-01",
+        "diagramId": "diagram-inline-ch-48-section-01",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-48",
+        "chapterTitle": "Advanced Statistical Design & IRT",
+        "legacySource": "js/textbook_ch48.js",
+        "sectionId": "ch-48-section-0",
+        "sectionIndex": 1,
+        "sectionHeading": "The Normal Distribution & Standard Scores",
+        "title": "",
+        "description": "The Normal Distribution: Mean (Î¼) and Standard Deviations (Ïƒ)",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      },
+      {
+        "id": "diagram-placement-ch-49-section-01",
+        "diagramId": "diagram-inline-ch-49-section-01",
+        "origin": "inline",
+        "templateKey": null,
+        "chapterId": "ch-49",
+        "chapterTitle": "Psychopharmacokinetics & Neurotransmission",
+        "legacySource": "js/textbook_ch49.js",
+        "sectionId": "ch-49-section-0",
+        "sectionIndex": 1,
+        "sectionHeading": "The Synaptic Cleft and Neurotransmission",
+        "title": "",
+        "description": "The Synapse: Neurotransmitter Release and Reuptake",
+        "hasSvg": true,
+        "reviewStatus": "review-required",
+        "reviewNote": "",
+        "references": [],
+        "sourceDetails": [],
+        "reviewArtifact": "",
+        "reviewWave": "",
+        "reviewDate": "",
+        "checks": {
+          "textAlternative": "shared-renderer-pass-content-review-pending",
+          "reducedMotion": "shared-renderer-pass",
+          "keyboardDependency": "shared-renderer-pass",
+          "conceptAccuracy": "pending",
+          "labelQuality": "pending",
+          "sourceSupport": "pending",
+          "expertReview": "pending-independent-review"
+        }
+      }
+    ]
   },
   "chaptersByDomain": [
     {
@@ -131,9 +3131,14 @@
     },
     {
       "contentType": "interactive diagrams",
-      "count": 25,
-      "status": "legacy-preserved-review-not-started",
-      "nextGate": "concept accuracy, labels, keyboard/screen-reader alternative, reduced-motion review"
+      "count": 58,
+      "templateCount": 25,
+      "usedTemplateCount": 15,
+      "unusedTemplateCount": 10,
+      "inlinePlacementCount": 42,
+      "reviewedCount": 16,
+      "status": "review-in-progress",
+      "nextGate": "remaining placements need concept accuracy, label, text-alternative, source-support, bias/context, and independent expert review"
     },
     {
       "contentType": "flashcards",
@@ -148,7 +3153,7 @@
       "contentType": "memory aids",
       "count": 255,
       "status": "review-in-progress",
-      "reviewedCount": 8,
+      "reviewedCount": 40,
       "editorialSourcePendingCount": 2,
       "nextGate": "remaining aids need oversimplification, outdated-guidance, bias, and source review"
     },

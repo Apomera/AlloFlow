@@ -452,8 +452,8 @@ describe('Persona persistence contracts', () => {
     expect(viewSource).toContain("localStorage.getItem('allo_persona_resume_days')");
     expect(viewSource).toContain("chatHistory: (st.chatHistory || []).slice(-80)");
     expect(viewSource).not.toContain("studentNickname || 'anonymous'");
-    expect(viewSource).toContain("copy.avatarUrl.length >= 300000");
-    expect(viewSource).toContain("delete copy.chatHistory");
+    expect(viewSource).toContain("typeof authoritativeCharacter.avatarUrl === 'string' && authoritativeCharacter.avatarUrl.length < 300000");
+    expect(viewSource).toContain("serializedSnapshot.length > 750000");
     expect(viewSource).toContain("_handleCloseAndClearSnapshot");
     expect(viewSource).toContain("ds.remove('persona_sessions', 'active')");
     const editorStart = appSource.indexOf('const [personaTeacherEditor, setPersonaTeacherEditor] = useState(null)');

@@ -11470,7 +11470,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var demoPlanRequestGeneration = 0;
   var demoPlanBridgeRequestId = null;
   var demoPlanBridgeController = null;
+  var demoPlanSourceKind = '';
   var demoPlanDefaultLabel = $('demoPlanBtn').textContent;
+  var demoOfficialDefaultLabel = $('demoOfficialTextBtn').textContent;
   function syncDemoPlanSourceControls() {
     var recording = !!demoState.running || !!(rec && rec.state !== 'inactive');
     var locked = !!demoPlanSourceBusy || recording || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
@@ -11485,25 +11487,33 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('demoRehearseBtn').disabled = locked || !hasPlan;
     $('demoPreflightBtn').disabled = locked || !hasPlan;
   }
-  function setDemoPlanningBusy(busy) {
+  function setDemoPlanningBusy(busy, kind) {
     demoPlanSourceBusy = !!busy;
+    demoPlanSourceKind = busy ? (kind === 'official' ? 'official' : 'plan') : '';
     syncDemoPlanSourceControls();
     syncDemoExecutionControls();
-    $('demoPlanBtn').setAttribute('aria-busy', busy ? 'true' : 'false');
-    $('demoPlanBtn').textContent = busy ? 'Planning demo...' : demoPlanDefaultLabel;
+    var planning = demoPlanSourceBusy && demoPlanSourceKind === 'plan';
+    var loadingOfficial = demoPlanSourceBusy && demoPlanSourceKind === 'official';
+    $('demoPlanBtn').setAttribute('aria-busy', planning ? 'true' : 'false');
+    $('demoOfficialTextBtn').setAttribute('aria-busy', loadingOfficial ? 'true' : 'false');
+    $('demoPlanBtn').textContent = planning ? 'Planning demo...' : demoPlanDefaultLabel;
+    $('demoOfficialTextBtn').textContent = loadingOfficial ? 'Loading tutorial...' : demoOfficialDefaultLabel;
     $('demoPlanCancelBtn').hidden = !busy;
+    $('demoPlanCancelBtn').textContent = loadingOfficial ? 'Cancel tutorial load' : 'Cancel planning';
   }
   $('demoPlanCancelBtn').addEventListener('click', function () {
     if ($('demoPlanCancelBtn').hidden) return;
-    if (demoPlanBridgeRequestId) postToOpener({ type: 'allostudio-demoplan-cancel', requestId: demoPlanBridgeRequestId });
+    var sourceKind = demoPlanSourceKind;
+    if (sourceKind === 'plan' && demoPlanBridgeRequestId) postToOpener({ type: 'allostudio-demoplan-cancel', requestId: demoPlanBridgeRequestId });
     demoPlanBridgeRequestId = null;
     demoPlanRequestGeneration++;
     if (demoPlanBridgeController) { try { demoPlanBridgeController.abort(); } catch (_) {} }
     demoPlanBridgeController = null;
     setDemoPlanningBusy(false);
-    setStatus($('demoStatus'), 'Planning cancelled. Nothing ran, and AlloFlow was asked to stop the AI request.', 'ok');
-    announce('Demo planning cancelled. Nothing ran.');
-    $('demoPlanBtn').focus();
+    var official = sourceKind === 'official';
+    setStatus($('demoStatus'), official ? 'Official tutorial loading cancelled. Nothing ran, and the current plan was left unchanged.' : 'Planning cancelled. Nothing ran, and AlloFlow was asked to stop the AI request.', 'ok');
+    announce(official ? 'Official tutorial loading cancelled. Nothing ran.' : 'Demo planning cancelled. Nothing ran.');
+    $(official ? 'demoOfficialTextBtn' : 'demoPlanBtn').focus();
   });
   $('demoPlanBtn').addEventListener('click', async function () {
     if (demoState.running || (rec && rec.state !== 'inactive') || demoPlanSourceBusy) {
@@ -11517,7 +11527,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var generation = ++demoPlanRequestGeneration;
     var bridgeController = typeof AbortController === 'function' ? new AbortController() : null;
     demoPlanBridgeController = bridgeController;
-    setDemoPlanningBusy(true);
+    setDemoPlanningBusy(true, 'plan');
     setStatus($('demoStatus'), 'Asking Gemini to plan steps from AlloFlow’s command list (your goal text only — no video)…');
     try {
       var resp = await bridgeRequest('allostudio-demoplan-request', { goal: goal }, 60000, {
@@ -11541,6 +11551,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         announce('Demo plan ready: ' + resp.steps.length + ' steps');
       }
     } catch (e) {
+      if (generation !== demoPlanRequestGeneration) return;
       setStatus($('demoStatus'), 'Could not draft a plan: ' + String((e && e.message) || e).slice(0, 140), 'bad');
     } finally {
       if (generation === demoPlanRequestGeneration) {
@@ -11551,19 +11562,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
   });
   $('demoOfficialTextBtn').addEventListener('click', async function () {
-    var btn = $('demoOfficialTextBtn');
     if (demoState.running || (rec && rec.state !== 'inactive') || demoPlanSourceBusy) {
       setStatus($('demoStatus'), 'Finish the current demo, recording, or plan request before loading a tutorial.', 'warn');
       return;
     }
     if (!opener || opener.closed) { setStatus($('demoStatus'), 'The official tutorial needs the AlloFlow window.', 'warn'); return; }
-    demoPlanSourceBusy = true;
-    syncDemoPlanSourceControls();
-    syncDemoExecutionControls();
-    btn.setAttribute('aria-busy', 'true');
+    var generation = ++demoPlanRequestGeneration;
+    var bridgeController = typeof AbortController === 'function' ? new AbortController() : null;
+    demoPlanBridgeController = bridgeController;
+    setDemoPlanningBusy(true, 'official');
     setStatus($('demoStatus'), 'Loading the release-matched Text Adaptation tutorial...');
     try {
-      var resp = await bridgeRequest('allostudio-official-tutorial-request', { tutorialId: 'text-adaptation' }, 30000);
+      var resp = await bridgeRequest('allostudio-official-tutorial-request', { tutorialId: 'text-adaptation' }, 30000, { signal: bridgeController ? bridgeController.signal : null });
+      if (generation !== demoPlanRequestGeneration) return;
       if (resp.error) throw new Error(resp.error);
       if (!resp.steps || !resp.steps.length) throw new Error('The tutorial manifest was empty.');
       clearDemoContinuation();
@@ -11576,12 +11587,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       setStatus($('demoStatus'), 'Official Text Adaptation tutorial ready. It uses fixture content and restores your workspace after recording.', 'ok');
       announce('Official Text Adaptation tutorial ready');
     } catch (e) {
+      if (generation !== demoPlanRequestGeneration) return;
       setStatus($('demoStatus'), 'Could not load the official tutorial: ' + String((e && e.message) || e).slice(0, 140), 'bad');
     } finally {
-      demoPlanSourceBusy = false;
-      btn.setAttribute('aria-busy', 'false');
-      syncDemoPlanSourceControls();
-      syncDemoExecutionControls();
+      if (generation === demoPlanRequestGeneration) {
+        if (demoPlanBridgeController === bridgeController) demoPlanBridgeController = null;
+        setDemoPlanningBusy(false);
+      }
     }
   });
   function cleanupOfficialTutorial(keepPlan) {

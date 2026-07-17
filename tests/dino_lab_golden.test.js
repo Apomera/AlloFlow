@@ -201,6 +201,13 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Keyboard controls: Left and Right Arrow or A and D rotate the reconstruction/);
     expect(html).toMatch(/role="status"/);
     expect(html).toMatch(/aria-atomic="true"/);
+    expect(html).toMatch(/role="progressbar"/);
+    expect(html).toMatch(/aria-label="Fossil assembly progress"/);
+    expect(html).toMatch(/aria-label="Claim strength"/);
+    expect(html).toMatch(/aria-label="Reconstruction challenge progress"/);
+    expect(html).toMatch(/aria-valuenow="0"/);
+    expect(html).toMatch(/Skull scan anchor, not logged, current focus/);
+    expect(html).toMatch(/Skull fossil, locked until field scan is complete/);
     expect(html).toMatch(/Anchor label/);
     expect(html).toMatch(/Logged anchor/);
     expect(html).toMatch(/Scan focus/);
@@ -240,6 +247,17 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Uncertainty/);
   });
 
+  it('the Dig Site exposes reviewable grid and guess state semantics', () => {
+    const html = renderTab('dig');
+    expect(html).toMatch(/role="group" aria-label="Dig grid with 4 rows and 6 columns/);
+    expect(html).toMatch(/role="status" aria-live="polite" aria-atomic="true"/);
+    expect(html).toMatch(/Cell 1, row 1, column 1, bone fragment uncovered/);
+    expect(html).toMatch(/Cell 4, row 1, column 4, unopened rock\. Press to dig/);
+    expect(html).toMatch(/aria-disabled="true"/);
+    expect(html).toMatch(/aria-disabled="false"/);
+    expect(html).toMatch(/aria-label="Identify the find choices"/);
+    expect(html).toMatch(/aria-pressed="false"/);
+  });
   it('the 3D field station identifies the next open scan anchor', () => {
     const data = baseData('field3d');
     data.field3dScanLogged = { skull: true };
@@ -484,9 +502,25 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Evidence is the fossil material/);
     expect(html).toMatch(/Next challenge/);
   });
+  it('the Timeline and Compare visual bars expose named numeric semantics', () => {
+    const timeline = renderTab('timeline');
+    expect(timeline).toMatch(/role="progressbar"/);
+    expect(timeline).toMatch(/duration on the Mesozoic timeline/);
+    expect(timeline).toMatch(/lasted about \d+ million years/);
+    expect(timeline).toMatch(/aria-valuemax="229"/);
+
+    const compare = renderTab('compare');
+    expect(compare).toMatch(/Length comparison value/);
+    expect(compare).toMatch(/Height comparison value/);
+    expect(compare).toMatch(/Weight \(t\) comparison value/);
+    expect(compare).toMatch(/Top speed \(estimate\) comparison value/);
+    expect(compare).toMatch(/of the comparison maximum/);
+  });
+
   it('the Deep Time tab places the cosmic-calendar milestones correctly', () => {
     const html = renderTab('deeptime');
     expect(html).toMatch(/Deep time/);
+    expect(html).toMatch(/role="img" aria-label="Compressed Earth history timeline/);
     expect(html).toMatch(/December 13/); // first dinosaurs on the 1-year scale
     expect(html).toMatch(/December 26/); // the K-Pg asteroid
     expect(html).toMatch(/Homo sapiens/); // humans appear in the last sliver

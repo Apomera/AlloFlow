@@ -4391,9 +4391,8 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.fillStyle='#a78bfa'; ctx.fill(); ctx.strokeStyle='#6d28d9'; ctx.lineWidth=1; ctx.stroke();
 
-                ctx.font='bold '+(8*fontScale)+'px Inter,system-ui,sans-serif';
+                brainAtlasDrawPathLabel(W*0.20,H*0.58,'Soma','#6d28d9',W*0.12);
 
-                ctx.fillStyle='#6d28d9'; ctx.textAlign='center'; ctx.fillText('Soma',W*0.20,H*0.58);
 
                 ctx.restore();
 
@@ -4411,9 +4410,8 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.fill(); ctx.strokeStyle='#7c3aed'; ctx.lineWidth=1.5; ctx.stroke();
 
-                ctx.font=(6*fontScale)+'px Inter,system-ui,sans-serif';
+                brainAtlasDrawPathLabel(W*0.29,H*0.40,'Hillock','#7c3aed',W*0.14);
 
-                ctx.fillStyle='#7c3aed80'; ctx.textAlign='center'; ctx.fillText('Hillock',W*0.29,H*0.40);
 
                 ctx.restore();
 
@@ -4543,9 +4541,8 @@ var d = labToolData.brainAtlas || {};
 
                 }
 
-                ctx.font=(7*fontScale)+'px Inter,system-ui,sans-serif';
+                brainAtlasDrawPathLabel(W*0.90,H*0.58,'Terminal','#7c3aed',W*0.13);
 
-                ctx.fillStyle='#7c3aed'; ctx.textAlign='center'; ctx.fillText('Terminal',W*0.90,H*0.58);
 
                 ctx.restore();
 
@@ -4553,13 +4550,12 @@ var d = labToolData.brainAtlas || {};
 
                 // Labels (enlarged text)
 
-                ctx.save(); ctx.font='bold '+(9*fontScale)+'px Inter,system-ui,sans-serif';
+                ctx.save();
 
-                ctx.fillStyle='#475569'; ctx.textAlign='center';
 
-                ctx.fillText('Myelin Sheath',W*0.50,H*0.34);
+                brainAtlasDrawPathLabel(W*0.50,H*0.34,'Myelin Sheath','#475569',W*0.18);
 
-                ctx.fillText('Nodes of Ranvier',W*0.50,H*0.61);
+                brainAtlasDrawPathLabel(W*0.50,H*0.575,'Nodes of Ranvier','#475569',W*0.20);
 
                 ctx.beginPath(); ctx.moveTo(W*0.50,H*0.355); ctx.lineTo(W*0.50,H*0.40);
 

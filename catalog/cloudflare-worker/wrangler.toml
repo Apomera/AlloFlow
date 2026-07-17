@@ -21,7 +21,18 @@ GITHUB_BRANCH = "main"
 # Never ship either secret in browser code, module JSON, localStorage, or LMS URLs.
 # The Worker authenticates the review-service caller and validates internal bindings;
 # the upstream service remains responsible for identity, authorization, evidence,
-# accessibility review, and replay prevention.
+# accessibility review, and replay prevention within that upstream workflow.
+# The Worker separately enforces create-once credential issuance by decision ID.
+#
+# Reviewed issuance also requires a PRIVATE, strongly consistent R2 ledger.
+# Do not substitute an eventually consistent KV namespace:
+#   npx wrangler r2 bucket create alloflow-pd-issuance-ledger
+# Then uncomment and set the deployment bucket name:
+# [[r2_buckets]]
+# binding = "PD_ISSUANCE_LEDGER"
+# bucket_name = "alloflow-pd-issuance-ledger"
+# Missing, corrupt, or unavailable ledger storage disables reviewed issuance.
+# The self-paced lane below does not use this institutional ledger.
 #
 # Browser-requested self-paced signing is OFF by default. If deliberately enabled,
 # it requires a separate keypair and identity and remains explicitly non-institutional:

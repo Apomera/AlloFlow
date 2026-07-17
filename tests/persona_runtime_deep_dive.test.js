@@ -1,8 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
+import { loadAlloModule } from './setup.js';
 
 const root = process.cwd();
+const require = createRequire(import.meta.url);
+const React = require(path.resolve(root, 'prismflow-deploy/node_modules/react'));
 const appSource = fs.readFileSync(path.join(root, 'AlloFlowANTI.txt'), 'utf8');
 const phaseKSource = fs.readFileSync(path.join(root, 'phase_k_helpers_source.jsx'), 'utf8');
 const personaCoreSource = fs.readFileSync(path.join(root, 'personas_source.jsx'), 'utf8');
@@ -18,6 +22,59 @@ const personaStateContractFields = [
   'harmonyScore', 'earnedBadges',
 ];
 const uiStringsSource = fs.readFileSync(path.join(root, 'ui_strings.js'), 'utf8');
+let PhaseKHelpers;
+
+beforeAll(() => {
+  globalThis.React = React;
+  window.React = React;
+  loadAlloModule('phase_k_helpers_module.js');
+  PhaseKHelpers = window.AlloModules.PhaseKHelpers;
+});
+
+const makeReflectionHarness = (overrides = {}) => {
+  let history = [];
+  let feedback = null;
+  const deps = {
+    personaState: {
+      mode: 'single',
+      selectedCharacter: { name: 'Ada', context: 'Early computing' },
+      selectedCharacters: [],
+      chatHistory: [
+        { role: 'user', text: 'What did you invent?' },
+        { role: 'model', text: 'I described an analytical engine.' },
+      ],
+      earnedBadges: [],
+    },
+    personaReflectionInput: 'I connected the interview to the lesson evidence and explained how the idea applies today.',
+    personaReflectionSubmitRef: { current: false },
+    personaReflectionIdentityRef: { current: 'resource-1:1' },
+    personaReflectionContextTokenRef: { current: 1 },
+    personaReflectionResourceIdRef: { current: 'resource-1' },
+    personaReflectionGradeAbortRef: { current: null },
+    generatedContent: { id: 'resource-1', config: {} },
+    targetStandards: [],
+    dokLevel: '2',
+    currentUiLanguage: 'English',
+    sourceTopic: 'Computing',
+    callGemini: vi.fn().mockResolvedValue({ score: 72, feedback: 'Specific and thoughtful.', xpBonus: 5 }),
+    cleanJson: value => String(value || '').replace(/^\x60\x60\x60(?:json)?|\x60\x60\x60$/g, '').trim(),
+    setIsGradingReflection: vi.fn(),
+    setHistory: vi.fn(updater => { history = typeof updater === 'function' ? updater(history) : updater; }),
+    handleScoreUpdate: vi.fn(),
+    setPersonaState: vi.fn(),
+    setReflectionFeedback: vi.fn(value => { feedback = value; }),
+    addToast: vi.fn(),
+    playSound: vi.fn(),
+    warnLog: vi.fn(),
+    t: key => key,
+    ...overrides,
+  };
+  return {
+    deps,
+    getHistory: () => history,
+    getFeedback: () => feedback,
+  };
+};
 
 describe('Persona runtime deep-dive fixes', () => {
   it('keeps initial Persona state aligned with the core reset contract', () => {
@@ -59,7 +116,7 @@ describe('Persona runtime deep-dive fixes', () => {
 
   it('serializes reflection grading data into an escaped, bounded untrusted JSON envelope', () => {
     const gradingStart = phaseKSource.indexOf('const boundPromptValue = (value, maxLength)');
-    const gradingEnd = phaseKSource.indexOf('const result = await callGemini(prompt, true)', gradingStart);
+    const gradingEnd = phaseKSource.indexOf('const result = await Promise.race([', gradingStart);
     const gradingPrompt = phaseKSource.slice(gradingStart, gradingEnd);
     expect(gradingStart).toBeGreaterThanOrEqual(0);
     expect(gradingPrompt).toContain('const gradingPayload = {');
@@ -69,7 +126,7 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(gradingPrompt).toContain('.map(standard => boundPromptValue(standard, 300))');
     expect(gradingPrompt).toContain('targetDok: boundPromptValue(dokContext, 80)');
     expect(gradingPrompt).toContain('transcript: boundPromptValue(chatLogText.slice(-8000), 8000)');
-    expect(gradingPrompt).toContain('studentReflection: boundPromptValue(personaReflectionInput, 4000)');
+    expect(gradingPrompt).toContain('studentReflection: boundPromptValue(boundedReflectionInput, 4000)');
     expect(gradingPrompt).toContain('const escapedGradingPayload = JSON.stringify(gradingPayload).replace(/[<>&]/g');
     expect(gradingPrompt).toContain("'<': '\\\\u003c'");
     expect(gradingPrompt).toContain("'>': '\\\\u003e'");
@@ -82,6 +139,96 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(phaseKSource).not.toContain('<transcript>${');
     expect(phaseKSource).not.toContain('<student_reflection>${');
     expect(phaseKSource).toContain('grading.feedback.trim().slice(0, 4000)');
+    expect(phaseKSource).toContain('callGemini(prompt, true, false, null, null, gradingController?.signal || null)');
+    expect(phaseKSource).toContain('}, 45000)');
+    expect(phaseKSource).toContain('const parseGradingResult = (candidate) =>');
+    expect(phaseKSource).toContain("typeof candidate.text === 'string'");
+  });
+
+  it('accepts direct-object and wrapped-text grading responses', async () => {
+    const direct = makeReflectionHarness();
+    await PhaseKHelpers.handleSaveReflection(direct.deps);
+    expect(direct.getFeedback()).toMatchObject({ score: 72, feedback: 'Specific and thoughtful.' });
+    expect(direct.getHistory()).toHaveLength(1);
+
+    const wrapped = makeReflectionHarness({
+      callGemini: vi.fn().mockResolvedValue({
+        text: '{"score":88,"feedback":"Strong connection.","xpBonus":10}',
+      }),
+    });
+    await PhaseKHelpers.handleSaveReflection(wrapped.deps);
+    expect(wrapped.getFeedback()).toMatchObject({ score: 88, feedback: 'Strong connection.' });
+    expect(wrapped.getHistory()).toHaveLength(1);
+  });
+
+  it('bounds and sanitizes the persisted reflection resource while retaining recent translations and evidence', async () => {
+    const chatHistory = Array.from({ length: 100 }, (_, index) => ({
+      role: index % 2 === 0 ? 'user' : 'model',
+      speakerName: index % 2 ? '<b>Panelist</b>' : undefined,
+      text: '<script>' + 'x'.repeat(7000) + '</script> message ' + index,
+      translation: 'Translation ' + index + ' ' + 't'.repeat(3000),
+      evidenceNote: 'Evidence note ' + index + ' ' + 'e'.repeat(2000),
+    }));
+    const harness = makeReflectionHarness({
+      personaState: {
+        mode: 'single',
+        selectedCharacter: { name: '<b>' + 'N'.repeat(300), context: 'Context' },
+        selectedCharacters: [],
+        chatHistory,
+        earnedBadges: [],
+      },
+      personaReflectionInput: '<iframe>unsafe</iframe> ' + 'reflection '.repeat(1000),
+      targetStandards: ['<img src=x> Analyze evidence ' + 's'.repeat(500)],
+      generatedContent: {
+        id: 'resource-1',
+        config: {
+          personaSource: {
+            kind: 'input',
+            topic: 'Computing',
+            fingerprint: 'abc123',
+            excerpt: 'Lesson excerpt',
+            groundingMetadata: {
+              sources: [{
+                url: 'https://example.com/' + 'a'.repeat(3000),
+                title: '<source>Primary</source>',
+              }],
+            },
+          },
+        },
+      },
+    });
+
+    await PhaseKHelpers.handleSaveReflection(harness.deps);
+    const item = harness.getHistory()[0];
+    expect(item.data.length).toBeLessThanOrEqual(160000);
+    expect(item.data).not.toContain('<script>');
+    expect(item.data).not.toContain('<iframe>');
+    expect(item.data).toContain('English translation');
+    expect(item.data).toContain('Evidence & simulation note');
+    expect(item.title.length).toBeLessThanOrEqual(172);
+    expect(item.config.exportedMessageCount).toBeLessThanOrEqual(80);
+    expect(item.config.transcriptTruncated).toBe(true);
+    expect(item.config.groundingSources[0].url.length).toBeLessThanOrEqual(2048);
+    expect(harness.getFeedback().score).toBe(72);
+  });
+
+  it('times out stalled reflection grading and aborts its model request', async () => {
+    vi.useFakeTimers();
+    try {
+      const stalled = makeReflectionHarness({
+        callGemini: vi.fn(() => new Promise(() => {})),
+      });
+      const gradingPromise = PhaseKHelpers.handleSaveReflection(stalled.deps);
+      await vi.advanceTimersByTimeAsync(45000);
+      await gradingPromise;
+      const signal = stalled.deps.callGemini.mock.calls[0][5];
+      expect(signal.aborted).toBe(true);
+      expect(stalled.deps.addToast).toHaveBeenCalledWith('toasts.reflection_grade_error', 'error');
+      expect(stalled.deps.setIsGradingReflection).toHaveBeenLastCalledWith(false);
+      expect(stalled.getHistory()).toHaveLength(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('uses a persistent, generation-scoped auto-read queue with latest-only enable semantics', () => {
@@ -94,6 +241,36 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(appSource).toContain('phaseKPersonaTts.prewarmPersonaMessageAudio(entry.msg.text, entry.index');
     expect(appSource).toContain("Promise.resolve(speakResult).catch(error =>");
     expect(appSource).toContain('setPersonaAutoRead: setPersonaAutoReadSafely');
+    expect(appSource).toContain('const [personaAutoReadEpoch, setPersonaAutoReadEpoch] = useState(0)');
+    expect(appSource).toContain('const personaTtsVoiceSignature = JSON.stringify({');
+    expect(appSource).toContain("window.addEventListener('alloflow-mute-changed', handlePersonaMuteChange)");
+    expect(appSource).toContain('personaAutoReadEpoch, personaTtsVoiceSignature');
+  });
+
+  it('cancels and bounds reflection-question work and normalizes object responses', () => {
+    expect(appSource).toContain('const personaReflectionPromptAbortRef = useRef(null)');
+    expect(appSource).toContain('const personaReflectionGradeAbortRef = useRef(null)');
+    expect(appSource).toContain('personaReflectionPromptAbortRef.current?.controller?.abort()');
+    expect(appSource).toContain('personaReflectionGradeAbortRef.current?.controller?.abort()');
+    expect(appSource).toContain('callGemini(prompt, false, false, null, null, promptController?.signal || null)');
+    expect(appSource).toContain('}, 30000)');
+    expect(appSource).toContain("typeof result?.text === 'string'");
+    expect(appSource).toContain('.slice(0, 1000)');
+  });
+
+  it('keeps active Persona edits synchronized and locks candidate controls during startup', () => {
+    expect(appSource).toContain('selectedCharacter: prev.selectedCharacter?.name === currentPersona.name');
+    expect(appSource).toContain('{ ...prev.selectedCharacter, ...nextPersona }');
+    expect(appSource).toContain('character?.name === currentPersona.name');
+    const candidateStart = appSource.indexOf("{activeView === 'persona' && (");
+    const candidateEnd = appSource.indexOf('{isTeacherMode && personaTeacherEditor && (', candidateStart);
+    const candidateScreen = appSource.slice(candidateStart, candidateEnd);
+    expect(candidateScreen).toContain('aria-busy={isProcessing || isGeneratingPersona}');
+    expect(candidateScreen).toContain('disabled={isProcessing || isGeneratingPersona}');
+    expect(candidateScreen).toContain('if (isProcessing || isGeneratingPersona) return;');
+    expect(candidateScreen).toContain("aria-pressed={personaState.mode === 'panel' ? isSelectedInPanel : undefined}");
+    expect(candidateScreen).toContain('motion-reduce:animate-none');
+    expect(candidateScreen).toContain('personaState.selectedCharacters.length !== 2 || isProcessing || isGeneratingPersona');
   });
 
   it('normalizes retention and validates teacher-edit voice and quest difficulty', () => {
@@ -142,8 +319,13 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(appSource).toContain('target="_blank" rel="noopener noreferrer"');
     expect(personaCoreSource).toContain('const personaSource = createPersonaSourceBinding(');
     expect(personaCoreSource).toContain('config: {\n                        personaSource,');
-    expect(personaCoreSource).toContain('personaSource: generatedContent?.config?.personaSource || null');
+    expect(personaCoreSource).toContain('personaSource: sourceBinding');
     expect(phaseKSource).toContain('const rawPersonaSource = generatedContent?.config?.personaSource');
     expect(phaseKSource).toContain('rawPersonaSource?.groundingMetadata ?? generatedContent?.config?.groundingMetadata');
+    expect(phaseKSource).toContain('const boundedReflectionInput = String(personaReflectionInput || \'\').trim().slice(0, 4000)');
+    expect(phaseKSource).toContain('const transcriptMessages = (Array.isArray(personaState.chatHistory) ? personaState.chatHistory : []).slice(-80)');
+    expect(phaseKSource).toContain('if (transcriptCharCount + entryCost > 120000) break');
+    expect(phaseKSource).toContain(').slice(0, 160000)');
+    expect(phaseKSource).toContain('transcriptTruncated: transcriptEntries.length < transcriptMessages.length');
   });
 });

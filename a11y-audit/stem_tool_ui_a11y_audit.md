@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-16T20:11:01.011Z
+Generated: 2026-07-17T03:28:03.884Z
 
 ## Scope
 
@@ -47,7 +47,7 @@ Generated: 2026-07-16T20:11:01.011Z
 | `accessLens` Access Lens | general | standard | 8 | 1 | 0 | 0 | 0 | 1 | metadata x1 |
 | `algebraCAS` Algebra Solver | math | standard | 14 | 1 | 0 | 0 | 0 | 0 |  |
 | `alloBotSage` AlloBot: Starbound Sage | Games | standard | 79 | 0 | 0 | 0 | 0 | 0 |  |
-| `alphaFoldExplorer` AlphaFold Explorer | science | standard | 1 | 0 | 0 | 0 | 0 | 0 |  |
+| `alphaFoldExplorer` AlphaFold Explorer | science | standard | 5 | 0 | 0 | 0 | 0 | 0 |  |
 | `anatomy` Human Anatomy Explorer | science | standard | 66 | 1 | 1 | 0 | 0 | 0 |  |
 | `appLab` AppLab | technology | standard | 26 | 7 | 0 | 0 | 1 | 0 | inline-contrast x1 |
 | `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 144 | 0 | 0 | 0 | 0 | 0 |  |

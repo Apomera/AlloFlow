@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const src = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const pipelineSrc = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
 // ── Mirrors of the shipped loop decisions ──
 const shouldRevert = (detNew, detPrev, issuesNew, issuesPrev, vio) => {
@@ -80,7 +81,8 @@ describe('anti-drift: the loop carries the corrected logic', () => {
     expect(src).not.toContain(': (_curEa !== null ? _curEa : 100));'); // residual fabricated-100 terminal gone (#3)
   });
   it('the exact deterministic component is stamped each committed round (_detScore)', () => {
-    expect(src).toContain('_detScore: _det,');
+    expect(pipelineSrc).toContain('_detScore: _det,');
+    expect(src).toContain('const _det = _mergedRound._detScore;');
   });
   it('progress excludes the noisy blend, is null-safe, and gates the issue term to the axe-clean branch', () => {
     expect(src).toContain("const _progressed = _vio < lastViolations || (typeof _curDet === 'number' && _curDet > (lastDet + 1)) || (_vio === 0 && _aiIssues.length < lastIssues);");

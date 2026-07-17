@@ -136,6 +136,30 @@ describe('Weather Systems science kernel', () => {
     expect(live.source).toBe('Open-Meteo');
     expect(() => kernel.normalizeLiveWeatherResponse({}, 'Missing', 0, 0)).toThrow(/current conditions/);
   });
+
+  it('accepts decimal and hemisphere coordinate location formats', () => {
+    const kernel = window.WeatherSystemsKernel;
+    expect(kernel.parseLocationCoordinates('42.3601, -71.0589')).toEqual({ latitude: 42.3601, longitude: -71.0589 });
+    expect(kernel.parseLocationCoordinates('42.3601 N, 71.0589 W')).toEqual({ latitude: 42.3601, longitude: -71.0589 });
+    expect(kernel.parseLocationCoordinates('33.8688 S; 151.2093 E')).toEqual({ latitude: -33.8688, longitude: 151.2093 });
+    expect(kernel.parseLocationCoordinates('91, 20')).toBeNull();
+    expect(kernel.parseLocationCoordinates('Paris, France')).toBeNull();
+  });
+
+  it('builds resilient location queries and ranks structured matches', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const fields = { city: ' Boston ', region: ' MA ', postalCode: ' 02108 ', country: ' United States ' };
+    expect(kernel.buildLocationQuery(fields)).toBe('Boston, MA, 02108, United States');
+    expect(kernel.locationSearchCandidates('Boston, MA, 02108, United States', fields)).toEqual(expect.arrayContaining([
+      'Boston, MA, 02108, United States', 'Boston, MA, United States', 'Boston', '02108'
+    ]));
+    expect(kernel.locationSearchCandidates('Tokyo Japan')).toEqual(expect.arrayContaining(['Tokyo Japan', 'Tokyo']));
+    const best = kernel.chooseLocationResult([
+      { name: 'Boston', admin1: 'Lincolnshire', country: 'United Kingdom', country_code: 'GB' },
+      { name: 'Boston', admin1: 'Massachusetts', country: 'United States', country_code: 'US' }
+    ], fields);
+    expect(best.admin1).toBe('Massachusetts');
+  });
 });
 
 describe('Weather Systems grade-banded views', () => {
@@ -150,10 +174,40 @@ describe('Weather Systems grade-banded views', () => {
     expect(html).toContain('data-weather-live-control');
     expect(html).toContain('Nothing loads automatically');
     expect(html).toContain('Use my location');
-    expect(html).toContain('City, state, or country');
+    expect(html).toContain('Quick location search');
+    expect(html).toContain('More location fields');
+    expect(html).toContain('Boston, MA or 42.36, -71.06');
+    expect(html).toContain('postal or ZIP code');
+    expect(html).toContain('decimal coordinates');
     expect(html).toContain('data-weather-vr-control');
     expect(html).toContain('Check headset and enter VR');
     expect(html).toContain('Educational visualization only');
+  });
+
+  it('renders optional structured location fields with address autocomplete semantics', () => {
+    const html = renderTool('weatherSystems', {
+      weatherSystems: {
+        tab: 'immersive',
+        liveLocationDetailsOpen: true,
+        liveLocationCity: 'Boston',
+        liveLocationRegion: 'Massachusetts',
+        liveLocationPostalCode: '02108',
+        liveLocationCountry: 'United States'
+      }
+    }, { gradeLevel: '8th Grade' });
+    expect(html).toContain('aria-expanded="true"');
+    expect(html).toContain('Hide location fields');
+    expect(html).toContain('Search with separate fields');
+    expect(html).toContain('City or locality');
+    expect(html).toContain('State, province, or region');
+    expect(html).toContain('Postal or ZIP code');
+    expect(html).toContain('Country');
+    expect(html).toContain('autoComplete="address-level2"');
+    expect(html).toContain('autoComplete="address-level1"');
+    expect(html).toContain('autoComplete="postal-code"');
+    expect(html).toContain('autoComplete="country-name"');
+    expect(html).toContain('value="Boston"');
+    expect(html).toContain('Search these fields');
   });
 
   it('maps a loaded live observation into the immersive weather dashboard', () => {
@@ -490,6 +544,37 @@ describe('Weather Systems grade-banded views', () => {
 
     const guide = renderTool('weatherSystems', { weatherSystems: { tab: 'teacher' } }, { gradeLevel: '5th Grade' });
     expect(guide).toContain('Predict - Observe - Explain - Revise');
+    expect(guide).toContain('data-weather-mission-builder');
+    expect(guide).toContain('Classroom Mission Builder');
+    expect(guide).toContain('Front Boundary Detective');
+    expect(guide).toContain('35-minute lesson');
+    expect(guide).toContain('Copy mission brief');
+    expect(guide).toContain('aria-label="Copy classroom mission brief to clipboard"');
+    expect(guide).toContain('Preview copy-ready mission brief');
+    expect(guide).toContain('UDL access &amp; challenge');
+    expect(guide).toContain('Core pathway');
+    expect(guide).toContain('aria-label="Core pathway mission supports"');
+    expect(guide).toContain('Allow written, oral, visual, or broadcast responses.');
+    expect(guide).toContain('Learning pathway: Core pathway');
+    expect(guide).toContain('UDL ACCESS AND CHALLENGE');
+    expect(guide).toContain('data-weather-learning-lens');
+    expect(guide).toContain('Three-Dimensional Learning Lens');
+    expect(guide).toContain('Analyzing and interpreting data');
+    expect(guide).toContain('Crosscutting concept');
+    expect(guide).toContain('Patterns');
+    expect(guide).toContain('A boundary claim supported by spatial and temporal station contrasts.');
+    expect(guide).toContain('THREE-DIMENSIONAL LEARNING LENS');
+    expect(guide).toContain('Local alignment note: Connect this mission to district performance expectations and adopted curriculum.');
+    expect(guide).toContain('data-weather-student-mission-card');
+    expect(guide).toContain('Student Mission Card');
+    expect(guide).toContain('Copy student directions');
+    expect(guide).toContain('aria-label="Copy student mission directions to clipboard"');
+    expect(guide).toContain('Preview student directions');
+    expect(guide).toContain('aria-label="Student mission directions plain text"');
+    expect(guide).toContain('STUDENT WEATHER MISSION');
+    expect(guide).toContain('BEFORE YOU FINISH');
+    expect(guide).toContain('Student directions exclude teacher press questions, conference records, and local alignment notes.');
+    expect(guide).toContain('Builder selections affect this planning card only.');
     expect(guide).toContain('data-weather-teacher-checkpoints');
     expect(guide).toContain('Teacher Checkpoint Dashboard');
     expect(guide).toContain('0 of 5 checkpoints ready');
@@ -510,6 +595,60 @@ describe('Weather Systems grade-banded views', () => {
     expect(guide).toContain('Immersive 3D and VR are optional representations.');
     expect(guide).toContain('Live observations describe current conditions');
     expect(guide).toContain('MS-ESS2-5');
+  });
+
+  it('builds a copy-ready secondary ensemble mission', () => {
+    const guide = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'teacher', teacherMissionId: 'uncertainty',
+      teacherMissionDuration: '50', teacherMissionGrouping: 'teams',
+      teacherMissionSupport: 'extension'
+    } }, { gradeLevel: '10th Grade' });
+    expect(guide).toContain('data-weather-mission-builder');
+    expect(guide).toContain('Ensemble Uncertainty Challenge');
+    expect(guide).toContain('How should ensemble spread change forecast confidence and decision-making?');
+    expect(guide).toContain('50-minute deep dive');
+    expect(guide).toContain('Teams of 3-4');
+    expect(guide).toContain('Extension challenge');
+    expect(guide).toContain('Critique one model assumption or missing measurement.');
+    expect(guide).toContain('Explain how uncertainty changes confidence or action.');
+    expect(guide).toContain('Developing and using models');
+    expect(guide).toContain('Stability and change');
+    expect(guide).toContain('A calibrated uncertainty statement that distinguishes agreement from probability.');
+    expect(guide).toContain('What ensemble disagreement or model assumption should limit confidence?');
+    expect(guide).toContain('An uncertainty statement that distinguishes model agreement from operational probability.');
+    expect(guide).toContain('YOUR LEARNING PATHWAY');
+    expect(guide).toContain('Repeat the mission in a contrasting scenario.');
+    expect(guide).toContain('Identify one model assumption or missing measurement.');
+    expect(guide).toContain('Remember: This simulation is a teaching model.');
+    expect(guide).toContain('aria-label="9-12 classroom mission choices"');
+    expect(guide).toContain('aria-label="Classroom mission brief plain text"');
+    expect(guide).toContain('Open first student stage');
+  });
+
+  it('creates an early-learner mission with multimodal deliverables', () => {
+    const guide = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'teacher', teacherMissionId: 'weatherStory',
+      teacherMissionDuration: '20', teacherMissionGrouping: 'pairs',
+      teacherMissionSupport: 'scaffold'
+    } }, { gradeLevel: '1st Grade' });
+    expect(guide).toContain('Weather Detective Story');
+    expect(guide).toContain('What weather clues can help us tell what may happen next?');
+    expect(guide).toContain('A picture or spoken forecast that names one weather clue.');
+    expect(guide).toContain('20-minute sprint');
+    expect(guide).toContain('Scaffolded access');
+    expect(guide).toContain('Preview picture icons for cloud, wind, temperature, and rain.');
+    expect(guide).toContain('I think ___ because I noticed ___.');
+    expect(guide).toContain('Accept pointing, drawing, speaking, or acting out the explanation.');
+    expect(guide).toContain('Analyzing and interpreting data');
+    expect(guide).toContain('Patterns');
+    expect(guide).toContain('A picture or spoken forecast that cites an observable weather clue.');
+    expect(guide).toContain('What pattern did you notice, and what makes that clue useful?');
+    expect(guide).toContain('Use the picture icons and point to the weather clue you chose.');
+    expect(guide).toContain('Practice with a partner: I think ___ because I noticed ___.');
+    expect(guide).toContain('You may point, draw, speak, or act out your explanation.');
+    expect(guide).toContain('CHECK YOUR WORK');
+    expect(guide).toContain('aria-label="K-2 classroom mission choices"');
+    expect(guide).toContain('Grade band: K-2');
   });
 
   it('prioritizes the first incomplete teacher checkpoint from recorded work', () => {

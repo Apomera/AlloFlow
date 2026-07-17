@@ -13,7 +13,7 @@ let config;
 beforeAll(() => {
   window.StemLab = { registerTool: (_id, cfg) => { config = cfg; } };
   globalThis.StemLab = window.StemLab;
-  for (const file of ['stem_lumen_evidence.js', 'stem_lumen_study.js', 'stem_tool_lumen.js']) {
+  for (const file of ['stem_lumen_evidence.js', 'stem_lumen_documents.js', 'stem_lumen_study.js', 'stem_tool_lumen.js']) {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab', file), 'utf8');
     // Browser scripts intentionally expose globals instead of using imports.
     // eslint-disable-next-line no-new-func

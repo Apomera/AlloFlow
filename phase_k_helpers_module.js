@@ -1962,7 +1962,7 @@ const extractReflectionGroundingContext = (metadata) => {
     if (typeof value === "string") {
       const lowerKey = String(key || "").toLowerCase();
       if (lowerKey.includes("search") && lowerKey.includes("quer")) {
-        const query = value.replace(/[\r\n]+/g, " ").trim().slice(0, 300);
+        const query = value.replace(/[\r\n<>]+/g, " ").trim().slice(0, 300);
         if (query && !seenQueries.has(query)) {
           seenQueries.add(query);
           queries.push(query);
@@ -1979,10 +1979,10 @@ const extractReflectionGroundingContext = (metadata) => {
     const rawUrl = value.uri || value.url;
     if (typeof rawUrl === "string" && /^https?:\/\//i.test(rawUrl.trim())) {
       try {
-        const parsed = new URL(rawUrl.trim());
+        const parsed = new URL(rawUrl.trim().slice(0, 2048));
         if ((parsed.protocol === "https:" || parsed.protocol === "http:") && !seenLinks.has(parsed.href)) {
           seenLinks.add(parsed.href);
-          const title = String(value.title || value.name || parsed.hostname).replace(/[\[\]()\r\n]+/g, " ").trim().slice(0, 200);
+          const title = String(value.title || value.name || parsed.hostname).replace(/[\[\]()<>\r\n]+/g, " ").trim().slice(0, 200);
           links.push({ url: parsed.href, title: title || parsed.hostname });
         }
       } catch (_) {
@@ -2001,7 +2001,8 @@ const handleSaveReflection = async (deps) => {
     if (window._DEBUG_PHASE_K) console.log("[PhaseK] handleSaveReflection fired");
   } catch (_) {
   }
-  if (!personaState.selectedCharacter && personaState.mode !== "panel" || !personaReflectionInput.trim()) return;
+  const boundedReflectionInput = String(personaReflectionInput || "").trim().slice(0, 4e3);
+  if (!personaState.selectedCharacter && personaState.mode !== "panel" || !boundedReflectionInput) return;
   const submissionGuard = deps.personaReflectionSubmitRef;
   if (submissionGuard?.current) return;
   const submissionToken = {};
@@ -2012,6 +2013,15 @@ const handleSaveReflection = async (deps) => {
   const reflectionContextToken = reflectionContextTokenRef?.current ?? null;
   const reflectionResourceIdRef = deps.personaReflectionResourceIdRef;
   const reflectionResourceId = String(reflectionResourceIdRef?.current || generatedContent?.id || "");
+  const gradingAbortRef = deps.personaReflectionGradeAbortRef;
+  try {
+    gradingAbortRef?.current?.controller?.abort();
+  } catch (_) {
+  }
+  const gradingController = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const gradingHandle = { controller: gradingController };
+  if (gradingAbortRef) gradingAbortRef.current = gradingHandle;
+  let gradingTimeout = null;
   const reflectionIsCurrent = () => (!reflectionIdentityRef || reflectionIdentityRef.current === reflectionIdentity) && (!reflectionContextTokenRef || reflectionContextTokenRef.current === reflectionContextToken) && (!reflectionResourceIdRef || String(reflectionResourceIdRef.current || "") === reflectionResourceId);
   setIsGradingReflection(true);
   let subjectName = "Interview";
@@ -2033,14 +2043,19 @@ const handleSaveReflection = async (deps) => {
     const standardsContext = targetStandards && targetStandards.length > 0 ? targetStandards.join("; ") : null;
     const dokContext = dokLevel || null;
     const boundPromptValue = (value, maxLength) => String(value == null ? "" : value).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
+    const boundResourceLabel = (value, maxLength) => boundPromptValue(value, maxLength).replace(/[<>{}\[\]#*_~|]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
+    const boundPersistedMarkdown = (value, maxLength) => String(value == null ? "" : value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ").trim().slice(0, maxLength).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").slice(0, maxLength);
     const gradingPayload = {
       subject: boundPromptValue(subjectName, 240),
       context: boundPromptValue(contextData, 3e3),
       targetStandards: (Array.isArray(targetStandards) ? targetStandards : []).slice(0, 12).map((standard) => boundPromptValue(standard, 300)).filter(Boolean),
       targetDok: boundPromptValue(dokContext, 80),
       transcript: boundPromptValue(chatLogText.slice(-8e3), 8e3),
-      studentReflection: boundPromptValue(personaReflectionInput, 4e3)
+      studentReflection: boundPromptValue(boundedReflectionInput, 4e3)
     };
+    const persistedSubjectName = boundResourceLabel(gradingPayload.subject, 160) || "Interview";
+    const persistedStandardsContext = gradingPayload.targetStandards.map((standard) => boundResourceLabel(standard, 300)).filter(Boolean).join("; ").slice(0, 3e3);
+    const persistedDokContext = boundResourceLabel(gradingPayload.targetDok, 80);
     const escapedGradingPayload = JSON.stringify(gradingPayload).replace(/[<>&]/g, (character) => ({
       "<": "\\u003c",
       ">": "\\u003e",
@@ -2059,11 +2074,44 @@ const handleSaveReflection = async (deps) => {
       '{"score": 0, "feedback": "Brief, encouraging feedback in 1-2 sentences.", "xpBonus": 0}',
       "score must be an integer from 0 to 100. xpBonus must be an integer from 0 to 50."
     ].join("\n");
-    const result = await callGemini(prompt, true);
+    const gradingTimeoutPromise = new Promise((_, reject) => {
+      const rejectCancelled = () => {
+        const error = new Error("Persona reflection grading cancelled");
+        error.name = "AbortError";
+        reject(error);
+      };
+      gradingTimeout = setTimeout(() => {
+        const error = new Error("Persona reflection grading timed out");
+        error.name = "TimeoutError";
+        reject(error);
+        try {
+          gradingController?.abort();
+        } catch (_2) {
+        }
+      }, 45e3);
+      gradingController?.signal?.addEventListener("abort", rejectCancelled, { once: true });
+    });
+    const result = await Promise.race([
+      callGemini(prompt, true, false, null, null, gradingController?.signal || null),
+      gradingTimeoutPromise
+    ]);
     if (!reflectionIsCurrent()) return;
+    const parseGradingResult = (candidate) => {
+      if (candidate && typeof candidate === "object" && !Array.isArray(candidate)) {
+        const isDirectGrading = ["score", "feedback", "xpBonus"].some((key) => Object.prototype.hasOwnProperty.call(candidate, key));
+        if (isDirectGrading) return candidate;
+        if (candidate.data && typeof candidate.data === "object" && !Array.isArray(candidate.data)) {
+          const isDataGrading = ["score", "feedback", "xpBonus"].some((key) => Object.prototype.hasOwnProperty.call(candidate.data, key));
+          if (isDataGrading) return candidate.data;
+        }
+        candidate = typeof candidate.text === "string" ? candidate.text : typeof candidate.content === "string" ? candidate.content : null;
+      }
+      if (typeof candidate !== "string" || !candidate.trim()) return null;
+      return JSON.parse(cleanJson(candidate));
+    };
     let grading = null;
     try {
-      grading = JSON.parse(cleanJson(result));
+      grading = parseGradingResult(result);
     } catch (e) {
       warnLog("Grading JSON parse error \u2014 presenting without a score", e);
     }
@@ -2083,17 +2131,33 @@ const handleSaveReflection = async (deps) => {
         xpBonus: Number.isFinite(parsedXpBonus) ? Math.max(0, Math.min(50, Math.round(parsedXpBonus))) : 0
       };
     }
-    const reflectionWordCount = personaReflectionInput.trim().split(/\s+/).filter(Boolean).length;
+    const reflectionWordCount = boundedReflectionInput.split(/\s+/).filter(Boolean).length;
     const earnedBonusCap = reflectionWordCount >= 60 ? 30 : reflectionWordCount >= 30 ? 20 : reflectionWordCount >= 15 ? 10 : 0;
     grading.xpBonus = Math.min(grading.xpBonus, earnedBonusCap);
     const totalXP = 10 + grading.xpBonus;
-    const formattedChatLog = personaState.chatHistory.map((m) => {
-      const speaker = String(m.role === "user" ? "Student" : m.speakerName || subjectName).slice(0, 160);
-      let entry = "**" + speaker + ":**\n" + String(m.text || "").slice(0, 12e3);
-      if (m.translation) entry += "\n\n> *English translation:* " + String(m.translation).slice(0, 4e3);
-      if (m.evidenceNote) entry += "\n\n> **Evidence & simulation note:** " + String(m.evidenceNote).slice(0, 2e3);
-      return entry;
-    }).join("\n\n---\n\n");
+    const transcriptSeparator = "\n\n---\n\n";
+    const transcriptEntries = [];
+    let transcriptCharCount = 0;
+    const transcriptMessages = (Array.isArray(personaState.chatHistory) ? personaState.chatHistory : []).slice(-80);
+    for (let index = transcriptMessages.length - 1; index >= 0; index -= 1) {
+      const message = transcriptMessages[index] || {};
+      const speaker = boundResourceLabel(
+        message.role === "user" ? "Student" : message.speakerName || persistedSubjectName,
+        160
+      ) || "Interview participant";
+      let entry = "**" + speaker + ":**\n" + boundPersistedMarkdown(message.text, 6e3);
+      if (message.translation) {
+        entry += "\n\n> *English translation:* " + boundPersistedMarkdown(message.translation, 2e3);
+      }
+      if (message.evidenceNote) {
+        entry += "\n\n> **Evidence & simulation note:** " + boundPersistedMarkdown(message.evidenceNote, 1500);
+      }
+      const entryCost = entry.length + (transcriptEntries.length > 0 ? transcriptSeparator.length : 0);
+      if (transcriptCharCount + entryCost > 12e4) break;
+      transcriptEntries.unshift(entry);
+      transcriptCharCount += entryCost;
+    }
+    const formattedChatLog = transcriptEntries.join(transcriptSeparator);
     const rawPersonaSource = generatedContent?.config?.personaSource;
     const boundSourceText = (value, maxLength) => String(value == null ? "" : value).replace(/[\r\n]+/g, " ").replace(/[<>]/g, "").trim().slice(0, maxLength);
     const boundedPersonaSource = rawPersonaSource && typeof rawPersonaSource === "object" ? {
@@ -2112,34 +2176,40 @@ const handleSaveReflection = async (deps) => {
       if (boundedPersonaSource.fingerprint) groundingLines.push("**Source fingerprint:** " + boundedPersonaSource.fingerprint);
       if (boundedPersonaSource.excerpt) groundingLines.push("**Source excerpt:** " + boundedPersonaSource.excerpt);
     }
-    reflectionGrounding.links.forEach((source) => groundingLines.push("- " + source.title + ": " + source.url));
+    reflectionGrounding.links.forEach((source) => groundingLines.push(
+      "- " + boundResourceLabel(source.title, 200) + ": " + String(source.url || "").slice(0, 2048)
+    ));
     if (reflectionGrounding.queries.length > 0) {
       groundingLines.push("", "**Search queries used:**");
-      reflectionGrounding.queries.forEach((query) => groundingLines.push("- " + query));
+      reflectionGrounding.queries.forEach((query) => groundingLines.push("- " + boundPersistedMarkdown(query, 300)));
     }
     const groundingSection = groundingLines.length > 0 ? "\n\n---\n\n### Sources and Search Context\n" + groundingLines.join("\n") : "";
     let metaHeader = `### Student Reflection
 `;
-    if (standardsContext || dokContext) {
-      metaHeader += `> *Graded against: ${standardsContext || ""} ${dokContext || ""}*
+    if (persistedStandardsContext || persistedDokContext) {
+      metaHeader += `> *Graded against: ${persistedStandardsContext} ${persistedDokContext}*
 
 `;
     }
     const scoreSuffix = typeof grading.score === "number" ? ` (Score: ${grading.score}/100)` : "";
-    const fullData = formattedChatLog + groundingSection + "\n\n---\n\n" + metaHeader + personaReflectionInput + "\n\n> **AI Reflection Feedback:** " + grading.feedback + scoreSuffix;
+    const persistedReflectionText = boundPersistedMarkdown(boundedReflectionInput, 4e3);
+    const persistedFeedback = boundPersistedMarkdown(grading.feedback, 4e3);
+    const fullData = (formattedChatLog + groundingSection + "\n\n---\n\n" + metaHeader + persistedReflectionText + "\n\n> **AI Reflection Feedback:** " + persistedFeedback + scoreSuffix).slice(0, 16e4);
     const newItem = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       type: "persona-reflection",
       data: fullData,
-      meta: typeof grading.score === "number" ? `Reflection on ${subjectName} (Score: ${grading.score})` : `Reflection on ${subjectName}`,
-      title: `Reflection: ${subjectName}`,
+      meta: typeof grading.score === "number" ? `Reflection on ${persistedSubjectName} (Score: ${grading.score})` : `Reflection on ${persistedSubjectName}`,
+      title: `Reflection: ${persistedSubjectName}`,
       timestamp: /* @__PURE__ */ new Date(),
       config: {
         personaResourceId: reflectionResourceId || null,
         reflectionContextToken,
         personaSource: boundedPersonaSource,
         groundingSources: reflectionGrounding.links,
-        groundingSearchQueries: reflectionGrounding.queries
+        groundingSearchQueries: reflectionGrounding.queries,
+        exportedMessageCount: transcriptEntries.length,
+        transcriptTruncated: transcriptEntries.length < transcriptMessages.length
       }
     };
     if (!reflectionIsCurrent()) return;
@@ -2159,12 +2229,15 @@ const handleSaveReflection = async (deps) => {
       score: grading.score,
       feedback: grading.feedback,
       xpEarned: totalXP,
-      subjectName
+      subjectName: persistedSubjectName
     });
   } catch (err) {
     warnLog("Reflection grading failed", err);
-    if (reflectionIsCurrent()) addToast(t("toasts.reflection_grade_error"), "error");
+    const wasCancelled = err?.name === "AbortError" || /cancelled|aborted/i.test(err?.message || "");
+    if (reflectionIsCurrent() && !wasCancelled) addToast(t("toasts.reflection_grade_error"), "error");
   } finally {
+    if (gradingTimeout) clearTimeout(gradingTimeout);
+    if (gradingAbortRef?.current === gradingHandle) gradingAbortRef.current = null;
     if (reflectionIsCurrent()) setIsGradingReflection(false);
     if (submissionGuard && submissionGuard.current === submissionToken) submissionGuard.current = false;
   }

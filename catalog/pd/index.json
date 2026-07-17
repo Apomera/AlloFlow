@@ -5,6 +5,7 @@
   "entries": [
     {
       "slug": "udl-representation-quickstart",
+      "moduleId": "udl-representation-quickstart",
       "version": "1.0.0",
       "language": "en-US",
       "contentDigest": "sha256:c757c1e29e05e044f1ac73367ce3bd0eacff30090d14414a6e474cb07746d76e",
@@ -19,6 +20,7 @@
     },
     {
       "slug": "retrieval-practice-quickstart",
+      "moduleId": "retrieval-practice-quickstart",
       "version": "1.0.0",
       "language": "en-US",
       "contentDigest": "sha256:3037070d691efe93ad0cfb12d4d31130740bd7ce668373b774d21c7c8345326d",
@@ -33,6 +35,7 @@
     },
     {
       "slug": "actionable-feedback-quickstart",
+      "moduleId": "actionable-feedback-quickstart",
       "version": "1.0.0",
       "language": "en-US",
       "contentDigest": "sha256:6ff14915d7e7d1884c6338b037d9c3305205cffebdacf0951f90162e3dfc15e0",

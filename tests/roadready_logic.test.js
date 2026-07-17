@@ -121,6 +121,23 @@ describe('physical road layouts', () => {
     expect(RR.roadsideOffsetFor(RR.CONTINUOUS_SCENARIO_PROFILES.residential, 1.2)).toBeCloseTo(5.3);
   });
 
+  it('places stop bars before crosswalks and stops vehicle fronts behind the bar', () => {
+    const center = 100;
+    const positiveLine = RR.intersectionStopLineCoordinate(center, 1);
+    const negativeLine = RR.intersectionStopLineCoordinate(center, -1);
+    expect(positiveLine).toBeCloseTo(95.9, 8);
+    expect(negativeLine).toBeCloseTo(104.1, 8);
+    expect(positiveLine).toBeLessThan(center - 2.8);
+    expect(negativeLine).toBeGreaterThan(center + 2.8);
+
+    const positiveStopCenter = RR.vehicleStopCenterCoordinate(center, 1, 4.5);
+    const negativeStopCenter = RR.vehicleStopCenterCoordinate(center, -1, 4.5);
+    expect(positiveStopCenter).toBeCloseTo(93.4, 8);
+    expect(negativeStopCenter).toBeCloseTo(106.6, 8);
+    expect(positiveStopCenter + 4.5 / 2).toBeCloseTo(positiveLine - 0.25, 8);
+    expect(negativeStopCenter - 4.5 / 2).toBeCloseTo(negativeLine + 0.25, 8);
+  });
+
   it('derives banking from curvature, not an angled straight heading, and caps it', () => {
     const angledStraight = { headingAt: () => 0.5 };
     const gentleCurve = { headingAt: (y) => y * 0.02 };
@@ -730,11 +747,13 @@ describe('continuous scripted worlds', () => {
     expect(chunk.hasIntersection).toBe(true);
     const peds = RR.spawnStreamedPedestrians(scn, world, chunk, 1);
     expect(peds).toHaveLength(4);
+    const intersectionY = 1 * RR.CHUNK_SIZE + chunk.intersectionY;
     for (const ped of peds) {
       expect(ped._chunk).toBe(1);
-      expect(ped.crosswalkY).toBe(1 * RR.CHUNK_SIZE + chunk.intersectionY);
+      expect(Math.abs(ped.crosswalkY - intersectionY)).toBeCloseTo(2.8, 8);
       expect(Math.abs(ped.homeX - world.spline.centerAt(ped.crosswalkY))).toBeCloseTo(chunk.roadHalfWidth + 1, 5);
     }
+    expect(new Set(peds.map((ped) => Math.sign(ped.crosswalkY - intersectionY)))).toEqual(new Set([-1, 1]));
   });
 });
 

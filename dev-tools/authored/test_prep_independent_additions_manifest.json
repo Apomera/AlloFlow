@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "packs": {
+    "parapro": [
+      {
+        "id": "independent-diagnostic-batch-3",
+        "label": "Assistant-reviewed independent diagnostic bank 3",
+        "files": [
+          "parapro_batch3_reading_34.json",
+          "parapro_batch3_mathematics_33.json",
+          "parapro_batch3_writing_33.json"
+        ]
+      }
+    ]
+  }
+}

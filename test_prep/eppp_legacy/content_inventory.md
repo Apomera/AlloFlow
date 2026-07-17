@@ -1,6 +1,6 @@
 # Pass the EPPP learning-content inventory
 
-Generated: 2026-07-15T13:35:21.093Z
+Generated: 2026-07-17T04:12:48.180Z
 
 ## Inventory
 
@@ -18,7 +18,11 @@ Generated: 2026-07-15T13:35:21.093Z
 | Textbook sections | 278 |
 | Embedded knowledge checks | 109 |
 | Interactive diagram templates | 25 |
-| Diagram placements in chapters | 61 |
+| Used shared diagram templates | 15 |
+| Unused shared diagram templates | 10 |
+| Diagram placements in chapters | 58 |
+| Shared-template diagram placements | 16 |
+| Inline diagram placements | 42 |
 | Searchable term definitions | 1583 |
 | Chapter reference entries | 383 |
 | AI-reflective chapter codas | 49 |
@@ -73,7 +77,7 @@ Recommended release gates: 100-question foundation, 300-question alpha, 1,000-qu
 | --- | ---: | --- | --- |
 | legacy questions | 2933 | active-full-review | re-author or correct, source QA, item-writing QA, accessibility, independent expert validation |
 | textbook chapters | 49 | review-in-progress | 0 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review |
-| interactive diagrams | 25 | legacy-preserved-review-not-started | concept accuracy, labels, keyboard/screen-reader alternative, reduced-motion review |
+| interactive diagrams | 58 | review-in-progress | remaining placements need concept accuracy, label, text-alternative, source-support, bias/context, and independent expert review |
 | flashcards | 415 | first-pass-complete-expert-pending | independent qualified expert validation and release decisions for retained cards; retired duplicate cards remain excluded |
 | memory aids | 255 | review-in-progress | remaining aids need oversimplification, outdated-guidance, bias, and source review |
 | term definitions | 1583 | legacy-preserved-review-not-started | definition/source/version audit and cross-link review |

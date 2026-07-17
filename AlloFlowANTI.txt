@@ -1048,6 +1048,7 @@ if (typeof window !== 'undefined') {
 const ALLO_QR_STUDENT_AI_OFF_KEY = 'alloflow_qr_student_ai_disabled';
 const ALLO_QR_STUDENT_AI_CONFIG_KEY = 'alloflow_qr_student_ai_config';
 const ALLO_STUDENT_AI_CONFIG_EVENT = 'alloflow:student-ai-config-changed';
+const ALLO_STUDENT_AI_VALIDATION_TTL_MS = 6 * 60 * 60 * 1000;
 const ALLOFLOW_STUDENT_BASE_URL_KEY = 'alloflow_student_base_url';
 const ALLOFLOW_DEFAULT_STUDENT_BASE_URL = 'https://alloflow-cdn.pages.dev/app/';
 const ALLOFLOW_DEMO_STUDENT_HOSTS = ['prismflow-911fe.web.app', 'prismflow-911fe.firebaseapp.com'];
@@ -2503,31 +2504,61 @@ function _isQrStudentAiDisabled() {
     if (typeof window === 'undefined') return false;
     try {
         if (!_alloHasAnyStudentEntry()) return false;
-        const params = new URLSearchParams(window.location.search || '');
-        const urlPolicy = String(params.get('allo_ai') || '').toLowerCase() === 'byok' ? 'student-byok' : 'off';
-        const policy = window.__alloQrStudentMode?.aiPolicy || urlPolicy;
+        // The URL is only a routing hint. A student can edit it, so only an
+        // assignment packet or live-session document may authorize BYOK.
+        const policy = window.__alloQrStudentMode?.aiPolicy || 'pending';
         if (policy !== 'student-byok') return true;
         return !_alloStudentAiConfigIsValidated(_readAlloAiUserConfig());
     } catch (_) {
         return true;
     }
 }
+function _alloStudentAiConfigFingerprint(config) {
+    if (!config || typeof config !== 'object') return '';
+    const models = config.models && typeof config.models === 'object' ? config.models : {};
+    const canonical = JSON.stringify({
+        backend: String(config.backend || 'gemini').trim().toLowerCase(),
+        baseUrl: String(config.baseUrl || '').trim().replace(/\/+$/, ''),
+        apiKey: String(config.apiKey || ''),
+        modelDefault: String(models.default || ''),
+        modelFallback: String(models.fallback || ''),
+        ttsProvider: String(config.ttsProvider || 'auto'),
+        imageProvider: String(config.imageProvider || 'auto'),
+    });
+    let hash = 2166136261;
+    for (let index = 0; index < canonical.length; index += 1) {
+        hash ^= canonical.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
+    }
+    return 'v1-' + (hash >>> 0).toString(16).padStart(8, '0');
+}
+if (typeof window !== 'undefined') window.__alloStudentAiConfigFingerprint = _alloStudentAiConfigFingerprint;
+function _alloStudentAiCapabilities(config) {
+    const validation = config && config.validation;
+    const capabilities = validation && validation.capabilities;
+    return {
+        text: Boolean(capabilities && capabilities.text === true),
+        vision: Boolean(capabilities && capabilities.vision === true),
+        image: Boolean(capabilities && capabilities.image === true),
+        imageEdit: Boolean(capabilities && capabilities.imageEdit === true),
+        audio: Boolean(capabilities && capabilities.audio === true),
+    };
+}
 function _alloStudentAiConfigIsValidated(config) {
     if (!config || typeof config !== 'object') return false;
     const backend = String(config.backend || 'gemini');
     const validation = config.validation;
-    if (!validation || validation.ok !== true || validation.backend !== backend || validation.text !== true) return false;
+    const fingerprint = _alloStudentAiConfigFingerprint(config);
+    const expiresAt = Date.parse(validation && validation.expiresAt ? validation.expiresAt : '');
+    if (!validation
+        || validation.ok !== true
+        || validation.backend !== backend
+        || validation.fingerprint !== fingerprint
+        || !Number.isFinite(expiresAt)
+        || expiresAt <= Date.now()
+        || validation.capabilities?.text !== true) return false;
     const keyless = ['alloflow-local', 'lmstudio', 'localai', 'ollama', 'onnx-npu', 'custom'];
     return keyless.includes(backend) || Boolean(String(config.apiKey || '').trim());
-}
-function _alloQrStudentAiPolicyFromLocation() {
-    if (typeof window === 'undefined') return 'off';
-    try {
-        const params = new URLSearchParams(window.location.search || '');
-        return String(params.get('allo_ai') || '').toLowerCase() === 'byok' ? 'student-byok' : 'off';
-    } catch (_) {
-        return 'off';
-    }
 }
 function _makeQrStudentAiBlockedFn(label) {
     const blocked = async () => {
@@ -2546,6 +2577,7 @@ function _installQrStudentAiGuard() {
     callGeminiImageEdit = _makeQrStudentAiBlockedFn('image-edit');
     if (typeof window !== 'undefined') {
         window.__alloStudentAiDisabled = true;
+        window.__alloStudentAiCapabilities = { text: false, vision: false, image: false, imageEdit: false, audio: false };
         window.callGemini = callGemini;
         window.callGeminiVision = callGeminiVision;
         window.callGeminiImageEdit = callGeminiImageEdit;
@@ -2554,6 +2586,21 @@ function _installQrStudentAiGuard() {
     return true;
 }
 if (typeof window !== 'undefined') window.__alloInstallQrStudentAiGuard = _installQrStudentAiGuard;
+function _installQrStudentAiCapabilityGuards() {
+    if (typeof window === 'undefined' || !_alloHasAnyStudentEntry() || _isQrStudentAiDisabled()) return false;
+    const capabilities = _alloStudentAiCapabilities(_readAlloAiUserConfig());
+    window.__alloStudentAiCapabilities = capabilities;
+    if (!capabilities.vision) {
+        callGeminiVision = _makeQrStudentAiBlockedFn('vision');
+        window.callGeminiVision = callGeminiVision;
+    }
+    if (!capabilities.imageEdit) {
+        callGeminiImageEdit = _makeQrStudentAiBlockedFn('image-edit');
+        window.callGeminiImageEdit = callGeminiImageEdit;
+    }
+    if (!capabilities.audio) window.callGeminiAudio = _makeQrStudentAiBlockedFn('audio');
+    return true;
+}
 function _syncQrStudentAiAccess() {
     if (typeof window === 'undefined') return false;
     const disabled = _isQrStudentAiDisabled();
@@ -2563,23 +2610,56 @@ function _syncQrStudentAiAccess() {
         if (disabled) window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1');
         else window.sessionStorage?.removeItem(ALLO_QR_STUDENT_AI_OFF_KEY);
     } catch (_) {}
-    if (disabled) return _installQrStudentAiGuard();
+    if (disabled) {
+        _installQrStudentAiGuard();
+        return false;
+    }
     try { _upgradeGeminiAPI(); } catch (_) {}
     try { _upgradeTTS(); } catch (_) {}
     try { if (typeof callGeminiAudio === 'function') window.callGeminiAudio = callGeminiAudio; } catch (_) {}
+    _installQrStudentAiCapabilityGuards();
     return true;
 }
-function _alloSetQrStudentAiPolicy(policy, modePatch = {}) {
+function _alloClearQrStudentAiConfig({ dispatch = true } = {}) {
     if (typeof window === 'undefined') return false;
-    const normalized = policy === 'student-byok' ? 'student-byok' : 'off';
+    try { window.sessionStorage?.removeItem(ALLO_QR_STUDENT_AI_CONFIG_KEY); } catch (_) {}
+    window.__alloStudentAiConfigured = false;
+    window.__alloStudentAiCapabilities = { text: false, vision: false, image: false, imageEdit: false, audio: false };
+    if (dispatch) {
+        try { window.dispatchEvent(new CustomEvent(ALLO_STUDENT_AI_CONFIG_EVENT, { detail: { disconnected: true } })); } catch (_) {}
+    }
+    return true;
+}
+function _alloDisconnectStudentAi(options = {}) {
+    _alloClearQrStudentAiConfig({ dispatch: false });
+    const enabled = _syncQrStudentAiAccess();
+    if (options.dispatch !== false) {
+        try { window.dispatchEvent(new CustomEvent(ALLO_STUDENT_AI_CONFIG_EVENT, { detail: { disconnected: true, enabled } })); } catch (_) {}
+    }
+    return true;
+}
+function _alloSetQrStudentAiPolicy(policy, modePatch = {}, options = {}) {
+    if (typeof window === 'undefined') return false;
+    const normalized = policy === 'student-byok' ? 'student-byok' : (policy === 'pending' ? 'pending' : 'off');
+    if (options.clearCredentials === true || (normalized === 'off' && options.authoritative === true)) {
+        _alloClearQrStudentAiConfig({ dispatch: false });
+    }
     window.__alloQrStudentMode = { ...(window.__alloQrStudentMode || {}), ...(modePatch || {}), aiPolicy: normalized };
     const enabled = _syncQrStudentAiAccess();
     try { window.dispatchEvent(new CustomEvent(ALLO_STUDENT_AI_CONFIG_EVENT, { detail: { policy: normalized, enabled } })); } catch (_) {}
     return enabled;
 }
+function _alloApplyAuthoritativeStudentAiPolicy(source, modePatch = {}) {
+    const value = source && typeof source === 'object' && source.aiPolicy !== undefined ? source.aiPolicy : source;
+    const studentAi = value && typeof value === 'object' ? value.studentAi : value;
+    const policy = studentAi === 'student-byok' ? 'student-byok' : 'off';
+    return _alloSetQrStudentAiPolicy(policy, modePatch, { authoritative: true });
+}
 if (typeof window !== 'undefined') {
     window.__alloSyncQrStudentAiAccess = _syncQrStudentAiAccess;
     window.__alloSetQrStudentAiPolicy = _alloSetQrStudentAiPolicy;
+    window.__alloApplyAuthoritativeStudentAiPolicy = _alloApplyAuthoritativeStudentAiPolicy;
+    window.__alloDisconnectStudentAi = _alloDisconnectStudentAi;
 }
 function _loadAlloQrLibrary() {
     if (typeof window === 'undefined' || typeof document === 'undefined') return Promise.reject(new Error('QR library requires a browser'));
@@ -2681,6 +2761,7 @@ function _installLocalTextBridge(aiInstance, aiConfig) {
         };
     }
     _installQrStudentAiGuard();
+    _installQrStudentAiCapabilityGuards();
     return true;
 }
 function _installLocalTextBridgeFromStorage() {
@@ -8781,6 +8862,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const personaReflectionSubmitRef = useRef(false);
   const personaReflectionIdentityRef = useRef('');
   const personaReflectionPromptRequestRef = useRef(0);
+  const personaReflectionPromptAbortRef = useRef(null);
+  const personaReflectionGradeAbortRef = useRef(null);
   const personaReflectionContextTokenRef = useRef(0);
   const personaReflectionContextSignatureRef = useRef('');
   const personaReflectionResourceIdRef = useRef('');
@@ -10317,6 +10400,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     earnedBadges: []
   });
   const [personaAutoRead, setPersonaAutoRead] = useState(false);
+  const [personaAutoReadEpoch, setPersonaAutoReadEpoch] = useState(0);
   // Persistent queue refs intentionally outlive chat/isLoading renders. A
   // generation token cancels only on an explicit toggle-off or session change,
   // so a new message cannot cut off audio already playing.
@@ -10327,6 +10411,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const personaTtsQueueGenerationRef = useRef(0);
   const personaTtsProcessorRef = useRef(null);
   const personaAutoReadWasEnabledRef = useRef(false);
+  const personaTtsVoiceSignature = JSON.stringify({
+      selectedVoice: String(selectedVoice || ''),
+      single: personaState.selectedCharacter ? {
+          name: personaState.selectedCharacter.name || '',
+          voice: personaState.selectedCharacter.voice || '',
+          voiceProfile: personaState.selectedCharacter.voiceProfile || '',
+          role: personaState.selectedCharacter.role || '',
+          year: personaState.selectedCharacter.year || '',
+          nationality: personaState.selectedCharacter.nationality || ''
+      } : null,
+      panel: (personaState.selectedCharacters || []).map(character => ({
+          name: character?.name || '',
+          voice: character?.voice || '',
+          voiceProfile: character?.voiceProfile || '',
+          role: character?.role || '',
+          year: character?.year || '',
+          nationality: character?.nationality || ''
+      }))
+  });
   const [isPersonaDefining, setIsPersonaDefining] = useState(false);
   const personaDefinitionCache = React.useRef(new Map());
   const [panelTtsPending, setPanelTtsPending] = useState([]);
@@ -10341,6 +10444,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
   }, [personaAutoRead]);
   const setPersonaAutoReadSafely = (nextValue) => {
+      const wasEnabled = personaAutoReadRef.current;
       const enabled = Boolean(typeof nextValue === 'function'
           ? nextValue(personaAutoReadRef.current)
           : nextValue);
@@ -10361,9 +10465,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (shouldStop) {
               try { stopPlayback(); } catch (_) {}
           }
+      } else if (!wasEnabled) {
+          // An off -> on pair can be batched back to the same React boolean.
+          // This epoch still forces the latest reply to be queued and warmed.
+          personaAutoReadWasEnabledRef.current = false;
+          setPersonaAutoReadEpoch(value => value + 1);
       }
       setPersonaAutoRead(enabled);
   };
+  useEffect(() => {
+      const handlePersonaMuteChange = (event) => {
+          const muted = event?.detail?.muted === true
+              || (typeof isGlobalMuted === 'function' && isGlobalMuted());
+          if (muted) {
+              const hadActiveAudio = personaTtsQueueRunningRef.current || personaTtsQueueRef.current.length > 0;
+              personaTtsQueueGenerationRef.current += 1;
+              personaTtsQueueRef.current = [];
+              personaTtsQueuedIndicesRef.current.clear();
+              personaAutoReadWasEnabledRef.current = false;
+              setPanelTtsPending([]);
+              if (hadActiveAudio) {
+                  try { stopPlayback(); } catch (_) {}
+              }
+          } else if (personaAutoReadRef.current) {
+              // Auto-read stays enabled across mute. On unmute, replay and warm
+              // only the latest character turn instead of a silent backlog.
+              personaAutoReadWasEnabledRef.current = false;
+              setPersonaAutoReadEpoch(value => value + 1);
+          }
+      };
+      window.addEventListener('alloflow-mute-changed', handlePersonaMuteChange);
+      return () => window.removeEventListener('alloflow-mute-changed', handlePersonaMuteChange);
+  }, []);
   const [personaAutoSend, setPersonaAutoSend] = useState(false);
   const lastReadPersonaIndexRef = useRef(-1);
   const [personaInput, setPersonaInput] = useState('');
@@ -10388,6 +10521,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       // Invalidate late prompt/grading work and clear request-owned busy state
       // whenever a Persona resource/session closes, opens, or changes identity.
       personaReflectionPromptRequestRef.current += 1;
+      try { personaReflectionPromptAbortRef.current?.controller?.abort(); } catch (_) {}
+      try { personaReflectionGradeAbortRef.current?.controller?.abort(); } catch (_) {}
+      personaReflectionPromptAbortRef.current = null;
+      personaReflectionGradeAbortRef.current = null;
       personaReflectionSubmitRef.current = false;
       setIsGeneratingReflectionPrompt(false);
       setIsGradingReflection(false);
@@ -10492,6 +10629,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       setGeneratedContent(nextResource);
       setHistory(prev => prev.map(item => item.id === generatedContent.id ? nextResource : item));
+      // Candidate resources and the active interview hold separate object
+      // snapshots. Keep active character data synchronized immediately.
+      setPersonaState(prev => ({
+          ...prev,
+          selectedCharacter: prev.selectedCharacter?.name === currentPersona.name
+              ? { ...prev.selectedCharacter, ...nextPersona }
+              : prev.selectedCharacter,
+          selectedCharacters: (prev.selectedCharacters || []).map(character =>
+              character?.name === currentPersona.name
+                  ? { ...character, ...nextPersona }
+                  : character
+          )
+      }));
       setPersonaTeacherEditor(null);
       addToast(t('persona.character_updated'), 'success');
   };
@@ -13332,6 +13482,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const docSnap = await getDoc(historyRef);
           if (docSnap.exists()) {
               const data = docSnap.data();
+              if (!isTeacherMode && _alloHasAnyStudentEntry()) {
+                  _alloApplyAuthoritativeStudentAiPolicy(data, {
+                      type: _alloMbBridgeActive() ? 'mailbox-live' : 'live',
+                      code: activeSessionCode,
+                      hostAppId: activeSessionAppId,
+                  });
+              }
               const cloudItems = data.items || [];
           const hydratedCloudItems = hydrateHistory(cloudItems);
           setHistory(prev => {
@@ -13585,6 +13742,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   }
                   setActiveSessionCode(null);
                   setSessionData(null);
+                  if (!isTeacherMode) _alloDisconnectStudentAi();
                   hasConnectedRef.current = false;
                   lastResourcesStringRef.current = null;
                   return;
@@ -13937,6 +14095,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                  addToast(t('session.toast_ended'), "error");
                  setActiveSessionCode(null);
                  setSessionData(null);
+                 if (!isTeacherMode) _alloDisconnectStudentAi();
                  hasConnectedRef.current = false;
                  lastResourcesStringRef.current = null;
               }
@@ -14857,6 +15016,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       currentResourceId: null,
       createdAt: new Date().toISOString(),
       hostId: (user && user.uid) || (_alloMbBridgeState && _alloMbBridgeState.uid) || 'teacher',
+      aiPolicy: { studentAi: studentAiPolicyForShare },
       roster: {},
       democracy: { isActive: false, phase: 'idle', votingContext: 'custom', activeOptions: [], votes: {}, suggestions: {} },
       quizState: { isActive: false, mode: 'live-pulse', currentQuestionIndex: 0, phase: 'idle', responses: {}, bossStats: { maxHP: 1000, currentHP: 1000, classHP: 100, name: "The Knowledge Keeper", lastDamage: 0 }, teams: {} },
@@ -20095,7 +20255,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (imagenKeyNoticeShownRef.current) return;
     imagenKeyNoticeShownRef.current = true;
     console.warn('[Imagen] ' + message);
-    try { addToast(t('imagen.key_notice') || message, 'info'); } catch (_) {}
+    try { addToast(t('imagen.key_notice', { message }) || message, 'info'); } catch (_) {}
   };
   // Local image fallback (SD-Turbo on WebGPU): the image twin of the Kokoro
   // rate-limit fallback. Simpler images than Imagen — but private, free, and
@@ -20166,6 +20326,12 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (_isQrStudentAiDisabled()) {
       const err = new Error('AI image generation is off for this teacher-prepared QR activity.');
       err.code = 'allo-qr-ai-disabled';
+      err.aiDisabledFor = 'imagen';
+      throw err;
+    }
+    if (_alloHasAnyStudentEntry() && !_alloStudentAiCapabilities(_readAlloAiUserConfig()).image) {
+      const err = new Error('This verified personal AI connection supports text only. Image generation remains off.');
+      err.code = 'allo-student-ai-capability-disabled';
       err.aiDisabledFor = 'imagen';
       throw err;
     }
@@ -24031,6 +24197,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         dokLevel,
         rosterKey,
         sessionData,
+        studentAiPolicyForShare,
         user: sessionUser,
         appId,
         activeSessionAppId,
@@ -24168,7 +24335,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload, activeSessionCode);
               const prepared = prepareSessionResourcesForWrite(lightweightResources);
               const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-              await writeToSession(sessionRef, { resources: prepared.resources });
+              await writeToSession(sessionRef, {
+                  resources: prepared.resources,
+                  aiPolicy: { studentAi: studentAiPolicyForShare },
+              });
               debugLog("Session resources synced:", prepared.keptCount, "of", prepared.originalCount, "bytes", prepared.byteLength);
               if (prepared.droppedCount > 0 || prepared.overLimit) {
                   addToast('Live session resources were trimmed to keep sync reliable. Newest resources were shared.', 'info');
@@ -24179,7 +24349,22 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       };
       const timeoutId = setTimeout(syncResourcesToSession, 1500);
       return () => clearTimeout(timeoutId);
-  }, [history, activeSessionCode, isTeacherMode, appId]);
+  }, [history, activeSessionCode, isTeacherMode, appId, studentAiPolicyForShare]);
+  useEffect(() => {
+      if (!activeSessionCode || !isTeacherMode) return;
+      const syncStudentAiPolicy = async () => {
+          try {
+              const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+              await writeToSession(sessionRef, {
+                  aiPolicy: { studentAi: studentAiPolicyForShare },
+              });
+          } catch (error) {
+              warnLog('Failed to sync student AI policy to the active session:', error);
+          }
+      };
+      const timeoutId = setTimeout(syncStudentAiPolicy, 250);
+      return () => clearTimeout(timeoutId);
+  }, [activeSessionCode, isTeacherMode, appId, studentAiPolicyForShare]);
   const joinClassSession = async (code, hostOverride = '') => {
       const cleanCode = _alloCleanLiveSessionCode(code);
       if (!cleanCode) {
@@ -24205,7 +24390,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               return false;
           }
           const sessionInfo = sessionSnap.data();
+          if (_alloHasAnyStudentEntry()) {
+              _alloApplyAuthoritativeStudentAiPolicy(sessionInfo, {
+                  type: _alloMbBridgeActive() ? 'mailbox-live' : 'live',
+                  code: cleanCode,
+                  hostAppId: targetAppId,
+              });
+          }
           if (sessionInfo.isActive === false || sessionInfo.status === 'ended') {
+              _alloDisconnectStudentAi();
               addToast(t('session.toast_ended') || "Session has ended.", "info");
               setActiveSessionCode(null);
               setActiveSessionAppId(appId);
@@ -24276,7 +24469,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           if (!liveCode) return undefined;
           const firebaseHandoff = _alloReadQrFirebaseHandoff();
           const hostId = firebaseHandoff ? firebaseHandoff.appId : '';
-          _alloSetQrStudentAiPolicy(_alloQrStudentAiPolicyFromLocation(), { type: 'live', code: liveCode, hostAppId: hostId || appId });
+          _alloSetQrStudentAiPolicy('pending', { type: 'live', code: liveCode, hostAppId: hostId || appId }, { clearCredentials: true });
           setHasSelectedMode(true);
           setHasSelectedRole(true);
           setShowWizard(false);
@@ -25760,7 +25953,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           if (!assignmentId) return undefined;
           const firebaseHandoff = _alloReadQrFirebaseHandoff();
           const hostId = firebaseHandoff ? firebaseHandoff.appId : '';
-          _alloSetQrStudentAiPolicy(_alloQrStudentAiPolicyFromLocation(), { type: 'assignment', assignmentId, hostAppId: hostId });
+          _alloSetQrStudentAiPolicy('pending', { type: 'assignment', assignmentId, hostAppId: hostId }, { clearCredentials: true });
           setHasSelectedMode(true);
           setHasSelectedRole(true);
           setShowWizard(false);
@@ -25784,7 +25977,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   const snap = await getDoc(assignmentRef);
                   if (!snap.exists()) throw new Error('Assignment not found');
                   const packet = snap.data() || {};
-                  _alloSetQrStudentAiPolicy(packet.aiPolicy?.studentAi === 'student-byok' ? 'student-byok' : 'off');
+                  _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment', assignmentId, hostAppId: hostId });
                   if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
                   const rawResources = Array.isArray(packet.resources) ? packet.resources : [];
                   if (!rawResources.length) throw new Error('Assignment has no resources');
@@ -25833,7 +26026,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       let cancelled = false;
       const encodedPack = _alloReadAlloPackParam();
       if (!encodedPack) return undefined;
-      _alloSetQrStudentAiPolicy(_alloQrStudentAiPolicyFromLocation(), { type: 'assignment-pack' });
+      _alloSetQrStudentAiPolicy('pending', { type: 'assignment-pack' }, { clearCredentials: true });
       setHasSelectedMode(true);
       setHasSelectedRole(true);
       setShowWizard(false);
@@ -25847,7 +26040,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           try {
               const text = await _alloDecodeAlloPack(encodedPack);
               const packet = JSON.parse(text || 'null');
-              _alloSetQrStudentAiPolicy(packet.aiPolicy?.studentAi === 'student-byok' ? 'student-byok' : 'off');
+              _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack' });
               if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
               const rawResources = Array.isArray(packet?.resources)
                   ? packet.resources.filter(item => item && item.id && item.type && !TEACHER_ONLY_TYPES.includes(item.type))
@@ -25885,7 +26078,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (!entry || !entry.c || !entry.k) return undefined;
       const mbJoinCode = String(entry.c).toUpperCase();
       let mbJoinCancelled = false;
-      _alloSetQrStudentAiPolicy(_alloQrStudentAiPolicyFromLocation(), { type: 'mailbox-live', code: mbJoinCode });
+      _alloSetQrStudentAiPolicy('pending', { type: 'mailbox-live', code: mbJoinCode }, { clearCredentials: true });
       setHasSelectedMode(true);
       setHasSelectedRole(true);
       setShowWizard(false);
@@ -26171,7 +26364,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (!entry || !entry.id || !entry.k) return undefined;
       setMbHostedAssignment({ url: entry.u, id: entry.id, secret: String(entry.k) });
       let cancelled = false;
-      _alloSetQrStudentAiPolicy(_alloQrStudentAiPolicyFromLocation(), { type: 'assignment-pack-hosted' });
+      _alloSetQrStudentAiPolicy('pending', { type: 'assignment-pack-hosted' }, { clearCredentials: true });
       setHasSelectedMode(true);
       setHasSelectedRole(true);
       setShowWizard(false);
@@ -26196,7 +26389,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               } while (part <= of && !cancelled);
               if (cancelled) return;
               const packet = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
-              _alloSetQrStudentAiPolicy(packet.aiPolicy?.studentAi === 'student-byok' ? 'student-byok' : 'off');
+              _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack-hosted' });
               if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
               const rawResources = Array.isArray(packet?.resources)
                   ? packet.resources.filter(item => item && item.id && item.type && !TEACHER_ONLY_TYPES.includes(item.type))
@@ -28576,10 +28769,95 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setShowSessionModal, setShowClassAnalytics, setShowExportMenu, setShowAIBackendModal,
       setShowTextSettings, setShowVoiceSettings, setShowReadThisPage,
       openSourceInput: () => {
-        setShowEducatorHub(false); setShowLearningHub(false); setActiveSidebarTab('create');
+        setShowEducatorHub(false); setShowLearningHub(false); setActiveSidebarTab('create'); setActiveView('input');
+        setShowUrlInput(false); setShowSourceGen(false);
         setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
+        setTimeout(() => {
+          try {
+            const panel = document.getElementById('tour-input-panel');
+            if (!panel) return;
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const field = panel.querySelector('textarea, [contenteditable="true"], input[type="text"], input');
+            if (field && field.focus) field.focus();
+          } catch (_) {}
+        }, 150);
+      },
+      openSourceUrl: () => {
+        setShowEducatorHub(false); setShowLearningHub(false); setActiveSidebarTab('create'); setActiveView('input');
+        setShowSourceGen(false); setShowUrlInput(true);
+        setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
+        setTimeout(() => {
+          try {
+            const panel = document.getElementById('tour-input-panel');
+            if (!panel) return;
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const field = panel.querySelector('input[type="url"], input[type="text"], input');
+            if (field && field.focus) field.focus();
+          } catch (_) {}
+        }, 200);
+      },
+      openSourceGenerator: () => {
+        setShowEducatorHub(false); setShowLearningHub(false); setActiveSidebarTab('create'); setActiveView('input');
+        setShowUrlInput(false); setShowSourceGen(true);
+        setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
+        setTimeout(() => {
+          try {
+            const panel = document.getElementById('tour-input-panel');
+            if (!panel) return;
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const field = panel.querySelector('input[type="text"], textarea, [contenteditable="true"], input');
+            if (field && field.focus) field.focus();
+          } catch (_) {}
+        }, 150);
       },
       openHistory: () => { setShowEducatorHub(false); setShowLearningHub(false); setActiveSidebarTab('history'); },
+      setSetupGradeLevel: (value) => {
+        const raw = String(value || '').trim();
+        if (!raw) return gradeLevel || '3rd Grade';
+        const lower = raw.toLowerCase();
+        let next = raw;
+        if (/^(k|pre[-\s]?k|kindergarten)$/.test(lower)) next = 'Kindergarten';
+        else if (/graduate/.test(lower)) next = 'Graduate Level';
+        else if (/college|university/.test(lower)) next = 'College';
+        else {
+          const m = lower.match(/\d{1,2}/);
+          if (m) {
+            const n = Math.max(1, Math.min(12, parseInt(m[0], 10)));
+            next = n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th') + ' Grade';
+          }
+        }
+        setGradeLevel(next);
+        try { setSourceLevel(next); } catch (_) {}
+        return next;
+      },
+      setSetupSourceTone: (value) => {
+        const raw = String(value || '').trim();
+        const key = raw.toLowerCase().replace(/[^a-z]/g, '');
+        const map = { informative: 'Informative', info: 'Informative', explanatory: 'Informative', narrative: 'Narrative', story: 'Narrative', dialogue: 'Dialogue', dialog: 'Dialogue', conversation: 'Dialogue', conversational: 'Dialogue', persuasive: 'Persuasive', argument: 'Persuasive', humorous: 'Humorous', funny: 'Humorous', procedural: 'Step-by-Step', stepbystep: 'Step-by-Step', steps: 'Step-by-Step' };
+        const next = map[key] || raw || sourceTone || 'Informative';
+        setSourceTone(next);
+        return next;
+      },
+      setSetupSourceLength: (value) => {
+        const raw = String(value || '').trim().toLowerCase();
+        const lenMap = { short: '150', brief: '150', standard: '250', medium: '250', normal: '250', detailed: '500', long: '500', exhaustive: '1000', extended: '1000' };
+        let next = lenMap[raw];
+        if (!next) {
+          const n = parseInt(raw, 10);
+          if (!Number.isNaN(n) && n > 0) next = String(Math.max(50, Math.min(2000, n)));
+        }
+        if (!next) next = sourceLength || '250';
+        setSourceLength(next);
+        return next;
+      },
+      setSetupLanguage: (value) => {
+        const next = String(value || '').trim().slice(0, 60) || leveledTextLanguage || 'English';
+        setLeveledTextLanguage(next);
+        if (next && next.toLowerCase() !== 'english') {
+          setSelectedLanguages(prev => Array.isArray(prev) && prev.includes(next) ? prev : [...(Array.isArray(prev) ? prev : []), next]);
+        }
+        return next;
+      },
       handleToggleFocusMode, handleToggleReadingRuler, handleToggleIsHelpMode, handleToggleIsBotVisible,
       handleToggleVisualSupports, handleToggleShowSocraticChat,
       toggleLineFocus: () => setIsLineFocusMode(prev => !prev),
@@ -28594,6 +28872,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // throw. (Slice 1 of the context-aware palette; the renderer consumes these in a later slice.)
       educatorHubOpen: showEducatorHub,
       learningHubOpen: showLearningHub,
+      sourceSetupOpen: activeSidebarTab === 'create' && activeView === 'input',
       symbolStudioOpen: isSymbolStudioOpen,
       videoStudioOpen: isVideoStudioOpen,
       alloStudioOpen: isAlloStudioOpen,
@@ -29520,6 +29799,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (!personaState.selectedCharacter && personaState.mode !== 'panel') return;
       const promptRequest = ++personaReflectionPromptRequestRef.current;
       const reflectionIdentity = personaReflectionIdentityRef.current;
+      try { personaReflectionPromptAbortRef.current?.controller?.abort(); } catch (_) {}
+      const promptController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const promptHandle = { controller: promptController };
+      personaReflectionPromptAbortRef.current = promptHandle;
+      let promptTimeout = null;
       setIsGeneratingReflectionPrompt(true);
       setDynamicReflectionQuestion('');
       try {
@@ -29527,15 +29811,45 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           // persona/source/transcript fields as bounded, tag-escaped JSON, so
           // content inside them cannot alter the task or output contract.
           const prompt = buildSecurePersonaReflectionPrompt(personaState, targetStandards, dokLevel, currentUiLanguage);
-          const result = await callGemini(prompt);
+          const timeoutPromise = new Promise((_, reject) => {
+              const rejectCancelled = () => {
+                  const error = new Error('Persona reflection prompt cancelled');
+                  error.name = 'AbortError';
+                  reject(error);
+              };
+              promptTimeout = setTimeout(() => {
+                  const error = new Error('Persona reflection prompt timed out');
+                  error.name = 'TimeoutError';
+                  reject(error);
+                  try { promptController?.abort(); } catch (_) {}
+              }, 30000);
+              promptController?.signal?.addEventListener('abort', rejectCancelled, { once: true });
+          });
+          const result = await Promise.race([
+              callGemini(prompt, false, false, null, null, promptController?.signal || null),
+              timeoutPromise
+          ]);
           if (promptRequest !== personaReflectionPromptRequestRef.current || reflectionIdentity !== personaReflectionIdentityRef.current) return;
-          setDynamicReflectionQuestion(result);
+          const questionValue = typeof result === 'string'
+              ? result
+              : (typeof result?.text === 'string'
+                  ? result.text
+                  : (typeof result?.content === 'string' ? result.content : ''));
+          const boundedQuestion = String(questionValue || '')
+              .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ' ')
+              .trim()
+              .slice(0, 1000);
+          setDynamicReflectionQuestion(
+              boundedQuestion || t('persona.default_reflection_prompt') || 'Reflect on what you learned from this conversation.'
+          );
       } catch (error) {
           warnLog("Reflection Prompt Gen Error:", error);
           if (promptRequest === personaReflectionPromptRequestRef.current && reflectionIdentity === personaReflectionIdentityRef.current) {
               setDynamicReflectionQuestion(t('persona.default_reflection_prompt') || 'Reflect on what you learned from this conversation.');
           }
       } finally {
+          if (promptTimeout) clearTimeout(promptTimeout);
+          if (personaReflectionPromptAbortRef.current === promptHandle) personaReflectionPromptAbortRef.current = null;
           if (promptRequest === personaReflectionPromptRequestRef.current && reflectionIdentity === personaReflectionIdentityRef.current) setIsGeneratingReflectionPrompt(false);
       }
   };
@@ -29555,13 +29869,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       generatedContent?.id,
       personaState.mode,
       personaState.selectedCharacter?.name,
-      (personaState.selectedCharacters || []).map(c => c?.name || '').join('|')
+      (personaState.selectedCharacters || []).map(c => c?.name || '').join('|'),
+      personaTtsVoiceSignature
   ]);
   useEffect(() => () => {
+      const hadActiveAudio = personaTtsQueueRunningRef.current || personaTtsQueueRef.current.length > 0;
       personaAutoReadRef.current = false;
       personaTtsQueueGenerationRef.current += 1;
       personaTtsQueueRef.current = [];
       personaTtsQueuedIndicesRef.current.clear();
+      if (hadActiveAudio) {
+          try { stopPlayback(); } catch (_) {}
+      }
   }, []);
   const prewarmQueuedPersonaMessage = (entry) => {
       const phaseKPersonaTts = window.AlloModules && window.AlloModules.PhaseKHelpers;
@@ -29571,6 +29890,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               count: 1,
               shouldContinue: () => (
                   personaAutoReadRef.current &&
+                  !(typeof isGlobalMuted === 'function' && isGlobalMuted()) &&
                   entry.generation === personaTtsQueueGenerationRef.current
               ),
               deps: {
@@ -29588,7 +29908,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (personaTtsQueueRunningRef.current) return;
       personaTtsQueueRunningRef.current = true;
       try {
-          while (personaAutoReadRef.current) {
+          while (personaAutoReadRef.current && !(typeof isGlobalMuted === 'function' && isGlobalMuted())) {
               const entry = personaTtsQueueRef.current.shift();
               if (!entry) break;
               personaTtsQueuedIndicesRef.current.delete(entry.index);
@@ -29662,7 +29982,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
   personaTtsProcessorRef.current = processPersonaTtsQueue;
   const enqueuePersonaTtsMessages = (messages) => {
-      if (!personaAutoReadRef.current || !Array.isArray(messages) || messages.length === 0) return;
+      if (
+          !personaAutoReadRef.current ||
+          (typeof isGlobalMuted === 'function' && isGlobalMuted()) ||
+          !Array.isArray(messages) ||
+          messages.length === 0
+      ) return;
       const generation = personaTtsQueueGenerationRef.current;
       const added = [];
       messages.forEach(({ msg, index }) => {
@@ -29705,7 +30030,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       lastReadPersonaIndexRef.current = lastIndex;
       enqueuePersonaTtsMessages(newMessages);
-  }, [personaState.chatHistory, personaAutoRead]);
+  }, [personaState.chatHistory, personaAutoRead, personaAutoReadEpoch, personaTtsVoiceSignature]);
   useEffect(() => {
     if (isPersonaChatOpen && isDictationMode && personaAutoSend && personaInput.trim().length > 0) {
         const timer = setTimeout(() => {
@@ -29872,6 +30197,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         personaReflectionInput,
         personaReflectionSubmitRef,
         personaReflectionIdentityRef,
+        personaReflectionGradeAbortRef,
         personaReflectionContextTokenRef,
         personaReflectionResourceIdRef,
         fluencyStatus,
@@ -37089,7 +37415,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 })}
                 {activeView === 'persona' && (
                     <ErrorBoundary fallbackMessage={t('persona.error_boundary_fallback')}>
-                    <div className="h-full flex flex-col relative" data-help-key="persona_panel">
+                    <div className="h-full flex flex-col relative" data-help-key="persona_panel" aria-busy={isProcessing || isGeneratingPersona}>
                         <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 mb-2 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 shadow-sm">
                             <div className="flex items-center gap-3 w-full sm:w-auto">
                                 <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center border-2 border-yellow-200 text-yellow-700 shrink-0">
@@ -37109,7 +37435,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 <button type="button"
                                     aria-pressed={personaState.mode === 'single'}
                                     aria-label={t('persona.mode_single') || 'Single interview'}
-                                    onClick={() => setPersonaState(prev => ({ ...prev, mode: 'single', selectedCharacters: [] }))}
+                                    disabled={isProcessing || isGeneratingPersona}
+                                    onClick={() => {
+                                        if (isProcessing || isGeneratingPersona) return;
+                                        setPersonaState(prev => ({ ...prev, mode: 'single', selectedCharacters: [] }));
+                                    }}
                                     className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.mode === 'single' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
                                 >
                                     {t('persona.mode_single')}
@@ -37117,7 +37447,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 <button type="button"
                                     aria-pressed={personaState.mode === 'panel'}
                                     aria-label={t('persona.mode_panel') || 'Panel interview'}
-                                    onClick={() => setPersonaState(prev => ({ ...prev, mode: 'panel' }))}
+                                    disabled={isProcessing || isGeneratingPersona}
+                                    onClick={() => {
+                                        if (isProcessing || isGeneratingPersona) return;
+                                        setPersonaState(prev => ({ ...prev, mode: 'panel' }));
+                                    }}
                                     className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.mode === 'panel' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
                                 >
                                     {t('persona.mode_panel')}
@@ -37126,7 +37460,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             {isTeacherMode && (
                                 <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-[11px] font-bold text-slate-700">
                                     <span>{t('persona.resume_retention')}</span>
-                                    <select aria-label={t('persona.resume_retention')} defaultValue={(() => { try { return String(normalizePersonaResumeDays(localStorage.getItem('allo_persona_resume_days'))); } catch (_) { return '14'; } })()} onChange={async (e) => { try { const retentionDays = normalizePersonaResumeDays(e.target.value); localStorage.setItem('allo_persona_resume_days', String(retentionDays)); if (retentionDays === 0 && !(await clearPersonaResumeSnapshots())) throw new Error('clear failed'); addToast(t('persona.retention_updated'), 'success'); } catch (_) { addToast(t('persona.retention_update_failed'), 'error'); } }} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-xs">
+                                    <select aria-label={t('persona.resume_retention')} disabled={isProcessing || isGeneratingPersona} defaultValue={(() => { try { return String(normalizePersonaResumeDays(localStorage.getItem('allo_persona_resume_days'))); } catch (_) { return '14'; } })()} onChange={async (e) => { try { const retentionDays = normalizePersonaResumeDays(e.target.value); localStorage.setItem('allo_persona_resume_days', String(retentionDays)); if (retentionDays === 0 && !(await clearPersonaResumeSnapshots())) throw new Error('clear failed'); addToast(t('persona.retention_updated'), 'success'); } catch (_) { addToast(t('persona.retention_update_failed'), 'error'); } }} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60">
                                         <option value="0">{t('persona.retention_off')}</option>
                                         <option value="7">7 {t('persona.days')}</option>
                                         <option value="14">14 {t('persona.days')}</option>
@@ -37189,10 +37523,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         })()}
                         <div className="flex flex-nowrap gap-6 overflow-auto p-6 custom-scrollbar flex-grow items-center snap-x snap-mandatory z-10 w-full bg-slate-50/50 relative">
                             {isGeneratingPersona && (
-                                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-lg">
+                                <div role="status" aria-live="polite" className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-lg">
                                     <div className="relative">
-                                        <div className="w-20 h-20 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
-                                        <Sparkles size={28} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-purple-600 animate-pulse" />
+                                        <div className="w-20 h-20 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin motion-reduce:animate-none"></div>
+                                        <Sparkles size={28} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-purple-600 animate-pulse motion-reduce:animate-none" />
                                     </div>
                                     <p className="mt-6 text-lg font-bold text-slate-700">{t('persona.identifying')}</p>
                                     <p className="text-sm text-slate-600 mt-1">{t('persona.analyzing_historical_figures') || 'Analyzing content for historical figures...'}</p>
@@ -37209,7 +37543,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                         ${isSelectedInPanel ? 'border-purple-500 ring-4 ring-purple-100' : 'border-slate-100 hover:border-yellow-300'}
                                     `}
                                     data-help-key="persona_card"
+                                    aria-disabled={isProcessing || isGeneratingPersona}
                                     onClick={() => {
+                                        if (isProcessing || isGeneratingPersona) return;
                                         if (personaState.mode === 'panel') handleTogglePanelSelection(persona);
                                     }}
                                 >
@@ -37222,8 +37558,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                                 {persona.year}
                                             </span>
                                             {isTeacherMode && (
-                                                <button type="button" className="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700 hover:bg-indigo-100" onClick={(e) => {
+                                                <button type="button" disabled={isProcessing || isGeneratingPersona} className="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50" onClick={(e) => {
                                                     e.stopPropagation();
+                                                    if (isProcessing || isGeneratingPersona) return;
                                                     openPersonaTeacherEditor(persona, idx);
                                                 }}>{t('common.edit')}</button>
                                             )}
@@ -37239,10 +37576,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                         {persona.context}
                                     </div>
                                     <button
-                                        aria-label={t('common.ask_question')}
+                                        type="button"
+                                        aria-label={(personaState.mode === 'single' ? (t('common.ask_question') || 'Ask a question') : (isSelectedInPanel ? (t('persona.selected') || 'Selected') : (t('persona.add_to_panel') || 'Add to panel'))) + ': ' + String(persona.name || '')}
+                                        aria-pressed={personaState.mode === 'panel' ? isSelectedInPanel : undefined}
+                                        disabled={isProcessing || isGeneratingPersona}
                                         data-help-key="persona_select_button"
                                         onClick={(e) => {
                                             e.stopPropagation();
+                                            if (isProcessing || isGeneratingPersona) return;
                                             if (personaState.mode === 'single') {
                                                 handleSelectPersona(persona);
                                             } else {
@@ -37275,10 +37616,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
                                 <button aria-label={t('common.start_panel_chat')}
                                     onClick={handleStartPanelChat}
-                                    disabled={personaState.selectedCharacters.length !== 2 || isProcessing} aria-busy={isProcessing}
+                                    disabled={personaState.selectedCharacters.length !== 2 || isProcessing || isGeneratingPersona} aria-busy={isProcessing || isGeneratingPersona}
                                     className="bg-purple-600 text-white px-8 py-4 rounded-full font-black text-lg shadow-xl hover:bg-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 active:scale-95"
                                 >
-                                    {isProcessing ? <RefreshCw className="animate-spin"/> : <Users size={24}/>}
+                                    {(isProcessing || isGeneratingPersona) ? <RefreshCw className="animate-spin motion-reduce:animate-none"/> : <Users size={24}/>}
                                     {t('persona.start_panel')}
                                 </button>
                             </div>

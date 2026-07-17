@@ -359,7 +359,7 @@ function normalizeTestPrepItem(item, index, domainIds) {
     rationale: String(input.rationale || '').trim().slice(0, 4000),
     references,
     sourceDetails,
-    reviewStatus: String(input.reviewStatus || 'unreviewed').trim().slice(0, 40),
+    reviewStatus: String(input.reviewStatus || 'unreviewed').trim().slice(0, 100),
     legacySourceId: /^legacy-[a-f0-9]{16}$/.test(String(input.legacySourceId || '').trim()) ? String(input.legacySourceId).trim() : '',
     legacySourceFile: /^js\/[a-zA-Z0-9_.-]+\.js$/.test(String(input.legacySourceFile || '').trim()) ? String(input.legacySourceFile).trim() : '',
     authoredSourceId: String(input.authoredSourceId || '').trim().slice(0, 100),
@@ -380,7 +380,7 @@ function normalizeTestPrepItem(item, index, domainIds) {
     clueReviewStatus: String(input.clueReviewStatus || '').trim().slice(0, 100),
     biasAccessibilityStatus: String(input.biasAccessibilityStatus || '').trim().slice(0, 100),
     migrationStatus: String(input.migrationStatus || '').trim().slice(0, 60),
-    qaStatus: input.qaStatus === 'qa-passed' ? 'qa-passed' : 'review-required',
+    qaStatus: ['qa-passed', 'qa-passed-independent-practice-item', 'structural-qa-passed-guided-practice-only'].includes(input.qaStatus) ? input.qaStatus : 'review-required',
     qaReviewedAt: /^\d{4}-\d{2}-\d{2}$/.test(String(input.qaReviewedAt || '').trim()) ? String(input.qaReviewedAt).trim() : '',
   };
 }
@@ -393,7 +393,7 @@ function normalizeTestPrepPack(pack) {
   const sections = (Array.isArray(input.sections) ? input.sections : []).slice(0, 20).map((section, index) => ({
     id: testPrepSlug(section && (section.id || section.label), 'section-' + (index + 1)),
     label: String(section && (section.label || section.name) || 'Section ' + (index + 1)).trim().slice(0, 140),
-    kind: section && section.kind === 'guided-review' ? 'guided-review' : section && section.kind === 'source-diagnostic' ? 'source-diagnostic' : 'practice',
+    kind: section && section.kind === 'guided-review' ? 'guided-review' : section && section.kind === 'source-diagnostic' ? 'source-diagnostic' : section && section.kind === 'independent-diagnostic' ? 'independent-diagnostic' : 'practice',
     timeMinutes: section && section.timeMinutes != null ? Math.max(1, Math.round(testPrepFinite(section.timeMinutes, 1))) : null,
   }));
   const items = (Array.isArray(input.items) ? input.items : []).slice(0, 10000)
@@ -429,10 +429,18 @@ function normalizeTestPrepPack(pack) {
     diagnosticBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.diagnosticBatchCount, 0)))),
     diagnosticBatchCountSemantics: String(input.diagnosticBatchCountSemantics || '').trim().slice(0, 100),
     sourceDiagnosticBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.sourceDiagnosticBatchCount, 0)))),
+    assistantAuthoredIndependentBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.assistantAuthoredIndependentBatchCount, 0)))),
+    independentDiagnosticBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.independentDiagnosticBatchCount, input.sourceDiagnosticBatchCount || 0)))),
     guidedReviewBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.guidedReviewBatchCount, 0)))),
     learningActivityBankCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.learningActivityBankCount, 0)))),
+    sourceQuestionItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.sourceQuestionItems, 200)))),
+    assistantAuthoredIndependentItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantAuthoredIndependentItems, 0)))),
+    independentPracticeItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.independentPracticeItems, input.sourceQuestionItems || 200)))),
+    guidedReviewItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.guidedReviewItems, 0)))),
     distinctSourceContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.distinctSourceContentKernels, 0)))),
     parallelSourceVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.parallelSourceVariants, 0)))),
+    distinctIndependentContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.distinctIndependentContentKernels, input.distinctSourceContentKernels || 0)))),
+    parallelIndependentVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.parallelIndependentVariants, input.parallelSourceVariants || 0)))),
     newIndependentItemsNeeded: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.newIndependentItemsNeeded, 0)))),
     expansionVersion: String(input.expansionVersion || '').trim().slice(0, 100),
     assistantReviewVerdict: String(input.assistantReview && input.assistantReview.verdict || '').trim().slice(0, 100),
@@ -440,8 +448,12 @@ function normalizeTestPrepPack(pack) {
       reviewer: String(input.assistantReview.reviewer || '').trim().slice(0, 120),
       structurallyReviewedItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.structurallyReviewedItems, 0)))),
       sourceItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.sourceItems, 0)))),
+      assistantAuthoredIndependentItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.assistantAuthoredIndependentItems, 0)))),
+      independentPracticeItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.independentPracticeItems, input.assistantReview.sourceItems || 0)))),
       distinctSourceContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.distinctSourceContentKernels, 0)))),
       parallelSourceVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.parallelSourceVariants, 0)))),
+      distinctIndependentContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.distinctIndependentContentKernels, input.assistantReview.distinctSourceContentKernels || 0)))),
+      parallelIndependentVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.parallelIndependentVariants, input.assistantReview.parallelSourceVariants || 0)))),
       guidedReviewItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.guidedReviewItems, 0)))),
       independentQuestionTarget: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.independentQuestionTarget, 0)))),
       newIndependentItemsNeeded: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.newIndependentItemsNeeded, 0)))),
@@ -1547,6 +1559,7 @@ function TestPrepHub(props) {
   const activePack = selectedPack ? Object.assign({}, selectedPack, { items: practiceItems, batchSize: activeBatchSize }) : null;
   const currentItem = practiceStarted && activePack && activePack.items[questionIndex];
   const currentBatch = activePack ? testPrepBatchMeta(activePack, questionIndex) : null;
+  const currentSection = selectedPack && selectedPack.sections[Math.floor(sourceStartIndex / Math.max(1, selectedPack.batchSize))] || null;
   const savedReviewItemIds = selectedPack ? (reviewItems[selectedPack.id] || []).filter((itemId) => {
     const item = itemLookup.get(itemId);
     return item && item.examItemStatus !== 'not-approved-as-independent-exam-item';
@@ -2429,7 +2442,7 @@ function TestPrepHub(props) {
                 <section className="rounded-2xl border border-indigo-300 bg-white p-5 shadow-sm sm:p-7" aria-labelledby="practice-options-title">
                   <p className="text-xs font-black uppercase tracking-wider text-indigo-700">Choose a study mode</p>
                   <h4 id="practice-options-title" className="mt-1 text-2xl font-black text-slate-900">What would you like to work on?</h4>
-                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">{selectedPack.guidedReviewBatchCount ? 'Choose from ' + selectedPack.sourceDiagnosticBatchCount + ' source-question diagnostic banks and ' + selectedPack.guidedReviewBatchCount + ' guided-reasoning review banks. Each includes answer explanations, confidence calibration, and end-of-bank feedback; guided banks reinforce source items and are not additional independent exam questions.' : 'Choose any of the ' + Math.ceil(selectedPack.items.length / selectedPack.batchSize) + ' practice banks. Each bank includes ' + selectedPack.batchSize + ' questions, answer explanations, confidence calibration, and diagnostic feedback. Targeted sets and the optional timed simulation remain available below.'}</p>
+                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">{selectedPack.guidedReviewBatchCount ? selectedPack.assistantAuthoredIndependentBatchCount ? 'Choose from ' + selectedPack.sourceDiagnosticBatchCount + ' source-question diagnostic banks, ' + selectedPack.assistantAuthoredIndependentBatchCount + ' assistant-authored independent diagnostic bank' + (selectedPack.assistantAuthoredIndependentBatchCount === 1 ? '' : 's') + ', and ' + selectedPack.guidedReviewBatchCount + ' guided-reasoning review banks. Each includes answer explanations, confidence calibration, and end-of-bank feedback; guided banks reinforce source items and are not additional independent exam questions.' : 'Choose from ' + selectedPack.sourceDiagnosticBatchCount + ' source-question diagnostic banks and ' + selectedPack.guidedReviewBatchCount + ' guided-reasoning review banks. Each includes answer explanations, confidence calibration, and end-of-bank feedback; guided banks reinforce source items and are not additional independent exam questions.' : 'Choose any of the ' + Math.ceil(selectedPack.items.length / selectedPack.batchSize) + ' practice banks. Each bank includes ' + selectedPack.batchSize + ' questions, answer explanations, confidence calibration, and diagnostic feedback. Targeted sets and the optional timed simulation remain available below.'}</p>
 
                   {savedSession && savedSession.packId === selectedPack.id && (
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-300 bg-emerald-50 p-4">
@@ -2450,11 +2463,13 @@ function TestPrepHub(props) {
                       const bankNumber = batchIndex + 1;
                       const section = selectedPack.sections[batchIndex];
                       const guided = section && section.kind === 'guided-review';
-                      const classified = guided || section && section.kind === 'source-diagnostic';
+                      const independent = section && section.kind === 'independent-diagnostic';
+                      const classified = guided || independent || section && section.kind === 'source-diagnostic';
+                      const guidedNumber = batchIndex - Math.max(0, selectedPack.independentDiagnosticBatchCount || selectedPack.sourceDiagnosticBatchCount) + 1;
                       const bankLabel = classified ? section.label : 'Practice Bank ' + bankNumber;
                       const prior = packAttempts.filter((attempt) => attempt.mode === (guided ? 'guided-review' : 'diagnostic') && attempt.batchNumber === bankNumber);
                       const latest = prior.length ? prior[prior.length - 1] : null;
-                      return <article key={'diagnostic-' + batchIndex} className="flex min-h-52 flex-col rounded-xl border border-sky-300 bg-white p-4 shadow-sm"><p className="text-xs font-black uppercase tracking-wide text-sky-800">{bankLabel}</p><h6 className="mt-1 text-lg font-black text-slate-900">{selectedPack.guidedReviewBatchCount ? 'Activities ' : 'Questions '}{start + 1}{'–'}{start + count}</h6><p className="mt-2 text-sm text-slate-700">{guided ? count + ' source-derived guided reasoning activities with feedback; these are not independent exam questions.' : count + ' untimed source questions with answer explanations and an end-of-bank diagnostic.'}</p><p className={'mt-3 text-xs font-bold ' + (latest ? 'text-emerald-800' : 'text-slate-600')}>{latest ? 'Latest: ' + latest.correct + '/' + latest.total + ' · ' + latest.percent + '% · ' + prior.length + ' attempt' + (prior.length === 1 ? '' : 's') : 'Not started on this browser'}</p><button type="button" onClick={() => startDiagnosticBatch(batchIndex)} className="mt-auto rounded-lg bg-sky-800 px-3 py-2 font-black text-white focus:ring-2 focus:ring-sky-600 focus:ring-offset-2">{guided ? 'Start Guided Review ' + (batchIndex - 1) : 'Start Practice Bank ' + bankNumber}</button></article>;
+                      return <article key={'diagnostic-' + batchIndex} className="flex min-h-52 flex-col rounded-xl border border-sky-300 bg-white p-4 shadow-sm"><p className="text-xs font-black uppercase tracking-wide text-sky-800">{bankLabel}</p><h6 className="mt-1 text-lg font-black text-slate-900">{selectedPack.guidedReviewBatchCount ? 'Activities ' : 'Questions '}{start + 1}{'–'}{start + count}</h6><p className="mt-2 text-sm text-slate-700">{guided ? count + ' source-derived guided reasoning activities with feedback; these are not independent exam questions.' : independent ? count + ' assistant-authored independent practice questions with item-specific feedback; these are not official or psychometrically calibrated exam items.' : count + ' untimed source questions with answer explanations and an end-of-bank diagnostic.'}</p><p className={'mt-3 text-xs font-bold ' + (latest ? 'text-emerald-800' : 'text-slate-600')}>{latest ? 'Latest: ' + latest.correct + '/' + latest.total + ' · ' + latest.percent + '% · ' + prior.length + ' attempt' + (prior.length === 1 ? '' : 's') : 'Not started on this browser'}</p><button type="button" onClick={() => startDiagnosticBatch(batchIndex)} className="mt-auto rounded-lg bg-sky-800 px-3 py-2 font-black text-white focus:ring-2 focus:ring-sky-600 focus:ring-offset-2">{guided ? 'Start Guided Review ' + guidedNumber : 'Start Practice Bank ' + bankNumber}</button></article>;
                     })}
                     </div>
                   </section>
@@ -2523,10 +2538,10 @@ function TestPrepHub(props) {
                     <div className="rounded-xl bg-indigo-50 p-4"><p className="text-3xl font-black text-indigo-950">{checkpoint.percent}%</p><p className="text-sm font-bold text-indigo-900">{practiceMode === 'guided-review' ? 'Guided-practice accuracy' : 'Batch accuracy'}</p></div>
                     <div className="rounded-xl bg-amber-50 p-4"><p className="text-3xl font-black text-amber-950">{checkpoint.confidentMissQuestionNumbers.length}</p><p className="text-sm font-bold text-amber-900">Confident misses</p></div>
                   </div>
-                  <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">{practiceMode === 'guided-review' ? 'This checkpoint describes source-derived guided practice and is excluded from diagnostic analytics.' : 'This checkpoint describes practice in this source-question batch.'} It is not an official score, pass prediction, or readiness classification.</p>
+                  <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">{practiceMode === 'guided-review' ? 'This checkpoint describes source-derived guided practice and is excluded from diagnostic analytics.' : currentSection && currentSection.kind === 'independent-diagnostic' ? 'This checkpoint describes assistant-authored independent practice questions in this diagnostic bank.' : 'This checkpoint describes practice in this source-question batch.'} It is not an official score, pass prediction, or readiness classification.</p>
                   <div className="mt-5 overflow-hidden rounded-xl border border-slate-300">
                     <table className="w-full text-left text-sm">
-                      <caption className="bg-slate-100 px-4 py-3 text-left font-black text-slate-900">{practiceMode === 'guided-review' ? 'Domain breakdown for guided review' : selectedPack.guidedReviewBatchCount ? 'Domain diagnostic for this source-question batch' : 'Domain diagnostic for this batch'}</caption>
+                      <caption className="bg-slate-100 px-4 py-3 text-left font-black text-slate-900">{practiceMode === 'guided-review' ? 'Domain breakdown for guided review' : currentSection && currentSection.kind === 'independent-diagnostic' ? 'Domain diagnostic for this independent-practice bank' : selectedPack.guidedReviewBatchCount ? 'Domain diagnostic for this source-question batch' : 'Domain diagnostic for this batch'}</caption>
                       <thead className="bg-slate-50 text-slate-700"><tr><th scope="col" className="px-4 py-2">Domain</th><th scope="col" className="px-4 py-2">Correct</th><th scope="col" className="px-4 py-2">Accuracy</th></tr></thead>
                       <tbody className="divide-y divide-slate-200">{checkpoint.domainRows.map((entry) => <tr key={entry.id}><th scope="row" className="px-4 py-2 font-semibold text-slate-900">{entry.label}</th><td className="px-4 py-2 text-slate-800">{entry.correct}/{entry.total}</td><td className="px-4 py-2 font-bold text-slate-900">{entry.percent}%</td></tr>)}</tbody>
                     </table>
@@ -2583,7 +2598,7 @@ function TestPrepHub(props) {
               {!legacyOpen && !!selectedPack.items.length && !result && currentItem && (
                 <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm sm:p-7">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{practiceLabel || 'Practice set'}</p><p className="font-black text-indigo-900">{practiceMode === 'guided-review' ? 'Guided-review activity ' : 'Question '}{questionIndex + 1} of {activePack.items.length}</p>{practiceMode === 'diagnostic' && <p className="mt-1 text-sm font-bold text-sky-800">{selectedPack.guidedReviewBatchCount ? 'Source-question bank item ' : 'Question bank item '}{sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}</p>}{practiceMode === 'guided-review' && <p className="mt-1 text-sm font-bold text-violet-800">Guided activity {sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}; this score is excluded from diagnostic analytics.</p>}{currentBatch && currentBatch.batchCount > 1 && <p className="mt-1 text-sm font-bold text-slate-700">Batch {currentBatch.batchNumber} of {currentBatch.batchCount} · Question {currentBatch.position} of {currentBatch.itemCount}</p>}{practiceMode === 'simulation' && <div className="mt-2 flex flex-wrap items-center gap-2"><p className="text-lg font-black text-amber-900" role="timer">Time remaining {formatPracticeTime(timeRemainingSeconds)}</p><button type="button" onClick={extendSimulationTime} className="rounded-lg border border-amber-600 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700 focus:ring-offset-2">Add 10 minutes</button>{timeRemainingSeconds <= 60 && <p className="w-full text-sm font-bold text-rose-800" role="status" aria-live="polite">One minute or less remains. Use Add 10 minutes now if you need more time.</p>}</div>}</div>
+                    <div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{practiceLabel || 'Practice set'}</p><p className="font-black text-indigo-900">{practiceMode === 'guided-review' ? 'Guided-review activity ' : 'Question '}{questionIndex + 1} of {activePack.items.length}</p>{practiceMode === 'diagnostic' && <p className="mt-1 text-sm font-bold text-sky-800">{currentSection && currentSection.kind === 'independent-diagnostic' ? 'Independent-practice bank item ' : selectedPack.guidedReviewBatchCount ? 'Source-question bank item ' : 'Question bank item '}{sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}</p>}{practiceMode === 'guided-review' && <p className="mt-1 text-sm font-bold text-violet-800">Guided activity {sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}; this score is excluded from diagnostic analytics.</p>}{currentBatch && currentBatch.batchCount > 1 && <p className="mt-1 text-sm font-bold text-slate-700">Batch {currentBatch.batchNumber} of {currentBatch.batchCount} · Question {currentBatch.position} of {currentBatch.itemCount}</p>}{practiceMode === 'simulation' && <div className="mt-2 flex flex-wrap items-center gap-2"><p className="text-lg font-black text-amber-900" role="timer">Time remaining {formatPracticeTime(timeRemainingSeconds)}</p><button type="button" onClick={extendSimulationTime} className="rounded-lg border border-amber-600 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700 focus:ring-offset-2">Add 10 minutes</button>{timeRemainingSeconds <= 60 && <p className="w-full text-sm font-bold text-rose-800" role="status" aria-live="polite">One minute or less remains. Use Add 10 minutes now if you need more time.</p>}</div>}</div>
                     <button type="button" aria-pressed={readAloudActive} onClick={readQuestion} className="rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} {readAloudStatus === 'loading' ? 'Preparing audio' : readAloudStatus === 'speaking' ? 'Stop reading' : 'Read question'}</button>
                     {currentItem.examItemStatus !== 'not-approved-as-independent-exam-item' && <button type="button" aria-pressed={currentItemSavedForReview} onClick={() => toggleSavedForReview(currentItem.id)} className={'rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-600 ' + (currentItemSavedForReview ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : 'border-indigo-400 bg-indigo-50 text-indigo-900')}>{currentItemSavedForReview ? 'Remove from review' : 'Save for review'}</button>}
                     <button type="button" onClick={() => beginAnnotation({ targetType: 'question', targetId: currentItem.id, targetLabel: 'Question: ' + currentItem.prompt })} className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 focus:ring-2 focus:ring-amber-600">Add note or highlight</button>

@@ -134,22 +134,120 @@ const sourceFiles = [
   ...listFiles(path.join(ROOT, 'sel_hub'), f => f.endsWith('.js') && !f.startsWith('_')),
 ];
 
+function buildJsCodeMask(src) {
+  const mask = new Uint8Array(src.length);
+  const templateExpressionDepths = [];
+  let mode = 'code';
+  let quote = '';
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i];
+    const next = src[i + 1];
+    if (mode === 'line-comment') {
+      if (ch === '\n') mode = 'code';
+      continue;
+    }
+    if (mode === 'block-comment') {
+      if (ch === '*' && next === '/') { i++; mode = 'code'; }
+      continue;
+    }
+    if (mode === 'string') {
+      if (ch === '\\') { i++; continue; }
+      if (ch === quote) mode = 'code';
+      continue;
+    }
+    if (mode === 'template') {
+      if (ch === '\\') { i++; continue; }
+      if (ch === '`') { mode = 'code'; continue; }
+      if (ch === '$' && next === '{') {
+        mask[i] = 1;
+        mask[i + 1] = 1;
+        templateExpressionDepths.push(1);
+        i++;
+        mode = 'code';
+      }
+      continue;
+    }
+
+    mask[i] = 1;
+    if (ch === '/' && next === '/') { i++; mode = 'line-comment'; continue; }
+    if (ch === '/' && next === '*') { i++; mode = 'block-comment'; continue; }
+    if (ch === "'" || ch === '"') { quote = ch; mode = 'string'; continue; }
+    if (ch === '`') { mode = 'template'; continue; }
+    if (templateExpressionDepths.length && ch === '{') {
+      templateExpressionDepths[templateExpressionDepths.length - 1]++;
+    } else if (templateExpressionDepths.length && ch === '}') {
+      const last = templateExpressionDepths.length - 1;
+      templateExpressionDepths[last]--;
+      if (templateExpressionDepths[last] === 0) {
+        templateExpressionDepths.pop();
+        mode = 'template';
+      }
+    }
+  }
+  return mask;
+}
+
+function findJsCallClose(src, codeMask, callStart) {
+  const open = src.indexOf('(', callStart);
+  if (open < 0 || !codeMask[open]) return -1;
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    if (!codeMask[i]) continue;
+    if (src[i] === '(') depth++;
+    else if (src[i] === ')' && --depth === 0) return i;
+  }
+  return -1;
+}
+
+function startsWithClosedLiteral(value) {
+  const leading = /^\s*/.exec(value);
+  let i = leading ? leading[0].length : 0;
+  const quote = value[i];
+  if (quote !== "'" && quote !== '"' && quote !== '`') return false;
+  for (i++; i < value.length; i++) {
+    if (value[i] === '\\') { i++; continue; }
+    if (quote !== '`' && (value[i] === '\r' || value[i] === '\n')) return false;
+    if (value[i] === quote) return true;
+  }
+  return false;
+}
+
+function hasExplicitOrFallback(tail) {
+  const prefix = /^\s*\)*\s*\|\|\s*\(*\s*/.exec(tail);
+  return !!prefix && startsWithClosedLiteral(tail.slice(prefix[0].length));
+}
 const tCallsByKey = new Map();   // key → [{ file, line }]
 const helpRefsByKey = new Map(); // key → [{ file, line }]
 let dynamicTCount = 0;
+let safeInlineFallbackCount = 0;
 
 for (const file of sourceFiles) {
   const src = fs.readFileSync(file, 'utf-8');
+  const codeMask = buildJsCodeMask(src);
   const rel = path.relative(ROOT, file);
 
   // Match t('foo.bar.baz') or t("foo.bar.baz") — single line only
-  const tRe = /(?<![A-Za-z0-9_$])t\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*[,)]/g;
+  const tRe = /(?<![A-Za-z0-9_$])t\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*([,)])/g;
   let m;
   while ((m = tRe.exec(src)) !== null) {
+    if (!codeMask[m.index]) continue;
     const key = m[2];
     // Sanity: skip obviously non-translation things (URLs, regexes, paths)
     if (!/^[a-zA-Z0-9_$.\-]+$/.test(key)) continue;
     if (key.length > 80) continue;
+    const argumentTail = src.slice(tRe.lastIndex, tRe.lastIndex + 1200);
+    const callClose = findJsCallClose(src, codeMask, m.index);
+    const fallbackTail = callClose < 0 ? '' : src.slice(callClose + 1, callClose + 1201);
+    // An explicit literal fallback prevents dotted-key UI even when the key is
+    // not yet in the canonical registry. Host t() supports the || form;
+    // extracted modules use fallback-applying wrappers for the second-argument
+    // form. Keep these visible as coverage debt, but do not block deployment.
+    const hasLiteralOrFallback = hasExplicitOrFallback(fallbackTail);
+    const hasModuleLiteralArgFallback = file !== HOST && m[3] === ',' && startsWithClosedLiteral(argumentTail);
+    if (!uiKeys.has(key) && (hasLiteralOrFallback || hasModuleLiteralArgFallback)) {
+      safeInlineFallbackCount++;
+      continue;
+    }
     const line = src.substring(0, m.index).split('\n').length;
     if (!tCallsByKey.has(key)) tCallsByKey.set(key, []);
     tCallsByKey.get(key).push({ file: rel, line });
@@ -207,6 +305,7 @@ if (!QUIET || totalErrors > 0) {
   console.log('  help_strings.js keys defined: ' + helpKeys.size);
   console.log('  t() calls (literal):          ' + tCallsByKey.size + ' unique');
   console.log('  t() calls (dynamic):          ' + dynamicTCount + ' (skipped, can\'t check statically)');
+  console.log('  t() calls (safe fallback):    ' + safeInlineFallbackCount + ' (English-safe; registry debt)');
   console.log('  HELP_STRINGS refs (literal):  ' + helpRefsByKey.size + ' unique');
   console.log('');
 }
@@ -214,11 +313,12 @@ if (!QUIET || totalErrors > 0) {
 if (missingT.length > 0) {
   console.log('═══ ✗ MISSING t() KEYS (' + missingT.length + ') — UI will show literal key string instead of translated text ═══');
   console.log('');
-  for (const e of missingT.slice(0, 50)) {
+  const reportedMissingT = VERBOSE ? missingT : missingT.slice(0, 50);
+  for (const e of reportedMissingT) {
     console.log('  ✗ t(\'' + e.key + '\')');
     console.log('      First call: ' + e.locations[0].file + ':' + e.locations[0].line + ' (' + e.locations.length + ' total)');
   }
-  if (missingT.length > 50) console.log('  (... ' + (missingT.length - 50) + ' more, run --verbose for full list)');
+  if (!VERBOSE && missingT.length > 50) console.log('  (... ' + (missingT.length - 50) + ' more, run --verbose for full list)');
   console.log('');
 }
 

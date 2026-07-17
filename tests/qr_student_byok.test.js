@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const modalSource = readFileSync(resolve(process.cwd(), 'view_misc_modals_source.jsx'), 'utf8');
 const headerSource = readFileSync(resolve(process.cwd(), 'view_header_source.jsx'), 'utf8');
+const phaseOSource = readFileSync(resolve(process.cwd(), 'phase_o_misc_handlers_source.jsx'), 'utf8');
 
 function sliceBetween(startMarker, endMarker) {
   const start = anti.indexOf(startMarker);
@@ -48,6 +49,7 @@ function createRuntime({ href, studentConfig, teacherConfig } = {}) {
       const ALLO_QR_STUDENT_AI_OFF_KEY = 'alloflow_qr_student_ai_disabled';
       const ALLO_QR_STUDENT_AI_CONFIG_KEY = 'alloflow_qr_student_ai_config';
       const ALLO_STUDENT_AI_CONFIG_EVENT = 'alloflow:student-ai-config-changed';
+      const ALLO_STUDENT_AI_VALIDATION_TTL_MS = 6 * 60 * 60 * 1000;
       const apiKey = 'bundled-teacher-key';
       let callGemini = async () => 'original-text';
       let callGeminiVision = async () => 'original-vision';
@@ -66,14 +68,40 @@ function createRuntime({ href, studentConfig, teacherConfig } = {}) {
         effectiveGeminiKey: _alloEffectiveGeminiApiKey,
         isDisabled: _isQrStudentAiDisabled,
         isValidated: _alloStudentAiConfigIsValidated,
+        fingerprint: _alloStudentAiConfigFingerprint,
         installGuard: _installQrStudentAiGuard,
         sync: _syncQrStudentAiAccess,
         setPolicy: _alloSetQrStudentAiPolicy,
+        applyPolicy: _alloApplyAuthoritativeStudentAiPolicy,
+        disconnect: _alloDisconnectStudentAi,
         upgrades: () => ({ gemini: geminiUpgrades, tts: ttsUpgrades }),
       };
     `,
   );
   return factory(fakeWindow, localStorage, globalThis.CustomEvent);
+}
+
+function installValidatedStudentConfig(runtime, config, validationPatch = {}) {
+  const next = {
+    ...config,
+    validation: {
+      ok: true,
+      backend: config.backend || 'gemini',
+      fingerprint: runtime.fingerprint(config),
+      capabilities: {
+        text: true,
+        vision: false,
+        image: false,
+        imageEdit: false,
+        audio: false,
+      },
+      testedAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 60_000).toISOString(),
+      ...validationPatch,
+    },
+  };
+  runtime.window.sessionStorage.setItem('alloflow_qr_student_ai_config', JSON.stringify(next));
+  return next;
 }
 
 describe('QR and mailbox personal AI policy', () => {
@@ -92,63 +120,71 @@ describe('QR and mailbox personal AI policy', () => {
     expect(runtime.readConfig()).toBeNull();
     expect(runtime.effectiveGeminiKey()).toBe('');
     expect(runtime.isDisabled()).toBe(true);
-    expect(runtime.sync()).toBe(true);
+    expect(runtime.sync()).toBe(false);
     expect(runtime.window.sessionStorage.getItem('alloflow_qr_student_ai_disabled')).toBe('1');
     await expect(runtime.window.callGemini('hello')).rejects.toMatchObject({ code: 'allo-qr-ai-disabled' });
   });
 
-  it('unlocks only a validated session-scoped student provider when the teacher link permits BYOK', () => {
-    const studentConfig = {
+  it('unlocks only a fingerprint-matched, unexpired session provider after authoritative BYOK policy', () => {
+    const baseConfig = {
       backend: 'openai',
       apiKey: 'student-secret',
       baseUrl: 'https://api.openai.com',
-      validation: { ok: true, backend: 'openai', text: true },
     };
     const runtime = createRuntime({
       href: 'https://alloflow-cdn.pages.dev/app/?allo_mb=handoff&allo_ai=byok',
-      studentConfig,
+      studentConfig: baseConfig,
       teacherConfig,
     });
+    const studentConfig = installValidatedStudentConfig(runtime, baseConfig);
+    runtime.setPolicy('student-byok', { type: 'mailbox-live' }, { authoritative: true });
 
     expect(runtime.readConfig()).toEqual(studentConfig);
     expect(runtime.effectiveGeminiKey()).toBe('');
     expect(runtime.isValidated(studentConfig)).toBe(true);
     expect(runtime.isDisabled()).toBe(false);
     expect(runtime.sync()).toBe(true);
-    expect(runtime.upgrades()).toEqual({ gemini: 1, tts: 1 });
+    expect(runtime.upgrades()).toEqual({ gemini: 2, tts: 2 });
     expect(runtime.window.sessionStorage.getItem('alloflow_qr_student_ai_disabled')).toBeNull();
   });
 
-  it('keeps BYOK locked for missing keys, failed validation, or a mismatched backend', () => {
-    const cases = [
-      { backend: 'gemini', apiKey: '', validation: { ok: true, backend: 'gemini', text: true } },
+  it('keeps BYOK locked for missing keys, expired validation, or config edits after testing', () => {
+    const runtime = createRuntime({
+      href: 'https://alloflow-cdn.pages.dev/app/?allo_assignment=HW-1&allo_ai=byok',
+      studentConfig: { backend: 'gemini', apiKey: 'student-secret' },
+    });
+    runtime.setPolicy('student-byok', { type: 'assignment' }, { authoritative: true });
+
+    const missingKey = installValidatedStudentConfig(runtime, { backend: 'gemini', apiKey: '' });
+    expect(runtime.isValidated(missingKey)).toBe(false);
+
+    const expired = installValidatedStudentConfig(
+      runtime,
       { backend: 'gemini', apiKey: 'student-secret' },
-      { backend: 'gemini', apiKey: 'student-secret', validation: { ok: true, backend: 'openai', text: true } },
-      { backend: 'gemini', apiKey: 'student-secret', validation: { ok: false, backend: 'gemini', text: true } },
-    ];
-    for (const studentConfig of cases) {
-      const runtime = createRuntime({
-        href: 'https://alloflow-cdn.pages.dev/app/?allo_assignment=HW-1&allo_ai=byok',
-        studentConfig,
-      });
-      expect(runtime.isDisabled(), JSON.stringify(studentConfig)).toBe(true);
-    }
+      { expiresAt: new Date(Date.now() - 1_000).toISOString() },
+    );
+    expect(runtime.isValidated(expired)).toBe(false);
+
+    const validated = installValidatedStudentConfig(runtime, { backend: 'gemini', apiKey: 'student-secret' });
+    const edited = { ...validated, apiKey: 'changed-after-test' };
+    runtime.window.sessionStorage.setItem('alloflow_qr_student_ai_config', JSON.stringify(edited));
+    expect(runtime.isValidated(edited)).toBe(false);
   });
 
-  it('uses the student Gemini key only after validation and normalizes every other policy to off', () => {
+  it('does not trust allo_ai=byok in the URL and erases credentials on authoritative off', () => {
     const runtime = createRuntime({
       href: 'https://alloflow-cdn.pages.dev/app/?allo_pack=0.abc&allo_ai=byok',
-      studentConfig: {
-        backend: 'gemini',
-        apiKey: 'student-gemini-key',
-        validation: { ok: true, backend: 'gemini', text: true },
-      },
+      studentConfig: { backend: 'gemini', apiKey: 'student-gemini-key' },
       teacherConfig,
     });
+    installValidatedStudentConfig(runtime, { backend: 'gemini', apiKey: 'student-gemini-key' });
+    expect(runtime.isDisabled()).toBe(true);
+    runtime.applyPolicy({ aiPolicy: { studentAi: 'student-byok' } }, { type: 'assignment-pack' });
     expect(runtime.effectiveGeminiKey()).toBe('student-gemini-key');
-    runtime.setPolicy('unexpected', { type: 'assignment-pack' });
+    runtime.applyPolicy({ aiPolicy: { studentAi: 'off' } }, { type: 'assignment-pack' });
     expect(runtime.window.__alloQrStudentMode.aiPolicy).toBe('off');
     expect(runtime.isDisabled()).toBe(true);
+    expect(runtime.window.sessionStorage.getItem('alloflow_qr_student_ai_config')).toBeNull();
   });
 });
 
@@ -159,13 +195,26 @@ describe('student AI setup source wiring', () => {
     expect(modalSource).toContain('delete next.validation');
     expect(modalSource).toContain('testConnection()');
     expect(modalSource).toContain('Use only your own provider account.');
+    expect(modalSource).toContain('fingerprintAIBackendConfig');
+    expect(modalSource).toContain('expiresAt');
+    expect(modalSource).toContain('lockedControls');
     expect(modalSource).not.toContain("configStorageKey = isStudentAiSetup ? 'alloflow_ai_config'");
   });
 
   it('exposes setup while AI features remain locked and never inherits the active teacher provider', () => {
     expect(headerSource).toContain('window.__alloStudentAiSetupAllowed');
     expect(headerSource).toContain("window.__alloStudentAiConfigured ? 'AI ready' : 'Set up AI'");
+    expect(headerSource).toContain('header_student_ai_disconnect');
     expect(modalSource).toContain('const canInheritActiveProvider = !isStudentAiSetup');
     expect(anti).toContain("apiKey: _alloHasAnyStudentEntry() ? (_aiUserConfig?.apiKey || '')");
+  });
+
+  it('carries teacher policy in live-session documents and starts student entry pending', () => {
+    expect(phaseOSource).toContain('aiPolicy');
+    expect(phaseOSource).toContain("studentAi: studentAiPolicyForShare === 'student-byok' ? 'student-byok' : 'off'");
+    expect(anti).toContain("_alloSetQrStudentAiPolicy('pending', { type: 'live'");
+    expect(anti).toContain('_alloApplyAuthoritativeStudentAiPolicy(sessionInfo');
+    expect(anti).toContain('Failed to sync student AI policy to the active session:');
+    expect(anti).not.toContain('_alloSetQrStudentAiPolicy(_alloQrStudentAiPolicyFromLocation()');
   });
 });

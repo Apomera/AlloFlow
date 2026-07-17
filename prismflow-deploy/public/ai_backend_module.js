@@ -1025,10 +1025,13 @@ class AIProvider {
         this.apiKey = config.apiKey ?? '';
         this.baseUrl = config.baseUrl || this._defaultBaseUrl();
         this.isCanvasEnv = config.isCanvasEnv || false;
+        const providerTextDefault = this.backend === 'openai'
+            ? 'gpt-4o-mini'
+            : (this.backend === 'claude' ? 'claude-sonnet-4-20250514' : 'gemini-3-flash-preview');
         this.models = {
-            default: config.models?.default || 'gemini-3-flash-preview',
-            fallback: config.models?.fallback || 'gemini-3-flash-preview',
-            flash: config.models?.flash || config.models?.default || 'gemini-3-flash-preview',
+            default: config.models?.default || providerTextDefault,
+            fallback: config.models?.fallback || providerTextDefault,
+            flash: config.models?.flash || config.models?.default || providerTextDefault,
             image: config.models?.image || 'gemini-2.5-flash-image',
             imagen: config.models?.imagen || 'imagen-4.0-generate-001',
             tts: config.models?.tts || 'gemini-3-flash-preview',
@@ -2285,7 +2288,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * List available models from the current backend.
      * Used by Settings UI for smart model detection.
      */
-    async listAvailableModels() {
+    async listAvailableModels({ signal = null } = {}) {
         try {
             let url;
             const headers = { 'Content-Type': 'application/json' };
@@ -2308,13 +2311,20 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     break;
             }
 
-            const response = await fetch(url, { headers });
+            const response = await fetch(url, { headers, signal });
+            if (!response || !response.ok) {
+                const status = response && response.status ? response.status : 'network';
+                const statusText = response && response.statusText ? ': ' + response.statusText : '';
+                throw new Error(`Model discovery failed (HTTP ${status}${statusText})`);
+            }
             const data = await response.json();
 
             if (this.backend === 'ollama') {
                 return (data.models || []).map(m => ({ id: m.name, type: 'text' }));
             } else if (this.backend === 'gemini') {
-                return (data.models || []).map(m => ({ id: m.name?.replace('models/', ''), type: 'text' }));
+                return (data.models || [])
+                    .filter(m => !Array.isArray(m.supportedGenerationMethods) || m.supportedGenerationMethods.includes('generateContent'))
+                    .map(m => ({ id: m.name?.replace('models/', ''), type: 'text' }));
             } else {
                 return (data.data || []).map(m => ({ id: m.id, type: 'text' }));
             }
@@ -2331,11 +2341,57 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * Used by Settings UI "Test Connection" button.
      */
     async testConnection() {
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timeoutId = controller ? setTimeout(() => controller.abort(), 15000) : null;
         try {
-            const models = await this.listAvailableModels();
-            return { success: true, modelCount: models.length, models };
+            const models = await this.listAvailableModels({ signal: controller ? controller.signal : null });
+            const usableModels = (models || []).filter(model => model && String(model.id || '').trim());
+            const currentModel = String(this.models.default || '').trim();
+            const listedCurrent = usableModels.find(model => model.id === currentModel);
+            const selectedModel = (listedCurrent && listedCurrent.id)
+                || (usableModels[0] && usableModels[0].id)
+                || currentModel;
+            if (!selectedModel) throw new Error('No compatible text model is available from this provider.');
+
+            // A catalog request alone does not prove that the key can generate,
+            // that browser CORS is allowed, or that the selected model is usable.
+            // Make the smallest real text request and require a non-empty reply.
+            this.models.default = selectedModel;
+            this.models.flash = selectedModel;
+            const reply = await this.generateText('Reply with only OK.', {
+                json: false,
+                search: false,
+                temperature: 0,
+                maxTokens: 8,
+                signal: controller ? controller.signal : null,
+            });
+            const replyText = typeof reply === 'string' ? reply.trim() : String(reply?.text || '').trim();
+            if (!replyText) throw new Error('The provider returned an empty text response.');
+
+            const verifiedModels = usableModels.length > 0
+                ? usableModels
+                : [{ id: selectedModel, type: 'text' }];
+            return {
+                success: true,
+                modelCount: verifiedModels.length,
+                models: verifiedModels,
+                selectedModel,
+                capabilities: {
+                    text: true,
+                    vision: false,
+                    image: false,
+                    imageEdit: false,
+                    audio: false,
+                },
+            };
         } catch (e) {
-            return { success: false, error: e.message };
+            const timedOut = e && e.name === 'AbortError';
+            return {
+                success: false,
+                error: timedOut ? 'Connection test timed out after 15 seconds.' : (e && e.message ? e.message : String(e)),
+            };
+        } finally {
+            if (timeoutId) clearTimeout(timeoutId);
         }
     }
 

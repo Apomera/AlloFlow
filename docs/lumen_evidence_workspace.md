@@ -1,6 +1,6 @@
 # Lumen Evidence Workspace
 
-Status: active implementation, July 2026. Discover Sources, the first-party safe page importer, active-source controls, labels, and exact-passage viewing are implemented.
+Status: active implementation, July 2026. Discover Sources, safe page import, local document import, active-source controls, labels, and exact-passage viewing are implemented.
 
 Lumen is now an evidence workspace with distinct modes rather than a single expanding screen:
 
@@ -13,6 +13,7 @@ Lumen is now an evidence workspace with distinct modes rather than a single expa
 The quantitative implementation remains in `stem_lab/stem_tool_lumen.js`. Source study is split into:
 
 - `stem_lab/stem_lumen_evidence.js` — pure schema, passage chunking, deterministic lexical retrieval, prompt construction, response validation, staleness, migrations, and durable project storage.
+- `stem_lab/stem_lumen_documents.js` — local document routing, deterministic extractor adapter, provenance construction, EPUB spine reader, and fail-closed import rules.
 - `stem_lab/stem_lumen_study.js` — React Study Sources experience and provider-neutral orchestration.
 - `prismflow-deploy/functions/web_source_fetch.js` and `desktop/runtime/web-source-fetch.cjs` — byte-identical DNS-pinned, redirect-revalidating public-page import boundary.
 - `docs/lumen_discover_sources.md` — web discovery, candidate/import boundary, privacy disclosure and acceptance contract.
@@ -27,7 +28,7 @@ EvidenceProject
   schemaVersion
   id, title, activeMode
   retrievalLabel
-  sources[] { active, labels[] }
+  sources[] { active, labels[], file provenance }
   evidenceNodes[]
   claims[]
   artifacts[]
@@ -58,6 +59,12 @@ Active/label changes are organizational state, not source-content changes, so th
 
 Retrieved evidence and citation chips can open a keyboard-focusable stored-passage viewer. It shows exact highlighted snapshot text with surrounding context, line and character positions, source version, import/fetch time, content hash, and the original public link when available. It never refetches the page merely to inspect a citation.
 
+## Local document import
+
+Study Sources imports PDF, DOCX, PPTX, XLSX/XLS/XLSB/ODS, TXT, Markdown, CSV, and EPUB locally. Binary formats reuse AlloFlow's existing document pipeline; EPUB reuses its local ZIP dependency path. File bytes are not sent to AI or retained in the project. Only the normalized text snapshot and bounded provenance metadata enter the evidence graph.
+
+Page, slide, sheet, and EPUB-section boundaries become structured evidence locators. A damaged page, encrypted/unreadable Office file, truncated workbook, malformed/expansive EPUB, unsupported type, or size/character-limit violation fails closed and creates no partial source. Replacing a file with the same name versions the existing source while preserving its active state and labels. See `docs/lumen_local_documents.md` for the complete contract.
+
 ## Web discovery and import
 
 Discover Sources searches through the environment's provider-neutral search path, normalizes up to ten public HTTP(S) candidates, and requires explicit human selection. Candidate titles, URLs and snippets remain outside `sources[]` and can never support a claim. Only a successfully retrieved page snapshot that passes URL/DNS validation, redirect revalidation, text content checks, byte/time limits, and the readable-text minimum enters `upsertSource`, where it is hashed, versioned, and chunked locally. Hosted and explicit Functions environments prefer the authenticated `/api/sourceFetchProxy`; the bundled desktop app uses the same safety core through its private loopback runtime.
@@ -80,6 +87,8 @@ Study Sources permits eight AI requests per open session and applies a short rep
 - Inactive or label-excluded sources never enter retrieval or prompt payloads.
 - Active state, labels, and label scope survive schema migration and durable storage.
 - Citation controls open the exact stored passage and source version with keyboard focus.
+- Local files preserve format, size, last-modified time, extraction method, part count, version, content fingerprint, and page/slide/sheet/section context.
+- A partial, truncated, encrypted, unreadable, oversized, or unsupported document never contributes evidence.
 - Missing support excerpts, unknown citations, and fabricated excerpts are rejected.
 - Insufficient source support produces a refusal rather than outside-knowledge completion.
 - Existing quantitative Lumen tests and honesty gates remain intact.

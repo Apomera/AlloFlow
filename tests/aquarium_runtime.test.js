@@ -55,7 +55,6 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('var plantStillPresent = newPlants.indexOf(removed) !== -1');
     expect(source).toContain('delete newPB[removed]');
   });
-});
 
   it('migrates legacy tanks to stable per-fish identities', () => {
     expect(source).toContain("var restoreRunningRef = React.useRef(d.simRunning === true)");
@@ -110,7 +109,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
   it('offers targeted treatment and live persistent volume control', () => {
     expect(source).toContain('var medicateFish = function (targetFishId)');
     expect(source).toContain("onClick: function () { medicateFish(fishKey); }");
-    expect(source).toContain("ammonia: waterChem.ammonia + (targetId ? 0.1 : 0.25)");
+    expect(source).toContain("ammonia: waterChem.ammonia + (targetInQuarantine ? 0 : targetId ? 0.1 : 0.25)");
     expect(source).toContain('function aquaGain(baseGain)');
     expect(source).toContain("upd('soundVolume', Number(event.target.value))");
     expect(source).toContain("'aria-label': \"Aquarium sound volume\"");
@@ -139,3 +138,64 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(liveFeedLoop).toBeGreaterThan(liveFeedStart);
     expect(liveFeedKey).toBeGreaterThan(liveFeedLoop);
   });
+  it('supports responsible individual feeding and accessible fish care profiles', () => {
+    expect(source).toContain('var expandedCareFish = d.expandedCareFish || null');
+    expect(source).toContain('var feedIndividual = function (fishId, speciesId)');
+    expect(source).toContain('if (currentHunger <= 10)');
+    expect(source).toContain('var individualAmmonia = quarantinedFish[fishId] ? 0 : 0.05');
+    expect(source).toContain('var careScore = Math.max(0, Math.round(100 - hunger * 0.35 - stress * 0.35 - illnessSeverity * 15))');
+    expect(source).toContain("'aria-expanded': historyExpanded");
+    expect(source).toContain('role: "list"');
+    expect(source).toContain('role: "listitem"');
+    expect(source).toContain('expandedCareFish: expandedCareFish === removedInstanceId ? null : expandedCareFish');
+    expect(source).toContain('finalFishInstanceIds.indexOf(aq.expandedCareFish) !== -1');
+
+    const liveFeedStart = source.indexOf('var feedLive = function ()');
+    const individualFeedStart = source.indexOf('var feedIndividual = function (fishId, speciesId)');
+    const lightsStart = source.indexOf('var toggleLights = function ()');
+    expect(individualFeedStart).toBeGreaterThan(liveFeedStart);
+    expect(lightsStart).toBeGreaterThan(individualFeedStart);
+  });
+  it('models an accessible hospital tank across treatment and simulation systems', () => {
+    expect(source).toContain('var quarantinedFish = migrateFishState(d.quarantinedFish)');
+    expect(source).toContain('var toggleFishQuarantine = function (fishId)');
+    expect(source).toContain('fishSickness: {}, fishStress: {}, quarantinedFish: {}');
+    expect(source).toContain('var displayFishCount = fishInstanceIds.filter');
+    expect(source).toContain('if (quarantinedFish[fishKey]) return');
+    expect(source).toContain('ammonia: waterChem.ammonia + individualAmmonia');
+    expect(source).toContain("displayName + ' should stay isolated until treatment clears the illness.'");
+    expect(source).toContain('var targetInQuarantine = targetId && quarantinedFish[targetId]');
+    expect(source).toContain('ammonia: waterChem.ammonia + (targetInQuarantine ? 0 : targetId ? 0.1 : 0.25)');
+    expect(source).toContain('var susceptibleIndexes = _tankFish.map');
+    expect(source).toContain('var progressionWindow = _quarantinedFish[fId] ? 16 : 10');
+    expect(source).toContain('if (_quarantinedFish[fishKey]) newStress[fishKey] = Math.max');
+    expect(source).toContain('delete _quarantinedFish[removedKey]');
+    expect(source).toContain('quarantinedFish: _quarantinedFish');
+    expect(source).toContain("'aria-pressed': isQuarantined");
+    expect(source).toContain('"Move " + displayName + " to the hospital tank"');
+
+    const quarantineStart = source.indexOf('var toggleFishQuarantine = function (fishId)');
+    const treatmentStart = source.indexOf('var medicateFish = function (targetFishId)');
+    expect(quarantineStart).toBeGreaterThan(-1);
+    expect(treatmentStart).toBeGreaterThan(quarantineStart);
+  });
+  it('models contagious outbreaks and a batch containment response', () => {
+    expect(source).toContain('var mainTankSickFishIds = Object.keys(fishSickness).filter');
+    expect(source).toContain('var quarantineAllSickFish = function ()');
+    expect(source).toContain("msg: 'Moved to hospital tank during outbreak response'");
+    expect(source).toContain('var contagiousFishIds = Object.keys(newSickness).filter');
+    expect(source).toContain('/^(ich|velvet)$/.test(illness.disease)');
+    expect(source).toContain('return _fishInstanceIds.indexOf(fishId) !== -1 && !_quarantinedFish[fishId]');
+    expect(source).toContain('var healthyMainTankFishIds = _fishInstanceIds.filter');
+    expect(source).toContain('var transmissionChance = Math.min(0.35, contagiousFishIds.length * 0.08)');
+    expect(source).toContain('source: sourceFishId');
+    expect(source).toContain("'aria-live': \"polite\"");
+    expect(source).toContain('" sick fish to the hospital tank"');
+
+    const exposureStart = source.indexOf('var susceptibleIndexes = _tankFish.map');
+    const contactStart = source.indexOf('var contagiousFishIds = Object.keys(newSickness).filter', exposureStart);
+    const progressionStart = source.indexOf('Object.keys(newSickness).forEach(function (fId)', contactStart);
+    expect(contactStart).toBeGreaterThan(exposureStart);
+    expect(progressionStart).toBeGreaterThan(contactStart);
+  });
+});

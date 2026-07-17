@@ -238,7 +238,7 @@ function ProjectSettingsView(props) {
                   'proj-allow-student-byok-ai',
                   'allowStudentByokAi',
                   tx('project_settings.allow_student_byok_ai', 'Allow students to connect their own AI provider'),
-                  tx('project_settings.allow_student_byok_ai_desc', 'QR and Class Mailbox links stay AI-off by default. When enabled, students may enter and test their own provider credentials for this browser session. Your API key is never shared.'),
+                  tx('project_settings.allow_student_byok_ai_desc', 'QR and Class Mailbox links stay AI-off by default. Enable only when school or district policy permits student-managed provider accounts and charges. Students must verify their own session-only key; your API key is never shared.'),
                   false
                 )}
               </div>

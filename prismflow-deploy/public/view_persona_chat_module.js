@@ -69,9 +69,9 @@
   var isPersonaDefining = props.isPersonaDefining;
   var isGeneratingReflectionPrompt = props.isGeneratingReflectionPrompt;
   var isTeacherMode = props.isTeacherMode;
-  var studentProjectSettings = props.studentProjectSettings;
+  var studentProjectSettings = props.studentProjectSettings || {};
   var dynamicReflectionQuestion = props.dynamicReflectionQuestion;
-  var panelTtsPending = props.panelTtsPending;
+  var panelTtsPending = Array.isArray(props.panelTtsPending) ? props.panelTtsPending : [];
   var personaTurnHintsViewed = props.personaTurnHintsViewed;
   var playingContentId = props.playingContentId;
   var playbackState = props.playbackState;
@@ -115,29 +115,66 @@
   var _panelChoicePendingState = React.useState(false);
   var panelChoicePending = _panelChoicePendingState[0];
   var setPanelChoicePending = _panelChoicePendingState[1];
+  var panelChoicePendingRef = React.useRef(false);
   var _personaSummaryOpenState = React.useState(false);
   var isPersonaSummaryOpen = _personaSummaryOpenState[0];
   var setIsPersonaSummaryOpen = _personaSummaryOpenState[1];
+  var _summaryRequestPendingState = React.useState(false);
+  var summaryRequestPending = _summaryRequestPendingState[0];
+  var setSummaryRequestPending = _summaryRequestPendingState[1];
+  var summaryRequestPendingRef = React.useRef(false);
+  var _reflectionSubmitPendingState = React.useState(false);
+  var reflectionSubmitPending = _reflectionSubmitPendingState[0];
+  var setReflectionSubmitPending = _reflectionSubmitPendingState[1];
+  var reflectionSubmitPendingRef = React.useRef(false);
+  var personaReflectionText = typeof personaReflectionInput === 'string' ? personaReflectionInput : '';
+  var reflectionBusy = Boolean(isGradingReflection || reflectionSubmitPending);
+  var summaryBusy = Boolean(personaState.isGeneratingSummary || summaryRequestPending);
   var _handlePanelChoice = function (option) {
-    if (panelChoicePending || personaState.isLoading || !option) return;
+    if (panelChoicePendingRef.current || panelChoicePending || personaState.isLoading || !option || typeof option.text !== 'string' || !option.text.trim()) return;
+    panelChoicePendingRef.current = true;
     setPanelChoicePending(true);
     Promise.resolve().then(function () {
       return handlePanelChatSubmit(option.text, true);
     }).catch(function () {}).finally(function () {
+      panelChoicePendingRef.current = false;
       setPanelChoicePending(false);
     });
   };
+  var _requestPersonaSummary = function (options) {
+    if (summaryRequestPendingRef.current || personaState.isGeneratingSummary || typeof handleGeneratePersonaSummary !== 'function') return Promise.resolve(null);
+    summaryRequestPendingRef.current = true;
+    setSummaryRequestPending(true);
+    return Promise.resolve().then(function () {
+      return handleGeneratePersonaSummary(options);
+    }).catch(function () {}).finally(function () {
+      summaryRequestPendingRef.current = false;
+      setSummaryRequestPending(false);
+    });
+  };
   var _openPersonaSummary = function () {
+    if (personaDefinitionData && typeof handleSetPersonaDefinitionDataToNull === 'function') handleSetPersonaDefinitionDataToNull();
     setIsPersonaSummaryOpen(true);
-    if (!personaState.personaSummary && !personaState.isGeneratingSummary && typeof handleGeneratePersonaSummary === 'function') {
-      Promise.resolve(handleGeneratePersonaSummary()).catch(function () {});
+    if (!personaState.personaSummary && !summaryBusy) {
+      _requestPersonaSummary();
     }
   };
   var _retryPersonaSummary = function () {
-    if (personaState.isGeneratingSummary || typeof handleGeneratePersonaSummary !== 'function') return;
-    Promise.resolve(handleGeneratePersonaSummary({
+    if (summaryBusy || !canGeneratePersonaSummary) return;
+    _requestPersonaSummary({
       force: Boolean(personaState.personaSummary)
-    })).catch(function () {});
+    });
+  };
+  var _submitPersonaReflection = function () {
+    if (reflectionSubmitPendingRef.current || reflectionBusy || isGeneratingReflectionPrompt || !personaReflectionText.trim() || typeof handleSaveReflection !== 'function') return;
+    reflectionSubmitPendingRef.current = true;
+    setReflectionSubmitPending(true);
+    Promise.resolve().then(function () {
+      return handleSaveReflection();
+    }).catch(function () {}).finally(function () {
+      reflectionSubmitPendingRef.current = false;
+      setReflectionSubmitPending(false);
+    });
   };
   var personaCloseHandlerRef = React.useRef(handleClosePersonaChat);
   personaCloseHandlerRef.current = handleClosePersonaChat;
@@ -155,7 +192,7 @@
     var focusableSelector = 'button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
     var handleDialogKeyDown = function (event) {
       if (event.key === 'Escape') {
-        if (event.target && typeof event.target.closest === 'function' && event.target.closest('[data-persona-reflection-dialog], [data-persona-summary-dialog]')) {
+        if (event.target && typeof event.target.closest === 'function' && event.target.closest('[data-persona-definition-dialog], [data-persona-reflection-dialog], [data-persona-summary-dialog]')) {
           return;
         }
         event.preventDefault();
@@ -163,7 +200,7 @@
         return;
       }
       if (event.key !== 'Tab') return;
-      var scope = dialog.querySelector('[data-persona-reflection-dialog], [data-persona-summary-dialog]') || dialog;
+      var scope = dialog.querySelector('[data-persona-summary-dialog]') || dialog.querySelector('[data-persona-reflection-dialog]') || dialog.querySelector('[data-persona-definition-dialog]') || dialog;
       var focusable = Array.prototype.filter.call(scope.querySelectorAll(focusableSelector), function (element) {
         return element.getAttribute('aria-hidden') !== 'true' && (element.offsetParent !== null || element === document.activeElement);
       });
@@ -264,10 +301,16 @@
     _personaRetentionDays = Number.isFinite(_storedPersonaRetention) && [0, 7, 14, 30].includes(_storedPersonaRetention) ? _storedPersonaRetention : 14;
   } catch (_) {}
   var _personaSnapshotEnabled = Boolean(_personaSnapshotResourceId && _personaSnapshotStudentId && _personaRetentionDays > 0);
+  var _personaSnapshotEnabledRef = React.useRef(_personaSnapshotEnabled);
+  _personaSnapshotEnabledRef.current = _personaSnapshotEnabled;
+  var _personaSnapshotLoadingRef = React.useRef(Boolean(personaState.isLoading));
+  _personaSnapshotLoadingRef.current = Boolean(personaState.isLoading);
   var _personaSnapshotScope = [appId || 'app', _personaSnapshotResourceId || 'no-resource', _personaSnapshotStudentId || 'disabled'].map(function (value) {
     return String(value).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
   }).join(':');
   var _personaSnapshotKey = ('active:' + _personaSnapshotScope).slice(0, 500);
+  var _personaSnapshotKeyRef = React.useRef(_personaSnapshotKey);
+  _personaSnapshotKeyRef.current = _personaSnapshotKey;
   var _dsResumeState = React.useState(null);
   var personaResumeOffer = _dsResumeState[0];
   var setPersonaResumeOffer = _dsResumeState[1];
@@ -302,20 +345,148 @@
       return ds.remove('persona_sessions', _personaSnapshotKey);
     }).catch(function () {});
   };
+  var _boundedSnapshotText = function (value, limit) {
+    if (typeof value !== 'string') return '';
+    var text = value.trim();
+    return text.length > limit ? text.slice(0, limit) : text;
+  };
+  var _boundedSnapshotNumber = function (value, min, max, fallback) {
+    var number = Number(value);
+    if (!Number.isFinite(number)) return fallback;
+    return Math.max(min, Math.min(max, Math.round(number)));
+  };
   var _sanitizeSnapshotCharacter = function (character) {
-    if (!character || typeof character !== 'object') return null;
-    var copy = {
-      ...character
+    if (!character || typeof character !== 'object' || Array.isArray(character)) return null;
+    var requestedName = _boundedSnapshotText(character.name, 120);
+    if (!requestedName) return null;
+    // Device storage is learner-controlled. Rehydrate identity, prompt metadata,
+    // voice, and teacher guardrails only from the currently active resource.
+    var authoritativeCandidates = generatedContent && Array.isArray(generatedContent.data) ? generatedContent.data : [];
+    var authoritativeCharacter = authoritativeCandidates.find(function (candidate) {
+      return candidate && typeof candidate.name === 'string' && candidate.name.trim().toLocaleLowerCase() === requestedName.toLocaleLowerCase();
+    });
+    if (!authoritativeCharacter) return null;
+    var name = _boundedSnapshotText(authoritativeCharacter.name, 120);
+    var avatarUrl = typeof authoritativeCharacter.avatarUrl === 'string' && authoritativeCharacter.avatarUrl.length < 300000 ? authoritativeCharacter.avatarUrl : null;
+    var resumedQuestCompletion = new Map();
+    (Array.isArray(character.quests) ? character.quests : []).slice(0, 6).forEach(function (quest, index) {
+      if (!quest || typeof quest !== 'object' || Array.isArray(quest)) return;
+      var id = _boundedSnapshotText(String(quest.id == null ? 'q' + (index + 1) : quest.id), 80);
+      if (id) resumedQuestCompletion.set(id, quest.isCompleted === true);
+    });
+    var quests = (Array.isArray(authoritativeCharacter.quests) ? authoritativeCharacter.quests : []).slice(0, 6).reduce(function (list, quest, index) {
+      if (!quest || typeof quest !== 'object' || Array.isArray(quest)) return list;
+      var id = _boundedSnapshotText(String(quest.id == null ? 'q' + (index + 1) : quest.id), 80);
+      var text = _boundedSnapshotText(quest.text, 500);
+      if (!text) return list;
+      list.push({
+        id: id,
+        text: text,
+        difficulty: _boundedSnapshotNumber(quest.difficulty, 0, 100, 20),
+        isCompleted: quest.isCompleted === true || resumedQuestCompletion.get(id) === true
+      });
+      return list;
+    }, []);
+    var suggestedQuestions = (Array.isArray(authoritativeCharacter.suggestedQuestions) ? authoritativeCharacter.suggestedQuestions : []).slice(0, 6).reduce(function (list, item) {
+      var text = _boundedSnapshotText(typeof item === 'string' ? item : item && item.text, 500);
+      if (!text) return list;
+      list.push(typeof item === 'object' && item ? {
+        text: text,
+        tier: ['neutral', 'good', 'poor'].includes(item.tier) ? item.tier : 'neutral'
+      } : text);
+      return list;
+    }, []);
+    return {
+      name: name,
+      role: _boundedSnapshotText(authoritativeCharacter.role, 160) || 'Historical perspective',
+      year: _boundedSnapshotText(String(authoritativeCharacter.year == null ? 'Unknown era' : authoritativeCharacter.year), 80),
+      nationality: _boundedSnapshotText(authoritativeCharacter.nationality, 160),
+      context: _boundedSnapshotText(authoritativeCharacter.context, 2000),
+      visualDescription: _boundedSnapshotText(authoritativeCharacter.visualDescription, 2500),
+      artStyle: _boundedSnapshotText(authoritativeCharacter.artStyle, 500),
+      greeting: _boundedSnapshotText(authoritativeCharacter.greeting, 1000) || 'Hello, I am ' + name + '.',
+      voice: _boundedSnapshotText(authoritativeCharacter.voice, 80),
+      voiceProfile: _boundedSnapshotText(authoritativeCharacter.voiceProfile, 1200),
+      guardrails: _boundedSnapshotText(authoritativeCharacter.guardrails, 4000),
+      guardrailsSource: authoritativeCharacter.guardrailsSource === 'teacher' ? 'teacher' : 'system',
+      suggestedQuestions: suggestedQuestions,
+      quests: quests,
+      initialRapport: _boundedSnapshotNumber(authoritativeCharacter.initialRapport, 0, 100, 10),
+      rapport: _boundedSnapshotNumber(character.rapport, 0, 100, _boundedSnapshotNumber(authoritativeCharacter.rapport ?? authoritativeCharacter.initialRapport, 0, 100, 10)),
+      accumulatedXP: _boundedSnapshotNumber(character.accumulatedXP, 0, 300, _boundedSnapshotNumber(authoritativeCharacter.accumulatedXP, 0, 300, 0)),
+      avatarUrl: avatarUrl
     };
-    delete copy.chatHistory;
-    delete copy.savedDialogue;
-    if (typeof copy.avatarUrl !== 'string' || copy.avatarUrl.length >= 300000) copy.avatarUrl = null;
-    return copy;
+  };
+  var _normalizePersonaResumeSnapshot = function (snapshot) {
+    if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot) || !snapshot.state || typeof snapshot.state !== 'object' || Array.isArray(snapshot.state)) return null;
+    var rawState = snapshot.state;
+    var chatHistory = (Array.isArray(rawState.chatHistory) ? rawState.chatHistory : []).slice(-80).reduce(function (list, message) {
+      if (!message || typeof message !== 'object' || Array.isArray(message) || !['user', 'model'].includes(message.role)) return list;
+      var text = _boundedSnapshotText(message.text, 12000);
+      if (!text) return list;
+      var normalized = {
+        role: message.role,
+        text: text
+      };
+      var speakerName = _boundedSnapshotText(message.speakerName, 120);
+      var translation = _boundedSnapshotText(message.translation, 12000);
+      var evidenceNote = _boundedSnapshotText(message.evidenceNote, 4000);
+      if (speakerName) normalized.speakerName = speakerName;
+      if (translation) normalized.translation = translation;
+      if (evidenceNote) normalized.evidenceNote = evidenceNote;
+      list.push(normalized);
+      return list;
+    }, []);
+    // A device can close while a response is in flight. Never restore a user
+    // turn that has no following model response as if it were completed.
+    while (chatHistory.length && chatHistory[chatHistory.length - 1].role === 'user') chatHistory.pop();
+    if (chatHistory.length < 2) return null;
+    var selectedCharacters = (Array.isArray(rawState.selectedCharacters) ? rawState.selectedCharacters : []).slice(0, 2).map(_sanitizeSnapshotCharacter).filter(Boolean);
+    var selectedCharacter = _sanitizeSnapshotCharacter(rawState.selectedCharacter);
+    if (!['single', 'panel'].includes(rawState.mode)) return null;
+    if (rawState.mode === 'panel' && selectedCharacters.length !== 2) return null;
+    if (rawState.mode === 'single' && !selectedCharacter) return null;
+    var mode = rawState.mode;
+    var suggestions = (Array.isArray(rawState.suggestions) ? rawState.suggestions : []).slice(0, 6).map(function (item) {
+      return _boundedSnapshotText(typeof item === 'string' ? item : item && item.text, 500);
+    }).filter(Boolean);
+    var panelSuggestions = (Array.isArray(rawState.panelSuggestions) ? rawState.panelSuggestions : []).slice(0, 6).reduce(function (list, item) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return list;
+      var text = _boundedSnapshotText(item.text, 500);
+      if (text) list.push({
+        text: text,
+        tier: ['neutral', 'good', 'poor'].includes(item.tier) ? item.tier : 'neutral'
+      });
+      return list;
+    }, []);
+    return {
+      ...snapshot,
+      state: {
+        mode: mode,
+        selectedCharacter: selectedCharacter,
+        selectedCharacters: selectedCharacters,
+        chatHistory: chatHistory,
+        harmonyScore: _boundedSnapshotNumber(rawState.harmonyScore, 0, 100, 10),
+        earnedBadges: (Array.isArray(rawState.earnedBadges) ? rawState.earnedBadges : []).slice(0, 20).map(function (badge) {
+          return _boundedSnapshotText(badge, 80);
+        }).filter(Boolean),
+        topicSparkCount: _boundedSnapshotNumber(rawState.topicSparkCount, 0, 2, 0),
+        suggestions: suggestions,
+        panelSuggestions: panelSuggestions,
+        avatarUrl: mode === 'single' && selectedCharacter ? selectedCharacter.avatarUrl : null
+      }
+    };
   };
   var _dsChatLen = (personaState.chatHistory || []).length;
   React.useEffect(function () {
-    if (!_personaSnapshotEnabled || _dsCheckedKeyRef.current === _personaSnapshotKey) return;
+    if (!_personaSnapshotEnabled) {
+      setPersonaResumeOffer(null);
+      return undefined;
+    }
+    var cancelled = false;
+    var requestedKey = _personaSnapshotKey;
     _dsCheckedKeyRef.current = _personaSnapshotKey;
+    setPersonaResumeOffer(null);
     var mountMsgs = _dsChatLen;
     _ensureDeviceStorage().then(function (ds) {
       // v1 used one global key for every resource/student. Remove that unsafe
@@ -324,22 +495,44 @@
         return ds.get('persona_sessions', _personaSnapshotKey);
       });
     }).then(function (snap) {
+      if (cancelled || _dsCheckedKeyRef.current !== requestedKey) return;
       var savedTime = snap && Date.parse(snap.savedAt);
       var isExpired = !Number.isFinite(savedTime) || Date.now() - savedTime > _personaRetentionDays * 86400000;
       if (isExpired) {
         _clearPersonaSnapshot();
         return;
       }
-      if (!snap || snap.resourceId !== _personaSnapshotResourceId || snap.studentId !== _personaSnapshotStudentId || !snap.state || !(snap.state.chatHistory || []).length) return;
-      if ((snap.state.chatHistory || []).length > mountMsgs) setPersonaResumeOffer(snap);
+      if (!snap || snap.appId !== (appId || null) || snap.resourceId !== _personaSnapshotResourceId || snap.studentId !== _personaSnapshotStudentId) {
+        _clearPersonaSnapshot();
+        return;
+      }
+      var normalizedSnapshot = _normalizePersonaResumeSnapshot(snap);
+      if (!normalizedSnapshot) {
+        _clearPersonaSnapshot();
+        return;
+      }
+      if (normalizedSnapshot.state.chatHistory.length > mountMsgs) setPersonaResumeOffer(normalizedSnapshot);
     }).catch(function () {});
+    return function () {
+      cancelled = true;
+    };
   }, [_personaSnapshotKey]);
+  var _dsTopicSparkCount = _boundedSnapshotNumber(personaState.topicSparkCount, 0, 2, 0);
+  var _dsSuggestionFingerprint = '';
+  try {
+    _dsSuggestionFingerprint = JSON.stringify([(Array.isArray(personaState.suggestions) ? personaState.suggestions : []).slice(0, 6), (Array.isArray(personaState.panelSuggestions) ? personaState.panelSuggestions : []).slice(0, 6)]).slice(0, 12000);
+  } catch (_) {}
   React.useEffect(function () {
-    if (!_personaSnapshotEnabled || _dsChatLen < 2) return undefined;
-    if (personaResumeOffer) return undefined;
-    if (_dsSaveTimerRef.current) clearTimeout(_dsSaveTimerRef.current);
+    if (_dsSaveTimerRef.current) {
+      clearTimeout(_dsSaveTimerRef.current);
+      _dsSaveTimerRef.current = null;
+    }
+    if (!_personaSnapshotEnabled || personaState.isLoading || _dsChatLen < 2 || personaResumeOffer) return undefined;
     var st = personaState;
+    var scheduledSnapshotKey = _personaSnapshotKey;
     _dsSaveTimerRef.current = setTimeout(function () {
+      _dsSaveTimerRef.current = null;
+      if (!_personaSnapshotEnabledRef.current || _personaSnapshotLoadingRef.current || _personaSnapshotKeyRef.current !== scheduledSnapshotKey) return;
       var avatarOk = typeof st.avatarUrl === 'string' && st.avatarUrl.length < 300000;
       var snap;
       try {
@@ -356,7 +549,7 @@
             chatHistory: (st.chatHistory || []).slice(-80),
             harmonyScore: st.harmonyScore,
             earnedBadges: st.earnedBadges || [],
-            topicSparkCount: st.topicSparkCount || 0,
+            topicSparkCount: _boundedSnapshotNumber(st.topicSparkCount, 0, 2, 0),
             suggestions: st.suggestions || [],
             panelSuggestions: st.panelSuggestions || [],
             avatarUrl: avatarOk ? st.avatarUrl : null
@@ -376,28 +569,43 @@
         return;
       }
       _ensureDeviceStorage().then(function (ds) {
+        if (!_personaSnapshotEnabledRef.current || _personaSnapshotLoadingRef.current || _personaSnapshotKeyRef.current !== scheduledSnapshotKey) return;
         return ds.set('persona_sessions', _personaSnapshotKey, snap);
       }).catch(function () {});
     }, 1500);
     return function () {
       if (_dsSaveTimerRef.current) clearTimeout(_dsSaveTimerRef.current);
+      _dsSaveTimerRef.current = null;
     };
-  }, [_personaSnapshotKey, _dsChatLen, personaState.harmonyScore, (personaState.earnedBadges || []).length, !!personaResumeOffer]);
+  }, [_personaSnapshotKey, _personaSnapshotEnabled, _personaRetentionDays, personaState.isLoading, _dsChatLen, personaState.harmonyScore, (personaState.earnedBadges || []).length, _dsTopicSparkCount, _dsSuggestionFingerprint, !!personaResumeOffer]);
   var _resumeSnapshotName = personaResumeOffer ? personaResumeOffer.state.selectedCharacter && personaResumeOffer.state.selectedCharacter.name || (personaResumeOffer.state.selectedCharacters || []).map(function (c) {
     return c && c.name;
   }).filter(Boolean).join(' & ') || 'your character' : null;
   var _handleResumeSnapshot = function () {
     var snap = personaResumeOffer;
-    if (!snap || snap.resourceId !== _personaSnapshotResourceId || snap.studentId !== _personaSnapshotStudentId) {
+    if (!snap || snap.appId !== (appId || null) || snap.resourceId !== _personaSnapshotResourceId || snap.studentId !== _personaSnapshotStudentId) {
       _clearPersonaSnapshot();
       setPersonaResumeOffer(null);
       return;
     }
+    if (typeof stopPlayback === 'function') stopPlayback();
+    if (typeof setPersonaAutoRead === 'function') setPersonaAutoRead(false);
     setPersonaState(function (prev) {
       return {
         ...prev,
         ...snap.state,
         isLoading: false,
+        isImageLoading: false,
+        avatarGenerationFailed: false,
+        isGeneratingSuggestions: false,
+        suggestionsError: null,
+        isGeneratingPanelSuggestions: false,
+        panelSuggestionsError: null,
+        isGeneratingTopicSpark: false,
+        topicSparkError: null,
+        isGeneratingSummary: false,
+        personaSummary: null,
+        personaSummaryError: null,
         showReflection: false,
         reflectionText: '',
         reflectionSubmitted: false
@@ -439,28 +647,56 @@
   var activePersonaMessageIndex = activePersonaMessageMatch ? parseInt(activePersonaMessageMatch[1], 10) : -1;
   var activePersonaMessage = activePersonaMessageIndex >= 0 ? (personaState.chatHistory || [])[activePersonaMessageIndex] : null;
   var activeSpeakerName = activePersonaMessage && activePersonaMessage.role !== 'user' ? activePersonaMessage.speakerName || personaState.selectedCharacter?.name || null : null;
-  var panelTotalXp = (personaState.selectedCharacters?.[0]?.accumulatedXP || 0) + (personaState.selectedCharacters?.[1]?.accumulatedXP || 0);
-  var panelHarmonyScore = personaState.harmonyScore || 0;
+  var panelTotalXp = _boundedSnapshotNumber(personaState.selectedCharacters?.[0]?.accumulatedXP, 0, 300, 0) + _boundedSnapshotNumber(personaState.selectedCharacters?.[1]?.accumulatedXP, 0, 300, 0);
+  var panelHarmonyScore = _boundedSnapshotNumber(personaState.harmonyScore, 0, 100, 0);
   var panelConcludeReady = panelHarmonyScore >= 50 || panelTotalXp >= 100;
   var panelUnlockPct = Math.min(100, Math.round(Math.max(panelHarmonyScore / 50 * 100, panelTotalXp / 100 * 100)));
-  var singleRapport = personaState.selectedCharacter?.rapport ?? personaState.selectedCharacter?.initialRapport ?? 0;
-  var singleXp = personaState.selectedCharacter?.accumulatedXP || 0;
+  var singleRapport = _boundedSnapshotNumber(personaState.selectedCharacter?.rapport ?? personaState.selectedCharacter?.initialRapport, 0, 100, 0);
+  var singleXp = _boundedSnapshotNumber(personaState.selectedCharacter?.accumulatedXP, 0, 300, 0);
   var singleConcludeReady = singleRapport >= 50 || singleXp >= 100;
   var singleUnlockPct = Math.min(100, Math.round(Math.max(singleRapport / 50 * 100, singleXp / 100 * 100)));
-  var canGeneratePersonaSummary = Array.isArray(personaState.chatHistory) && personaState.chatHistory.some(function (message) {
-    return message && message.role === 'user';
-  }) && personaState.chatHistory.some(function (message) {
-    return message && message.role === 'model';
+  var summaryHistory = Array.isArray(personaState.chatHistory) ? personaState.chatHistory : [];
+  var summaryLastUserIndex = -1;
+  var summaryLastModelIndex = -1;
+  summaryHistory.forEach(function (message, index) {
+    if (message && message.role === 'user') summaryLastUserIndex = index;
+    if (message && message.role === 'model') summaryLastModelIndex = index;
   });
-  var personaSummary = personaState.personaSummary && typeof personaState.personaSummary === 'object' ? personaState.personaSummary : null;
+  var canGeneratePersonaSummary = !personaState.isLoading && summaryLastUserIndex >= 0 && summaryLastModelIndex > summaryLastUserIndex;
+  var personaSummary = personaState.personaSummary && typeof personaState.personaSummary === 'object' && !Array.isArray(personaState.personaSummary) ? personaState.personaSummary : null;
+  var _boundedDisplayText = function (value, limit) {
+    if (typeof value !== 'string' && typeof value !== 'number') return '';
+    var text = String(value).trim();
+    if (!text) return '';
+    return text.length > limit ? text.slice(0, Math.max(1, limit - 1)) + '…' : text;
+  };
   var _summaryItemText = function (item) {
-    if (typeof item === 'string') return item;
+    if (typeof item === 'string' || typeof item === 'number') return _boundedDisplayText(item, 2000);
     if (!item || typeof item !== 'object') return '';
-    return item.text || item.question || item.step || item.strength || item.insight || item.name || '';
+    return _boundedDisplayText(item.text || item.question || item.step || item.strength || item.insight || item.name, 2000);
   };
   var _summaryList = function (value) {
-    return Array.isArray(value) ? value.map(_summaryItemText).filter(Boolean) : [];
+    return Array.isArray(value) ? value.slice(0, 20).map(_summaryItemText).filter(Boolean) : [];
   };
+  var summaryTitle = _boundedDisplayText(personaSummary?.title, 240) || t(personaState.mode === 'panel' ? 'persona.summary.title_panel' : 'persona.summary.title_single');
+  var summaryParticipants = personaSummary && Array.isArray(personaSummary.participants) ? personaSummary.participants.slice(0, 8).map(_summaryItemText).filter(Boolean).join(' • ') : '';
+  var summaryOverview = _boundedDisplayText(personaSummary?.overview, 12000);
+  var summaryInsights = personaSummary && Array.isArray(personaSummary.keyInsights) ? personaSummary.keyInsights.slice(0, 20).reduce(function (list, item) {
+    var text = _summaryItemText(item);
+    if (!text) return list;
+    list.push({
+      text: text,
+      evidence: item && typeof item === 'object' ? _boundedDisplayText(item.evidence, 4000) : '',
+      confidence: item && typeof item === 'object' ? _boundedDisplayText(item.confidence, 80) : ''
+    });
+    return list;
+  }, []) : [];
+  var summaryVerificationNote = _boundedDisplayText(personaSummary?.verificationNote, 8000);
+  var summaryGeneratedAtLabel = '';
+  if (personaSummary && (typeof personaSummary.generatedAt === 'string' || typeof personaSummary.generatedAt === 'number')) {
+    var summaryGeneratedAtMs = Date.parse(String(personaSummary.generatedAt));
+    if (Number.isFinite(summaryGeneratedAtMs)) summaryGeneratedAtLabel = new Date(summaryGeneratedAtMs).toLocaleString();
+  }
   var summarySections = personaSummary ? [{
     key: 'agreements',
     title: t('persona.summary.agreements'),
@@ -484,10 +720,19 @@
   }].filter(function (section) {
     return section.items.length > 0;
   }) : [];
+  var hasRenderableSummaryContent = Boolean(summaryOverview || summaryInsights.length || summarySections.length || summaryVerificationNote);
+  var reflectionFeedbackData = reflectionFeedback && typeof reflectionFeedback === 'object' && !Array.isArray(reflectionFeedback) ? reflectionFeedback : null;
+  var reflectionFeedbackText = _boundedDisplayText(reflectionFeedbackData?.feedback, 12000);
+  var reflectionFeedbackSubject = _boundedDisplayText(reflectionFeedbackData?.subjectName, 240);
+  var reflectionFeedbackScore = reflectionFeedbackData && Number.isFinite(Number(reflectionFeedbackData.score)) ? _boundedSnapshotNumber(reflectionFeedbackData.score, 0, 100, 0) : null;
+  var reflectionFeedbackXp = reflectionFeedbackData ? _boundedSnapshotNumber(reflectionFeedbackData.xpEarned, 0, 300, 0) : 0;
+  var hasRenderableReflectionFeedback = Boolean(reflectionFeedbackData && (reflectionFeedbackText || reflectionFeedbackScore !== null));
+  var topicSparkCount = _boundedSnapshotNumber(personaState.topicSparkCount, 0, 2, 0);
+  var topicSparkRemaining = Math.max(0, 2 - topicSparkCount);
   return /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: t('persona.interface_error')
   }, /*#__PURE__*/React.createElement("div", {
-    className: `allo-docsuite fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300 theme-${theme}`,
+    className: `allo-docsuite fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-1 sm:p-4 animate-in motion-reduce:animate-none fade-in duration-300 theme-${theme}`,
     ref: personaDialogRef,
     role: "dialog",
     "aria-modal": "true",
@@ -526,7 +771,7 @@
     onClick: _handleDiscardSnapshot,
     className: "text-xs font-bold bg-white hover:bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none"
   }, t('persona.resume_discard_btn') || 'Discard'))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-2xl shadow-2xl w-full max-w-7xl relative border-4 border-yellow-200 overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-[85vh]"
+    className: "bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-7xl relative border-2 sm:border-4 border-yellow-200 overflow-hidden flex flex-col md:flex-row h-[calc(100dvh-0.5rem)] sm:h-[90vh] md:h-[85vh]"
   }, personaState.mode === 'panel' ? /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 w-full h-full flex flex-col overflow-hidden relative"
   }, /*#__PURE__*/React.createElement("div", {
@@ -545,9 +790,9 @@
   }, panelTotalXp), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-600"
   }, t('common.xp')))), /*#__PURE__*/React.createElement("div", {
-    className: "w-full max-w-lg transition-all motion-reduce:transition-none duration-500"
+    className: "w-full max-w-lg px-10 sm:px-12 md:px-0 transition-all motion-reduce:transition-none duration-500"
   }, /*#__PURE__*/React.createElement(HarmonyMeter, {
-    score: personaState.harmonyScore ?? 10
+    score: panelHarmonyScore
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "persona_close",
@@ -562,7 +807,7 @@
     className: "shrink-0 px-4 py-2 border-b border-slate-200 bg-slate-50/90 flex flex-wrap items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.volume'),
+    "aria-label": personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on'),
     onClick: () => {
       const newState = !personaAutoRead;
       setPersonaAutoRead(newState);
@@ -582,6 +827,7 @@
   }, t('persona.auto_read_label'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "persona_auto_send",
+    "aria-label": personaAutoSend ? t('persona.turn_off_auto_send') : t('persona.turn_on_auto_send'),
     "aria-pressed": personaAutoSend,
     onClick: handleTogglePersonaAutoSend,
     className: `p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${personaAutoSend ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`,
@@ -595,7 +841,7 @@
     className: "w-px h-6 bg-slate-300 mx-1"
   }), isPersonaFreeResponse && /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.show'),
+    "aria-label": showPersonaHints ? t('persona.hints_hide_tooltip') : t('persona.hints_show_tooltip'),
     "data-help-key": "persona_show_hints",
     "aria-pressed": showPersonaHints,
     onClick: handleToggleShowPersonaHints,
@@ -629,13 +875,13 @@
     type: "button",
     "data-help-key": "persona_topic_spark",
     onClick: handlePersonaTopicSpark,
-    disabled: personaState.isLoading || personaState.isGeneratingTopicSpark || (personaState.topicSparkCount || 0) >= 2,
-    className: `p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${(personaState.topicSparkCount || 0) >= 2 ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed' : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'}`,
+    disabled: personaState.isLoading || personaState.isGeneratingTopicSpark || topicSparkCount >= 2,
+    className: `p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${topicSparkCount >= 2 ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed' : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'}`,
     title: t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', {
-      remaining: 2 - (personaState.topicSparkCount || 0)
+      remaining: topicSparkRemaining
     }),
     "aria-label": t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', {
-      remaining: 2 - (personaState.topicSparkCount || 0)
+      remaining: topicSparkRemaining
     })
   }, /*#__PURE__*/React.createElement(Lightbulb, {
     size: 16,
@@ -647,7 +893,7 @@
     "aria-label": t('common.save'),
     "data-help-key": "persona_save_chat",
     onClick: handleSavePersonaChat,
-    disabled: personaState.chatHistory.length === 0,
+    disabled: personaState.chatHistory.length === 0 || personaState.isLoading,
     className: "p-2 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2",
     title: t('persona.save_tooltip')
   }, /*#__PURE__*/React.createElement(Save, {
@@ -655,25 +901,30 @@
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _openPersonaSummary,
-    disabled: !canGeneratePersonaSummary || personaState.isGeneratingSummary,
+    disabled: !canGeneratePersonaSummary || summaryBusy,
     className: "p-2 rounded-lg bg-violet-100 text-violet-700 border border-violet-200 hover:bg-violet-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2",
     title: personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn'),
     "aria-label": personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn'),
-    "aria-busy": personaState.isGeneratingSummary ? 'true' : 'false'
+    "aria-busy": summaryBusy ? 'true' : 'false'
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 16,
-    className: personaState.isGeneratingSummary ? 'animate-pulse motion-reduce:animate-none' : ''
+    className: summaryBusy ? 'animate-pulse motion-reduce:animate-none' : ''
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.check'),
+    "aria-label": personaState.isLoading || isGeneratingReflectionPrompt ? t('persona.finish_current_turn') : panelConcludeReady ? t('persona.conclude_button') : t('persona.conclude_locked_progress', {
+      percent: panelUnlockPct
+    }),
     "data-help-key": "persona_conclude",
     onClick: () => {
+      if (personaDefinitionData && typeof handleSetPersonaDefinitionDataToNull === 'function') handleSetPersonaDefinitionDataToNull();
       handleGenerateReflectionPrompt();
       setIsPersonaReflectionOpen(true);
     },
-    disabled: !panelConcludeReady,
+    disabled: !panelConcludeReady || personaState.isLoading || isGeneratingReflectionPrompt,
     className: `relative overflow-hidden flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all motion-reduce:transition-none text-xs font-bold ${panelConcludeReady ? 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700' : 'bg-slate-200 text-slate-600 border-slate-300 cursor-not-allowed'}`,
-    title: panelConcludeReady ? t('persona.conclude_tooltip') : `${t('persona.conclude_locked') || 'Keep building rapport to unlock reflection'} (${panelUnlockPct}%)`
+    title: personaState.isLoading || isGeneratingReflectionPrompt ? t('persona.finish_current_turn') : panelConcludeReady ? t('persona.conclude_tooltip') : t('persona.conclude_locked_progress', {
+      percent: panelUnlockPct
+    })
   }, panelConcludeReady ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 16
   }) : /*#__PURE__*/React.createElement(Lock, {
@@ -703,14 +954,14 @@
   }, t('persona.topic_spark_error'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handlePersonaTopicSpark,
-    disabled: (personaState.topicSparkCount || 0) >= 2,
+    disabled: topicSparkCount >= 2 || personaState.isGeneratingTopicSpark,
     className: "rounded border border-red-300 bg-white px-2 py-1 font-bold hover:bg-red-100 disabled:opacity-50"
   }, t('persona.topic_spark_retry')))), /*#__PURE__*/React.createElement("div", {
     className: "shrink-0 md:hidden px-3 py-2 bg-white border-b border-slate-200 flex items-start gap-2 overflow-x-auto"
   }, (personaState.selectedCharacters || []).map((char, cIdx) => {
     const isActivePanelist = activeSpeakerName && activeSpeakerName === char?.name;
-    const rapport = char?.rapport ?? char?.initialRapport ?? 30;
-    const xp = char?.accumulatedXP || 0;
+    const rapport = _boundedSnapshotNumber(char?.rapport ?? char?.initialRapport, 0, 100, 30);
+    const xp = _boundedSnapshotNumber(char?.accumulatedXP, 0, 300, 0);
     const quests = [...(char?.quests || [])].sort((a, b) => Number(a.isCompleted) - Number(b.isCompleted));
     return /*#__PURE__*/React.createElement("details", {
       key: char?.name || cIdx,
@@ -825,7 +1076,7 @@
     side: "left",
     onRetryPortrait: handleRetryPortraitGeneration
   })), /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 flex flex-col bg-slate-50/50 relative min-w-[320px]"
+    className: "flex-1 flex flex-col bg-slate-50/50 relative min-w-0 md:min-w-[320px]"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar",
     ref: personaScrollRef,
@@ -907,7 +1158,7 @@
       className: "text-[10px] font-bold uppercase tracking-wider text-slate-500"
     }, t('persona.translation_label') || 'English translation'), /*#__PURE__*/React.createElement("button", {
       type: "button",
-      "aria-label": t('common.volume'),
+      "aria-label": t('persona.speak_translation'),
       onClick: e => {
         e.stopPropagation();
         handleSpeak(msg.translation, `persona-panel-translation-${idx}`, 0);
@@ -967,13 +1218,15 @@
     size: 12,
     className: "animate-bounce motion-reduce:animate-none"
   }), " ", t('persona.waiting_to_speak'))), personaDefinitionData && /*#__PURE__*/React.createElement("div", {
-    className: "fixed z-[9999] bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 max-w-sm animate-in motion-reduce:animate-none zoom-in-95 duration-150",
+    "data-persona-definition-dialog": true,
+    className: "fixed z-[9999] w-[calc(100vw-1rem)] max-w-sm max-h-[calc(100dvh-1rem)] overflow-y-auto bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 animate-in motion-reduce:animate-none zoom-in-95 duration-150 sm:w-auto",
     style: {
-      left: Math.min(personaDefinitionData.x + 10, window.innerWidth - 320),
-      top: Math.min(personaDefinitionData.y + 10, window.innerHeight - 150)
+      left: Math.max(8, Math.min((Number(personaDefinitionData.x) || 0) + 10, Math.max(8, window.innerWidth - 392))),
+      top: Math.max(8, Math.min((Number(personaDefinitionData.y) || 0) + 10, Math.max(8, window.innerHeight - 220)))
     },
     ref: personaDefinitionDialogRef,
     role: "dialog",
+    tabIndex: -1,
     "aria-labelledby": "persona-definition-title",
     onKeyDown: e => {
       if (e.key === 'Escape') {
@@ -1005,7 +1258,7 @@
     className: "text-sm text-slate-700 leading-relaxed mb-3"
   }, personaDefinitionData.text), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.volume'),
+    "aria-label": t('persona.speak_definition'),
     onClick: () => handleSpeak(personaDefinitionData.text, 'persona-definition', 0),
     className: "flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-full"
   }, /*#__PURE__*/React.createElement(Volume2, {
@@ -1015,7 +1268,7 @@
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 text-center mb-3 font-medium"
   }, t('persona.panel_choose_response')), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-2 lg:grid-cols-3 gap-1.5"
+    className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5"
   }, personaState.panelSuggestions.map((opt, i) => /*#__PURE__*/React.createElement("button", {
     type: "button",
     key: i,
@@ -1035,7 +1288,17 @@
     type: "button",
     onClick: () => generatePanelFollowUps(personaState.chatHistory, personaState.selectedCharacters?.[0], personaState.selectedCharacters?.[1]),
     className: "font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
-  }, t('persona.retry_choices'))))) : isPersonaFreeResponse ? /*#__PURE__*/React.createElement("div", {
+  }, t('persona.retry_choices'))))) : panelChoicePending || personaState.isLoading ? /*#__PURE__*/React.createElement("div", {
+    className: "p-4 bg-white border-t border-slate-200",
+    role: "status",
+    "aria-live": "polite",
+    "aria-busy": "true"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-center gap-2 text-sm font-bold text-indigo-700"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 18,
+    className: "animate-spin motion-reduce:animate-none"
+  }), t('persona.waiting_for_response'))) : isPersonaFreeResponse ? /*#__PURE__*/React.createElement("div", {
     className: "p-4 bg-white border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
@@ -1044,7 +1307,12 @@
     maxLength: 2000,
     value: personaInput,
     onChange: e => setPersonaInput(e.target.value),
-    onKeyDown: e => e.key === 'Enter' && !personaState.isLoading && handlePanelChatSubmit(personaInput),
+    onKeyDown: e => {
+      if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
+        e.preventDefault();
+        if (!personaState.isLoading && typeof personaInput === 'string' && personaInput.trim()) handlePanelChatSubmit(personaInput);
+      }
+    },
     className: "flex-1 p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-400 outline-none transition-all motion-reduce:transition-none placeholder:text-slate-600",
     placeholder: t('persona.panel_question_placeholder'),
     disabled: personaState.isLoading
@@ -1087,14 +1355,14 @@
     "aria-labelledby": "persona-reflection-title",
     tabIndex: -1,
     onKeyDown: e => {
-      if (e.key === 'Escape' && !isGradingReflection) {
+      if (e.key === 'Escape' && !reflectionBusy) {
         e.preventDefault();
         e.stopPropagation();
         handleSetIsPersonaReflectionOpenToFalse();
       }
     },
-    className: "absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col p-8 animate-in motion-reduce:animate-none fade-in duration-300"
-  }, reflectionFeedback ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col overflow-hidden p-3 sm:p-8 animate-in motion-reduce:animate-none fade-in duration-300"
+  }, hasRenderableReflectionFeedback ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-center mb-6 relative"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300"
@@ -1104,15 +1372,15 @@
   })), /*#__PURE__*/React.createElement("h2", {
     id: "persona-reflection-title",
     className: "text-2xl font-black text-slate-800"
-  }, t('persona.reflection_complete') || 'Great Reflection!'), /*#__PURE__*/React.createElement("p", {
-    className: "text-slate-600 text-sm"
-  }, reflectionFeedback.subjectName)), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.reflection_complete') || 'Great Reflection!'), reflectionFeedbackSubject && /*#__PURE__*/React.createElement("p", {
+    className: "break-words text-slate-600 text-sm"
+  }, reflectionFeedbackSubject)), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto space-y-4"
-  }, typeof reflectionFeedback.score === 'number' && /*#__PURE__*/React.createElement("div", {
+  }, reflectionFeedbackScore !== null && /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-5xl font-black text-indigo-600 mb-2"
-  }, reflectionFeedback.score, /*#__PURE__*/React.createElement("span", {
+  }, reflectionFeedbackScore, /*#__PURE__*/React.createElement("span", {
     className: "text-2xl text-indigo-400"
   }, "/100")), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-indigo-500 uppercase tracking-wider"
@@ -1125,7 +1393,7 @@
     className: "fill-current"
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-black text-yellow-600"
-  }, "+", reflectionFeedback.xpEarned, " XP"), /*#__PURE__*/React.createElement("div", {
+  }, "+", reflectionFeedbackXp, " XP"), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-yellow-700 font-medium"
   }, t('persona.xp_earned') || 'Experience Earned'))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm"
@@ -1136,9 +1404,9 @@
   }), " ", t('persona.ai_feedback') || 'AI Reflection Feedback'), /*#__PURE__*/React.createElement("p", {
     className: "mb-2 text-[11px] text-slate-500"
   }, t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'), /*#__PURE__*/React.createElement("div", {
-    className: "text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none",
+    className: "break-words [overflow-wrap:anywhere] text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none",
     dangerouslySetInnerHTML: {
-      __html: (reflectionFeedback.feedback || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>')
+      __html: reflectionFeedbackText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>')
     }
   }))), /*#__PURE__*/React.createElement("div", {
     className: "mt-6"
@@ -1178,36 +1446,46 @@
   }), " ", t('persona.status_generating_prompt')) : /*#__PURE__*/React.createElement("p", {
     className: "text-slate-700 text-sm leading-relaxed"
   }, dynamicReflectionQuestion || t('persona.default_reflection_prompt'))), /*#__PURE__*/React.createElement("textarea", {
+    id: "persona-reflection-input",
     "aria-label": t('persona.reflection_input') || 'Write your reflection',
+    "aria-describedby": "persona-reflection-count",
     maxLength: 4000,
-    value: personaReflectionInput,
+    value: personaReflectionText,
     onChange: e => setPersonaReflectionInput(e.target.value),
     placeholder: t('persona.reflection_placeholder'),
     className: "w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600",
-    disabled: isGradingReflection
-  }))), /*#__PURE__*/React.createElement("div", {
+    disabled: reflectionBusy || isGeneratingReflectionPrompt
+  }), /*#__PURE__*/React.createElement("p", {
+    id: "persona-reflection-count",
+    className: "mt-1 text-right text-[11px] font-medium text-slate-500"
+  }, t('persona.reflection_character_count', {
+    count: personaReflectionText.length,
+    limit: 4000
+  })))), /*#__PURE__*/React.createElement("div", {
     className: "mt-6 flex gap-3"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "aria-label": t('persona.back_to_chat'),
     onClick: handleSetIsPersonaReflectionOpenToFalse,
-    disabled: isGradingReflection,
+    disabled: reflectionBusy,
     className: "flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
   }, t('persona.back_to_chat')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.submit_reflection_for_grading'),
-    onClick: handleSaveReflection,
-    disabled: !personaReflectionInput.trim() || isGradingReflection,
+    "aria-busy": reflectionBusy ? 'true' : 'false',
+    onClick: _submitPersonaReflection,
+    disabled: !personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt,
     className: "flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-  }, isGradingReflection ? /*#__PURE__*/React.createElement(RefreshCw, {
+  }, reflectionBusy ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18,
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
     className: "text-yellow-700 fill-current"
-  }), isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp')))))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "w-full md:w-1/3 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 p-6 flex flex-col items-center text-center overflow-y-auto shrink-0 z-10 relative custom-scrollbar"
+  }), reflectionBusy ? t('persona.status_grading') : t('persona.submit_xp')))))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "w-full md:w-1/3 max-h-[40vh] md:max-h-none bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 p-3 sm:p-4 md:p-6 flex flex-col items-center text-center overflow-y-auto shrink-0 z-10 relative custom-scrollbar"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-48 h-72 md:w-80 md:h-[28rem] bg-yellow-100 rounded-2xl border-4 border-white shadow-xl overflow-hidden mb-6 shrink-0 relative group"
+    className: "w-24 h-32 sm:w-32 sm:h-48 md:w-80 md:h-[28rem] bg-yellow-100 rounded-2xl border-4 border-white shadow-xl overflow-hidden mb-3 md:mb-6 shrink-0 relative group"
   }, personaState.avatarUrl && /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: personaState.avatarUrl,
@@ -1230,7 +1508,9 @@
     className: "text-yellow-300/50"
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.refresh'),
+    "aria-label": t('persona.generate_portrait_for', {
+      name: personaState.selectedCharacter?.name || t('persona.character_fallback')
+    }),
     onClick: () => handleRetryPortraitGeneration(personaState.selectedCharacter),
     className: "bg-yellow-500 hover:bg-yellow-600 text-yellow-900 px-4 py-2 rounded-full text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2 transition-all motion-reduce:transition-none shadow-md hover:shadow-lg"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
@@ -1253,18 +1533,18 @@
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest"
   }, t('persona.trust_rapport_label')), /*#__PURE__*/React.createElement("span", {
-    className: `text-xs font-bold ${(personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 70 ? 'text-green-600' : (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 30 ? 'text-yellow-600' : 'text-red-500'}`
-  }, personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport, "%")), /*#__PURE__*/React.createElement("div", {
+    className: `text-xs font-bold ${singleRapport >= 70 ? 'text-green-600' : singleRapport >= 30 ? 'text-yellow-600' : 'text-red-500'}`
+  }, singleRapport, "%")), /*#__PURE__*/React.createElement("div", {
     role: "progressbar",
     "aria-label": t('persona.trust_rapport_label'),
     "aria-valuemin": 0,
     "aria-valuemax": 100,
-    "aria-valuenow": personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport ?? 0,
+    "aria-valuenow": singleRapport,
     className: "w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-400"
   }, /*#__PURE__*/React.createElement("div", {
-    className: `h-full transition-all motion-reduce:transition-none duration-500 ease-out ${(personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 70 ? 'bg-green-500' : (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 30 ? 'bg-yellow-400' : 'bg-red-500'}`,
+    className: `h-full transition-all motion-reduce:transition-none duration-500 ease-out ${singleRapport >= 70 ? 'bg-green-500' : singleRapport >= 30 ? 'bg-yellow-400' : 'bg-red-500'}`,
     style: {
-      width: `${personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport}%`
+      width: `${singleRapport}%`
     }
   }))), personaState.selectedCharacter.quests && personaState.selectedCharacter.quests.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-6 text-left"
@@ -1316,25 +1596,25 @@
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-black text-yellow-600"
-  }, personaState.selectedCharacter?.accumulatedXP || 0), /*#__PURE__*/React.createElement("span", {
+  }, singleXp), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-600"
   }, "/ 300"))), /*#__PURE__*/React.createElement("div", {
     role: "progressbar",
     "aria-label": t('common.xp') || 'Experience points',
     "aria-valuemin": 0,
     "aria-valuemax": 300,
-    "aria-valuenow": personaState.selectedCharacter?.accumulatedXP || 0,
+    "aria-valuenow": singleXp,
     className: "w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden"
   }, /*#__PURE__*/React.createElement("div", {
     className: "h-full bg-gradient-to-r from-yellow-400 to-amber-500 transition-all motion-reduce:transition-none duration-500",
     style: {
-      width: `${Math.min(100, (personaState.selectedCharacter?.accumulatedXP || 0) / 300 * 100)}%`
+      width: `${Math.min(100, singleXp / 300 * 100)}%`
     }
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.volume'),
+    "aria-label": personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on'),
     "data-help-key": "persona_auto_read",
     "aria-pressed": personaAutoRead,
     onClick: () => {
@@ -1354,6 +1634,7 @@
   }, t('persona.auto_read_label'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "persona_auto_send",
+    "aria-label": personaAutoSend ? t('persona.turn_off_auto_send') : t('persona.turn_on_auto_send'),
     "aria-pressed": personaAutoSend,
     onClick: handleTogglePersonaAutoSend,
     className: `p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${personaAutoSend ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`,
@@ -1367,7 +1648,7 @@
     className: "w-px h-6 bg-slate-300 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.show'),
+    "aria-label": showPersonaHints ? t('persona.hints_hide_tooltip') : t('persona.hints_show_tooltip'),
     "data-help-key": "persona_hints_toggle",
     "aria-pressed": showPersonaHints,
     onClick: handleToggleShowPersonaHints,
@@ -1401,13 +1682,13 @@
     type: "button",
     "data-help-key": "persona_topic_spark",
     onClick: handlePersonaTopicSpark,
-    disabled: personaState.isLoading || personaState.isGeneratingTopicSpark || (personaState.topicSparkCount || 0) >= 2,
-    className: `p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${(personaState.topicSparkCount || 0) >= 2 ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed' : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'}`,
+    disabled: personaState.isLoading || personaState.isGeneratingTopicSpark || topicSparkCount >= 2,
+    className: `p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${topicSparkCount >= 2 ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed' : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'}`,
     title: t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', {
-      remaining: 2 - (personaState.topicSparkCount || 0)
+      remaining: topicSparkRemaining
     }),
     "aria-label": t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', {
-      remaining: 2 - (personaState.topicSparkCount || 0)
+      remaining: topicSparkRemaining
     })
   }, /*#__PURE__*/React.createElement(Lightbulb, {
     size: 16,
@@ -1416,7 +1697,7 @@
     type: "button",
     "data-help-key": "persona_save_chat",
     onClick: handleSavePersonaChat,
-    disabled: personaState.chatHistory.length === 0,
+    disabled: personaState.chatHistory.length === 0 || personaState.isLoading,
     className: "p-2 rounded-lg bg-white text-slate-600 border border-slate-400 shadow-sm hover:bg-slate-50 hover:border-indigo-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed",
     title: t('persona.chat_save'),
     "aria-label": t('persona.chat_save')
@@ -1425,25 +1706,30 @@
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _openPersonaSummary,
-    disabled: !canGeneratePersonaSummary || personaState.isGeneratingSummary,
+    disabled: !canGeneratePersonaSummary || summaryBusy,
     className: "p-2 rounded-lg bg-violet-50 text-violet-700 border border-violet-200 shadow-sm hover:bg-violet-100 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed",
     title: personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn'),
     "aria-label": personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn'),
-    "aria-busy": personaState.isGeneratingSummary ? 'true' : 'false'
+    "aria-busy": summaryBusy ? 'true' : 'false'
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 16,
-    className: personaState.isGeneratingSummary ? 'animate-pulse motion-reduce:animate-none' : ''
+    className: summaryBusy ? 'animate-pulse motion-reduce:animate-none' : ''
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.check'),
+    "aria-label": personaState.isLoading || isGeneratingReflectionPrompt ? t('persona.finish_current_turn') : singleConcludeReady ? t('persona.conclude_button') : t('persona.conclude_locked_progress', {
+      percent: singleUnlockPct
+    }),
     "data-help-key": "persona_conclude",
     onClick: () => {
+      if (personaDefinitionData && typeof handleSetPersonaDefinitionDataToNull === 'function') handleSetPersonaDefinitionDataToNull();
       handleGenerateReflectionPrompt();
       setIsPersonaReflectionOpen(true);
     },
-    disabled: !singleConcludeReady,
+    disabled: !singleConcludeReady || personaState.isLoading || isGeneratingReflectionPrompt,
     className: `relative overflow-hidden flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all motion-reduce:transition-none text-xs font-bold ${singleConcludeReady ? 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700' : 'bg-slate-200 text-slate-600 border-slate-300 cursor-not-allowed'}`,
-    title: singleConcludeReady ? t('persona.conclude_tooltip') : `${t('persona.conclude_locked') || 'Keep building rapport to unlock reflection'} (${singleUnlockPct}%)`
+    title: personaState.isLoading || isGeneratingReflectionPrompt ? t('persona.finish_current_turn') : singleConcludeReady ? t('persona.conclude_tooltip') : t('persona.conclude_locked_progress', {
+      percent: singleUnlockPct
+    })
   }, singleConcludeReady ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 16
   }) : /*#__PURE__*/React.createElement(Lock, {
@@ -1473,7 +1759,7 @@
   }, t('persona.topic_spark_error'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handlePersonaTopicSpark,
-    disabled: (personaState.topicSparkCount || 0) >= 2,
+    disabled: topicSparkCount >= 2 || personaState.isGeneratingTopicSpark,
     className: "rounded border border-red-300 bg-white px-2 py-1 font-bold hover:bg-red-100 disabled:opacity-50"
   }, t('persona.topic_spark_retry')))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar",
@@ -1598,7 +1884,7 @@
         className: "text-[10px] font-bold uppercase tracking-wider text-slate-500"
       }, t('persona.translation_label') || 'English translation'), /*#__PURE__*/React.createElement("button", {
         type: "button",
-        "aria-label": t('common.volume'),
+        "aria-label": t('persona.speak_translation'),
         onClick: e => {
           e.stopPropagation();
           handleSpeak(translationText, `persona-translation-${idx}`, 0);
@@ -1685,7 +1971,12 @@
     maxLength: 2000,
     value: personaInput,
     onChange: e => setPersonaInput(e.target.value),
-    onKeyDown: e => e.key === 'Enter' && !personaState.isLoading && handlePersonaChatSubmit(),
+    onKeyDown: e => {
+      if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
+        e.preventDefault();
+        if (!personaState.isLoading && typeof personaInput === 'string' && personaInput.trim()) handlePersonaChatSubmit();
+      }
+    },
     placeholder: t('persona.character_question_placeholder', {
       name: personaState.selectedCharacter?.name
     }),
@@ -1725,14 +2016,14 @@
     "aria-labelledby": "persona-reflection-title",
     tabIndex: -1,
     onKeyDown: e => {
-      if (e.key === 'Escape' && !isGradingReflection) {
+      if (e.key === 'Escape' && !reflectionBusy) {
         e.preventDefault();
         e.stopPropagation();
         handleSetIsPersonaReflectionOpenToFalse();
       }
     },
-    className: "absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col p-8 animate-in motion-reduce:animate-none fade-in duration-300"
-  }, reflectionFeedback ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col overflow-hidden p-3 sm:p-8 animate-in motion-reduce:animate-none fade-in duration-300"
+  }, hasRenderableReflectionFeedback ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-center mb-6 relative"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300"
@@ -1742,15 +2033,15 @@
   })), /*#__PURE__*/React.createElement("h2", {
     id: "persona-reflection-title",
     className: "text-2xl font-black text-slate-800"
-  }, t('persona.reflection_complete') || 'Great Reflection!'), /*#__PURE__*/React.createElement("p", {
-    className: "text-slate-600 text-sm"
-  }, reflectionFeedback.subjectName)), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.reflection_complete') || 'Great Reflection!'), reflectionFeedbackSubject && /*#__PURE__*/React.createElement("p", {
+    className: "break-words text-slate-600 text-sm"
+  }, reflectionFeedbackSubject)), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto space-y-4"
-  }, typeof reflectionFeedback.score === 'number' && /*#__PURE__*/React.createElement("div", {
+  }, reflectionFeedbackScore !== null && /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-5xl font-black text-indigo-600 mb-2"
-  }, reflectionFeedback.score, /*#__PURE__*/React.createElement("span", {
+  }, reflectionFeedbackScore, /*#__PURE__*/React.createElement("span", {
     className: "text-2xl text-indigo-400"
   }, "/100")), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-indigo-500 uppercase tracking-wider"
@@ -1763,7 +2054,7 @@
     className: "fill-current"
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-black text-yellow-600"
-  }, "+", reflectionFeedback.xpEarned, " XP"), /*#__PURE__*/React.createElement("div", {
+  }, "+", reflectionFeedbackXp, " XP"), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-yellow-700 font-medium"
   }, t('persona.xp_earned') || 'Experience Earned'))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm"
@@ -1774,15 +2065,15 @@
   }), " ", t('persona.ai_feedback') || 'AI Reflection Feedback'), /*#__PURE__*/React.createElement("p", {
     className: "mb-2 text-[11px] text-slate-500"
   }, t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'), /*#__PURE__*/React.createElement("div", {
-    className: "text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none",
+    className: "break-words [overflow-wrap:anywhere] text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none",
     dangerouslySetInnerHTML: {
-      __html: (reflectionFeedback.feedback || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>')
+      __html: reflectionFeedbackText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>')
     }
   }))), /*#__PURE__*/React.createElement("div", {
     className: "mt-6"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.check'),
+    "aria-label": t('common.continue'),
     onClick: _handleCompleteReflection,
     className: "w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -1818,36 +2109,46 @@
   }, dynamicReflectionQuestion || t('persona.default_reflection_prompt_named', {
     name: personaState.selectedCharacter?.name || t('persona.character_fallback')
   }))), /*#__PURE__*/React.createElement("textarea", {
+    id: "persona-reflection-input",
     "aria-label": t('persona.reflection_input') || 'Write your reflection',
-    value: personaReflectionInput,
+    "aria-describedby": "persona-reflection-count",
+    maxLength: 4000,
+    value: personaReflectionText,
     "data-help-key": "persona_reflection_input",
     onChange: e => setPersonaReflectionInput(e.target.value),
     placeholder: t('persona.reflection_placeholder'),
     className: "w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600",
-    disabled: isGradingReflection
-  }))), /*#__PURE__*/React.createElement("div", {
+    disabled: reflectionBusy || isGeneratingReflectionPrompt
+  }), /*#__PURE__*/React.createElement("p", {
+    id: "persona-reflection-count",
+    className: "mt-1 text-right text-[11px] font-medium text-slate-500"
+  }, t('persona.reflection_character_count', {
+    count: personaReflectionText.length,
+    limit: 4000
+  })))), /*#__PURE__*/React.createElement("div", {
     className: "mt-6 flex gap-3"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.refresh'),
+    "aria-label": t('persona.back_to_chat'),
     onClick: handleSetIsPersonaReflectionOpenToFalse,
     "data-help-key": "persona_back_btn",
-    disabled: isGradingReflection,
+    disabled: reflectionBusy,
     className: "flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
   }, t('persona.back_to_chat')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.submit_reflection_for_grading'),
-    onClick: handleSaveReflection,
+    "aria-busy": reflectionBusy ? 'true' : 'false',
+    onClick: _submitPersonaReflection,
     "data-help-key": "persona_submit_btn",
-    disabled: !personaReflectionInput.trim() || isGradingReflection,
+    disabled: !personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt,
     className: "flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-  }, isGradingReflection ? /*#__PURE__*/React.createElement(RefreshCw, {
+  }, reflectionBusy ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18,
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
     className: "text-yellow-700 fill-current"
-  }), isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp'))))))), isPersonaSummaryOpen && /*#__PURE__*/React.createElement("div", {
+  }), reflectionBusy ? t('persona.status_grading') : t('persona.submit_xp'))))))), isPersonaSummaryOpen && /*#__PURE__*/React.createElement("div", {
     ref: personaSummaryDialogRef,
     "data-persona-summary-dialog": true,
     role: "dialog",
@@ -1874,10 +2175,10 @@
     className: "min-w-0 flex-1"
   }, /*#__PURE__*/React.createElement("h2", {
     id: "persona-summary-title",
-    className: "text-xl font-black text-slate-900"
-  }, personaSummary?.title || t(personaState.mode === 'panel' ? 'persona.summary.title_panel' : 'persona.summary.title_single')), personaSummary?.participants?.length > 0 && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 truncate text-xs font-medium text-slate-600"
-  }, personaSummary.participants.map(_summaryItemText).filter(Boolean).join(' • '))), /*#__PURE__*/React.createElement("button", {
+    className: "break-words [overflow-wrap:anywhere] text-xl font-black text-slate-900"
+  }, summaryTitle), summaryParticipants && /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 break-words [overflow-wrap:anywhere] text-xs font-medium text-slate-600"
+  }, summaryParticipants)), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-persona-summary-initial-focus": true,
     autoFocus: true,
@@ -1888,7 +2189,7 @@
     size: 20
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-5 sm:p-6"
-  }, personaState.isGeneratingSummary ? /*#__PURE__*/React.createElement("div", {
+  }, summaryBusy && !personaSummary ? /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     className: "flex min-h-[16rem] flex-col items-center justify-center gap-3 text-center text-violet-700"
@@ -1905,19 +2206,40 @@
   }, t('persona.summary.error')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _retryPersonaSummary,
-    className: "inline-flex items-center gap-2 rounded-lg bg-red-700 px-4 py-2 font-bold text-white hover:bg-red-800"
+    disabled: summaryBusy || !canGeneratePersonaSummary,
+    "aria-busy": summaryBusy ? 'true' : 'false',
+    className: "inline-flex items-center gap-2 rounded-lg bg-red-700 px-4 py-2 font-bold text-white hover:bg-red-800 disabled:opacity-50"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 16
   }), " ", t('persona.summary.retry'))) : personaSummary ? /*#__PURE__*/React.createElement("div", {
-    className: "space-y-5"
-  }, personaState.personaSummaryError && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-5 break-words [overflow-wrap:anywhere]"
+  }, summaryBusy && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-busy": "true",
+    className: "flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm font-bold text-violet-800"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 16,
+    className: "animate-spin motion-reduce:animate-none"
+  }), " ", t('persona.summary.generating')), personaState.personaSummaryError && /*#__PURE__*/React.createElement("div", {
     role: "alert",
     className: "flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
   }, /*#__PURE__*/React.createElement("span", null, t('persona.summary.refresh_failed')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _retryPersonaSummary,
-    className: "rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-amber-100"
-  }, t('persona.summary.retry'))), personaSummary.overview && /*#__PURE__*/React.createElement("section", {
+    disabled: summaryBusy || !canGeneratePersonaSummary,
+    className: "rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-amber-100 disabled:opacity-50"
+  }, t('persona.summary.retry'))), !hasRenderableSummaryContent && !summaryBusy && /*#__PURE__*/React.createElement("div", {
+    role: "alert",
+    className: "rounded-xl border border-amber-200 bg-amber-50 p-5 text-center text-sm text-amber-900"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold"
+  }, t('persona.summary.no_usable_content')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: _retryPersonaSummary,
+    disabled: !canGeneratePersonaSummary,
+    className: "mt-3 rounded-lg border border-amber-300 bg-white px-3 py-2 font-bold hover:bg-amber-100 disabled:opacity-50"
+  }, t('persona.summary.retry'))), summaryOverview && /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "persona-summary-overview",
     className: "rounded-xl border border-violet-100 bg-violet-50 p-4"
   }, /*#__PURE__*/React.createElement("h3", {
@@ -1925,31 +2247,27 @@
     className: "mb-2 text-xs font-black uppercase tracking-wider text-violet-700"
   }, t('persona.summary.overview')), /*#__PURE__*/React.createElement("p", {
     className: "leading-relaxed text-slate-700"
-  }, personaSummary.overview)), Array.isArray(personaSummary.keyInsights) && personaSummary.keyInsights.length > 0 && /*#__PURE__*/React.createElement("section", {
+  }, summaryOverview)), summaryInsights.length > 0 && /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "persona-summary-insights"
   }, /*#__PURE__*/React.createElement("h3", {
     id: "persona-summary-insights",
     className: "mb-3 text-sm font-black uppercase tracking-wider text-slate-700"
   }, t('persona.summary.key_insights')), /*#__PURE__*/React.createElement("ol", {
     className: "grid gap-3 md:grid-cols-2"
-  }, personaSummary.keyInsights.map((item, idx) => {
-    const insight = _summaryItemText(item);
-    if (!insight) return null;
-    return /*#__PURE__*/React.createElement("li", {
-      key: idx,
-      className: "rounded-xl border border-indigo-100 bg-white p-4 shadow-sm"
-    }, /*#__PURE__*/React.createElement("p", {
-      className: "font-bold leading-relaxed text-slate-800"
-    }, insight), item && typeof item === 'object' && item.evidence && /*#__PURE__*/React.createElement("p", {
-      className: "mt-2 border-l-2 border-indigo-200 pl-3 text-xs leading-relaxed text-slate-600"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "font-bold"
-    }, t('persona.summary.evidence'), ":"), " ", item.evidence), item && typeof item === 'object' && item.confidence != null && /*#__PURE__*/React.createElement("p", {
-      className: "mt-2 text-[11px] font-bold uppercase tracking-wide text-indigo-600"
-    }, t('persona.summary.confidence', {
-      value: item.confidence
-    })));
-  }))), /*#__PURE__*/React.createElement("div", {
+  }, summaryInsights.map((item, idx) => /*#__PURE__*/React.createElement("li", {
+    key: idx,
+    className: "rounded-xl border border-indigo-100 bg-white p-4 shadow-sm"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold leading-relaxed text-slate-800"
+  }, item.text), item.evidence && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 border-l-2 border-indigo-200 pl-3 text-xs leading-relaxed text-slate-600"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold"
+  }, t('persona.summary.evidence'), ":"), " ", item.evidence), item.confidence && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-[11px] font-bold uppercase tracking-wide text-indigo-600"
+  }, t('persona.summary.confidence', {
+    value: item.confidence
+  })))))), /*#__PURE__*/React.createElement("div", {
     className: "grid gap-4 md:grid-cols-2"
   }, summarySections.map(section => /*#__PURE__*/React.createElement("section", {
     key: section.key,
@@ -1960,14 +2278,14 @@
     className: "list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-slate-700"
   }, section.items.map((item, idx) => /*#__PURE__*/React.createElement("li", {
     key: idx
-  }, item)))))), personaSummary.verificationNote && /*#__PURE__*/React.createElement("aside", {
+  }, item)))))), summaryVerificationNote && /*#__PURE__*/React.createElement("aside", {
     className: "rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "mb-1 text-xs font-black uppercase tracking-wider"
-  }, t('persona.summary.verification_note')), /*#__PURE__*/React.createElement("p", null, personaSummary.verificationNote)), personaSummary.generatedAt && /*#__PURE__*/React.createElement("p", {
+  }, t('persona.summary.verification_note')), /*#__PURE__*/React.createElement("p", null, summaryVerificationNote)), summaryGeneratedAtLabel && /*#__PURE__*/React.createElement("p", {
     className: "text-right text-[11px] text-slate-500"
   }, t('persona.summary.generated_at', {
-    date: new Date(personaSummary.generatedAt).toLocaleString()
+    date: summaryGeneratedAtLabel
   }))) : /*#__PURE__*/React.createElement("div", {
     className: "flex min-h-[16rem] flex-col items-center justify-center gap-4 text-center text-slate-600"
   }, /*#__PURE__*/React.createElement(Sparkles, {
@@ -1976,29 +2294,31 @@
   }), /*#__PURE__*/React.createElement("p", null, t('persona.summary.empty')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _retryPersonaSummary,
-    disabled: !canGeneratePersonaSummary,
+    disabled: !canGeneratePersonaSummary || summaryBusy,
     className: "rounded-lg bg-violet-700 px-4 py-2 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
   }, t('persona.summary.generate_btn')))), /*#__PURE__*/React.createElement("footer", {
-    className: "flex flex-wrap justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3"
+    className: "flex flex-col gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3 sm:flex-row sm:flex-wrap sm:justify-end"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setIsPersonaSummaryOpen(false),
-    className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100"
+    className: "w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 sm:w-auto"
   }, t('persona.summary.back_to_chat')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleSavePersonaChat,
-    disabled: (personaState.chatHistory || []).length === 0,
-    className: "inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50"
+    disabled: (personaState.chatHistory || []).length === 0 || personaState.isLoading,
+    className: "inline-flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50 sm:w-auto"
   }, /*#__PURE__*/React.createElement(Save, {
     size: 15
   }), " ", t('persona.chat_save')), personaSummary && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _retryPersonaSummary,
-    disabled: personaState.isGeneratingSummary,
-    className: "inline-flex items-center gap-2 rounded-lg bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-50"
+    disabled: summaryBusy || !canGeneratePersonaSummary,
+    "aria-busy": summaryBusy ? 'true' : 'false',
+    className: "inline-flex w-full items-center justify-center gap-2 rounded-lg bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-50 sm:w-auto"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 15
-  }), " ", t('persona.summary.regenerate'))))))));
+    size: 15,
+    className: summaryBusy ? 'animate-spin motion-reduce:animate-none' : ''
+  }), " ", summaryBusy ? t('persona.summary.generating') : t('persona.summary.regenerate'))))))));
 }
 
   window.AlloModules = window.AlloModules || {};

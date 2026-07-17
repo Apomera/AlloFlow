@@ -291,11 +291,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
     var effect = { name: amendment.name, applied: applied, triggerMet: triggerMet, affordable: affordable, benefitResource: rule.benefitResource, benefitAmount: rule.benefitAmount, costResource: rule.costResource, costAmount: rule.costAmount, socialAxis: rule.socialAxis, socialDelta: rule.socialDelta, turnsLeft: remaining, stats: stats };
     return { resources: resources, equity: equity, morale: morale, active: remaining > 0 ? next : null, expired: remaining > 0 ? null : Object.assign({}, next, { retiredTurn: context.turn || 0 }), effect: effect };
   }
+  function summarizeColonyCharterTrial(input) {
+    var amendment = normalizeColonyCharterAmendment(input);
+    if (!amendment || !input) return null;
+    var stats = input.stats || {};
+    var rule = amendment.rule;
+    var turnsObserved = Math.max(0, stats.turnsObserved || 0);
+    var appliedTurns = Math.max(0, stats.appliedTurns || 0);
+    var triggerMet = Math.max(0, stats.triggerMet || 0);
+    var blocked = Math.max(0, stats.resourceBlocked || 0);
+    var socialTotal = stats.socialTotal || 0;
+    var predictedSocial = rule.socialDelta * Math.max(1, appliedTurns || triggerMet || turnsObserved || 1);
+    var reliability = turnsObserved <= 0 ? 'untested' : blocked > appliedTurns ? 'resource-constrained' : appliedTurns === 0 ? 'not-triggered' : Math.abs(socialTotal) >= Math.abs(predictedSocial) ? 'strong' : 'mixed';
+    var question = reliability === 'resource-constrained' ? 'Was the civic goal worth a rule that the colony could not reliably afford?' : reliability === 'not-triggered' ? 'Did the trigger describe the real colony conditions, or should the next test target a different pressure?' : reliability === 'strong' ? 'Which evidence would justify making this principle more durable?' : 'What changed between the prediction and the public result?';
+    return {
+      id: input.id || amendment.name,
+      name: amendment.name,
+      principle: amendment.principle,
+      appliedTurns: appliedTurns,
+      turnsObserved: turnsObserved,
+      triggerMet: triggerMet,
+      resourceBlocked: blocked,
+      benefitTotal: Math.max(0, stats.benefitTotal || 0),
+      costTotal: Math.max(0, stats.costTotal || 0),
+      socialTotal: socialTotal,
+      socialAxis: rule.socialAxis,
+      benefitResource: rule.benefitResource,
+      costResource: rule.costResource,
+      reliability: reliability,
+      question: question,
+      studentClaim: String(input.studentClaim || '').slice(0, 600),
+      reasoning: String(input.reasoning || '').slice(0, 900)
+    };
+  }
+  function buildColonyCharterStakeholders(input, context) {
+    var amendment = normalizeColonyCharterAmendment(input);
+    if (!amendment) return [];
+    context = context || {};
+    var rule = amendment.rule;
+    var resourceState = context.resources || {};
+    var costStock = resourceState[rule.costResource] == null ? null : resourceState[rule.costResource];
+    var costConcern = costStock != null && costStock < 15 ? 'Current ' + rule.costResource + ' reserves are thin, so pauses are likely.' : 'The cost is visible enough to audit each dawn.';
+    var socialConcern = rule.socialDelta > 0 ? 'The social gain is promising, but the colony should define who might still be excluded.' : 'The social cost is explicit; explain why the resource benefit deserves that strain.';
+    var triggerConcern = rule.trigger === 'always' ? 'Because this runs every dawn, small mistakes can compound quickly.' : 'Because this only runs under a trigger, the council should watch for missed conditions.';
+    return [
+      { id: 'systems', name: 'Systems desk', stance: costConcern, asks: 'What reserve level would make you pause or revise the rule?' },
+      { id: 'commons', name: rule.socialAxis === 'equity' ? 'Commons assembly' : 'Crew wellbeing circle', stance: socialConcern, asks: 'Who benefits first, and who carries the burden if the prediction is wrong?' },
+      { id: 'science', name: 'Evidence council', stance: triggerConcern, asks: 'Which measurement after ' + rule.duration + ' sols would count as a fair test?' }
+    ];
+  }
+  function reviseColonyCharterFromTrial(input) {
+    var amendment = normalizeColonyCharterAmendment(input);
+    var summary = summarizeColonyCharterTrial(input);
+    if (!amendment || !summary) return null;
+    var rule = Object.assign({}, amendment.rule);
+    var revisionNote = 'retains the public principle while narrowing the next test.';
+    if (summary.reliability === 'resource-constrained') {
+      if (rule.costAmount > 1) rule.costAmount -= 1;
+      else rule.duration = Math.max(3, rule.duration - 1);
+      revisionNote = 'lowers the operating burden after repeated affordability pauses.';
+    } else if (summary.reliability === 'not-triggered') {
+      rule.trigger = 'always';
+      rule.duration = Math.max(3, Math.min(6, rule.duration - 1));
+      revisionNote = 'uses a broader trigger so the next trial can collect evidence.';
+    } else if (summary.reliability === 'mixed') {
+      rule.duration = Math.min(6, rule.duration + 1);
+      revisionNote = 'extends observation time because the signal was mixed.';
+    } else if (summary.reliability === 'strong') {
+      rule.duration = Math.min(6, rule.duration + 1);
+      revisionNote = 'keeps the rule bounded while testing whether the result repeats.';
+    }
+    return normalizeColonyCharterAmendment({
+      name: ('Revised ' + amendment.name).slice(0, 80),
+      principle: (amendment.principle + ' Revision: ' + revisionNote).slice(0, 320),
+      rule: rule,
+      explanation: ('Revision from ' + amendment.name + ': ' + revisionNote + ' Prior result was ' + summary.reliability + ' after ' + summary.appliedTurns + '/' + summary.turnsObserved + ' applied sols.').slice(0, 500)
+    });
+  }
   window.StemLab.spaceColonyCharterPure = {
     normalize: normalizeColonyCharterAmendment,
     parse: parseColonyCharterAmendment,
     buildPrompt: buildColonyCharterPrompt,
-    evaluate: evaluateColonyCharterAmendment
+    evaluate: evaluateColonyCharterAmendment,
+    summarize: summarizeColonyCharterTrial,
+    stakeholders: buildColonyCharterStakeholders,
+    revise: reviseColonyCharterFromTrial
   };
 
   window.StemLab.registerTool('spaceColony', {
@@ -548,6 +628,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           var activeCharterAmendment = d.colonyCharterAmendment || null;
           var charterProposal = normalizeColonyCharterAmendment(d.colonyCharterProposal) || null;
           var charterHistory = d.colonyCharterHistory || [];
+          var charterReviewId = d.colonyCharterReviewId || null;
+          var charterReview = charterHistory.find(function (trial) { return trial && trial.id === charterReviewId; }) || null;
+          var charterVerdict = d.colonyCharterVerdict || 'revise';
           var policyDefs = [
             { id: 'militarist', name: t('stem.spacecolony.frontier_expansion', 'Frontier Expansion'), icon: '\uD83D\uDEE1\uFE0F', desc: t('stem.spacecolony.exploration_costs_0_energy_1_materials', 'Exploration costs 0 energy. +1 materials/turn.'), effect: { exploreFreeCost: true, materialBonus: 1 } },
             { id: 'scientific', name: t('stem.spacecolony.knowledge_first', 'Knowledge First'), icon: '\uD83E\uDDEC', desc: '+1 science/turn from protected research time.', effect: { scienceBonus: 1 } },
@@ -1806,6 +1889,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       colonyCharterHistory: [],
                       colonyCharterClaim: '',
                       colonyCharterReasoning: '',
+                      colonyCharterReviewId: null,
+                      colonyCharterConclusion: '',
+                      colonyCharterVerdict: 'revise',
+                      colonyCharterResponse: '',
                       charterForgeBusy: false,
                       colonyArtifactReviewId: null,
                       colonyArtifactConclusion: '',
@@ -3599,6 +3686,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   ),
                   charterProposal ? (function () {
                     var proposalRule = charterProposal.rule || {};
+                    var stakeholderBriefs = buildColonyCharterStakeholders(charterProposal, { resources: resources, equity: equity, morale: colonyHappiness, terraform: terraform });
+                    var charterResponseReady = (d.colonyCharterResponse || '').trim().length >= 25;
                     return React.createElement('div', { className: 'rounded-xl border-2 border-cyan-500 bg-cyan-950/45 p-3' },
                       React.createElement('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-300' }, 'Public amendment draft'),
                       React.createElement('h5', { className: 'mt-2 text-sm font-black text-white' }, charterProposal.name),
@@ -3609,24 +3698,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         React.createElement('div', { className: proposalRule.socialDelta > 0 ? 'text-emerald-300' : 'text-amber-300' }, (proposalRule.socialDelta > 0 ? '+' : '') + proposalRule.socialDelta + ' ' + proposalRule.socialAxis + ' per activation · ' + proposalRule.duration + ' sols')
                       ),
                       React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-200' }, charterProposal.explanation),
+                      React.createElement('div', { className: 'mt-3 rounded-lg border border-cyan-800 bg-slate-950/45 p-2' },
+                        React.createElement('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-300' }, 'Council deliberation'),
+                        React.createElement('div', { className: 'mt-2 grid gap-1 md:grid-cols-3' }, stakeholderBriefs.map(function (voice) {
+                          return React.createElement('div', { key: voice.id, className: 'rounded-lg border border-slate-700 bg-black/20 p-2 text-[11px]' },
+                            React.createElement('div', { className: 'font-bold text-cyan-100' }, voice.name),
+                            React.createElement('p', { className: 'mt-1 text-slate-300' }, voice.stance),
+                            React.createElement('p', { className: 'mt-1 text-cyan-200' }, voice.asks)
+                          );
+                        })),
+                        React.createElement('label', { htmlFor: 'kepler-charter-response', className: 'mt-2 block text-[11px] font-black text-cyan-200' }, '3. Respond to one council concern before enactment'),
+                        React.createElement('textarea', { id: 'kepler-charter-response', rows: 3, maxLength: 700, value: d.colonyCharterResponse || '', onChange: function (event) { upd('colonyCharterResponse', event.target.value); }, placeholder: 'Example: If materials fall below 10, we pause the ledger and revise toward a cheaper public audit.', className: 'mt-1 w-full rounded-lg border border-cyan-800 bg-slate-900 px-3 py-2 text-xs text-white placeholder:text-slate-300' }),
+                        React.createElement('div', { className: 'mt-1 text-right text-[11px] text-slate-400' }, Math.min(700, (d.colonyCharterResponse || '').length) + '/700 · 25 characters required')
+                      ),
                       React.createElement('div', { className: 'mt-3 flex flex-wrap items-center justify-between gap-2' },
                         React.createElement('span', { className: 'text-[11px] font-bold text-violet-300' }, 'Deliberation cost: ' + charterProposal.enactCostScience + ' science'),
                         React.createElement('div', { className: 'flex gap-2' },
                           React.createElement('button', { type: 'button', onClick: function () { upd('colonyCharterProposal', null); }, className: 'rounded-lg border border-slate-600 px-3 py-2 text-[11px] font-bold text-slate-200' }, 'Discard'),
-                          React.createElement('button', { type: 'button', disabled: resources.science < charterProposal.enactCostScience || (d.colonyCharterClaim || '').trim().length < 15 || (d.colonyCharterReasoning || '').trim().length < 30, onClick: function () {
+                          React.createElement('button', { type: 'button', disabled: resources.science < charterProposal.enactCostScience || (d.colonyCharterClaim || '').trim().length < 15 || (d.colonyCharterReasoning || '').trim().length < 30 || !charterResponseReady, onClick: function () {
                             var approved = normalizeColonyCharterAmendment(charterProposal);
                             var studentClaim = (d.colonyCharterClaim || '').trim();
                             var studentReasoning = (d.colonyCharterReasoning || '').trim();
-                            if (!approved || studentClaim.length < 15 || studentReasoning.length < 30 || resources.science < approved.enactCostScience) return;
-                            var enacted = Object.assign({}, approved, { id: 'charter-' + turn + '-' + Date.now(), enactedTurn: turn, turnsLeft: approved.rule.duration, studentClaim: studentClaim, reasoning: studentReasoning, stats: { turnsObserved: 0, triggerMet: 0, appliedTurns: 0, resourceBlocked: 0, benefitTotal: 0, costTotal: 0, socialTotal: 0 } });
+                            var studentResponse = (d.colonyCharterResponse || '').trim();
+                            if (!approved || studentClaim.length < 15 || studentReasoning.length < 30 || studentResponse.length < 25 || resources.science < approved.enactCostScience) return;
+                            var enacted = Object.assign({}, approved, { id: 'charter-' + turn + '-' + Date.now(), enactedTurn: turn, turnsLeft: approved.rule.duration, studentClaim: studentClaim, reasoning: studentReasoning, deliberationResponse: studentResponse, stakeholders: stakeholderBriefs, stats: { turnsObserved: 0, triggerMet: 0, appliedTurns: 0, resourceBlocked: 0, benefitTotal: 0, costTotal: 0, socialTotal: 0 } });
                             upd('colonyCharterAmendment', enacted);
                             var charterResources = Object.assign({}, resources); charterResources.science -= approved.enactCostScience; upd('colonyRes', charterResources);
-                            upd('colonyCharterProposal', null); upd('colonyCharterClaim', ''); upd('colonyCharterReasoning', '');
+                            upd('colonyCharterProposal', null); upd('colonyCharterClaim', ''); upd('colonyCharterReasoning', ''); upd('colonyCharterResponse', '');
                             var charterLog = gameLog.slice(); charterLog.push('📜 Enacted temporary amendment: ' + approved.name); upd('colonyLog', charterLog);
-                            var charterJournal = scienceJournal.slice(); charterJournal.push({ turn: turn, source: 'Charter Lab: ' + approved.name, fact: studentReasoning + ' Testable civic rule: ' + charterTriggerLabels[approved.rule.trigger] + '; +' + approved.rule.benefitAmount + ' ' + approved.rule.benefitResource + ', -' + approved.rule.costAmount + ' ' + approved.rule.costResource + ', ' + (approved.rule.socialDelta > 0 ? '+' : '') + approved.rule.socialDelta + ' ' + approved.rule.socialAxis + '.' }); upd('scienceJournal', charterJournal);
+                            var charterJournal = scienceJournal.slice(); charterJournal.push({ turn: turn, source: 'Charter Lab: ' + approved.name, fact: studentReasoning + ' Public response: ' + studentResponse + ' Testable civic rule: ' + charterTriggerLabels[approved.rule.trigger] + '; +' + approved.rule.benefitAmount + ' ' + approved.rule.benefitResource + ', -' + approved.rule.costAmount + ' ' + approved.rule.costResource + ', ' + (approved.rule.socialDelta > 0 ? '+' : '') + approved.rule.socialDelta + ' ' + approved.rule.socialAxis + '.' }); upd('scienceJournal', charterJournal);
                             if (addToast) addToast('📜 ' + approved.name + ' enacted for ' + approved.rule.duration + ' sols', 'success');
                             if (typeof addXP === 'function') addXP(25, 'Kepler Colony: Justified civic amendment');
-                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (resources.science >= charterProposal.enactCostScience && (d.colonyCharterClaim || '').trim().length >= 15 && (d.colonyCharterReasoning || '').trim().length >= 30 ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-600') }, 'Enact trial rule')
+                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (resources.science >= charterProposal.enactCostScience && (d.colonyCharterClaim || '').trim().length >= 15 && (d.colonyCharterReasoning || '').trim().length >= 30 && charterResponseReady ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-600') }, charterResponseReady ? 'Enact trial rule' : 'Answer council first')
                         )
                       )
                     );
@@ -3635,15 +3738,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 )),
                 activeCharterAmendment && React.createElement('div', { className: 'rounded-lg border border-amber-800/60 bg-amber-950/25 p-2 text-[11px] text-amber-200' }, 'One amendment is already under trial. Its remaining sols continue even when the trigger is not met; review the public telemetry before drafting the next rule.'),
                 charterHistory.length > 0 && React.createElement('div', { className: 'mt-3' },
-                  React.createElement('div', { className: 'mb-1 text-[11px] font-black uppercase tracking-wider text-slate-300' }, 'Completed civic trials'),
+                  React.createElement('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2' },
+                    React.createElement('span', { className: 'text-[11px] font-black uppercase tracking-wider text-slate-300' }, 'Completed civic trials'),
+                    React.createElement('span', { className: 'text-[11px] text-cyan-300' }, charterHistory.filter(function (trial) { return trial && trial.reviewedTurn; }).length + '/' + charterHistory.length + ' reviewed')
+                  ),
                   React.createElement('div', { className: 'grid gap-1 md:grid-cols-3' }, charterHistory.slice().reverse().slice(0, 3).map(function (past) {
                     var pastStats = past.stats || {};
+                    var pastSummary = summarizeColonyCharterTrial(past) || {};
                     return React.createElement('div', { key: past.id, className: 'rounded-lg border border-slate-700 bg-slate-950/60 p-2 text-[11px]' },
-                      React.createElement('div', { className: 'font-bold text-slate-100' }, past.name),
+                      React.createElement('div', { className: 'flex items-start justify-between gap-2' },
+                        React.createElement('div', { className: 'font-bold text-slate-100' }, past.name),
+                        past.reviewedTurn ? React.createElement('span', { className: 'rounded-full border border-emerald-700 px-2 py-0.5 text-[10px] font-bold text-emerald-300' }, 'Reviewed') : React.createElement('span', { className: 'rounded-full border border-cyan-700 px-2 py-0.5 text-[10px] font-bold text-cyan-300' }, 'Needs review')
+                      ),
                       React.createElement('div', { className: 'mt-1 text-slate-300' }, 'Applied ' + (pastStats.appliedTurns || 0) + '/' + (pastStats.turnsObserved || 0) + ' · paused ' + (pastStats.resourceBlocked || 0)),
-                      React.createElement('div', { className: 'text-slate-300' }, '+' + (pastStats.benefitTotal || 0) + ' ' + ((past.rule || {}).benefitResource || '') + ' / -' + (pastStats.costTotal || 0) + ' ' + ((past.rule || {}).costResource || '') + ' / ' + ((pastStats.socialTotal || 0) > 0 ? '+' : '') + (pastStats.socialTotal || 0) + ' ' + ((past.rule || {}).socialAxis || ''))
+                      React.createElement('div', { className: 'text-slate-300' }, '+' + (pastStats.benefitTotal || 0) + ' ' + ((past.rule || {}).benefitResource || '') + ' / -' + (pastStats.costTotal || 0) + ' ' + ((past.rule || {}).costResource || '') + ' / ' + ((pastStats.socialTotal || 0) > 0 ? '+' : '') + (pastStats.socialTotal || 0) + ' ' + ((past.rule || {}).socialAxis || '')),
+                      React.createElement('div', { className: 'mt-1 text-cyan-200' }, 'Read: ' + (pastSummary.reliability || 'untested')),
+                      React.createElement('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+                        React.createElement('button', { type: 'button', onClick: function () { upd('colonyCharterReviewId', past.id); upd('colonyCharterConclusion', past.conclusion || ''); upd('colonyCharterVerdict', past.verdict || 'revise'); }, className: 'rounded-lg border border-cyan-700 px-2.5 py-1.5 text-[11px] font-bold text-cyan-100 hover:bg-cyan-900' }, past.reviewedTurn ? 'Reopen civic review' : 'Review evidence'),
+                        React.createElement('button', { type: 'button', disabled: !!activeCharterAmendment, onClick: function () {
+                          var revision = reviseColonyCharterFromTrial(past);
+                          if (!revision || activeCharterAmendment) return;
+                          upd('colonyCharterProposal', revision);
+                          upd('colonyCharterClaim', (past.studentClaim || past.principle || revision.principle || '').slice(0, 600));
+                          upd('colonyCharterReasoning', ((past.reasoning || revision.explanation || '') + ' Prior conclusion: ' + (past.conclusion || pastSummary.question || '')).slice(0, 900));
+                          upd('colonyCharterResponse', 'Revision guardrail: watch ' + revision.rule.costResource + ' reserves and compare the new trial against the prior ' + (pastSummary.reliability || 'untested') + ' result.');
+                          upd('colonyCharterReviewId', null);
+                          if (addToast) addToast('📜 Revised amendment draft loaded from prior evidence', 'info');
+                        }, className: 'rounded-lg border px-2.5 py-1.5 text-[11px] font-bold ' + (!activeCharterAmendment ? 'border-emerald-700 text-emerald-200 hover:bg-emerald-900' : 'border-slate-700 text-slate-600') }, 'Draft revision')
+                      )
                     );
-                  }))
+                  })),
+                  charterReview && (function () {
+                    var reviewSummary = summarizeColonyCharterTrial(charterReview) || {};
+                    return React.createElement('div', { className: 'mt-3 rounded-xl border border-cyan-700/70 bg-cyan-950/30 p-3' },
+                      React.createElement('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-300' }, 'Civic review hearing'),
+                      React.createElement('h5', { className: 'mt-1 text-sm font-black text-white' }, charterReview.name),
+                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, reviewSummary.question),
+                      React.createElement('div', { className: 'mt-2 grid gap-1 text-[11px] text-slate-300 md:grid-cols-3' },
+                        React.createElement('div', { className: 'rounded-lg border border-slate-700 bg-slate-950/60 p-2' }, 'Trigger met ' + (reviewSummary.triggerMet || 0) + '/' + (reviewSummary.turnsObserved || 0) + ' sols'),
+                        React.createElement('div', { className: 'rounded-lg border border-slate-700 bg-slate-950/60 p-2' }, '+' + (reviewSummary.benefitTotal || 0) + ' ' + (reviewSummary.benefitResource || '') + ' / -' + (reviewSummary.costTotal || 0) + ' ' + (reviewSummary.costResource || '')),
+                        React.createElement('div', { className: 'rounded-lg border border-slate-700 bg-slate-950/60 p-2' }, ((reviewSummary.socialTotal || 0) > 0 ? '+' : '') + (reviewSummary.socialTotal || 0) + ' ' + (reviewSummary.socialAxis || '') + '; paused ' + (reviewSummary.resourceBlocked || 0))
+                      ),
+                      reviewSummary.reasoning && React.createElement('p', { className: 'mt-2 text-[11px] italic text-slate-300' }, 'Original reasoning: ' + reviewSummary.reasoning),
+                      React.createElement('textarea', { id: 'kepler-charter-conclusion', rows: 4, maxLength: 800, value: d.colonyCharterConclusion || '', onChange: function (event) { upd('colonyCharterConclusion', event.target.value); }, placeholder: 'Compare your prediction to the measured outcome. Who benefited, who paid, and what should change next?', className: 'mt-2 w-full rounded-lg border border-cyan-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder:text-slate-300' }),
+                      React.createElement('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Civic trial verdict' }, [
+                        { id: 'supports', label: 'Supports principle' }, { id: 'revise', label: 'Revise rule' }, { id: 'retire', label: 'Retire principle' }
+                      ].map(function (verdict) {
+                        var selected = charterVerdict === verdict.id;
+                        return React.createElement('button', { key: verdict.id, type: 'button', 'aria-pressed': selected, onClick: function () { upd('colonyCharterVerdict', verdict.id); }, className: 'rounded-lg border px-2.5 py-1.5 text-[11px] font-bold ' + (selected ? 'border-cyan-300 bg-cyan-700 text-white' : 'border-slate-600 bg-slate-900 text-slate-300') }, verdict.label);
+                      })),
+                      React.createElement('div', { className: 'mt-3 flex flex-wrap justify-between gap-2' },
+                        React.createElement('span', { className: 'text-[11px] text-slate-300' }, Math.min(800, (d.colonyCharterConclusion || '').length) + '/800 · 35 characters required'),
+                        React.createElement('div', { className: 'flex gap-2' },
+                          React.createElement('button', { type: 'button', onClick: function () { upd('colonyCharterReviewId', null); }, className: 'rounded-lg border border-slate-600 px-3 py-2 text-[11px] font-bold text-slate-200' }, 'Cancel'),
+                          React.createElement('button', { type: 'button', disabled: (d.colonyCharterConclusion || '').trim().length < 35, onClick: function () {
+                            var conclusion = (d.colonyCharterConclusion || '').trim();
+                            if (!charterReview || conclusion.length < 35) return;
+                            var reviewedCharters = charterHistory.map(function (trial) { return trial.id === charterReview.id ? Object.assign({}, trial, { conclusion: conclusion, verdict: charterVerdict, reviewedTurn: turn }) : trial; });
+                            upd('colonyCharterHistory', reviewedCharters);
+                            var civicEvidence = fieldEvidence.filter(function (evidence) { return evidence.charterId !== charterReview.id; });
+                            civicEvidence.push({ id: 'charter-trial-' + charterReview.id, charterId: charterReview.id, turn: turn, source: 'Charter Lab civic trial', title: charterReview.name + ' civic conclusion', observation: '[' + charterVerdict + '] ' + conclusion, supports: charterVerdict === 'supports' && workingHypothesis ? [workingHypothesis] : [] });
+                            upd('colonyFieldEvidence', civicEvidence);
+                            var civicJournal = scienceJournal.slice(); civicJournal.push({ turn: turn, source: 'Charter Lab review: ' + charterReview.name, fact: '[' + charterVerdict + '] ' + conclusion + ' Outcome: ' + (reviewSummary.reliability || 'untested') + '.' }); upd('scienceJournal', civicJournal);
+                            upd('colonyCharterReviewId', null); upd('colonyCharterConclusion', '');
+                            if (addToast) addToast('📜 Civic conclusion added to the Evidence Board', 'success');
+                            if (typeof addXP === 'function') addXP(20, 'Kepler Colony: Evaluated civic trial');
+                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + ((d.colonyCharterConclusion || '').trim().length >= 35 ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-600') }, 'Publish civic finding')
+                        )
+                      )
+                    );
+                  })()
                 )
               ),              // Cultural Traditions Panel
               d.showPolicy && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #451a03, #422006, #0f172a)', borderColor: '#ca8a0430', animation: 'kp-fadeIn 0.3s ease-out' } },

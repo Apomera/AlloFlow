@@ -9,8 +9,74 @@ const sourceDir=path.join(root,'test_prep'),deployDir=path.join(root,'prismflow-
 // The derivation itself lives in test_prep_guided_expansion_core.cjs — shared
 // byte-for-byte with the hub module's runtime derivation (release-build parity gate).
 const{compact,inlineQuote,sourceFeedback,expandedItem,deriveGuidedReviewItems}=require('./test_prep_guided_expansion_core.cjs');
-const canonical=value=>String(value||'').toLowerCase().replace(/[“”"'’`]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
-const contentKernel=item=>JSON.stringify({answer:canonical(item.choices?.[item.answerIndex]),distractors:(item.choices||[]).filter((_,index)=>index!==item.answerIndex).map(canonical).sort(),rationale:canonical(item.rationale),references:(item.references||[]).map(canonical).sort()});
+function replaceBinaryMathOperator(value, escapedOperator, token) {
+  const leftOperand = '(?:\\d+(?:\\.\\d+)?|[A-Za-z]|\\))';
+  const rightOperand = '(?:\\d+(?:\\.\\d+)?|[A-Za-z]|\\()';
+  const pattern = new RegExp(
+    '(^|[^A-Za-z0-9_])(' + leftOperand + ')\\s*' + escapedOperator +
+      '\\s*(' + rightOperand + ')(?=$|[^A-Za-z0-9_])',
+    'g'
+  );
+  let normalized = value;
+  while (true) {
+    const next = normalized.replace(pattern, (_, prefix, left, right) =>
+      prefix + left + ' ' + token + ' ' + right
+    );
+    if (next === normalized) return normalized;
+    normalized = next;
+  }
+}
+
+function normalizeMathOperators(value) {
+  let normalized = value
+    .replace(/<=|≤/g, ' mathoplte ')
+    .replace(/>=|≥/g, ' mathopgte ')
+    .replace(/!=|≠/g, ' mathopneq ')
+    .replace(/=/g, ' mathopeq ')
+    .replace(/</g, ' mathoplt ')
+    .replace(/>/g, ' mathopgt ')
+    .replace(/×/g, ' mathopmul ')
+    .replace(/÷/g, ' mathopdiv ')
+    .replace(/−/g, ' mathopminus ')
+    .replace(/\+/g, ' mathopplus ')
+    .replace(/\^/g, ' mathoppow ');
+  normalized = normalized.replace(
+    /(^|[\s(\[{,:=<>+*/^])-(?=\s*(?:\d|[A-Za-z]\b))/g,
+    (_, prefix) => prefix + ' mathopminus '
+  );
+  normalized = replaceBinaryMathOperator(normalized, '\\*', 'mathopmul');
+  normalized = replaceBinaryMathOperator(normalized, '\\/', 'mathopdiv');
+  return replaceBinaryMathOperator(normalized, '-', 'mathopminus');
+}
+
+function canonical(value, options = {}) {
+  const raw = String(value ?? '').normalize('NFKC');
+  const isStandaloneUrl = /^https?:\/\/\S+$/i.test(raw.trim());
+  const operatorAware = options.mathOperators !== false && !isStandaloneUrl
+    ? normalizeMathOperators(raw)
+    : raw;
+  return operatorAware
+    .toLowerCase()
+    .replace(/[“”"'’\u0060]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function contentKernel(item) {
+  return JSON.stringify({
+    answer: canonical(item.choices?.[item.answerIndex]),
+    distractors: (item.choices || [])
+      .filter((_, index) => index !== item.answerIndex)
+      .map(value => canonical(value))
+      .sort(),
+    rationale: canonical(item.rationale),
+    references: (item.references || [])
+      .map(value => canonical(value, { mathOperators: false }))
+      .sort(),
+  });
+}
+
+
 const countBy=(items,key)=>items.reduce((counts,item)=>(counts[item[key]]=(counts[item[key]]||0)+1,counts),{});
 const equalCounts=(left,right)=>JSON.stringify(Object.fromEntries(Object.entries(left).sort()))===JSON.stringify(Object.fromEntries(Object.entries(right).sort()));
 
@@ -83,4 +149,5 @@ for(const packFile of packFiles){
   updateQa(stem,pack,findings);expanded++;
 }
 if(expanded!==22)throw Error(`Expected 22 non-EPPP packs, expanded ${expanded}`);
-console.log(`Reviewed ${expanded} non-EPPP packs: 200 source questions plus 300 guided-review activities each; the 500-independent-question target remains unmet.`);
+require('./apply_test_prep_independent_additions.cjs');
+console.log(`Reviewed ${expanded} non-EPPP packs and applied all manifest-backed independent diagnostic batches; the cross-pack 500-independent-question target remains in progress.`);

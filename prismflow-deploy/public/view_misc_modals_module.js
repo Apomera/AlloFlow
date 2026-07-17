@@ -475,6 +475,13 @@ function AIBackendModal(props) {
       return {};
     }
   };
+  const fingerprintAIBackendConfig = (config) => {
+    try {
+      return typeof window.__alloStudentAiConfigFingerprint === "function" ? window.__alloStudentAiConfigFingerprint(config) : "";
+    } catch (_) {
+      return "";
+    }
+  };
   const writeAIBackendConfig = (config, options = {}) => {
     try {
       const next = { ...config || {} };
@@ -486,8 +493,12 @@ function AIBackendModal(props) {
   };
   const clearAIBackendConfig = () => {
     try {
-      configStorage.removeItem(configStorageKey);
-      if (isStudentAiSetup) window.dispatchEvent(new CustomEvent("alloflow:student-ai-config-changed"));
+      if (isStudentAiSetup && typeof window.__alloDisconnectStudentAi === "function") {
+        window.__alloDisconnectStudentAi();
+      } else {
+        configStorage.removeItem(configStorageKey);
+        if (isStudentAiSetup) window.dispatchEvent(new CustomEvent("alloflow:student-ai-config-changed"));
+      }
     } catch (_) {
     }
   };
@@ -683,8 +694,8 @@ function AIBackendModal(props) {
       stopEngineStripPoll();
     }
   };
-  const createAIProviderFromSettings = () => {
-    const cfg = readAIBackendConfig();
+  const createAIProviderFromSettings = (configOverride = null) => {
+    const cfg = configOverride || readAIBackendConfig();
     const backend = cfg.backend || "gemini";
     const Provider = typeof window !== "undefined" && window.AIProvider || ai && ai.constructor;
     if (!Provider) return ai;
@@ -701,9 +712,19 @@ function AIBackendModal(props) {
       isCanvasEnv: false
     });
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300", onClick: () => setShowAIBackendModal(false) }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: (e) => {
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300", onClick: () => setShowAIBackendModal(false) }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": isStudentAiSetup ? "true" : "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: (e) => {
     if (e.key === "Escape") setShowAIBackendModal(false);
-  }, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, isStudentAiSetup && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, "Personal AI for this session"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, "Use only your own provider account. Your credential stays in this browser tab, is sent only to the provider you select, and is never placed in the QR, Class Mailbox, or student submission. Avoid entering a key on a shared device.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
+  }, onClick: (e) => e.stopPropagation() }, isStudentAiSetup && /* @__PURE__ */ React.createElement("style", null, `
+              [data-student-ai-setup="true"] #ai-backend-engine-strip,
+              [data-student-ai-setup="true"] #ai-backend-sdturbo-strip,
+              [data-student-ai-setup="true"] div:has(> #ai-backend-wolfram),
+              [data-student-ai-setup="true"] div.pt-3:has(#ai-backend-model-default),
+              [data-student-ai-setup="true"] div.pt-3:has(#ai-backend-tts-provider),
+              [data-student-ai-setup="true"] div.pt-3:has(#ai-backend-image-provider),
+              [data-student-ai-setup="true"] #ai-backend-device-storage-section {
+                display: none !important;
+              }
+            `), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, isStudentAiSetup ? "Connect Personal AI" : t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, isStudentAiSetup && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, "Personal AI for this session"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, "Use only your own provider account. Your credential is stored only in this browser tab and transmitted only to the provider you choose; it is never placed in the QR, Class Mailbox, or student submission."), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, "Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
     "select",
     {
       "data-help-key": "ai_backend_provider_select",
@@ -730,13 +751,9 @@ function AIBackendModal(props) {
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-bold text-slate-700 bg-white cursor-pointer"
     },
     /* @__PURE__ */ React.createElement("option", { value: "gemini" }, "\u2728 Gemini (Google) \u2014 Default"),
-    /* @__PURE__ */ React.createElement("option", { value: "alloflow-local" }, "\u{1F3EB} AlloFlow Built-in Engine (this computer \u2014 no account)"),
-    /* @__PURE__ */ React.createElement("option", { value: "lmstudio" }, "LM Studio (Local)"),
-    /* @__PURE__ */ React.createElement("option", { value: "localai" }, "\u{1F5A5}\uFE0F LocalAI (Self-Hosted GPU)"),
-    /* @__PURE__ */ React.createElement("option", { value: "ollama" }, "\u{1F999} Ollama (Local)"),
+    !isStudentAiSetup && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("option", { value: "alloflow-local" }, "\u{1F3EB} AlloFlow Built-in Engine (this computer \u2014 no account)"), /* @__PURE__ */ React.createElement("option", { value: "lmstudio" }, "LM Studio (Local)"), /* @__PURE__ */ React.createElement("option", { value: "localai" }, "\u{1F5A5}\uFE0F LocalAI (Self-Hosted GPU)"), /* @__PURE__ */ React.createElement("option", { value: "ollama" }, "\u{1F999} Ollama (Local)")),
     /* @__PURE__ */ React.createElement("option", { value: "openai" }, "\u{1F916} OpenAI"),
-    /* @__PURE__ */ React.createElement("option", { value: "claude" }, "\u{1F9E0} Claude (Anthropic)"),
-    /* @__PURE__ */ React.createElement("option", { value: "onnx-npu" }, "\u{1F9E0} On-Device NPU (Snapdragon)"),
+    !isStudentAiSetup && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("option", { value: "claude" }, "\u{1F9E0} Claude (Anthropic)"), /* @__PURE__ */ React.createElement("option", { value: "onnx-npu" }, "\u{1F9E0} On-Device NPU (Snapdragon)")),
     /* @__PURE__ */ React.createElement("option", { value: "custom" }, "\u2699\uFE0F Custom Endpoint")
   )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.server_url_label") || "Server URL"), /* @__PURE__ */ React.createElement(
     "input",
@@ -802,21 +819,31 @@ function AIBackendModal(props) {
       onClick: async () => {
         const btn = document.getElementById("ai-backend-test");
         const status = document.getElementById("ai-backend-status");
+        const panel = btn && btn.closest('[data-help-key="ai_backend_modal_panel"]');
+        const lockedControls = panel ? Array.from(panel.querySelectorAll("input, select, button")).filter((control) => control !== btn) : [];
         btn.disabled = true;
+        lockedControls.forEach((control) => {
+          control.disabled = true;
+        });
         btn.textContent = "\u23F3 Testing...";
         if (status) {
           status.textContent = "";
           status.className = "";
         }
         try {
-          writeAIBackendConfig(readAIBackendConfig());
-          const result = await createAIProviderFromSettings().testConnection();
+          const testedConfig = readAIBackendConfig();
+          const testedFingerprint = fingerprintAIBackendConfig(testedConfig);
+          writeAIBackendConfig(testedConfig);
+          const result = await createAIProviderFromSettings(testedConfig).testConnection();
           if (result.success) {
+            if (!testedFingerprint || fingerprintAIBackendConfig(readAIBackendConfig()) !== testedFingerprint) {
+              throw new Error("Settings changed while the connection was being tested. Please test again.");
+            }
             const modelSelect = document.getElementById("ai-backend-model-default");
             const fallbackSelect = document.getElementById("ai-backend-model-fallback");
             const cfg = readAIBackendConfig();
-            const firstModel = result.models?.[0]?.id || "";
-            if (firstModel && !cfg.models?.default) {
+            const firstModel = result.selectedModel || result.models?.[0]?.id || "";
+            if (firstModel && cfg.models?.default !== firstModel) {
               const models = { ...cfg.models || {}, default: firstModel };
               writeAIBackendConfig({ ...cfg, models });
             }
@@ -827,13 +854,23 @@ function AIBackendModal(props) {
                 ok: true,
                 backend: refreshedCfg.backend || "gemini",
                 text: true,
+                fingerprint: fingerprintAIBackendConfig(refreshedCfg),
+                capabilities: {
+                  text: true,
+                  vision: false,
+                  image: false,
+                  imageEdit: false,
+                  audio: false,
+                  ...result.capabilities || {}
+                },
                 testedAt: (/* @__PURE__ */ new Date()).toISOString(),
+                expiresAt: new Date(Date.now() + 6 * 60 * 60 * 1e3).toISOString(),
                 modelCount: Number(result.modelCount || 0)
               }
             }, { preserveValidation: true });
             if (isStudentAiSetup && typeof window.__alloSyncQrStudentAiAccess === "function") window.__alloSyncQrStudentAiAccess();
             if (status) {
-              status.textContent = "Connected! " + result.modelCount + " model(s) available" + (firstModel && !cfg.models?.default ? ". Default model selected." : "");
+              status.textContent = "Connected! " + result.modelCount + " model(s) available" + (firstModel && cfg.models?.default !== firstModel ? ". Verified model selected." : "");
               status.className = "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100";
             }
             if (modelSelect && result.models?.length > 0) {
@@ -854,6 +891,9 @@ function AIBackendModal(props) {
             status.className = "text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100";
           }
         }
+        lockedControls.forEach((control) => {
+          control.disabled = false;
+        });
         btn.disabled = false;
         btn.textContent = "\u{1F50C} Test Connection";
       },
@@ -883,13 +923,13 @@ function AIBackendModal(props) {
         if (tt) tt.value = "auto";
         if (ig) ig.value = "auto";
         if (s) {
-          s.textContent = "\u{1F504} Reset to defaults \u2014 reload page to apply";
+          s.textContent = isStudentAiSetup ? "Disconnected. The session key was erased." : "\u{1F504} Reset to defaults \u2014 reload page to apply";
           s.className = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
         }
       },
       className: "bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
     },
-    "\u21A9 Reset"
+    isStudentAiSetup ? "Disconnect & erase key" : "\u21A9 Reset"
   )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-status" }), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-blue-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.model_selection_header") || "Model Selection")), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.default_model_label") || "Default Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.default_model_hint") || "(text generation)")), /* @__PURE__ */ React.createElement(
     "select",
     {
@@ -956,7 +996,7 @@ function AIBackendModal(props) {
     /* @__PURE__ */ React.createElement("option", { value: "imagen" }, "\u{1F3A8} Imagen 4.0 (Google Cloud)"),
     /* @__PURE__ */ React.createElement("option", { value: "flux" }, "\u{1F5BC}\uFE0F FLUX (Local \u2014 port 7860)"),
     /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F6AB} Off (disable image generation)")
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-device-storage-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -973,7 +1013,7 @@ function AIBackendModal(props) {
     } catch {
       return "Gemini (default)";
     }
-  })()), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium mt-1" }, "\u26A1 Reload page after changing backend to apply.")))));
+  })()), !isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium mt-1" }, "\u26A1 Reload page after changing backend to apply."), isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium mt-1" }, "Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified.")))));
 }
 window.AlloModules = window.AlloModules || {};
 // GroupSessionModal + PdfDiffViewer live in view_misc_panels_module.js; this module only owns

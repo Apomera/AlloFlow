@@ -1,0 +1,186 @@
+{
+  "reviewedAt": "2026-07-17T02:49:45.116Z",
+  "reviewer": "OpenAI Codex independent cross-review",
+  "itemCount": 34,
+  "correctionsMade": [
+    {
+      "itemId": "parapro-b3-reading-012",
+      "issue": "Tone was not one of the seven reading-skills topics named in the current ETS outline, and the stimulus did not assess fact versus opinion.",
+      "change": "Replaced the tone task with a four-sentence fact-versus-opinion item while retaining answer position 3 and the school-transportation context."
+    },
+    {
+      "itemId": "parapro-b3-reading-013",
+      "issue": "The keyed main-idea choice inferred sensitivity to broadly “intense” environments beyond what the passage directly established.",
+      "change": "Narrowed the keyed choice and its rationale to the reported quiet hour, families who avoided crowded exhibits, and reduced access barriers."
+    },
+    {
+      "itemId": "parapro-b3-reading-022",
+      "issue": "The source-type comparison was an extension beyond the explicit current ETS reading-skills list, while this batch lacked a direct numeric table-interpretation task.",
+      "change": "Replaced it with a two-week class table requiring calculation and comparison of increases; answer position 1 remains keyed."
+    },
+    {
+      "itemId": "parapro-b3-reading-023",
+      "issue": "A second tone item reduced coverage of the current ETS fact-versus-opinion topic.",
+      "change": "Replaced it with an astronomy-announcement fact-versus-opinion item and rewrote all four choice rationales."
+    },
+    {
+      "itemId": "parapro-b3-reading-024",
+      "issue": "The cited K–3 foundational-skills guide was not the closest support for a main-idea and gist scaffold.",
+      "change": "Changed the instructional reference to the IES grades 4–9 reading-interventions guide, which expressly covers gist and comprehension-building routines."
+    },
+    {
+      "itemId": "parapro-b3-reading-025",
+      "issue": "The cited K–3 foundational-skills guide was not the closest support for evidence-based comprehension questioning.",
+      "change": "Changed the instructional reference to the IES grades 4–9 reading-interventions guide."
+    },
+    {
+      "itemId": "parapro-b3-reading-026",
+      "issue": "The prompt asked for the meaning of resilient, but resilient was absent from the quoted sentence.",
+      "change": "Inserted resilient into the sentence so the contextual contrast directly supports the keyed meaning."
+    },
+    {
+      "itemId": "parapro-b3-reading-028",
+      "issue": "The cited foundational-skills guide was not the closest support for identifying gist and omitting examples in summaries.",
+      "change": "Changed the instructional reference to the IES grades 4–9 reading-interventions guide."
+    },
+    {
+      "itemId": "parapro-b3-reading-029",
+      "issue": "The cited foundational-skills guide was not the closest support for teaching problem–solution text structure.",
+      "change": "Changed the instructional reference to the IES K–3 reading-comprehension guide, which expressly recommends teaching organizational structure."
+    },
+    {
+      "itemId": "parapro-b3-reading-030",
+      "issue": "The keyed scaffold named word chunks without identifying their morphological roles and used imprecise blending language.",
+      "change": "Labeled trans- as a prefix, port as a root, and -ation as a suffix; clarified whole-word blending and contextual verification."
+    },
+    {
+      "itemId": "parapro-b3-reading-031",
+      "issue": "The cited foundational-skills guide was not the closest support for comprehension across prose, captions, and a diagram.",
+      "change": "Changed the supplemental instructional reference to the IES grades 4–9 reading-interventions guide; retained the ETS blueprint citation for diagrams."
+    },
+    {
+      "itemId": "parapro-b3-reading-032",
+      "issue": "The source-credibility research task fit writing/research more closely than the current ETS classroom-reading topics.",
+      "change": "Replaced it with a dictionary, syntax, and context task requiring selection and verification of the correct sense of channel."
+    },
+    {
+      "itemId": "parapro-b3-reading-033",
+      "issue": "The sarcasm-and-tone task was outside the explicit current ETS classroom-reading topic list.",
+      "change": "Replaced it with an antonym task using scarce, abundant, and the contrast signal but, while retaining a multilingual-learner context and answer position 0."
+    },
+    {
+      "itemId": "parapro-b3-reading-034",
+      "issue": "The cited foundational-skills guide was not the closest support for prereading prediction and gradual release.",
+      "change": "Changed the instructional reference to the IES K–3 reading-comprehension guide; retained the ETS citation for prereading strategies."
+    }
+  ],
+  "checks": {
+    "lineByLineItemReview": {
+      "status": "pass",
+      "reviewedItems": 34,
+      "scope": [
+        "passage and stimulus coherence",
+        "keyed-answer defensibility",
+        "inference and evidence logic",
+        "vocabulary in context",
+        "ambiguity",
+        "distractor plausibility",
+        "classroom-role appropriateness",
+        "choice rationales",
+        "references"
+      ]
+    },
+    "blueprintAlignment": {
+      "status": "pass",
+      "officialBlueprint": "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "readingSkillsAndKnowledgeTopicsRepresented": [
+        "main idea and primary purpose",
+        "supporting ideas and evidence",
+        "organization",
+        "word and phrase meaning in context",
+        "inference",
+        "fact versus opinion",
+        "tables and diagrams"
+      ],
+      "classroomApplicationTopicsRepresented": [
+        "word parts",
+        "syntax and context",
+        "antonyms",
+        "prereading",
+        "comprehension questions",
+        "observation of student performance",
+        "dictionary use",
+        "written and visual information"
+      ],
+      "contentFocusCounts": {
+        "basic-skills-knowledge": 23,
+        "application-classroom": 11
+      },
+      "expectedContentFocusCounts": {
+        "basic-skills-knowledge": 23,
+        "application-classroom": 11
+      }
+    },
+    "answerKeysAndFeedback": {
+      "status": "pass",
+      "keyedAnswersChecked": 34,
+      "choiceRationaleSetsChecked": 34,
+      "unresolvedAmbiguities": 0
+    },
+    "answerPositionBalance": {
+      "status": "pass",
+      "countsByZeroBasedIndex": {
+        "0": 9,
+        "1": 9,
+        "2": 8,
+        "3": 8
+      },
+      "expectedCountsByZeroBasedIndex": {
+        "0": 9,
+        "1": 9,
+        "2": 8,
+        "3": 8
+      }
+    },
+    "originality": {
+      "status": "pass",
+      "comparedAgainst": "test_prep/parapro_pack.json",
+      "existingReadingItemsCompared": 170,
+      "exactPromptOverlaps": 0,
+      "exactChoiceSetOverlaps": 0,
+      "maximumPromptTokenJaccard": 0.24,
+      "maximumSimilarityPair": [
+        "parapro-b3-reading-022",
+        "parapro-reading-skills-022"
+      ],
+      "threshold": 0.82,
+      "intraBatchDistinctNormalizedContentKernels": 34,
+      "exactNormalizedContentKernelOverlaps": 0,
+      "maximumIntraBatchPromptTokenJaccard": 0.172,
+      "maximumIntraBatchSimilarityPair": [
+        "parapro-b3-reading-004",
+        "parapro-b3-reading-009"
+      ]
+    },
+    "references": {
+      "status": "pass",
+      "httpsOnly": true,
+      "officialSources": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/14",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/29"
+      ]
+    },
+    "structure": {
+      "status": "pass",
+      "uniqueIds": 34,
+      "uniquePrompts": 34,
+      "fourUniqueChoicesPerItem": true,
+      "fourChoiceRationalesPerItem": true,
+      "validSkillAndChapterLinks": true,
+      "independentDraftProvenancePreserved": true
+    }
+  },
+  "verdict": "pass-with-corrections: all 34 items are approved for integration as assistant-authored independent ParaPro practice drafts; this is not official ETS content or psychometric validation."
+}

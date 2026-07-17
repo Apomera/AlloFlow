@@ -58,7 +58,6 @@
   // Tier-2 (optional) verified-credential endpoints on the same worker host.
   var PD_ISSUE_URL = WORKER_URL.replace(/\/submit$/, '/issuePd');
   var PD_VERIFY_URL = WORKER_URL.replace(/\/submit$/, '/verifyPd');
-  var PD_ISSUER_KEY_URL = WORKER_URL.replace(/\/submit$/, '/pdIssuerKey');
   var PD_INTENT_KEY = 'alloflow_pd_intent';
   var PD_CORE_FALLBACK_URL = 'https://alloflow-cdn.pages.dev/pd_core_module.js';
 
@@ -649,6 +648,10 @@
 
   // ----- Professional Development: progress + completion history (localStorage) -
   var PD_PROGRESS_PREFIX = 'alloflow_pd_progress::';
+  var PD_PROGRESS_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+  var PD_PROGRESS_FUTURE_SKEW_MS = 5 * 60 * 1000;
+  var PD_HISTORY_MAX_ENTRIES = 200;
+  var PD_HISTORY_MAX_IMPORT_BYTES = 262144;
   var PD_HISTORY_KEY = 'alloflow_pd_history';
   function pdModuleId(mod) {
     return (mod && mod.metadata && mod.metadata.id) || slugify((mod && mod.metadata && mod.metadata.title) || 'module');
@@ -689,11 +692,23 @@
     }
     return fallbackPdFingerprint(mod);
   }
+  function pdManifestModuleId(entry) {
+    var moduleId = String((entry && entry.moduleId) || '').trim();
+    if (moduleId) return moduleId;
+    return String((entry && entry.slug) || '').trim();
+  }
+  function pdEntryForHistoryModuleId(entries, moduleId) {
+    return (entries || []).filter(function (entry) {
+      return entry && pdManifestModuleId(entry) === moduleId;
+    })[0] || null;
+  }
   function verifyPdManifestEntryDigest(Core, entry, mod) {
     var expected = String((entry && entry.contentDigest) || '').trim();
+    var expectedModuleId = pdManifestModuleId(entry);
     var expectedVersion = String((entry && entry.version) || '').trim();
     var expectedLanguage = String((entry && entry.language) || '').trim();
     if (!expected) return { ok: false, error: 'This approved catalog entry is missing its required content digest.' };
+    if (!expectedModuleId) return { ok: false, error: 'This approved catalog entry is missing its required module identity.' };
     if (!expectedVersion) return { ok: false, error: 'This approved catalog entry is missing its required module version.' };
     if (!expectedLanguage) return { ok: false, error: 'This approved catalog entry is missing its required language binding.' };
     if (!Core || typeof Core.moduleContentDigest !== 'function') {
@@ -701,8 +716,10 @@
     }
     try {
       var metadata = (mod && mod.metadata) || {};
+      var actualModuleId = String(metadata.id || '').trim();
       var actualVersion = String(metadata.version || '').trim();
       var actualLanguage = String(metadata.language || metadata.lang || '').trim();
+      if (actualModuleId !== expectedModuleId) return { ok: false, error: 'This module identity does not match the approved catalog.' };
       if (actualVersion !== expectedVersion) return { ok: false, error: 'This module version does not match the approved catalog.' };
       if (actualLanguage !== expectedLanguage) return { ok: false, error: 'This module language does not match the approved catalog.' };
       var actual = Core.moduleContentDigest(mod);
@@ -712,26 +729,84 @@
       return { ok: false, error: 'This module content digest could not be verified.' };
     }
   }
-  function loadPdProgress(mod) {
-    try { var raw = localStorage.getItem(PD_PROGRESS_PREFIX + pdModuleId(mod)); return raw ? JSON.parse(raw) : null; } catch (_e) { return null; }
+  function removePdProgressKey(key) {
+    try { localStorage.removeItem(key); } catch (_e) { /* no-op */ }
   }
-  function loadPdProgressById(id) {
-    try { var raw = localStorage.getItem(PD_PROGRESS_PREFIX + id); return raw ? JSON.parse(raw) : null; } catch (_e) { return null; }
+  function readPdProgressKey(key, expectedFingerprint) {
+    try {
+      var raw = localStorage.getItem(key);
+      if (!raw) return null;
+      var state = JSON.parse(raw);
+      var savedAtMs = state && Date.parse(state.savedAt);
+      var nowMs = Date.now();
+      var invalid = !state || typeof state !== 'object' || Array.isArray(state) ||
+        !isFinite(savedAtMs) || savedAtMs > nowMs + PD_PROGRESS_FUTURE_SKEW_MS || nowMs - savedAtMs > PD_PROGRESS_TTL_MS ||
+        (state.rawById != null && (typeof state.rawById !== 'object' || Array.isArray(state.rawById))) ||
+        (expectedFingerprint && state.fp !== expectedFingerprint);
+      if (invalid) { removePdProgressKey(key); return null; }
+      // Completed response evidence belongs only to the current in-memory screen.
+      if (state.done === true) removePdProgressKey(key);
+      return state;
+    } catch (_e) { removePdProgressKey(key); return null; }
+  }
+  function loadPdProgress(mod, Core) {
+    return readPdProgressKey(PD_PROGRESS_PREFIX + pdModuleId(mod), pdFingerprint(mod, Core));
+  }
+  function loadPdProgressById(id, expectedFingerprint) {
+    return readPdProgressKey(PD_PROGRESS_PREFIX + id, expectedFingerprint || null);
   }
   function savePdProgress(mod, state) {
-    try { localStorage.setItem(PD_PROGRESS_PREFIX + pdModuleId(mod), JSON.stringify(state)); } catch (_e) { /* quota/sandbox */ }
+    var key = PD_PROGRESS_PREFIX + pdModuleId(mod);
+    if (!state || state.done === true) { removePdProgressKey(key); return; }
+    try { localStorage.setItem(key, JSON.stringify(state)); } catch (_e) { /* quota/sandbox */ }
   }
   function clearPdProgress(mod) {
-    try { localStorage.removeItem(PD_PROGRESS_PREFIX + pdModuleId(mod)); } catch (_e) { /* no-op */ }
+    removePdProgressKey(PD_PROGRESS_PREFIX + pdModuleId(mod));
+  }
+  function clearAllPdProgress() {
+    var keys = [];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (typeof key === 'string' && key.indexOf(PD_PROGRESS_PREFIX) === 0) keys.push(key);
+      }
+      keys.forEach(function (key) { localStorage.removeItem(key); });
+    } catch (_e) { /* storage unavailable */ }
+    return keys.length;
+  }
+  function pdHistoryText(value, maxLength) {
+    return typeof value === 'string' && value === value.trim() && value.length > 0 && value.length <= maxLength;
+  }
+  function pdHistoryTimestamp(value) {
+    return typeof value === 'string' && value.length <= 64 &&
+      /^[0-9]{4}-[0-9]{2}-[0-9]{2}(?:T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:[.][0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2}))?$/.test(value) && !isNaN(Date.parse(value));
   }
   function normalizePdHistoryEntry(entry, origin) {
-    var clean = Object.assign({}, entry || {});
-    // Local history is useful personal progress, never institutional evidence.
-    // Force these values even if an imported file claims that it is verified.
-    clean.trust = 'self-reported';
-    clean.verified = false;
-    clean.verificationStatus = 'unverified';
-    clean.historyOrigin = origin || clean.historyOrigin || 'legacy-local';
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry) || entry.complete !== true ||
+        !pdHistoryText(entry.moduleId, 128) || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(entry.moduleId) ||
+        !pdHistoryTimestamp(entry.completedAt)) return null;
+    if (entry.moduleTitle != null && !pdHistoryText(entry.moduleTitle, 200)) return null;
+    if (entry.topic != null && !pdHistoryText(entry.topic, 100)) return null;
+    if (entry.moduleVersion != null && (!pdHistoryText(entry.moduleVersion, 128) || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(entry.moduleVersion))) return null;
+    if (entry.contentDigest != null && (typeof entry.contentDigest !== 'string' || !/^sha256:[a-f0-9]{64}$/.test(entry.contentDigest))) return null;
+    var hasPassed = entry.passed != null; var hasTotal = entry.total != null;
+    if (hasPassed !== hasTotal || (hasPassed && (!Number.isInteger(entry.passed) || !Number.isInteger(entry.total) ||
+        entry.passed < 0 || entry.total < 0 || entry.total > 500 || entry.passed > entry.total))) return null;
+    var clean = {
+      moduleId: entry.moduleId,
+      completedAt: entry.completedAt,
+      complete: true,
+      trust: 'self-reported',
+      verified: false,
+      verificationStatus: 'unverified',
+      historyOrigin: origin === 'local-device' || origin === 'imported-history' ? origin :
+        (entry.historyOrigin === 'local-device' || entry.historyOrigin === 'imported-history' ? entry.historyOrigin : 'legacy-local')
+    };
+    if (entry.moduleTitle != null) clean.moduleTitle = entry.moduleTitle;
+    if (entry.topic != null) clean.topic = entry.topic;
+    if (entry.moduleVersion != null) clean.moduleVersion = entry.moduleVersion;
+    if (entry.contentDigest != null) clean.contentDigest = entry.contentDigest;
+    if (hasPassed) { clean.passed = entry.passed; clean.total = entry.total; }
     return clean;
   }
   function isPersonalPdCompletionEntry(entry) {
@@ -740,15 +815,19 @@
   }
   function loadPdHistory() {
     try {
-      var raw = localStorage.getItem(PD_HISTORY_KEY); var arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) ? arr.filter(function (h) { return h && typeof h === 'object'; }).map(function (h) { return normalizePdHistoryEntry(h); }) : [];
+      var raw = localStorage.getItem(PD_HISTORY_KEY);
+      if (raw && raw.length > PD_HISTORY_MAX_IMPORT_BYTES) { localStorage.removeItem(PD_HISTORY_KEY); return []; }
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr.slice(0, PD_HISTORY_MAX_ENTRIES).map(function (h) { return normalizePdHistoryEntry(h); }).filter(Boolean) : [];
     } catch (_e) { return []; }
   }
   function recordPdCompletion(entry) {
     try {
-      var hist = loadPdHistory().filter(function (h) { return h && h.moduleId !== entry.moduleId; });
-      hist.unshift(normalizePdHistoryEntry(entry, 'local-device'));
-      localStorage.setItem(PD_HISTORY_KEY, JSON.stringify(hist.slice(0, 200)));
+      var clean = normalizePdHistoryEntry(entry, 'local-device');
+      if (!clean) return;
+      var hist = loadPdHistory().filter(function (h) { return h && h.moduleId !== clean.moduleId; });
+      hist.unshift(clean);
+      localStorage.setItem(PD_HISTORY_KEY, JSON.stringify(hist.slice(0, PD_HISTORY_MAX_ENTRIES)));
     } catch (_e) { /* no-op */ }
   }
   function pdHistoryEntryMatchesBinding(entry, binding) {
@@ -782,18 +861,24 @@
     downloadJsonFile({ schema_version: 'pd-history-1.0', kind: 'pd_history', trust_model: 'self-reported-unverified', exported_at: new Date().toISOString(), entries: loadPdHistory() }, 'my-pd-learning');
   }
   function importPdHistory(parsed) {
+    var serialized;
+    try { serialized = JSON.stringify(parsed); } catch (_e) { return { ok: false, error: 'That file is not valid JSON history data.' }; }
+    if (!serialized || serialized.length > PD_HISTORY_MAX_IMPORT_BYTES) return { ok: false, error: 'That PD history file is too large.' };
     var incoming = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.entries) ? parsed.entries : null);
     if (!incoming) return { ok: false, error: 'That file is not a PD history export.' };
+    if (incoming.length > PD_HISTORY_MAX_ENTRIES) return { ok: false, error: 'That PD history file has too many entries.' };
     var byId = {};
     loadPdHistory().forEach(function (h) { if (h && h.moduleId) byId[h.moduleId] = h; });
     incoming.forEach(function (h) {
-      if (!h || !h.moduleId || h.complete !== true) return;
-      var prev = byId[h.moduleId];
-      if (!prev || String(h.completedAt || '') > String(prev.completedAt || '')) byId[h.moduleId] = normalizePdHistoryEntry(h, 'imported-history'); // keep the most recent
+      var clean = normalizePdHistoryEntry(h, 'imported-history');
+      if (!clean) return;
+      var prev = byId[clean.moduleId];
+      if (!prev || clean.completedAt > prev.completedAt) byId[clean.moduleId] = clean; // keep the most recent
     });
     var merged = Object.keys(byId).map(function (k) { return byId[k]; })
-      .sort(function (a, b) { return String(b.completedAt || '').localeCompare(String(a.completedAt || '')); });
-    try { localStorage.setItem(PD_HISTORY_KEY, JSON.stringify(merged.slice(0, 200))); } catch (_e) { return { ok: false, error: 'Could not save imported history.' }; }
+      .sort(function (a, b) { return b.completedAt.localeCompare(a.completedAt); })
+      .slice(0, PD_HISTORY_MAX_ENTRIES);
+    try { localStorage.setItem(PD_HISTORY_KEY, JSON.stringify(merged)); } catch (_e) { return { ok: false, error: 'Could not save imported history.' }; }
     return { ok: true, count: merged.length };
   }
 
@@ -886,8 +971,9 @@
   // Pure (dependency-injected) row builder so it can be unit-tested without localStorage.
   function pdPathCertificateRows(path, entries, history) {
     return ((path && path.moduleSlugs) || []).map(function (sl) {
-      var h = (history || []).filter(function (x) { return x && x.moduleId === sl; })[0];
       var en = (entries || []).filter(function (x) { return x && x.slug === sl; })[0];
+      var moduleId = pdManifestModuleId(en) || sl;
+      var h = (history || []).filter(function (x) { return x && x.moduleId === moduleId; })[0];
       return { title: (en && en.title) || (h && h.moduleTitle) || sl, completedAt: h && h.completedAt };
     });
   }
@@ -897,12 +983,6 @@
   }
 
   // ----- Professional Development: non-institutional self-paced attestation (optional) ----
-  function _b64ToBuf(b64) {
-    var bin = atob(String(b64 || '').replace(/\s+/g, ''));
-    var u = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
-    return u.buffer;
-  }
   // Ask the issuer to sign a COMPLETED self-paced record only when the instance
   // explicitly enables the non-institutional lane. Reviewed institutional issuance
   // is server-to-server and never uses this learner-browser request.
@@ -915,43 +995,44 @@
       })
       .catch(function (err) { return { ok: false, error: 'Network error: ' + err.message }; });
   }
-  // Verify a credential. Prefers client-side WebCrypto (trusting the public key
-  // fetched from /pdIssuerKey — never the one embedded in the credential), falling
-  // back to the worker /verifyPd when the browser lacks Ed25519. → {valid, method}.
+  // Verify only through the authoritative worker. It applies the strict credential
+  // contract, trusted historical keyring, and accessibility-window semantics before
+  // institutional assurance reaches the browser. → {valid, method, accessibilityCurrent}.
   function verifyPdCredential(credential) {
-    if (!credential || !credential.payload || !credential.signature) return Promise.resolve({ valid: false, error: 'Not a PD credential.' });
+    var noAssurance = { reviewed: false, institutional: false };
+    if (!credential || !credential.payload || !credential.signature) return Promise.resolve({ valid: false, assurance: noAssurance, error: 'Not a PD credential.' });
     var profile = credential.payload.credential_profile;
-    if (profile !== 'reviewed-evidence' && profile !== 'self-paced-non-institutional') return Promise.resolve({ valid: false, error: 'Unsupported credential profile.' });
-    var profileAssurance = profile === 'reviewed-evidence'
-      ? { reviewed: true, institutional: true } : { reviewed: false, institutional: false };
-    var Core = window.AlloModules && window.AlloModules.PdCore;
-    function serverVerify() {
-      return fetch(PD_VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: credential }) })
-        .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
-        .then(function (res) {
-          // Only a clean {valid:boolean} response is a real verdict; otherwise (e.g.
-          // 501 issuer-disabled) report "couldn't check", not "invalid/tampered".
-          if (res.body && typeof res.body.valid === 'boolean') {
-            var returnedProfile = res.body.credential_profile;
-            if (returnedProfile !== profile) return { valid: false, error: 'Credential profile mismatch in verification response.' };
-            var returnedAssurance = res.body.assurance;
-            if (!returnedAssurance || returnedAssurance.reviewed !== profileAssurance.reviewed || returnedAssurance.institutional !== profileAssurance.institutional) return { valid: false, error: 'Credential assurance mismatch in verification response.' };
-            return { valid: res.body.valid, method: 'server', credentialProfile: profile, assurance: profileAssurance };
-          }
-          return { valid: false, error: (res.body && res.body.error) || ('verification unavailable (HTTP ' + res.status + ')') };
-        })
-        .catch(function (err) { return { valid: false, error: 'Could not verify: ' + err.message }; });
-    }
-    var canSubtle = typeof window !== 'undefined' && window.crypto && window.crypto.subtle && Core && typeof Core.canonicalize === 'function';
-    if (profile === 'self-paced-non-institutional') return serverVerify();
-    if (!canSubtle) return serverVerify();
-    return fetch(PD_ISSUER_KEY_URL).then(function (r) { return r.json(); }).then(function (k) {
-      if (!k || !k.public_key_spki_b64) throw new Error('no issuer key');
-      return window.crypto.subtle.importKey('spki', _b64ToBuf(k.public_key_spki_b64), { name: 'Ed25519' }, false, ['verify']).then(function (pub) {
-        return window.crypto.subtle.verify({ name: 'Ed25519' }, pub, _b64ToBuf(credential.signature), new TextEncoder().encode(Core.canonicalize(credential.payload)));
-      });
-    }).then(function (valid) { return { valid: !!valid, method: 'client', credentialProfile: profile, assurance: profileAssurance }; })
-      .catch(function () { return serverVerify(); });
+    if (profile !== 'reviewed-evidence' && profile !== 'self-paced-non-institutional') return Promise.resolve({ valid: false, assurance: noAssurance, error: 'Unsupported credential profile.' });
+    var expectedAssurance = profile === 'reviewed-evidence'
+      ? { reviewed: true, institutional: true } : noAssurance;
+    return fetch(PD_VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: credential }) })
+      .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
+      .then(function (res) {
+        if (res.status >= 500 || !res.body || typeof res.body.valid !== 'boolean') {
+          return { valid: false, assurance: noAssurance, error: (res.body && res.body.error) || ('verification unavailable (HTTP ' + res.status + ')') };
+        }
+        var returnedProfile = res.body.credential_profile;
+        if (returnedProfile !== profile) return { valid: false, assurance: noAssurance, error: 'Credential profile mismatch in verification response.' };
+        var returnedAssurance = res.body.assurance;
+        if (!returnedAssurance || typeof returnedAssurance.reviewed !== 'boolean' || typeof returnedAssurance.institutional !== 'boolean') {
+          return { valid: false, assurance: noAssurance, error: 'Credential assurance is missing from verification response.' };
+        }
+        if (res.body.valid !== true) {
+          if (returnedAssurance.reviewed !== false || returnedAssurance.institutional !== false) return { valid: false, assurance: noAssurance, error: 'Invalid credentials cannot carry assurance.' };
+          return { valid: false, method: 'server', credentialProfile: profile, assurance: noAssurance, error: res.body.error || res.body.reason || '' };
+        }
+        if (returnedAssurance.reviewed !== expectedAssurance.reviewed || returnedAssurance.institutional !== expectedAssurance.institutional) {
+          return { valid: false, assurance: noAssurance, error: 'Credential assurance mismatch in verification response.' };
+        }
+        if (profile === 'reviewed-evidence' && typeof res.body.accessibility_current !== 'boolean') {
+          return { valid: false, assurance: noAssurance, error: 'Accessibility verification state is missing from verification response.' };
+        }
+        return {
+          valid: true, method: 'server', credentialProfile: profile, assurance: expectedAssurance,
+          accessibilityCurrent: profile === 'reviewed-evidence' ? res.body.accessibility_current : null,
+        };
+      })
+      .catch(function (err) { return { valid: false, assurance: noAssurance, error: 'Could not verify: ' + err.message }; });
   }
 
   // ----- Professional Development: activity views -----------------------------
@@ -1293,6 +1374,7 @@
   function PdRunner(props) {
     var addToast = props.addToast;
     var mod = props.module;
+    var moduleLanguage = String((mod.metadata && mod.metadata.language) || 'en').trim() || 'en';
     var Core = window.AlloModules && window.AlloModules.PdCore;
     var allowSelfPacedSigning = typeof window !== 'undefined' && window.__alloPdAllowSelfPacedIssuance === true;
     var steps = useMemo(function () {
@@ -1304,10 +1386,7 @@
     }, [mod]);
     // Resume from any saved progress for this module.
     var saved = useMemo(function () {
-      var s = loadPdProgress(mod);
-      // Discard saved answers if the module's structure changed since they were saved.
-      if (s && s.fp && s.fp !== pdFingerprint(mod, Core)) return null;
-      return s;
+      return loadPdProgress(mod, Core);
     }, [mod, Core]);
     var idx$ = useState(function () { return (saved && typeof saved.idx === 'number' && saved.idx < steps.length) ? saved.idx : 0; });
     var idx = idx$[0], setIdx = idx$[1];
@@ -1319,6 +1398,16 @@
     var resumed = resumed$[0], setResumed = resumed$[1];
     var headingRef = React.useRef ? React.useRef(null) : { current: null };
     var name$ = useState((props.learner && props.learner.name) || ''); var learnerName = name$[0], setLearnerName = name$[1];
+    var reviewConsent$ = useState(false);
+    var reviewConsent = reviewConsent$[0], setReviewConsent = reviewConsent$[1];
+    var reviewAi$ = useState(false);
+    var reviewIncludeAi = reviewAi$[0], setReviewIncludeAi = reviewAi$[1];
+    var reviewIntegrity$ = useState(false);
+    var reviewIncludeIntegrity = reviewIntegrity$[0], setReviewIncludeIntegrity = reviewIntegrity$[1];
+    var reviewPreview$ = useState(null);
+    var reviewPreview = reviewPreview$[0], setReviewPreview = reviewPreview$[1];
+    var reviewPreviewConfirmed$ = useState(false);
+    var reviewPreviewConfirmed = reviewPreviewConfirmed$[0], setReviewPreviewConfirmed = reviewPreviewConfirmed$[1];
 
     // Persist progress as the learner moves through the module.
     useEffect(function () {
@@ -1363,11 +1452,25 @@
       steps.forEach(function (st) { r[st.act.id] = Core.normalizeResult(st.act, rawById[st.act.id] || {}); });
       return r;
     }
-    function startOver() { clearPdProgress(mod); setRawById({}); setIdx(0); setDone(false); setResumed(false); }
+    function resetReviewPreview() { setReviewPreview(null); setReviewPreviewConfirmed(false); }
+    function startOver() {
+      clearPdProgress(mod); setRawById({}); setIdx(0); setDone(false); setResumed(false);
+      setReviewConsent(false); setReviewIncludeAi(false); setReviewIncludeIntegrity(false); resetReviewPreview();
+    }
 
     if (done) {
       var ev = Core.evaluateModule(mod, resultsById());
-      return e('div', { className: 'flex flex-col gap-4 items-start' },
+      var reviewNotice = typeof Core.reviewConsentNotice === 'function'
+        ? Core.reviewConsentNotice((mod.metadata && mod.metadata.language) || 'en') : null;
+      var reviewArtifactCounts = {};
+      if (reviewPreview && Array.isArray(reviewPreview.artifacts)) {
+        reviewPreview.artifacts.forEach(function (artifact) {
+          var kind = String((artifact && artifact.kind) || 'unknown');
+          reviewArtifactCounts[kind] = (reviewArtifactCounts[kind] || 0) + 1;
+        });
+      }
+      var reviewArtifactKinds = Object.keys(reviewArtifactCounts).sort();
+      return e('div', { lang: moduleLanguage, className: 'flex flex-col gap-4 items-start' },
         e('h3', { ref: headingRef, tabIndex: -1, className: 'font-bold text-lg text-slate-800 outline-none' }, ev.complete ? 'Module complete 🎓' : 'Module summary'),
         e('p', { className: 'text-sm text-slate-600' }, mod.metadata.title),
         e('p', { className: 'text-sm text-slate-700' }, 'Activities passed: ' + ev.passed + ' / ' + ev.total),
@@ -1410,6 +1513,97 @@
             onClick: props.onExit,
             className: 'px-4 py-2 text-sm font-semibold border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50',
           }, 'Back to PD library')
+        ),
+        ev.complete && e('section', {
+          className: 'w-full max-w-2xl rounded-md border border-violet-200 bg-violet-50 p-4 flex flex-col gap-3',
+          'aria-labelledby': 'pd-review-candidate-title'
+        },
+          e('h4', { id: 'pd-review-candidate-title', className: 'text-sm font-bold text-slate-800' }, reviewNotice ? reviewNotice.heading : 'Review export unavailable'),
+          reviewNotice && e('p', { className: 'text-xs text-slate-700' }, reviewNotice.purpose),
+          reviewNotice && e('p', { className: 'text-xs text-slate-700' }, reviewNotice.privacy),
+          !reviewNotice && e('p', { className: 'text-xs text-red-700' }, 'This PD engine cannot bind the export to a versioned consent notice.'),
+          e('label', { className: 'flex items-start gap-2 text-xs text-slate-700' },
+            e('input', {
+              type: 'checkbox',
+              checked: reviewConsent,
+              onChange: function (event) { setReviewConsent(event.target.checked); resetReviewPreview(); },
+              className: 'mt-0.5'
+            }),
+            e('span', null, reviewNotice && reviewNotice.consent_label)
+          ),
+          e('label', { className: 'flex items-start gap-2 text-xs text-slate-700' },
+            e('input', {
+              type: 'checkbox',
+              checked: reviewIncludeAi,
+              onChange: function (event) { setReviewIncludeAi(event.target.checked); resetReviewPreview(); },
+              className: 'mt-0.5'
+            }),
+            e('span', null, reviewNotice && reviewNotice.ai_option_label)
+          ),
+          e('label', { className: 'flex items-start gap-2 text-xs text-slate-700' },
+            e('input', {
+              type: 'checkbox',
+              checked: reviewIncludeIntegrity,
+              onChange: function (event) { setReviewIncludeIntegrity(event.target.checked); resetReviewPreview(); },
+              className: 'mt-0.5'
+            }),
+            e('span', null, reviewNotice && reviewNotice.integrity_option_label)
+          ),
+          e('button', {
+            type: 'button',
+            disabled: !reviewConsent || !reviewNotice,
+            onClick: function () {
+              if (!Core || typeof Core.buildReviewCandidatePackage !== 'function' || !reviewNotice) {
+                addToast && addToast('The review-candidate export is unavailable in this PD engine.', 'error');
+                return;
+              }
+              var preparedAt = new Date().toISOString();
+              var built = Core.buildReviewCandidatePackage(mod, resultsById(), {
+                consent: { granted: reviewConsent, grantedAt: preparedAt },
+                includeAiAnalysis: reviewIncludeAi,
+                includeIntegritySummary: reviewIncludeIntegrity
+              }, preparedAt);
+              if (!built.ok) {
+                addToast && addToast('Could not prepare review evidence: ' + built.error, 'error');
+                return;
+              }
+              setReviewPreview(built.package);
+              setReviewPreviewConfirmed(false);
+              addToast && addToast('Local evidence summary ready. Review it before downloading.', 'info');
+            },
+            className: 'self-start px-4 py-2 text-sm font-semibold bg-violet-700 text-white rounded-md hover:bg-violet-800 disabled:opacity-40 disabled:cursor-not-allowed'
+          }, 'Preview review-candidate package'),
+          reviewPreview && e('div', {
+            className: 'rounded-md border border-violet-300 bg-white p-3 flex flex-col gap-2',
+            role: 'region', 'aria-labelledby': 'pd-review-preview-title'
+          },
+            e('h5', { id: 'pd-review-preview-title', className: 'text-xs font-bold text-slate-800' }, 'Local export preview'),
+            e('p', { className: 'text-xs text-slate-700' },
+              'Artifact summary: ' + reviewPreview.artifacts.length + ' item' + (reviewPreview.artifacts.length === 1 ? '' : 's') + '. Response contents are not repeated in this preview.'),
+            reviewArtifactKinds.length > 0
+              ? e('ul', { className: 'list-disc pl-5 text-xs text-slate-700' }, reviewArtifactKinds.map(function (kind) {
+                  return e('li', { key: kind }, kind + ': ' + reviewArtifactCounts[kind]);
+                }))
+              : e('p', { className: 'text-xs text-slate-600' }, 'No evidence artifacts are included.'),
+            e('p', { className: 'text-xs font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded p-2', role: 'note' },
+              'Free-text responses may contain names, email addresses, or personal data you typed or pasted. Go back and edit responses before downloading if needed.'),
+            e('label', { className: 'flex items-start gap-2 text-xs text-slate-700' },
+              e('input', {
+                type: 'checkbox', checked: reviewPreviewConfirmed,
+                onChange: function (event) { setReviewPreviewConfirmed(event.target.checked); },
+                className: 'mt-0.5'
+              }),
+              e('span', null, 'I reviewed this summary and understand that free-text evidence may contain personal data.')
+            ),
+            e('button', {
+              type: 'button', disabled: !reviewPreviewConfirmed,
+              onClick: function () {
+                downloadJsonFile(reviewPreview, pdModuleId(mod) + '-review-candidate');
+                addToast && addToast('Local review-candidate evidence package downloaded.', 'success');
+              },
+              className: 'self-start px-4 py-2 text-sm font-semibold border border-violet-700 text-violet-800 rounded-md hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed'
+            }, 'Confirm and download review-candidate package (JSON)')
+          )
         ),
         ev.complete && !allowSelfPacedSigning && e('p', { className: 'text-[11px] text-slate-500 max-w-prose' },
           'Institutional credentials are issued only after authorized evidence and accessibility review; this self-paced record cannot issue one.'),
@@ -1455,7 +1649,7 @@
     }
 
 
-    return e('div', { className: 'flex flex-col gap-4' },
+    return e('div', { lang: moduleLanguage, className: 'flex flex-col gap-4' },
       // Header + progress
       e('div', { className: 'flex flex-col gap-2 border-b border-slate-200 pb-3' },
         e('div', { className: 'flex items-center justify-between gap-3' },
@@ -1474,6 +1668,8 @@
         }, e('div', { className: 'h-full bg-indigo-600 rounded-full transition-all motion-reduce:transition-none', style: { width: pct + '%' } }))
       ),
       resumed && e('div', { className: 'text-xs text-slate-500 -mt-1' }, 'Resumed where you left off.'),
+      e('p', { className: 'text-[11px] text-slate-500 -mt-1' },
+        'In-progress written responses stay only in this browser for up to 30 days. Stale drafts and drafts for changed modules are deleted automatically; completed response data is removed from browser storage.'),
       // Body
       e('div', { className: 'flex flex-col gap-3' },
         e('h4', { ref: headingRef, tabIndex: -1, className: 'font-semibold text-sm text-slate-800 outline-none' }, act.title),
@@ -1837,7 +2033,8 @@
     }
     function entryCompleted(entry) {
       if (!entry) return false;
-      return isPdCompleted(entry.slug, entry) || isPdCompleted(slugify(entry.title || ''), entry);
+      var moduleId = pdManifestModuleId(entry);
+      return !!moduleId && isPdCompleted(moduleId, entry);
     }
     function slugCompleted(slug) {
       var entry = manifestEntryForSlug(slug);
@@ -1871,7 +2068,7 @@
       var histTopics = {}; var histMinutes = 0;
       hist.forEach(function (h) {
         if (h && h.topic) histTopics[h.topic] = true;
-        var en = (state.entries || []).filter(function (x) { return x.slug === h.moduleId; })[0];
+        var en = pdEntryForHistoryModuleId(state.entries, h.moduleId);
         if (en && typeof en.estMinutes === 'number') histMinutes += en.estMinutes;
       });
       var histTopicCount = Object.keys(histTopics).length;
@@ -1889,6 +2086,9 @@
               ref: importRef, type: 'file', accept: 'application/json,.json', className: 'hidden', tabIndex: -1, 'aria-hidden': 'true',
               onChange: function (ev) {
                 var f = ev.target.files && ev.target.files[0]; if (!f) return;
+                if (typeof f.size === 'number' && f.size > PD_HISTORY_MAX_IMPORT_BYTES) {
+                  addToast && addToast('That PD history file is too large.', 'error'); ev.target.value = ''; return;
+                }
                 var reader = new FileReader();
                 reader.onload = function () {
                   var res; try { res = importPdHistory(JSON.parse(String(reader.result || ''))); } catch (e) { res = { ok: false, error: 'Could not read that file.' }; }
@@ -1911,7 +2111,10 @@
                     if (res.valid) {
                       var s = (cred.payload && cred.payload.credentialSubject) || {};
                       var assurance = res.assurance || {};
-                      if (assurance.institutional === true) addToast && addToast('✓ Reviewed-credential signature valid — "' + (s.moduleTitle || s.moduleId || 'module') + '" is unaltered (' + (res.method || '') + ' check). This confirms the signed reviewed decision and integrity; the named institution remains the credential authority.', 'success');
+                      if (assurance.institutional === true) {
+                        if (res.accessibilityCurrent === true) addToast && addToast('✓ Reviewed achievement valid — "' + (s.moduleTitle || s.moduleId || 'module') + '" has an institutionally verified decision, evidence binding, and current accessibility verification (' + (res.method || '') + ' check).', 'success');
+                        else addToast && addToast('✓ Reviewed achievement valid — "' + (s.moduleTitle || s.moduleId || 'module') + '" remains a valid signed completion, but its accessibility verification window has expired. Check the credential status reference and reverify before claiming current WCAG 2.2 AA assurance.', 'info');
+                      }
                       else addToast && addToast('✓ Self-paced attestation signature valid — "' + (s.moduleTitle || s.moduleId || 'module') + '" is unaltered (' + (res.method || '') + ' check). It is explicitly NOT institutionally reviewed, accredited, or contact-hour-bearing.', 'info');
                     } else { addToast && addToast(res.error ? ('Could not verify: ' + res.error) : '✗ Signature did not verify — this credential may be altered or from a different issuer.', 'error'); }
                   });
@@ -1923,11 +2126,21 @@
             hist.length > 0 && e('button', {
               onClick: function () { try { localStorage.removeItem(PD_HISTORY_KEY); } catch (_e) { /* no-op */ } setHistTick(function (n) { return n + 1; }); addToast && addToast('Cleared your local PD history.', 'info'); },
               className: 'text-xs text-slate-500 hover:text-red-700 underline decoration-dotted',
-            }, 'Clear history')
+            }, 'Clear history'),
+            e('button', {
+              type: 'button',
+              onClick: function () {
+                var count = clearAllPdProgress();
+                setHistTick(function (n) { return n + 1; });
+                addToast && addToast(count ? ('Deleted saved responses for ' + count + ' PD module' + (count === 1 ? '.' : 's.')) : 'No saved PD responses were stored.', 'info');
+              },
+              className: 'text-xs text-slate-500 hover:text-red-700 underline decoration-dotted',
+            }, 'Delete all saved PD responses')
           )
         ),
         e('h3', { className: 'font-bold text-base text-slate-800' }, 'My learning'),
         e('p', { className: 'text-xs text-slate-500' }, 'Your completion history is stored only on this device. Every entry, including an imported entry, is self-reported and unverified; it is personal progress, not institutional evidence. Use Export to keep a copy and Import to restore it.'),
+        e('p', { className: 'text-xs text-slate-500' }, 'In-progress responses are retained in this browser for at most 30 days; stale or module-mismatched drafts are purged, and completed response data is not retained.'),
         hist.length > 0 && e('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': 'Learning summary' },
           [
             { label: hist.length + ' module' + (hist.length !== 1 ? 's' : '') + ' completed' },
@@ -1942,7 +2155,7 @@
           ? e('p', { className: 'text-sm text-slate-600' }, 'No completed modules yet. Finish a module and it will appear here.')
           : e('div', { className: 'flex flex-col gap-2' },
               hist.map(function (h, i) {
-                var match = (state.entries || []).filter(function (en) { return en.slug === h.moduleId || slugify(en.title || '') === h.moduleId; })[0];
+                var match = pdEntryForHistoryModuleId(state.entries, h.moduleId);
                 var currentBinding = match && pdHistoryEntryMatchesBinding(h, match);
                 return e('div', { key: h.moduleId || i, className: 'bg-white border border-slate-200 rounded-lg p-3 flex items-center justify-between gap-3 flex-wrap' },
                   e('div', null,
@@ -2078,7 +2291,8 @@
       e('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
         visible.map(function (entry) {
           var doneBadge = entryCompleted(entry);
-          var prog = doneBadge ? null : (loadPdProgressById(entry.slug) || loadPdProgressById(slugify(entry.title || '')));
+          var progressModuleId = pdManifestModuleId(entry);
+          var prog = doneBadge || !progressModuleId ? null : loadPdProgressById(progressModuleId, entry.contentDigest);
           var inProgress = !!(prog && !prog.done && ((prog.idx > 0) || (prog.rawById && Object.keys(prog.rawById).length > 0)));
           return e('div', {
             key: entry.slug || entry.path,
@@ -2227,10 +2441,17 @@
   CommunityCatalog._buildPdCertificateHtml = buildPdCertificateHtml;
   CommunityCatalog._buildPdPathCertificateHtml = buildPdPathCertificateHtml;
   CommunityCatalog._pdPathCertificateRows = pdPathCertificateRows;
+  CommunityCatalog._pdManifestModuleId = pdManifestModuleId;
+  CommunityCatalog._pdEntryForHistoryModuleId = pdEntryForHistoryModuleId;
   CommunityCatalog._requestPdCredential = requestPdCredential;
   CommunityCatalog._verifyPdCredential = verifyPdCredential;
   CommunityCatalog._loadPdHistory = loadPdHistory;
   CommunityCatalog._pdFingerprint = pdFingerprint;
+  CommunityCatalog._loadPdProgress = loadPdProgress;
+  CommunityCatalog._loadPdProgressById = loadPdProgressById;
+  CommunityCatalog._savePdProgress = savePdProgress;
+  CommunityCatalog._clearAllPdProgress = clearAllPdProgress;
+  CommunityCatalog._PD_PROGRESS_TTL_MS = PD_PROGRESS_TTL_MS;
   CommunityCatalog._normalizePdHistoryEntry = normalizePdHistoryEntry;
   CommunityCatalog._pdHistoryEntryMatchesBinding = pdHistoryEntryMatchesBinding;
   CommunityCatalog._isPersonalPdCompletionEntry = isPersonalPdCompletionEntry;

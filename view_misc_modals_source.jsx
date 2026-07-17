@@ -610,6 +610,15 @@ function AIBackendModal(props) {
     try { return JSON.parse(configStorage.getItem(configStorageKey) || '{}'); }
     catch { return {}; }
   };
+  const fingerprintAIBackendConfig = (config) => {
+    try {
+      return typeof window.__alloStudentAiConfigFingerprint === 'function'
+        ? window.__alloStudentAiConfigFingerprint(config)
+        : '';
+    } catch (_) {
+      return '';
+    }
+  };
   const writeAIBackendConfig = (config, options = {}) => {
     try {
       const next = { ...(config || {}) };
@@ -621,8 +630,12 @@ function AIBackendModal(props) {
   };
   const clearAIBackendConfig = () => {
     try {
-      configStorage.removeItem(configStorageKey);
-      if (isStudentAiSetup) window.dispatchEvent(new CustomEvent('alloflow:student-ai-config-changed'));
+      if (isStudentAiSetup && typeof window.__alloDisconnectStudentAi === 'function') {
+        window.__alloDisconnectStudentAi();
+      } else {
+        configStorage.removeItem(configStorageKey);
+        if (isStudentAiSetup) window.dispatchEvent(new CustomEvent('alloflow:student-ai-config-changed'));
+      }
     } catch (_) {}
   };
   const populateModelSelect = (select, emptyLabel, models, selectedValue = '') => {
@@ -818,8 +831,8 @@ function AIBackendModal(props) {
       stopEngineStripPoll();
     }
   };
-  const createAIProviderFromSettings = () => {
-    const cfg = readAIBackendConfig();
+  const createAIProviderFromSettings = (configOverride = null) => {
+    const cfg = configOverride || readAIBackendConfig();
     const backend = cfg.backend || 'gemini';
     const Provider = (typeof window !== 'undefined' && window.AIProvider) || (ai && ai.constructor);
     if (!Provider) return ai;
@@ -838,18 +851,30 @@ function AIBackendModal(props) {
   };
   return (
         <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
-          <div data-help-key="ai_backend_modal_panel" className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') setShowAIBackendModal(false); }} onClick={e => e.stopPropagation()}>
+          <div data-help-key="ai_backend_modal_panel" data-student-ai-setup={isStudentAiSetup ? 'true' : 'false'} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') setShowAIBackendModal(false); }} onClick={e => e.stopPropagation()}>
+            {isStudentAiSetup && <style>{`
+              [data-student-ai-setup="true"] #ai-backend-engine-strip,
+              [data-student-ai-setup="true"] #ai-backend-sdturbo-strip,
+              [data-student-ai-setup="true"] div:has(> #ai-backend-wolfram),
+              [data-student-ai-setup="true"] div.pt-3:has(#ai-backend-model-default),
+              [data-student-ai-setup="true"] div.pt-3:has(#ai-backend-tts-provider),
+              [data-student-ai-setup="true"] div.pt-3:has(#ai-backend-image-provider),
+              [data-student-ai-setup="true"] #ai-backend-device-storage-section {
+                display: none !important;
+              }
+            `}</style>}
             <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-6 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
-                <h3 id="ai-backend-title" className="font-black text-lg">{t('ai_backend.title') || 'AI Backend Settings'}</h3>
+                <h3 id="ai-backend-title" className="font-black text-lg">{isStudentAiSetup ? 'Connect Personal AI' : (t('ai_backend.title') || 'AI Backend Settings')}</h3>
             </div>
             <div className="space-y-4">
                 {/* ─── Section 1: Provider & Connection ─── */}
                 {isStudentAiSetup && (
                   <div className='rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950'>
                     <p className='font-black'>Personal AI for this session</p>
-                    <p className='mt-1'>Use only your own provider account. Your credential stays in this browser tab, is sent only to the provider you select, and is never placed in the QR, Class Mailbox, or student submission. Avoid entering a key on a shared device.</p>
+                    <p className='mt-1'>Use only your own provider account. Your credential is stored only in this browser tab and transmitted only to the provider you choose; it is never placed in the QR, Class Mailbox, or student submission.</p>
+                    <p className='mt-1'>Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.</p>
                   </div>
                 )}
                 <div>
@@ -876,13 +901,17 @@ function AIBackendModal(props) {
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-bold text-slate-700 bg-white cursor-pointer"
                     >
                         <option value="gemini">✨ Gemini (Google) — Default</option>
+                        {!isStudentAiSetup && <>
                         <option value="alloflow-local">🏫 AlloFlow Built-in Engine (this computer — no account)</option>
                         <option value="lmstudio">LM Studio (Local)</option>
                         <option value="localai">🖥️ LocalAI (Self-Hosted GPU)</option>
                         <option value="ollama">🦙 Ollama (Local)</option>
+                        </>}
                         <option value="openai">🤖 OpenAI</option>
+                        {!isStudentAiSetup && <>
                         <option value="claude">🧠 Claude (Anthropic)</option>
                         <option value="onnx-npu">🧠 On-Device NPU (Snapdragon)</option>
+                        </>}
                         <option value="custom">⚙️ Custom Endpoint</option>
                     </select>
                 </div>
@@ -942,18 +971,28 @@ function AIBackendModal(props) {
                         onClick={async () => {
                             const btn = document.getElementById('ai-backend-test');
                             const status = document.getElementById('ai-backend-status');
+                            const panel = btn && btn.closest('[data-help-key="ai_backend_modal_panel"]');
+                            const lockedControls = panel
+                              ? Array.from(panel.querySelectorAll('input, select, button')).filter(control => control !== btn)
+                              : [];
                             btn.disabled = true;
+                            lockedControls.forEach(control => { control.disabled = true; });
                             btn.textContent = '⏳ Testing...';
                             if (status) { status.textContent = ''; status.className = ''; }
                             try {
-                                writeAIBackendConfig(readAIBackendConfig());
-                                const result = await createAIProviderFromSettings().testConnection();
+                                const testedConfig = readAIBackendConfig();
+                                const testedFingerprint = fingerprintAIBackendConfig(testedConfig);
+                                writeAIBackendConfig(testedConfig);
+                                const result = await createAIProviderFromSettings(testedConfig).testConnection();
                                 if (result.success) {
+                                    if (!testedFingerprint || fingerprintAIBackendConfig(readAIBackendConfig()) !== testedFingerprint) {
+                                        throw new Error('Settings changed while the connection was being tested. Please test again.');
+                                    }
                                     const modelSelect = document.getElementById('ai-backend-model-default');
                                     const fallbackSelect = document.getElementById('ai-backend-model-fallback');
                                     const cfg = readAIBackendConfig();
-                                    const firstModel = result.models?.[0]?.id || '';
-                                    if (firstModel && !cfg.models?.default) {
+                                    const firstModel = result.selectedModel || result.models?.[0]?.id || '';
+                                    if (firstModel && cfg.models?.default !== firstModel) {
                                         const models = { ...(cfg.models || {}), default: firstModel };
                                         writeAIBackendConfig({ ...cfg, models });
                                     }
@@ -964,12 +1003,22 @@ function AIBackendModal(props) {
                                             ok: true,
                                             backend: refreshedCfg.backend || 'gemini',
                                             text: true,
+                                            fingerprint: fingerprintAIBackendConfig(refreshedCfg),
+                                            capabilities: {
+                                                text: true,
+                                                vision: false,
+                                                image: false,
+                                                imageEdit: false,
+                                                audio: false,
+                                                ...(result.capabilities || {})
+                                            },
                                             testedAt: new Date().toISOString(),
+                                            expiresAt: new Date(Date.now() + (6 * 60 * 60 * 1000)).toISOString(),
                                             modelCount: Number(result.modelCount || 0)
                                         }
                                     }, { preserveValidation: true });
                                     if (isStudentAiSetup && typeof window.__alloSyncQrStudentAiAccess === 'function') window.__alloSyncQrStudentAiAccess();
-                                    if (status) { status.textContent = 'Connected! ' + result.modelCount + ' model(s) available' + (firstModel && !cfg.models?.default ? '. Default model selected.' : ''); status.className = 'text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100'; }
+                                    if (status) { status.textContent = 'Connected! ' + result.modelCount + ' model(s) available' + (firstModel && cfg.models?.default !== firstModel ? '. Verified model selected.' : ''); status.className = 'text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100'; }
                                     if (modelSelect && result.models?.length > 0) {
                                         populateModelSelect(modelSelect, 'Auto (server default)', result.models, refreshedCfg.models?.default || '');
                                     }
@@ -982,6 +1031,7 @@ function AIBackendModal(props) {
                             } catch (err) {
                                 if (status) { status.textContent = '❌ Error: ' + err.message; status.className = 'text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100'; }
                             }
+                            lockedControls.forEach(control => { control.disabled = false; });
                             btn.disabled = false;
                             btn.textContent = '🔌 Test Connection';
                         }}
@@ -1009,11 +1059,11 @@ function AIBackendModal(props) {
                             if (mf) mf.value = '';
                             if (tt) tt.value = 'auto';
                             if (ig) ig.value = 'auto';
-                            if (s) { s.textContent = '🔄 Reset to defaults — reload page to apply'; s.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100'; }
+                            if (s) { s.textContent = isStudentAiSetup ? 'Disconnected. The session key was erased.' : '🔄 Reset to defaults — reload page to apply'; s.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100'; }
                         }}
                         className="bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
                     >
-                        ↩ Reset
+                        {isStudentAiSetup ? 'Disconnect & erase key' : '↩ Reset'}
                     </button>
                 </div>
                 <div id="ai-backend-status"></div>
@@ -1137,7 +1187,7 @@ function AIBackendModal(props) {
                      Settings modal, 2026-07-14) — opens the on-device storage
                      manager (review/export/erase). On this deployed surface the
                      backend is the app origin's own IndexedDB; same panel. */}
-                <div className="border-t border-slate-100 pt-4">
+                <div id="ai-backend-device-storage-section" className="border-t border-slate-100 pt-4">
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</label>
                     <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.device_storage_hint') || 'Work and settings are saved on this device only — nothing goes to a server. Review, export, or erase what is stored here.'}</p>
                     <button
@@ -1154,7 +1204,8 @@ function AIBackendModal(props) {
                         <strong className="text-slate-600">Active:</strong>{' '}
                         {(() => { try { const c = readAIBackendConfig(); return c.backend ? (c.backend.charAt(0).toUpperCase() + c.backend.slice(1)) + (c.baseUrl ? ' → ' + c.baseUrl : '') : 'Gemini (default)'; } catch { return 'Gemini (default)'; } })()}
                     </p>
-                    <p className="text-[11px] text-slate-600 font-medium mt-1">⚡ Reload page after changing backend to apply.</p>
+                    {!isStudentAiSetup && <p className="text-[11px] text-slate-600 font-medium mt-1">⚡ Reload page after changing backend to apply.</p>}
+                    {isStudentAiSetup && <p className="text-[11px] text-slate-600 font-medium mt-1">Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified.</p>}
                 </div>
             </div>
           </div>

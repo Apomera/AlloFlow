@@ -1,0 +1,209 @@
+{
+  "reviewedAt": "2026-07-16T22:51:56.8190003-04:00",
+  "reviewer": "OpenAI Codex independent cross-review",
+  "itemCount": 33,
+  "correctionsMade": [
+    {
+      "itemId": "parapro-b3-mathematics-003",
+      "issue": "Several distractors and their rationales did not correspond cleanly to reproducible fraction-operation errors.",
+      "change": "Replaced three distractors and explanations with traceable errors: reversing the fractional subtraction, treating 5/6 as one whole, and adding instead of subtracting."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-004",
+      "issue": "The greatest-common-factor task was not one of the mathematics topics named in the current ParaPro outline.",
+      "change": "Replaced it with a whole-number equal-sharing word problem using the same classroom materials and preserved answer position 3."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-006",
+      "issue": "The elevator scenario depended on an unstated floor-numbering convention when movement passed below floor 1.",
+      "change": "Replaced the scenario with an unambiguous integer temperature-change problem and aligned every distractor rationale to a specific operation error."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-008",
+      "issue": "Two distractors were weakly motivated and their explanations did not reflect especially recognizable scale-factor errors.",
+      "change": "Replaced them with reverse-operation, incompatible-unit addition, and wrong-scale-factor errors, with corresponding rationales."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-009",
+      "issue": "Similar-triangle proportional reasoning was not named in the current ParaPro mathematics content topics.",
+      "change": "Replaced the similarity item with a blueprint-aligned exponent misconception task in which a student distinguishes repeated addition from using the base as a factor three times. The final stem, data, choices, rationale, and feedback are substantively different from existing item parapro-mathematics-skills-028 while preserving answer position 2."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-011",
+      "issue": "The original equation required distribution and two inverse-operation steps, while the blueprint specifies one-step single-variable equations.",
+      "change": "Replaced it with a one-step decimal equation and independently verified y = 9."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-012",
+      "issue": "Deriving an nth-term algebraic expression exceeded the listed objective of identifying what comes next in a number sequence.",
+      "change": "Replaced it with a decreasing constant-difference sequence requiring the next term, 20."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-013",
+      "issue": "Solving a two-step inequality exceeded the named one-step equation objective.",
+      "change": "Replaced it with direct interpretation of the <= symbol in a capacity context, explicitly testing a listed mathematical-symbol skill."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-014",
+      "issue": "The rationale for 154 did not identify that the distractor is the circle's area computed from radius 7.",
+      "change": "Corrected the choice rationale to show (22/7)(7 squared) = 154 square feet and distinguish area from circumference."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-015",
+      "issue": "The stem referred to a shape being shown even though no image was supplied, and one distractor rationale was imprecise.",
+      "change": "Made the L-shape construction fully textual and explained that 72 removes a 4-by-9 strip instead of the specified 4-by-3 corner."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-016",
+      "issue": "Coordinate reflection was not a named ParaPro geometry topic; the outline instead specifies graphing data on an xy-coordinate plane.",
+      "change": "Replaced the reflection item with a data-point plotting item and preserved answer position 1."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-017",
+      "issue": "Triangle angle-sum computation was less directly aligned than the named basic-shape identification objective, and terse category labels could invite unnecessary overlap questions.",
+      "change": "Replaced it with explicit classification by side lengths and made each answer a complete classification statement."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-018",
+      "issue": "A display case could be interpreted as open on one face, which would change its total surface area.",
+      "change": "Specified that the cube-shaped display case is closed, leaving the independently verified answer of 96 square centimeters unique."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-020",
+      "issue": "Probability is not named in the current ParaPro Data Analysis content topics.",
+      "change": "Replaced the probability item with a median computation, including the even-count middle-value average and common-error distractors."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-021",
+      "issue": "Range is not among the named Data Analysis statistics, whereas interpreting trends over time is explicit in the blueprint.",
+      "change": "Replaced the range item with a four-week table-trend interpretation task and preserved answer position 2."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-026",
+      "issue": "Deriving a linear function rule from rate and intercept exceeded the listed sequence objective for this assessment.",
+      "change": "Replaced it with a classroom application that helps a student verify consecutive differences and continue a sequence accurately."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-028",
+      "issue": "The keyed response incorrectly grouped a meter stick with tools long enough to measure a typical doorway in one placement.",
+      "change": "Specified a measuring tape long enough for the doorway and clarified zero alignment, straight placement, and one endpoint reading."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-031",
+      "issue": "Sample-space probability was not a named Data Analysis topic in the current blueprint.",
+      "change": "Replaced it with classroom support for completing and checking a frequency table and bar graph, preserving answer position 1."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-033",
+      "issue": "One distractor used an opaque, internally inconsistent construction rather than a recognizable proportional-reasoning error.",
+      "change": "Replaced it with the common error of changing denominators to 60 without scaling the numerators, and supplied an exact explanation."
+    }
+  ],
+  "checks": {
+    "currentBlueprintAlignment": {
+      "status": "pass",
+      "officialSource": "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "sourceCheckedAt": "2026-07-16",
+      "operationalMathematicsQuestionCount": 30,
+      "operationalFocusProportion": "approximately two-thirds basic skills and knowledge and one-third classroom application",
+      "coveredOfficialSkillCategories": [
+        "Number Sense and Basic Algebra",
+        "Geometry and Measurement",
+        "Data Analysis"
+      ],
+      "finding": "Every retained or revised item maps to at least one mathematics topic named in the current official outline; the 33-item authoring batch preserves its requested two-thirds/one-third focus allocation."
+    },
+    "independentAnswerRecomputation": {
+      "status": "pass",
+      "itemsChecked": 33,
+      "incorrectKeysRemaining": 0,
+      "ambiguousKeysRemaining": 0,
+      "finding": "All arithmetic, fraction, decimal, percentage, algebra, geometry, measurement, table, graph, and classroom-support conclusions were recomputed independently."
+    },
+    "arithmeticUnitsAndNotation": {
+      "status": "pass",
+      "itemsChecked": 33,
+      "finding": "Computed values, conversions internal to each task, dimensions, linear and square units, percentages, coordinates, inequalities, and displayed operations are internally consistent."
+    },
+    "ambiguityAndStandalonePresentation": {
+      "status": "pass",
+      "itemsChecked": 33,
+      "finding": "The elevator convention, absent L-shape visual, open-versus-closed cube interpretation, and doorway-tool ambiguity were removed; every item is answerable from its own text."
+    },
+    "distractorPlausibilityAndChoiceRationales": {
+      "status": "pass",
+      "itemsChecked": 33,
+      "choicesChecked": 132,
+      "choiceRationalesChecked": 132,
+      "finding": "Each item has four distinct choices, one unique best answer, and choice-specific feedback tied to a defensible common error or misconception."
+    },
+    "originality": {
+      "status": "pass",
+      "comparedAgainst": "test_prep/parapro_pack.json",
+      "existingPackItemCount": 500,
+      "withinBatchExactOrNormalizedPromptDuplicates": 0,
+      "existingPackExactOrNormalizedPromptDuplicates": 0,
+      "method": "Normalized-prompt comparison across all 33 by 500 item pairs, followed by manual review of nearest token-similarity matches for task, data, reasoning, and scenario overlap.",
+      "finding": "No item is a duplicate of another batch item or an existing ParaPro pack activity; nearest lexical matches assess materially different tasks."
+    },
+    "classroomRoleAppropriateness": {
+      "status": "pass",
+      "applicationItemsChecked": 11,
+      "finding": "All classroom-application items ask a paraprofessional to model mathematics, surface student reasoning, correct a specific misconception, improve measurement practice, or help represent data in support of instruction."
+    },
+    "references": {
+      "status": "pass",
+      "officialBlueprintReference": "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "supplementalMathematicsReference": "https://openstax.org/details/books/prealgebra-2e/",
+      "itemsWithOfficialBlueprintReference": 33,
+      "itemsWithSupplementalMathematicsReference": 33,
+      "finding": "Both repeated reference URLs were checked, and every item retains the official blueprint plus the supplemental open mathematics text."
+    },
+    "answerIndexQuota": {
+      "status": "pass",
+      "counts": {
+        "0": 8,
+        "1": 8,
+        "2": 9,
+        "3": 8
+      },
+      "finding": "Correct-answer positions are balanced to within one item."
+    },
+    "contentFocusQuota": {
+      "status": "pass",
+      "target": {
+        "basic-skills-knowledge": 22,
+        "application-classroom": 11
+      },
+      "actual": {
+        "basic-skills-knowledge": 22,
+        "application-classroom": 11
+      }
+    },
+    "localSkillDistribution": {
+      "status": "pass",
+      "counts": {
+        "mathematics-number-operations": 9,
+        "mathematics-ratio-algebra": 8,
+        "mathematics-geometry-measurement": 8,
+        "mathematics-data-support": 8
+      },
+      "finding": "The local preparation taxonomy remains broadly balanced while covering all three official mathematics categories."
+    },
+    "jsonStructure": {
+      "status": "pass",
+      "validJson": true,
+      "uniqueItemIds": 33,
+      "itemsWithFourChoices": 33,
+      "itemsWithFourChoiceRationales": 33,
+      "itemsWithValidAnswerIndex": 33
+    },
+    "integrationQaFollowUp": {
+      "status": "pass",
+      "checkedAt": "2026-07-17T02:58:25.830Z",
+      "itemId": "parapro-b3-mathematics-009",
+      "finding": "Reauthored the flagged exponent item to remove substantive and lexical overlap with parapro-mathematics-skills-028 while preserving its mathematics domain, basic-skills-knowledge focus, metadata, and answer index."
+    }
+  },
+  "verdict": "pass-after-corrections"
+}

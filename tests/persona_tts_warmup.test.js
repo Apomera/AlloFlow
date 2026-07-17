@@ -127,6 +127,14 @@ describe('Persona auto-read TTS warming', () => {
     expect(appSource).toContain('const setPersonaAutoReadSafely = (nextValue) =>');
     expect(appSource).toContain('personaAutoReadRef.current = enabled');
     expect(appSource).toContain('setPersonaAutoRead: setPersonaAutoReadSafely');
+    expect(appSource).toContain('const wasEnabled = personaAutoReadRef.current');
+    expect(appSource).toContain('setPersonaAutoReadEpoch(value => value + 1)');
+    expect(appSource).toContain('const personaTtsVoiceSignature = JSON.stringify({');
+    expect(appSource).toContain('personaAutoReadEpoch, personaTtsVoiceSignature');
+    expect(appSource).toContain("window.addEventListener('alloflow-mute-changed', handlePersonaMuteChange)");
+    expect(appSource).toContain("window.removeEventListener('alloflow-mute-changed', handlePersonaMuteChange)");
+    expect(appSource).toContain("(typeof isGlobalMuted === 'function' && isGlobalMuted())");
+    expect(appSource).toContain('selectedCharacter: prev.selectedCharacter?.name === currentPersona.name');
 
     const enqueueStart = appSource.indexOf('const enqueuePersonaTtsMessages =');
     const enqueueEnd = appSource.indexOf('useEffect(() => {', enqueueStart);

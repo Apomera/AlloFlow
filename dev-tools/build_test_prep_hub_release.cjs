@@ -171,7 +171,19 @@ if(!fs.existsSync(plt595623SourcePath))throw Error('PLT Grades 5–9 5623 source
 if(!fs.existsSync(plt7125624SourcePath))throw Error('PLT Grades 7–12 5624 source missing');
 if(!fs.existsSync(schoolLibrarian5312SourcePath))throw Error('School Librarian 5312 source missing');
 const skipPackRebuild=process.argv.includes('--skip-pack-rebuild');
-if(skipPackRebuild){const packs=fs.readdirSync(path.join(root,'test_prep')).filter(name=>name.endsWith('_pack.json')&&!name.startsWith('eppp'));if(packs.length!==22)throw Error('Current-snapshot build requires 22 non-EPPP packs');for(const name of packs){const pack=JSON.parse(fs.readFileSync(path.join(root,'test_prep',name),'utf8'));if(pack.items?.length!==500||pack.sections?.length!==5||pack.assistantReview?.verdict!=='reviewed-target-not-met'||!pack.bankDisclosure||pack.sourceDiagnosticBatchCount!==2||pack.guidedReviewBatchCount!==3||pack.learningActivityBankCount!==5||pack.expansionVersion!=='source-kernel-audit-plus-guided-review-v1'||pack.sections?.slice(0,2).some(section=>section.kind!=='source-diagnostic')||pack.sections?.slice(2).some(section=>section.kind!=='guided-review'))throw Error(name+': current snapshot has stale or invalid audit metadata')}}
+if(skipPackRebuild){
+  const packs=fs.readdirSync(path.join(root,'test_prep')).filter(name=>name.endsWith('_pack.json')&&!name.startsWith('eppp'));
+  if(packs.length!==22)throw Error('Current-snapshot build requires 22 non-EPPP packs');
+  for(const name of packs){
+    const pack=JSON.parse(fs.readFileSync(path.join(root,'test_prep',name),'utf8'));
+    const authoredBanks=Math.max(0,Number(pack.assistantAuthoredIndependentBatchCount)||0);
+    const independentBanks=2+authoredBanks;
+    const guidedBanks=3-authoredBanks;
+    const expectedKinds=[...Array(2).fill('source-diagnostic'),...Array(authoredBanks).fill('independent-diagnostic'),...Array(guidedBanks).fill('guided-review')];
+    const expectedVersion=authoredBanks?'source-kernel-audit-plus-independent-batches-and-guided-review-v2':'source-kernel-audit-plus-guided-review-v1';
+    if(pack.items?.length!==500||pack.sections?.length!==5||!String(pack.assistantReview?.verdict||'').startsWith('reviewed-target-')||!pack.bankDisclosure||pack.sourceDiagnosticBatchCount!==2||pack.independentDiagnosticBatchCount&&pack.independentDiagnosticBatchCount!==independentBanks||pack.guidedReviewBatchCount!==guidedBanks||pack.learningActivityBankCount!==5||pack.expansionVersion!==expectedVersion||JSON.stringify(pack.sections.map(section=>section.kind))!==JSON.stringify(expectedKinds))throw Error(name+': current snapshot has stale or invalid audit metadata');
+  }
+}
 if(!skipPackRebuild){
 execFileSync(process.execPath,[prepareTestPrepPacksPath,'--allow-legacy-collapse'],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath, [paraProBatch2BuildPath], { cwd: root, stdio: 'inherit' });

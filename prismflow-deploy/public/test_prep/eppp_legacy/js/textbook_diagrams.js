@@ -23,6 +23,7 @@
                     <filter id="neonGlow"><feGaussianBlur stdDeviation="3" result="blur"/>
                         <feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
                 </defs>
+                <text x="350" y="20" text-anchor="middle" class="diagram-label" font-weight="700" font-size="13" fill="#a78bfa">Example Myelinated Multipolar Neuron — Schematic</text>
                 <!-- Cell body (soma) -->
                 <ellipse cx="90" cy="140" rx="55" ry="45" fill="#312e81" stroke="#818cf8" stroke-width="2" class="diagram-box"/>
                 <text x="90" y="125" text-anchor="middle" class="diagram-label" font-weight="600">Cell Body</text>
@@ -37,9 +38,9 @@
                 <path d="M42 180 Q20 200 10 220" stroke="#a78bfa" stroke-width="2" fill="none" opacity="0.7"/>
                 <path d="M50 185 Q30 210 20 230" stroke="#a78bfa" stroke-width="2" fill="none" opacity="0.7"/>
                 <text x="5" y="48" class="diagram-label-sm">Dendrites</text>
-                <text x="5" y="58" style="font-size:7px;fill:#94a3b8">(receive signals)</text>
-                <!-- Axon Hillock label -->
-                <text x="155" y="118" class="diagram-label-sm" fill="#fbbf24">Axon Hillock</text>
+                <text x="5" y="58" style="font-size:9px;fill:#94a3b8">(common input sites)</text>
+                <!-- Axon Initial Segment label -->
+                <text x="155" y="118" class="diagram-label-sm" fill="#fbbf24">Axon Initial Segment</text>
                 <line x1="145" y1="140" x2="155" y2="125" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3 2"/>
                 <!-- Axon -->
                 <line x1="145" y1="140" x2="550" y2="140" stroke="url(#axonGrad)" stroke-width="3"/>
@@ -51,16 +52,16 @@
                 <rect x="415" y="128" width="50" height="24" rx="12" fill="url(#myelinGrad)" class="diagram-box"/>
                 <text x="200" y="175" text-anchor="middle" class="diagram-label-sm" fill="#fbbf24">Myelin Sheath</text>
                 <!-- Nodes of Ranvier labels -->
-                <text x="238" y="195" text-anchor="middle" style="font-size:7px;fill:#6ee7b7">Node of</text>
-                <text x="238" y="204" text-anchor="middle" style="font-size:7px;fill:#6ee7b7">Ranvier</text>
+                <text x="238" y="195" text-anchor="middle" style="font-size:9px;fill:#6ee7b7">Node of</text>
+                <text x="238" y="204" text-anchor="middle" style="font-size:9px;fill:#6ee7b7">Ranvier</text>
                 <line x1="238" y1="152" x2="238" y2="188" stroke="#6ee7b7" stroke-width="0.7" stroke-dasharray="2 2"/>
-                <!-- Action potential signal flowing -->
+                <!-- Schematic sequence marker; not a physical particle or voltage trace -->
                 <circle cx="0" cy="140" r="5" fill="#6ee7b7" filter="url(#neonGlow)">
-                    <animate attributeName="cx" values="145;550" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="cx" values="145;238;320;400;480;550" keyTimes="0;0.2;0.4;0.6;0.8;1" calcMode="discrete" dur="2s" repeatCount="indefinite"/>
                     <animate attributeName="opacity" values="1;0.3;1;0.3;1" dur="2s" repeatCount="indefinite"/>
                 </circle>
                 <circle cx="0" cy="140" r="3" fill="#a7f3d0">
-                    <animate attributeName="cx" values="145;550" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="cx" values="145;238;320;400;480;550" keyTimes="0;0.2;0.4;0.6;0.8;1" calcMode="discrete" dur="2s" repeatCount="indefinite"/>
                 </circle>
                 <!-- Terminal buttons -->
                 <g transform="translate(550,140)">
@@ -70,20 +71,20 @@
                     <circle cx="30" cy="-25" r="8" fill="#065f46" stroke="#6ee7b7" stroke-width="1.5" class="diagram-node-pulse"/>
                     <circle cx="35" cy="0" r="8" fill="#065f46" stroke="#6ee7b7" stroke-width="1.5" class="diagram-node-pulse" style="animation-delay:0.3s"/>
                     <circle cx="30" cy="25" r="8" fill="#065f46" stroke="#6ee7b7" stroke-width="1.5" class="diagram-node-pulse" style="animation-delay:0.6s"/>
-                    <text x="55" y="-20" class="diagram-label-sm">Terminal</text>
-                    <text x="55" y="-10" class="diagram-label-sm">Buttons</text>
+                    <text x="55" y="-20" class="diagram-label-sm">Axon</text>
+                    <text x="55" y="-10" class="diagram-label-sm">Terminals</text>
                     <!-- Neurotransmitter release -->
                     <circle cx="38" cy="-32" r="2" fill="#fbbf24" class="diagram-fade-pulse"/>
                     <circle cx="42" cy="-20" r="2" fill="#fbbf24" class="diagram-fade-pulse" style="animation-delay:0.5s"/>
                     <circle cx="44" cy="7" r="2" fill="#fbbf24" class="diagram-fade-pulse" style="animation-delay:1s"/>
                     <circle cx="38" cy="32" r="2" fill="#fbbf24" class="diagram-fade-pulse" style="animation-delay:1.5s"/>
-                    <text x="55" y="5" style="font-size:7px;fill:#fbbf24">(NTs released</text>
-                    <text x="55" y="14" style="font-size:7px;fill:#fbbf24"> into synapse)</text>
+                    <text x="55" y="5" style="font-size:9px;fill:#fbbf24">(neurotransmitter release</text>
+                    <text x="55" y="14" style="font-size:9px;fill:#fbbf24"> into synaptic cleft)</text>
                 </g>
                 <!-- Direction arrow -->
-                <text x="340" y="108" text-anchor="middle" style="font-size:9px;fill:#6ee7b7">⚡ Signal direction →</text>
+                <text x="340" y="108" text-anchor="middle" style="font-size:9px;fill:#6ee7b7">⚡ Schematic node-to-node sequence →</text>
             </svg>`,
-            description: '🔬 A neuron showing dendrites (receive), soma (integrate), axon with myelin sheaths (conduct), and terminal buttons (release neurotransmitters). The green pulse shows the action potential traveling along the axon.'
+            description: '🔬 Simplified example of a myelinated multipolar neuron. Dendrites and the soma commonly receive and integrate synaptic inputs, and the soma contains the nucleus. Action potentials usually initiate at the axon initial segment, propagate along the axon, and trigger neurotransmitter release from axon terminals into the synaptic cleft. In a myelinated axon, active regeneration occurs at nodes of Ranvier while depolarizing current spreads beneath myelin. The green marker represents direction and sequence, not a physical particle or an exact continuous voltage trace.'
         },
 
         // ─── 2. CLASSICAL CONDITIONING (Ch for Learning/Development) ───
@@ -193,7 +194,7 @@
                 <line x1="250" y1="300" x2="250" y2="330" stroke="#6ee7b7" stroke-width="2" marker-end="url(#hpaArrow)" class="diagram-signal-flow"/>
                 <rect x="175" y="330" width="150" height="35" rx="10" fill="#1e1b4b" stroke="#6ee7b7" stroke-width="1.5"/>
                 <text x="250" y="350" text-anchor="middle" class="diagram-label" fill="#6ee7b7" font-weight="600">💪 CORTISOL</text>
-                <text x="250" y="362" text-anchor="middle" style="font-size:7px;fill:#86efac">↑HR ↑glucose ↓immunity ↓digestion</text>
+                <text x="250" y="362" text-anchor="middle" style="font-size:7px;fill:#86efac">mobilizes energy; feeds back on CRH/ACTH</text>
                 <!-- Negative feedback loop (red dashed) -->
                 <path d="M175 345 Q60 345 60 200 Q60 100 165 100" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 3" fill="none" marker-end="url(#hpaFeedback)" opacity="0.7"/>
                 <text x="45" y="230" class="diagram-label-sm" fill="#ef4444" transform="rotate(-90,45,230)">NEGATIVE FEEDBACK</text>
@@ -201,11 +202,11 @@
                 <!-- Chronic stress warning -->
                 <rect x="350" y="310" width="140" height="55" rx="8" fill="rgba(239,68,68,0.1)" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 2"/>
                 <text x="420" y="328" text-anchor="middle" style="font-size:8px;fill:#ef4444;font-weight:600">⚠ Chronic Stress</text>
-                <text x="420" y="342" text-anchor="middle" style="font-size:7px;fill:#fca5a5">Sustained cortisol →</text>
-                <text x="420" y="354" text-anchor="middle" style="font-size:7px;fill:#fca5a5">hippocampal damage,</text>
-                <text x="420" y="366" text-anchor="middle" style="font-size:7px;fill:#fca5a5">depression, anxiety</text>
+                <text x="420" y="342" text-anchor="middle" style="font-size:7px;fill:#fca5a5">Prolonged stress may</text>
+                <text x="420" y="354" text-anchor="middle" style="font-size:7px;fill:#fca5a5">alter HPA function and</text>
+                <text x="420" y="366" text-anchor="middle" style="font-size:7px;fill:#fca5a5">hippocampal processes</text>
             </svg>`,
-            description: '🔴 The HPA axis stress cascade: Hypothalamus → CRH → Pituitary → ACTH → Adrenal Cortex → Cortisol. The red dashed line shows the negative feedback loop. Chronic activation leads to hippocampal damage and mood disorders.'
+            description: '🔴 The HPA axis stress cascade: hypothalamic CRH stimulates pituitary ACTH, which stimulates adrenal-cortex cortisol release; cortisol participates in negative feedback. Prolonged or dysregulated stress-system activity is associated with hippocampal structural and functional changes and greater risk for stress-related disorders, but it does not determine that a person will develop a disorder.'
         },
 
         // ─── 4. BRAIN REGIONS (Lateral View) ───
@@ -215,24 +216,26 @@
                     <filter id="brainGlow"><feGaussianBlur stdDeviation="2" result="blur"/>
                         <feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
                 </defs>
-                <text x="300" y="22" text-anchor="middle" class="diagram-label" font-weight="700" font-size="13" fill="#a78bfa">Major Brain Lobes — Lateral View</text>
+                <text x="300" y="22" text-anchor="middle" class="diagram-label" font-weight="700" font-size="13" fill="#a78bfa">Cerebral Lobes &amp; Selected Landmarks — Left Lateral Schematic</text>
+                <text x="70" y="45" class="diagram-label-sm" fill="#94a3b8">← Anterior</text>
+                <text x="530" y="45" text-anchor="end" class="diagram-label-sm" fill="#94a3b8">Posterior →</text>
                 <!-- Brain outline -->
                 <path d="M120 280 Q80 250 70 180 Q65 130 100 90 Q140 50 200 40 Q280 30 360 40 Q440 50 480 80 Q520 110 520 160 Q520 200 490 240 Q460 270 420 290 Q380 300 340 310 Q280 320 220 310 Q160 300 120 280 Z" fill="#1e1b4b" stroke="#4338ca" stroke-width="2"/>
                 <!-- Frontal Lobe -->
                 <path d="M120 280 Q80 250 70 180 Q65 130 100 90 Q130 60 180 50 L220 200 Q180 260 120 280" fill="#3b82f620" stroke="#3b82f6" stroke-width="1.5" class="diagram-box"/>
                 <text x="130" y="155" class="diagram-label" font-weight="600" fill="#60a5fa">Frontal</text>
-                <text x="115" y="170" class="diagram-label-sm" fill="#93c5fd">Planning, decision-</text>
-                <text x="115" y="182" class="diagram-label-sm" fill="#93c5fd">making, personality</text>
+                <text x="115" y="170" class="diagram-label-sm" fill="#93c5fd">Executive functions,</text>
+                <text x="115" y="182" class="diagram-label-sm" fill="#93c5fd">planning, motor control</text>
                 <!-- Parietal Lobe -->
                 <path d="M180 50 Q250 35 340 42 Q380 60 360 120 L220 200 Z" fill="#8b5cf620" stroke="#8b5cf6" stroke-width="1.5" class="diagram-box"/>
                 <text x="270" y="85" class="diagram-label" font-weight="600" fill="#a78bfa">Parietal</text>
-                <text x="260" y="100" class="diagram-label-sm" fill="#c4b5fd">Somatosensory,</text>
-                <text x="260" y="112" class="diagram-label-sm" fill="#c4b5fd">spatial processing</text>
+                <text x="260" y="100" class="diagram-label-sm" fill="#c4b5fd">Somatosensory &amp;</text>
+                <text x="260" y="112" class="diagram-label-sm" fill="#c4b5fd">spatial attention</text>
                 <!-- Temporal Lobe -->
                 <path d="M220 200 Q280 210 340 200 Q390 220 420 290 Q380 300 340 310 Q280 315 220 310 Q170 295 120 280 Q175 260 220 200" fill="#f59e0b20" stroke="#f59e0b" stroke-width="1.5" class="diagram-box"/>
                 <text x="275" y="260" class="diagram-label" font-weight="600" fill="#fbbf24">Temporal</text>
-                <text x="265" y="275" class="diagram-label-sm" fill="#fde68a">Auditory processing,</text>
-                <text x="265" y="287" class="diagram-label-sm" fill="#fde68a">memory, language</text>
+                <text x="265" y="275" class="diagram-label-sm" fill="#fde68a">Auditory processing;</text>
+                <text x="265" y="287" class="diagram-label-sm" fill="#fde68a">memory/language networks</text>
                 <!-- Occipital Lobe -->
                 <path d="M360 120 Q380 60 480 80 Q520 110 520 160 Q520 200 490 240 Q460 270 420 290 Q390 220 340 200 Q330 160 360 120" fill="#22c55e20" stroke="#22c55e" stroke-width="1.5" class="diagram-box"/>
                 <text x="460" y="155" class="diagram-label" font-weight="600" fill="#6ee7b7">Occipital</text>
@@ -244,20 +247,21 @@
                 <!-- Cerebellum -->
                 <ellipse cx="490" cy="290" rx="50" ry="35" fill="#ec489920" stroke="#ec4899" stroke-width="1.5" class="diagram-box"/>
                 <text x="490" y="287" text-anchor="middle" class="diagram-label-sm" font-weight="600" fill="#f472b6">Cerebellum</text>
-                <text x="490" y="300" text-anchor="middle" style="font-size:7px;fill:#f9a8d4">Coordination,</text>
-                <text x="490" y="310" text-anchor="middle" style="font-size:7px;fill:#f9a8d4">balance, motor learning</text>
+                <text x="490" y="300" text-anchor="middle" style="font-size:9px;fill:#f9a8d4">Coordination,</text>
+                <text x="490" y="310" text-anchor="middle" style="font-size:9px;fill:#f9a8d4">balance, motor learning</text>
                 <!-- Brainstem -->
                 <rect x="380" y="310" width="80" height="30" rx="8" fill="#64748b30" stroke="#64748b" stroke-width="1"/>
                 <text x="420" y="330" text-anchor="middle" style="font-size:8px;fill:#94a3b8;font-weight:600">Brainstem</text>
                 <!-- Key highlight spot — Broca's area -->
-                <circle cx="148" cy="220" r="12" fill="none" stroke="#f472b6" stroke-width="1.5" stroke-dasharray="3 2" class="diagram-fade-pulse"/>
-                <text x="100" y="240" style="font-size:7px;fill:#f472b6">Broca's</text>
-                <text x="100" y="248" style="font-size:7px;fill:#f472b6">Area</text>
+                <ellipse cx="148" cy="220" rx="18" ry="12" fill="none" stroke="#f472b6" stroke-width="1.5" stroke-dasharray="3 2"/>
+                <text x="100" y="240" style="font-size:9px;fill:#f472b6">Classic Broca</text>
+                <text x="100" y="251" style="font-size:9px;fill:#f472b6">region</text>
                 <!-- Wernicke's area -->
-                <circle cx="340" cy="225" r="12" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2" class="diagram-fade-pulse" style="animation-delay:1s"/>
-                <text x="355" y="228" style="font-size:7px;fill:#fbbf24">Wernicke's</text>
+                <ellipse cx="340" cy="225" rx="22" ry="12" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+                <text x="365" y="221" style="font-size:9px;fill:#fbbf24">Classic Wernicke</text>
+                <text x="365" y="232" style="font-size:9px;fill:#fbbf24">region</text>
             </svg>`,
-            description: '🧩 The four major brain lobes: Frontal (blue — executive function), Parietal (purple — sensory/spatial), Temporal (yellow — memory/language), Occipital (green — vision). Broca\'s and Wernicke\'s areas are highlighted with pulsing circles.'
+            description: '🧩 Simplified left lateral view of the four conventionally named cerebral lobes and selected landmarks. The frontal lobe participates in executive and motor functions; the parietal lobe in somatosensory processing and spatial attention; the temporal lobe in auditory, memory, and language networks; and the occipital lobe in visual processing. The central sulcus separates frontal and parietal cortex. The outlined Broca and Wernicke regions are approximate, classically named regions in the usually dominant left hemisphere; language depends on a broader connected network whose precise functional locations vary across people. The cerebellum and brainstem are orientation landmarks, not cerebral lobes.'
         },
 
         // ─── 5. DOPAMINE PATHWAYS ───
@@ -317,16 +321,16 @@
         // ─── 6. ERIKSON'S PSYCHOSOCIAL STAGES ───
         eriksonStages: {
             svg: `<svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" style="max-width:700px">
-                <text x="350" y="18" text-anchor="middle" class="diagram-label" font-weight="700" font-size="12" fill="#a78bfa">Erikson's Psychosocial Stages</text>
+                <text x="350" y="18" text-anchor="middle" class="diagram-label" font-weight="700" font-size="12" fill="#a78bfa">Erikson's Eight-Stage Psychosocial Theory</text>
                 ${[
-                    {age:'0-1',crisis:'Trust vs.\nMistrust',color:'#ef4444',virtue:'Hope'},
-                    {age:'1-3',crisis:'Autonomy vs.\nShame/Doubt',color:'#f59e0b',virtue:'Will'},
-                    {age:'3-6',crisis:'Initiative vs.\nGuilt',color:'#eab308',virtue:'Purpose'},
-                    {age:'6-12',crisis:'Industry vs.\nInferiority',color:'#22c55e',virtue:'Competence'},
-                    {age:'12-18',crisis:'Identity vs.\nRole Confusion',color:'#06b6d4',virtue:'Fidelity'},
-                    {age:'18-40',crisis:'Intimacy vs.\nIsolation',color:'#3b82f6',virtue:'Love'},
-                    {age:'40-65',crisis:'Generativity vs.\nStagnation',color:'#8b5cf6',virtue:'Care'},
-                    {age:'65+',crisis:'Integrity vs.\nDespair',color:'#a855f7',virtue:'Wisdom'}
+                    {age:'Infancy',crisis:'Trust vs.\nMistrust',color:'#ef4444',virtue:'Hope'},
+                    {age:'Early Childhood',crisis:'Autonomy vs.\nShame &amp; Doubt',color:'#f59e0b',virtue:'Will'},
+                    {age:'Play Age',crisis:'Initiative vs.\nGuilt',color:'#eab308',virtue:'Purpose'},
+                    {age:'School Age',crisis:'Industry vs.\nInferiority',color:'#22c55e',virtue:'Competence'},
+                    {age:'Adolescence',crisis:'Identity vs.\nRole Confusion',color:'#06b6d4',virtue:'Fidelity'},
+                    {age:'Young Adulthood',crisis:'Intimacy vs.\nIsolation',color:'#3b82f6',virtue:'Love'},
+                    {age:'Adulthood',crisis:'Generativity vs.\nStagnation',color:'#8b5cf6',virtue:'Care'},
+                    {age:'Later Adulthood',crisis:'Integrity vs.\nDespair',color:'#a855f7',virtue:'Wisdom'}
                 ].map((s,i) => {
                     const x = 20 + i * 84;
                     const lines = s.crisis.split('\\n');
@@ -335,23 +339,19 @@
                         '<text x="' + (x+39) + '" y="48" text-anchor="middle" style="font-size:8px;fill:' + s.color + ';font-weight:700">' + s.age + '</text>' +
                         '<text x="' + (x+39) + '" y="70" text-anchor="middle" style="font-size:8px;fill:#e2e8f0;font-weight:600">' + lines[0] + '</text>' +
                         (lines[1] ? '<text x="' + (x+39) + '" y="82" text-anchor="middle" style="font-size:8px;fill:#e2e8f0;font-weight:600">' + lines[1] + '</text>' : '') +
-                        '<text x="' + (x+39) + '" y="110" text-anchor="middle" style="font-size:7px;fill:#94a3b8">Virtue:</text>' +
+                        '<text x="' + (x+39) + '" y="110" text-anchor="middle" style="font-size:9px;fill:#94a3b8">Ego strength:</text>' +
                         '<text x="' + (x+39) + '" y="123" text-anchor="middle" style="font-size:9px;fill:' + s.color + ';font-weight:600">' + s.virtue + '</text>' +
                         (i < 7 ? '<line x1="' + (x+78) + '" y1="90" x2="' + (x+84) + '" y2="90" stroke="#4b5563" stroke-width="1"/>' : '') +
                         '</g>';
                 }).join('')}
                 <!-- Lifespan arrow -->
                 <line x1="20" y1="165" x2="690" y2="165" stroke="#4b5563" stroke-width="1.5"/>
-                <text x="20" y="180" style="font-size:8px;fill:#94a3b8">Birth</text>
-                <text x="660" y="180" style="font-size:8px;fill:#94a3b8">Old Age</text>
-                <text x="350" y="195" text-anchor="middle" style="font-size:9px;fill:#6ee7b7">→ Lifespan Development →</text>
-                <!-- Animated progress dot -->
-                <circle r="4" fill="#6ee7b7" filter="url(#neonGlow)">
-                    <animate attributeName="cx" values="20;690" dur="8s" repeatCount="indefinite"/>
-                    <animate attributeName="cy" values="165;165" dur="8s" repeatCount="indefinite"/>
-                </circle>
+                <text x="20" y="180" style="font-size:8px;fill:#94a3b8">Earlier life</text>
+                <text x="660" y="180" style="font-size:8px;fill:#94a3b8">Later life</text>
+                <text x="350" y="195" text-anchor="middle" style="font-size:9px;fill:#6ee7b7">Proposed sequence; conflicts may be revisited across life</text>
+                <!-- Motion removed: the theory does not prescribe one fixed developmental timetable. -->
             </svg>`,
-            description: '📊 Erikson\'s 8 psychosocial stages from birth through old age, showing the core crisis and associated virtue at each stage. The green dot traces the lifespan journey.'
+            description: '📊 Erikson’s classic theory proposes eight psychosocial tensions and associated ego strengths: trust versus mistrust—hope; autonomy versus shame and doubt—will; initiative versus guilt—purpose; industry versus inferiority—competence; identity versus role confusion—fidelity; intimacy versus isolation—love; generativity versus stagnation—care; and integrity versus despair—wisdom. The life periods are approximate teaching conventions, not rigid deadlines; within the theory, earlier conflicts can be revisited across the lifespan. This is a developmental framework, not a universal timetable.'
         },
 
         // ─── 7. DIFFERENTIAL DIAGNOSIS FLOWCHART ───
@@ -497,7 +497,7 @@
         // ─── 9. OPERANT CONDITIONING QUADRANTS (Ch 12 / Learning) ───
         operantConditioning: {
             svg: `<svg viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg" style="max-width:600px">
-                <text x="300" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Operant Conditioning (Skinner)</text>
+                <text x="300" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Four Operant-Consequence Contingencies</text>
                 
                 <!-- Matrix Background -->
                 <rect x="150" y="80" width="400" height="300" fill="none" stroke="#334155" stroke-width="2" rx="8"/>
@@ -505,71 +505,70 @@
                 <line x1="150" y1="230" x2="550" y2="230" stroke="#334155" stroke-width="2"/>
                 
                 <!-- Row/Col Headers -->
-                <text x="250" y="65" text-anchor="middle" font-weight="bold" fill="#6ee7b7" font-size="13">ADD Stimulus (Positive +)</text>
-                <text x="450" y="65" text-anchor="middle" font-weight="bold" fill="#ef4444" font-size="13">REMOVE Stimulus (Negative -)</text>
+                <text x="250" y="65" text-anchor="middle" font-weight="bold" fill="#6ee7b7" font-size="13">PRESENT / ADD (positive +)</text>
+                <text x="450" y="65" text-anchor="middle" font-weight="bold" fill="#ef4444" font-size="13">WITHDRAW / REMOVE (negative −)</text>
                 
                 <!-- Vertical Headers (rotated) -->
                 <g transform="translate(130, 155)">
                     <text x="0" y="0" text-anchor="middle" transform="rotate(-90)" font-weight="bold" fill="#3b82f6" font-size="13">REINFORCEMENT</text>
-                    <text x="0" y="15" text-anchor="middle" transform="rotate(-90)" font-size="10" fill="#93c5fd">(Increases Behavior)</text>
+                    <text x="0" y="15" text-anchor="middle" transform="rotate(-90)" font-size="10" fill="#93c5fd">(Future behavior increases)</text>
                 </g>
                 <g transform="translate(130, 305)">
                     <text x="0" y="0" text-anchor="middle" transform="rotate(-90)" font-weight="bold" fill="#f59e0b" font-size="13">PUNISHMENT</text>
-                    <text x="0" y="15" text-anchor="middle" transform="rotate(-90)" font-size="10" fill="#fde68a">(Decreases Behavior)</text>
+                    <text x="0" y="15" text-anchor="middle" transform="rotate(-90)" font-size="10" fill="#fde68a">(Future behavior decreases)</text>
                 </g>
 
                 <!-- Q1: Positive Reinforcement -->
                 <g transform="translate(150, 80)">
                     <rect x="5" y="5" width="190" height="140" fill="#3b82f615" rx="4" class="diagram-box"/>
                     <text x="100" y="30" text-anchor="middle" font-weight="bold" fill="#60a5fa" font-size="12">Positive Reinforcement</text>
-                    <text x="100" y="50" text-anchor="middle" fill="#e2e8f0" font-size="10">Add a desirable stimulus to</text>
-                    <text x="100" y="62" text-anchor="middle" fill="#e2e8f0" font-size="10">INCREASE a behavior.</text>
+                    <text x="100" y="50" text-anchor="middle" fill="#e2e8f0" font-size="10">Present a stimulus after behavior;</text>
+                    <text x="100" y="62" text-anchor="middle" fill="#e2e8f0" font-size="10">that behavior later INCREASES.</text>
                     <rect x="20" y="75" width="160" height="60" fill="#0f172a" stroke="#60a5fa" rx="4"/>
-                    <text x="100" y="95" text-anchor="middle" fill="#93c5fd" font-size="10">Ex: Giving a child a cookie</text>
-                    <text x="100" y="107" text-anchor="middle" fill="#93c5fd" font-size="10">when they clean their room.</text>
-                    <text x="100" y="125" text-anchor="middle" fill="#22c55e" font-weight="bold" font-size="10">Behavior goes UP ↑</text>
+                    <text x="100" y="95" text-anchor="middle" fill="#93c5fd" font-size="10">Ex: Cookie follows room cleaning;</text>
+                    <text x="100" y="107" text-anchor="middle" fill="#93c5fd" font-size="10">later room cleaning increases.</text>
+                    <text x="100" y="125" text-anchor="middle" fill="#22c55e" font-weight="bold" font-size="10">Future behavior ↑</text>
                 </g>
 
                 <!-- Q2: Negative Reinforcement -->
                 <g transform="translate(350, 80)">
                     <rect x="5" y="5" width="190" height="140" fill="#22c55e15" rx="4" class="diagram-box"/>
                     <text x="100" y="30" text-anchor="middle" font-weight="bold" fill="#4ade80" font-size="12">Negative Reinforcement</text>
-                    <text x="100" y="50" text-anchor="middle" fill="#e2e8f0" font-size="10">Remove an aversive stimulus</text>
-                    <text x="100" y="62" text-anchor="middle" fill="#e2e8f0" font-size="10">to INCREASE a behavior.</text>
+                    <text x="100" y="50" text-anchor="middle" fill="#e2e8f0" font-size="10">Remove a stimulus after behavior;</text>
+                    <text x="100" y="62" text-anchor="middle" fill="#e2e8f0" font-size="10">that behavior later INCREASES.</text>
                     <rect x="20" y="75" width="160" height="60" fill="#0f172a" stroke="#4ade80" rx="4"/>
-                    <text x="100" y="95" text-anchor="middle" fill="#86efac" font-size="10">Ex: Turning off an alarm</text>
-                    <text x="100" y="107" text-anchor="middle" fill="#86efac" font-size="10">by pressing snooze.</text>
-                    <text x="100" y="125" text-anchor="middle" fill="#22c55e" font-weight="bold" font-size="10">Behavior goes UP ↑</text>
+                    <text x="100" y="95" text-anchor="middle" fill="#86efac" font-size="10">Ex: Buckling stops a warning tone;</text>
+                    <text x="100" y="107" text-anchor="middle" fill="#86efac" font-size="10">later buckling increases.</text>
+                    <text x="100" y="125" text-anchor="middle" fill="#22c55e" font-weight="bold" font-size="10">Future behavior ↑</text>
                 </g>
 
                 <!-- Q3: Positive Punishment -->
                 <g transform="translate(150, 230)">
                     <rect x="5" y="5" width="190" height="140" fill="#f59e0b15" rx="4" class="diagram-box"/>
                     <text x="100" y="30" text-anchor="middle" font-weight="bold" fill="#fbbf24" font-size="12">Positive Punishment</text>
-                    <text x="100" y="50" text-anchor="middle" fill="#e2e8f0" font-size="10">Add an aversive stimulus to</text>
-                    <text x="100" y="62" text-anchor="middle" fill="#e2e8f0" font-size="10">DECREASE a behavior.</text>
+                    <text x="100" y="50" text-anchor="middle" fill="#e2e8f0" font-size="10">Present a stimulus after behavior;</text>
+                    <text x="100" y="62" text-anchor="middle" fill="#e2e8f0" font-size="10">that behavior later DECREASES.</text>
                     <rect x="20" y="75" width="160" height="60" fill="#0f172a" stroke="#fbbf24" rx="4"/>
-                    <text x="100" y="95" text-anchor="middle" fill="#fde68a" font-size="10">Ex: Giving a speeding ticket</text>
-                    <text x="100" y="107" text-anchor="middle" fill="#fde68a" font-size="10">to stop fast driving.</text>
-                    <text x="100" y="125" text-anchor="middle" fill="#ef4444" font-weight="bold" font-size="10">Behavior goes DOWN ↓</text>
+                    <text x="100" y="95" text-anchor="middle" fill="#fde68a" font-size="10">Ex: Ticket follows speeding;</text>
+                    <text x="100" y="107" text-anchor="middle" fill="#fde68a" font-size="10">later speeding decreases.</text>
+                    <text x="100" y="125" text-anchor="middle" fill="#ef4444" font-weight="bold" font-size="10">Future behavior ↓</text>
                 </g>
 
                 <!-- Q4: Negative Punishment -->
                 <g transform="translate(350, 230)">
                     <rect x="5" y="5" width="190" height="140" fill="#ef444415" rx="4" class="diagram-box"/>
                     <text x="100" y="30" text-anchor="middle" font-weight="bold" fill="#f87171" font-size="12">Negative Punishment</text>
-                    <text x="100" y="50" text-anchor="middle" fill="#e2e8f0" font-size="10">Remove a desirable stimulus</text>
-                    <text x="100" y="62" text-anchor="middle" fill="#e2e8f0" font-size="10">to DECREASE a behavior.</text>
+                    <text x="100" y="50" text-anchor="middle" fill="#e2e8f0" font-size="10">Remove a stimulus after behavior;</text>
+                    <text x="100" y="62" text-anchor="middle" fill="#e2e8f0" font-size="10">that behavior later DECREASES.</text>
                     <rect x="20" y="75" width="160" height="60" fill="#0f172a" stroke="#f87171" rx="4"/>
-                    <text x="100" y="95" text-anchor="middle" fill="#fca5a5" font-size="10">Ex: Taking away a teen's</text>
-                    <text x="100" y="107" text-anchor="middle" fill="#fca5a5" font-size="10">phone for breaking curfew.</text>
-                    <text x="100" y="125" text-anchor="middle" fill="#ef4444" font-weight="bold" font-size="10">Behavior goes DOWN ↓</text>
+                    <text x="100" y="95" text-anchor="middle" fill="#fca5a5" font-size="10">Ex: Phone access is removed after</text>
+                    <text x="100" y="107" text-anchor="middle" fill="#fca5a5" font-size="10">curfew-breaking; it later decreases.</text>
+                    <text x="100" y="125" text-anchor="middle" fill="#ef4444" font-weight="bold" font-size="10">Future behavior ↓</text>
                 </g>
                 
-                <!-- Highlight showing the difference between Negative Reinforcement and Punishment -->
-                <rect x="350" y="80" width="200" height="150" fill="none" stroke="#22c55e" stroke-width="3" opacity="0.8" class="diagram-fade-pulse" style="animation-duration: 4s"/>
+                <!-- No contingency is visually privileged; classification depends on the observed future effect. -->
             </svg>`,
-            description: '🐀 The Four Quadrants of Operant Conditioning. Remember: Positive means ADDING something, Negative means REMOVING something. Reinforcement INCREASES behavior, Punishment DECREASES behavior. The flashing green box highlights Negative Reinforcement (removing a bad thing to increase a behavior), which is highly tested and often confused with punishment.'
+            description: '🐀 Operant consequences are classified on two axes. Positive means a stimulus is presented; negative means a stimulus is removed. Reinforcement means the target behavior becomes more likely in similar future conditions; punishment means it becomes less likely. Thus the four standard contingencies are positive reinforcement (present; behavior increases), negative reinforcement (remove; behavior increases), positive punishment (present; behavior decreases), and negative punishment (remove; behavior decreases). A consequence is classified by its observed effect on future behavior—not by whether someone intended it as a reward or penalty or assumed it was desirable or aversive.'
         },
 
         // ─── 10. PIAGET'S STAGES OF COGNITIVE DEVELOPMENT ───
@@ -636,7 +635,7 @@
                     </marker>
                     <filter id="glowSerotonin"><feGaussianBlur stdDeviation="2" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
                 </defs>
-                <text x="300" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Synaptic Transmission & Psychotropics</text>
+                <text x="300" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Selected Antidepressant Mechanisms</text>
                 
                 <!-- Pre-synaptic neuron top -->
                 <path d="M 200 40 L 200 120 Q 200 180, 250 200 Q 300 220, 350 200 Q 400 180, 400 120 L 400 40" fill="#312e81" stroke="#818cf8" stroke-width="2"/>
@@ -680,28 +679,29 @@
                 
                 <!-- DRUG: SSRI Action -->
                 <rect x="185" y="130" width="30" height="20" fill="#ef4444" rx="4" class="diagram-glow"/>
-                <text x="175" y="120" text-anchor="end" fill="#fca5a5" font-size="11" font-weight="bold">SSRI (e.g., Prozac)</text>
-                <text x="175" y="135" text-anchor="end" fill="#fca5a5" font-size="9">Blocks reuptake pump</text>
+                <text x="175" y="120" text-anchor="end" fill="#fca5a5" font-size="11" font-weight="bold">SSRI (e.g., fluoxetine)</text>
+                <text x="175" y="135" text-anchor="end" fill="#fca5a5" font-size="9">Inhibits serotonin reuptake</text>
                 <line x1="185" y1="140" x2="205" y2="150" stroke="#ef4444" stroke-width="2"/>
                 
                 <!-- MAO Enzyme -->
-                <circle cx="380" cy="220" r="15" fill="#eab30820" stroke="#eab308" stroke-width="2"/>
-                <text x="380" y="224" text-anchor="middle" fill="#eab308" font-size="10" font-weight="bold">MAO</text>
-                <!-- Destroying NT -->
-                <line x1="330" y1="230" x2="365" y2="225" stroke="#fde68a" stroke-width="1" stroke-dasharray="2 2"/>
+                <circle cx="380" cy="165" r="15" fill="#eab30820" stroke="#eab308" stroke-width="2"/>
+                <text x="380" y="169" text-anchor="middle" fill="#eab308" font-size="10" font-weight="bold">MAO</text>
+                <text x="380" y="189" text-anchor="middle" fill="#fde68a" font-size="8">intracellular</text>
+                <!-- Intracellular metabolism of monoamines -->
+                <line x1="345" y1="145" x2="365" y2="160" stroke="#fde68a" stroke-width="1" stroke-dasharray="2 2"/>
                 
                 <!-- DRUG: MAOI Action -->
-                <rect x="420" y="210" width="40" height="20" fill="#ef4444" rx="4" class="diagram-glow" style="animation-delay:1s"/>
-                <text x="470" y="215" fill="#fca5a5" font-size="11" font-weight="bold">MAOI</text>
-                <text x="470" y="230" fill="#fca5a5" font-size="9">Blocks breakdown</text>
-                <line x1="420" y1="220" x2="395" y2="220" stroke="#ef4444" stroke-width="2"/>
+                <rect x="420" y="155" width="40" height="20" fill="#ef4444" rx="4" class="diagram-glow" style="animation-delay:1s"/>
+                <text x="470" y="160" fill="#fca5a5" font-size="11" font-weight="bold">MAOI</text>
+                <text x="470" y="175" fill="#fca5a5" font-size="9">Inhibits monoamine metabolism</text>
+                <line x1="420" y1="165" x2="395" y2="165" stroke="#ef4444" stroke-width="2"/>
                 
                 <!-- Summary Text -->
                 <rect x="100" y="300" width="400" height="40" fill="none" stroke="#64748b" stroke-width="1" rx="4"/>
-                <text x="300" y="315" text-anchor="middle" fill="#e2e8f0" font-size="10">Both SSRIs and MAOIs result in MORE neurotransmitter (like serotonin)</text>
-                <text x="300" y="330" text-anchor="middle" fill="#e2e8f0" font-size="10">remaining in the synaptic cleft to bind to postsynaptic receptors.</text>
+                <text x="300" y="315" text-anchor="middle" fill="#e2e8f0" font-size="10">SSRIs inhibit serotonin reuptake at the transporter.</text>
+                <text x="300" y="330" text-anchor="middle" fill="#e2e8f0" font-size="10">MAOIs inhibit intracellular metabolism of monoamines.</text>
             </svg>`,
-            description: '💊 Synaptic Transmission & Drug Mechanisms. SSRIs (like Prozac) block the reuptake pump, keeping more serotonin in the synapse. MAOIs block the monoamine oxidase (MAO) enzyme from destroying neurotransmitters. Both effectively increase neurotransmitter activity.'
+            description: '💊 Selected antidepressant mechanisms. SSRIs inhibit the serotonin transporter and reduce serotonin reuptake. Monoamine oxidase is an intracellular, mitochondrial enzyme; MAOIs inhibit monoamine metabolism. These are distinct acute mechanisms, and therapeutic effects involve downstream adaptations rather than one interchangeable increase in generic “neurotransmitter activity.”'
         },
 
         // ─── 12. FREUD'S ICEBERG MODEL (Personality Structure) ───
@@ -717,7 +717,7 @@
                         <stop offset="100%" stop-color="#94a3b8"/>
                     </linearGradient>
                 </defs>
-                <text x="250" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Freud's Structural Model (The Iceberg)</text>
+                <text x="250" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Freud's Historical Model (Iceberg Metaphor)</text>
                 
                 <!-- Water Surface -->
                 <path d="M 0 150 Q 125 140 250 150 T 500 150 L 500 400 L 0 400 Z" fill="url(#waterGrad)" class="diagram-pulse" style="animation-duration: 6s; transform-origin: center bottom;"/>
@@ -764,73 +764,73 @@
                 <text x="200" y="290" text-anchor="middle" fill="#991b1b" font-size="9">Pleasure Principle</text>
                 <text x="200" y="302" text-anchor="middle" fill="#991b1b" font-size="9">(Libido / Thanatos)</text>
                 <line x1="260" y1="280" x2="400" y2="300" stroke="#f87171" stroke-width="1.5" stroke-dasharray="3 3"/>
-                <text x="405" y="295" fill="#f87171" font-size="10">Completely hidden</text>
-                <text x="405" y="307" fill="#f87171" font-size="10">Basic biological urges</text>
+                <text x="405" y="295" fill="#f87171" font-size="10">In Freud’s theory</text>
+                <text x="405" y="307" fill="#f87171" font-size="10">Theoretical drives</text>
             </svg>`,
-            description: '🧊 Freud\'s Structural Iceberg Model. The Ego represents conscious reality, the Superego spans all levels to represent morality, and the Id operates completely unconsciously on the pleasure principle. Water level indicates the threshold of consciousness.'
+            description: '🧊 Historical theory, not an anatomical map. This teaching metaphor combines Freud’s structural constructs (id, ego, and superego) with the related topographic ideas of conscious, preconscious, and unconscious mental life. It is useful for recognizing Freudian terminology, but these constructs should not be presented as literal brain regions or as conclusions established by modern empirical research.'
         },
 
         // ─── 13. RELIABILITY VS. VALIDITY (Target Analogy) ───
         reliabilityValidity: {
-            svg: `<svg viewBox="0 0 650 250" xmlns="http://www.w3.org/2000/svg" style="max-width:650px">
-                <text x="325" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Reliability vs. Validity</text>
+            svg: `<svg viewBox="0 0 650 270" xmlns="http://www.w3.org/2000/svg" style="max-width:650px">
+                <text x="325" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Target Analogy: Precision, Bias, and Validity</text>
                 
                 <defs>
-                    <g id="target">
+                    <g id="rvTarget">
                         <circle cx="0" cy="0" r="45" fill="#1e293b" stroke="#475569" stroke-width="2"/>
                         <circle cx="0" cy="0" r="30" fill="#334155" stroke="#64748b" stroke-width="2"/>
                         <circle cx="0" cy="0" r="15" fill="#ef4444" stroke="#f87171" stroke-width="2" class="diagram-pulse"/>
                         <text x="0" y="5" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">+</text>
                     </g>
-                    <g id="bullseye-hit">
+                    <g id="rvHit">
                         <circle cx="0" cy="0" r="4" fill="#fbbf24" stroke="#fff" stroke-width="1"/>
                     </g>
                 </defs>
 
-                <!-- TARGET 1: Unreliable & Invalid -->
+                <!-- TARGET 1: Low Precision; Off Target -->
                 <g transform="translate(110, 110)">
-                    <use href="#target"/>
+                    <use href="#rvTarget"/>
                     <!-- Scattered shots -->
-                    <use href="#bullseye-hit" x="-30" y="-20"/>
-                    <use href="#bullseye-hit" x="15" y="-35"/>
-                    <use href="#bullseye-hit" x="35" y="10"/>
-                    <use href="#bullseye-hit" x="-10" y="30"/>
-                    <use href="#bullseye-hit" x="-25" y="25"/>
-                    <text x="0" y="75" text-anchor="middle" fill="#ef4444" font-weight="bold" font-size="12">Unreliable & Invalid</text>
-                    <text x="0" y="90" text-anchor="middle" fill="#94a3b8" font-size="10">Inconsistent, misses mark</text>
+                    <use href="#rvHit" x="-30" y="-20"/>
+                    <use href="#rvHit" x="15" y="-35"/>
+                    <use href="#rvHit" x="35" y="10"/>
+                    <use href="#rvHit" x="-10" y="30"/>
+                    <use href="#rvHit" x="-25" y="25"/>
+                    <text x="0" y="75" text-anchor="middle" fill="#ef4444" font-weight="bold" font-size="12">Low Precision; Off Target</text>
+                    <text x="0" y="90" text-anchor="middle" fill="#94a3b8" font-size="10">Scattered under these replications</text>
                 </g>
 
                 <!-- TARGET 2: Reliable but Invalid -->
                 <g transform="translate(325, 110)">
-                    <use href="#target"/>
+                    <use href="#rvTarget"/>
                     <!-- Tightly grouped but off-center -->
-                    <use href="#bullseye-hit" x="25" y="-25"/>
-                    <use href="#bullseye-hit" x="30" y="-20"/>
-                    <use href="#bullseye-hit" x="22" y="-18"/>
-                    <use href="#bullseye-hit" x="28" y="-30"/>
-                    <use href="#bullseye-hit" x="32" y="-25"/>
-                    <text x="0" y="75" text-anchor="middle" fill="#f59e0b" font-weight="bold" font-size="12">Reliable, Not Valid</text>
-                    <text x="0" y="90" text-anchor="middle" fill="#94a3b8" font-size="10">Consistent, but misses mark</text>
+                    <use href="#rvHit" x="25" y="-25"/>
+                    <use href="#rvHit" x="30" y="-20"/>
+                    <use href="#rvHit" x="22" y="-18"/>
+                    <use href="#rvHit" x="28" y="-30"/>
+                    <use href="#rvHit" x="32" y="-25"/>
+                    <text x="0" y="75" text-anchor="middle" fill="#f59e0b" font-weight="bold" font-size="12">High Precision; Biased</text>
+                    <text x="0" y="90" text-anchor="middle" fill="#94a3b8" font-size="10">Tight grouping with systematic offset</text>
                 </g>
 
-                <!-- TARGET 3: Reliable & Valid -->
+                <!-- TARGET 3: High Precision; Near Target -->
                 <g transform="translate(540, 110)">
-                    <use href="#target"/>
+                    <use href="#rvTarget"/>
                     <!-- Tightly grouped in center -->
-                    <use href="#bullseye-hit" x="0" y="-5"/>
-                    <use href="#bullseye-hit" x="4" y="2"/>
-                    <use href="#bullseye-hit" x="-3" y="4"/>
-                    <use href="#bullseye-hit" x="-4" y="-2"/>
-                    <use href="#bullseye-hit" x="2" y="-2"/>
-                    <text x="0" y="75" text-anchor="middle" fill="#22c55e" font-weight="bold" font-size="12">Reliable & Valid</text>
-                    <text x="0" y="90" text-anchor="middle" fill="#94a3b8" font-size="10">Consistent AND hits the mark!</text>
+                    <use href="#rvHit" x="0" y="-5"/>
+                    <use href="#rvHit" x="4" y="2"/>
+                    <use href="#rvHit" x="-3" y="4"/>
+                    <use href="#rvHit" x="-4" y="-2"/>
+                    <use href="#rvHit" x="2" y="-2"/>
+                    <text x="0" y="75" text-anchor="middle" fill="#22c55e" font-weight="bold" font-size="12">High Precision; Near Target</text>
+                    <text x="0" y="90" text-anchor="middle" fill="#94a3b8" font-size="10">Tight grouping near the reference</text>
                 </g>
 
                 <!-- Connecting arrow and rule -->
-                <line x1="110" y1="230" x2="540" y2="230" stroke="#a78bfa" stroke-width="2" marker-end="url(#drugArrow)"/>
-                <text x="325" y="245" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="bold" class="diagram-pulse">"Consistency is necessary evidence, but validity depends on the intended score interpretation and use."</text>
+                <line x1="110" y1="230" x2="540" y2="230" stroke="#a78bfa" stroke-width="2"/>
+                <text x="325" y="245" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="bold" class="diagram-pulse">Grouping illustrates precision; closeness to center illustrates bias—not validity by itself.</text>
             </svg>`,
-            description: '🎯 The classic Target Analogy for Measurement. Reliability/precision concerns consistency across defined replications (grouping of hits). The bullseye is only an analogy: validity concerns evidence for a specified score interpretation and use, not a test property called accuracy.'
+            description: '🎯 This target analogy illustrates random versus systematic measurement error. Grouping represents reliability/precision across a defined set of replications; distance from the center represents bias or accuracy in this analogy. Neither feature, by itself, establishes validity. Validity is a unitary, evidence-based judgment about a specified interpretation of scores for a proposed use. Reliable/precise scores can still support an invalid interpretation when systematic error or other evidence undermines that use.'
         },
 
         // ─── 14. ATKINSON-SHIFFRIN MEMORY MODEL (Cognitive) ───
@@ -844,7 +844,7 @@
                         <path d="M0 0 L10 5 L0 10 z" fill="#22c55e"/>
                     </marker>
                 </defs>
-                <text x="300" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Information Processing Model of Memory (Atkinson & Shiffrin)</text>
+                <text x="300" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Atkinson–Shiffrin Modal Model of Memory</text>
 
                 <!-- Input -->
                 <text x="30" y="145" fill="#f8fafc" font-weight="bold">Input</text>
@@ -854,7 +854,7 @@
                 <rect x="110" y="100" width="100" height="80" fill="#1e1b4b" stroke="#818cf8" stroke-width="2" rx="8" class="diagram-box"/>
                 <text x="160" y="130" text-anchor="middle" fill="#818cf8" font-weight="bold">Sensory</text>
                 <text x="160" y="145" text-anchor="middle" fill="#818cf8" font-weight="bold">Memory</text>
-                <text x="160" y="165" text-anchor="middle" fill="#94a3b8" font-size="9">Large cap, &lt;1-3 sec</text>
+                <text x="160" y="165" text-anchor="middle" fill="#94a3b8" font-size="9">Brief sensory register</text>
                 
                 <line x1="160" y1="180" x2="160" y2="240" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 2" marker-end="url(#memArrow)"/>
                 <text x="165" y="215" fill="#ef4444" font-size="10">Decay</text>
@@ -866,9 +866,9 @@
 
                 <!-- Short-Term / Working Memory -->
                 <rect x="300" y="100" width="100" height="80" fill="#1e1b4b" stroke="#22c55e" stroke-width="2" rx="8" class="diagram-box diagram-glow"/>
-                <text x="350" y="130" text-anchor="middle" fill="#4ade80" font-weight="bold">Short-Term /</text>
-                <text x="350" y="145" text-anchor="middle" fill="#4ade80" font-weight="bold">Working</text>
-                <text x="350" y="165" text-anchor="middle" fill="#94a3b8" font-size="9">7±2 items, 15-30s</text>
+                <text x="350" y="130" text-anchor="middle" fill="#4ade80" font-weight="bold">Short-Term</text>
+                <text x="350" y="145" text-anchor="middle" fill="#4ade80" font-weight="bold">Store</text>
+                <text x="350" y="165" text-anchor="middle" fill="#94a3b8" font-size="9">Limited, brief holding</text>
 
                 <!-- Maintenance Rehearsal Loop -->
                 <path d="M 330 100 Q 350 40 370 100" fill="none" stroke="#22c55e" stroke-width="2" marker-end="url(#rehearsalArrow)"/>
@@ -889,13 +889,13 @@
                 <rect x="490" y="100" width="100" height="80" fill="#1e1b4b" stroke="#f59e0b" stroke-width="2" rx="8" class="diagram-box"/>
                 <text x="540" y="130" text-anchor="middle" fill="#fbbf24" font-weight="bold">Long-Term</text>
                 <text x="540" y="145" text-anchor="middle" fill="#fbbf24" font-weight="bold">Memory (LTM)</text>
-                <text x="540" y="165" text-anchor="middle" fill="#94a3b8" font-size="9">Infinite cap, Permanent</text>
+                <text x="540" y="165" text-anchor="middle" fill="#94a3b8" font-size="9">Large capacity, durable</text>
 
                 <line x1="540" y1="180" x2="540" y2="240" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 2" marker-end="url(#memArrow)"/>
                 <text x="545" y="215" fill="#ef4444" font-size="10">Interference /</text>
                 <text x="545" y="228" fill="#ef4444" font-size="10">Decay</text>
             </svg>`,
-            description: '🧠 The Atkinson-Shiffrin 3-Stage Memory Model. Sensory memory briefly holds exact environmental info. Paying ATTENTION moves it to Short-Term Memory (STM) where it loops via rehearsal. ENCODING moves it to permanent Long-Term Memory (LTM), and RETRIEVAL brings it back to STM for use.'
+            description: '🧠 The Atkinson–Shiffrin modal model is a historical, simplified framework: sensory registers briefly retain incoming information; attention supports transfer to a limited short-term store; and rehearsal or other control processes can support encoding and retrieval. Long-term storage can be durable but is not guaranteed permanent, and modern working-memory models add processes not shown in this three-store flow.'
         },
 
         // ─── 15. MASLOW'S HIERARCHY OF NEEDS ───
@@ -1032,7 +1032,7 @@
                 <text x="350" y="434" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="bold">Right Occipital Lobe</text>
 
             </svg>`,
-            description: '👁️ The Visual Pathway. Note the contralateral processing: The entirely LEFT Visual Field (Blue) hits the nasal retina of the left eye and temporal retina of the right eye, crossing at the Optic Chiasm to be processed in the RIGHT Occipital Lobe. Conversely, the entirely RIGHT Visual Field (Red) is processed in the LEFT Occipital Lobe. Damage before the chiasm affects one eye; damage after the chiasm affects one entire visual field.'
+            description: '👁️ The visual pathway. Information from the left visual hemifield falls on the left nasal retina and right temporal retina. Nasal retinal axons cross at the optic chiasm while temporal retinal axons remain ipsilateral, bringing left-field information into the right postchiasmal pathway; the reverse applies to the right field. Prechiasmal lesions can produce monocular deficits. Postchiasmal lesions produce contralateral homonymous field defects whose extent depends on lesion site and completeness; optic-radiation lesions can produce quadrantanopia rather than loss of an entire hemifield.'
         },
 
         // ─── 17. COGNITIVE DISSONANCE (Social Psychology) ───
@@ -1106,65 +1106,65 @@
         // ─── 18. TYPES OF VALIDITY (Research & Statistics) ───
         typesOfValidity: {
             svg: `<svg viewBox="0 0 650 350" xmlns="http://www.w3.org/2000/svg" style="max-width:650px">
-                <text x="325" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Construct Validity and its Subtypes</text>
+                <text x="325" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Unified Validity: Sources of Evidence</text>
                 
                 <!-- Main Umbrella: Construct Validity -->
                 <path d="M 225 80 Q 325 30 425 80 L 325 90 Z" fill="#4c1d95" stroke="#8b5cf6" stroke-width="2"/>
                 <rect x="315" y="85" width="20" height="200" fill="#4c1d95" stroke="#8b5cf6" stroke-width="2"/>
                 <rect x="250" y="50" width="150" height="30" fill="#2e1065" stroke="#a855f7" rx="4"/>
-                <text x="325" y="70" text-anchor="middle" fill="#ddd6fe" font-weight="bold" font-size="14">Construct Validity</text>
-                <text x="325" y="115" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="bold" fill-opacity="0.8">Does the test measure</text>
-                <text x="325" y="130" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="bold" fill-opacity="0.8">the underlying theory?</text>
+                <text x="325" y="70" text-anchor="middle" fill="#ddd6fe" font-weight="bold" font-size="14">Validity Argument</text>
+                <text x="325" y="115" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="bold" fill-opacity="0.8">Do evidence and theory support</text>
+                <text x="325" y="130" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="bold" fill-opacity="0.8">the intended interpretation and use?</text>
                 
                 <line x1="335" y1="135" x2="480" y2="150" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4 2"/>
                 <line x1="315" y1="135" x2="170" y2="150" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4 2"/>
 
                 <!-- Left Branch: Internal Evidence -->
                 <rect x="60" y="150" width="220" height="140" fill="#1e293b" stroke="#3b82f6" stroke-width="2" rx="8" class="diagram-box"/>
-                <text x="170" y="170" text-anchor="middle" fill="#93c5fd" font-weight="bold" font-size="12">Internal / Content Focus</text>
+                <text x="170" y="170" text-anchor="middle" fill="#93c5fd" font-weight="bold" font-size="12">Evidence Within the Assessment</text>
                 
                 <!-- Content Validity -->
                 <rect x="70" y="185" width="200" height="40" fill="#1e3a8a" stroke="#60a5fa" rx="4"/>
-                <text x="80" y="202" fill="#bfdbfe" font-weight="bold" font-size="11">Content Validity:</text>
+                <text x="80" y="202" fill="#bfdbfe" font-weight="bold" font-size="11">Test content:</text>
                 <text x="80" y="217" fill="#93c5fd" font-size="10">Does content represent the intended domain?</text>
                 
                 <!-- Face Validity -->
                 <rect x="70" y="235" width="200" height="40" fill="#1e3a8a" stroke="#60a5fa" rx="4"/>
-                <text x="80" y="252" fill="#bfdbfe" font-weight="bold" font-size="11">Face credibility (not validity evidence):</text>
-                <text x="80" y="267" fill="#93c5fd" font-size="10">Does it appear relevant to test takers?</text>
+                <text x="80" y="252" fill="#bfdbfe" font-weight="bold" font-size="11">Response processes:</text>
+                <text x="80" y="267" fill="#93c5fd" font-size="10">Do responses reflect intended processes?</text>
 
                 <!-- Right Branch: Empirical / Criterion Evidence -->
                 <rect x="370" y="150" width="250" height="180" fill="#1e293b" stroke="#22c55e" stroke-width="2" rx="8" class="diagram-box"/>
-                <text x="495" y="170" text-anchor="middle" fill="#86efac" font-weight="bold" font-size="12">External / Criterion Focus</text>
+                <text x="495" y="170" text-anchor="middle" fill="#86efac" font-weight="bold" font-size="12">Structure &amp; External Relations</text>
                 
                 <!-- Concurrent -->
                 <rect x="380" y="185" width="230" height="40" fill="#14532d" stroke="#4ade80" rx="4"/>
-                <text x="390" y="202" fill="#bbf7d0" font-weight="bold" font-size="11">Concurrent Validity:</text>
-                <text x="390" y="217" fill="#86efac" font-size="10">Relation to a concurrent criterion.</text>
+                <text x="390" y="202" fill="#bbf7d0" font-weight="bold" font-size="11">Internal structure:</text>
+                <text x="390" y="217" fill="#86efac" font-size="10">Do item/scale relations fit the construct?</text>
 
                 <!-- Predictive -->
                 <rect x="380" y="235" width="230" height="40" fill="#14532d" stroke="#4ade80" rx="4"/>
-                <text x="390" y="252" fill="#bbf7d0" font-weight="bold" font-size="11">Predictive Validity:</text>
-                <text x="390" y="267" fill="#86efac" font-size="10">Relation to a criterion measured later.</text>
+                <text x="390" y="252" fill="#bbf7d0" font-weight="bold" font-size="11">Relations to criteria:</text>
+                <text x="390" y="267" fill="#86efac" font-size="10">Concurrent or later outcomes, as predicted.</text>
 
                 <!-- Convergent/Divergent -->
                 <rect x="380" y="285" width="230" height="35" fill="#1e293b" stroke="#f59e0b" stroke-dasharray="2 2" rx="4"/>
-                <text x="390" y="300" fill="#fde68a" font-weight="bold" font-size="10">Convergent: Expected relation to similar constructs.</text>
-                <text x="390" y="312" fill="#fde68a" font-weight="bold" font-size="10">Discriminant: Distinct from theoretically different constructs.</text>
+                <text x="390" y="300" fill="#fde68a" font-weight="bold" font-size="10">Convergent: predicted related constructs align.</text>
+                <text x="390" y="312" fill="#fde68a" font-weight="bold" font-size="10">Discriminant: predicted distinctions appear.</text>
             </svg>`,
-            description: '📊 Construct Validity Framework. Validity is a unified argument for an intended score interpretation and use. Evidence may come from content representation, response processes, internal structure, and theoretically expected relations to concurrent or later criteria and to similar or distinct constructs. Face credibility can affect engagement but is not itself validity evidence.'
+            description: '📊 Validity is a unified argument about whether accumulated evidence and theory support a particular interpretation of test scores for a proposed use; it is not a fixed property of a test. The Standards describe sources of validity evidence—not separate “types of validity”—including test content, response processes, internal structure, and relations to other variables (such as concurrent or later criteria and convergent/discriminant patterns). The evidence needed depends on the claims being made. Perceived face relevance is not a separate psychometric validity type, although it can affect engagement or response processes. Older textbooks and exam items may still use “content validity,” “criterion-related validity” (concurrent/predictive), and “construct validity.” Treat those as historical labels; the current Standards organize a unified validity argument around sources of evidence.'
         },
 
         // ─── 19. KOHLBERG'S MORAL DEVELOPMENT (Developmental) ───
         kohlbergMoral: {
             svg: `<svg viewBox="0 0 600 350" xmlns="http://www.w3.org/2000/svg" style="max-width:600px">
-                <text x="300" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Kohlberg's Stages of Moral Development</text>
+                <text x="300" y="25" text-anchor="middle" class="diagram-label" font-weight="700" font-size="14" fill="#a78bfa">Kohlberg's Proposed Stages of Moral Reasoning</text>
                 
                 <!-- Level 1: Preconventional -->
                 <rect x="50" y="70" width="150" height="230" fill="#1e293b" stroke="#ef4444" stroke-width="2" rx="8" class="diagram-box"/>
                 <rect x="65" y="55" width="120" height="30" fill="#7f1d1d" stroke="#ef4444" rx="4"/>
                 <text x="125" y="75" text-anchor="middle" fill="#fca5a5" font-weight="bold" font-size="12">PRECONVENTIONAL</text>
-                <text x="125" y="105" text-anchor="middle" fill="#e2e8f0" font-size="10">(Childhood - Self Focus)</text>
+                <text x="125" y="105" text-anchor="middle" fill="#e2e8f0" font-size="10">(Consequences / self-interest)</text>
                 
                 <rect x="60" y="120" width="130" height="80" fill="#0f172a" stroke="#f87171" rx="4"/>
                 <text x="125" y="140" text-anchor="middle" fill="#f87171" font-weight="bold" font-size="11">Stage 1: Punishment</text>
@@ -1185,10 +1185,10 @@
                 <rect x="225" y="70" width="150" height="230" fill="#1e293b" stroke="#3b82f6" stroke-width="2" rx="8" class="diagram-box"/>
                 <rect x="240" y="55" width="120" height="30" fill="#1e3a8a" stroke="#3b82f6" rx="4"/>
                 <text x="300" y="75" text-anchor="middle" fill="#93c5fd" font-weight="bold" font-size="12">CONVENTIONAL</text>
-                <text x="300" y="105" text-anchor="middle" fill="#e2e8f0" font-size="10">(Adolescent - Society Focus)</text>
+                <text x="300" y="105" text-anchor="middle" fill="#e2e8f0" font-size="10">(Approval / social order)</text>
                 
                 <rect x="235" y="120" width="130" height="80" fill="#0f172a" stroke="#60a5fa" rx="4"/>
-                <text x="300" y="140" text-anchor="middle" fill="#60a5fa" font-weight="bold" font-size="11">Stage 3: Good Boy/Girl</text>
+                <text x="300" y="140" text-anchor="middle" fill="#60a5fa" font-weight="bold" font-size="11">Stage 3: Interpersonal Accord</text>
                 <text x="300" y="155" text-anchor="middle" fill="#bfdbfe" font-size="10">"I'll help so people</text>
                 <text x="300" y="167" text-anchor="middle" fill="#bfdbfe" font-size="10">think I'm a good person."</text>
                 <text x="300" y="187" text-anchor="middle" fill="#3b82f6" font-weight="bold" font-size="10">Social Approval</text>
@@ -1206,25 +1206,25 @@
                 <rect x="400" y="70" width="150" height="230" fill="#1e293b" stroke="#22c55e" stroke-width="2" rx="8" class="diagram-box"/>
                 <rect x="415" y="55" width="120" height="30" fill="#14532d" stroke="#22c55e" rx="4"/>
                 <text x="475" y="75" text-anchor="middle" fill="#86efac" font-weight="bold" font-size="12">POSTCONVENTIONAL</text>
-                <text x="475" y="105" text-anchor="middle" fill="#e2e8f0" font-size="10">(Adult - Principles Focus)</text>
+                <text x="475" y="105" text-anchor="middle" fill="#e2e8f0" font-size="10">(Rights / principles)</text>
                 
                 <rect x="410" y="120" width="130" height="80" fill="#0f172a" stroke="#4ade80" rx="4"/>
                 <text x="475" y="140" text-anchor="middle" fill="#4ade80" font-weight="bold" font-size="11">Stage 5: Social Contract</text>
                 <text x="475" y="155" text-anchor="middle" fill="#bbf7d0" font-size="10">"Rules are made by people,</text>
                 <text x="475" y="167" text-anchor="middle" fill="#bbf7d0" font-size="10">unjust rules can change."</text>
-                <text x="475" y="187" text-anchor="middle" fill="#22c55e" font-weight="bold" font-size="10">Human Rights > Law</text>
+                <text x="475" y="187" text-anchor="middle" fill="#22c55e" font-weight="bold" font-size="10">Rights can guide law reform</text>
                 
                 <rect x="410" y="210" width="130" height="80" fill="#0f172a" stroke="#4ade80" rx="4" class="diagram-glow"/>
-                <text x="475" y="230" text-anchor="middle" fill="#4ade80" font-weight="bold" font-size="11">Stage 6: Univ. Principles</text>
-                <text x="475" y="245" text-anchor="middle" fill="#bbf7d0" font-size="10">"Life is sacred above</text>
-                <text x="475" y="257" text-anchor="middle" fill="#bbf7d0" font-size="10">all other considerations."</text>
+                <text x="475" y="230" text-anchor="middle" fill="#4ade80" font-weight="bold" font-size="11">Proposed 6: Principles</text>
+                <text x="475" y="245" text-anchor="middle" fill="#bbf7d0" font-size="10">General principles guide</text>
+                <text x="475" y="257" text-anchor="middle" fill="#bbf7d0" font-size="10">moral judgment.</text>
                 <text x="475" y="277" text-anchor="middle" fill="#22c55e" font-weight="bold" font-size="10">Internal Moral Code</text>
 
                 <!-- Indicator Line -->
                 <path d="M 50 320 L 550 320" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 4"/>
-                <text x="300" y="335" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="bold">Increasing complexity of moral reasoning (Gilligan criticized this as male-biased)</text>
+                <text x="300" y="335" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="bold">Proposed progression in reasoning; age does not fix a person’s level</text>
             </svg>`,
-            description: '⚖️ Kohlberg\'s Stages of Moral Development. Focuses on the reasoning behind moral choices (like the Heinz Dilemma), not just the choice itself. Moves from avoiding punishment (Preconventional) to following society\'s rules (Conventional) to personal, universal ethics (Postconventional). Carol Gilligan famously criticized Kohlberg for neglecting the "ethics of care" more prevalent in women.'
+            description: '⚖️ Kohlberg’s framework classifies the reasoning used to justify moral choices, not whether a particular choice is correct. Its levels are not fixed to childhood, adolescence, and adulthood, and the proposed sequence is not a rule for every person or culture. Gilligan challenged its justice emphasis and sampling; a meta-analysis found only small average gender differences in care versus justice orientations, not a uniform women-use-care distinction.'
         },
         
         // ─── 18. CBT TRIANGLE (Clinical Psychology) ───
@@ -1235,7 +1235,7 @@
                         <stop offset="0%" stop-color="#3B82F6"/>
                         <stop offset="100%" stop-color="#8B5CF6"/>
                     </linearGradient>
-                    <marker id="arrowHead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <marker id="cbtArrowHead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                         <polygon points="0 0, 10 3.5, 0 7" fill="#94A3B8"/>
                     </marker>
                     <filter id="cbtGlow" x="-20%" y="-20%" width="140%" height="140%">
@@ -1243,14 +1243,15 @@
                     </filter>
                 </defs>
                 <style>
-                    .cbt-node { fill: #1E293B; stroke: url(#cbtGrad); stroke-width: 3px; filter: url(#cbtGlow); transition: all 0.3s ease; cursor: pointer; }
-                    .cbt-node:hover { stroke: #6EE7B7; filter: drop-shadow(0 0 8px rgba(110, 231, 183, 0.6)); }
+                    .cbt-node { fill: #1E293B; stroke: url(#cbtGrad); stroke-width: 3px; filter: url(#cbtGlow); }
+                    /* Static nodes: guided reveal controls provide the diagram interaction. */
                     .cbt-text { fill: #F8FAFC; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px; text-anchor: middle; pointer-events: none; }
                     .cbt-subtext { fill: #94A3B8; font-family: 'Inter', sans-serif; font-size: 12px; text-anchor: middle; pointer-events: none; }
-                    .cbt-edge { stroke: #475569; stroke-width: 2px; fill: none; marker-end: url(#arrowHead); stroke-dasharray: 6 4; animation: cbtFlow 20s linear infinite; }
+                    .cbt-edge { stroke: #475569; stroke-width: 2px; fill: none; marker-end: url(#cbtArrowHead); stroke-dasharray: 6 4; animation: cbtFlow 20s linear infinite; }
                     @keyframes cbtFlow { from { stroke-dashoffset: 200; } to { stroke-dashoffset: 0; } }
                 </style>
                 
+                <text x="250" y="24" text-anchor="middle" class="diagram-label" font-weight="700" font-size="16" fill="#a78bfa">Simplified CBT Formulation</text>
                 <!-- Connections -->
                 <!-- Thoughts to Feelings -->
                 <path d="M 230 110 L 140 260" class="cbt-edge"/>
@@ -1267,31 +1268,32 @@
                 <g transform="translate(250, 70)">
                     <rect x="-75" y="-35" width="150" height="70" rx="35" class="cbt-node"/>
                     <text x="0" y="0" class="cbt-text">Thoughts</text>
-                    <text x="0" y="18" class="cbt-subtext">What we think</text>
+                    <text x="0" y="18" class="cbt-subtext">Appraisals / meanings</text>
                 </g>
 
                 <!-- Feelings (Bottom Left) -->
                 <g transform="translate(110, 300)">
                     <rect x="-75" y="-35" width="150" height="70" rx="35" class="cbt-node"/>
                     <text x="0" y="0" class="cbt-text">Feelings</text>
-                    <text x="0" y="18" class="cbt-subtext">What we feel</text>
+                    <text x="0" y="18" class="cbt-subtext">Emotions</text>
                 </g>
 
                 <!-- Behaviors (Bottom Right) -->
                 <g transform="translate(390, 300)">
                     <rect x="-75" y="-35" width="150" height="70" rx="35" class="cbt-node"/>
                     <text x="0" y="0" class="cbt-text">Behaviors</text>
-                    <text x="0" y="18" class="cbt-subtext">What we do</text>
+                    <text x="0" y="18" class="cbt-subtext">Actions / avoidance</text>
                 </g>
                 
                 <!-- Core Beliefs -->
                 <g transform="translate(250, 200)">
                     <circle cx="0" cy="0" r="45" fill="#0F172A" stroke="#475569" stroke-width="2" stroke-dasharray="4 4"/>
-                    <text x="0" y="-5" fill="#94A3B8" font-family="'Inter', sans-serif" font-size="12px" text-anchor="middle">Core</text>
-                    <text x="0" y="12" fill="#94A3B8" font-family="'Inter', sans-serif" font-size="12px" text-anchor="middle">Beliefs</text>
+                    <text x="0" y="-5" fill="#94A3B8" font-family="'Inter', sans-serif" font-size="12px" text-anchor="middle">Underlying</text>
+                    <text x="0" y="12" fill="#94A3B8" font-family="'Inter', sans-serif" font-size="12px" text-anchor="middle">beliefs</text>
                 </g>
+                <text x="250" y="425" text-anchor="middle" fill="#94A3B8" font-family="'Inter', sans-serif" font-size="11px">A formulation aid; situation, physiology, culture, and context also matter.</text>
             </svg>`,
-            description: '🔺 Cognitive-Behavioral Therapy holds that psychological distress is maintained by the reciprocal interactions between core beliefs, automatic thoughts, emotional states, and behavioral responses. Intervening at any corner of the triangle impacts the others.'
+            description: '🔺 A simplified CBT formulation. In a situation, appraisals, emotions, behavior, and physiological responses can influence one another, while deeper beliefs can shape appraisals. Changing one element may affect others, but change is not guaranteed and cognition is not presented as the sole cause of distress. CBT uses an individualized, evolving formulation to select cognitive, behavioral, and other interventions.'
         },
 
         // ─── 19. SYSTEMATIC DESENSITIZATION (Behavioral Therapy) ───
@@ -1369,7 +1371,7 @@
 
         // ─── 20. DBT MODULES (Borderline Personality Disorder) ───
         dbtModules: {
-            svg: `<svg viewBox="0 0 500 450" xmlns="http://www.w3.org/2000/svg" style="max-width:500px">
+            svg: `<svg viewBox="0 0 500 480" xmlns="http://www.w3.org/2000/svg" style="max-width:500px">
                 <defs>
                     <radialGradient id="dbtCenter" cx="50%" cy="50%" r="50%">
                         <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.2"/>
@@ -1380,13 +1382,15 @@
                     </filter>
                 </defs>
                 <style>
-                    .dbt-quad { fill: #1E293B; stroke: #475569; stroke-width: 2px; transition: all 0.3s ease; cursor: pointer; }
-                    .dbt-quad:hover { stroke: #A78BFA; filter: url(#dbtGlow); transform: scale(1.02); }
+                    .dbt-quad { fill: #1E293B; stroke: #475569; stroke-width: 2px; }
+                    /* Static module cards: guided reveal controls provide the diagram interaction. */
                     .dbt-title { fill: #F8FAFC; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; text-anchor: middle; }
                     .dbt-desc { fill: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; text-anchor: middle; }
                     .dbt-tag { fill: #38BDF8; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; text-anchor: middle; }
                 </style>
                 
+                <text x="250" y="22" text-anchor="middle" class="dbt-title">DBT Skills-Training Modules</text>
+                <g transform="translate(0,30)">
                 <rect x="0" y="0" width="500" height="450" fill="url(#dbtCenter)" rx="10"/>
                 
                 <!-- Dialectic Axiom Axis -->
@@ -1407,29 +1411,29 @@
                 <g transform="translate(60, 60)" style="transform-origin: 90px 70px;">
                     <rect x="0" y="0" width="170" height="140" rx="15" class="dbt-quad"/>
                     <text x="85" y="30" class="dbt-title" fill="#A78BFA">Mindfulness</text>
-                    <text x="85" y="55" class="dbt-tag">Focus: Grounding</text>
+                    <text x="85" y="55" class="dbt-tag" style="font-size:11px">Present-moment awareness</text>
                     <text x="85" y="80" class="dbt-desc">Observe, Describe, Participate</text>
                     <text x="85" y="100" class="dbt-desc">"Wise Mind"</text>
-                    <text x="85" y="120" class="dbt-desc">Without judgment</text>
+                    <text x="85" y="120" class="dbt-desc" style="font-size:9px">Nonjudgmentally and effectively</text>
                 </g>
 
                 <!-- Quadrant 2: Distress Tolerance (Top Right) -->
                 <g transform="translate(270, 60)" style="transform-origin: 90px 70px;">
                     <rect x="0" y="0" width="170" height="140" rx="15" class="dbt-quad"/>
                     <text x="85" y="30" class="dbt-title" fill="#F472B6">Distress Tolerance</text>
-                    <text x="85" y="55" class="dbt-tag">Focus: Crisis Survival</text>
-                    <text x="85" y="80" class="dbt-desc">TIPP Skills (Temp, Intense Exer,</text>
-                    <text x="85" y="95" class="dbt-desc">Paced breathing, Paired relax)</text>
-                    <text x="85" y="120" class="dbt-desc">Radical Acceptance</text>
+                    <text x="85" y="55" class="dbt-tag">Focus: Crisis survival</text>
+                    <text x="85" y="80" class="dbt-desc" style="font-size:9px">Crisis-survival skills (e.g., TIPP)</text>
+                    <text x="85" y="95" class="dbt-desc">Reality-acceptance skills</text>
+                    <text x="85" y="120" class="dbt-desc">Radical acceptance</text>
                 </g>
 
                 <!-- Quadrant 3: Emotion Regulation (Bottom Left) -->
                 <g transform="translate(60, 250)" style="transform-origin: 90px 70px;">
                     <rect x="0" y="0" width="170" height="140" rx="15" class="dbt-quad"/>
                     <text x="85" y="30" class="dbt-title" fill="#38BDF8">Emotion Reg.</text>
-                    <text x="85" y="55" class="dbt-tag">Focus: Modulate Mood</text>
+                    <text x="85" y="55" class="dbt-tag">Understand &amp; regulate</text>
                     <text x="85" y="80" class="dbt-desc">ABC PLEASE</text>
-                    <text x="85" y="100" class="dbt-desc">Identify & Label Emotions</text>
+                    <text x="85" y="100" class="dbt-desc">Identify &amp; Label Emotions</text>
                     <text x="85" y="120" class="dbt-desc">Opposite Action</text>
                 </g>
 
@@ -1438,12 +1442,13 @@
                     <rect x="0" y="0" width="170" height="140" rx="15" class="dbt-quad"/>
                     <text x="85" y="30" class="dbt-title" fill="#FBBF24">Interpersonal Eff.</text>
                     <text x="85" y="55" class="dbt-tag">Focus: Relationships</text>
-                    <text x="85" y="80" class="dbt-desc">DEAR MAN (Objective effect)</text>
-                    <text x="85" y="100" class="dbt-desc">GIVE (Relationship effect)</text>
-                    <text x="85" y="120" class="dbt-desc">FAST (Self-respect effect)</text>
+                    <text x="85" y="80" class="dbt-desc">DEAR MAN — objectives</text>
+                    <text x="85" y="100" class="dbt-desc">GIVE — relationships</text>
+                    <text x="85" y="120" class="dbt-desc">FAST — self-respect</text>
+                </g>
                 </g>
             </svg>`,
-            description: '☯️ Dialectical Behavior Therapy (DBT) relies heavily on four core skills modules that balance the central dialectic of Acceptance (Mindfulness & Distress Tolerance) and Change (Emotion Regulation & Interpersonal Effectiveness).'
+            description: '☯️ These are the four DBT skills-training modules. Mindfulness and distress tolerance are acceptance-oriented; emotion regulation and interpersonal effectiveness are change-oriented. Skills training is one component of comprehensive DBT, which also includes individual therapy, between-session phone coaching, and a therapist consultation team. DBT uses a target hierarchy that prioritizes life-threatening behavior, therapy-interfering behavior, quality-of-life-interfering behavior, and then skills acquisition. Teaching selected skills alone should not be labeled comprehensive DBT.'
         }
 ,
 
@@ -1483,17 +1488,13 @@
                     @keyframes participantConfuse {
                         0%, 40% { transform: translateY(0); fill: #3B82F6; }
                         50%, 60% { transform: translateY(-2px) translateX(-2px); fill: #F59E0B; }
-                        70%, 80% { transform: translateY(-5px); fill: #EF4444; } /* Gives in to majority */
+                        70%, 80% { transform: translateY(-2px); fill: #F59E0B; } /* Response is not predetermined */
                         90%, 100% { transform: translateY(0); fill: #3B82F6; }
                     }
-                    @keyframes participantSpeech {
-                        0%, 60% { opacity: 0; content: "?"; }
-                        70%, 80% { opacity: 1; content: "Line 1"; }
-                        90%, 100% { opacity: 0; }
-                    }
+                    /* The participant’s answer is intentionally not animated or preselected. */
                 </style>
                 
-                <text x="300" y="30" class="asch-text" font-size="18">Asch Conformity Experiment (1951)</text>
+                <text x="300" y="30" class="asch-text" font-size="18">Asch Line-Judgment Studies (1950s)</text>
 
                 <!-- Experiment Cards -->
                 <!-- Standard Line Card -->
@@ -1556,8 +1557,8 @@
                         <circle cx="20" cy="0" r="15"/>
                         <path d="M 5 20 Q 20 5 35 20 L 35 50 L 5 50 Z"/>
                         <text x="20" y="70" class="asch-text" font-size="10" fill="#60A5FA">Subject</text>
-                        <rect x="5" y="-35" width="30" height="18" class="asch-speech" style="animation: confederateSpeech 4s infinite 0.8s; stroke: #3B82F6;"/>
-                        <text x="20" y="-22" class="asch-speech-text" style="animation: confederateSpeech 4s infinite 0.8s;">"...1"</text>
+                        <!-- Participant response intentionally not preselected. -->
+                        <text x="20" y="-22" class="asch-text" font-size="9">answer varies</text>
                     </g>
                     <!-- Confederate 5 -->
                     <g transform="translate(400, 0)" class="asch-confederate" style="animation-delay: 1.0s;">
@@ -1569,7 +1570,7 @@
                     </g>
                 </g>
             </svg>`,
-            description: '👥 Asch Conformity Experiment. Demonstrated the power of normative social influence. Participants conformed to the clearly incorrect majority answer on about 32% of trials. Conformity dropped sharply if even ONE confederate gave the correct answer (breaking unanimity) or if the participant could write their answer privately.'
+            description: '👥 In Asch’s 1956 line-judgment report, participants yielded to a unanimous majority’s wrong answer on 36.8% of critical trials—not on all trials—and many judgments remained independent. Breaking unanimity and changing response conditions reduced yielding. The classic paradigm demonstrates majority influence under specified conditions; it does not imply that a participant will conform or establish one universal conformity rate across settings.'
         },
 
         // ─── 22. BYSTANDER INTERVENTION (Social Psychology) ───
@@ -1762,7 +1763,7 @@
 
                 // ─── NEW DIAGRAMS (Prioritized to prevent greedy matching from older broad rules) ───
                 // CBT Triangle
-                if ((heading.includes('cognitive therapy') || heading.includes('cognitive-behavioral therapy') || heading.includes('beck') || heading.includes('ellis')) && !sec.interactiveDiagram) {
+                if ((ch.id === 'ch-14' && heading === 'why this chapter matters') && !sec.interactiveDiagram) {
                     if (!applied.has('cbtTriangle')) { sec.interactiveDiagram = window._epppDiagrams.cbtTriangle; applied.add('cbtTriangle'); }
                 }
                 // Systematic Desensitization
@@ -1786,7 +1787,7 @@
                     if (!applied.has('kohlbergMoral')) { sec.interactiveDiagram = window._epppDiagrams.kohlbergMoral; applied.add('kohlbergMoral'); }
                 }
                 // Types of Validity
-                if ((heading.includes('types of validity') || heading.includes('construct validity') || heading.includes('predictive validity') || heading.includes('construct & statistical') || heading.includes('validity: does the test measure')) && !sec.interactiveDiagram) {
+                if ((heading.includes('types of validity') || heading.includes('construct validity') || heading.includes('predictive validity') || heading.includes('validity: does the test measure')) && !sec.interactiveDiagram) {
                     if (!applied.has('typesOfValidity')) { sec.interactiveDiagram = window._epppDiagrams.typesOfValidity; applied.add('typesOfValidity'); }
                 }
 
@@ -1853,7 +1854,7 @@
                     if (!applied.has('freudIceberg')) { sec.interactiveDiagram = window._epppDiagrams.freudIceberg; applied.add('freudIceberg'); }
                 }
                 // Reliability vs Validity
-                if ((heading.includes('reliability') || heading.includes('validity') || heading.includes('psychometrics') || heading.includes('measure') || heading.includes('construct')) && !heading.includes('threats') && !heading.includes('validity scales') && !heading.includes('performance validity') && !sec.interactiveDiagram) {
+                if ((ch.id === 'ch-1' && heading.includes('reliability: is the test consistent')) && !heading.includes('threats') && !heading.includes('validity scales') && !heading.includes('performance validity') && !sec.interactiveDiagram) {
                     if (!applied.has('reliabilityValidity')) { sec.interactiveDiagram = window._epppDiagrams.reliabilityValidity; applied.add('reliabilityValidity'); }
                 }
                 // Memory Model

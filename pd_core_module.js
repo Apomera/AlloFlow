@@ -23,6 +23,18 @@
 
   var SCHEMA_VERSION = 'pd-1.0';
   var COMPLETION_SCHEMA_VERSION = 'pd-completion-1.0';
+  var REVIEW_CANDIDATE_SCHEMA_VERSION = 'pd-review-candidate-1.0';
+  var REVIEW_CANDIDATE_CONSENT_VERSION = 'pd-review-candidate-consent-1.0';
+  var MAX_COMPLETION_INTEGRITY_EVENTS = 500;
+  var REVIEW_MAX_ACTIVITIES = 500;
+  var REVIEW_MAX_ARTIFACTS = 1000;
+  var REVIEW_MAX_RESPONSE_CHARS = 20000;
+  var REVIEW_MAX_AI_FEEDBACK_CHARS = 2000;
+  var REVIEW_MAX_PACKAGE_BYTES = 524288;
+  var REVIEW_MAX_INTEGRITY_CHARS_PER_EVENT = 100000;
+  var REVIEW_MAX_INTEGRITY_WORDS_PER_EVENT = 25000;
+  var REVIEW_MAX_INTEGRITY_TOTAL_CHARS = 500000;
+  var REVIEW_MAX_INTEGRITY_TOTAL_WORDS = 125000;
   var DEFAULT_THRESHOLD = 0.8;
 
   // Activity types understood by the runner. 'sim' is an AI-assessed scenario
@@ -392,7 +404,8 @@
         var events = Array.isArray(raw.integrityEvents) ? raw.integrityEvents : [];
         var activityPaste = act.assessmentPolicy && act.assessmentPolicy.paste;
         var policyMode = (activityPaste && activityPaste.mode) || (modulePaste && modulePaste.mode) || 'allowed';
-        events.forEach(function (event) {
+        var remaining = Math.max(0, MAX_COMPLETION_INTEGRITY_EVENTS - out.length);
+        events.slice(0, remaining).forEach(function (event) {
           if (!event || typeof event !== 'object') return;
           var eventType = event.eventType || event.type;
           if (allowedTypes.indexOf(eventType) === -1) return;
@@ -400,8 +413,8 @@
           var occurredAt = event.occurredAt || event.timestamp;
           if (isNonEmptyString(occurredAt) && occurredAt.length <= 64 && /^[0-9TZ:+.\-]+$/.test(occurredAt)) clean.occurredAt = occurredAt;
           var chars = isNum(event.characterCount) ? event.characterCount : event.charCount;
-          if (isNum(chars) && chars >= 0) clean.characterCount = Math.min(1000000000, Math.floor(chars));
-          if (isNum(event.wordCount) && event.wordCount >= 0) clean.wordCount = Math.min(1000000000, Math.floor(event.wordCount));
+          if (isNum(chars) && chars >= 0) clean.characterCount = Math.min(REVIEW_MAX_INTEGRITY_CHARS_PER_EVENT, Math.floor(chars));
+          if (isNum(event.wordCount) && event.wordCount >= 0) clean.wordCount = Math.min(REVIEW_MAX_INTEGRITY_WORDS_PER_EVENT, Math.floor(event.wordCount));
           if (typeof event.blocked === 'boolean') clean.blocked = event.blocked;
           if (isStableId(event.fieldId)) clean.fieldId = event.fieldId;
           out.push(clean);
@@ -409,6 +422,12 @@
       });
     });
     return out;
+  }
+
+  function sanitizeCompletionLearner(learner) {
+    var name = learner && typeof learner.name === 'string' ? learner.name.trim() : '';
+    if (name.length > 200) name = name.slice(0, 200);
+    return { name: name || null };
   }
 
   function buildCompletionRecord(mod, resultsById, learner, nowISO) {
@@ -422,7 +441,7 @@
       contentDigest: moduleContentDigest(mod),
       moduleTitle: mod.metadata && mod.metadata.title,
       topic: mod.metadata && mod.metadata.topic,
-      learner: learner || { name: null },
+      learner: sanitizeCompletionLearner(learner),
       completedAt: nowISO || null,
       complete: ev.complete,
       perActivity: ev.perActivity.map(function (p) { return { activityId: p.activityId, type: p.type, score: p.score, passed: p.passed }; }),
@@ -443,6 +462,625 @@
   // issuer identity — NOT supervised/proctored or accredited completion (the
   // learner controls the input record). Crypto (Ed25519) lives in the worker /
   // client; only the deterministic payload + canonicalization live here.
+  // Review-candidate evidence is a local, learner-controlled export for a
+  // separate human review workflow. It never establishes identity, approval,
+  // institutional review, or credential eligibility.
+  function reviewCandidateProblem(code, path, message) {
+    return { ok: false, code: code, path: path, error: message };
+  }
+
+  function reviewIsObject(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
+  }
+
+  function reviewOnlyKeys(value, allowed) {
+    if (!reviewIsObject(value)) return false;
+    var allow = {};
+    allowed.forEach(function (key) { allow[key] = true; });
+    return Object.keys(value).every(function (key) { return !!allow[key]; });
+  }
+
+  function reviewIsIsoTimestamp(value) {
+    return typeof value === 'string' &&
+      /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:[.][0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})$/.test(value) &&
+      !isNaN(Date.parse(value));
+  }
+
+  function reviewIsLanguageTag(value) {
+    return typeof value === 'string' && value.length <= 35 &&
+      /^(?:[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*|x(?:-[A-Za-z0-9]{1,8})+)$/.test(value);
+  }
+
+  function reviewScoreInterpretation(activityType) {
+    if (activityType === 'quiz') return 'module-answer-key';
+    if (activityType === 'sim') return 'ai-formative-advisory';
+    return 'not-scored';
+  }
+
+  function reviewConsentNotice(locale) {
+    return {
+      version: REVIEW_CANDIDATE_CONSENT_VERSION,
+      locale: locale,
+      heading: 'Prepare evidence for human review',
+      purpose: 'This creates a local learner-device-unverified JSON package for a separate human review process. Nothing is uploaded or submitted by this action, and the package is not an approval decision.',
+      privacy: 'Structured identity fields and raw clipboard event/content fields are omitted. Written responses are included as learner-provided, unverified free text and may contain names, email addresses, or other personal data you typed or pasted.',
+      consent_label: 'I choose to include my written responses in this local review-candidate export.',
+      ai_option_label: 'Optional - Include AI-assisted advisory notes, clearly labeled for human review.',
+      integrity_option_label: 'Optional - Include an aggregate paste-event summary (counts only; context, never an automatic decision).'
+    };
+  }
+
+  function reviewConsentNoticeDigest(locale) {
+    return 'sha256:' + sha256Hex(canonicalize(reviewConsentNotice(locale)));
+  }
+
+  function reviewIsDigest(value) {
+    return typeof value === 'string' && /^sha256:[a-f0-9]{64}$/.test(value);
+  }
+
+  function reviewIsInteger(value) {
+    return isNum(value) && isFinite(value) && Math.floor(value) === value;
+  }
+
+  function reviewQualitativeLimitProblem(value, path) {
+    if (value == null) return null;
+    if (!reviewIsObject(value)) return reviewCandidateProblem('invalid_ai_analysis', path, 'AI advisory analysis must be an object.');
+    if (!reviewOnlyKeys(value, ['strengths', 'growthAreas', 'criterionEvidence']))
+      return reviewCandidateProblem('invalid_ai_analysis', path, 'AI advisory analysis contains unsupported fields.');
+    var listSpecs = [
+      { key: 'strengths', maxItems: 8, maxChars: 500 },
+      { key: 'growthAreas', maxItems: 8, maxChars: 500 }
+    ];
+    for (var li = 0; li < listSpecs.length; li++) {
+      var spec = listSpecs[li];
+      var list = value[spec.key];
+      if (list === undefined) continue;
+      if (!Array.isArray(list) || list.length > spec.maxItems) {
+        return reviewCandidateProblem('oversized_ai_analysis', path + '.' + spec.key, spec.key + ' exceeds the formal package limit.');
+      }
+      for (var ti = 0; ti < list.length; ti++) {
+        if (!isNonEmptyString(list[ti]) || list[ti].length > spec.maxChars) {
+          return reviewCandidateProblem('oversized_ai_analysis', path + '.' + spec.key + '[' + ti + ']', 'AI advisory text is invalid or exceeds the formal package limit.');
+        }
+      }
+    }
+    var criteria = value.criterionEvidence;
+    if (criteria !== undefined) {
+      if (!Array.isArray(criteria) || criteria.length > 12) {
+        return reviewCandidateProblem('oversized_ai_analysis', path + '.criterionEvidence', 'criterionEvidence exceeds the formal package limit.');
+      }
+      for (var ci = 0; ci < criteria.length; ci++) {
+        var item = criteria[ci];
+        if (!reviewIsObject(item) || !reviewOnlyKeys(item, ['criterion', 'assessment', 'evidence', 'feedback']) ||
+            !isNonEmptyString(item.criterion) || item.criterion.length > 300 ||
+            ['met', 'developing', 'not-yet', 'not-assessed'].indexOf(item.assessment) === -1 ||
+            (item.evidence != null && (typeof item.evidence !== 'string' || item.evidence.length > 1000)) ||
+            (item.feedback != null && (typeof item.feedback !== 'string' || item.feedback.length > 1000))) {
+          return reviewCandidateProblem('oversized_ai_analysis', path + '.criterionEvidence[' + ci + ']', 'Criterion evidence is invalid or exceeds the formal package limit.');
+        }
+      }
+    }
+    return null;
+  }
+
+  function reviewArtifactDigest(artifact) {
+    var unsigned = {};
+    Object.keys(artifact || {}).forEach(function (key) {
+      if (key !== 'digest') unsigned[key] = artifact[key];
+    });
+    return 'sha256:' + sha256Hex(canonicalize(unsigned));
+  }
+
+  function reviewCandidateDigest(candidate) {
+    if (!reviewIsObject(candidate)) throw new Error('A review-candidate package object is required.');
+    var unsigned = {};
+    Object.keys(candidate).forEach(function (key) {
+      if (key !== 'package_digest') unsigned[key] = candidate[key];
+    });
+    return 'sha256:' + sha256Hex(canonicalize(unsigned));
+  }
+
+  function addReviewArtifact(artifacts, activityId, kind, mediaType, source, provenance, value) {
+    var artifact = {
+      artifact_id: 'artifact:' + sha256Hex(activityId + '|' + kind).slice(0, 32),
+      activity_id: activityId,
+      kind: kind,
+      media_type: mediaType,
+      source: source,
+      provenance: provenance,
+      value: value
+    };
+    artifact.digest = reviewArtifactDigest(artifact);
+    artifacts.push(artifact);
+    return artifact.artifact_id;
+  }
+
+  function aggregateReviewIntegrity(mod, resultsById) {
+    var rows = [];
+    var eventCount = 0;
+    var totalCharacterCount = 0;
+    var totalWordCount = 0;
+    var allowedTypes = ['paste', 'drop', 'beforeinput', 'insertFromPaste'];
+    var modulePaste = mod.assessmentPolicy && mod.assessmentPolicy.paste;
+    var problem = null;
+    (mod.sections || []).forEach(function (sec) {
+      (sec.activities || []).forEach(function (act) {
+        if (problem) return;
+        var raw = (resultsById[act.id] && resultsById[act.id].raw) || {};
+        var events = Array.isArray(raw.integrityEvents) ? raw.integrityEvents : [];
+        if (eventCount + events.length > MAX_COMPLETION_INTEGRITY_EVENTS) {
+          problem = reviewCandidateProblem('integrity_event_limit', 'integrity_summary', 'Too many integrity events for a formal review-candidate package.');
+          return;
+        }
+        eventCount += events.length;
+        var activityPaste = act.assessmentPolicy && act.assessmentPolicy.paste;
+        var policyMode = (activityPaste && activityPaste.mode) || (modulePaste && modulePaste.mode) || 'allowed';
+        var row = {
+          activity_id: act.id,
+          policy_mode: policyMode,
+          event_count: 0,
+          blocked_event_count: 0,
+          character_count: 0,
+          word_count: 0
+        };
+        events.forEach(function (event) {
+          if (problem || !reviewIsObject(event)) return;
+          var eventType = event.eventType || event.type;
+          if (allowedTypes.indexOf(eventType) === -1) return;
+          var chars = event.characterCount !== undefined ? event.characterCount : event.charCount;
+          var words = event.wordCount;
+          if (chars !== undefined && (!reviewIsInteger(chars) || chars < 0 || chars > REVIEW_MAX_INTEGRITY_CHARS_PER_EVENT)) {
+            problem = reviewCandidateProblem('invalid_integrity_count', 'integrity_summary', 'An integrity character count is invalid or too large.');
+            return;
+          }
+          if (words !== undefined && (!reviewIsInteger(words) || words < 0 || words > REVIEW_MAX_INTEGRITY_WORDS_PER_EVENT)) {
+            problem = reviewCandidateProblem('invalid_integrity_count', 'integrity_summary', 'An integrity word count is invalid or too large.');
+            return;
+          }
+          totalCharacterCount += chars || 0;
+          totalWordCount += words || 0;
+          if (totalCharacterCount > REVIEW_MAX_INTEGRITY_TOTAL_CHARS || totalWordCount > REVIEW_MAX_INTEGRITY_TOTAL_WORDS) {
+            problem = reviewCandidateProblem('integrity_count_limit', 'integrity_summary', 'Aggregate integrity counters exceed the formal package limits.');
+            return;
+          }
+          row.event_count++;
+          if (event.blocked === true) row.blocked_event_count++;
+          row.character_count += chars || 0;
+          row.word_count += words || 0;
+        });
+        if (row.event_count) rows.push(row);
+      });
+    });
+    if (problem) return problem;
+    return {
+      ok: true,
+      summary: {
+        interpretation: 'Context-only interaction summary; never an automatic completion or review decision.',
+        activities: rows
+      }
+    };
+  }
+
+  function buildReviewCandidatePackage(mod, resultsById, options, nowISO) {
+    resultsById = resultsById || {};
+    options = options || {};
+    var moduleCheck = validatePdModule(mod);
+    if (!moduleCheck.ok) return reviewCandidateProblem('invalid_module', 'module', moduleCheck.error);
+    var metadata = mod.metadata || {};
+    if (!isStableId(metadata.version)) {
+      return reviewCandidateProblem('module_version_required', 'module.version', 'A stable module version is required for exact evidence binding.');
+    }
+    if (!reviewIsLanguageTag(metadata.language)) {
+      return reviewCandidateProblem('module_language_required', 'module.language', 'A valid module language is required for review.');
+    }
+    if (metadata.title.length > 200) {
+      return reviewCandidateProblem('module_title_too_large', 'module.title', 'Module title exceeds the formal package limit.');
+    }
+    if (!reviewIsIsoTimestamp(nowISO)) {
+      return reviewCandidateProblem('invalid_created_at', 'created_at', 'A valid RFC 3339 created_at timestamp is required.');
+    }
+    var consent = options.consent;
+    if (!reviewIsObject(consent) || consent.granted !== true) {
+      return reviewCandidateProblem('explicit_consent_required', 'consent.granted', 'Explicit learner consent is required before preparing review evidence.');
+    }
+    if (!reviewIsIsoTimestamp(consent.grantedAt)) {
+      return reviewCandidateProblem('invalid_consent_time', 'consent.granted_at', 'A valid RFC 3339 consent timestamp is required.');
+    }
+    if (Date.parse(consent.grantedAt) > Date.parse(nowISO)) {
+      return reviewCandidateProblem('invalid_consent_time', 'consent.granted_at', 'Consent cannot be recorded after package creation.');
+    }
+
+    var evaluation = evaluateModule(mod, resultsById);
+    if (!evaluation.complete) {
+      return reviewCandidateProblem('incomplete_module', 'activities', 'Only a complete client-side module observation can be prepared for review.');
+    }
+
+    var flatActivities = [];
+    (mod.sections || []).forEach(function (sec) {
+      (sec.activities || []).forEach(function (act) { flatActivities.push(act); });
+    });
+    if (!flatActivities.length || flatActivities.length > REVIEW_MAX_ACTIVITIES) {
+      return reviewCandidateProblem('activity_limit', 'activities', 'Formal review-candidate packages support 1-' + REVIEW_MAX_ACTIVITIES + ' activities.');
+    }
+
+    var includeAi = options.includeAiAnalysis === true;
+    var includeIntegrity = options.includeIntegritySummary === true;
+    var activities = [];
+    var artifacts = [];
+    var buildProblem = null;
+
+    flatActivities.forEach(function (act) {
+      if (buildProblem) return;
+      var result = resultsById[act.id] || { completed: false, score: null, raw: {} };
+      var raw = result.raw || {};
+      var gate = evaluateGate(act, result);
+      var refs = [];
+      var scoreInterpretation = reviewScoreInterpretation(act.type);
+
+      if (act.type === 'reflect') {
+        if (typeof raw.text !== 'string' || !raw.text.trim()) {
+          buildProblem = reviewCandidateProblem('required_evidence_missing', 'activities.' + act.id, 'A reflection needs learner-provided response evidence.');
+          return;
+        }
+        if (raw.text.length > REVIEW_MAX_RESPONSE_CHARS) {
+          buildProblem = reviewCandidateProblem('response_too_large', 'activities.' + act.id, 'A learner response exceeds the formal package limit.');
+          return;
+        }
+        var reflection = raw.text.trim();
+        if (reflection.length > REVIEW_MAX_RESPONSE_CHARS) {
+          buildProblem = reviewCandidateProblem('response_too_large', 'activities.' + act.id, 'A learner response exceeds the formal package limit.');
+          return;
+        }
+        refs.push(addReviewArtifact(artifacts, act.id, 'learner-response', 'text/plain', 'learner-provided-unverified',
+          { capture: 'learner-device', verified: false }, reflection));
+      } else if (act.type === 'checklist') {
+        if (!Array.isArray(raw.checked)) {
+          buildProblem = reviewCandidateProblem('required_evidence_missing', 'activities.' + act.id, 'A checklist needs a learner-provided selection.');
+          return;
+        }
+        var items = (act.content && act.content.items) || [];
+        var selected = items.filter(function (_item, index) { return !!raw.checked[index]; });
+        for (var si = 0; si < selected.length; si++) {
+          if (typeof selected[si] !== 'string' || selected[si].length > 2000) {
+            buildProblem = reviewCandidateProblem('response_too_large', 'activities.' + act.id, 'A selected commitment exceeds the formal package limit.');
+            return;
+          }
+        }
+        if (!selected.length) {
+          buildProblem = reviewCandidateProblem('required_evidence_missing', 'activities.' + act.id, 'A checklist needs at least one learner-provided selection.');
+          return;
+        }
+        refs.push(addReviewArtifact(artifacts, act.id, 'learner-selection-of-module-authored-options', 'application/json', 'learner-provided-unverified',
+          { capture: 'learner-device', verified: false }, selected));
+      } else if (act.type === 'sim') {
+        if (typeof raw.response !== 'string' || !raw.response.trim()) {
+          buildProblem = reviewCandidateProblem('required_evidence_missing', 'activities.' + act.id, 'A scenario needs learner-provided response evidence.');
+          return;
+        }
+        if (raw.response.length > REVIEW_MAX_RESPONSE_CHARS) {
+          buildProblem = reviewCandidateProblem('response_too_large', 'activities.' + act.id, 'A learner response exceeds the formal package limit.');
+          return;
+        }
+          var scenarioResponse = raw.response.trim();
+          if (scenarioResponse.length > REVIEW_MAX_RESPONSE_CHARS) {
+            buildProblem = reviewCandidateProblem('response_too_large', 'activities.' + act.id, 'A learner response exceeds the formal package limit.');
+            return;
+          }
+          refs.push(addReviewArtifact(artifacts, act.id, 'learner-response', 'text/plain', 'learner-provided-unverified',
+            { capture: 'learner-device', verified: false }, scenarioResponse));
+        if (includeAi) {
+          if (raw.feedback != null && typeof raw.feedback !== 'string') {
+            buildProblem = reviewCandidateProblem('invalid_ai_analysis', 'activities.' + act.id + '.feedback', 'AI advisory feedback must be text.');
+            return;
+          }
+          var feedback = (raw.feedback || '').trim();
+          if (feedback.length > REVIEW_MAX_AI_FEEDBACK_CHARS) {
+            buildProblem = reviewCandidateProblem('oversized_ai_analysis', 'activities.' + act.id + '.feedback', 'AI advisory feedback exceeds the formal package limit.');
+            return;
+          }
+          var analysisProblem = reviewQualitativeLimitProblem(raw.qualitativeAnalysis, 'activities.' + act.id + '.qualitativeAnalysis');
+          if (analysisProblem) { buildProblem = analysisProblem; return; }
+          var analysis = sanitizeQualitativeAnalysis(raw.qualitativeAnalysis);
+          if (feedback || analysis) {
+            refs.push(addReviewArtifact(artifacts, act.id, 'ai-advisory-analysis', 'application/json', 'ai-assisted-advisory',
+              { capture: 'learner-device', advisory: true, provider: 'not-recorded', model: 'not-recorded', human_review_required: true },
+              { feedback: feedback, qualitativeAnalysis: analysis }));
+          }
+        }
+      }
+
+      activities.push({
+        activity_id: act.id,
+        type: act.type,
+        client_observation: {
+          completed: !!result.completed,
+          gate_passed: !!gate.passed,
+          score: isNum(result.score) ? result.score : null,
+          score_interpretation: scoreInterpretation
+        },
+        artifact_refs: refs
+      });
+    });
+    if (buildProblem) return buildProblem;
+    if (artifacts.length > REVIEW_MAX_ARTIFACTS) {
+      return reviewCandidateProblem('artifact_limit', 'artifacts', 'Too many artifacts for a formal review-candidate package.');
+    }
+
+    var integritySummary = null;
+    if (includeIntegrity) {
+      var integrity = aggregateReviewIntegrity(mod, resultsById);
+      if (!integrity.ok) return integrity;
+      integritySummary = integrity.summary;
+    }
+
+    var scopes = ['learner-response-evidence'];
+    if (includeAi) scopes.push('ai-advisory-analysis');
+    if (includeIntegrity) scopes.push('integrity-summary');
+
+    var candidate = {
+      schema_version: REVIEW_CANDIDATE_SCHEMA_VERSION,
+      kind: 'pd_review_candidate',
+      trust_model: 'learner-device-unverified',
+      purpose: 'human-review-candidate',
+      created_at: nowISO,
+      module: {
+        id: metadata.id,
+        version: metadata.version,
+        language: metadata.language,
+        title: metadata.title,
+        content_digest: moduleContentDigest(mod),
+        activity_ids: flatActivities.map(function (act) { return act.id; })
+      },
+      consent: {
+        granted: true,
+        granted_at: consent.grantedAt,
+        notice_version: REVIEW_CANDIDATE_CONSENT_VERSION,
+        notice_locale: metadata.language,
+        notice_payload: reviewConsentNotice(metadata.language),
+        notice_digest: reviewConsentNoticeDigest(metadata.language),
+        scopes: scopes
+      },
+      activities: activities,
+      artifacts: artifacts,
+      integrity_summary: integritySummary,
+      privacy_manifest: {
+        structured_identity_fields_included: false,
+        raw_clipboard_events_included: false,
+        raw_clipboard_content_included: false,
+        free_text_may_contain_personal_data: true,
+        learner_response_text_included: artifacts.some(function (artifact) { return artifact.kind === 'learner-response'; }),
+        exact_event_times_included: false,
+        field_identifiers_included: false,
+        ai_advisory_analysis_included: artifacts.some(function (artifact) { return artifact.kind === 'ai-advisory-analysis'; }),
+        integrity_summary_included: !!integritySummary
+      }
+    };
+    if (utf8Bytes(canonicalize(candidate)).length > REVIEW_MAX_PACKAGE_BYTES) {
+      return reviewCandidateProblem('package_too_large', 'package', 'Review-candidate package exceeds the formal package byte limit.');
+    }
+    candidate.package_digest = reviewCandidateDigest(candidate);
+    var validation = validateReviewCandidatePackage(candidate);
+    if (!validation.ok) return validation;
+    return { ok: true, package: candidate };
+  }
+
+  function validateReviewCandidatePackage(candidate) {
+    var bad = reviewCandidateProblem;
+    if (!reviewOnlyKeys(candidate, ['schema_version', 'kind', 'trust_model', 'purpose', 'created_at', 'module', 'consent', 'activities', 'artifacts', 'integrity_summary', 'privacy_manifest', 'package_digest'])) {
+      return bad('invalid_package_shape', 'package', 'Review-candidate package contains unsupported fields.');
+    }
+    if (candidate.schema_version !== REVIEW_CANDIDATE_SCHEMA_VERSION || candidate.kind !== 'pd_review_candidate' ||
+        candidate.trust_model !== 'learner-device-unverified' || candidate.purpose !== 'human-review-candidate') {
+      return bad('unsupported_package', 'package', 'Unsupported review-candidate package profile.');
+    }
+    if (!reviewIsIsoTimestamp(candidate.created_at)) return bad('invalid_created_at', 'created_at', 'created_at must be RFC 3339.');
+    if (utf8Bytes(canonicalize(candidate)).length > REVIEW_MAX_PACKAGE_BYTES) {
+      return bad('package_too_large', 'package', 'Review-candidate package exceeds the formal package byte limit.');
+    }
+
+    var moduleBinding = candidate.module;
+    if (!reviewOnlyKeys(moduleBinding, ['id', 'version', 'language', 'title', 'content_digest', 'activity_ids']) ||
+        !isStableId(moduleBinding.id) || !isStableId(moduleBinding.version) ||
+        !reviewIsLanguageTag(moduleBinding.language) ||
+        !isNonEmptyString(moduleBinding.title) || moduleBinding.title.length > 200 ||
+        !reviewIsDigest(moduleBinding.content_digest) ||
+        !Array.isArray(moduleBinding.activity_ids) || !moduleBinding.activity_ids.length ||
+        moduleBinding.activity_ids.length > REVIEW_MAX_ACTIVITIES) {
+      return bad('invalid_module_binding', 'module', 'Review evidence requires an exact, bounded module binding.');
+    }
+    var expectedIds = {};
+    for (var mi = 0; mi < moduleBinding.activity_ids.length; mi++) {
+      var expectedId = moduleBinding.activity_ids[mi];
+      if (!isStableId(expectedId) || expectedIds[expectedId]) return bad('invalid_module_binding', 'module.activity_ids', 'Module activity IDs must be unique stable identifiers.');
+      expectedIds[expectedId] = true;
+    }
+
+    var consent = candidate.consent;
+    var allowedScopes = ['learner-response-evidence', 'ai-advisory-analysis', 'integrity-summary'];
+    if (!reviewOnlyKeys(consent, ['granted', 'granted_at', 'notice_version', 'notice_locale', 'notice_payload', 'notice_digest', 'scopes']) ||
+        consent.granted !== true || !reviewIsIsoTimestamp(consent.granted_at) ||
+        consent.notice_version !== REVIEW_CANDIDATE_CONSENT_VERSION ||
+        Date.parse(consent.granted_at) > Date.parse(candidate.created_at) ||
+        consent.notice_locale !== moduleBinding.language ||
+        !reviewIsObject(consent.notice_payload) ||
+        canonicalize(consent.notice_payload) !== canonicalize(reviewConsentNotice(moduleBinding.language)) ||
+        consent.notice_digest !== 'sha256:' + sha256Hex(canonicalize(consent.notice_payload)) ||
+        consent.notice_digest !== reviewConsentNoticeDigest(moduleBinding.language) ||
+        !reviewIsDigest(consent.notice_digest) ||
+        !Array.isArray(consent.scopes) || consent.scopes.length > allowedScopes.length || consent.scopes.indexOf('learner-response-evidence') === -1 ||
+        consent.scopes.some(function (scope, index) { return allowedScopes.indexOf(scope) === -1 || consent.scopes.indexOf(scope) !== index; })) {
+      return bad('invalid_consent', 'consent', 'Explicit, versioned consent scopes are required.');
+    }
+
+    var privacy = candidate.privacy_manifest;
+    if (!reviewOnlyKeys(privacy, ['structured_identity_fields_included', 'raw_clipboard_events_included', 'raw_clipboard_content_included', 'free_text_may_contain_personal_data', 'learner_response_text_included', 'exact_event_times_included', 'field_identifiers_included', 'ai_advisory_analysis_included', 'integrity_summary_included']) ||
+        privacy.structured_identity_fields_included !== false || privacy.raw_clipboard_events_included !== false ||
+        privacy.raw_clipboard_content_included !== false || privacy.free_text_may_contain_personal_data !== true ||
+        typeof privacy.learner_response_text_included !== 'boolean' || privacy.exact_event_times_included !== false ||
+        privacy.field_identifiers_included !== false ||
+        typeof privacy.ai_advisory_analysis_included !== 'boolean' ||
+        typeof privacy.integrity_summary_included !== 'boolean') {
+      return bad('invalid_privacy_manifest', 'privacy_manifest', 'The privacy manifest must distinguish structured exclusions from possible personal data in free text.');
+    }
+
+    if (!Array.isArray(candidate.activities) || candidate.activities.length !== moduleBinding.activity_ids.length) {
+      return bad('activity_mismatch', 'activities', 'Activities must exactly match the module binding.');
+    }
+    var activityMap = {};
+    var referenced = {};
+    for (var ai = 0; ai < candidate.activities.length; ai++) {
+      var activity = candidate.activities[ai];
+      var observation = activity && activity.client_observation;
+      if (!reviewOnlyKeys(activity, ['activity_id', 'type', 'client_observation', 'artifact_refs']) ||
+          !expectedIds[activity.activity_id] || activityMap[activity.activity_id] ||
+          ACTIVITY_TYPES.indexOf(activity.type) === -1 ||
+          !reviewOnlyKeys(observation, ['completed', 'gate_passed', 'score', 'score_interpretation']) ||
+          observation.completed !== true || observation.gate_passed !== true ||
+          !(observation.score === null || (isNum(observation.score) && isFinite(observation.score) && observation.score >= 0 && observation.score <= 1)) ||
+          observation.score_interpretation !== reviewScoreInterpretation(activity.type) ||
+          (activity.type === 'quiz' && observation.score === null) ||
+          (activity.type !== 'quiz' && activity.type !== 'sim' && observation.score !== null) ||
+          !Array.isArray(activity.artifact_refs) || activity.artifact_refs.length > 3) {
+        return bad('invalid_activity_observation', 'activities[' + ai + ']', 'Invalid unverified client activity observation.');
+      }
+      activityMap[activity.activity_id] = activity;
+      for (var ri = 0; ri < activity.artifact_refs.length; ri++) {
+        var ref = activity.artifact_refs[ri];
+        if (!isStableId(ref) || referenced[ref]) return bad('invalid_artifact_ref', 'activities[' + ai + '].artifact_refs', 'Artifact references must be unique stable identifiers.');
+        referenced[ref] = activity.activity_id;
+      }
+    }
+    if (Object.keys(activityMap).length !== Object.keys(expectedIds).length) return bad('activity_mismatch', 'activities', 'Activities must exactly match the module binding.');
+
+    if (!Array.isArray(candidate.artifacts) || candidate.artifacts.length > REVIEW_MAX_ARTIFACTS) {
+      return bad('artifact_limit', 'artifacts', 'Artifact collection is invalid or too large.');
+    }
+    var artifactMap = {};
+    var aiArtifactFound = false;
+    var artifactKindsByActivity = {};
+    for (var ar = 0; ar < candidate.artifacts.length; ar++) {
+      var artifact = candidate.artifacts[ar];
+      if (!reviewOnlyKeys(artifact, ['artifact_id', 'activity_id', 'kind', 'media_type', 'source', 'provenance', 'value', 'digest']) ||
+          !isStableId(artifact.artifact_id) || artifactMap[artifact.artifact_id] ||
+          !activityMap[artifact.activity_id] || referenced[artifact.artifact_id] !== artifact.activity_id ||
+          !reviewIsDigest(artifact.digest)) {
+        return bad('invalid_artifact', 'artifacts[' + ar + ']', 'Artifact binding or digest is invalid.');
+      }
+      if (artifact.kind === 'learner-response') {
+        if ((activityMap[artifact.activity_id].type !== 'reflect' && activityMap[artifact.activity_id].type !== 'sim') ||
+            artifact.media_type !== 'text/plain' || artifact.source !== 'learner-provided-unverified' ||
+            !reviewOnlyKeys(artifact.provenance, ['capture', 'verified']) ||
+            artifact.provenance.capture !== 'learner-device' || artifact.provenance.verified !== false ||
+            !isNonEmptyString(artifact.value) || artifact.value.length > REVIEW_MAX_RESPONSE_CHARS) {
+          return bad('invalid_artifact', 'artifacts[' + ar + ']', 'Learner response artifact is invalid or too large.');
+        }
+      } else if (artifact.kind === 'learner-selection-of-module-authored-options') {
+        if (activityMap[artifact.activity_id].type !== 'checklist' ||
+            artifact.media_type !== 'application/json' || artifact.source !== 'learner-provided-unverified' ||
+            !reviewOnlyKeys(artifact.provenance, ['capture', 'verified']) ||
+            artifact.provenance.capture !== 'learner-device' || artifact.provenance.verified !== false ||
+            !Array.isArray(artifact.value) || artifact.value.length > 100 || artifact.value.some(function (item) { return !isNonEmptyString(item) || item.length > 2000; })) {
+          return bad('invalid_artifact', 'artifacts[' + ar + ']', 'Selected commitments artifact is invalid or too large.');
+        }
+      } else if (artifact.kind === 'ai-advisory-analysis') {
+        aiArtifactFound = true;
+        if (activityMap[artifact.activity_id].type !== 'sim' ||
+            artifact.media_type !== 'application/json' || artifact.source !== 'ai-assisted-advisory' ||
+            !reviewOnlyKeys(artifact.provenance, ['capture', 'advisory', 'provider', 'model', 'human_review_required']) ||
+            artifact.provenance.capture !== 'learner-device' || artifact.provenance.advisory !== true ||
+            artifact.provenance.provider !== 'not-recorded' || artifact.provenance.model !== 'not-recorded' ||
+            artifact.provenance.human_review_required !== true ||
+            !reviewOnlyKeys(artifact.value, ['feedback', 'qualitativeAnalysis']) ||
+            typeof artifact.value.feedback !== 'string' || artifact.value.feedback.length > REVIEW_MAX_AI_FEEDBACK_CHARS) {
+          return bad('invalid_ai_artifact', 'artifacts[' + ar + ']', 'AI advisory artifact is invalid or too large.');
+        }
+        var qualitativeProblem = reviewQualitativeLimitProblem(artifact.value.qualitativeAnalysis, 'artifacts[' + ar + '].value.qualitativeAnalysis');
+        if (qualitativeProblem) return qualitativeProblem;
+      } else {
+        return bad('unsupported_artifact_kind', 'artifacts[' + ar + '].kind', 'Unsupported review artifact kind.');
+      }
+      artifactMap[artifact.artifact_id] = artifact;
+      if (reviewArtifactDigest(artifact) !== artifact.digest) {
+        return bad('invalid_artifact', 'artifacts[' + ar + '].digest', 'Artifact digest does not match its validated content.');
+      }
+      artifactKindsByActivity[artifact.activity_id] = artifactKindsByActivity[artifact.activity_id] || [];
+      artifactKindsByActivity[artifact.activity_id].push(artifact.kind);
+    }
+    if (Object.keys(artifactMap).length !== Object.keys(referenced).length) {
+      return bad('artifact_ref_mismatch', 'artifacts', 'Every artifact must be referenced exactly once.');
+    }
+    var requiredArtifactProblem = null;
+    var learnerResponseFound = false;
+    Object.keys(activityMap).forEach(function (activityId) {
+      if (requiredArtifactProblem) return;
+      var kinds = artifactKindsByActivity[activityId] || [];
+      var activityType = activityMap[activityId].type;
+      var responseCount = kinds.filter(function (kind) { return kind === 'learner-response'; }).length;
+      var selectionCount = kinds.filter(function (kind) { return kind === 'learner-selection-of-module-authored-options'; }).length;
+      if (responseCount) learnerResponseFound = true;
+      if ((activityType === 'reflect' || activityType === 'sim') && responseCount !== 1) {
+        requiredArtifactProblem = bad('required_evidence_missing', 'activities.' + activityId, 'Reflect and scenario activities require exactly one learner-provided response artifact.');
+      } else if (activityType === 'checklist' && selectionCount !== 1) {
+        requiredArtifactProblem = bad('required_evidence_missing', 'activities.' + activityId, 'Checklist activities require exactly one learner selection of module-authored options.');
+      }
+    });
+    if (requiredArtifactProblem) return requiredArtifactProblem;
+    if (learnerResponseFound !== privacy.learner_response_text_included) {
+      return bad('privacy_manifest_mismatch', 'privacy_manifest.learner_response_text_included', 'Free-text inclusion must match the privacy manifest.');
+    }
+
+    if (aiArtifactFound !== privacy.ai_advisory_analysis_included ||
+        (aiArtifactFound && consent.scopes.indexOf('ai-advisory-analysis') === -1)) {
+      return bad('ai_scope_mismatch', 'consent.scopes', 'AI advisory inclusion must match the consent and privacy manifest.');
+    }
+
+    var integrity = candidate.integrity_summary;
+    if (integrity === null) {
+      if (privacy.integrity_summary_included || consent.scopes.indexOf('integrity-summary') !== -1) {
+        return bad('integrity_scope_mismatch', 'integrity_summary', 'Integrity scope and privacy manifest do not match.');
+      }
+    } else {
+      if (!reviewOnlyKeys(integrity, ['interpretation', 'activities']) ||
+          integrity.interpretation !== 'Context-only interaction summary; never an automatic completion or review decision.' ||
+          !Array.isArray(integrity.activities) || integrity.activities.length > REVIEW_MAX_ACTIVITIES ||
+          !privacy.integrity_summary_included || consent.scopes.indexOf('integrity-summary') === -1) {
+        return bad('invalid_integrity_summary', 'integrity_summary', 'Integrity summary is invalid or outside consent.');
+      }
+      var integrityRows = {};
+      var totalIntegrityEvents = 0;
+      var totalIntegrityCharacters = 0;
+      var totalIntegrityWords = 0;
+      for (var ii = 0; ii < integrity.activities.length; ii++) {
+        var row = integrity.activities[ii];
+        if (!reviewOnlyKeys(row, ['activity_id', 'policy_mode', 'event_count', 'blocked_event_count', 'character_count', 'word_count']) ||
+            !activityMap[row.activity_id] || integrityRows[row.activity_id] || ['allowed', 'monitored', 'restricted'].indexOf(row.policy_mode) === -1 ||
+            !reviewIsInteger(row.event_count) || row.event_count < 1 ||
+            !reviewIsInteger(row.blocked_event_count) || row.blocked_event_count < 0 || row.blocked_event_count > row.event_count ||
+            !reviewIsInteger(row.character_count) || row.character_count < 0 || row.character_count > row.event_count * REVIEW_MAX_INTEGRITY_CHARS_PER_EVENT ||
+            !reviewIsInteger(row.word_count) || row.word_count < 0 || row.word_count > row.event_count * REVIEW_MAX_INTEGRITY_WORDS_PER_EVENT) {
+          return bad('invalid_integrity_summary', 'integrity_summary.activities[' + ii + ']', 'Integrity summary row is invalid.');
+        }
+        integrityRows[row.activity_id] = true;
+        totalIntegrityEvents += row.event_count;
+        totalIntegrityCharacters += row.character_count;
+        totalIntegrityWords += row.word_count;
+        if (totalIntegrityEvents > MAX_COMPLETION_INTEGRITY_EVENTS ||
+            totalIntegrityCharacters > REVIEW_MAX_INTEGRITY_TOTAL_CHARS ||
+            totalIntegrityWords > REVIEW_MAX_INTEGRITY_TOTAL_WORDS) {
+          return bad('integrity_event_limit', 'integrity_summary', 'Aggregate integrity counters exceed the formal package limits.');
+        }
+      }
+    }
+
+    if (!reviewIsDigest(candidate.package_digest) || reviewCandidateDigest(candidate) !== candidate.package_digest) {
+      return bad('package_digest_mismatch', 'package_digest', 'Review-candidate package digest does not match its content.');
+    }
+    if (utf8Bytes(canonicalize(candidate)).length > REVIEW_MAX_PACKAGE_BYTES) {
+      return bad('package_too_large', 'package', 'Review-candidate package exceeds the formal package byte limit.');
+    }
+    return { ok: true };
+  }
+
   var CREDENTIAL_SCHEMA_VERSION = 'pd-credential-1.0';
 
   // Deterministic JSON canonicalization (RFC 8785 / JCS-aligned for our value
@@ -577,7 +1215,14 @@
   var API = {
     SCHEMA_VERSION: SCHEMA_VERSION,
     COMPLETION_SCHEMA_VERSION: COMPLETION_SCHEMA_VERSION,
+    REVIEW_CANDIDATE_SCHEMA_VERSION: REVIEW_CANDIDATE_SCHEMA_VERSION,
+    REVIEW_CANDIDATE_CONSENT_VERSION: REVIEW_CANDIDATE_CONSENT_VERSION,
     CREDENTIAL_SCHEMA_VERSION: CREDENTIAL_SCHEMA_VERSION,
+    MAX_COMPLETION_INTEGRITY_EVENTS: MAX_COMPLETION_INTEGRITY_EVENTS,
+    REVIEW_MAX_INTEGRITY_CHARS_PER_EVENT: REVIEW_MAX_INTEGRITY_CHARS_PER_EVENT,
+    REVIEW_MAX_INTEGRITY_WORDS_PER_EVENT: REVIEW_MAX_INTEGRITY_WORDS_PER_EVENT,
+    REVIEW_MAX_INTEGRITY_TOTAL_CHARS: REVIEW_MAX_INTEGRITY_TOTAL_CHARS,
+    REVIEW_MAX_INTEGRITY_TOTAL_WORDS: REVIEW_MAX_INTEGRITY_TOTAL_WORDS,
     DEFAULT_THRESHOLD: DEFAULT_THRESHOLD,
     ACTIVITY_TYPES: ACTIVITY_TYPES,
     SCORABLE_TYPES: SCORABLE_TYPES,
@@ -587,6 +1232,11 @@
     evaluateGate: evaluateGate,
     evaluateModule: evaluateModule,
     buildCompletionRecord: buildCompletionRecord,
+    buildReviewCandidatePackage: buildReviewCandidatePackage,
+    validateReviewCandidatePackage: validateReviewCandidatePackage,
+    reviewCandidateDigest: reviewCandidateDigest,
+    reviewArtifactDigest: reviewArtifactDigest,
+    reviewConsentNotice: reviewConsentNotice,
     canonicalize: canonicalize,
     moduleContentDigest: moduleContentDigest,
     sanitizeQualitativeAnalysis: sanitizeQualitativeAnalysis,

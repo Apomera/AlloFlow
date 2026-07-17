@@ -269,7 +269,7 @@ describe('brain atlas canvas loops', () => {
       const pathLabelCalls = source.match(/brainAtlasDrawPathLabel\(/g) || [];
 
       expect(source).toContain('function brainAtlasDrawPathLabel(cx, cy, text, color, maxWidth)');
-      expect(pathLabelCalls).toHaveLength(11);
+      expect(pathLabelCalls).toHaveLength(16);
       expect(source).toContain("var value = String(text || '').trim();");
       expect(source).toContain('var widthLimit = Math.max(48, maxWidth || W * 0.18);');
       expect(source).toContain('var safeText = brainAtlasEllipsizeCanvasText(value, widthLimit - 18);');
@@ -312,6 +312,19 @@ describe('brain atlas canvas loops', () => {
     });
   });
 
+  it('places neuron anatomy terms in measured edge-safe pills', () => {
+    BRAIN_ATLAS_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain("brainAtlasDrawPathLabel(W*0.20,H*0.58,'Soma','#6d28d9',W*0.12);");
+      expect(source).toContain("brainAtlasDrawPathLabel(W*0.29,H*0.40,'Hillock','#7c3aed',W*0.14);");
+      expect(source).toContain("brainAtlasDrawPathLabel(W*0.90,H*0.58,'Terminal','#7c3aed',W*0.13);");
+      expect(source).toContain("brainAtlasDrawPathLabel(W*0.50,H*0.34,'Myelin Sheath','#475569',W*0.18);");
+      expect(source).toContain("brainAtlasDrawPathLabel(W*0.50,H*0.575,'Nodes of Ranvier','#475569',W*0.20);");
+      expect(source).not.toContain("ctx.fillText('Terminal',W*0.90,H*0.58)");
+      expect(source).not.toContain("ctx.fillText('Nodes of Ranvier',W*0.50,H*0.61)");
+    });
+  });
   it('packs canvas legend items into measured centered rows', () => {
     BRAIN_ATLAS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');

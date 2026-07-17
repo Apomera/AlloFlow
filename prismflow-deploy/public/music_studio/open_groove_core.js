@@ -1869,6 +1869,13 @@
     });
   }
 
+  function ogXmlDirectChildByName(parent, tagName) {
+    tagName = String(tagName || '').toLowerCase();
+    return ogXmlDirectChildren(parent).filter(function (child) {
+      return ogMusicXmlNodeName(child) === tagName;
+    })[0] || null;
+  }
+
   function ogParseMusicXmlDocument(xmlText) {
     var text = String(xmlText || '').trim();
     if (!text) throw new Error('OpenGroove: MusicXML text is empty');
@@ -1967,7 +1974,7 @@
           ? parts.filter(function (part) { return String(part.getAttribute('id') || '') === selectedId; })[0]
           : parts[0];
         if (match) foundSelectedPart = true;
-        return match || null;
+        return { node: match || null, wrapper: measure };
       });
       return foundSelectedPart ? { id: selectedId || 'P1', measures: partMeasures, format: 'timewise' } : null;
     }
@@ -1982,6 +1989,42 @@
       measures: Array.prototype.slice.call(part.getElementsByTagName('measure')),
       format: 'partwise'
     };
+  }
+
+  function ogMusicXmlMeasureNode(measureEntry) {
+    return measureEntry && measureEntry.node !== undefined ? measureEntry.node : measureEntry;
+  }
+
+  function ogMusicXmlAttributesFromMeasureEntry(measureEntry) {
+    var selectedMeasure = ogMusicXmlMeasureNode(measureEntry);
+    var selectedAttributes = ogXmlDirectChildByName(selectedMeasure, 'attributes');
+    if (selectedAttributes) return selectedAttributes;
+    var wrapper = measureEntry && measureEntry.wrapper;
+    if (!wrapper) return null;
+    var parts = ogXmlDirectChildren(wrapper).filter(function (child) { return ogMusicXmlNodeName(child) === 'part'; });
+    for (var i = 0; i < parts.length; i += 1) {
+      var partAttributes = ogXmlDirectChildByName(parts[i], 'attributes');
+      if (partAttributes) return partAttributes;
+    }
+    return null;
+  }
+
+  function ogApplyMusicXmlMeasureAttributes(project, attributesEl, state) {
+    if (!attributesEl) return false;
+    state.divisions = Math.max(1, ogFinite(ogXmlFirstText(attributesEl, 'divisions', state.divisions), state.divisions));
+    var nextTimeSignature = ogMusicXmlTimeSignatureFromAttributes(attributesEl, state.currentTimeSignature);
+    if (!ogMusicXmlSameTimeSignature(nextTimeSignature, state.currentTimeSignature)) {
+      if (!state.importedTimeSignature) state.importedTimeSignature = nextTimeSignature.slice(0, 2);
+      else if (!ogMusicXmlSameTimeSignature(nextTimeSignature, state.importedTimeSignature) && !state.warnedTimeChange) {
+        state.warnings.push('Imported score has time signature changes; Open Groove uses the first imported signature for display.');
+        state.warnedTimeChange = true;
+      }
+      state.currentTimeSignature = nextTimeSignature.slice(0, 2);
+      state.measureTicksForThisMeasure = ogMusicXmlTicksPerMeasure(project, state.currentTimeSignature);
+      state.currentMeasureTicks = state.measureTicksForThisMeasure;
+      return true;
+    }
+    return false;
   }
 
   function ogParseMusicXmlInput(xmlText, project, options) {
@@ -2010,21 +2053,39 @@
       var measureTicksForThisMeasure = currentMeasureTicks;
       cursor = measureStart;
       var lastNoteStart = measureStart;
-      ogXmlDirectChildren(measure).forEach(function (child) {
+      var measureNode = ogMusicXmlMeasureNode(measure);
+      var attributeState = {
+        divisions: divisions,
+        currentTimeSignature: currentTimeSignature,
+        currentMeasureTicks: currentMeasureTicks,
+        measureTicksForThisMeasure: measureTicksForThisMeasure,
+        importedTimeSignature: importedTimeSignature,
+        warnedTimeChange: warnedTimeChange,
+        warnings: warnings
+      };
+      ogApplyMusicXmlMeasureAttributes(project, ogMusicXmlAttributesFromMeasureEntry(measure), attributeState);
+      divisions = attributeState.divisions;
+      currentTimeSignature = attributeState.currentTimeSignature;
+      currentMeasureTicks = attributeState.currentMeasureTicks;
+      measureTicksForThisMeasure = attributeState.measureTicksForThisMeasure;
+      importedTimeSignature = attributeState.importedTimeSignature;
+      warnedTimeChange = attributeState.warnedTimeChange;
+      ogXmlDirectChildren(measureNode).forEach(function (child) {
         var name = String(child.localName || child.nodeName || '').toLowerCase();
         if (name === 'attributes') {
-          divisions = Math.max(1, ogFinite(ogXmlFirstText(child, 'divisions', divisions), divisions));
-          var nextTimeSignature = ogMusicXmlTimeSignatureFromAttributes(child, currentTimeSignature);
-          if (!ogMusicXmlSameTimeSignature(nextTimeSignature, currentTimeSignature)) {
-            if (!importedTimeSignature) importedTimeSignature = nextTimeSignature.slice(0, 2);
-            else if (!ogMusicXmlSameTimeSignature(nextTimeSignature, importedTimeSignature) && !warnedTimeChange) {
-              warnings.push('Imported score has time signature changes; Open Groove uses the first imported signature for display.');
-              warnedTimeChange = true;
-            }
-            currentTimeSignature = nextTimeSignature.slice(0, 2);
-            measureTicksForThisMeasure = ogMusicXmlTicksPerMeasure(project, currentTimeSignature);
-            currentMeasureTicks = measureTicksForThisMeasure;
-          }
+          attributeState.divisions = divisions;
+          attributeState.currentTimeSignature = currentTimeSignature;
+          attributeState.currentMeasureTicks = currentMeasureTicks;
+          attributeState.measureTicksForThisMeasure = measureTicksForThisMeasure;
+          attributeState.importedTimeSignature = importedTimeSignature;
+          attributeState.warnedTimeChange = warnedTimeChange;
+          ogApplyMusicXmlMeasureAttributes(project, child, attributeState);
+          divisions = attributeState.divisions;
+          currentTimeSignature = attributeState.currentTimeSignature;
+          currentMeasureTicks = attributeState.currentMeasureTicks;
+          measureTicksForThisMeasure = attributeState.measureTicksForThisMeasure;
+          importedTimeSignature = attributeState.importedTimeSignature;
+          warnedTimeChange = attributeState.warnedTimeChange;
           return;
         }
         if (name === 'backup' || name === 'forward') {
