@@ -57,6 +57,41 @@ const run = async () => {
   const pbody = await r.json();
   ok(r.status === 201 && pbody.pii_findings_count >= 1, 'PII (email) detected → pii_findings_count >= 1');
 
+  // ── /submitItemCorrection → public GitHub item_corrections/pending/ (mirrors translations) ──
+  // 8a. missing PAT → 500
+  r = await worker.fetch(jsonPost('/submitItemCorrection', { packId: 'p', kind: 'wrong-answer', suggested: 'x' }), {});
+  ok(r.status === 500, '/submitItemCorrection no GITHUB_PAT → 500 (got ' + r.status + ')');
+  // 8b. wrong content-type → 415
+  r = await worker.fetch(req('/submitItemCorrection', { method: 'POST', body: 'x' }), ENV);
+  ok(r.status === 415, '/submitItemCorrection non-JSON → 415 (got ' + r.status + ')');
+  // 8c. missing suggested → 400
+  r = await worker.fetch(jsonPost('/submitItemCorrection', { packId: 'praxis-core-5752', kind: 'wrong-answer' }), ENV);
+  ok(r.status === 400, '/submitItemCorrection missing suggested → 400 (got ' + r.status + ')');
+  // 8d. missing packId → 400
+  r = await worker.fetch(jsonPost('/submitItemCorrection', { kind: 'wrong-answer', suggested: 'x' }), ENV);
+  ok(r.status === 400, '/submitItemCorrection missing packId → 400 (got ' + r.status + ')');
+  // 8e. unknown kind → 400 (allowlist)
+  r = await worker.fetch(jsonPost('/submitItemCorrection', { packId: 'p', kind: 'malicious-thing', suggested: 'x' }), ENV);
+  ok(r.status === 400, '/submitItemCorrection unknown kind → 400 (got ' + r.status + ')');
+  // 8f. happy path → 201 + correct commit path + record shape
+  lastGh = null;
+  r = await worker.fetch(jsonPost('/submitItemCorrection', {
+    packId: 'praxis-core-5752', packTitle: 'Praxis Core 5752', itemId: 'core5752-b1-083',
+    domain: 'math-data-statistics-probability', reviewTier: 'source-reviewed',
+    kind: 'wrong-answer (The keyed answer looks wrong)', prompt: 'What is the range of 4, 9, 11, 15, and 18?',
+    currentAnswer: '14', suggested: 'The key is right; ignore.', note: 'per the definition of range',
+  }), ENV);
+  ok(r.status === 201, '/submitItemCorrection valid → 201 (got ' + r.status + ')');
+  const icBody = await r.json();
+  ok(icBody.ok === true && icBody.pack_id === 'praxis-core-5752' && icBody.item_id === 'core5752-b1-083', '/submitItemCorrection echoes pack_id + item_id');
+  ok(lastGh && /\/contents\/item_corrections\/pending\/\d+-praxis-core-5752-core5752-b1-083\.json$/.test(lastGh.url), 'commits to item_corrections/pending/<ts>-<pack>-<item>.json');
+  const icRec = JSON.parse(Buffer.from(JSON.parse(lastGh.init.body).content, 'base64').toString('utf8'));
+  ok(icRec.kind === 'item_correction' && icRec.pack_id === 'praxis-core-5752' && icRec.review_tier === 'source-reviewed' && icRec.problem_kind.startsWith('wrong-answer'), '/submitItemCorrection committed record shape correct');
+  // 8g. PII in the note is flagged but does not block
+  r = await worker.fetch(jsonPost('/submitItemCorrection', { packId: 'p', kind: 'other', suggested: 'call me at 207-555-0143' }), ENV);
+  const icPii = await r.json();
+  ok(r.status === 201 && icPii.pii_findings_count >= 1, '/submitItemCorrection flags PII (phone) but still 201');
+
   // 9. regression: /submit (lessons) still validates — bad body → 400, not 404/405
   r = await worker.fetch(jsonPost('/submit', { nope: true }), ENV);
   ok(r.status === 400, '/submit still reachable + validates → 400 (got ' + r.status + ')');
@@ -162,7 +197,9 @@ const run = async () => {
     list: async () => ({ keys: [...pdKv.keys()].map(name => ({ name })) }),
   };
   const ENVPD = { ...ENV, PD_SUBMISSIONS: PDKV };
-  const basePdModule = { kind: 'pd_module', metadata: { title: 'Trauma-Informed Basics' }, sections: [{ activities: [{ id: 'a1', type: 'read', content: { body: 'x' } }] }] };
+  // schema_version "pd-1.0" is required by the current PD contract (versioned 2026-07); validation
+  // failures return 422 Unprocessable Entity (structured {code,path,message}), not a bare 400.
+  const basePdModule = { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { id: 'trauma-informed-basics', title: 'Trauma-Informed Basics', language: 'en' }, sections: [{ title: 'Section 1', activities: [{ id: 'a1', title: 'Read: intro', type: 'read', content: { body: 'x' } }] }] };
   const validPdBody = { pd_module: basePdModule, affirmations: validAff };
 
   // 23. missing PD_SUBMISSIONS binding → 500
@@ -171,18 +208,21 @@ const run = async () => {
   // 24. wrong content-type → 415
   r = await worker.fetch(req('/submitPd', { method: 'POST', body: 'x' }), ENVPD);
   ok(r.status === 415, '/submitPd non-JSON content-type → 415 (got ' + r.status + ')');
-  // 25. validatePd: missing pd_module → 400
+  // 25. validatePd: missing pd_module → 422
   r = await worker.fetch(jsonPost('/submitPd', { affirmations: validAff }), ENVPD);
-  ok(r.status === 400, '/submitPd missing pd_module → 400');
-  // 26. validatePd: wrong kind → 400
-  r = await worker.fetch(jsonPost('/submitPd', { pd_module: { kind: 'x', metadata: { title: 't' }, sections: [{ activities: [] }] }, affirmations: validAff }), ENVPD);
-  ok(r.status === 400, '/submitPd wrong kind → 400');
-  // 27. validatePd: no sections → 400
-  r = await worker.fetch(jsonPost('/submitPd', { pd_module: { kind: 'pd_module', metadata: { title: 't' }, sections: [] }, affirmations: validAff }), ENVPD);
-  ok(r.status === 400, '/submitPd no sections → 400');
-  // 28. validatePd: affirmation not true → 400
+  ok(r.status === 422, '/submitPd missing pd_module → 422 (got ' + r.status + ')');
+  // 25b. validatePd: missing schema_version → 422
+  r = await worker.fetch(jsonPost('/submitPd', { pd_module: { kind: 'pd_module', metadata: { title: 't' }, sections: [{ activities: [{ id: 'a1', type: 'read', content: { body: 'x' } }] }] }, affirmations: validAff }), ENVPD);
+  ok(r.status === 422, '/submitPd missing schema_version → 422 (got ' + r.status + ')');
+  // 26. validatePd: wrong kind → 422
+  r = await worker.fetch(jsonPost('/submitPd', { pd_module: { schema_version: 'pd-1.0', kind: 'x', metadata: { title: 't' }, sections: [{ activities: [] }] }, affirmations: validAff }), ENVPD);
+  ok(r.status === 422, '/submitPd wrong kind → 422 (got ' + r.status + ')');
+  // 27. validatePd: no sections → 422
+  r = await worker.fetch(jsonPost('/submitPd', { pd_module: { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { title: 't' }, sections: [] }, affirmations: validAff }), ENVPD);
+  ok(r.status === 422, '/submitPd no sections → 422 (got ' + r.status + ')');
+  // 28. validatePd: affirmation not true → 422
   r = await worker.fetch(jsonPost('/submitPd', { pd_module: basePdModule, affirmations: { ...validAff, no_pii: false } }), ENVPD);
-  ok(r.status === 400, '/submitPd affirmation not true → 400');
+  ok(r.status === 422, '/submitPd affirmation not true → 422 (got ' + r.status + ')');
   // 29. happy path → 201 + KV write + record shape
   r = await worker.fetch(jsonPost('/submitPd', validPdBody), ENVPD);
   ok(r.status === 201, '/submitPd valid → 201 (got ' + r.status + ')');
@@ -192,19 +232,14 @@ const run = async () => {
   const pdStored = JSON.parse([...pdKv.values()][0]);
   ok(pdStored.kind === 'pd_submission' && pdStored.structure_check.ok === true && pdStored.pd_module.kind === 'pd_module', '/submitPd stored record shape + structure_check.ok');
   // 30. pdStructureIssues annotates a structurally-broken (but schema-valid) module
-  r = await worker.fetch(jsonPost('/submitPd', { pd_module: { kind: 'pd_module', metadata: { title: 'Broken' }, sections: [{ activities: [
-    { id: 'q1', type: 'quiz', content: { questions: [] } },
-    { id: 'v1', type: 'video', content: {} },
-    { id: 'u1', type: 'wat' },
+  // A structurally-weak-but-schema-valid module: unknown/empty activity types are caught by the
+  // server contract now (422), so this asserts the contract rejects them rather than KV-storing.
+  r = await worker.fetch(jsonPost('/submitPd', { pd_module: { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { id: 'broken', title: 'Broken' }, sections: [{ title: 'S', activities: [
+    { id: 'u1', title: 'Bad type', type: 'wat', content: {} },
   ] }] }, affirmations: validAff }), ENVPD);
-  const brokenStored = JSON.parse([...pdKv.values()][pdKv.size - 1]);
-  const issues = brokenStored.structure_check.issues;
-  ok(brokenStored.structure_check.ok === false
-    && issues.includes('q1: quiz has no questions')
-    && issues.includes('v1: video needs content.url')
-    && issues.includes('u1: unknown type "wat"'), '/submitPd structure_check flags quiz/video/unknown-type issues');
+  ok(r.status === 422, '/submitPd rejects an unknown activity type at the contract → 422 (got ' + r.status + ')');
   // 31. PII in a PD module is flagged but does NOT block (201)
-  r = await worker.fetch(jsonPost('/submitPd', { pd_module: { kind: 'pd_module', metadata: { title: 'PII PD' }, sections: [{ activities: [{ id: 'a1', type: 'read', content: { body: 'email a@b.com' } }] }] }, affirmations: validAff }), ENVPD);
+  r = await worker.fetch(jsonPost('/submitPd', { pd_module: { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { id: 'pii-pd', title: 'PII PD', language: 'en' }, sections: [{ title: 'S', activities: [{ id: 'a1', title: 'Read', type: 'read', content: { body: 'email a@b.com' } }] }] }, affirmations: validAff }), ENVPD);
   const pdpii = await r.json();
   ok(r.status === 201 && pdpii.pii_findings_count >= 1, '/submitPd flags PII (email) but still 201');
 

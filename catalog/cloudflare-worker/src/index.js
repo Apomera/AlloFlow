@@ -14,9 +14,10 @@
  *   GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH
  *
  * Endpoints:
- *   POST /submit            accept a lesson submission (-> public GitHub pending/)
- *   POST /submitTranslation accept a translation correction (-> public GitHub pending/)
- *   POST /submitBug         accept a bug report (-> PRIVATE BUG_REPORTS KV)
+ *   POST /submit             accept a lesson submission (-> public GitHub pending/)
+ *   POST /submitTranslation  accept a translation correction (-> public GitHub pending/)
+ *   POST /submitItemCorrection accept a practice-item correction (-> public GitHub pending/)
+ *   POST /submitBug          accept a bug report (-> PRIVATE BUG_REPORTS KV)
  *   POST /submitPd          accept a PD module (-> PRIVATE PD_SUBMISSIONS KV)
  *   POST /submitPlugin      accept a Tool Forge plugin (-> PRIVATE PLUGIN_SUBMISSIONS KV)
  *   GET  /bugs              token-gated bug-report reader
@@ -60,7 +61,7 @@ const ALLOWED_SUBJECTS = new Set([
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Max-Age': '86400',
 };
 
@@ -86,6 +87,21 @@ function timingSafeEq(a, b) {
   let r = 0;
   for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return r === 0;
+}
+
+// Hash both values before comparing issuer authorization tokens. This keeps the
+// comparison loop fixed-width and avoids exposing a useful length/prefix oracle.
+// (The Worker runtime does not expose Node's crypto.timingSafeEqual.)
+async function timingSafeTokenEq(a, b) {
+  const enc = new TextEncoder();
+  const [ah, bh] = await Promise.all([
+    crypto.subtle.digest('SHA-256', enc.encode(String(a || ''))),
+    crypto.subtle.digest('SHA-256', enc.encode(String(b || ''))),
+  ]);
+  const av = new Uint8Array(ah); const bv = new Uint8Array(bh);
+  let diff = 0;
+  for (let i = 0; i < av.length; i++) diff |= av[i] ^ bv[i];
+  return diff === 0;
 }
 
 function scanForPii(text) {
@@ -240,6 +256,72 @@ async function handleTranslationSubmit(request, env) {
   return jsonResponse({ ok: true, language: record.language, key: record.key, pii_findings_count: piiFindings.length }, 201);
 }
 
+// ── Practice-item corrections (parallel to translation corrections; same GitHub-commit model) ──
+// Commits to item_corrections/pending/<file>.json. The maintainer reviews + applies accepted fixes
+// to the pack source via dev-tools/i18n/ingest_item_corrections.cjs (--apply). Submit-only; the app
+// never reads these back. This is the community-review channel for the Test Prep packs, whose
+// independent expert validation is deliberately still in progress.
+
+const ITEM_CORRECTION_KINDS = ['wrong-answer', 'ambiguous', 'weak-distractor', 'outdated', 'not-exam-item', 'typo', 'other'];
+
+function validateItemCorrection(p) {
+  if (!p || typeof p !== 'object') return 'Body must be a JSON object.';
+  if (!p.packId || typeof p.packId !== 'string' || p.packId.trim().length === 0) return 'packId required.';
+  if (p.packId.length > 120) return 'packId too long (max 120 chars).';
+  if (!p.suggested || typeof p.suggested !== 'string' || p.suggested.trim().length === 0) return 'suggested fix required.';
+  if (p.suggested.length > 4000) return 'suggested too long (max 4000 chars).';
+  if (!p.kind || typeof p.kind !== 'string') return 'kind required.';
+  // kind arrives as "id (Human label)"; validate the leading id against the allowlist.
+  const kindId = p.kind.trim().split(' ')[0];
+  if (!ITEM_CORRECTION_KINDS.includes(kindId)) return 'kind must be one of: ' + ITEM_CORRECTION_KINDS.join(', ');
+  for (const f of ['packTitle', 'itemId', 'domain', 'reviewTier', 'prompt', 'currentAnswer', 'note']) {
+    if (p[f] != null && (typeof p[f] !== 'string' || p[f].length > 4000)) return `${f} must be a string up to 4000 chars.`;
+  }
+  return null;
+}
+
+async function handleItemCorrectionSubmit(request, env) {
+  if (!env.GITHUB_PAT) return jsonResponse({ ok: false, error: 'Server misconfigured: missing GITHUB_PAT secret.' }, 500);
+  const contentType = request.headers.get('Content-Type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  const rawBody = await request.text();
+  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  let p;
+  try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
+  const err = validateItemCorrection(p);
+  if (err) return jsonResponse({ ok: false, error: err }, 400);
+
+  const piiFindings = scanForPii([p.suggested, p.note, p.prompt].filter(Boolean).join('\n'));
+  const record = {
+    schema_version: '1.0',
+    kind: 'item_correction',
+    submitted_at: new Date().toISOString(),
+    pack_id: p.packId.trim(),
+    pack_title: (p.packTitle || '').trim(),
+    item_id: (p.itemId || '').trim(),
+    domain: (p.domain || '').trim(),
+    review_tier: (p.reviewTier || '').trim(),
+    problem_kind: p.kind.trim(),
+    prompt: (p.prompt || '').trim(),
+    current_answer: (p.currentAnswer || '').trim(),
+    suggested: p.suggested.trim(),
+    note: (p.note || '').trim(),
+    pii_scan: { ran_server_side: true, findings: piiFindings },
+    submitter: {
+      ip_country: request.cf?.country || null,
+      user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
+    },
+  };
+  const base = slugify(p.packId) + '-' + slugify(p.itemId || p.kind).slice(0, 32);
+  const filePath = `item_corrections/pending/${Date.now()}-${base}.json`;
+  try {
+    await commitJsonToGitHub(env, filePath, JSON.stringify(record, null, 2) + '\n', `Item correction: ${record.pack_id} ${record.item_id || ''}`.trim());
+  } catch (e) {
+    return jsonResponse({ ok: false, error: 'Could not commit to GitHub: ' + e.message }, 502);
+  }
+  return jsonResponse({ ok: true, pack_id: record.pack_id, item_id: record.item_id, pii_findings_count: piiFindings.length }, 201);
+}
+
 // ── Bug reports → Cloudflare KV (PRIVATE, not GitHub) ──
 // Unlike lessons/translations, bug reports carry error logs + free text that can include
 // student-identifiable data (FERPA). The AlloFlow repo is PUBLIC, so these must NOT go to GitHub.
@@ -261,56 +343,173 @@ function validateBug(p) {
 // ── PD module submissions → Cloudflare KV (PRIVATE, not GitHub) ──
 // PD modules are educator-authored and may reference student/classroom detail, so
 // like bug reports they are staged in PRIVATE KV (PD_SUBMISSIONS), NOT committed to
-// the public repo. Shallow validation only — the deep schema check lives in
-// pd_core_module.js (client-side) and is repeated by the maintainer at review time.
+// the public repo. The server is a trust boundary: it performs its own complete
+// pd-1.0 validation and never relies on the browser's PdCore validator.
+const PD_SCHEMA_VERSION = 'pd-1.0';
+const PD_ACTIVITY_TYPES = new Set(['read', 'quiz', 'reflect', 'video', 'checklist', 'sim']);
+const PD_MODULE_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const PD_ACTIVITY_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const PD_AUTHORING_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 
-function validatePd(p) {
-  if (!p || typeof p !== 'object') return 'Body must be a JSON object.';
-  const m = p.pd_module;
-  if (!m || typeof m !== 'object') return 'pd_module missing or not an object.';
-  if (m.kind !== 'pd_module') return 'pd_module.kind must be "pd_module".';
-  if (!m.metadata || typeof m.metadata !== 'object' || !m.metadata.title || typeof m.metadata.title !== 'string' || !m.metadata.title.trim()) return 'pd_module.metadata.title required.';
-  if (m.metadata.title.length > 200) return 'pd_module.metadata.title too long (max 200 chars).';
-  if (!Array.isArray(m.sections) || m.sections.length === 0) return 'pd_module needs at least one section.';
-  if (p.credit != null && (typeof p.credit !== 'string' || p.credit.length > 80)) return 'credit must be a string up to 80 chars.';
-  if (!p.affirmations || typeof p.affirmations !== 'object') return 'affirmations missing or not an object.';
-  for (const key of ['author_or_authorized', 'no_pii', 'license_agreed', 'age_eligible']) {
-    if (p.affirmations[key] !== true) return `affirmation "${key}" must be true.`;
+function pdValidationError(status, code, path, message) {
+  return { status, code, path, message };
+}
+function isObject(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
+function isNonBlank(v, max) { return typeof v === 'string' && !!v.trim() && v.length <= max; }
+function validPdUrl(v) {
+  if (!isNonBlank(v, 2048) || v !== v.trim() || /[\u0000-\u001F\u007F\\\s]/.test(v)) return false;
+  if (/^https?:\/\/[^/?#]+(?:[/?#].*)?$/i.test(v)) return true;
+  if (/^(?:\/(?!\/)|\.\.?\/|[?#])/.test(v)) return true;
+  return /^[A-Za-z0-9][A-Za-z0-9._~!$&'()*+,;=@%/?#-]*$/.test(v);
+}
+function validatePdAssessmentPolicy(policy, path) {
+  const bad = (code, suffix, message) => pdValidationError(422, code, path + suffix, message);
+  if (policy === undefined) return null;
+  if (!isObject(policy)) return bad('invalid_assessment_policy', '', 'assessmentPolicy must be an object.');
+  if (policy.paste === undefined) return null;
+  if (!isObject(policy.paste)) return bad('invalid_paste_policy', '.paste', 'assessmentPolicy.paste must be an object.');
+  if (!['allowed', 'monitored', 'restricted'].includes(policy.paste.mode)) return bad('invalid_paste_mode', '.paste.mode', 'Paste mode must be allowed, monitored, or restricted.');
+  if (policy.paste.mode === 'restricted' &&
+      !isNonBlank(policy.paste.accessibleAlternative, 4000) &&
+      !isNonBlank(policy.paste.accommodationContact, 1000)) {
+    return bad('paste_alternative_required', '.paste', 'Restricted paste mode requires an accessibleAlternative or accommodationContact.');
   }
   return null;
 }
 
-// Non-blocking deeper structural check (mirrors the client validator's spirit) so a
-// maintainer can quickly see whether a stored submission is publish-ready. The real
-// gate is the client-side PdCore.validatePdModule + human review; this only annotates.
-function pdStructureIssues(m) {
-  const issues = [];
-  const KNOWN = ['read', 'quiz', 'reflect', 'video', 'checklist', 'sim'];
-  const ids = {};
-  (Array.isArray(m.sections) ? m.sections : []).forEach((sec, si) => {
-    const acts = (sec && Array.isArray(sec.activities)) ? sec.activities : [];
-    if (!acts.length) issues.push(`section ${si + 1} has no activities`);
-    acts.forEach((a) => {
-      if (!a || typeof a.id !== 'string' || !a.id) { issues.push('an activity is missing an id'); return; }
-      if (ids[a.id]) issues.push(`duplicate activity id: ${a.id}`); else ids[a.id] = true;
-      if (KNOWN.indexOf(a.type) === -1) issues.push(`${a.id}: unknown type "${a.type}"`);
-      if (a.type === 'quiz') {
-        const qs = (a.content && a.content.questions) || [];
-        if (!Array.isArray(qs) || !qs.length) issues.push(`${a.id}: quiz has no questions`);
-        else qs.forEach((q, qi) => {
-          if (!Array.isArray(q.options) || q.options.length < 2) issues.push(`${a.id} q${qi + 1}: needs >=2 options`);
-          else if (!(q.correctIndex >= 0 && q.correctIndex < q.options.length)) issues.push(`${a.id} q${qi + 1}: invalid correctIndex`);
-        });
+function validatePdModuleServer(m) {
+  const bad = (code, path, message) => pdValidationError(422, code, path, message);
+  if (!isObject(m)) return bad('pd_module_required', 'pd_module', 'pd_module must be an object.');
+  if (m.schema_version !== PD_SCHEMA_VERSION) return bad('unsupported_schema_version', 'pd_module.schema_version', `Only schema_version "${PD_SCHEMA_VERSION}" is supported.`);
+  if (m.kind !== 'pd_module') return bad('invalid_module_kind', 'pd_module.kind', 'pd_module.kind must be "pd_module".');
+  if (!isObject(m.metadata)) return bad('metadata_required', 'pd_module.metadata', 'pd_module.metadata must be an object.');
+  if (!isNonBlank(m.metadata.id, 128) || !PD_AUTHORING_ID_RE.test(m.metadata.id)) {
+    return bad('invalid_module_id', 'pd_module.metadata.id', 'metadata.id must be a stable identifier up to 128 chars.');
+  }
+  if (!isNonBlank(m.metadata.title, 200)) return bad('invalid_module_title', 'pd_module.metadata.title', 'metadata.title must be a non-empty string up to 200 chars.');
+  const modulePolicyError = validatePdAssessmentPolicy(m.assessmentPolicy, 'pd_module.assessmentPolicy');
+  if (modulePolicyError) return modulePolicyError;
+  for (const [field, max] of [['topic', 80], ['summary', 4000], ['credit', 80], ['license', 80], ['audience', 80]]) {
+    if (m.metadata[field] != null && typeof m.metadata[field] !== 'string') return bad('invalid_metadata_field', `pd_module.metadata.${field}`, `metadata.${field} must be a string.`);
+    if (typeof m.metadata[field] === 'string' && m.metadata[field].length > max) return bad('metadata_field_too_long', `pd_module.metadata.${field}`, `metadata.${field} exceeds ${max} chars.`);
+  }
+  if (m.metadata.estMinutes != null && (!Number.isFinite(m.metadata.estMinutes) || m.metadata.estMinutes <= 0 || m.metadata.estMinutes > 10080)) {
+    return bad('invalid_estimated_minutes', 'pd_module.metadata.estMinutes', 'metadata.estMinutes must be a number in (0, 10080].');
+  }
+  if (!Array.isArray(m.sections) || m.sections.length === 0) return bad('sections_required', 'pd_module.sections', 'A PD module needs at least one section.');
+  if (m.sections.length > 100) return bad('too_many_sections', 'pd_module.sections', 'A PD module may contain at most 100 sections.');
+
+  const ids = new Set();
+  let activityCount = 0;
+  for (let si = 0; si < m.sections.length; si++) {
+    const sec = m.sections[si]; const sp = `pd_module.sections[${si}]`;
+    if (!isObject(sec)) return bad('invalid_section', sp, `Section ${si + 1} must be an object.`);
+    if (!isNonBlank(sec.title, 200)) return bad('invalid_section_title', `${sp}.title`, `Section ${si + 1} needs a non-empty title up to 200 chars.`);
+    if (!Array.isArray(sec.activities) || sec.activities.length === 0) return bad('activities_required', `${sp}.activities`, `Section ${si + 1} needs at least one activity.`);
+    if (sec.activities.length > 100) return bad('too_many_activities', `${sp}.activities`, `Section ${si + 1} may contain at most 100 activities.`);
+
+    for (let ai = 0; ai < sec.activities.length; ai++) {
+      activityCount++;
+      if (activityCount > 500) return bad('too_many_activities', 'pd_module.sections', 'A PD module may contain at most 500 activities.');
+      const act = sec.activities[ai]; const ap = `${sp}.activities[${ai}]`;
+      if (!isObject(act)) return bad('invalid_activity', ap, 'Every activity must be an object.');
+      if (!isNonBlank(act.id, 128) || !PD_AUTHORING_ID_RE.test(act.id)) return bad('invalid_activity_id', `${ap}.id`, 'Activity id must be a stable identifier up to 128 chars.');
+      if (ids.has(act.id)) return bad('duplicate_activity_id', `${ap}.id`, `Duplicate activity id "${act.id}".`);
+      ids.add(act.id);
+      if (!PD_ACTIVITY_TYPES.has(act.type)) return bad('unsupported_activity_type', `${ap}.type`, `Unsupported activity type "${String(act.type)}".`);
+      if (!isNonBlank(act.title, 200)) return bad('invalid_activity_title', `${ap}.title`, `Activity ${act.id} needs a non-empty title up to 200 chars.`);
+      if (!isObject(act.content)) return bad('activity_content_required', `${ap}.content`, `Activity ${act.id} needs a content object.`);
+      const activityPolicyError = validatePdAssessmentPolicy(act.assessmentPolicy, `${ap}.assessmentPolicy`);
+      if (activityPolicyError) return activityPolicyError;
+
+      const c = act.content;
+      if (act.type === 'read') {
+        if (!isNonBlank(c.body, 100000)) return bad('read_body_required', `${ap}.content.body`, `Read activity ${act.id} needs a non-empty body.`);
+        if (c.keyPoints !== undefined) {
+          if (!Array.isArray(c.keyPoints) || c.keyPoints.length > 100 || c.keyPoints.some((item) => !isNonBlank(item, 4000))) {
+            return bad('invalid_read_key_points', `${ap}.content.keyPoints`, 'Read keyPoints must be an array of non-empty strings.');
+          }
+        }
+        if (c.links !== undefined) {
+          if (!Array.isArray(c.links) || c.links.length > 100) return bad('invalid_read_links', `${ap}.content.links`, 'Read links must be an array.');
+          for (let li = 0; li < c.links.length; li++) {
+            const link = c.links[li];
+            if (!isObject(link) || !isNonBlank(link.label, 4000) || !validPdUrl(link.url)) return bad('invalid_read_link', `${ap}.content.links[${li}]`, 'Every read link needs a label and safe URL.');
+          }
+        }
       }
-      if (a.type === 'video' && !(a.content && a.content.url)) issues.push(`${a.id}: video needs content.url`);
-      if (a.type === 'checklist' && !(a.content && Array.isArray(a.content.items) && a.content.items.length)) issues.push(`${a.id}: checklist needs content.items`);
-      if (a.type === 'sim' && !(a.content && a.content.scenario)) issues.push(`${a.id}: sim needs content.scenario`);
-      if (a.gate && a.gate.kind === 'score' && a.type !== 'quiz') issues.push(`${a.id}: score gate only valid on quiz`);
-    });
-  });
-  return issues;
+      if (act.type === 'reflect' && !isNonBlank(c.prompt, 10000)) return bad('reflect_prompt_required', `${ap}.content.prompt`, `Reflect activity ${act.id} needs a non-empty prompt.`);
+      if (act.type === 'video') {
+        if (!validPdUrl(c.url)) return bad('invalid_video_url', `${ap}.content.url`, `Video activity ${act.id} needs a safe content.url.`);
+        if (c.transcriptUrl !== undefined && !validPdUrl(c.transcriptUrl)) return bad('invalid_transcript_url', `${ap}.content.transcriptUrl`, 'Video transcriptUrl must be safe.');
+        if (c.captionsUrl !== undefined && !validPdUrl(c.captionsUrl)) return bad('invalid_captions_url', `${ap}.content.captionsUrl`, 'Video captionsUrl must be safe.');
+      }
+      if (act.type === 'sim') {
+        if (!isNonBlank(c.scenario, 20000)) return bad('sim_scenario_required', `${ap}.content.scenario`, `Sim activity ${act.id} needs a non-empty scenario.`);
+        if (!isNonBlank(c.rubric, 20000)) return bad('invalid_sim_rubric', `${ap}.content.rubric`, `Sim activity ${act.id} needs a non-empty rubric up to 20000 chars.`);
+      }
+      if (act.type === 'checklist') {
+        if (!Array.isArray(c.items) || c.items.length === 0 || c.items.length > 100) return bad('invalid_checklist_items', `${ap}.content.items`, `Checklist activity ${act.id} needs 1-100 items.`);
+        for (let ii = 0; ii < c.items.length; ii++) if (!isNonBlank(c.items[ii], 2000)) return bad('invalid_checklist_item', `${ap}.content.items[${ii}]`, 'Every checklist item must be a non-empty string up to 2000 chars.');
+      }
+      if (act.type === 'quiz') {
+        if (!Array.isArray(c.questions) || c.questions.length === 0 || c.questions.length > 100) return bad('invalid_quiz_questions', `${ap}.content.questions`, `Quiz ${act.id} needs 1-100 questions.`);
+        for (let qi = 0; qi < c.questions.length; qi++) {
+          const q = c.questions[qi]; const qp = `${ap}.content.questions[${qi}]`;
+          if (!isObject(q)) return bad('invalid_quiz_question', qp, `Quiz ${act.id} question ${qi + 1} must be an object.`);
+          if (!isNonBlank(q.prompt, 10000)) return bad('quiz_prompt_required', `${qp}.prompt`, `Quiz ${act.id} question ${qi + 1} needs a prompt.`);
+          if (!Array.isArray(q.options) || q.options.length < 2 || q.options.length > 20) return bad('invalid_quiz_options', `${qp}.options`, `Quiz ${act.id} question ${qi + 1} needs 2-20 options.`);
+          for (let oi = 0; oi < q.options.length; oi++) if (!isNonBlank(q.options[oi], 4000)) return bad('invalid_quiz_option', `${qp}.options[${oi}]`, 'Every quiz option must be a non-empty string up to 4000 chars.');
+          if (!Number.isInteger(q.correctIndex) || q.correctIndex < 0 || q.correctIndex >= q.options.length) return bad('invalid_answer_key', `${qp}.correctIndex`, `Quiz ${act.id} question ${qi + 1} needs a valid integer correctIndex.`);
+          if (q.explanation != null && !isNonBlank(q.explanation, 10000)) return bad('invalid_quiz_explanation', `${qp}.explanation`, 'Quiz explanations must be non-empty strings when supplied.');
+        }
+      }
+
+      const gate = act.gate == null ? { kind: 'none' } : act.gate;
+      if (!isObject(gate) || (gate.kind !== 'none' && gate.kind !== 'score')) return bad('invalid_gate_kind', `${ap}.gate.kind`, `Activity ${act.id} gate.kind must be "none" or "score".`);
+      if (gate.kind === 'score') {
+        if (act.type !== 'quiz') return bad('invalid_score_gate_type', `${ap}.gate`, `Activity ${act.id} may use a score gate only when its type is quiz.`);
+        if (!Number.isFinite(gate.threshold) || gate.threshold <= 0 || gate.threshold > 1) return bad('invalid_score_threshold', `${ap}.gate.threshold`, `Activity ${act.id} score threshold must be in (0,1].`);
+      }
+    }
+  }
+  return null;
 }
 
+function validatePdAccessibilityReadinessServer(m) {
+  const bad = (code, path, message) => pdValidationError(422, code, path, message);
+  const metadata = (m && m.metadata) || {};
+  if (!isNonBlank(metadata.language || metadata.lang, 64)) return bad('metadata_language_required', 'pd_module.metadata.language', 'Declare the primary module language.');
+  for (let si = 0; si < m.sections.length; si++) {
+    const activities = m.sections[si].activities || [];
+    for (let ai = 0; ai < activities.length; ai++) {
+      const act = activities[ai];
+      if (!act || act.type !== 'video') continue;
+      const c = act.content || {};
+      const path = `pd_module.sections[${si}].activities[${ai}].content`;
+      const captions = c.captions === true || (isNonBlank(c.captionsUrl, 2048) && validPdUrl(c.captionsUrl));
+      const transcript = isNonBlank(c.transcript, 100000) || (isNonBlank(c.transcriptUrl, 2048) && validPdUrl(c.transcriptUrl));
+      const alternative = isNonBlank(c.accessibleAlternative, 100000);
+      if (!captions) return bad('video_captions_required', path, 'Provide captions for prerecorded video.');
+      if (!transcript && !alternative) return bad('video_alternative_required', path, 'Provide a transcript or documented accessible alternative.');
+    }
+  }
+  return null;
+}
+
+function validatePd(p) {
+  if (!isObject(p)) return pdValidationError(400, 'invalid_body', '', 'Body must be a JSON object.');
+  const moduleError = validatePdModuleServer(p.pd_module);
+  if (moduleError) return moduleError;
+  const accessibilityError = validatePdAccessibilityReadinessServer(p.pd_module);
+  if (accessibilityError) return accessibilityError;
+  if (p.credit != null && (typeof p.credit !== 'string' || p.credit.length > 80)) return pdValidationError(422, 'invalid_credit', 'credit', 'credit must be a string up to 80 chars.');
+  if (!isObject(p.affirmations)) return pdValidationError(422, 'affirmations_required', 'affirmations', 'affirmations must be an object.');
+  for (const key of ['author_or_authorized', 'no_pii', 'license_agreed', 'age_eligible']) {
+    if (p.affirmations[key] !== true) return pdValidationError(422, 'affirmation_required', `affirmations.${key}`, `affirmation "${key}" must be true.`);
+  }
+  return null;
+}
 async function handlePdSubmit(request, env) {
   if (!env.PD_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Server misconfigured: missing PD_SUBMISSIONS KV binding.' }, 500);
   const contentType = request.headers.get('Content-Type') || '';
@@ -320,10 +519,9 @@ async function handlePdSubmit(request, env) {
   let p;
   try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
   const err = validatePd(p);
-  if (err) return jsonResponse({ ok: false, error: err }, 400);
+  if (err) return jsonResponse({ ok: false, error: err.message, code: err.code, path: err.path }, err.status);
 
   const piiFindings = scanForPii(JSON.stringify(p.pd_module));
-  const structIssues = pdStructureIssues(p.pd_module);
   const submittedAt = new Date().toISOString();
   const title = p.pd_module.metadata.title.trim();
   const slug = slugify(title);
@@ -337,7 +535,7 @@ async function handlePdSubmit(request, env) {
     license: (p.pd_module.metadata.license || 'CC-BY-SA-4.0'),
     affirmations: p.affirmations,
     pii_scan: { ran_server_side: true, findings: piiFindings },
-    structure_check: { ok: structIssues.length === 0, issues: structIssues.slice(0, 50) },
+    structure_check: { ok: true, issues: [], validator: 'worker-pd-1.0' },
     submitter: {
       ip_country: request.cf?.country || null,
       user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
@@ -514,7 +712,7 @@ async function handlePluginSubmit(request, env) {
     affirmations: p.affirmations,
     validator_report: (p.validator_report && typeof p.validator_report === 'object') ? p.validator_report : null,
     pii_scan: { ran_server_side: true, findings: piiFindings },
-    structure_check: { ok: structIssues.length === 0, issues: structIssues.slice(0, 50) },
+    structure_check: { ok: structIssues.length === 0, issues: structIssues.slice(0, 50), validator: 'worker-plugin-1.0' },
     submitter: {
       ip_country: request.cf?.country || null,
       user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
@@ -549,11 +747,18 @@ async function handlePluginList(request, env, url) {
   return jsonResponse({ ok: true, count: submissions.length, submissions });
 }
 
-// ── PD completion credentials (Tier-2, OPTIONAL): Ed25519-signed attestations ──
-// MUST stay byte-identical to pd_core_module.js canonicalize/buildCredentialPayload
-// so a credential signed here verifies client-side. The signature proves issuance +
-// integrity + timestamp + issuer identity — NOT supervised/proctored completion.
-// Enabled only when PD_ISSUER_PRIVATE_KEY (pkcs8 base64 secret) is configured.
+// PD completion credentials. Secure-by-default reviewed issuance requires BOTH
+// PD_ISSUER_PRIVATE_KEY and the PD_ISSUER_AUTH_TOKEN secret. The caller holding
+// that token is the trusted review service; the endpoint validates and signs a
+// complete, version-bound decision/evidence contract. Legacy learner-controlled
+// self-paced attestations are disabled unless PD_ALLOW_SELF_PACED_ISSUANCE=true.
+const PD_REVIEWED_DECISION_SCHEMA = 'pd-reviewed-decision-1.0';
+const PD_EVIDENCE_SCHEMA = 'pd-evidence-1.0';
+const PD_ACCESSIBILITY_SCHEMA = 'pd-accessibility-verification-1.0';
+const PD_REVIEWED_CREDENTIAL_SCHEMA = 'pd-reviewed-credential-1.0';
+const PD_DIGEST_RE = /^sha256:[a-f0-9]{64}$/i;
+const PD_CONTRACT_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
+
 function pdCanonicalize(v) {
   if (v === null) return 'null';
   const t = typeof v;
@@ -567,73 +772,193 @@ function pdCanonicalize(v) {
   }
   throw new Error('cannot canonicalize ' + t);
 }
-function pdBuildCredentialPayload(record, issuerName, nowISO) {
-  record = record || {};
-  const per = Array.isArray(record.perActivity) ? record.perActivity : [];
-  return {
-    schema_version: 'pd-credential-1.0',
-    type: 'PdCompletionAttestation',
-    issuer: { name: issuerName || 'AlloFlow PD' },
-    issuanceDate: nowISO || null,
-    credentialSubject: {
-      name: (record.learner && record.learner.name) || null,
-      moduleId: record.moduleId || null,
-      moduleTitle: record.moduleTitle || null,
-      topic: record.topic || null,
-      complete: !!record.complete,
-      completedAt: record.completedAt || null,
-      achievement: {
-        name: record.moduleTitle || record.moduleId || 'PD module',
-        activitiesPassed: per.filter((p) => p && p.passed).length,
-        activitiesTotal: per.length,
-      },
-    },
-    attestation_note: 'Issuer-signed, tamper-evident attestation: confirms this self-paced completion record was issued by the named issuer at issuanceDate and has not been altered since. It is self-reported and NOT proctored, accredited, or contact-hour-bearing.',
-  };
-}
 function b64ToBuf(b64) { const bin = atob(String(b64 || '').replace(/\s+/g, '')); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; }
 function bufToB64(buf) { let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i++) s += String.fromCharCode(u[i]); return btoa(s); }
+function isContractId(v) { return typeof v === 'string' && PD_CONTRACT_ID_RE.test(v); }
+function isIsoDate(v) { return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(v) && !Number.isNaN(Date.parse(v)); }
+function issueContractError(code, path, message, status = 422) { return { code, path, message, status }; }
+function sameStringSet(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+  const aa = [...a].sort(); const bb = [...b].sort();
+  return aa.every((v, i) => v === bb[i]);
+}
+
+function validateReviewedDecision(d) {
+  const bad = (code, path, message) => issueContractError(code, path, message);
+  if (!isObject(d)) return bad('reviewed_decision_required', 'decision', 'decision must be an object.');
+  if (d.schema_version !== PD_REVIEWED_DECISION_SCHEMA) return bad('unsupported_decision_schema', 'decision.schema_version', `Only ${PD_REVIEWED_DECISION_SCHEMA} is supported.`);
+  if (!isContractId(d.decision_id)) return bad('invalid_decision_id', 'decision.decision_id', 'decision_id must be a stable identifier up to 128 chars.');
+  if (d.status !== 'approved') return bad('decision_not_approved', 'decision.status', 'Only an approved reviewed decision is credential-eligible.');
+  if (!isIsoDate(d.decided_at)) return bad('invalid_decision_date', 'decision.decided_at', 'decided_at must be an RFC 3339 timestamp.');
+
+  if (!isObject(d.reviewer)) return bad('reviewer_required', 'decision.reviewer', 'reviewer provenance is required.');
+  if (!isContractId(d.reviewer.id)) return bad('invalid_reviewer_id', 'decision.reviewer.id', 'reviewer.id must be a stable identifier.');
+  if (!isNonBlank(d.reviewer.name, 200)) return bad('invalid_reviewer_name', 'decision.reviewer.name', 'reviewer.name is required.');
+  if (!isNonBlank(d.reviewer.authority, 200)) return bad('reviewer_authority_required', 'decision.reviewer.authority', 'reviewer.authority is required.');
+  if (!isObject(d.provenance) || !isNonBlank(d.provenance.system, 200) || !isContractId(d.provenance.review_record_id)) return bad('decision_provenance_required', 'decision.provenance', 'provenance.system and provenance.review_record_id are required.');
+  if (!isObject(d.learner) || !isContractId(d.learner.id)) return bad('learner_required', 'decision.learner.id', 'A stable learner.id is required.');
+  if (d.learner.name != null && !isNonBlank(d.learner.name, 200)) return bad('invalid_learner_name', 'decision.learner.name', 'learner.name must be a non-empty string up to 200 chars when supplied.');
+
+  const m = d.module;
+  if (!isObject(m)) return bad('module_binding_required', 'decision.module', 'An immutable module binding is required.');
+  if (!isNonBlank(m.id, 100) || !PD_MODULE_ID_RE.test(m.id)) return bad('invalid_module_id', 'decision.module.id', 'module.id must be a stable lowercase slug.');
+  if (!isContractId(m.version)) return bad('invalid_module_version', 'decision.module.version', 'module.version must be a stable identifier.');
+  if (!PD_DIGEST_RE.test(String(m.content_digest || ''))) return bad('invalid_content_digest', 'decision.module.content_digest', 'module.content_digest must be sha256:<64 hex chars>.');
+  if (!isNonBlank(m.title, 200)) return bad('invalid_module_title', 'decision.module.title', 'module.title is required.');
+  if (!Array.isArray(m.required_activity_ids) || m.required_activity_ids.length === 0 || m.required_activity_ids.length > 500) return bad('activity_requirements_required', 'decision.module.required_activity_ids', 'module.required_activity_ids must contain 1-500 activity IDs.');
+  const requiredIds = new Set();
+  for (let i = 0; i < m.required_activity_ids.length; i++) {
+    const id = m.required_activity_ids[i];
+    if (!isNonBlank(id, 100) || !PD_ACTIVITY_ID_RE.test(id)) return bad('invalid_required_activity_id', `decision.module.required_activity_ids[${i}]`, 'Every required activity ID must be a stable lowercase slug.');
+    if (requiredIds.has(id)) return bad('duplicate_required_activity_id', `decision.module.required_activity_ids[${i}]`, `Duplicate required activity id "${id}".`);
+    requiredIds.add(id);
+  }
+
+  const e = d.evidence;
+  if (!isObject(e) || e.schema_version !== PD_EVIDENCE_SCHEMA) return bad('unsupported_evidence_schema', 'decision.evidence.schema_version', `Evidence must use ${PD_EVIDENCE_SCHEMA}.`);
+  if (!isContractId(e.evidence_id)) return bad('invalid_evidence_id', 'decision.evidence.evidence_id', 'evidence_id must be a stable identifier.');
+  if (!PD_DIGEST_RE.test(String(e.evidence_digest || ''))) return bad('invalid_evidence_digest', 'decision.evidence.evidence_digest', 'evidence_digest must be sha256:<64 hex chars>.');
+  if (!isIsoDate(e.collected_at)) return bad('invalid_evidence_date', 'decision.evidence.collected_at', 'evidence.collected_at must be an RFC 3339 timestamp.');
+  if (e.module_id !== m.id || e.module_version !== m.version || e.content_digest !== m.content_digest) return bad('evidence_module_mismatch', 'decision.evidence', 'Evidence must bind to the same module id, version, and content digest.');
+  if (!Array.isArray(e.activity_results) || e.activity_results.length !== m.required_activity_ids.length) return bad('incomplete_activity_evidence', 'decision.evidence.activity_results', 'Evidence must include exactly one result for every required activity.');
+  const resultIds = [];
+  for (let i = 0; i < e.activity_results.length; i++) {
+    const ar = e.activity_results[i]; const path = `decision.evidence.activity_results[${i}]`;
+    if (!isObject(ar) || !isNonBlank(ar.activity_id, 100) || !PD_ACTIVITY_ID_RE.test(ar.activity_id)) return bad('invalid_activity_result', path, 'Every activity result needs a stable activity_id.');
+    if (ar.satisfied !== true) return bad('activity_requirement_not_satisfied', `${path}.satisfied`, `Activity requirement "${ar.activity_id}" is not satisfied.`);
+    if (!Array.isArray(ar.evidence_refs) || ar.evidence_refs.length === 0 || ar.evidence_refs.length > 20 || ar.evidence_refs.some((ref) => !isContractId(ref))) return bad('activity_evidence_refs_required', `${path}.evidence_refs`, 'Every activity result needs 1-20 stable evidence_refs.');
+    resultIds.push(ar.activity_id);
+  }
+  if (new Set(resultIds).size !== resultIds.length || !sameStringSet(resultIds, m.required_activity_ids)) return bad('activity_evidence_mismatch', 'decision.evidence.activity_results', 'Activity evidence IDs must exactly match module.required_activity_ids.');
+
+  const a = d.accessibility_verification;
+  if (!isObject(a) || a.schema_version !== PD_ACCESSIBILITY_SCHEMA) return bad('accessibility_verification_required', 'decision.accessibility_verification.schema_version', `Accessibility verification must use ${PD_ACCESSIBILITY_SCHEMA}.`);
+  if (a.module_id !== m.id || a.module_version !== m.version || a.content_digest !== m.content_digest) return bad('accessibility_module_mismatch', 'decision.accessibility_verification', 'Accessibility verification must bind to the same module id, version, and content digest.');
+  if (a.standard !== 'WCAG 2.2' || a.level !== 'AA') return bad('unsupported_accessibility_target', 'decision.accessibility_verification', 'Credential issuance requires a WCAG 2.2 AA verification target.');
+  if (a.status !== 'verified') return bad('accessibility_not_credential_eligible', 'decision.accessibility_verification.status', 'Only accessibility status "verified" is credential-eligible.');
+  if (!isIsoDate(a.verified_at)) return bad('invalid_accessibility_date', 'decision.accessibility_verification.verified_at', 'verified_at must be an RFC 3339 timestamp.');
+  if (!isObject(a.automated) || a.automated.completed !== true || a.automated.blocking_issues !== 0 || !Array.isArray(a.automated.tools) || a.automated.tools.length === 0 || a.automated.tools.some((tool) => !isNonBlank(tool, 100))) return bad('automated_accessibility_checks_incomplete', 'decision.accessibility_verification.automated', 'Automated checks must be complete, name a tool, and report zero blocking issues.');
+  if (!isObject(a.manual_review) || a.manual_review.completed !== true || a.manual_review.result !== 'pass' || !isContractId(a.manual_review.reviewer_id) || !isContractId(a.manual_review.checklist_version) || !isIsoDate(a.manual_review.reviewed_at)) return bad('manual_accessibility_review_incomplete', 'decision.accessibility_verification.manual_review', 'A passing, dated manual accessibility review with reviewer/checklist provenance is required; automated-only results cannot establish conformance.');
+  return null;
+}
+
+function pdBuildReviewedCredentialPayload(d, issuerName, issuerId, nowISO) {
+  return {
+    schema_version: PD_REVIEWED_CREDENTIAL_SCHEMA,
+    type: 'PdReviewedCompletionCredential', credential_profile: 'reviewed-evidence',
+    issuer: { id: issuerId || null, name: issuerName || 'AlloFlow PD' }, issuanceDate: nowISO,
+    credentialSubject: {
+      id: d.learner.id, name: d.learner.name || null,
+      moduleId: d.module.id, moduleVersion: d.module.version, contentDigest: d.module.content_digest,
+      moduleTitle: d.module.title, topic: d.module.topic || null, complete: true, completedAt: d.decided_at,
+      achievement: { name: d.module.title, activitiesPassed: d.module.required_activity_ids.length, activitiesTotal: d.module.required_activity_ids.length },
+    },
+    review: {
+      decisionId: d.decision_id, status: d.status, decidedAt: d.decided_at,
+      reviewer: { id: d.reviewer.id, name: d.reviewer.name, authority: d.reviewer.authority },
+      provenance: { system: d.provenance.system, reviewRecordId: d.provenance.review_record_id },
+    },
+    evidence: {
+      id: d.evidence.evidence_id, digest: d.evidence.evidence_digest, collectedAt: d.evidence.collected_at,
+      requirementsSatisfied: d.evidence.activity_results.length, requirementsTotal: d.module.required_activity_ids.length,
+      activityIds: d.module.required_activity_ids.slice(),
+    },
+    accessibilityVerification: {
+      standard: aValue(d, 'standard'), level: aValue(d, 'level'), status: aValue(d, 'status'), verifiedAt: aValue(d, 'verified_at'),
+      automatedChecksCompleted: true, manualReviewCompleted: true,
+      checklistVersion: d.accessibility_verification.manual_review.checklist_version,
+      moduleVersion: d.module.version, contentDigest: d.module.content_digest,
+      note: 'Verification evidence is bound to this exact module version and reviewed scope. It is not an automated-only or perpetual guarantee of WCAG conformance.',
+    },
+    attestation_note: 'Issuer-signed, tamper-evident reviewed completion decision binding the approved decision, evidence digest, accessibility verification, and exact module version/content digest.',
+  };
+}
+function aValue(d, field) { return d.accessibility_verification[field]; }
+
+function validateLegacySelfPacedRecord(record) {
+  if (!isObject(record)) return issueContractError('record_required', 'record', 'record (a self-paced completion record) is required.', 400);
+  if (record.complete !== true) return issueContractError('record_incomplete', 'record.complete', 'Only a completed record can be issued.', 422);
+  if (!isNonBlank(record.moduleId, 100) || !PD_MODULE_ID_RE.test(record.moduleId)) return issueContractError('invalid_module_id', 'record.moduleId', 'record.moduleId must be a stable lowercase slug.', 422);
+  if (!isContractId(record.moduleVersion)) return issueContractError('invalid_module_version', 'record.moduleVersion', 'Self-paced attestation requires a stable moduleVersion.', 422);
+  if (!PD_DIGEST_RE.test(String(record.contentDigest || ''))) return issueContractError('invalid_content_digest', 'record.contentDigest', 'Self-paced attestation requires an exact sha256 contentDigest.', 422);
+  if (!Array.isArray(record.perActivity) || record.perActivity.length === 0 || record.perActivity.some((activity) => !isObject(activity) || activity.passed !== true)) return issueContractError('activity_requirements_not_satisfied', 'record.perActivity', 'Every self-paced activity must be present and passed.', 422);
+  return null;
+}
+function pdBuildSelfPacedCredentialPayload(record, issuerName, issuerId, nowISO) {
+  const per = record.perActivity;
+  return {
+    schema_version: 'pd-credential-1.0', type: 'PdSelfPacedCompletionAttestation', credential_profile: 'self-paced-non-institutional',
+    issuer: { id: issuerId || 'urn:alloflow:pd:self-paced', name: issuerName || 'AlloFlow PD Self-Paced' }, issuanceDate: nowISO,
+    credentialSubject: {
+      name: (record.learner && record.learner.name) || null, moduleId: record.moduleId,
+      moduleVersion: record.moduleVersion, contentDigest: record.contentDigest,
+      moduleTitle: record.moduleTitle || null, topic: record.topic || null, complete: true, completedAt: record.completedAt || null,
+      achievement: { name: record.moduleTitle || record.moduleId, moduleVersion: record.moduleVersion, contentDigest: record.contentDigest, activitiesPassed: per.filter((activity) => activity.passed).length, activitiesTotal: per.length },
+    },
+    assurance: { reviewed: false, institutional: false, level: 'self-paced' },
+    attestation_note: 'Issuer-signed self-paced record only. It is learner-controlled, NOT institutionally reviewed, proctored, accredited, or contact-hour-bearing, and must not be represented as an institutional credential.',
+  };
+}
+async function signPdPayload(payload, privateKeyB64) {
+  const key = await crypto.subtle.importKey('pkcs8', b64ToBuf(privateKeyB64), { name: 'Ed25519' }, false, ['sign']);
+  const sig = await crypto.subtle.sign({ name: 'Ed25519' }, key, new TextEncoder().encode(pdCanonicalize(payload)));
+  return bufToB64(sig);
+}
+async function verifyPdPayloadSignature(payload, signature, publicKeyB64) {
+  const key = await crypto.subtle.importKey('spki', b64ToBuf(publicKeyB64), { name: 'Ed25519' }, false, ['verify']);
+  return crypto.subtle.verify({ name: 'Ed25519' }, key, b64ToBuf(signature), new TextEncoder().encode(pdCanonicalize(payload)));
+}
 
 async function handlePdIssue(request, env) {
-  if (!env.PD_ISSUER_PRIVATE_KEY) return jsonResponse({ ok: false, error: 'Verified credentials are not enabled on this issuer.' }, 501);
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
   const rawBody = await request.text();
   if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let p;
   try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
-  const rec = p && p.record;
-  if (!rec || typeof rec !== 'object') return jsonResponse({ ok: false, error: 'record (a completion record) is required.' }, 400);
-  if (rec.complete !== true) return jsonResponse({ ok: false, error: 'Only a completed record can be issued a credential.' }, 400);
-  const payload = pdBuildCredentialPayload(rec, env.PD_ISSUER_NAME || 'AlloFlow PD', new Date().toISOString());
-  let signature;
-  try {
-    const key = await crypto.subtle.importKey('pkcs8', b64ToBuf(env.PD_ISSUER_PRIVATE_KEY), { name: 'Ed25519' }, false, ['sign']);
-    const sig = await crypto.subtle.sign({ name: 'Ed25519' }, key, new TextEncoder().encode(pdCanonicalize(payload)));
-    signature = bufToB64(sig);
-  } catch (e) {
-    return jsonResponse({ ok: false, error: 'Signing failed: ' + e.message }, 500);
-  }
-  return jsonResponse({
-    ok: true,
-    credential: {
-      schema_version: 'pd-credential-1.0',
-      payload: payload,
-      signature: signature,
-      alg: 'Ed25519',
-      key_id: env.PD_ISSUER_KEY_ID || 'alloflow-pd-1',
-      public_key_spki_b64: env.PD_ISSUER_PUBLIC_KEY || null,
-    },
-  }, 201);
-}
 
+  let payload, signingPrivateKey, signingPublicKey, keyId;
+  if (isObject(p) && p.decision != null) {
+    if (!env.PD_ISSUER_AUTH_TOKEN) return jsonResponse({ ok: false, error: 'Reviewed credential issuance is disabled: configure PD_ISSUER_AUTH_TOKEN.' }, 501);
+    if (!env.PD_ISSUER_PRIVATE_KEY || !env.PD_ISSUER_PUBLIC_KEY) return jsonResponse({ ok: false, error: 'Reviewed credential issuance requires both issuer signing keys.' }, 501);
+    if (!isNonBlank(env.PD_ISSUER_ID, 500)) return jsonResponse({ ok: false, error: 'Reviewed credential issuance requires PD_ISSUER_ID.' }, 501);
+    const match = (request.headers.get('Authorization') || '').match(/^Bearer\s+(.+)$/i);
+    if (!match || !(await timingSafeTokenEq(match[1], env.PD_ISSUER_AUTH_TOKEN))) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+    const err = validateReviewedDecision(p.decision);
+    if (err) return jsonResponse({ ok: false, error: err.message, code: err.code, path: err.path }, err.status);
+    payload = pdBuildReviewedCredentialPayload(p.decision, env.PD_ISSUER_NAME || 'AlloFlow PD', env.PD_ISSUER_ID || null, new Date().toISOString());
+    signingPrivateKey = env.PD_ISSUER_PRIVATE_KEY;
+    signingPublicKey = env.PD_ISSUER_PUBLIC_KEY;
+    keyId = env.PD_ISSUER_KEY_ID || 'alloflow-pd-1';
+  } else if (isObject(p) && p.record != null) {
+    if (String(env.PD_ALLOW_SELF_PACED_ISSUANCE || '').toLowerCase() !== 'true') return jsonResponse({ ok: false, error: 'Legacy self-paced issuance is disabled.', code: 'legacy_self_paced_disabled' }, 403);
+    if (!env.PD_SELF_PACED_PRIVATE_KEY || !env.PD_SELF_PACED_PUBLIC_KEY) return jsonResponse({ ok: false, error: 'Self-paced signing requires separate PD_SELF_PACED_PRIVATE_KEY and PD_SELF_PACED_PUBLIC_KEY values.' }, 501);
+    const err = validateLegacySelfPacedRecord(p.record);
+    if (err) return jsonResponse({ ok: false, error: err.message, code: err.code, path: err.path }, err.status);
+    payload = pdBuildSelfPacedCredentialPayload(p.record, env.PD_SELF_PACED_ISSUER_NAME, env.PD_SELF_PACED_ISSUER_ID, new Date().toISOString());
+    signingPrivateKey = env.PD_SELF_PACED_PRIVATE_KEY;
+    signingPublicKey = env.PD_SELF_PACED_PUBLIC_KEY;
+    keyId = env.PD_SELF_PACED_KEY_ID || 'alloflow-pd-self-paced-1';
+  } else return jsonResponse({ ok: false, error: 'decision (reviewed issuance) is required.', code: 'reviewed_decision_required' }, 400);
+
+  let signature, keyPairValid;
+  try {
+    signature = await signPdPayload(payload, signingPrivateKey);
+    keyPairValid = await verifyPdPayloadSignature(payload, signature, signingPublicKey);
+  }
+  catch (_) { return jsonResponse({ ok: false, error: 'Signing failed.' }, 500); }
+  if (!keyPairValid) return jsonResponse({ ok: false, error: 'Issuer signing/public key configuration mismatch.' }, 500);
+  return jsonResponse({ ok: true, credential: {
+    schema_version: payload.schema_version, payload, signature, alg: 'Ed25519',
+    key_id: keyId, public_key_spki_b64: signingPublicKey,
+  } }, 201);
+}
 function handlePdIssuerKey(env) {
   if (!env.PD_ISSUER_PUBLIC_KEY) return jsonResponse({ ok: false, error: 'No issuer public key configured.' }, 501);
   return jsonResponse({ ok: true, alg: 'Ed25519', key_id: env.PD_ISSUER_KEY_ID || 'alloflow-pd-1', public_key_spki_b64: env.PD_ISSUER_PUBLIC_KEY });
 }
 
 async function handlePdVerify(request, env) {
-  if (!env.PD_ISSUER_PUBLIC_KEY) return jsonResponse({ ok: false, error: 'No issuer public key configured.' }, 501);
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
   const rawBody = await request.text();
@@ -642,14 +967,22 @@ async function handlePdVerify(request, env) {
   try { const p = JSON.parse(rawBody); cred = (p && p.credential) || p; } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
   if (!cred || !cred.payload || !cred.signature) return jsonResponse({ ok: false, error: 'credential {payload, signature} required.' }, 400);
   // Verify against the SERVER's trusted public key (never the key embedded in the credential).
+  const profile = cred.payload.credential_profile;
+  let trustedPublicKey;
+  if (profile === 'reviewed-evidence') trustedPublicKey = env.PD_ISSUER_PUBLIC_KEY;
+  else if (profile === 'self-paced-non-institutional') trustedPublicKey = env.PD_SELF_PACED_PUBLIC_KEY;
+  else return jsonResponse({ ok: false, error: 'Unsupported credential profile.' }, 400);
+  if (!trustedPublicKey) return jsonResponse({ ok: false, error: 'No trusted public key is configured for this credential profile.' }, 501);
+  const assurance = profile === 'reviewed-evidence'
+    ? { reviewed: true, institutional: true } : { reviewed: false, institutional: false };
   let valid = false;
   try {
-    const pub = await crypto.subtle.importKey('spki', b64ToBuf(env.PD_ISSUER_PUBLIC_KEY), { name: 'Ed25519' }, false, ['verify']);
+    const pub = await crypto.subtle.importKey('spki', b64ToBuf(trustedPublicKey), { name: 'Ed25519' }, false, ['verify']);
     valid = await crypto.subtle.verify({ name: 'Ed25519' }, pub, b64ToBuf(cred.signature), new TextEncoder().encode(pdCanonicalize(cred.payload)));
   } catch (e) {
     return jsonResponse({ ok: false, error: 'Verification error: ' + e.message }, 400);
   }
-  return jsonResponse({ ok: true, valid: valid });
+  return jsonResponse({ ok: true, valid: valid, credential_profile: profile, assurance });
 }
 
 export default {
@@ -666,6 +999,10 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/submitTranslation') {
       return handleTranslationSubmit(request, env);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/submitItemCorrection') {
+      return handleItemCorrectionSubmit(request, env);
     }
 
     if (request.method === 'POST' && url.pathname === '/submitBug') {
@@ -705,7 +1042,7 @@ export default {
     }
 
     if (request.method !== 'POST' || url.pathname !== '/submit') {
-      return jsonResponse({ ok: false, error: 'Use POST /submit, /submitTranslation, /submitBug, /submitPd, /submitPlugin, or /issuePd' }, 405);
+      return jsonResponse({ ok: false, error: 'Use POST /submit, /submitTranslation, /submitItemCorrection, /submitBug, /submitPd, /submitPlugin, or /issuePd' }, 405);
     }
 
     if (!env.GITHUB_PAT) {
