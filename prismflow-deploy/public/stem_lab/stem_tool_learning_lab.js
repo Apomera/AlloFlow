@@ -8681,6 +8681,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var ss = R.useState(null);                    var activeSub = ss[0]; var setActiveSub = ss[1];
     var fs = R.useState({ name: '' });             var subForm = fs[0]; var setSubForm = fs[1];
     var ts = R.useState({ name: '' });             var topicForm = ts[0]; var setTopicForm = ts[1];
+    var ses = R.useState('');                      var subjectError = ses[0]; var setSubjectError = ses[1];
+    var tes = R.useState('');                      var topicError = tes[0]; var setTopicError = tes[1];
 
     var MASTERY = [
       { id: 'new',       label: 'New',       icon: '✨', color: 'var(--allo-stem-text-soft, #94a3b8)', val: 0 },
@@ -8691,47 +8693,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function addSubject() {
-      if (!subForm.name.trim()) return;
+      if (!subForm.name.trim()) {
+        setSubjectError('Subject name is required.');
+        setTimeout(function() { var field = document.getElementById('learning-lab-subject-name'); if (field) field.focus(); }, 0);
+        return;
+      }
       var sub = { id: tkId(), name: subForm.name.trim(), topics: [], createdAt: todayISO() };
-      setData({ subjects: [sub].concat(data.subjects || []) });
+      setData(Object.assign({}, data, { subjects: [sub].concat(data.subjects || []) }));
       setSubForm({ name: '' });
+      setSubjectError('');
+      llAnnounce('Subject added: ' + sub.name + '.');
     }
-    function removeSubject(id) {
-      if (!confirm('Delete this subject and all its topics?')) return;
-      setData({ subjects: (data.subjects || []).filter(function(s) { return s.id !== id; }) });
+    async function removeSubject(id) {
+      var subject = (data.subjects || []).filter(function(s) { return s.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes' + (subject ? ' "' + subject.name + '" and all of its topics' : ' this subject and all of its topics') + '.', {
+        title: 'Delete this subject?', confirmText: 'Delete subject'
+      }))) return;
+      setData(Object.assign({}, data, { subjects: (data.subjects || []).filter(function(s) { return s.id !== id; }) }));
+      llAnnounce('Subject deleted.');
     }
     function addTopic() {
-      if (!topicForm.name.trim() || !activeSub) return;
+      if (!topicForm.name.trim()) {
+        setTopicError('Topic name is required.');
+        setTimeout(function() { var field = document.getElementById('learning-lab-topic-name'); if (field) field.focus(); }, 0);
+        return;
+      }
+      if (!activeSub) return;
       var topic = { id: tkId(), name: topicForm.name.trim(), mastery: 'new', updatedAt: todayISO() };
-      setData({
+      setData(Object.assign({}, data, {
         subjects: (data.subjects || []).map(function(s) {
           if (s.id !== activeSub) return s;
           return Object.assign({}, s, { topics: (s.topics || []).concat([topic]) });
         })
-      });
+      }));
       setTopicForm({ name: '' });
+      setTopicError('');
+      llAnnounce('Topic added: ' + topic.name + '.');
     }
     function setMastery(topicId, mastery) {
-      setData({
+      var topicName = '';
+      setData(Object.assign({}, data, {
         subjects: (data.subjects || []).map(function(s) {
           if (s.id !== activeSub) return s;
-          return Object.assign({}, s, { topics: s.topics.map(function(t) {
+          return Object.assign({}, s, { topics: (s.topics || []).map(function(t) {
             if (t.id !== topicId) return t;
+            topicName = t.name;
             return Object.assign({}, t, { mastery: mastery, updatedAt: todayISO() });
           }) });
         })
-      });
+      }));
+      var level = MASTERY.filter(function(item) { return item.id === mastery; })[0];
+      llAnnounce((topicName || 'Topic') + ' mastery set to ' + (level ? level.label : mastery) + '.');
     }
-    function removeTopic(topicId) {
-      setData({
+    async function removeTopic(topicId) {
+      var subject = (data.subjects || []).filter(function(s) { return s.id === activeSub; })[0];
+      var topic = subject ? (subject.topics || []).filter(function(t) { return t.id === topicId; })[0] : null;
+      if (!(await askLearningLabConfirmation('This permanently removes' + (topic ? ' the topic "' + topic.name + '"' : ' this topic') + '.', {
+        title: 'Delete this topic?', confirmText: 'Delete topic'
+      }))) return;
+      setData(Object.assign({}, data, {
         subjects: (data.subjects || []).map(function(s) {
           if (s.id !== activeSub) return s;
-          return Object.assign({}, s, { topics: s.topics.filter(function(t) { return t.id !== topicId; }) });
+          return Object.assign({}, s, { topics: (s.topics || []).filter(function(t) { return t.id !== topicId; }) });
         })
-      });
+      }));
+      llAnnounce('Topic deleted.');
     }
 
     var subjects = data.subjects || [];
+    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(96,165,250,0.5)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var srOnlyStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
+    var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
 
     if (view === 'subject' && activeSub) {
       var sub = subjects.filter(function(s) { return s.id === activeSub; })[0];
@@ -8740,58 +8772,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var counts = MASTERY.map(function(m) {
         return { mastery: m, count: topics.filter(function(t) { return t.mastery === m.id; }).length };
       });
-      var avg = topics.length > 0 ? (topics.reduce(function(s, t) {
-        var m = MASTERY.filter(function(x) { return x.id === t.mastery; })[0];
-        return s + (m ? m.val : 0);
+      var avg = topics.length > 0 ? (topics.reduce(function(sum, topic) {
+        var level = MASTERY.filter(function(x) { return x.id === topic.mastery; })[0];
+        return sum + (level ? level.val : 0);
       }, 0) / topics.length) : 0;
+      var distributionText = counts.map(function(item) { return item.mastery.label + ': ' + item.count; }).join(', ');
 
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('📚', sub.name, topics.length + ' topics tracked · avg mastery: ' + avg.toFixed(1) + '/4', '#3b82f6'),
+        tkSectionHeader('📚', sub.name, topics.length + ' topics tracked · average mastery: ' + avg.toFixed(1) + ' out of 4', '#3b82f6'),
 
-        // Mastery distribution
-        hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 14 } },
-          hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', marginBottom: 8 } }, '📊 Mastery distribution'),
-          hh('div', { style: { display: 'flex', gap: 4 } },
-            counts.map(function(c) {
-              var pct = topics.length > 0 ? (c.count / topics.length) * 100 : 0;
-              return hh('div', { key: 'cnt-' + c.mastery.id, style: { flex: 1, textAlign: 'center' } },
-                hh('div', { style: { height: 50, background: 'rgba(15,23,42,0.5)', borderRadius: 4, position: 'relative', overflow: 'hidden', marginBottom: 4 } },
-                  hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: c.mastery.color, transition: 'height 300ms ease' } }),
-                  hh('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: 16, fontWeight: 900, color: '#fff', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.count)
+        hh('section', { 'aria-labelledby': 'learning-lab-mastery-distribution-heading', style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 14 } },
+          hh('h3', { id: 'learning-lab-mastery-distribution-heading', style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', margin: '0 0 8px' } }, '📊 Mastery distribution'),
+          hh('div', { role: 'img', 'aria-label': 'Mastery distribution. ' + distributionText, style: { display: 'flex', gap: 4 } },
+            counts.map(function(item) {
+              var pct = topics.length > 0 ? (item.count / topics.length) * 100 : 0;
+              return hh('div', { key: 'cnt-' + item.mastery.id, style: { flex: 1, textAlign: 'center' } },
+                hh('div', { 'aria-hidden': 'true', style: { height: 50, background: 'rgba(15,23,42,0.5)', borderRadius: 4, position: 'relative', overflow: 'hidden', marginBottom: 4 } },
+                  hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: item.mastery.color, transition: 'height 300ms ease' } }),
+                  hh('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: 16, fontWeight: 900, color: '#fff', fontFamily: 'ui-monospace, Menlo, monospace' } }, item.count)
                 ),
-                hh('div', { style: { fontSize: 9, color: c.mastery.color, fontWeight: 700 } }, c.mastery.icon),
-                hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, c.mastery.label)
+                hh('div', { 'aria-hidden': 'true', style: { fontSize: 9, color: item.mastery.color, fontWeight: 700 } }, item.mastery.icon),
+                hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, item.mastery.label + ' ' + item.count)
               );
             })
           )
         ),
 
-        // Add topic
-        hh('div', { style: { display: 'flex', gap: 6, marginBottom: 12 } },
-          tkInput(topicForm.name, function(v) { setTopicForm({ name: v }); }, 'New topic (e.g., "Photosynthesis basics")', { flex: 1 }),
-          tkBtn('+', addTopic, 'primary', { padding: '8px 16px' })
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); addTopic(); }, style: { marginBottom: 12 } },
+          hh('label', { htmlFor: 'learning-lab-topic-name', style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#60a5fa', marginBottom: 4 } }, 'New topic'),
+          hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+            hh('input', { id: 'learning-lab-topic-name', type: 'text', value: topicForm.name, maxLength: 160, 'aria-invalid': topicError ? 'true' : undefined, 'aria-describedby': topicError ? 'learning-lab-topic-error' : undefined, placeholder: 'e.g., Photosynthesis basics', onChange: function(event) { setTopicForm({ name: event.target.value }); if (topicError) setTopicError(''); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { flex: '1 1 14rem' }) }),
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 16px', borderRadius: 8, border: '1px solid #93c5fd', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Add topic')
+          ),
+          hh('div', { id: 'learning-lab-topic-error', role: 'alert', style: { minHeight: topicError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginTop: topicError ? 4 : 0 } }, topicError)
         ),
 
-        // Topics list
         topics.length === 0 ? tkEmptyState('📖', 'No topics yet. Add the topics or chapters in this subject.', null, null)
-        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            topics.map(function(t) {
-              var m = MASTERY.filter(function(x) { return x.id === t.mastery; })[0] || MASTERY[0];
-              return hh('div', { key: 't-' + t.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + m.color + '30', borderLeft: '3px solid ' + m.color } },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
+        : hh('ul', { 'aria-label': sub.name + ' topics', style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 6 }) },
+            topics.map(function(topic) {
+              var currentLevel = MASTERY.filter(function(x) { return x.id === topic.mastery; })[0] || MASTERY[0];
+              return hh('li', { key: 't-' + topic.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + currentLevel.color + '30', borderLeft: '3px solid ' + currentLevel.color } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   hh('div', { style: { flex: 1, minWidth: 0 } },
-                    hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, m.icon + ' ' + t.name),
-                    hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, 'Updated ' + relDate(t.updatedAt))
+                    hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, hh('span', { 'aria-hidden': 'true' }, currentLevel.icon + ' '), topic.name),
+                    hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, 'Current mastery: ' + currentLevel.label + '. Updated ' + relDate(topic.updatedAt))
                   ),
-                  hh('button', { onClick: function() { removeTopic(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer' } }, '✕')
+                  hh('button', { type: 'button', 'aria-label': 'Delete topic: ' + topic.name, onClick: function() { removeTopic(topic.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
                 ),
-                hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4 } },
+                hh('div', { role: 'group', 'aria-label': 'Set mastery for ' + topic.name, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(76px, 1fr))', gap: 4 } },
                   MASTERY.map(function(level) {
-                    var active = t.mastery === level.id;
-                    return hh('button', { key: 'lv-' + level.id,
-                      onClick: function() { setMastery(t.id, level.id); },
-                      style: { padding: '6px 4px', borderRadius: 4, background: active ? level.color + '30' : 'rgba(15,23,42,0.5)', color: active ? level.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (active ? level.color : 'rgba(100,116,139,0.30)'), fontSize: 9, fontWeight: 700, cursor: 'pointer' }
-                    }, level.icon, hh('br'), level.label);
+                    var active = topic.mastery === level.id;
+                    return hh('button', { key: 'lv-' + level.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                      onClick: function() { setMastery(topic.id, level.id); }, 'data-ll-focusable': true,
+                      style: { minHeight: 44, padding: '6px 4px', borderRadius: 4, background: active ? level.color + '30' : 'rgba(15,23,42,0.5)', color: active ? level.color : 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (active ? level.color : 'rgba(100,116,139,0.30)'), fontSize: 9, fontWeight: 700, cursor: 'pointer' }
+                    }, hh('span', { 'aria-hidden': 'true' }, level.icon + ' '), level.label);
                   })
                 )
               );
@@ -8799,7 +8833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           ),
 
         hh('div', { style: { textAlign: 'center', marginTop: 14 } },
-          tkBtn('← All subjects', function() { setView('list'); setActiveSub(null); }, 'ghost')
+          tkBtn('← All subjects', function() { setTopicError(''); setView('list'); setActiveSub(null); }, 'ghost', { minHeight: 44 })
         )
       );
     }
@@ -8807,40 +8841,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('📚', 'Subject Mastery Tracker', 'Track YOUR mastery per topic per subject. Visualize progress over time. Identify what needs more work.', '#3b82f6'),
 
-      hh('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
-        tkInput(subForm.name, function(v) { setSubForm({ name: v }); }, 'New subject (e.g., "AP Biology")', { flex: 1 }),
-        tkBtn('+ Add subject', addSubject, 'primary')
+      hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); addSubject(); }, style: { marginBottom: 14 } },
+        hh('label', { htmlFor: 'learning-lab-subject-name', style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#60a5fa', marginBottom: 4 } }, 'New subject'),
+        hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+          hh('input', { id: 'learning-lab-subject-name', type: 'text', value: subForm.name, maxLength: 120, 'aria-invalid': subjectError ? 'true' : undefined, 'aria-describedby': subjectError ? 'learning-lab-subject-error' : undefined, placeholder: 'e.g., AP Biology', onChange: function(event) { setSubForm({ name: event.target.value }); if (subjectError) setSubjectError(''); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { flex: '1 1 14rem' }) }),
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 16px', borderRadius: 8, border: '1px solid #93c5fd', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Add subject')
+        ),
+        hh('div', { id: 'learning-lab-subject-error', role: 'alert', style: { minHeight: subjectError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginTop: subjectError ? 4 : 0 } }, subjectError)
       ),
 
       subjects.length === 0 ? tkEmptyState('📚', 'No subjects tracked yet. Add a subject to start mapping your mastery.', null, null)
-      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-          subjects.map(function(s) {
-            var topics = s.topics || [];
-            var avg = topics.length > 0 ? (topics.reduce(function(sum, t) {
-              var m = MASTERY.filter(function(x) { return x.id === t.mastery; })[0];
-              return sum + (m ? m.val : 0);
-            }, 0) / topics.length) : 0;
-            var avgColor = avg >= 3 ? '#10b981' : avg >= 2 ? '#fbbf24' : avg >= 1 ? '#f97316' : '#94a3b8';
-            return hh('button', { key: 's-' + s.id,
-              onClick: function() { setActiveSub(s.id); setView('subject'); },
-              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(59,130,246,0.40)', borderLeft: '4px solid #3b82f6', cursor: 'pointer' }
-            },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                hh('strong', { style: { fontSize: 14, color: '#60a5fa' } }, '📚 ' + s.name),
-                hh('span', { onClick: function(e) { e.stopPropagation(); removeSubject(s.id); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
+      : hh('ul', { 'aria-label': 'Tracked subjects', style: Object.assign({}, listStyle, { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }) },
+          subjects.map(function(subject) {
+            var subjectTopics = subject.topics || [];
+            var subjectAvg = subjectTopics.length > 0 ? (subjectTopics.reduce(function(sum, topic) {
+              var level = MASTERY.filter(function(x) { return x.id === topic.mastery; })[0];
+              return sum + (level ? level.val : 0);
+            }, 0) / subjectTopics.length) : 0;
+            var avgColor = subjectAvg >= 3 ? '#10b981' : subjectAvg >= 2 ? '#fbbf24' : subjectAvg >= 1 ? '#f97316' : '#94a3b8';
+            return hh('li', { key: 's-' + subject.id, style: { position: 'relative', minHeight: 120 } },
+              hh('button', { type: 'button', 'aria-label': 'Open ' + subject.name + '. ' + subjectTopics.length + ' topics. Average mastery ' + subjectAvg.toFixed(1) + ' out of 4.', onClick: function() { setActiveSub(subject.id); setView('subject'); }, 'data-ll-focusable': true,
+                style: { display: 'block', width: '100%', height: '100%', minHeight: 120, textAlign: 'left', padding: '14px 60px 14px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(59,130,246,0.40)', borderLeft: '4px solid #3b82f6', cursor: 'pointer' }
+              },
+                hh('strong', { style: { fontSize: 14, color: '#60a5fa' } }, '📚 ' + subject.name),
+                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, subjectTopics.length + ' topic' + (subjectTopics.length !== 1 ? 's' : '')),
+                hh('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: avgColor + '12', border: '1px solid ' + avgColor + '40', textAlign: 'center' } },
+                  hh('div', { style: { fontSize: 9, color: avgColor, textTransform: 'uppercase', fontWeight: 700 } }, 'Average mastery'),
+                  hh('strong', { style: { fontSize: 20, color: avgColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, subjectAvg.toFixed(1) + '/4')
+                )
               ),
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, topics.length + ' topic' + (topics.length !== 1 ? 's' : '')),
-              hh('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: avgColor + '12', border: '1px solid ' + avgColor + '40', textAlign: 'center' } },
-                hh('div', { style: { fontSize: 9, color: avgColor, textTransform: 'uppercase', fontWeight: 700 } }, 'Avg mastery'),
-                hh('strong', { style: { fontSize: 20, color: avgColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, avg.toFixed(1) + '/4')
-              )
+              hh('button', { type: 'button', 'aria-label': 'Delete subject: ' + subject.name, onClick: function() { removeSubject(subject.id); }, 'data-ll-focusable': true, style: { position: 'absolute', top: 8, right: 8, minWidth: 44, minHeight: 44, padding: 8, border: 'none', borderRadius: 8, background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 14 } }, '✕')
             );
           })
         )
     );
   }
 
-  // ── Y. PERSONAL SLEEP LOGGER (Wave 5) ──
   // Daily sleep log: bedtime, waketime, quality 1-5, factors. Trend
   // over time. Personal recommendations based on patterns.
   function PersonalSleepLog(props) {
