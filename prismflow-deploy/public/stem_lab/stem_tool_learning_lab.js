@@ -12055,50 +12055,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var setData = props.setData;
     var p = data.plan || {};
     function update(key, val) {
-      setData({ plan: Object.assign({}, p, (function() { var o = {}; o[key] = val; return o; })()) });
+      var patch = {}; patch[key] = val;
+      setData(Object.assign({}, data, { plan: Object.assign({}, p, patch) }));
     }
 
     var STEPS = [
-      { id: 'warning',    label: '1. Warning signs', icon: '⚠', color: '#fbbf24',
-        prompt: 'How do I know I\'m heading into crisis? (Thoughts, feelings, behaviors, body signals)' },
-      { id: 'coping',     label: '2. Internal coping', icon: '🧰', color: '#3b82f6',
-        prompt: 'What can I do BY MYSELF to take my mind off the crisis? (e.g., listen to music, take a walk, watch a comfort show)' },
-      { id: 'distract',   label: '3. People + places that distract', icon: '🌳', color: '#10b981',
-        prompt: 'Where can I go + who can I be around to help shift my mind? (Not for help yet — just for distraction)' },
-      { id: 'helpers',    label: '4. People I can ask for help', icon: '🤝', color: '#a855f7',
-        prompt: 'Friends, family, mentors I can reach out to. Name + how to contact them.' },
-      { id: 'pros',       label: '5. Professionals + crisis resources', icon: '☎', color: '#ec4899',
-        prompt: 'My therapist, school counselor, doctor. Crisis lines: 988 (US), Maine Mobile Crisis 1-888-568-1112. Maine Crisis Text "HOME" to 741741.' },
-      { id: 'safe',       label: '6. Making the environment safer', icon: '🛡', color: '#ef4444',
-        prompt: 'Things I will remove or put away during a hard time (medications, alcohol, sharp objects). Where + who has them.' }
+      { id: 'warning', label: '1. Warning signs', icon: '⚠', borderColor: '#fbbf24', textColor: '#fde68a',
+        prompt: 'How do I know I am heading into crisis? Consider thoughts, feelings, behaviors, and body signals.' },
+      { id: 'coping', label: '2. Internal coping', icon: '🧰', borderColor: '#3b82f6', textColor: '#bfdbfe',
+        prompt: 'What can I do by myself to take my mind off the crisis? For example: listen to music, take a walk, or watch a comfort show.' },
+      { id: 'distract', label: '3. People and places that distract', icon: '🌳', borderColor: '#10b981', textColor: '#a7f3d0',
+        prompt: 'Where can I go and who can I be around to help shift my mind? This step is for company or distraction, before asking for help.' },
+      { id: 'helpers', label: '4. People I can ask for help', icon: '🤝', borderColor: '#a855f7', textColor: '#ddd6fe',
+        prompt: 'List friends, family, or mentors I can contact for help. Include how to reach them.' },
+      { id: 'pros', label: '5. Professionals and crisis resources', icon: '☎', borderColor: '#ec4899', textColor: '#fbcfe8',
+        prompt: 'List my therapist, school counselor, doctor, and any crisis services I may use. Include how to reach them.' },
+      { id: 'safe', label: '6. Making the environment safer', icon: '🛡', borderColor: '#ef4444', textColor: '#fecaca',
+        prompt: 'List things I will remove or put away during a hard time, where they will go, and who can help secure them.' }
     ];
+    var resourceLinkStyle = { display: 'inline-flex', alignItems: 'center', minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid #fecaca', color: '#fff', background: 'rgba(127,29,29,0.55)', fontWeight: 800, textDecoration: 'underline', textUnderlineOffset: 3 };
+    var textareaStyle = { boxSizing: 'border-box', width: '100%', minHeight: 96, padding: '10px', borderRadius: 8, border: '1px solid rgba(226,232,240,0.55)', background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit', lineHeight: 1.5, resize: 'vertical' };
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🛡', 'My Crisis Plan', 'Stanley + Brown 2012 Safety Planning Intervention. Build YOUR plan. Refer to it on hard days.', '#ef4444'),
 
-      hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.15)', border: '2px solid #ef4444', marginBottom: 14 } },
-        hh('div', { style: { fontSize: 12, color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '🚨 IF YOU ARE IN CRISIS RIGHT NOW:'),
-        hh('div', { style: { fontSize: 12, color: '#fecaca', lineHeight: 1.6 } },
-          'Call or text ', hh('strong', null, '988'), ' (US Suicide + Crisis Lifeline). ',
-          'Maine Mobile Crisis: ', hh('strong', null, '1-888-568-1112'), '. ',
-          'Text ', hh('strong', null, '"HOME"'), ' to ', hh('strong', null, '741741'), ' (Crisis Text Line). ',
-          'You can reach a real person 24/7. This planning tool is for AFTER you\'re safe — to prepare for next time.'
+      hh('section', { 'aria-labelledby': 'learning-lab-crisis-help-heading', style: { padding: 12, borderRadius: 10, background: 'rgba(127,29,29,0.55)', border: '2px solid #fca5a5', marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-crisis-help-heading', style: { fontSize: 14, color: '#fff', fontWeight: 900, margin: '0 0 6px' } }, hh('span', { 'aria-hidden': 'true' }, '🚨 '), 'If you are in crisis right now'),
+        hh('p', { style: { fontSize: 12, color: '#fff', lineHeight: 1.6, margin: '0 0 10px' } }, 'Reach a trained crisis counselor now. If there is immediate danger or an immediate risk of harm, call 911. This planning tool is for after you are safe, to prepare for next time.'),
+        hh('ul', { 'aria-label': 'Crisis contact options', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          hh('li', null, hh('a', { href: 'tel:988', 'aria-label': 'Call the 988 Suicide and Crisis Lifeline', style: resourceLinkStyle }, 'Call 988')),
+          hh('li', null, hh('a', { href: 'sms:988', 'aria-label': 'Text the 988 Suicide and Crisis Lifeline', style: resourceLinkStyle }, 'Text 988')),
+          hh('li', null, hh('a', { href: 'tel:+18885681112', 'aria-label': 'Call the Maine Crisis Line at 1-888-568-1112', style: resourceLinkStyle }, 'Call Maine Crisis: 1-888-568-1112')),
+          hh('li', null, hh('a', { href: 'sms:741741', 'aria-label': 'Text HOME to Crisis Text Line at 741741', style: resourceLinkStyle }, 'Text HOME to 741741')),
+          hh('li', null, hh('a', { href: 'tel:911', 'aria-label': 'Call 911 for immediate danger', style: resourceLinkStyle }, 'Immediate danger: call 911'))
+        ),
+        hh('p', { style: { fontSize: 11, color: '#fee2e2', lineHeight: 1.5, margin: '10px 0 0' } }, 'United States resources. Crisis services are available 24 hours a day, 7 days a week. Calling or texting may use your device’s phone or messaging app.')
+      ),
+
+      hh('section', { 'aria-labelledby': 'learning-lab-crisis-plan-heading' },
+        hh('h3', { id: 'learning-lab-crisis-plan-heading', style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 4px' } }, 'Build your six-step plan'),
+        hh('p', { id: 'learning-lab-crisis-save-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 12px' } }, 'Your entries save automatically in this browser. Because this plan may contain private contact and safety information, use a device and account you trust.'),
+        hh('ol', { 'aria-label': 'Six-step personal crisis plan', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 } },
+          STEPS.map(function(s) {
+            var fieldId = 'learning-lab-crisis-' + s.id;
+            var promptId = fieldId + '-prompt';
+            return hh('li', { key: 'cs-' + s.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + s.borderColor } },
+              hh('h4', { style: { margin: '0 0 4px' } },
+                hh('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 12, fontWeight: 800, color: s.textColor } }, hh('span', { 'aria-hidden': 'true' }, s.icon + ' '), s.label)
+              ),
+              hh('p', { id: promptId, style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.5, margin: '0 0 8px' } }, s.prompt),
+              hh('textarea', { id: fieldId, value: p[s.id] || '', rows: 4, maxLength: 4000, 'aria-describedby': promptId + ' learning-lab-crisis-save-note', onChange: function(event) { update(s.id, event.target.value); }, onBlur: function() { llAnnounce(s.label + ' saved automatically.'); }, 'data-ll-focusable': true, style: textareaStyle })
+            );
+          })
         )
       ),
 
-      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-        STEPS.map(function(s) {
-          return hh('div', { key: 'cs-' + s.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + s.color } },
-            hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: s.color, marginBottom: 4 } }, s.icon + ' ' + s.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, s.prompt),
-            tkTextarea(p[s.id], function(v) { update(s.id, v); }, '', 3)
-          );
-        })
-      ),
-
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#ef4444' } }, '🎓 Why this works: '),
-        'Stanley + Brown 2012, JAMA Psychiatry. Safety planning intervention has the strongest evidence for reducing repeat-attempts after a crisis. The act of WRITING this plan when you\'re calm makes it accessible when you\'re not. Share your plan with someone safe — a parent, counselor, friend.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-crisis-evidence-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(127,29,29,0.35)', border: '1px solid #fca5a5', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-crisis-evidence-heading', style: { color: '#fecaca', fontSize: 12, margin: '0 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '🎓 '), 'Why write a safety plan?'),
+        hh('p', { style: { margin: 0 } }, 'Writing this plan when you are calm can make it easier to use during a hard moment. Consider sharing your plan with someone safe, such as a parent, counselor, or trusted friend. This tool does not replace professional care or emergency services.')
       )
     );
   }
