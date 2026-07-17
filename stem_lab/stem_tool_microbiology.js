@@ -365,17 +365,42 @@
   var hh = R ? R.createElement : null;
 
   // ── 1. ANTIBIOTIC RESISTANCE EVOLUTION SIM ──
+  function getResistanceKillProbabilities(dose) {
+    var sensitive = Math.max(0, Math.min(1, (Number(dose) || 0) / 100));
+    var resistant = sensitive === 0 ? 0 : Math.min(0.05, sensitive * 0.15);
+    return { sensitive: sensitive, resistant: resistant };
+  }
+  function classifyResistanceTrend(initialPct, finalPct) {
+    var change = (Number(finalPct) || 0) - (Number(initialPct) || 0);
+    return change > 5 ? 'increase' : change < -5 ? 'decrease' : 'similar';
+  }
+  function evaluateResistancePrediction(initialPct, finalPct, prediction) {
+    var observed = classifyResistanceTrend(initialPct, finalPct);
+    var labels = { increase: 'increased', similar: 'stayed about the same', decrease: 'decreased' };
+    return { correct: prediction === observed, observed: observed, observedLabel: labels[observed], change: (Number(finalPct) || 0) - (Number(initialPct) || 0) };
+  }
+  function evaluateResistanceExplanation(initialPct, choice) {
+    var expected = Number(initialPct) > 0 ? 'selection' : 'variation-required';
+    var feedback = expected === 'selection' ? 'Pre-existing resistant cells survived exposure more often, so their descendants became a larger share. The bacteria did not choose or learn resistance.' : 'No resistant variant was present, and this model omits mutation and gene transfer. Selection cannot favor a variant that is absent.';
+    return { correct: choice === expected, expected: expected, feedback: feedback };
+  }
+  window.__MicrobiologyCore = { getResistanceKillProbabilities: getResistanceKillProbabilities, classifyResistanceTrend: classifyResistanceTrend, evaluateResistancePrediction: evaluateResistancePrediction, evaluateResistanceExplanation: evaluateResistanceExplanation };
+
   function AntibioticResistanceSim(props) {
     if (!R) return null;
     var awardXP = props.awardXP;
     var ds = R.useState(60);    var dose = ds[0];      var setDose = ds[1];
     var ts = R.useState(14);    var duration = ts[0];  var setDuration = ts[1];
     var rs = R.useState(3);     var initRes = rs[0];   var setInitRes = rs[1];
+    var prs = R.useState(null); var prediction = prs[0]; var setPrediction = prs[1];
+    var es = R.useState(null); var explanation = es[0]; var setExplanation = es[1];
+    var ers = R.useState(null); var explanationReview = ers[0]; var setExplanationReview = ers[1];
     var ps = R.useState(false); var playing = ps[0];   var setPlaying = ps[1];
     var ks = R.useState(0);     var day = ks[0];       var setDay = ks[1];
     var hs = R.useState([]);    var history = hs[0];   var setHistory = hs[1];
     var bs = R.useState([]);    var bact = bs[0];      var setBact = bs[1];
     var awardedRef = R.useRef(false);
+    var explanationAwardedRef = R.useRef(false);
 
     R.useEffect(function() { if (bact.length === 0) seed(); }, []);
 
@@ -394,8 +419,9 @@
     function step() {
       if (day >= duration) { setPlaying(false); return; }
       var nextDay = day + 1;
-      var killSens = dose / 100;
-      var killRes = 0.05;
+      var killProbabilities = getResistanceKillProbabilities(dose);
+      var killSens = killProbabilities.sensitive;
+      var killRes = killProbabilities.resistant;
       var newBact = bact.map(function(b) {
         if (!b.alive) return b;
         var p = b.resistant ? killRes : killSens;
@@ -428,12 +454,20 @@
       return function() { clearTimeout(t); };
     }, [playing, day, bact]);
 
-    function reset() { setPlaying(false); seed(); }
+    function reset() { setPlaying(false); setPrediction(null); setExplanation(null); setExplanationReview(null); explanationAwardedRef.current = false; seed(); }
 
     var totalAlive = bact.filter(function(b) { return b.alive; }).length;
     var totalRes   = bact.filter(function(b) { return b.alive && b.resistant; }).length;
     var pctRes = totalAlive > 0 ? Math.round((totalRes / totalAlive) * 100) : 0;
     var initialPct = history.length > 0 ? Math.round((history[0].resistant / Math.max(1, (history[0].sensitive + history[0].resistant))) * 100) : initRes;
+    var predictionReview = day >= duration && history.length > 1 && prediction ? evaluateResistancePrediction(initialPct, pctRes, prediction) : null;
+    var investigationReady = !!prediction;
+    function submitExplanation() {
+      if (!explanation || explanationReview) return;
+      var review = evaluateResistanceExplanation(initialPct, explanation);
+      setExplanationReview(review);
+      if (review.correct && !explanationAwardedRef.current) { explanationAwardedRef.current = true; if (awardXP) awardXP(2); }
+    }
 
     return hh('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(239,68,68,0.30)', borderRight: '1px solid rgba(239,68,68,0.30)', borderBottom: '1px solid rgba(239,68,68,0.30)', borderLeft: '4px solid #ef4444', boxShadow: '0 4px 20px rgba(239,68,68,0.10)' } },
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
@@ -488,7 +522,13 @@
           )
         )
       ),
-      hh('div', { role: 'note', style: { padding: 9, marginBottom: 10, borderRadius: 7, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a', fontSize: 10.5, lineHeight: 1.5 } }, 'Model boundary: resistant cells are present at the start. The simulation omits mutation, horizontal gene transfer, drug concentration over time, immune responses, and patient dosing. It demonstrates selection, not a treatment recommendation.'),
+      hh('div', { role: 'note', style: { padding: 9, marginBottom: 10, borderRadius: 7, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a', fontSize: 10.5, lineHeight: 1.5 } }, 'Model boundary: resistant cells are present only when initial resistance is above zero. The simulation omits mutation, horizontal gene transfer, drug concentration over time, immune responses, and patient dosing. It demonstrates selection, not a treatment recommendation.'),
+      hh('fieldset', { disabled: day > 0, style: { margin: '0 0 10px', padding: 10, borderRadius: 8, border: '1px solid rgba(167,243,208,0.38)', opacity: day > 0 ? 0.72 : 1 } },
+        hh('legend', { style: { padding: '0 6px', color: '#a7f3d0', fontSize: 11, fontWeight: 800 } }, '1. Predict the resistant share after exposure'),
+        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 7 } }, [{ id: 'increase', label: 'Increase' }, { id: 'similar', label: 'Stay about the same' }, { id: 'decrease', label: 'Decrease' }].map(function(option) {
+          return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'center', gap: 7, padding: 8, borderRadius: 6, background: prediction === option.id ? 'rgba(16,185,129,0.22)' : 'rgba(2,6,23,0.35)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, cursor: day > 0 ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-prediction', value: option.id, checked: prediction === option.id, onChange: function() { setPrediction(option.id); }, style: { accentColor: '#10b981' } }), option.label);
+        }))
+      ),
       hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('div', { style: { marginBottom: 4 } }, 'Exposure strength: ', hh('strong', { style: { color: '#fbbf24' } }, dose + '/100')),
@@ -504,15 +544,25 @@
         )
       ),
       hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 10, flexWrap: 'wrap' } },
-        hh('button', { type: 'button', onClick: function() { if (day === 0) seed(); setPlaying(function(p) { return !p; }); }, disabled: day >= duration, style: { padding: '8px 18px', borderRadius: 8, background: playing ? '#ef4444' : 'rgba(239,68,68,0.18)', color: playing ? '#fff' : '#fca5a5', border: '1.5px solid #ef4444', fontSize: 11, fontWeight: 800, cursor: day >= duration ? 'default' : 'pointer', opacity: day >= duration ? 0.4 : 1 } }, playing ? '⏸ Pause' : '▶ Play'),
-        hh('button', { type: 'button', onClick: function() { setPlaying(false); step(); }, disabled: day >= duration, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: day >= duration ? 'default' : 'pointer', opacity: day >= duration ? 0.4 : 1 } }, 'Step round'),
+        hh('button', { type: 'button', onClick: function() { if (day === 0) seed(); setPlaying(function(p) { return !p; }); }, disabled: !investigationReady || day >= duration, style: { padding: '8px 18px', borderRadius: 8, background: playing ? '#ef4444' : 'rgba(239,68,68,0.18)', color: playing ? '#fff' : '#fca5a5', border: '1.5px solid #ef4444', fontSize: 11, fontWeight: 800, cursor: !investigationReady || day >= duration ? 'default' : 'pointer', opacity: !investigationReady || day >= duration ? 0.4 : 1 } }, playing ? '⏸ Pause' : '▶ Play'),
+        hh('button', { type: 'button', onClick: function() { setPlaying(false); step(); }, disabled: !investigationReady || day >= duration, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: !investigationReady || day >= duration ? 'default' : 'pointer', opacity: !investigationReady || day >= duration ? 0.4 : 1 } }, 'Step round'),
         hh('button', { type: 'button', onClick: reset, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '↺ Reset')
       ),
+      !investigationReady && day === 0 ? hh('div', { role: 'status', style: { marginBottom: 10, color: '#fde68a', fontSize: 10.5, textAlign: 'center', fontWeight: 700 } }, 'Choose a prediction to unlock the culture controls.') : null,
       day >= duration && history.length > 1 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#22c55e' } }, 'What the model shows: '),
-        'The dish started with ' + initialPct + '% resistant cells. After ' + duration + ' exposure rounds at strength ' + dose + '/100, ' + totalAlive + ' cells remain and ' + pctRes + '% of them are resistant. Susceptible cells were removed more often, so resistant survivors contributed a larger share of later rounds. ',
+        hh('div', { role: 'status', 'aria-live': 'polite', style: { marginBottom: 8, paddingBottom: 7, borderBottom: '1px solid rgba(167,243,208,0.25)' } }, hh('strong', { style: { color: predictionReview && predictionReview.correct ? '#86efac' : '#fde68a' } }, predictionReview && predictionReview.correct ? 'Prediction matched. ' : 'Prediction review. '), predictionReview && predictionReview.observed === 'similar' ? 'The resistant share stayed about the same (a ' + Math.abs(predictionReview.change) + '-point change).' : 'The resistant share ' + (predictionReview ? predictionReview.observedLabel : 'was not classified') + ' by ' + Math.abs(predictionReview ? predictionReview.change : 0) + ' percentage points.'),
+        hh('strong', { style: { color: '#22c55e' } }, '2. Observe: '),
+        'The dish started with ' + initialPct + '% resistant cells. After ' + duration + ' exposure rounds at strength ' + dose + '/100, ' + totalAlive + ' cells remain and ' + pctRes + '% of them are resistant. ',
+        initialPct === 0 ? 'No resistant lineage appeared because mutation and gene transfer are outside this model. ' : 'Susceptible cells were removed more often, so resistant survivors contributed a larger share of later rounds. ',
         (pctRes >= 80 ? 'Selection strongly changed the population composition.' : pctRes >= 40 ? 'Selection produced a clear resistance shift.' : 'The resistance shift was modest in this run.'),
-        ' Real resistance also emerges and spreads through mutation and horizontal gene transfer. For personal care, antibiotics should be taken exactly as prescribed by a clinician.'
+        ' Real resistance also emerges and spreads through mutation and horizontal gene transfer. For personal care, antibiotics should be taken exactly as prescribed by a clinician.',
+        hh('fieldset', { style: { margin: '10px 0 8px', padding: 9, borderRadius: 7, border: '1px solid rgba(125,211,252,0.35)' } },
+          hh('legend', { style: { padding: '0 5px', color: '#bae6fd', fontSize: 11, fontWeight: 800 } }, '3. Explain the observed pattern'),
+          [{ id: 'selection', label: 'Pre-existing resistant cells survived more often and left more descendants.' }, { id: 'variation-required', label: 'No resistant variant was present, so selection had nothing resistant to favor.' }, { id: 'learned', label: 'Individual bacteria learned resistance during the run.' }, { id: 'caused', label: 'The exposure deliberately created every resistant cell.' }].map(function(option) {
+            return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'flex-start', gap: 7, marginTop: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 10.5, lineHeight: 1.4, cursor: explanationReview ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-explanation', value: option.id, checked: explanation === option.id, disabled: !!explanationReview, onChange: function() { setExplanation(option.id); }, style: { marginTop: 2, accentColor: '#38bdf8' } }), option.label);
+          })
+        ),
+        explanationReview ? hh('div', { role: 'status', 'aria-live': 'polite', style: { padding: 8, borderRadius: 6, background: explanationReview.correct ? 'rgba(16,185,129,0.14)' : 'rgba(245,158,11,0.14)', color: explanationReview.correct ? '#a7f3d0' : '#fde68a', fontSize: 10.5, lineHeight: 1.45 } }, (explanationReview.correct ? 'Explanation confirmed. ' : 'Explanation review. ') + explanationReview.feedback) : hh('button', { type: 'button', onClick: submitExplanation, disabled: !explanation, style: { padding: '8px 14px', borderRadius: 7, border: '1px solid rgba(125,211,252,0.55)', background: explanation ? '#0e7490' : '#334155', color: '#f0f9ff', fontSize: 10.5, fontWeight: 800, cursor: explanation ? 'pointer' : 'not-allowed' } }, 'Submit explanation')
       ) : null
     );
   }
