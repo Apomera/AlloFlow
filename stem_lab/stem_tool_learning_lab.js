@@ -8302,12 +8302,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function rateAll() {
-      var entry = Object.assign({ id: tkId(), date: todayISO() }, newRating);
-      setData({ ratings: [entry].concat(data.ratings || []) });
+      var values = {};
+      DIMENSIONS.forEach(function(dim) { values[dim.id] = newRating[dim.id] || 5; });
+      var entry = Object.assign({ id: tkId(), date: todayISO() }, values);
+      setData(Object.assign({}, data, { ratings: [entry].concat(data.ratings || []) }));
       setNewRating({});
+      llAnnounce('Executive function ratings saved.');
     }
-    function removeRating(id) {
-      setData({ ratings: (data.ratings || []).filter(function(r) { return r.id !== id; }) });
+    async function removeRating(id) {
+      var rating = (data.ratings || []).filter(function(r) { return r.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes' + (rating ? ' the executive function rating from ' + rating.date : ' this executive function rating') + '.', {
+        title: 'Delete this weekly rating?', confirmText: 'Delete rating'
+      }))) return;
+      setData(Object.assign({}, data, { ratings: (data.ratings || []).filter(function(r) { return r.id !== id; }) }));
+      llAnnounce('Executive function rating deleted.');
     }
 
     var ratings = data.ratings || [];
@@ -8318,91 +8326,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       return ratings.slice(0, 8).reverse().map(function(r) { return r[dimId] || 0; });
     }
 
+    var srOnlyStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
+    var listStyle = { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 };
+
     if (detail) {
       var dim = DIMENSIONS.filter(function(d) { return d.id === detail; })[0];
       if (!dim) { setDetail(null); return null; }
       return hh('div', { style: { padding: 14 } },
         tkSectionHeader(dim.icon, dim.label, dim.what, dim.color),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
-          dim.strategies.map(function(s, i) {
-            return hh('div', { key: 'str-' + i, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + dim.color + '30', borderLeft: '3px solid ' + dim.color } },
-              hh('div', { style: { fontSize: 12, fontWeight: 800, color: dim.color, marginBottom: 4 } }, '→ ' + s.title),
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } }, s.detail)
+        hh('ul', { 'aria-label': dim.label + ' strategies', style: Object.assign({}, listStyle, { gap: 10, marginBottom: 14 }) },
+          dim.strategies.map(function(strategy, index) {
+            return hh('li', { key: 'str-' + index, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + dim.color + '30', borderLeft: '3px solid ' + dim.color } },
+              hh('h3', { style: { fontSize: 12, fontWeight: 800, color: dim.color, margin: '0 0 4px' } }, '→ ' + strategy.title),
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } }, strategy.detail)
             );
           })
         ),
         hh('div', { style: { textAlign: 'center' } },
-          tkBtn('← Back to dashboard', function() { setDetail(null); }, 'ghost')
+          tkBtn('← Back to dashboard', function() { setDetail(null); }, 'ghost', { minHeight: 44 })
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🧩', 'Executive Function Dashboard', 'Rate 8 EF dimensions weekly. Track trends. Click any dimension for strategies. Barkley + Brown frameworks.', '#a855f7'),
+      tkSectionHeader('🧩', 'Executive Function Dashboard', 'Rate 8 EF dimensions weekly. Track trends. Select any dimension for strategies. Barkley + Brown frameworks.', '#a855f7'),
 
-      // Weekly rating form
       tkCard('#a855f7',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '📊 Rate your week (1 = struggling, 10 = strong)'),
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); rateAll(); }, 'aria-labelledby': 'learning-lab-ef-rating-heading' },
+          hh('h3', { id: 'learning-lab-ef-rating-heading', style: { fontSize: 12, fontWeight: 800, color: '#c084fc', margin: '0 0 8px' } }, '📊 Rate your week (1 = struggling, 10 = strong)'),
           DIMENSIONS.map(function(dim) {
-            return hh('div', { key: 'rd-' + dim.id, style: { display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + dim.color, marginBottom: 6 } },
-              hh('div', { style: { fontSize: 16, flexShrink: 0 } }, dim.icon),
-              hh('div', { style: { flex: 1, minWidth: 0 } },
-                hh('strong', { style: { fontSize: 11, color: dim.color } }, dim.label)
+            var ratingId = 'learning-lab-ef-rating-' + dim.id;
+            var ratingValue = newRating[dim.id] || 5;
+            return hh('div', { key: 'rd-' + dim.id, style: { display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + dim.color, marginBottom: 6, flexWrap: 'wrap' } },
+              hh('label', { htmlFor: ratingId, style: { display: 'flex', alignItems: 'center', gap: 8, flex: '1 1 12rem', minWidth: 0, fontSize: 11, fontWeight: 800, color: dim.color } },
+                hh('span', { 'aria-hidden': 'true', style: { fontSize: 16, flexShrink: 0 } }, dim.icon),
+                dim.label
               ),
-              hh('input', { type: 'range', min: 1, max: 10, step: 1, value: newRating[dim.id] || 5,
-                onChange: function(e) { setNewRating(Object.assign({}, newRating, (function() { var o = {}; o[dim.id] = parseInt(e.target.value, 10); return o; })())); },
-                style: { width: 140, accentColor: dim.color }
+              hh('input', { id: ratingId, type: 'range', min: 1, max: 10, step: 1, value: ratingValue, 'aria-valuetext': ratingValue + ' out of 10',
+                onChange: function(event) { setNewRating(Object.assign({}, newRating, (function() { var o = {}; o[dim.id] = parseInt(event.target.value, 10); return o; })())); }, 'data-ll-focusable': true,
+                style: { flex: '1 1 140px', width: 140, maxWidth: '100%', minHeight: 44, accentColor: dim.color }
               }),
-              hh('strong', { style: { width: 30, textAlign: 'right', fontSize: 14, color: dim.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, newRating[dim.id] || 5)
+              hh('output', { htmlFor: ratingId, 'aria-live': 'polite', style: { width: 42, textAlign: 'right', fontSize: 14, color: dim.color, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, ratingValue + '/10')
             );
           }),
           hh('div', { style: { textAlign: 'right', marginTop: 8 } },
-            tkBtn('💾 Save this week\'s ratings', rateAll, 'primary')
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #c4b5fd', background: '#7e22ce', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '💾 Save this week\'s ratings')
           )
         )
       ),
 
-      // Latest snapshot — radar-like
       latest ? tkCard('#9333ea',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '🎯 Latest snapshot · ' + relDate(latest.date) + ' · Click for strategies'),
+        hh('section', { 'aria-labelledby': 'learning-lab-ef-snapshot-heading' },
+          hh('h3', { id: 'learning-lab-ef-snapshot-heading', style: { fontSize: 12, fontWeight: 800, color: '#c084fc', margin: '0 0 8px' } }, '🎯 Latest snapshot · ' + relDate(latest.date) + ' · Select for strategies'),
           hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
             DIMENSIONS.map(function(dim) {
               var val = latest[dim.id] || 0;
               var hist = trend(dim.id);
-              return hh('button', { key: 'sn-' + dim.id,
-                onClick: function() { setDetail(dim.id); },
-                style: { display: 'block', textAlign: 'left', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid ' + dim.color + '30', borderLeft: '3px solid ' + dim.color, cursor: 'pointer' }
+              var trendText = hist.length ? hist.join(', ') : 'No trend history';
+              return hh('button', { key: 'sn-' + dim.id, type: 'button', 'aria-label': dim.label + ': ' + val + ' out of 10. Open strategies. Recent ratings: ' + trendText,
+                onClick: function() { setDetail(dim.id); }, 'data-ll-focusable': true,
+                style: { display: 'block', minHeight: 80, textAlign: 'left', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid ' + dim.color + '30', borderLeft: '3px solid ' + dim.color, cursor: 'pointer' }
               },
                 hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                  hh('span', { style: { fontSize: 14 } }, dim.icon),
+                  hh('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, dim.icon),
                   hh('span', { style: { fontSize: 11, fontWeight: 700, color: dim.color, flex: 1 } }, dim.label),
-                  hh('strong', { style: { fontSize: 16, color: dim.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, val)
+                  hh('strong', { style: { fontSize: 16, color: dim.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, val + '/10')
                 ),
-                // Mini trend line
-                hh('div', { style: { display: 'flex', gap: 1, alignItems: 'flex-end', height: 20 } },
-                  hist.map(function(v, i) {
-                    return hh('div', { key: 'h-' + i, style: { flex: 1, height: (v / 10 * 100) + '%', background: dim.color + '70', minHeight: 1, borderRadius: 1 } });
+                hh('div', { 'aria-hidden': 'true', style: { display: 'flex', gap: 1, alignItems: 'flex-end', height: 20 } },
+                  hist.map(function(value, index) {
+                    return hh('div', { key: 'h-' + index, style: { flex: 1, height: (value / 10 * 100) + '%', background: dim.color + '70', minHeight: 1, borderRadius: 1 } });
                   })
-                )
+                ),
+                hh('span', { style: srOnlyStyle }, 'Recent ratings: ' + trendText)
               );
             })
           )
         )
       ) : null,
 
-      // Past ratings
-      ratings.length > 1 ? hh('div', { style: { marginTop: 12 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Rating history'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          ratings.slice(0, 10).map(function(r) {
-            var avg = (DIMENSIONS.reduce(function(s, d) { return s + (r[d.id] || 0); }, 0) / DIMENSIONS.length).toFixed(1);
-            return hh('div', { key: 'rt-' + r.id, style: { display: 'flex', justifyContent: 'space-between', padding: '6px 10px', borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
-              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, r.date + ' · ' + relDate(r.date)),
-              hh('div', null,
-                hh('span', { style: { fontSize: 11, color: '#c084fc', fontWeight: 700, marginRight: 8 } }, 'avg ' + avg + '/10'),
-                hh('button', { onClick: function() { removeRating(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+      ratings.length > 1 ? hh('section', { 'aria-labelledby': 'learning-lab-ef-history-heading', style: { marginTop: 12 } },
+        hh('h3', { id: 'learning-lab-ef-history-heading', style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📚 Rating history'),
+        hh('ul', { style: Object.assign({}, listStyle, { gap: 4 }) },
+          ratings.slice(0, 10).map(function(rating) {
+            var avg = (DIMENSIONS.reduce(function(sum, dimension) { return sum + (rating[dimension.id] || 0); }, 0) / DIMENSIONS.length).toFixed(1);
+            return hh('li', { key: 'rt-' + rating.id, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7', flexWrap: 'wrap' } },
+              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, rating.date + ' · ' + relDate(rating.date)),
+              hh('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                hh('span', { style: { fontSize: 11, color: '#c084fc', fontWeight: 700 } }, 'average ' + avg + '/10'),
+                hh('button', { type: 'button', 'aria-label': 'Delete executive function rating from ' + rating.date, onClick: function() { removeRating(rating.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
               )
             );
           })
@@ -8411,7 +8422,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
-  // ── W. PERSONAL IEP GOAL TRACKER (Wave 5) ──
   // Student-controlled IEP goal tracking. Annual goals + quarterly
   // sub-goals + accommodation review. Designed for the student to
   // own and bring to IEP meetings.
