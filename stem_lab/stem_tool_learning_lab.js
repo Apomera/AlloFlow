@@ -8053,6 +8053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var bp = R.useState(false);                    var boxPlaying = bp[0]; var setBoxPlaying = bp[1];
     var gs = R.useState({ five: '', four: '', three: '', two: '', one: '' });
     var ground = gs[0];                            var setGround = gs[1];
+    var es = R.useState('');                       var emotionError = es[0]; var setEmotionError = es[1];
 
     var EMOTION_LABELS = [
       { id: 'sad',         icon: '😢', color: '#3b82f6' },
@@ -8068,10 +8069,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function save() {
-      if (!form.label) { alert('Pick an emotion first.'); return; }
+      if (!form.label) {
+        setEmotionError('Choose the emotion that feels strongest right now.');
+        setTimeout(function() { var first = document.getElementById('learning-lab-emotion-sad'); if (first) first.focus(); }, 0);
+        return;
+      }
       var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
-      setData({ checks: [entry].concat(data.checks || []) });
+      setData(Object.assign({}, data, { checks: [entry].concat(data.checks || []) }));
       setForm({ intensity: 5, label: '', what: '', need: '' });
+      setEmotionError('');
+      llAnnounce('Emotion check-in saved.');
     }
 
     R.useEffect(function() {
@@ -8080,23 +8087,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       return function() { clearTimeout(t); };
     }, [boxPlaying, boxStep]);
 
-    var BOX_STEPS = ['Breathe in (4 sec)', 'Hold (4 sec)', 'Breathe out (4 sec)', 'Hold (4 sec)'];
+    var BOX_STEPS = ['Breathe in (4 seconds)', 'Hold (4 seconds)', 'Breathe out (4 seconds)', 'Hold (4 seconds)'];
     var checks = data.checks || [];
+    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(244,114,182,0.45)', background: 'rgba(2,6,23,0.55)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var labelStyle = { display: 'block', fontSize: 11, fontWeight: 800, color: '#f9a8d4', marginBottom: 4 };
+    var listStyle = { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 };
 
     if (view === 'breathing') {
       return hh('div', { style: { padding: 14 } },
         tkSectionHeader('🌬', 'Box breathing', '4-4-4-4 pattern. Settles the nervous system in ~2 minutes.', '#06b6d4'),
         hh('div', { style: { textAlign: 'center', padding: 30 } },
-          hh('div', { style: { fontSize: 60, marginBottom: 14, opacity: boxPlaying ? 1 : 0.4 } }, '🌬'),
-          hh('div', { style: { fontSize: 20, fontWeight: 900, color: '#06b6d4', marginBottom: 20 } }, boxPlaying ? BOX_STEPS[boxStep] : 'Press play to begin'),
-          // Visual box that pulses
-          hh('div', { style: { width: 120, height: 120, margin: '0 auto 24px', border: '4px solid #06b6d4', borderRadius: 12, position: 'relative', transition: 'transform 1500ms ease', transform: boxPlaying && boxStep === 0 ? 'scale(1.4)' : boxPlaying && boxStep === 2 ? 'scale(0.7)' : 'scale(1)' } }),
-          hh('button', { onClick: function() { setBoxPlaying(!boxPlaying); setBoxStep(0); },
-            style: { padding: '14px 36px', borderRadius: 10, background: boxPlaying ? '#ef4444' : '#06b6d4', color: '#fff', border: 'none', fontSize: 14, fontWeight: 900, cursor: 'pointer', marginRight: 8 }
-          }, boxPlaying ? '⏸ Pause' : '▶ Play')
+          hh('div', { 'aria-hidden': 'true', style: { fontSize: 60, marginBottom: 14, opacity: boxPlaying ? 1 : 0.4 } }, '🌬'),
+          hh('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 20, fontWeight: 900, color: '#06b6d4', marginBottom: 20 } }, boxPlaying ? BOX_STEPS[boxStep] : 'Press play to begin'),
+          hh('div', { 'aria-hidden': 'true', style: { width: 120, height: 120, margin: '0 auto 24px', border: '4px solid #06b6d4', borderRadius: 12, position: 'relative', transition: 'transform 1500ms ease', transform: boxPlaying && boxStep === 0 ? 'scale(1.4)' : boxPlaying && boxStep === 2 ? 'scale(0.7)' : 'scale(1)' } }),
+          hh('button', { type: 'button', 'aria-pressed': boxPlaying ? 'true' : 'false', onClick: function() { setBoxPlaying(!boxPlaying); setBoxStep(0); }, 'data-ll-focusable': true,
+            style: { minWidth: 44, minHeight: 44, padding: '14px 36px', borderRadius: 10, background: boxPlaying ? '#ef4444' : '#06b6d4', color: '#fff', border: 'none', fontSize: 14, fontWeight: 900, cursor: 'pointer', marginRight: 8 }
+          }, boxPlaying ? '⏸ Pause breathing' : '▶ Start breathing')
         ),
         hh('div', { style: { textAlign: 'center' } },
-          tkBtn('← Back', function() { setView('check'); setBoxPlaying(false); }, 'ghost')
+          tkBtn('← Back', function() { setView('check'); setBoxPlaying(false); }, 'ghost', { minHeight: 44 })
         )
       );
     }
@@ -8113,9 +8122,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkSectionHeader('🌱', '5-4-3-2-1 grounding', 'Sensory awareness shifts attention out of overwhelm. ~3 minutes.', '#10b981'),
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
           FIELDS.map(function(f) {
+            var fieldId = 'learning-lab-grounding-' + f.id;
             return hh('div', { key: 'g-' + f.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + f.color } },
-              hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: f.color, marginBottom: 6 } }, f.icon + ' ' + f.label),
-              tkTextarea(ground[f.id], function(v) { setGround(Object.assign({}, ground, (function() { var o = {}; o[f.id] = v; return o; })())); }, '', 2)
+              hh('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 12, fontWeight: 800, color: f.color, marginBottom: 6 } }, f.icon + ' ' + f.label),
+              hh('textarea', { id: fieldId, value: ground[f.id], rows: 2, onChange: function(event) { setGround(Object.assign({}, ground, (function() { var o = {}; o[f.id] = event.target.value; return o; })())); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { borderColor: f.color, resize: 'vertical' }) })
             );
           })
         ),
@@ -8123,7 +8133,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           'Notice how you feel now compared to when you started. Even partial completion helps.'
         ),
         hh('div', { style: { textAlign: 'center' } },
-          tkBtn('← Back', function() { setView('check'); }, 'ghost')
+          tkBtn('← Back', function() { setView('check'); }, 'ghost', { minHeight: 44 })
         )
       );
     }
@@ -8131,63 +8141,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('💖', 'Emotion Check + Tools', 'Quick check + 3 tools for when feelings are intense.', '#ec4899'),
 
-      // Crisis safety footer (always visible)
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
+      hh('aside', { 'aria-label': 'Crisis support', style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#ef4444' } }, '🚨 If you\'re in crisis: '),
-        'Call or text 988 (Suicide + Crisis Lifeline, US). Maine Mobile Crisis: 1-888-568-1112. You can reach a real person 24/7. This app is a self-help tool, not crisis care.'
+        hh('a', { href: 'tel:988', style: { color: '#fecaca', textDecoration: 'underline', fontWeight: 800 } }, 'Call 988'),
+        ' or ',
+        hh('a', { href: 'sms:988', style: { color: '#fecaca', textDecoration: 'underline', fontWeight: 800 } }, 'text 988'),
+        ' (Suicide & Crisis Lifeline, US). Maine Mobile Crisis: ',
+        hh('a', { href: 'tel:18885681112', style: { color: '#fecaca', textDecoration: 'underline', fontWeight: 800 } }, '1-888-568-1112'),
+        '. You can reach a real person 24/7. This app is a self-help tool, not crisis care.'
       ),
 
-      // Quick check form
       tkCard('#ec4899',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 10 } }, '💖 Quick emotion check'),
-          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, 'What\'s the strongest feeling right now?'),
-          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 } },
-            EMOTION_LABELS.map(function(e) {
-              var on = form.label === e.id;
-              return hh('button', { key: 'el-' + e.id,
-                onClick: function() { setForm(Object.assign({}, form, { label: e.id })); },
-                style: { padding: '10px', borderRadius: 8, background: on ? e.color + '30' : 'rgba(15,23,42,0.5)', border: '2px solid ' + (on ? e.color : 'rgba(100,116,139,0.30)'), fontSize: 22, cursor: 'pointer', minWidth: 44 }
-              }, e.icon);
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-emotion-check-heading' },
+          hh('h3', { id: 'learning-lab-emotion-check-heading', style: { fontSize: 12, fontWeight: 800, color: '#f472b6', margin: '0 0 10px' } }, '💖 Quick emotion check'),
+          hh('div', { id: 'learning-lab-emotion-question', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, 'What\'s the strongest feeling right now?'),
+          hh('div', { role: 'group', 'aria-labelledby': 'learning-lab-emotion-question', 'aria-describedby': emotionError ? 'learning-lab-emotion-error' : undefined, style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 4 } },
+            EMOTION_LABELS.map(function(emotion) {
+              var on = form.label === emotion.id;
+              return hh('button', { key: 'el-' + emotion.id, id: 'learning-lab-emotion-' + emotion.id, type: 'button', 'aria-label': emotion.id, 'aria-pressed': on ? 'true' : 'false',
+                onClick: function() { setForm(Object.assign({}, form, { label: emotion.id })); if (emotionError) setEmotionError(''); }, 'data-ll-focusable': true,
+                style: { minWidth: 48, minHeight: 48, padding: 10, borderRadius: 8, background: on ? emotion.color + '30' : 'rgba(15,23,42,0.5)', border: '2px solid ' + (on ? emotion.color : 'rgba(100,116,139,0.30)'), fontSize: 22, cursor: 'pointer' }
+              }, emotion.icon);
             })
           ),
-          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'How intense? ', hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.intensity + '/10')),
-          hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.intensity,
-            onChange: function(e) { setForm(Object.assign({}, form, { intensity: parseInt(e.target.value, 10) })); },
-            style: { width: '100%', accentColor: '#ec4899', marginBottom: 10 }
+          hh('div', { id: 'learning-lab-emotion-error', role: 'alert', style: { minHeight: emotionError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: emotionError ? 8 : 4 } }, emotionError),
+          hh('label', { htmlFor: 'learning-lab-emotion-intensity', style: labelStyle }, 'How intense? ', hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.intensity + '/10')),
+          hh('input', { id: 'learning-lab-emotion-intensity', type: 'range', min: 1, max: 10, step: 1, value: form.intensity, 'aria-valuetext': form.intensity + ' out of 10',
+            onChange: function(event) { setForm(Object.assign({}, form, { intensity: parseInt(event.target.value, 10) })); }, 'data-ll-focusable': true,
+            style: { width: '100%', minHeight: 44, accentColor: '#ec4899', marginBottom: 10 }
           }),
-          tkInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'What\'s going on? (optional, 1 line)', { marginBottom: 8 }),
-          tkInput(form.need, function(v) { setForm(Object.assign({}, form, { need: v })); }, 'What do you need right now? (optional)', { marginBottom: 10 }),
-          tkBtn('💾 Save check-in', save, 'primary')
+          hh('label', { htmlFor: 'learning-lab-emotion-context', style: labelStyle }, 'What\'s going on? (optional)'),
+          hh('input', { id: 'learning-lab-emotion-context', type: 'text', value: form.what, maxLength: 240, onChange: function(event) { setForm(Object.assign({}, form, { what: event.target.value })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { marginBottom: 8 }) }),
+          hh('label', { htmlFor: 'learning-lab-emotion-need', style: labelStyle }, 'What do you need right now? (optional)'),
+          hh('input', { id: 'learning-lab-emotion-need', type: 'text', value: form.need, maxLength: 240, onChange: function(event) { setForm(Object.assign({}, form, { need: event.target.value })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { marginBottom: 10 }) }),
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #f9a8d4', background: '#be185d', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '💾 Save check-in')
         )
       ),
 
-      // Tools
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
+      hh('div', { role: 'group', 'aria-label': 'Emotion regulation tools', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
         [
           { id: 'breathing', icon: '🌬', label: 'Box breathing', color: '#06b6d4', desc: '4-4-4-4 pattern, ~2 min' },
           { id: 'ground',    icon: '🌱', label: '5-4-3-2-1 grounding', color: '#10b981', desc: 'Sensory anchor, ~3 min' }
-        ].map(function(t) {
-          return hh('button', { key: 'tool-' + t.id,
-            onClick: function() { setView(t.id); },
-            style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, ' + t.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + t.color + '40', borderLeft: '4px solid ' + t.color, cursor: 'pointer' }
+        ].map(function(tool) {
+          return hh('button', { key: 'tool-' + tool.id, type: 'button',
+            onClick: function() { setView(tool.id); }, 'data-ll-focusable': true,
+            style: { display: 'block', minHeight: 80, textAlign: 'left', padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, ' + tool.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + tool.color + '40', borderLeft: '4px solid ' + tool.color, cursor: 'pointer' }
           },
-            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
-            hh('div', { style: { fontSize: 13, fontWeight: 800, color: t.color } }, t.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, t.desc)
+            hh('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4 } }, tool.icon),
+            hh('div', { style: { fontSize: 13, fontWeight: 800, color: tool.color } }, tool.label),
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, tool.desc)
           );
         })
       ),
 
-      // Recent check-ins
-      checks.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Recent emotion check-ins'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+      checks.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-emotion-history-heading' },
+        hh('h3', { id: 'learning-lab-emotion-history-heading', style: { fontSize: 12, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📚 Recent emotion check-ins'),
+        hh('ul', { style: listStyle },
           checks.slice(0, 8).map(function(c) {
-            var e = EMOTION_LABELS.filter(function(x) { return x.id === c.label; })[0] || EMOTION_LABELS[0];
-            return hh('div', { key: 'ck-' + c.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + e.color, display: 'flex', alignItems: 'flex-start', gap: 8 } },
-              hh('div', { style: { fontSize: 20, lineHeight: 1, flexShrink: 0 } }, e.icon),
+            var emotion = EMOTION_LABELS.filter(function(x) { return x.id === c.label; })[0] || EMOTION_LABELS[0];
+            return hh('li', { key: 'ck-' + c.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + emotion.color, display: 'flex', alignItems: 'flex-start', gap: 8 } },
+              hh('div', { 'aria-hidden': 'true', style: { fontSize: 20, lineHeight: 1, flexShrink: 0 } }, emotion.icon),
               hh('div', { style: { flex: 1, minWidth: 0 } },
+                hh('div', { style: { fontSize: 11, color: emotion.color, fontWeight: 800, textTransform: 'capitalize' } }, c.label),
                 hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, new Date(c.time).toLocaleString() + ' · intensity ' + c.intensity + '/10'),
                 c.what ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginTop: 2 } }, c.what) : null,
                 c.need ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, fontStyle: 'italic' } }, 'needed: ' + c.need) : null
@@ -8199,7 +8214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
-  // ── V. PERSONAL EXECUTIVE FUNCTION DASHBOARD (Wave 5) ──
+  // V. PERSONAL EXECUTIVE FUNCTION DASHBOARD (Wave 5)
   // 8 EF dimensions tracked over time with weekly self-rating + library
   // of strategies per dimension. Based on Barkley + Brown frameworks.
   // Particularly valuable for ADHD + autistic students whose EF profiles
